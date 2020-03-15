@@ -26,11 +26,13 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
 class PartitioningSuite
-    extends SparkFunSuite with SharedSparkContext with PrivateMethodTester {
+    extends SparkFunSuite
+    with SharedSparkContext
+    with PrivateMethodTester {
 
   test("HashPartitioner equality") {
-    val p2 = new HashPartitioner(2)
-    val p4 = new HashPartitioner(4)
+    val p2        = new HashPartitioner(2)
+    val p4        = new HashPartitioner(4)
     val anotherP4 = new HashPartitioner(4)
     assert(p2 === p2)
     assert(p4 === p4)
@@ -45,9 +47,9 @@ class PartitioningSuite
     // are deterministically all the same.
     val rdd = sc.parallelize(Seq(1, 1, 1, 1)).map(x => (x, x))
 
-    val p2 = new RangePartitioner(2, rdd)
-    val p4 = new RangePartitioner(4, rdd)
-    val anotherP4 = new RangePartitioner(4, rdd)
+    val p2           = new RangePartitioner(2, rdd)
+    val p4           = new RangePartitioner(4, rdd)
+    val anotherP4    = new RangePartitioner(4, rdd)
     val descendingP2 = new RangePartitioner(2, rdd, false)
     val descendingP4 = new RangePartitioner(4, rdd, false)
 
@@ -94,13 +96,15 @@ class PartitioningSuite
     }
   }
 
-  test("RangePartitioner for keys that are not Comparable (but with Ordering)") {
+  test(
+    "RangePartitioner for keys that are not Comparable (but with Ordering)"
+  ) {
     // Row does not extend Comparable, but has an implicit Ordering defined.
     implicit object RowOrdering extends Ordering[Item] {
       override def compare(x: Item, y: Item): Int = x.value - y.value
     }
 
-    val rdd = sc.parallelize(1 to 4500).map(x => (Item(x), Item(x)))
+    val rdd         = sc.parallelize(1 to 4500).map(x => (Item(x), Item(x)))
     val partitioner = new RangePartitioner(1500, rdd)
     partitioner.getPartition(Item(100))
   }
@@ -125,17 +129,21 @@ class PartitioningSuite
   }
 
   test("RangePartitioner.determineBounds") {
-    assert(RangePartitioner
-             .determineBounds(ArrayBuffer.empty[(Int, Float)], 10)
-             .isEmpty,
-           "Bounds on an empty candidates set should be empty.")
-    val candidates = ArrayBuffer((0.7, 2.0f),
-                                 (0.1, 1.0f),
-                                 (0.4, 1.0f),
-                                 (0.3, 1.0f),
-                                 (0.2, 1.0f),
-                                 (0.5, 1.0f),
-                                 (1.0, 3.0f))
+    assert(
+      RangePartitioner
+        .determineBounds(ArrayBuffer.empty[(Int, Float)], 10)
+        .isEmpty,
+      "Bounds on an empty candidates set should be empty."
+    )
+    val candidates = ArrayBuffer(
+      (0.7, 2.0f),
+      (0.1, 1.0f),
+      (0.4, 1.0f),
+      (0.3, 1.0f),
+      (0.2, 1.0f),
+      (0.5, 1.0f),
+      (1.0, 3.0f)
+    )
     assert(RangePartitioner.determineBounds(candidates, 3) === Array(0.4, 0.7))
   }
 
@@ -178,7 +186,7 @@ class PartitioningSuite
   }
 
   test("RangePartitioner should return a single partition for empty RDDs") {
-    val empty1 = sc.emptyRDD[(Int, Double)]
+    val empty1       = sc.emptyRDD[(Int, Double)]
     val partitioner1 = new RangePartitioner(0, empty1)
     assert(partitioner1.numPartitions === 1)
     val empty2 =
@@ -188,9 +196,9 @@ class PartitioningSuite
   }
 
   test("HashPartitioner not equal to RangePartitioner") {
-    val rdd = sc.parallelize(1 to 10).map(x => (x, x))
+    val rdd     = sc.parallelize(1 to 10).map(x => (x, x))
     val rangeP2 = new RangePartitioner(2, rdd)
-    val hashP2 = new HashPartitioner(2)
+    val hashP2  = new HashPartitioner(2)
     assert(rangeP2 === rangeP2)
     assert(hashP2 === hashP2)
     assert(hashP2 !== rangeP2)
@@ -221,26 +229,33 @@ class PartitioningSuite
 
     assert(grouped2.join(grouped4).partitioner === grouped4.partitioner)
     assert(
-        grouped2.leftOuterJoin(grouped4).partitioner === grouped4.partitioner)
+      grouped2.leftOuterJoin(grouped4).partitioner === grouped4.partitioner
+    )
     assert(
-        grouped2.rightOuterJoin(grouped4).partitioner === grouped4.partitioner)
+      grouped2.rightOuterJoin(grouped4).partitioner === grouped4.partitioner
+    )
     assert(
-        grouped2.fullOuterJoin(grouped4).partitioner === grouped4.partitioner)
+      grouped2.fullOuterJoin(grouped4).partitioner === grouped4.partitioner
+    )
     assert(grouped2.cogroup(grouped4).partitioner === grouped4.partitioner)
 
     assert(grouped2.join(reduced2).partitioner === grouped2.partitioner)
     assert(
-        grouped2.leftOuterJoin(reduced2).partitioner === grouped2.partitioner)
+      grouped2.leftOuterJoin(reduced2).partitioner === grouped2.partitioner
+    )
     assert(
-        grouped2.rightOuterJoin(reduced2).partitioner === grouped2.partitioner)
+      grouped2.rightOuterJoin(reduced2).partitioner === grouped2.partitioner
+    )
     assert(
-        grouped2.fullOuterJoin(reduced2).partitioner === grouped2.partitioner)
+      grouped2.fullOuterJoin(reduced2).partitioner === grouped2.partitioner
+    )
     assert(grouped2.cogroup(reduced2).partitioner === grouped2.partitioner)
 
     assert(grouped2.map(_ => 1).partitioner === None)
     assert(grouped2.mapValues(_ => 1).partitioner === grouped2.partitioner)
     assert(
-        grouped2.flatMapValues(_ => Seq(1)).partitioner === grouped2.partitioner)
+      grouped2.flatMapValues(_ => Seq(1)).partitioner === grouped2.partitioner
+    )
     assert(grouped2.filter(_._1 > 4).partitioner === grouped2.partitioner)
   }
 

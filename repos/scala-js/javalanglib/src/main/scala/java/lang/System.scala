@@ -13,7 +13,7 @@ import scalajs.runtime.environmentInfo
 object System {
   var out: PrintStream = new JSConsoleBasedPrintStream(isErr = false)
   var err: PrintStream = new JSConsoleBasedPrintStream(isErr = true)
-  var in: InputStream = null
+  var in: InputStream  = null
 
   def setIn(in: InputStream): Unit =
     this.in = in
@@ -37,22 +37,20 @@ object System {
         global.performance.now().asInstanceOf[scala.Double]
       } else if (global.performance.selectDynamic("webkitNow")) { () =>
         global.performance.webkitNow().asInstanceOf[scala.Double]
-      } else { () =>
-        new js.Date().getTime()
-      }
-    } else { () =>
-      new js.Date().getTime()
-    }
+      } else { () => new js.Date().getTime() }
+    } else { () => new js.Date().getTime() }
   }
 
   def nanoTime(): scala.Long =
     (getHighPrecisionTime() * 1000000).toLong
 
-  def arraycopy(src: Object,
-                srcPos: scala.Int,
-                dest: Object,
-                destPos: scala.Int,
-                length: scala.Int): Unit = {
+  def arraycopy(
+      src: Object,
+      srcPos: scala.Int,
+      dest: Object,
+      destPos: scala.Int,
+      length: scala.Int
+  ): Unit = {
 
     import scala.{Boolean, Char, Byte, Short, Int, Long, Float, Double}
 
@@ -109,47 +107,47 @@ object System {
         case src: Array[AnyRef] =>
           dest match {
             case dest: Array[AnyRef] => copyRef(src, dest)
-            case _ => mismatch()
+            case _                   => mismatch()
           }
         case src: Array[Boolean] =>
           dest match {
             case dest: Array[Boolean] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                    => mismatch()
           }
         case src: Array[Char] =>
           dest match {
             case dest: Array[Char] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                 => mismatch()
           }
         case src: Array[Byte] =>
           dest match {
             case dest: Array[Byte] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                 => mismatch()
           }
         case src: Array[Short] =>
           dest match {
             case dest: Array[Short] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                  => mismatch()
           }
         case src: Array[Int] =>
           dest match {
             case dest: Array[Int] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                => mismatch()
           }
         case src: Array[Long] =>
           dest match {
             case dest: Array[Long] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                 => mismatch()
           }
         case src: Array[Float] =>
           dest match {
             case dest: Array[Float] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                  => mismatch()
           }
         case src: Array[Double] =>
           dest match {
             case dest: Array[Double] => copyPrim(src, dest)
-            case _ => mismatch()
+            case _                   => mismatch()
           }
         case _ =>
           mismatch()
@@ -224,21 +222,26 @@ object System {
       sysProp.setProperty("java.vm.specification.version", "1.8")
       sysProp.setProperty("java.vm.specification.vendor", "Oracle Corporation")
       sysProp.setProperty(
-          "java.vm.specification.name", "Java Virtual Machine Specification")
+        "java.vm.specification.name",
+        "Java Virtual Machine Specification"
+      )
       sysProp.setProperty("java.vm.name", "Scala.js")
-      linkingInfo.linkerVersion.foreach(
-          v => sysProp.setProperty("java.vm.version", v))
+      linkingInfo.linkerVersion.foreach(v =>
+        sysProp.setProperty("java.vm.version", v)
+      )
       sysProp.setProperty("java.specification.version", "1.8")
       sysProp.setProperty("java.specification.vendor", "Oracle Corporation")
       sysProp.setProperty(
-          "java.specification.name", "Java Platform API Specification")
+        "java.specification.name",
+        "Java Platform API Specification"
+      )
       sysProp.setProperty("file.separator", "/")
       sysProp.setProperty("path.separator", ":")
       sysProp.setProperty("line.separator", "\n")
 
       for {
         jsEnvProperties <- environmentInfo.javaSystemProperties
-        (key, value) <- jsEnvProperties
+        (key, value)    <- jsEnvProperties
       } {
         sysProp.setProperty(key, value)
       }
@@ -250,8 +253,9 @@ object System {
     SystemProperties.value
 
   def setProperties(properties: ju.Properties): Unit = {
-    SystemProperties.value = if (properties != null) properties
-    else SystemProperties.loadSystemProperties()
+    SystemProperties.value =
+      if (properties != null) properties
+      else SystemProperties.loadSystemProperties()
   }
 
   def getProperty(key: String): String =
@@ -270,7 +274,7 @@ object System {
   //def getenv(name: String): String
 
   def exit(status: scala.Int): Unit = Runtime.getRuntime().exit(status)
-  def gc(): Unit = Runtime.getRuntime().gc()
+  def gc(): Unit                    = Runtime.getRuntime().gc()
 }
 
 private[lang] final class JSConsoleBasedPrintStream(isErr: Boolean)
@@ -283,7 +287,7 @@ private[lang] final class JSConsoleBasedPrintStream(isErr: Boolean)
     *  However, the converse is never true, i.e., !flushed => buffer != "".
     */
   private var flushed: scala.Boolean = true
-  private var buffer: String = ""
+  private var buffer: String         = ""
 
   override def write(b: Int): Unit =
     write(Array(b.toByte), 0, 1)
@@ -305,11 +309,11 @@ private[lang] final class JSConsoleBasedPrintStream(isErr: Boolean)
   }
 
   override def print(b: scala.Boolean): Unit = printString(String.valueOf(b))
-  override def print(c: scala.Char): Unit = printString(String.valueOf(c))
-  override def print(i: scala.Int): Unit = printString(String.valueOf(i))
-  override def print(l: scala.Long): Unit = printString(String.valueOf(l))
-  override def print(f: scala.Float): Unit = printString(String.valueOf(f))
-  override def print(d: scala.Double): Unit = printString(String.valueOf(d))
+  override def print(c: scala.Char): Unit    = printString(String.valueOf(c))
+  override def print(i: scala.Int): Unit     = printString(String.valueOf(i))
+  override def print(l: scala.Long): Unit    = printString(String.valueOf(l))
+  override def print(f: scala.Float): Unit   = printString(String.valueOf(f))
+  override def print(d: scala.Double): Unit  = printString(String.valueOf(d))
   override def print(s: Array[scala.Char]): Unit =
     printString(String.valueOf(s))
   override def print(s: String): Unit =
@@ -344,11 +348,12 @@ private[lang] final class JSConsoleBasedPrintStream(isErr: Boolean)
     * line with continuation symbol at the end and schedule a line continuation
     * symbol for the new line if the buffer is flushed.
     */
-  override def flush(): Unit = if (!flushed) {
-    doWriteLine(buffer + LineContEnd)
-    buffer = LineContStart
-    flushed = true
-  }
+  override def flush(): Unit =
+    if (!flushed) {
+      doWriteLine(buffer + LineContEnd)
+      buffer = LineContStart
+      flushed = true
+    }
 
   override def close(): Unit = ()
 
@@ -365,12 +370,13 @@ private[lang] final class JSConsoleBasedPrintStream(isErr: Boolean)
 }
 
 private[lang] object JSConsoleBasedPrintStream {
-  private final val LineContEnd: String = "\u21A9"
+  private final val LineContEnd: String   = "\u21A9"
   private final val LineContStart: String = "\u21AA"
 
   class DummyOutputStream extends OutputStream {
     def write(c: Int): Unit =
       throw new AssertionError(
-          "Should not get in JSConsoleBasedPrintStream.DummyOutputStream")
+        "Should not get in JSConsoleBasedPrintStream.DummyOutputStream"
+      )
   }
 }

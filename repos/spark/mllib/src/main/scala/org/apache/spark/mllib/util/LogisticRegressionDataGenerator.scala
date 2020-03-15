@@ -45,12 +45,14 @@ object LogisticRegressionDataGenerator {
     * @param probOne Probability that a label is 1 (and not 0). Default value is 0.5.
     */
   @Since("0.8.0")
-  def generateLogisticRDD(sc: SparkContext,
-                          nexamples: Int,
-                          nfeatures: Int,
-                          eps: Double,
-                          nparts: Int = 2,
-                          probOne: Double = 0.5): RDD[LabeledPoint] = {
+  def generateLogisticRDD(
+      sc: SparkContext,
+      nexamples: Int,
+      nfeatures: Int,
+      eps: Double,
+      nparts: Int = 2,
+      probOne: Double = 0.5
+  ): RDD[LabeledPoint] = {
     val data = sc.parallelize(0 until nexamples, nparts).map { idx =>
       val rnd = new Random(42 + idx)
 
@@ -68,20 +70,21 @@ object LogisticRegressionDataGenerator {
     if (args.length != 5) {
       // scalastyle:off println
       println(
-          "Usage: LogisticRegressionGenerator " +
-          "<master> <output_dir> <num_examples> <num_features> <num_partitions>")
+        "Usage: LogisticRegressionGenerator " +
+          "<master> <output_dir> <num_examples> <num_features> <num_partitions>"
+      )
       // scalastyle:on println
       System.exit(1)
     }
 
     val sparkMaster: String = args(0)
-    val outputPath: String = args(1)
-    val nexamples: Int = if (args.length > 2) args(2).toInt else 1000
-    val nfeatures: Int = if (args.length > 3) args(3).toInt else 2
-    val parts: Int = if (args.length > 4) args(4).toInt else 2
-    val eps = 3
+    val outputPath: String  = args(1)
+    val nexamples: Int      = if (args.length > 2) args(2).toInt else 1000
+    val nfeatures: Int      = if (args.length > 3) args(3).toInt else 2
+    val parts: Int          = if (args.length > 4) args(4).toInt else 2
+    val eps                 = 3
 
-    val sc = new SparkContext(sparkMaster, "LogisticRegressionDataGenerator")
+    val sc   = new SparkContext(sparkMaster, "LogisticRegressionDataGenerator")
     val data = generateLogisticRDD(sc, nexamples, nfeatures, eps, parts)
 
     data.saveAsTextFile(outputPath)

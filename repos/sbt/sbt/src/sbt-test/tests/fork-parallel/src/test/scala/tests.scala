@@ -4,10 +4,13 @@ import org.junit.Test
 import scala.annotation.tailrec
 
 object ParallelTest {
-  val nbConcurrentTests = new AtomicInteger(0)
+  val nbConcurrentTests  = new AtomicInteger(0)
   val maxConcurrentTests = new AtomicInteger(0)
 
-  private def updateMaxConcurrentTests(currentMax: Int, newMax: Int): Boolean = {
+  private def updateMaxConcurrentTests(
+      currentMax: Int,
+      newMax: Int
+  ): Boolean = {
     if (maxConcurrentTests.compareAndSet(currentMax, newMax)) {
       val f = new File("max-concurrent-tests_" + newMax)
       f.createNewFile
@@ -19,7 +22,7 @@ object ParallelTest {
 
   @tailrec
   def execute(f: => Unit): Unit = {
-    val nb = nbConcurrentTests.incrementAndGet()
+    val nb  = nbConcurrentTests.incrementAndGet()
     val max = maxConcurrentTests.get()
     if (nb <= max || updateMaxConcurrentTests(max, nb)) {
       f

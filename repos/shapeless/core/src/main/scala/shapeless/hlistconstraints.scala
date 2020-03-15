@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-15 Miles Sabin 
+ * Copyright (c) 2011-15 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import ops.hlist.Selector
 import scala.annotation.implicitNotFound
 
 /**
-  * Type class witnessing that every element of `L` has `TC` as its outer type constructor. 
+  * Type class witnessing that every element of `L` has `TC` as its outer type constructor.
   */
 trait UnaryTCConstraint[L <: HList, TC[_]] extends Serializable
 
@@ -34,13 +34,15 @@ trait LowPriorityUnaryTCConstraint extends LowPriorityUnaryTCConstraint0 {
   implicit def hnilConstUnaryTC[H] = new UnaryTCConstraint[HNil, Const[H]#λ] {}
 
   implicit def hlistConstUnaryTC[H, T <: HList](
-      implicit utct: UnaryTCConstraint[T, Const[H]#λ]) =
+      implicit utct: UnaryTCConstraint[T, Const[H]#λ]
+  ) =
     new UnaryTCConstraint[H :: T, Const[H]#λ] {}
 }
 
 object UnaryTCConstraint extends LowPriorityUnaryTCConstraint {
   def apply[L <: HList, TC[_]](
-      implicit utcc: UnaryTCConstraint[L, TC]): UnaryTCConstraint[L, TC] = utcc
+      implicit utcc: UnaryTCConstraint[L, TC]
+  ): UnaryTCConstraint[L, TC] = utcc
 
   type *->*[TC[_]] = {
     type λ[L <: HList] = UnaryTCConstraint[L, TC]
@@ -48,7 +50,8 @@ object UnaryTCConstraint extends LowPriorityUnaryTCConstraint {
 
   implicit def hnilUnaryTC[TC[_]] = new UnaryTCConstraint[HNil, TC] {}
   implicit def hlistUnaryTC[H, T <: HList, TC[_]](
-      implicit utct: UnaryTCConstraint[T, TC]) =
+      implicit utct: UnaryTCConstraint[T, TC]
+  ) =
     new UnaryTCConstraint[TC[H] :: T, TC] {}
 }
 
@@ -59,15 +62,18 @@ trait BasisConstraint[L <: HList, M <: HList] extends Serializable
 
 object BasisConstraint {
   def apply[L <: HList, M <: HList](
-      implicit bc: BasisConstraint[L, M]): BasisConstraint[L, M] = bc
+      implicit bc: BasisConstraint[L, M]
+  ): BasisConstraint[L, M] = bc
 
   type Basis[M <: HList] = {
     type λ[L <: HList] = BasisConstraint[L, M]
   }
 
   implicit def hnilBasis[M <: HList] = new BasisConstraint[HNil, M] {}
-  implicit def hlistBasis[H, T <: HList, M <: HList](
-      implicit bct: BasisConstraint[T, M], sel: Selector[M, H]) =
+  implicit def hlistBasis[H, T <: HList, M <: HList](implicit
+      bct: BasisConstraint[T, M],
+      sel: Selector[M, H]
+  ) =
     new BasisConstraint[H :: T, M] {}
 }
 
@@ -78,15 +84,18 @@ trait LUBConstraint[L <: HList, B] extends Serializable
 
 object LUBConstraint {
   def apply[L <: HList, B](
-      implicit lc: LUBConstraint[L, B]): LUBConstraint[L, B] = lc
+      implicit lc: LUBConstraint[L, B]
+  ): LUBConstraint[L, B] = lc
 
   type <<:[B] = {
     type λ[L <: HList] = LUBConstraint[L, B]
   }
 
   implicit def hnilLUB[T] = new LUBConstraint[HNil, T] {}
-  implicit def hlistLUB[H, T <: HList, B](
-      implicit bct: LUBConstraint[T, B], ev: H <:< B) =
+  implicit def hlistLUB[H, T <: HList, B](implicit
+      bct: LUBConstraint[T, B],
+      ev: H <:< B
+  ) =
     new LUBConstraint[H :: T, B] {}
 }
 
@@ -99,15 +108,18 @@ object KeyConstraint {
   import labelled._
 
   def apply[L <: HList, M <: HList](
-      implicit kc: KeyConstraint[L, M]): KeyConstraint[L, M] = kc
+      implicit kc: KeyConstraint[L, M]
+  ): KeyConstraint[L, M] = kc
 
   type Keys[M <: HList] = {
     type λ[L <: HList] = KeyConstraint[L, M]
   }
 
   implicit def hnilKeys[M <: HList] = new KeyConstraint[HNil, M] {}
-  implicit def hlistKeys[K, V, T <: HList, M <: HList](
-      implicit bct: KeyConstraint[T, M], sel: Selector[M, K]) =
+  implicit def hlistKeys[K, V, T <: HList, M <: HList](implicit
+      bct: KeyConstraint[T, M],
+      sel: Selector[M, K]
+  ) =
     new KeyConstraint[FieldType[K, V] :: T, M] {}
 }
 
@@ -120,15 +132,18 @@ object ValueConstraint {
   import labelled._
 
   def apply[L <: HList, M <: HList](
-      implicit vc: ValueConstraint[L, M]): ValueConstraint[L, M] = vc
+      implicit vc: ValueConstraint[L, M]
+  ): ValueConstraint[L, M] = vc
 
   type Values[M <: HList] = {
     type λ[L <: HList] = ValueConstraint[L, M]
   }
 
   implicit def hnilValues[M <: HList] = new ValueConstraint[HNil, M] {}
-  implicit def hlistValues[K, V, T <: HList, M <: HList](
-      implicit bct: ValueConstraint[T, M], sel: Selector[M, V]) =
+  implicit def hlistValues[K, V, T <: HList, M <: HList](implicit
+      bct: ValueConstraint[T, M],
+      sel: Selector[M, V]
+  ) =
     new ValueConstraint[FieldType[K, V] :: T, M] {}
 }
 
@@ -136,13 +151,15 @@ object ValueConstraint {
   * Type class witnessing that `L` doesn't contain elements of type `U`
   */
 @implicitNotFound(
-    "Implicit not found: shapeless.NotContainsConstraint[${L}, ${U}]. This HList already contains element of type ${U}.")
+  "Implicit not found: shapeless.NotContainsConstraint[${L}, ${U}]. This HList already contains element of type ${U}."
+)
 trait NotContainsConstraint[L <: HList, U] extends Serializable
 
 object NotContainsConstraint {
 
   def apply[L <: HList, U](
-      implicit ncc: NotContainsConstraint[L, U]): NotContainsConstraint[L, U] =
+      implicit ncc: NotContainsConstraint[L, U]
+  ): NotContainsConstraint[L, U] =
     ncc
 
   type NotContains[U] = {
@@ -150,8 +167,10 @@ object NotContainsConstraint {
   }
 
   implicit def hnilNotContains[U] = new NotContainsConstraint[HNil, U] {}
-  implicit def hlistNotContains[H, T <: HList, U](
-      implicit nc: T NotContainsConstraint U, neq: U =:!= H) =
+  implicit def hlistNotContains[H, T <: HList, U](implicit
+      nc: T NotContainsConstraint U,
+      neq: U =:!= H
+  ) =
     new NotContainsConstraint[H :: T, U] {}
 }
 
@@ -159,17 +178,20 @@ object NotContainsConstraint {
   * Type class witnessing that all elements of `L` have distinct types
   */
 @implicitNotFound(
-    "Implicit not found: shapeless.IsDistinctConstraint[${L}]. Some elements have the same type.")
+  "Implicit not found: shapeless.IsDistinctConstraint[${L}]. Some elements have the same type."
+)
 trait IsDistinctConstraint[L <: HList] extends Serializable
 
 object IsDistinctConstraint {
 
   def apply[L <: HList](
-      implicit idc: IsDistinctConstraint[L]): IsDistinctConstraint[L] = idc
+      implicit idc: IsDistinctConstraint[L]
+  ): IsDistinctConstraint[L] = idc
 
   implicit def hnilIsDistinct = new IsDistinctConstraint[HNil] {}
-  implicit def hlistIsDistinct[H, T <: HList](
-      implicit d: IsDistinctConstraint[T],
-      nc: NotContainsConstraint[T, H]): IsDistinctConstraint[H :: T] =
+  implicit def hlistIsDistinct[H, T <: HList](implicit
+      d: IsDistinctConstraint[T],
+      nc: NotContainsConstraint[T, H]
+  ): IsDistinctConstraint[H :: T] =
     new IsDistinctConstraint[H :: T] {}
 }

@@ -7,7 +7,7 @@ import List._;
 object M0 {
 
   var x: String = "abc";
-  var count = 111;
+  var count     = 111;
 
   def test = {
     Console.println("x     = " + x);
@@ -147,9 +147,9 @@ object M5 {
   type Action = () => Unit;
 
   class Wire() {
-    private var sigVal = false;
+    private var sigVal                = false;
     private var actions: List[Action] = List();
-    def getSignal = sigVal;
+    def getSignal                     = sigVal;
     def setSignal(s: Boolean) =
       if (s != sigVal) {
         sigVal = s;
@@ -163,33 +163,33 @@ object M5 {
   abstract class Simulation() {
     private type Agenda = List[Tuple2[Int, Action]];
     private var agenda: Agenda = List();
-    private var curtime = 0;
-    def currentTime: Int = curtime;
+    private var curtime        = 0;
+    def currentTime: Int       = curtime;
 
     def afterDelay(delay: Int)(action: Action): Unit = {
-      def insert(ag: Agenda, time: Int): Agenda = ag match {
-        case List() =>
-          List((time, action))
-        case (t, act) :: ag1 =>
-          if (time < t) (time, action) :: ag
-          else (t, act) :: insert(ag1, time)
-      }
+      def insert(ag: Agenda, time: Int): Agenda =
+        ag match {
+          case List() =>
+            List((time, action))
+          case (t, act) :: ag1 =>
+            if (time < t) (time, action) :: ag
+            else (t, act) :: insert(ag1, time)
+        }
       agenda = insert(agenda, curtime + delay)
     }
 
-    private def next: Unit = agenda match {
-      case List() => ()
-      case (time, action) :: ag1 => {
+    private def next: Unit =
+      agenda match {
+        case List() => ()
+        case (time, action) :: ag1 => {
           agenda = ag1;
           curtime = time;
           action();
         }
-    }
+      }
 
     def run: Unit = {
-      afterDelay(0) { () =>
-        Console.println("*** simulation started ***");
-      }
+      afterDelay(0) { () => Console.println("*** simulation started ***"); }
       while (!agenda.isEmpty) { next }
     }
   }
@@ -203,9 +203,7 @@ object M5 {
     def inverter(input: Wire, output: Wire): Unit = {
       def invertAction() = {
         val inputSig = input.getSignal;
-        afterDelay(InverterDelay) { () =>
-          output.setSignal(!inputSig)
-        };
+        afterDelay(InverterDelay) { () => output.setSignal(!inputSig) };
       }
       input addAction invertAction
     }
@@ -214,9 +212,7 @@ object M5 {
       def andAction() = {
         val a1Sig = a1.getSignal;
         val a2Sig = a2.getSignal;
-        afterDelay(AndGateDelay) { () =>
-          output.setSignal(a1Sig & a2Sig)
-        };
+        afterDelay(AndGateDelay) { () => output.setSignal(a1Sig & a2Sig) };
       }
       a1 addAction andAction;
       a2 addAction andAction;
@@ -226,9 +222,7 @@ object M5 {
       def orAction() = {
         val o1Sig = o1.getSignal;
         val o2Sig = o2.getSignal;
-        afterDelay(OrGateDelay) { () =>
-          output.setSignal(o1Sig | o2Sig)
-        };
+        afterDelay(OrGateDelay) { () => output.setSignal(o1Sig | o2Sig) };
       }
       o1 addAction orAction;
       o2 addAction orAction;
@@ -237,7 +231,8 @@ object M5 {
     def probe(name: String, wire: Wire): Unit = {
       wire addAction { () =>
         Console.println(
-            name + " " + currentTime + " new-value = " + wire.getSignal);
+          name + " " + currentTime + " new-value = " + wire.getSignal
+        );
       }
     }
   }
@@ -254,7 +249,7 @@ object M5 {
     }
 
     def fullAdder(a: Wire, b: Wire, cin: Wire, sum: Wire, cout: Wire): Unit = {
-      val s = new Wire();
+      val s  = new Wire();
       val c1 = new Wire();
       val c2 = new Wire();
       halfAdder(a, cin, s, c1);
@@ -266,11 +261,11 @@ object M5 {
   class Test() extends CircuitSimulation() {
 
     val InverterDelay = 1;
-    val AndGateDelay = 3;
-    val OrGateDelay = 5;
+    val AndGateDelay  = 3;
+    val OrGateDelay   = 5;
 
     def invert = {
-      val ain = new Wire();
+      val ain  = new Wire();
       val cout = new Wire();
       inverter(ain, cout);
 
@@ -290,8 +285,8 @@ object M5 {
     }
 
     def and = {
-      val ain = new Wire();
-      val bin = new Wire();
+      val ain  = new Wire();
+      val bin  = new Wire();
       val cout = new Wire();
       andGate(ain, bin, cout);
 
@@ -315,8 +310,8 @@ object M5 {
     }
 
     def or = {
-      val ain = new Wire();
-      val bin = new Wire();
+      val ain  = new Wire();
+      val bin  = new Wire();
       val cout = new Wire();
       orGate(ain, bin, cout);
 
@@ -340,8 +335,8 @@ object M5 {
     }
 
     def half = {
-      val ain = new Wire();
-      val bin = new Wire();
+      val ain  = new Wire();
+      val bin  = new Wire();
       val sout = new Wire();
       val cout = new Wire();
       halfAdder(ain, bin, sout, cout);
@@ -368,9 +363,9 @@ object M5 {
     }
 
     def full = {
-      val ain = new Wire();
-      val bin = new Wire();
-      val cin = new Wire();
+      val ain  = new Wire();
+      val bin  = new Wire();
+      val cin  = new Wire();
       val sout = new Wire();
       val cout = new Wire();
       fullAdder(ain, bin, cin, sout, cout);
@@ -420,42 +415,42 @@ class Simulator() {
   type Agenda = List[Tuple2[Int, Action]];
 
   private var agenda: Agenda = List();
-  private var curtime = 0;
+  private var curtime        = 0;
 
   def afterDelay(delay: Int)(action: Action) = {
-    def insert(ag: Agenda, time: Int): Agenda = ag match {
-      case List() =>
-        List((time, action))
-      case (t, act) :: ag1 =>
-        if (time < t) (time, action) :: ag
-        else (t, act) :: insert(ag1, time)
-    }
+    def insert(ag: Agenda, time: Int): Agenda =
+      ag match {
+        case List() =>
+          List((time, action))
+        case (t, act) :: ag1 =>
+          if (time < t) (time, action) :: ag
+          else (t, act) :: insert(ag1, time)
+      }
     agenda = insert(agenda, curtime + delay)
   }
 
-  def next: Unit = agenda match {
-    case List() => ()
-    case (time, action) :: rest => {
+  def next: Unit =
+    agenda match {
+      case List() => ()
+      case (time, action) :: rest => {
         agenda = rest;
         curtime = time;
         action();
       }
-  }
+    }
 
   protected def currentTime: Int = curtime;
 
   def run = {
-    afterDelay(0) { () =>
-      Console.println("*** simulation started ***");
-    }
+    afterDelay(0) { () => Console.println("*** simulation started ***"); }
     while (!agenda.isEmpty) { next }
   }
 }
 
 class Wire() {
-  private var sigVal = false;
+  private var sigVal                    = false;
   private var actions: List[() => Unit] = List();
-  def getSignal = sigVal;
+  def getSignal                         = sigVal;
   def setSignal(s: Boolean) =
     if (s != sigVal) {
       sigVal = s;
@@ -472,7 +467,8 @@ abstract class BasicCircuitSimulator() extends Simulator() {
   def probe(name: String, wire: Wire): Unit = {
     wire addAction { () =>
       Console.println(
-          name + " " + currentTime + " new-value = " + wire.getSignal);
+        name + " " + currentTime + " new-value = " + wire.getSignal
+      );
     }
   }
 
@@ -483,9 +479,7 @@ abstract class BasicCircuitSimulator() extends Simulator() {
   def inverter(input: Wire, output: Wire) = {
     def invertAction() = {
       val inputSig = input.getSignal;
-      afterDelay(InverterDelay) { () =>
-        output.setSignal(!inputSig)
-      };
+      afterDelay(InverterDelay) { () => output.setSignal(!inputSig) };
     }
     input addAction invertAction
   }
@@ -494,9 +488,7 @@ abstract class BasicCircuitSimulator() extends Simulator() {
     def andAction() = {
       val a1Sig = a1.getSignal;
       val a2Sig = a2.getSignal;
-      afterDelay(AndGateDelay) { () =>
-        output.setSignal(a1Sig & a2Sig)
-      };
+      afterDelay(AndGateDelay) { () => output.setSignal(a1Sig & a2Sig) };
     }
     a1 addAction andAction;
     a2 addAction andAction
@@ -506,9 +498,7 @@ abstract class BasicCircuitSimulator() extends Simulator() {
     def orAction() = {
       val a1Sig = a1.getSignal;
       val a2Sig = a2.getSignal;
-      afterDelay(OrGateDelay) { () =>
-        output.setSignal(a1Sig | a2Sig)
-      };
+      afterDelay(OrGateDelay) { () => output.setSignal(a1Sig | a2Sig) };
     }
     a1 addAction orAction;
     a2 addAction orAction
@@ -528,10 +518,10 @@ abstract class BasicCircuitSimulator() extends Simulator() {
 abstract class CircuitSimulator() extends BasicCircuitSimulator() {
   def demux2(in: Wire, ctrl: List[Wire], out: List[Wire]): Unit = {
     val ctrlN = ctrl.map(w => { val iw = new Wire(); inverter(w, iw); iw });
-    val w0 = new Wire();
-    val w1 = new Wire();
-    val w2 = new Wire();
-    val w3 = new Wire();
+    val w0    = new Wire();
+    val w1    = new Wire();
+    val w2    = new Wire();
+    val w3    = new Wire();
 
     andGate(in, ctrl(1), w3);
     andGate(in, ctrl(1), w2);
@@ -545,38 +535,37 @@ abstract class CircuitSimulator() extends BasicCircuitSimulator() {
   }
 
   def connect(in: Wire, out: Wire) = {
-    in addAction { () =>
-      out.setSignal(in.getSignal);
-    }
+    in addAction { () => out.setSignal(in.getSignal); }
   }
 
-  def demux(in: Wire, ctrl: List[Wire], out: List[Wire]): Unit = ctrl match {
-    case List() => connect(in, out.head);
-    case c :: rest =>
-      val c_ = new Wire();
-      val w1 = new Wire();
-      val w2 = new Wire();
-      inverter(c, c_);
-      andGate(in, c_, w1);
-      andGate(in, c, w2);
-      demux(w1, rest, out.drop(out.length / 2));
-      demux(w2, rest, out.take(out.length / 2));
-  }
+  def demux(in: Wire, ctrl: List[Wire], out: List[Wire]): Unit =
+    ctrl match {
+      case List() => connect(in, out.head);
+      case c :: rest =>
+        val c_ = new Wire();
+        val w1 = new Wire();
+        val w2 = new Wire();
+        inverter(c, c_);
+        andGate(in, c_, w1);
+        andGate(in, c, w2);
+        demux(w1, rest, out.drop(out.length / 2));
+        demux(w2, rest, out.take(out.length / 2));
+    }
 }
 
 class Main() extends CircuitSimulator() {
 
   val InverterDelay = 1;
-  val AndGateDelay = 3;
-  val OrGateDelay = 5;
+  val AndGateDelay  = 3;
+  val OrGateDelay   = 5;
 
   def main = {
-    val n = 3;
+    val n      = 3;
     val outNum = 1 << n;
 
-    val in = new Wire();
+    val in   = new Wire();
     val ctrl = for (x <- range(0, n)) yield { new Wire() };
-    val out = for (x <- range(0, outNum)) yield { new Wire() };
+    val out  = for (x <- range(0, outNum)) yield { new Wire() };
 
     demux(in, ctrl.reverse, out.reverse);
 

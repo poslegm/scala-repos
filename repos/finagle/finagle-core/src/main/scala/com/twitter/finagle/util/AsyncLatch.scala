@@ -20,19 +20,18 @@ import collection.mutable.ArrayBuffer
 class AsyncLatch(initialCount: Int = 0) {
   require(initialCount >= 0)
   @volatile private[this] var count = initialCount
-  private[this] var waiters = new ArrayBuffer[() => Unit]
+  private[this] var waiters         = new ArrayBuffer[() => Unit]
 
   /**
     * Execute the given computation when the count of this latch has
     * reached zero.
     */
-  def await(f: => Unit): Unit = synchronized {
-    if (count == 0) f
-    else
-      waiters += { () =>
-        f
-      }
-  }
+  def await(f: => Unit): Unit =
+    synchronized {
+      if (count == 0) f
+      else
+        waiters += { () => f }
+    }
 
   /**
     * Increment the latch. Computations passed to `await` will not be executed
@@ -63,7 +62,7 @@ class AsyncLatch(initialCount: Int = 0) {
 
     pendingTasks match {
       case Left(tasks) =>
-        tasks foreach { _ () }; 0
+        tasks foreach { _() }; 0
       case Right(count) =>
         count
     }

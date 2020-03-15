@@ -6,12 +6,14 @@ import reflect.ClassTag
 
 object Test {
 
-  def printResult[A, B](msg: String, obj: A, expected: B)(
-      implicit tag: ClassTag[A], tag2: ClassTag[B]) = {
+  def printResult[A, B](msg: String, obj: A, expected: B)(implicit
+      tag: ClassTag[A],
+      tag2: ClassTag[B]
+  ) = {
     print("  :" + msg + ": ")
     val isArray = obj match {
       case x: Array[Int] => true
-      case _ => false
+      case _             => false
     }
     val expectedEquals =
       if (isArray)
@@ -27,17 +29,19 @@ object Test {
     println("")
   }
 
-  val testVector = Vector(1, 2, 3)
-  val testBuffer = Buffer(1, 2, 3)
-  val testGenSeq = GenSeq(1, 2, 3)
-  val testSeq = Seq(1, 2, 3)
-  val testStream = Stream(1, 2, 3)
-  val testArray = Array(1, 2, 3)
+  val testVector    = Vector(1, 2, 3)
+  val testBuffer    = Buffer(1, 2, 3)
+  val testGenSeq    = GenSeq(1, 2, 3)
+  val testSeq       = Seq(1, 2, 3)
+  val testStream    = Stream(1, 2, 3)
+  val testArray     = Array(1, 2, 3)
   val testParVector = ParVector(1, 2, 3)
-  val testParArray = ParArray(1, 2, 3)
+  val testParArray  = ParArray(1, 2, 3)
 
-  def testConversion[A : ClassTag](
-      name: String, col: => GenTraversableOnce[A]): Unit = {
+  def testConversion[A: ClassTag](
+      name: String,
+      col: => GenTraversableOnce[A]
+  ): Unit = {
     val tmp = col
     println("-- Testing " + name + " ---")
     printResult("[Direct] Vector   ", col.toVector, testVector)

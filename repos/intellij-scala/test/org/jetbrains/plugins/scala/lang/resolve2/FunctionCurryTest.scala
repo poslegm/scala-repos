@@ -9,6 +9,6 @@ class FunctionCurryTest extends ResolveTestBase {
   }
 
   def testCurryiedToCurryied() = doTest()
-  def testCurryiedToNormal() = doTest()
-  def testNormalToCurryied() = doTest()
+  def testCurryiedToNormal()   = doTest()
+  def testNormalToCurryied()   = doTest()
 }

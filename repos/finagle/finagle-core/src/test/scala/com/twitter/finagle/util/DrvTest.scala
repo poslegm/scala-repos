@@ -9,10 +9,10 @@ class DrvTest extends FunSuite {
   val N = 100000
 
   test("Drv.newVose(weights)") {
-    val rng = Rng(87654321L)
+    val rng     = Rng(87654321L)
     val weights = Seq.range(1, 11) map (_.toDouble)
-    val drv = Drv.fromWeights(weights)
-    val histo = new Array[Int](10)
+    val drv     = Drv.fromWeights(weights)
+    val histo   = new Array[Int](10)
     for (_ <- 0 until N) histo(drv(rng)) += 1
 
     for (i <- 1 to 9) {

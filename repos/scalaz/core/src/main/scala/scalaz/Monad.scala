@@ -19,11 +19,14 @@ trait Monad[F[_]] extends Applicative[F] with Bind[F] { self =>
     * Collects the results into an arbitrary `MonadPlus` value, such as a `List`.
     */
   def whileM[G[_], A](p: F[Boolean], body: => F[A])(
-      implicit G: MonadPlus[G]): F[G[A]] = {
+      implicit G: MonadPlus[G]
+  ): F[G[A]] = {
     lazy val f = body
-    ifM(p,
-        bind(f)(x => map(whileM(p, f))(xs => G.plus(G.point(x), xs))),
-        point(G.empty))
+    ifM(
+      p,
+      bind(f)(x => map(whileM(p, f))(xs => G.plus(G.point(x), xs))),
+      point(G.empty)
+    )
   }
 
   /**
@@ -42,7 +45,8 @@ trait Monad[F[_]] extends Applicative[F] with Bind[F] { self =>
     * arbitrary `MonadPlus` value, such as a `List`.
     */
   def untilM[G[_], A](f: F[A], cond: => F[Boolean])(
-      implicit G: MonadPlus[G]): F[G[A]] = {
+      implicit G: MonadPlus[G]
+  ): F[G[A]] = {
     lazy val p = cond
     bind(f)(x => map(whileM(map(p)(!_), f))(xs => G.plus(G.point(x), xs)))
   }
@@ -85,7 +89,8 @@ trait Monad[F[_]] extends Applicative[F] with Bind[F] { self =>
 
     /** Lifted `f` applied to pure `a` is just `f(a)`. */
     def leftIdentity[A, B](a: A, f: A => F[B])(
-        implicit FB: Equal[F[B]]): Boolean = FB.equal(bind(point(a))(f), f(a))
+        implicit FB: Equal[F[B]]
+    ): Boolean = FB.equal(bind(point(a))(f), f(a))
   }
   def monadLaw = new MonadLaw {}
   ////
@@ -97,9 +102,10 @@ object Monad {
 
   ////
 
-  implicit def monadMTMAB[MT[_ [_], _], MAB[_, _], A](
-      implicit t: MonadTrans[MT],
-      m: Monad[MAB[A, ?]]): Monad[MT[MAB[A, ?], ?]] =
+  implicit def monadMTMAB[MT[_[_], _], MAB[_, _], A](implicit
+      t: MonadTrans[MT],
+      m: Monad[MAB[A, ?]]
+  ): Monad[MT[MAB[A, ?], ?]] =
     t.apply[MAB[A, ?]]
 
   ////

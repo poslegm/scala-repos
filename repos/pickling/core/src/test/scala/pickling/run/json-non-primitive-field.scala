@@ -9,17 +9,18 @@ case class Philipp(mother: Person)
 class JSONNonPrimitiveFieldTest extends FunSuite {
   test("main") {
     val gudrun = Person("Gudrun", 62)
-    val p = Philipp(gudrun)
-    val pckl = p.pickle
+    val p      = Philipp(gudrun)
+    val pckl   = p.pickle
 
     assert(
-        pckl.value === """{
+      pckl.value === """{
   "$type": "scala.pickling.json.non.primitive.field.Philipp",
   "mother": {
     "name": "Gudrun",
     "age": 62
   }
-}""")
+}"""
+    )
     assert(pckl.unpickle[Philipp] === p)
   }
 }

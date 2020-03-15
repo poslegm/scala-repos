@@ -47,11 +47,12 @@ import org.apache.spark.sql.SQLContext
   *
   */
 @Since("1.3.0")
-class IsotonicRegressionModel @Since("1.3.0")(
+class IsotonicRegressionModel @Since("1.3.0") (
     @Since("1.3.0") val boundaries: Array[Double],
     @Since("1.3.0") val predictions: Array[Double],
-    @Since("1.3.0") val isotonic: Boolean)
-    extends Serializable with Saveable {
+    @Since("1.3.0") val isotonic: Boolean
+) extends Serializable
+    with Saveable {
 
   private val predictionOrd =
     if (isotonic) Ordering[Double] else Ordering[Double].reverse
@@ -64,20 +65,25 @@ class IsotonicRegressionModel @Since("1.3.0")(
     * A Java-friendly constructor that takes two Iterable parameters and one Boolean parameter.
     */
   @Since("1.4.0")
-  def this(boundaries: java.lang.Iterable[Double],
-           predictions: java.lang.Iterable[Double],
-           isotonic: java.lang.Boolean) = {
+  def this(
+      boundaries: java.lang.Iterable[Double],
+      predictions: java.lang.Iterable[Double],
+      isotonic: java.lang.Boolean
+  ) = {
     this(boundaries.asScala.toArray, predictions.asScala.toArray, isotonic)
   }
 
   /** Asserts the input array is monotone with the given ordering. */
-  private def assertOrdered(xs: Array[Double])(
-      implicit ord: Ordering[Double]): Unit = {
-    var i = 1
+  private def assertOrdered(
+      xs: Array[Double]
+  )(implicit ord: Ordering[Double]): Unit = {
+    var i   = 1
     val len = xs.length
     while (i < len) {
-      require(ord.compare(xs(i - 1), xs(i)) <= 0,
-              s"Elements (${xs(i - 1)}, ${xs(i)}) are not ordered.")
+      require(
+        ord.compare(xs(i - 1), xs(i)) <= 0,
+        s"Elements (${xs(i - 1)}, ${xs(i)}) are not ordered."
+      )
       i += 1
     }
   }
@@ -105,8 +111,7 @@ class IsotonicRegressionModel @Since("1.3.0")(
     */
   @Since("1.3.0")
   def predict(testData: JavaDoubleRDD): JavaDoubleRDD = {
-    JavaDoubleRDD.fromRDD(
-        predict(testData.rdd.retag.asInstanceOf[RDD[Double]]))
+    JavaDoubleRDD.fromRDD(predict(testData.rdd.retag.asInstanceOf[RDD[Double]]))
   }
 
   /**
@@ -130,11 +135,16 @@ class IsotonicRegressionModel @Since("1.3.0")(
   def predict(testData: Double): Double = {
 
     def linearInterpolation(
-        x1: Double, y1: Double, x2: Double, y2: Double, x: Double): Double = {
+        x1: Double,
+        y1: Double,
+        x2: Double,
+        y2: Double,
+        x: Double
+    ): Double = {
       y1 + (y2 - y1) * (x - x1) / (x2 - x1)
     }
 
-    val foundIndex = binarySearch(boundaries, testData)
+    val foundIndex  = binarySearch(boundaries, testData)
     val insertIndex = -foundIndex - 1
 
     // Find if the index was lower than all values,
@@ -144,11 +154,13 @@ class IsotonicRegressionModel @Since("1.3.0")(
     } else if (insertIndex == boundaries.length) {
       predictions.last
     } else if (foundIndex < 0) {
-      linearInterpolation(boundaries(insertIndex - 1),
-                          predictions(insertIndex - 1),
-                          boundaries(insertIndex),
-                          predictions(insertIndex),
-                          testData)
+      linearInterpolation(
+        boundaries(insertIndex - 1),
+        predictions(insertIndex - 1),
+        boundaries(insertIndex),
+        predictions(insertIndex),
+        testData
+      )
     } else {
       predictions(foundIndex)
     }
@@ -163,7 +175,12 @@ class IsotonicRegressionModel @Since("1.3.0")(
   @Since("1.4.0")
   override def save(sc: SparkContext, path: String): Unit = {
     IsotonicRegressionModel.SaveLoadV1_0.save(
-        sc, path, boundaries, predictions, isotonic)
+      sc,
+      path,
+      boundaries,
+      predictions,
+      isotonic
+    )
   }
 
   override protected def formatVersion: String = "1.0"
@@ -185,20 +202,26 @@ object IsotonicRegressionModel extends Loader[IsotonicRegressionModel] {
     /** Model data for model import/export */
     case class Data(boundary: Double, prediction: Double)
 
-    def save(sc: SparkContext,
-             path: String,
-             boundaries: Array[Double],
-             predictions: Array[Double],
-             isotonic: Boolean): Unit = {
+    def save(
+        sc: SparkContext,
+        path: String,
+        boundaries: Array[Double],
+        predictions: Array[Double],
+        isotonic: Boolean
+    ): Unit = {
       val sqlContext = SQLContext.getOrCreate(sc)
 
-      val metadata = compact(render(("class" -> thisClassName) ~
-              ("version" -> thisFormatVersion) ~ ("isotonic" -> isotonic)))
+      val metadata = compact(
+        render(
+          ("class"     -> thisClassName) ~
+            ("version" -> thisFormatVersion) ~ ("isotonic" -> isotonic)
+        )
+      )
       sc.parallelize(Seq(metadata), 1).saveAsTextFile(metadataPath(path))
 
       sqlContext
         .createDataFrame(
-            boundaries.toSeq.zip(predictions).map { case (b, p) => Data(b, p) }
+          boundaries.toSeq.zip(predictions).map { case (b, p) => Data(b, p) }
         )
         .write
         .parquet(dataPath(path))
@@ -206,32 +229,32 @@ object IsotonicRegressionModel extends Loader[IsotonicRegressionModel] {
 
     def load(sc: SparkContext, path: String): (Array[Double], Array[Double]) = {
       val sqlContext = SQLContext.getOrCreate(sc)
-      val dataRDD = sqlContext.read.parquet(dataPath(path))
+      val dataRDD    = sqlContext.read.parquet(dataPath(path))
 
       checkSchema[Data](dataRDD.schema)
       val dataArray = dataRDD.select("boundary", "prediction").collect()
-      val (boundaries, predictions) = dataArray.map { x =>
-        (x.getDouble(0), x.getDouble(1))
-      }.toList
+      val (boundaries, predictions) = dataArray
+        .map { x => (x.getDouble(0), x.getDouble(1)) }
+        .toList
         .sortBy(_._1)
         .unzip
-        (boundaries.toArray, predictions.toArray)
+      (boundaries.toArray, predictions.toArray)
     }
   }
 
   @Since("1.4.0")
   override def load(sc: SparkContext, path: String): IsotonicRegressionModel = {
-    implicit val formats = DefaultFormats
+    implicit val formats                     = DefaultFormats
     val (loadedClassName, version, metadata) = loadMetadata(sc, path)
-    val isotonic = (metadata \ "isotonic").extract[Boolean]
-    val classNameV1_0 = SaveLoadV1_0.thisClassName
+    val isotonic                             = (metadata \ "isotonic").extract[Boolean]
+    val classNameV1_0                        = SaveLoadV1_0.thisClassName
     (loadedClassName, version) match {
       case (className, "1.0") if className == classNameV1_0 =>
         val (boundaries, predictions) = SaveLoadV1_0.load(sc, path)
         new IsotonicRegressionModel(boundaries, predictions, isotonic)
       case _ =>
         throw new Exception(
-            s"IsotonicRegressionModel.load did not recognize model with (className, format version):" +
+          s"IsotonicRegressionModel.load did not recognize model with (className, format version):" +
             s"($loadedClassName, $version).  Supported:\n" +
             s"  ($classNameV1_0, 1.0)"
         )
@@ -303,7 +326,7 @@ class IsotonicRegression private (private var isotonic: Boolean)
     val pooled = parallelPoolAdjacentViolators(preprocessedInput)
 
     val predictions = if (isotonic) pooled.map(_._1) else pooled.map(-_._1)
-    val boundaries = pooled.map(_._2)
+    val boundaries  = pooled.map(_._2)
 
     new IsotonicRegressionModel(boundaries, predictions, isotonic)
   }
@@ -320,7 +343,8 @@ class IsotonicRegression private (private var isotonic: Boolean)
     */
   @Since("1.3.0")
   def run(
-      input: JavaRDD[(JDouble, JDouble, JDouble)]): IsotonicRegressionModel = {
+      input: JavaRDD[(JDouble, JDouble, JDouble)]
+  ): IsotonicRegressionModel = {
     run(input.rdd.retag.asInstanceOf[RDD[(Double, Double, Double)]])
   }
 
@@ -334,8 +358,9 @@ class IsotonicRegression private (private var isotonic: Boolean)
     * @return Result tuples (label, feature, weight) where labels were updated
     *         to form a monotone sequence as per isotonic regression definition.
     */
-  private def poolAdjacentViolators(input: Array[(Double, Double, Double)])
-    : Array[(Double, Double, Double)] = {
+  private def poolAdjacentViolators(
+      input: Array[(Double, Double, Double)]
+  ): Array[(Double, Double, Double)] = {
 
     if (input.isEmpty) {
       return Array.empty
@@ -343,11 +368,14 @@ class IsotonicRegression private (private var isotonic: Boolean)
 
     // Pools sub array within given bounds assigning weighted average value to all elements.
     def pool(
-        input: Array[(Double, Double, Double)], start: Int, end: Int): Unit = {
+        input: Array[(Double, Double, Double)],
+        start: Int,
+        end: Int
+    ): Unit = {
       val poolSubArray = input.slice(start, end + 1)
 
       val weightedSum = poolSubArray.map(lp => lp._1 * lp._3).sum
-      val weight = poolSubArray.map(_._3).sum
+      val weight      = poolSubArray.map(_._3).sum
 
       var i = start
       while (i <= end) {
@@ -356,7 +384,7 @@ class IsotonicRegression private (private var isotonic: Boolean)
       }
     }
 
-    var i = 0
+    var i   = 0
     val len = input.length
     while (i < len) {
       var j = i
@@ -385,7 +413,7 @@ class IsotonicRegression private (private var isotonic: Boolean)
     val compressed = ArrayBuffer.empty[(Double, Double, Double)]
 
     var (curLabel, curFeature, curWeight) = input.head
-    var rightBound = curFeature
+    var rightBound                        = curFeature
     def merge(): Unit = {
       compressed += ((curLabel, curFeature, curWeight))
       if (rightBound > curFeature) {
@@ -421,14 +449,16 @@ class IsotonicRegression private (private var isotonic: Boolean)
     *         to form a monotone sequence as per isotonic regression definition.
     */
   private def parallelPoolAdjacentViolators(
-      input: RDD[(Double, Double, Double)])
-    : Array[(Double, Double, Double)] = {
+      input: RDD[(Double, Double, Double)]
+  ): Array[(Double, Double, Double)] = {
     val parallelStepResult = input
       .sortBy(x => (x._2, x._1))
       .glom()
       .flatMap(poolAdjacentViolators)
       .collect()
-      .sortBy(x => (x._2, x._1)) // Sort again because collect() doesn't promise ordering.
+      .sortBy(x =>
+        (x._2, x._1)
+      ) // Sort again because collect() doesn't promise ordering.
     poolAdjacentViolators(parallelStepResult)
   }
 }

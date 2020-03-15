@@ -26,19 +26,20 @@ import scala.collection.immutable.Range
   *  @since   2.8
   */
 @deprecated(
-    "Forwarding is inherently unreliable since it is not automated and new methods can be forgotten.",
-    "2.11.0")
+  "Forwarding is inherently unreliable since it is not automated and new methods can be forgotten.",
+  "2.11.0"
+)
 trait SeqForwarder[+A] extends Seq[A] with IterableForwarder[A] {
 
   protected override def underlying: Seq[A]
 
-  override def length: Int = underlying.length
-  override def apply(idx: Int): A = underlying.apply(idx)
+  override def length: Int                  = underlying.length
+  override def apply(idx: Int): A           = underlying.apply(idx)
   override def lengthCompare(len: Int): Int = underlying lengthCompare len
   override def isDefinedAt(x: Int): Boolean = underlying isDefinedAt x
   override def segmentLength(p: A => Boolean, from: Int): Int =
     underlying.segmentLength(p, from)
-  override def prefixLength(p: A => Boolean) = underlying prefixLength p
+  override def prefixLength(p: A => Boolean)    = underlying prefixLength p
   override def indexWhere(p: A => Boolean): Int = underlying indexWhere p
   override def indexWhere(p: A => Boolean, from: Int): Int =
     underlying.indexWhere(p, from)

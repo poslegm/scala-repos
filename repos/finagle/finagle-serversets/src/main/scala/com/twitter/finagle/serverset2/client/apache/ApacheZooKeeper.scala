@@ -18,13 +18,14 @@ import scala.collection.JavaConverters._
   *
   * @param zk Underlying Apache ZooKeeper client.
   */
-private[serverset2] class ApacheZooKeeper private[apache](
-    zk: zookeeper.ZooKeeper)
-    extends ZooKeeperRW {
-  private def fromZKData(data: Array[Byte]): Option[Buf] = data match {
-    case null => None
-    case x => Some(Buf.ByteArray.Owned(x))
-  }
+private[serverset2] class ApacheZooKeeper private[apache] (
+    zk: zookeeper.ZooKeeper
+) extends ZooKeeperRW {
+  private def fromZKData(data: Array[Byte]): Option[Buf] =
+    data match {
+      case null => None
+      case x    => Some(Buf.ByteArray.Owned(x))
+    }
 
   /**
     * ZooKeeper differentiates between an empty byte array and a null reference.
@@ -32,10 +33,11 @@ private[serverset2] class ApacheZooKeeper private[apache](
     * @param data Option[Buf]
     * @return Array[Byte] or null
     */
-  private def zkData(data: Option[Buf]): Array[Byte] = data match {
-    case Some(b) => toByteArray(b)
-    case None => null
-  }
+  private def zkData(data: Option[Buf]): Array[Byte] =
+    data match {
+      case Some(b) => toByteArray(b)
+      case None    => null
+    }
 
   def sessionId: Long = zk.getSessionId
 
@@ -55,25 +57,29 @@ private[serverset2] class ApacheZooKeeper private[apache](
   def getEphemerals(): Future[Seq[String]] =
     Future.exception(KeeperException.Unimplemented(None))
 
-  def create(path: String,
-             data: Option[Buf],
-             acl: Seq[Data.ACL],
-             createMode: CreateMode): Future[String] = {
+  def create(
+      path: String,
+      data: Option[Buf],
+      acl: Seq[Data.ACL],
+      createMode: CreateMode
+  ): Future[String] = {
     val rv = new Promise[String]
     val cb = new StringCallback {
       def processResult(ret: Int, path: String, ctx: Object, name: String) =
         ApacheKeeperException(ret, Option(path)) match {
-          case None => rv.setValue(name)
+          case None    => rv.setValue(name)
           case Some(e) => rv.setException(e)
         }
     }
     try {
-      zk.create(path,
-                zkData(data),
-                (acl map ApacheData.ACL.zk).asJava,
-                ApacheCreateMode.zk(createMode),
-                cb,
-                null)
+      zk.create(
+        path,
+        zkData(data),
+        (acl map ApacheData.ACL.zk).asJava,
+        ApacheCreateMode.zk(createMode),
+        cb,
+        null
+      )
     } catch {
       case t: Throwable =>
         rv.setException(t)
@@ -86,7 +92,7 @@ private[serverset2] class ApacheZooKeeper private[apache](
     val cb = new VoidCallback {
       def processResult(ret: Int, path: String, ctx: Object) =
         ApacheKeeperException(ret, Option(path)) match {
-          case None => rv.setValue(Unit)
+          case None    => rv.setValue(Unit)
           case Some(e) => rv.setException(e)
         }
     }
@@ -103,11 +109,15 @@ private[serverset2] class ApacheZooKeeper private[apache](
     val rv = new Promise[Option[Data.Stat]]
     val cb = new StatCallback {
       def processResult(
-          ret: Int, path: String, ctx: Object, stat: zookeeper.data.Stat) =
+          ret: Int,
+          path: String,
+          ctx: Object,
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
-          case None => rv.setValue(Some(ApacheData.Stat(stat)))
+          case None                            => rv.setValue(Some(ApacheData.Stat(stat)))
           case Some(KeeperException.NoNode(_)) => rv.setValue(None)
-          case Some(e) => rv.setException(e)
+          case Some(e)                         => rv.setException(e)
         }
     }
     try {
@@ -121,10 +131,14 @@ private[serverset2] class ApacheZooKeeper private[apache](
 
   def existsWatch(path: String): Future[Watched[Option[Data.Stat]]] = {
     val watcher = new ApacheWatcher
-    val rv = new Promise[Watched[Option[Data.Stat]]]
+    val rv      = new Promise[Watched[Option[Data.Stat]]]
     val cb = new StatCallback {
       def processResult(
-          ret: Int, path: String, ctx: Object, stat: zookeeper.data.Stat) =
+          ret: Int,
+          path: String,
+          ctx: Object,
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
           case None =>
             rv.setValue(Watched(Some(ApacheData.Stat(stat)), watcher.state))
@@ -145,11 +159,13 @@ private[serverset2] class ApacheZooKeeper private[apache](
   def getData(path: String): Future[Node.Data] = {
     val rv = new Promise[Node.Data]
     val cb = new DataCallback {
-      def processResult(ret: Int,
-                        path: String,
-                        ctx: Object,
-                        data: Array[Byte],
-                        stat: zookeeper.data.Stat) =
+      def processResult(
+          ret: Int,
+          path: String,
+          ctx: Object,
+          data: Array[Byte],
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
           case None =>
             rv.setValue(Node.Data(fromZKData(data), ApacheData.Stat(stat)))
@@ -167,18 +183,23 @@ private[serverset2] class ApacheZooKeeper private[apache](
 
   def getDataWatch(path: String): Future[Watched[Node.Data]] = {
     val watcher = new ApacheWatcher
-    val rv = new Promise[Watched[Node.Data]]
+    val rv      = new Promise[Watched[Node.Data]]
     val cb = new DataCallback {
-      def processResult(ret: Int,
-                        path: String,
-                        ctx: Object,
-                        data: Array[Byte],
-                        stat: zookeeper.data.Stat) =
+      def processResult(
+          ret: Int,
+          path: String,
+          ctx: Object,
+          data: Array[Byte],
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
           case None =>
             rv.setValue(
-                Watched(Node.Data(fromZKData(data), ApacheData.Stat(stat)),
-                        watcher.state))
+              Watched(
+                Node.Data(fromZKData(data), ApacheData.Stat(stat)),
+                watcher.state
+              )
+            )
           case Some(e) => rv.setException(e)
         }
     }
@@ -191,15 +212,21 @@ private[serverset2] class ApacheZooKeeper private[apache](
     rv
   }
 
-  def setData(path: String,
-              data: Option[Buf],
-              version: Option[Int]): Future[Data.Stat] = {
+  def setData(
+      path: String,
+      data: Option[Buf],
+      version: Option[Int]
+  ): Future[Data.Stat] = {
     val rv = new Promise[Data.Stat]
     val cb = new StatCallback {
       def processResult(
-          ret: Int, path: String, ctx: Object, stat: zookeeper.data.Stat) =
+          ret: Int,
+          path: String,
+          ctx: Object,
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
-          case None => rv.setValue(ApacheData.Stat(stat))
+          case None    => rv.setValue(ApacheData.Stat(stat))
           case Some(e) => rv.setException(e)
         }
     }
@@ -215,15 +242,21 @@ private[serverset2] class ApacheZooKeeper private[apache](
   def getACL(path: String): Future[Node.ACL] = {
     val rv = new Promise[Node.ACL]
     val cb = new ACLCallback {
-      def processResult(ret: Int,
-                        path: String,
-                        ctx: Object,
-                        acl: java.util.List[zookeeper.data.ACL],
-                        stat: zookeeper.data.Stat) =
+      def processResult(
+          ret: Int,
+          path: String,
+          ctx: Object,
+          acl: java.util.List[zookeeper.data.ACL],
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
           case None =>
-            rv.setValue(Node.ACL(acl.asScala.toList map (ApacheData.ACL(_)),
-                                 ApacheData.Stat(stat)))
+            rv.setValue(
+              Node.ACL(
+                acl.asScala.toList map (ApacheData.ACL(_)),
+                ApacheData.Stat(stat)
+              )
+            )
           case Some(e) => rv.setException(e)
         }
     }
@@ -236,24 +269,32 @@ private[serverset2] class ApacheZooKeeper private[apache](
     rv
   }
 
-  def setACL(path: String,
-             acl: Seq[Data.ACL],
-             version: Option[Int]): Future[Data.Stat] = {
+  def setACL(
+      path: String,
+      acl: Seq[Data.ACL],
+      version: Option[Int]
+  ): Future[Data.Stat] = {
     val rv = new Promise[Data.Stat]
     val cb = new StatCallback {
       def processResult(
-          ret: Int, path: String, ctx: Object, stat: zookeeper.data.Stat) =
+          ret: Int,
+          path: String,
+          ctx: Object,
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
-          case None => rv.setValue(ApacheData.Stat(stat))
+          case None    => rv.setValue(ApacheData.Stat(stat))
           case Some(e) => rv.setException(e)
         }
     }
     try {
-      zk.setACL(path,
-                (acl map ApacheData.ACL.zk).asJava,
-                version getOrElse -1,
-                cb,
-                null)
+      zk.setACL(
+        path,
+        (acl map ApacheData.ACL.zk).asJava,
+        version getOrElse -1,
+        cb,
+        null
+      )
     } catch {
       case t: Throwable =>
         rv.setException(t)
@@ -264,11 +305,13 @@ private[serverset2] class ApacheZooKeeper private[apache](
   def getChildren(path: String): Future[Node.Children] = {
     val rv = new Promise[Node.Children]
     val cb = new Children2Callback {
-      def processResult(ret: Int,
-                        path: String,
-                        ctx: Object,
-                        children: java.util.List[String],
-                        stat: zookeeper.data.Stat) =
+      def processResult(
+          ret: Int,
+          path: String,
+          ctx: Object,
+          children: java.util.List[String],
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
           case None =>
             rv.setValue(Node.Children(children.asScala, ApacheData.Stat(stat)))
@@ -286,18 +329,23 @@ private[serverset2] class ApacheZooKeeper private[apache](
 
   def getChildrenWatch(path: String): Future[Watched[Node.Children]] = {
     val watcher = new ApacheWatcher
-    val rv = new Promise[Watched[Node.Children]]
+    val rv      = new Promise[Watched[Node.Children]]
     val cb = new Children2Callback {
-      def processResult(ret: Int,
-                        path: String,
-                        ctx: Object,
-                        children: java.util.List[String],
-                        stat: zookeeper.data.Stat) =
+      def processResult(
+          ret: Int,
+          path: String,
+          ctx: Object,
+          children: java.util.List[String],
+          stat: zookeeper.data.Stat
+      ) =
         ApacheKeeperException(ret, Option(path)) match {
           case None =>
             rv.setValue(
-                Watched(Node.Children(children.asScala, ApacheData.Stat(stat)),
-                        watcher.state))
+              Watched(
+                Node.Children(children.asScala, ApacheData.Stat(stat)),
+                watcher.state
+              )
+            )
           case Some(e) => rv.setException(e)
         }
     }
@@ -315,7 +363,7 @@ private[serverset2] class ApacheZooKeeper private[apache](
     val cb = new VoidCallback {
       def processResult(ret: Int, path: String, ctx: Object) =
         ApacheKeeperException(ret, Option(path)) match {
-          case None => rv.setValue(Unit)
+          case None    => rv.setValue(Unit)
           case Some(e) => rv.setException(e)
         }
     }
@@ -340,42 +388,51 @@ private[serverset2] object ApacheZooKeeper {
     * @return a Watched[ZooKeeperRW]
     */
   private[apache] def newClient(config: ClientConfig): Watched[ZooKeeperRW] = {
-    val timeoutInMs = config.sessionTimeout.inMilliseconds.toInt
+    val timeoutInMs   = config.sessionTimeout.inMilliseconds.toInt
     val statsReceiver = config.statsReceiver
-    val watcher = new ApacheWatcher(statsReceiver)
+    val watcher       = new ApacheWatcher(statsReceiver)
     val statsWatcher = SessionStats.watcher(
-        watcher.state,
-        statsReceiver,
-        5.seconds,
-        config.timer
+      watcher.state,
+      statsReceiver,
+      5.seconds,
+      config.timer
     )
     val zk = (config.sessionId, config.password) match {
       case (Some(id), Some(pw)) =>
-        new ApacheZooKeeper(new zookeeper.ZooKeeper(
-                config.hosts, timeoutInMs, watcher, id, toByteArray(pw)))
+        new ApacheZooKeeper(
+          new zookeeper.ZooKeeper(
+            config.hosts,
+            timeoutInMs,
+            watcher,
+            id,
+            toByteArray(pw)
+          )
+        )
       case _ =>
         new ApacheZooKeeper(
-            new zookeeper.ZooKeeper(config.hosts, timeoutInMs, watcher))
+          new zookeeper.ZooKeeper(config.hosts, timeoutInMs, watcher)
+        )
     }
     val wrappedZk: ZooKeeperRW = new StatsRW {
       protected val underlying: ZooKeeperRW = zk
-      protected val stats: StatsReceiver = statsReceiver
+      protected val stats: StatsReceiver    = statsReceiver
     }
     if (com.twitter.finagle.serverset2.client.chatty()) {
       val logger = Logger.get(getClass)
-      Watched(new ChattyRW {
-        protected val underlying: ZooKeeperRW = wrappedZk
-        protected val print = { m: String =>
-          logger.info(m)
-        }
-      }, statsWatcher)
+      Watched(
+        new ChattyRW {
+          protected val underlying: ZooKeeperRW = wrappedZk
+          protected val print                   = { m: String => logger.info(m) }
+        },
+        statsWatcher
+      )
     } else Watched(wrappedZk, statsWatcher)
   }
 }
 
 private class ApacheFactory extends ClientFactory[ZooKeeperRW] {
   val capabilities: Seq[Capability] = Seq(Reader, Writer)
-  val priority: Int = 0
+  val priority: Int                 = 0
 
   def newClient(config: ClientConfig): Watched[ZooKeeperRW] =
     ApacheZooKeeper.newClient(config)

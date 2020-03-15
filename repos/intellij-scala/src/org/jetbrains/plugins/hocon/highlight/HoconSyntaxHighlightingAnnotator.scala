@@ -12,7 +12,7 @@ class HoconSyntaxHighlightingAnnotator extends Annotator {
   import org.jetbrains.plugins.hocon.parser.HoconElementType._
 
   def annotate(element: PsiElement, holder: AnnotationHolder) {
-    lazy val parentType = element.getParent.getNode.getElementType
+    lazy val parentType     = element.getParent.getNode.getElementType
     lazy val firstChildType = element.getFirstChild.getNode.getElementType
     element.getNode.getElementType match {
       case Null =>
@@ -53,7 +53,7 @@ class HoconSyntaxHighlightingAnnotator extends Annotator {
       case KeyPart if firstChildType == UnquotedString =>
         val textAttributesKey =
           element.getParent.getParent.getNode.getElementType match {
-            case Path => HoconHighlighterColors.SubstitutionKey
+            case Path                   => HoconHighlighterColors.SubstitutionKey
             case KeyedField.extractor() => HoconHighlighterColors.EntryKey
           }
         holder

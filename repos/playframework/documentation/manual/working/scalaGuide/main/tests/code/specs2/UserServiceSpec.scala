@@ -18,7 +18,7 @@ object UserServiceSpec extends Specification with Mockito {
       userRepository.roles(any[User]) returns Set(Role("ADMIN"))
 
       val userService = new UserService(userRepository)
-      val actual = userService.isAdmin(User("11", "Steve", "user@example.org"))
+      val actual      = userService.isAdmin(User("11", "Steve", "user@example.org"))
       actual must beTrue
     }
   }

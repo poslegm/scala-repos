@@ -39,11 +39,11 @@ class Same extends ScalaMatchingTask {
    **                             Ant user-properties                            **
 \*============================================================================*/
 
-  private var origin: Option[File] = None
+  private var origin: Option[File]      = None
   private var destination: Option[File] = None
 
   private var resultProperty: Option[String] = None
-  private var failing: Boolean = false
+  private var failing: Boolean               = false
 
   private var mapperElement: Option[Mapper] = None
 
@@ -70,7 +70,9 @@ class Same extends ScalaMatchingTask {
       mapper
     } else
       throw new BuildException(
-          "Cannot define more than one mapper", getLocation)
+        "Cannot define more than one mapper",
+        getLocation
+      )
 
   def add(fileNameMapper: FileNameMapper) =
     createMapper().add(fileNameMapper)
@@ -79,12 +81,13 @@ class Same extends ScalaMatchingTask {
    **                             Properties getters                             **
 \*============================================================================*/
 
-  private def getMapper: FileNameMapper = mapperElement match {
-    case None =>
-      new IdentityMapper()
-    case Some(me) =>
-      me.getImplementation
-  }
+  private def getMapper: FileNameMapper =
+    mapperElement match {
+      case None =>
+        new IdentityMapper()
+      case Some(me) =>
+        me.getImplementation
+    }
 
   /*============================================================================*\
    **                               Support methods                              **
@@ -119,25 +122,26 @@ class Same extends ScalaMatchingTask {
     allEqualNow = true
     val originNames: Array[String] =
       getDirectoryScanner(origin.get).getIncludedFiles
-    val bufferSize = 1024
+    val bufferSize   = 1024
     val originBuffer = new Array[Byte](bufferSize)
-    val destBuffer = new Array[Byte](bufferSize)
+    val destBuffer   = new Array[Byte](bufferSize)
     for (originName: String <- originNames;
-    destName: String <- mapper.mapFileName(originName)) {
+         destName: String   <- mapper.mapFileName(originName)) {
       //println("originName="+originName)
       //println("destName  ="+destName)
-      var equalNow = true
+      var equalNow   = true
       val originFile = new File(origin.get, originName)
-      val destFile = new File(destination.get, destName)
+      val destFile   = new File(destination.get, destName)
       if (originFile.canRead && destFile.canRead) {
-        val originStream = new FileInputStream(originFile)
-        val destStream = new FileInputStream(destFile)
+        val originStream    = new FileInputStream(originFile)
+        val destStream      = new FileInputStream(destFile)
         var originRemaining = originStream.read(originBuffer)
-        var destRemaining = destStream.read(destBuffer)
+        var destRemaining   = destStream.read(destBuffer)
         while (originRemaining > 0 && equalNow) {
           if (originRemaining == destRemaining)
-            for (idx <- 0 until originRemaining) equalNow = equalNow &&
-            (originBuffer(idx) == destBuffer(idx))
+            for (idx <- 0 until originRemaining)
+              equalNow = equalNow &&
+                (originBuffer(idx) == destBuffer(idx))
           else equalNow = false
           originRemaining = originStream.read(originBuffer)
           destRemaining = destStream.read(destBuffer)
@@ -150,17 +154,23 @@ class Same extends ScalaMatchingTask {
     }
     if (!allEqualNow)
       if (failing)
-        sys.error("There were differences between '" + origin.get +
-            "' and '" + destination.get + "'")
+        sys.error(
+          "There were differences between '" + origin.get +
+            "' and '" + destination.get + "'"
+        )
       else
-        log("There were differences between '" + origin.get + "' and '" +
-            destination.get + "'")
+        log(
+          "There were differences between '" + origin.get + "' and '" +
+            destination.get + "'"
+        )
     else {
       if (!resultProperty.isEmpty)
         getProject.setProperty(resultProperty.get, "yes")
-      log("All files in '" + origin.get + "' and '" +
+      log(
+        "All files in '" + origin.get + "' and '" +
           destination.get + "' are equal",
-          Project.MSG_VERBOSE)
+        Project.MSG_VERBOSE
+      )
     }
   }
 }

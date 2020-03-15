@@ -16,50 +16,57 @@ trait Parsers {
   // sequence
   def sq[T, U](a: => Parser[T], b: => Parser[U]): Parser[Tuple2[T, U]] =
     new Parser[Tuple2[T, U]] {
-      def apply(in: Input): ParseResult[Tuple2[T, U]] = a(in) match {
-        case Success(next, x) =>
-          b(next) match {
-            case Success(next2, y) => Success(next2, (x, y))
-            case Failure(_, msg) => Failure(in, msg)
-          }
-        case Failure(_, msg) => Failure(in, msg)
-      }
+      def apply(in: Input): ParseResult[Tuple2[T, U]] =
+        a(in) match {
+          case Success(next, x) =>
+            b(next) match {
+              case Success(next2, y) => Success(next2, (x, y))
+              case Failure(_, msg)   => Failure(in, msg)
+            }
+          case Failure(_, msg) => Failure(in, msg)
+        }
     }
 
   // ordered choice
   def or[T, U <: T](a: => Parser[T], b: => Parser[U]): Parser[T] =
     new Parser[T] {
-      def apply(in: Input): ParseResult[T] = a(in) match {
-        case Success(next, x) => Success(next, x)
-        case Failure(_, _) =>
-          b(in) match {
-            case Success(next, y) => Success(next, y)
-            case Failure(_, msg) => Failure(in, msg)
-          }
-      }
+      def apply(in: Input): ParseResult[T] =
+        a(in) match {
+          case Success(next, x) => Success(next, x)
+          case Failure(_, _) =>
+            b(in) match {
+              case Success(next, y) => Success(next, y)
+              case Failure(_, msg)  => Failure(in, msg)
+            }
+        }
     }
 
   // lifting
-  def lift[T, U](f: T => U)(a: => Parser[T]): Parser[U] = new Parser[U] {
-    def apply(in: Input): ParseResult[U] = a(in) match {
-      case Success(n, x) => Success(n, f(x))
-      case Failure(n, msg) => Failure(n, msg)
+  def lift[T, U](f: T => U)(a: => Parser[T]): Parser[U] =
+    new Parser[U] {
+      def apply(in: Input): ParseResult[U] =
+        a(in) match {
+          case Success(n, x)   => Success(n, f(x))
+          case Failure(n, msg) => Failure(n, msg)
+        }
     }
-  }
 
-  def accept[T](c: Char, r: T): Parser[T] = new Parser[T] {
-    def apply(in: Input) = in match {
-      case c2 :: n if c2 == c => Success(n, r)
-      case n => Failure(n, "expected " + c + " at the head of " + n)
+  def accept[T](c: Char, r: T): Parser[T] =
+    new Parser[T] {
+      def apply(in: Input) =
+        in match {
+          case c2 :: n if c2 == c => Success(n, r)
+          case n                  => Failure(n, "expected " + c + " at the head of " + n)
+        }
     }
-  }
 
   def apply_++[s, tt](fun: Parser[s => tt], arg: Parser[s]): Parser[tt] =
     lift[Tuple2[s => tt, s], tt]({ case (f, a) => f(a) })(sq(fun, arg))
 
-  def success[u](v: u): Parser[u] = new Parser[u] {
-    def apply(in: Input) = Success(in, v)
-  }
+  def success[u](v: u): Parser[u] =
+    new Parser[u] {
+      def apply(in: Input) = Success(in, v)
+    }
 }
 
 trait Idioms {
@@ -73,11 +80,15 @@ trait Idioms {
   class IdiomaticTarget[idi[x], idiom <: Idiom[idi], s](i: idiom, tgt: s) {
     def dot[t](fun: s => t, name: String) =
       new IdiomaticApp2[idi, idiom, t](
-          i, i.liftedApply(i.pureMethod(name, fun))(i.pure(tgt)))
+        i,
+        i.liftedApply(i.pureMethod(name, fun))(i.pure(tgt))
+      )
   } // TODO: `.` -->  java.lang.ClassFormatError: Illegal method name "." in class Idioms$Id$
 
   class IdiomaticFunction[idi[x], idiom <: Idiom[idi], s, t](
-      i: idiom, fun: s => t) {
+      i: idiom,
+      fun: s => t
+  ) {
     def <|(a: idi[s]) =
       new IdiomaticApp[idi, idiom, t](i, i.liftedApply(i.pure(fun))(a))
   }
@@ -86,7 +97,9 @@ trait Idioms {
     // where x <: s=>t -- TODO can this be expressed without generalised constraints?
     def <>[s, t](b: idi[s]) =
       new IdiomaticApp[idi, idiom, t](
-          i, i.liftedApply(a.asInstanceOf[idi[s => t]])(b))
+        i,
+        i.liftedApply(a.asInstanceOf[idi[s => t]])(b)
+      )
 
     def |> : idi[x] = a
   }
@@ -105,10 +118,12 @@ trait ParserIdioms extends Parsers with Idioms {
   }
 
   implicit def parserIdiomFun[s, t](
-      fun: s => t): IdiomaticFunction[Parser, ParserIdiom.type, s, t] =
+      fun: s => t
+  ): IdiomaticFunction[Parser, ParserIdiom.type, s, t] =
     new IdiomaticFunction[Parser, ParserIdiom.type, s, t](ParserIdiom, fun)
   implicit def parserIdiomTgt[s](
-      tgt: s): IdiomaticTarget[Parser, ParserIdiom.type, s] =
+      tgt: s
+  ): IdiomaticTarget[Parser, ParserIdiom.type, s] =
     new IdiomaticTarget[Parser, ParserIdiom.type, s](ParserIdiom, tgt)
 
   trait Expr

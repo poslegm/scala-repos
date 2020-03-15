@@ -17,8 +17,8 @@ abstract class DirectedGraph extends Graph {
   type Edge <: EdgeImpl;
 
   class EdgeImpl(origin: Node, dest: Node) {
-    def from = origin;
-    def to = dest;
+    def from              = origin;
+    def to                = dest;
     override def toString = "" + origin + " --> " + dest
   }
 
@@ -61,9 +61,9 @@ class ConcreteDirectedGraph extends DirectedGraph {
 object ExplicitThis {
   def main(args: Array[String]): Unit = {
     val g: Graph = new ConcreteDirectedGraph;
-    val n1 = g.addNode;
-    val n2 = g.addNode;
-    val n3 = g.addNode;
+    val n1       = g.addNode;
+    val n2       = g.addNode;
+    val n3       = g.addNode;
     Console.println(n1.connectWith(n2))
     Console.println(n2.connectWith(n3))
     Console.println(n1.connectWith(n3))

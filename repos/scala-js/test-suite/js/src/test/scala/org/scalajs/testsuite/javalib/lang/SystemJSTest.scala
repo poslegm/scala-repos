@@ -33,7 +33,7 @@ class SystemJSTest {
     assertEquals(x1FirstHash, x1.hashCode())
 
     // Seal after the first call to hashCode()
-    val x2 = new HasIDHashCodeToBeSealed
+    val x2          = new HasIDHashCodeToBeSealed
     val x2FirstHash = x2.hashCode()
     js.Object.seal(x2.asInstanceOf[js.Object])
     assertEquals(x2FirstHash, x2.hashCode())
@@ -44,8 +44,8 @@ class SystemJSTest {
       /* This test is more restrictive than the spec, but we know our
        * implementation will always pass the test.
        */
-      val x1 = new js.Object
-      val x2 = new js.Object
+      val x1          = new js.Object
+      val x2          = new js.Object
       val x1FirstHash = x1.hashCode()
       assertEquals(x1FirstHash, x1.hashCode())
       assertNotEquals(x1.hashCode(), x2.hashCode())
@@ -54,7 +54,7 @@ class SystemJSTest {
       assertEquals(x1FirstHash, System.identityHashCode(x1))
       assertEquals(x2.hashCode(), System.identityHashCode(x2))
     } else {
-      val x1 = new js.Object
+      val x1          = new js.Object
       val x1FirstHash = x1.hashCode()
       assertEquals(x1FirstHash, x1.hashCode())
       assertEquals(x1FirstHash, System.identityHashCode(x1))
@@ -75,7 +75,9 @@ class SystemJSTest {
     assertEquals(":", get("path.separator"))
     assertEquals("\n", get("line.separator"))
     assertEquals(
-        linkingInfo.linkerVersion.getOrElse(null), get("java.vm.version"))
+      linkingInfo.linkerVersion.getOrElse(null),
+      get("java.vm.version")
+    )
 
     // Defined in Build.scala and added via __ScalaJSEnv in ScalaJSPluginInternal
 
@@ -86,8 +88,10 @@ class SystemJSTest {
     if (compliantAsInstanceOf) {
       try {
         Int.box(5).asInstanceOf[String]
-        fail("Invalid class cast succeeded in presence of " +
-            "\"compliant-asinstanceofs\" flag.")
+        fail(
+          "Invalid class cast succeeded in presence of " +
+            "\"compliant-asinstanceofs\" flag."
+        )
       } catch {
         case _: ClassCastException => // As expected
       }
@@ -100,14 +104,14 @@ class SystemJSTest {
     val strictFloats = get("scalajs.strict-floats") == "true"
     assertEquals(strictFloats, Platform.hasStrictFloats)
 
-    val productionMode = get("scalajs.production-mode") == "true"
+    val productionMode  = get("scalajs.production-mode") == "true"
     val developmentMode = get("scalajs.development-mode") == "true"
     assertEquals(productionMode, Platform.isInProductionMode)
     assertEquals(developmentMode, Platform.isInDevelopmentMode)
 
-    val inNode = get("scalajs.nodejs") == "true"
+    val inNode      = get("scalajs.nodejs") == "true"
     val inPhantomJS = get("scalajs.phantomjs") == "true"
-    val inRhino = get("scalajs.rhino") == "true"
+    val inRhino     = get("scalajs.rhino") == "true"
     if (inNode) {
       val process = js.Dynamic.global.process
       assertFalse(js.isUndefined(process))

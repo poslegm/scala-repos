@@ -4,8 +4,10 @@ import scala.reflect.{ClassTag, classTag}
 object Util {
   def show[T](x: T): T = { println(x); x }
   def mkArgs(xs: Any*) =
-    xs map { case ((k, v)) => k + "=" + v; case x => "" + x } mkString
-    ("(", ", ", ")")
+    xs map {
+      case ((k, v)) => k + "=" + v; case x => "" + x
+    } mkString
+      ("(", ", ", ")")
 }
 import Util._
 
@@ -29,13 +31,14 @@ object Mono extends MonoDynamic {
   def f5 = f(f(f(f(f(f(this.bar)))))) + f(f(f(f(f(f(this.baz))))))
   def f6 =
     f(f(f(f(f(f(this.bar(bippy = 1, boppy = 2))))))) + f(
-        f(f(f(f(f(this.baz))))))
+      f(f(f(f(f(this.baz)))))
+    )
 }
 
 object Poly extends Dynamic {
-  def selectDynamic[T : ClassTag](name: String): String =
+  def selectDynamic[T: ClassTag](name: String): String =
     show(s"$this.$name[${classTag[T]}]")
-  def applyDynamic[T : ClassTag](name: String)(args: Any*): String =
+  def applyDynamic[T: ClassTag](name: String)(args: Any*): String =
     show(args.mkString(s"$this.$name[${classTag[T]}](", ", ", ")"))
 
   def f(s: String): String = s
@@ -46,10 +49,10 @@ object Poly extends Dynamic {
   def f4 = this.bar[Int]()
   def f5 = this.bar[Int](1, 2, 3)
 
-  def f6 = f(f(this.bar))
-  def f7 = f(f(this.bar[Int]))
-  def f8 = f(f(this.bar()))
-  def f9 = f(f(this.bar[Int]()))
+  def f6  = f(f(this.bar))
+  def f7  = f(f(this.bar[Int]))
+  def f8  = f(f(this.bar()))
+  def f9  = f(f(this.bar[Int]()))
   def f10 = f(f(this.bar[Int](1, 2, 3)))
 
   override def toString = "Poly"
@@ -90,18 +93,20 @@ object Named extends Dynamic {
     this
   }
 
-  def f1 = this.bippy(a = 1, b = 2).boppy(c = 3, d = 4)()()(e = 5, f = 6)
+  def f1                = this.bippy(a = 1, b = 2).boppy(c = 3, d = 4)()()(e = 5, f = 6)
   override def toString = "Named"
 }
 
 object Named2 extends Dynamic {
-  def applyDynamic(name: String)(a: Any)(
-      b: Any = "b", c: Any = "c"): Named2.type = {
+  def applyDynamic(
+      name: String
+  )(a: Any)(b: Any = "b", c: Any = "c"): Named2.type = {
     show(this + "." + name + mkArgs(a) + mkArgs(b, c))
     this
   }
-  def applyDynamicNamed(name: String)(
-      a: (String, Any))(b: (String, Any), c: (String, Any)): Named2.type = {
+  def applyDynamicNamed(
+      name: String
+  )(a: (String, Any))(b: (String, Any), c: (String, Any)): Named2.type = {
     show(this + "." + name + mkArgs(a) + mkArgs(b, c))
     this
   }

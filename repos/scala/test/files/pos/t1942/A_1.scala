@@ -1,5 +1,5 @@
 class A {
-  def foo(x: Int) = 0
+  def foo(x: Int)    = 0
   def foo(x: String) = 1
 }
 

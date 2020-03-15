@@ -33,11 +33,11 @@ class SparseVectorTest extends FunSuite {
   }
 
   test("MulInner") {
-    val a = SparseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
-    val b = SparseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
+    val a  = SparseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
+    val b  = SparseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
     val bd = DenseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
-    val bdSplit = DenseVector(
-        0.0, 0.15951, 0.0, 0.83671, 0.0, 0.56002, 0.0, 0.57797, 0.0, 0.54450)
+    val bdSplit = DenseVector(0.0, 0.15951, 0.0, 0.83671, 0.0, 0.56002, 0.0,
+      0.57797, 0.0, 0.54450)
     val bdd = bdSplit(1 to 9 by 2)
     assertClose(a dot b, .90249)
 //    assertClose(a dot bd, .90249)
@@ -46,10 +46,10 @@ class SparseVectorTest extends FunSuite {
   }
 
   test("Subtraction") {
-    val a = SparseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
-    val ad = DenseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
-    val b = SparseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
-    val bd = DenseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
+    val a   = SparseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
+    val ad  = DenseVector(0.56390, 0.36231, 0.14601, 0.60294, 0.14535)
+    val b   = SparseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
+    val bd  = DenseVector(0.15951, 0.83671, 0.56002, 0.57797, 0.54450)
     val bss = b - a
     val bdd = bd - ad
     b -= a
@@ -223,7 +223,7 @@ class SparseVectorTest extends FunSuite {
     svr(1) = 5
     svr(2) = 10
     val svrt = svr.t
-    val svt = sv * sv.t
+    val svt  = sv * sv.t
     assert(svt === csc)
 
     val svv = sv.t * csc
@@ -295,14 +295,14 @@ class SparseVectorTest extends FunSuite {
   }
 
   test("DenseMatrix * SparseVector OpMulMatrix") {
-    val x = SparseVector[Int](6)(1 -> 2, 3 -> 4)
+    val x  = SparseVector[Int](6)(1 -> 2, 3 -> 4)
     val xd = DenseVector[Int](0, 2, 0, 4, 0, 0)
     assert(x === xd)
     val m = DenseMatrix(
-        (1, 2, 3, 4, 5, 6),
-        (2, 4, 6, 8, 10, 12),
-        (3, 6, 9, 12, 15, 18),
-        (12, 1, 1, 0, 3, 4)
+      (1, 2, 3, 4, 5, 6),
+      (2, 4, 6, 8, 10, 12),
+      (3, 6, 9, 12, 15, 18),
+      (12, 1, 1, 0, 3, 4)
     )
 
     assert((m * x) === m * xd)
@@ -315,7 +315,7 @@ class SparseVectorTest extends FunSuite {
     // do in two stages to ensure that telling the return type doesn't change type inference
     val r =
       v1 +
-      v2 //type mismatch; found : breeze.linalg.Vector[Int] required: breeze.linalg.DenseVector[Int]
+        v2 //type mismatch; found : breeze.linalg.Vector[Int] required: breeze.linalg.DenseVector[Int]
     val q = r: DenseVector[Int]
     assert(q == DenseVector(0, 1, 0, 0))
   }
@@ -327,14 +327,14 @@ class SparseVectorTest extends FunSuite {
     // do in two stages to ensure that telling the return type doesn't change type inference
     val r =
       v2 +
-      v1 //type mismatch; found : breeze.linalg.Vector[Int] required: breeze.linalg.DenseVector[Int]
+        v1 //type mismatch; found : breeze.linalg.Vector[Int] required: breeze.linalg.DenseVector[Int]
     val q = r: DenseVector[Int]
     assert(q == DenseVector(0, 1, 0, 0))
   }
 
   test("#382: dividing a sparse vector") {
-    val vec = SparseVector(5)(0 -> 0.0, 3 -> 60.0, 4 -> 80.0)
-    val n = 60.0
+    val vec     = SparseVector(5)(0 -> 0.0, 3 -> 60.0, 4 -> 80.0)
+    val n       = 60.0
     val answer1 = vec :/ n
     val answer2 = vec.toDenseVector :/ n
     assert(answer1.toDenseVector === answer2)
@@ -382,25 +382,28 @@ class SparseVectorOps_DoubleTest
 
   val N = 30
   implicit def genTriple: Arbitrary[
-      (SparseVector[Double], SparseVector[Double], SparseVector[Double])] = {
+    (SparseVector[Double], SparseVector[Double], SparseVector[Double])
+  ] = {
     Arbitrary {
       for {
-        x <- Arbitrary.arbitrary[Double].map { _ % 1E100 }
+        x  <- Arbitrary.arbitrary[Double].map { _ % 1e100 }
         xl <- Arbitrary.arbitrary[List[Int]]
-        y <- Arbitrary.arbitrary[Double].map { _ % 1E100 }
+        y  <- Arbitrary.arbitrary[Double].map { _ % 1e100 }
         yl <- Arbitrary.arbitrary[List[Int]]
-        z <- Arbitrary.arbitrary[Double].map { _ % 1E100 }
+        z  <- Arbitrary.arbitrary[Double].map { _ % 1e100 }
         zl <- Arbitrary.arbitrary[List[Int]]
       } yield {
-        (SparseVector(N)(xl.map(i => (i % N).abs -> math.random * x): _*),
-         SparseVector(N)(yl.map(i => (i % N).abs -> math.random * y): _*),
-         SparseVector(N)(zl.map(i => (i % N).abs -> math.random * z): _*))
+        (
+          SparseVector(N)(xl.map(i => (i % N).abs -> math.random * x): _*),
+          SparseVector(N)(yl.map(i => (i % N).abs -> math.random * y): _*),
+          SparseVector(N)(zl.map(i => (i % N).abs -> math.random * z): _*)
+        )
       }
     }
   }
 
   def genScalar: Arbitrary[Double] =
-    Arbitrary(Arbitrary.arbitrary[Double].map { _ % 1E10 })
+    Arbitrary(Arbitrary.arbitrary[Double].map { _ % 1e10 })
 }
 
 /**
@@ -412,25 +415,31 @@ class SparseVectorOps_FloatTest
     extends TensorSpaceTestBase[SparseVector[Float], Int, Float] {
   val space = SparseVector.space[Float]
 
-  override val TOL: Double = 1E-2
-  val N = 30
+  override val TOL: Double = 1e-2
+  val N                    = 30
   implicit def genTriple: Arbitrary[
-      (SparseVector[Float], SparseVector[Float], SparseVector[Float])] = {
+    (SparseVector[Float], SparseVector[Float], SparseVector[Float])
+  ] = {
     Arbitrary {
       for {
-        x <- Arbitrary.arbitrary[Float].map { _ % 100 }
+        x  <- Arbitrary.arbitrary[Float].map { _ % 100 }
         xl <- Arbitrary.arbitrary[List[Int]]
-        y <- Arbitrary.arbitrary[Float].map { _ % 100 }
+        y  <- Arbitrary.arbitrary[Float].map { _ % 100 }
         yl <- Arbitrary.arbitrary[List[Int]]
-        z <- Arbitrary.arbitrary[Float].map { _ % 100 }
+        z  <- Arbitrary.arbitrary[Float].map { _ % 100 }
         zl <- Arbitrary.arbitrary[List[Int]]
       } yield {
-        (SparseVector(N)(
-             xl.map(i => (i % N).abs -> math.random.toFloat * x): _*),
-         SparseVector(N)(
-             yl.map(i => (i % N).abs -> math.random.toFloat * y): _*),
-         SparseVector(N)(
-             zl.map(i => (i % N).abs -> math.random.toFloat * z): _*))
+        (
+          SparseVector(N)(
+            xl.map(i => (i % N).abs -> math.random.toFloat * x): _*
+          ),
+          SparseVector(N)(
+            yl.map(i => (i % N).abs -> math.random.toFloat * y): _*
+          ),
+          SparseVector(N)(
+            zl.map(i => (i % N).abs -> math.random.toFloat * z): _*
+          )
+        )
       }
     }
   }
@@ -449,23 +458,28 @@ class SparseVectorOps_IntTest
   val space = SparseVector.space[Int]
 
   val N = 100
-  implicit def genTriple: Arbitrary[
-      (SparseVector[Int], SparseVector[Int], SparseVector[Int])] = {
+  implicit def genTriple
+      : Arbitrary[(SparseVector[Int], SparseVector[Int], SparseVector[Int])] = {
     Arbitrary {
       for {
-        x <- Arbitrary.arbitrary[Int].map { _ % 100 }
+        x  <- Arbitrary.arbitrary[Int].map { _ % 100 }
         xl <- Arbitrary.arbitrary[List[Int]]
-        y <- Arbitrary.arbitrary[Int].map { _ % 100 }
+        y  <- Arbitrary.arbitrary[Int].map { _ % 100 }
         yl <- Arbitrary.arbitrary[List[Int]]
-        z <- Arbitrary.arbitrary[Int].map { _ % 100 }
+        z  <- Arbitrary.arbitrary[Int].map { _ % 100 }
         zl <- Arbitrary.arbitrary[List[Int]]
       } yield {
-        (SparseVector(N)(
-             xl.map(i => (i % N).abs -> (math.random * x).toInt): _*),
-         SparseVector(N)(
-             yl.map(i => (i % N).abs -> (math.random * y).toInt): _*),
-         SparseVector(N)(
-             zl.map(i => (i % N).abs -> (math.random * z).toInt): _*))
+        (
+          SparseVector(N)(
+            xl.map(i => (i % N).abs -> (math.random * x).toInt): _*
+          ),
+          SparseVector(N)(
+            yl.map(i => (i % N).abs -> (math.random * y).toInt): _*
+          ),
+          SparseVector(N)(
+            zl.map(i => (i % N).abs -> (math.random * z).toInt): _*
+          )
+        )
       }
     }
   }

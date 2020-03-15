@@ -11,16 +11,15 @@ class RecipeManualTrigger extends RecipeSpec {
 
     "work" in {
 
-      val elements = Source(List("1", "2", "3", "4"))
-      val pub = TestPublisher.probe[Trigger]()
-      val sub = TestSubscriber.manualProbe[Message]()
+      val elements      = Source(List("1", "2", "3", "4"))
+      val pub           = TestPublisher.probe[Trigger]()
+      val sub           = TestSubscriber.manualProbe[Message]()
       val triggerSource = Source.fromPublisher(pub)
-      val sink = Sink.fromSubscriber(sub)
+      val sink          = Sink.fromSubscriber(sub)
 
       //#manually-triggered-stream
       val graph =
-        RunnableGraph.fromGraph(
-            GraphDSL.create() { implicit builder =>
+        RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
           import GraphDSL.Implicits._
           val zip = builder.add(Zip[Message, Trigger]())
           elements ~> zip.in0
@@ -54,22 +53,23 @@ class RecipeManualTrigger extends RecipeSpec {
 
     "work with ZipWith" in {
 
-      val elements = Source(List("1", "2", "3", "4"))
-      val pub = TestPublisher.probe[Trigger]()
-      val sub = TestSubscriber.manualProbe[Message]()
+      val elements      = Source(List("1", "2", "3", "4"))
+      val pub           = TestPublisher.probe[Trigger]()
+      val sub           = TestSubscriber.manualProbe[Message]()
       val triggerSource = Source.fromPublisher(pub)
-      val sink = Sink.fromSubscriber(sub)
+      val sink          = Sink.fromSubscriber(sub)
 
       //#manually-triggered-stream-zipwith
-      val graph = RunnableGraph.fromGraph(
-          GraphDSL.create() { implicit builder =>
-        import GraphDSL.Implicits._
-        val zip = builder.add(ZipWith((msg: Message, trigger: Trigger) => msg))
+      val graph = RunnableGraph.fromGraph(GraphDSL.create() {
+        implicit builder =>
+          import GraphDSL.Implicits._
+          val zip =
+            builder.add(ZipWith((msg: Message, trigger: Trigger) => msg))
 
-        elements ~> zip.in0
-        triggerSource ~> zip.in1
-        zip.out ~> sink
-        ClosedShape
+          elements ~> zip.in0
+          triggerSource ~> zip.in1
+          zip.out ~> sink
+          ClosedShape
       })
       //#manually-triggered-stream-zipwith
 

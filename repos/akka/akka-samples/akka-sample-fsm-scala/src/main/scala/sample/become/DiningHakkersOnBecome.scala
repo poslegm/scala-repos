@@ -10,12 +10,12 @@ import scala.concurrent.duration._
  * First we define our messages, they basically speak for themselves
  */
 sealed trait DiningHakkerMessage
-final case class Busy(chopstick: ActorRef) extends DiningHakkerMessage
-final case class Put(hakker: ActorRef) extends DiningHakkerMessage
-final case class Take(hakker: ActorRef) extends DiningHakkerMessage
+final case class Busy(chopstick: ActorRef)  extends DiningHakkerMessage
+final case class Put(hakker: ActorRef)      extends DiningHakkerMessage
+final case class Take(hakker: ActorRef)     extends DiningHakkerMessage
 final case class Taken(chopstick: ActorRef) extends DiningHakkerMessage
-object Eat extends DiningHakkerMessage
-object Think extends DiningHakkerMessage
+object Eat                                  extends DiningHakkerMessage
+object Think                                extends DiningHakkerMessage
 
 /*
  * A Chopstick is an actor, it can be taken, and put back
@@ -78,11 +78,14 @@ class Hakker(name: String, left: ActorRef, right: ActorRef) extends Actor {
   //and start eating, or the other chopstick was busy, and the hakker goes
   //back to think about how he should obtain his chopsticks :-)
   def waiting_for(
-      chopstickToWaitFor: ActorRef, otherChopstick: ActorRef): Receive = {
+      chopstickToWaitFor: ActorRef,
+      otherChopstick: ActorRef
+  ): Receive = {
     case Taken(`chopstickToWaitFor`) =>
       println(
-          "%s has picked up %s and %s and starts to eat".format(
-              name, left.path.name, right.path.name))
+        "%s has picked up %s and %s and starts to eat"
+          .format(name, left.path.name, right.path.name)
+      )
       become(eating)
       system.scheduler.scheduleOnce(5.seconds, self, Think)
 
@@ -135,15 +138,21 @@ object DiningHakkersOnBecome {
 
   def run(): Unit = {
     //Create 5 chopsticks
-    val chopsticks = for (i <- 1 to 5) yield
-      system.actorOf(Props[Chopstick], "Chopstick" + i)
+    val chopsticks =
+      for (i <- 1 to 5) yield system.actorOf(Props[Chopstick], "Chopstick" + i)
 
     //Create 5 awesome hakkers and assign them their left and right chopstick
     val hakkers = for {
-      (name, i) <- List("Ghosh", "Boner", "Klang", "Krasser", "Manie").zipWithIndex
-    } yield
-      system.actorOf(
-          Props(classOf[Hakker], name, chopsticks(i), chopsticks((i + 1) % 5)))
+      (name, i) <- List(
+                    "Ghosh",
+                    "Boner",
+                    "Klang",
+                    "Krasser",
+                    "Manie"
+                  ).zipWithIndex
+    } yield system.actorOf(
+      Props(classOf[Hakker], name, chopsticks(i), chopsticks((i + 1) % 5))
+    )
 
     //Signal all hakkers that they should start thinking, and watch the show
     hakkers.foreach(_ ! Think)

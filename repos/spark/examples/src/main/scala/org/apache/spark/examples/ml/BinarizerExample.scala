@@ -26,8 +26,8 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 
 object BinarizerExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("BinarizerExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("BinarizerExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     // $example on$
     val data = Array((0, 0.1), (1, 0.8), (2, 0.2))
@@ -40,7 +40,7 @@ object BinarizerExample {
       .setThreshold(0.5)
 
     val binarizedDataFrame = binarizer.transform(dataFrame)
-    val binarizedFeatures = binarizedDataFrame.select("binarized_feature")
+    val binarizedFeatures  = binarizedDataFrame.select("binarized_feature")
     binarizedFeatures.collect().foreach(println)
     // $example off$
     sc.stop()

@@ -5,7 +5,7 @@ import sbt._
 import Keys._
 
 object SonatypeSupport {
-  val GPL3 = ("GPL 3.0" -> url("http://www.gnu.org/licenses/gpl.html"))
+  val GPL3  = ("GPL 3.0"  -> url("http://www.gnu.org/licenses/gpl.html"))
   val LGPL3 = ("LGPL 3.0" -> url("http://www.gnu.org/licenses/lgpl.html"))
   val Apache2 =
     ("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
@@ -14,12 +14,11 @@ object SonatypeSupport {
       ghUser: String,
       ghRepo: String,
       license: (String, URL)
-  ) = Seq(
+  ) =
+    Seq(
       publishMavenStyle := true,
       publishArtifact in Test := false,
-      pomIncludeRepository := { _ =>
-        false
-      },
+      pomIncludeRepository := { _ => false },
       homepage := Some(url(s"http://github.com/$ghUser/$ghRepo")),
       licenses := Seq(license),
       publishTo <<= version { v: String =>
@@ -32,20 +31,21 @@ object SonatypeSupport {
         for {
           username <- sys.env.get("SONATYPE_USERNAME")
           password <- sys.env.get("SONATYPE_PASSWORD")
-        } yield
-          Credentials("Sonatype Nexus Repository Manager",
-                      "oss.sonatype.org",
-                      username,
-                      password)
+        } yield Credentials(
+          "Sonatype Nexus Repository Manager",
+          "oss.sonatype.org",
+          username,
+          password
+        )
       }.toSeq,
       pomExtra := (<scm>
-        <url>git@github.com:${ ghUser }/${ ghRepo }.git</url>
-        <connection>scm:git:git@github.com:${ ghUser }/${ ghRepo }.git</connection>
+        <url>git@github.com:${ghUser}/${ghRepo}.git</url>
+        <connection>scm:git:git@github.com:${ghUser}/${ghRepo}.git</connection>
       </scm>
       <developers>
         <developer>
           <id>$ghUser</id>
         </developer>
       </developers>)
-  )
+    )
 }

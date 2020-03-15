@@ -11,39 +11,39 @@ sealed trait HttpMethod {
 }
 
 case object Options extends HttpMethod {
-  override val isSafe = true
+  override val isSafe   = true
   override def toString = "OPTIONS"
 }
 case object Get extends HttpMethod {
-  override val isSafe = true
+  override val isSafe   = true
   override def toString = "GET"
 }
 case object Head extends HttpMethod {
-  override val isSafe = true
+  override val isSafe   = true
   override def toString = "HEAD"
 }
 case object Post extends HttpMethod {
-  override val isSafe = false
+  override val isSafe   = false
   override def toString = "POST"
 }
 case object Put extends HttpMethod {
-  override val isSafe = false
+  override val isSafe   = false
   override def toString = "PUT"
 }
 case object Delete extends HttpMethod {
-  override val isSafe = false
+  override val isSafe   = false
   override def toString = "DELETE"
 }
 case object Trace extends HttpMethod {
-  override val isSafe = true
+  override val isSafe   = true
   override def toString = "TRACE"
 }
 case object Connect extends HttpMethod {
-  override val isSafe = false
+  override val isSafe   = false
   override def toString = "CONNECT"
 }
 case object Patch extends HttpMethod {
-  override val isSafe = false
+  override val isSafe   = false
   override def toString = "PATCH"
 }
 case class ExtensionMethod(name: String) extends HttpMethod {
@@ -52,10 +52,10 @@ case class ExtensionMethod(name: String) extends HttpMethod {
 
 object HttpMethod {
   private[this] val methodMap = Map(
-      List(Options, Get, Head, Post, Put, Delete, Trace, Connect, Patch) map {
-    method =>
-      (method.toString, method)
-  }: _*)
+    List(Options, Get, Head, Post, Put, Delete, Trace, Connect, Patch) map {
+      method => (method.toString, method)
+    }: _*
+  )
 
   /**
     * Maps a String as an HttpMethod.

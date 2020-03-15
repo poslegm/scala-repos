@@ -84,7 +84,7 @@ class ObservableSpec extends FlatSpec with BeforeAndAfterEach {
 
   it should "support removing explict listeners" in {
     var invalidateCalled = false
-    val listener = (obs: JFXObservable) => invalidateCalled = true
+    val listener         = (obs: JFXObservable) => invalidateCalled = true
     property addListener listener
     invalidateCalled should be(false)
     property() = 100

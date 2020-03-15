@@ -21,10 +21,11 @@ object ClientMergeableLaws extends Properties("ClientMergeable") {
   }
 
   case class Machine[K, V](
-      offline: Store[K, (BatchID, V)], online: Store[(K, BatchID), V])(
-      implicit val batcher: Batcher, semi: Semigroup[V]) {
-    val mergeable = ClientMergeable(
-        offline, MergeableStore.fromStoreNoMulti(online), 10)
+      offline: Store[K, (BatchID, V)],
+      online: Store[(K, BatchID), V]
+  )(implicit val batcher: Batcher, semi: Semigroup[V]) {
+    val mergeable =
+      ClientMergeable(offline, MergeableStore.fromStoreNoMulti(online), 10)
   }
 
   def jstore[K, V]: Store[K, V] =
@@ -39,7 +40,7 @@ object ClientMergeableLaws extends Properties("ClientMergeable") {
   property("get-merge works") = Prop.forAll {
     (init: Map[Int, Int], toMerge: List[(Int, (Int, Int))]) =>
       implicit val batcher = Batcher.ofHours(2)
-      val machine = Machine.empty[Int, Int]
+      val machine          = Machine.empty[Int, Int]
       init.foreach {
         case (k, v) =>
           machine.offline.put((k, Some((BatchID(0), v))))
@@ -47,12 +48,12 @@ object ClientMergeableLaws extends Properties("ClientMergeable") {
       toMerge.forall {
         case (k, (v1, v2)) =>
           val tup = for {
-            prior <- machine.mergeable.readable.multiGetBatch(BatchID(1),
-                                                              Set(k))(k)
+            prior <- machine.mergeable.readable
+                      .multiGetBatch(BatchID(1), Set(k))(k)
             mergePrior <- machine.mergeable.merge((k, BatchID(1)), v1)
             mergeAfter <- machine.mergeable.merge((k, BatchID(1)), v2)
-            last <- machine.mergeable.readable.multiGetBatch(BatchID(1),
-                                                             Set(k))(k)
+            last <- machine.mergeable.readable
+                     .multiGetBatch(BatchID(1), Set(k))(k)
           } yield (prior, mergePrior, mergeAfter, last)
 
           Await.result(tup.map {
@@ -74,7 +75,7 @@ object ClientMergeableLaws extends Properties("ClientMergeable") {
   property("sequential merges include prior") = Prop.forAll {
     (init: Map[Int, Int], toMerge: Map[Int, (Int, Int)]) =>
       implicit val batcher = Batcher.ofHours(2)
-      val machine = Machine.empty[Int, Int]
+      val machine          = Machine.empty[Int, Int]
       init.foreach {
         case (k, v) =>
           machine.offline.put((k, Some((BatchID(0), v))))
@@ -85,21 +86,24 @@ object ClientMergeableLaws extends Properties("ClientMergeable") {
       }
 
       Await.result(
-          Future
-            .collect(machine.mergeable
-                  .multiMerge(keys)
-                  .collect {
-            case ((k, BatchID(2)), fopt) =>
-              fopt.map(_ == Some(toMerge(k)._1 + init.getOrElse(k, 0)))
-          }
-                  .toSeq)
-            .map(_.forall(identity)))
+        Future
+          .collect(
+            machine.mergeable
+              .multiMerge(keys)
+              .collect {
+                case ((k, BatchID(2)), fopt) =>
+                  fopt.map(_ == Some(toMerge(k)._1 + init.getOrElse(k, 0)))
+              }
+              .toSeq
+          )
+          .map(_.forall(identity))
+      )
   }
 
   property("sequential merges include prior (single merge)") = Prop.forAll {
     (init: Map[Int, Int], toMerge: Map[Int, (Int, Int)]) =>
       implicit val batcher = Batcher.ofHours(2)
-      val machine = Machine.empty[Int, Int]
+      val machine          = Machine.empty[Int, Int]
       init.foreach {
         case (k, v) =>
           machine.offline.put((k, Some((BatchID(0), v))))
@@ -109,23 +113,22 @@ object ClientMergeableLaws extends Properties("ClientMergeable") {
           Map((k, BatchID(1)) -> v1, (k, BatchID(2)) -> v2)
       }
 
-      val merged = keys.map { kbv =>
-        (kbv._1, machine.mergeable.merge(kbv))
-      }
+      val merged = keys.map { kbv => (kbv._1, machine.mergeable.merge(kbv)) }
 
       Await.result(
-          Future
-            .collect(merged.collect {
-          case ((k, BatchID(2)), fopt) =>
-            fopt.map(_ == Some(toMerge(k)._1 + init.getOrElse(k, 0)))
-        })
-            .map(_.forall(identity)))
+        Future
+          .collect(merged.collect {
+            case ((k, BatchID(2)), fopt) =>
+              fopt.map(_ == Some(toMerge(k)._1 + init.getOrElse(k, 0)))
+          })
+          .map(_.forall(identity))
+      )
   }
 
   property("simple check") = {
     implicit val b = Batcher.ofHours(23)
-    val machine = Machine.empty[Int, Int]
-    val merge = machine.mergeable
+    val machine    = Machine.empty[Int, Int]
+    val merge      = machine.mergeable
     // Initialize key 0 with some data:
     machine.offline.put((0, Some((BatchID(0), 1))))
     val prior1 = merge.merge(((0, BatchID(1)), 3))

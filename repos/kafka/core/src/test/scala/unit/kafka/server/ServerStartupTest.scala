@@ -28,9 +28,9 @@ class ServerStartupTest extends ZooKeeperTestHarness {
 
   @Test
   def testBrokerCreatesZKChroot {
-    val brokerId = 0
-    val zookeeperChroot = "/kafka-chroot-for-unittest"
-    val props = TestUtils.createBrokerConfig(brokerId, zkConnect)
+    val brokerId         = 0
+    val zookeeperChroot  = "/kafka-chroot-for-unittest"
+    val props            = TestUtils.createBrokerConfig(brokerId, zkConnect)
     val zooKeeperConnect = props.get("zookeeper.connect")
     props.put("zookeeper.connect", zooKeeperConnect + zookeeperChroot)
     val server = TestUtils.createServer(KafkaConfig.fromProps(props))
@@ -48,8 +48,8 @@ class ServerStartupTest extends ZooKeeperTestHarness {
     // This shouldn't affect the existing broker registration.
 
     val brokerId = 0
-    val props1 = TestUtils.createBrokerConfig(brokerId, zkConnect)
-    val server1 = TestUtils.createServer(KafkaConfig.fromProps(props1))
+    val props1   = TestUtils.createBrokerConfig(brokerId, zkConnect)
+    val server1  = TestUtils.createServer(KafkaConfig.fromProps(props1))
     val brokerRegistration =
       zkUtils.readData(ZkUtils.BrokerIdsPath + "/" + brokerId)._1
 
@@ -63,8 +63,10 @@ class ServerStartupTest extends ZooKeeperTestHarness {
     }
 
     // broker registration shouldn't change
-    assertEquals(brokerRegistration,
-                 zkUtils.readData(ZkUtils.BrokerIdsPath + "/" + brokerId)._1)
+    assertEquals(
+      brokerRegistration,
+      zkUtils.readData(ZkUtils.BrokerIdsPath + "/" + brokerId)._1
+    )
 
     server1.shutdown()
     CoreUtils.rm(server1.config.logDirs)
@@ -73,12 +75,13 @@ class ServerStartupTest extends ZooKeeperTestHarness {
   @Test
   def testBrokerSelfAware {
     val brokerId = 0
-    val props = TestUtils.createBrokerConfig(brokerId, zkConnect)
-    val server = TestUtils.createServer(KafkaConfig.fromProps(props))
+    val props    = TestUtils.createBrokerConfig(brokerId, zkConnect)
+    val server   = TestUtils.createServer(KafkaConfig.fromProps(props))
 
     TestUtils.waitUntilTrue(
-        () => server.metadataCache.getAliveBrokers.nonEmpty,
-        "Wait for cache to update")
+      () => server.metadataCache.getAliveBrokers.nonEmpty,
+      "Wait for cache to update"
+    )
     assertEquals(1, server.metadataCache.getAliveBrokers.size)
     assertEquals(brokerId, server.metadataCache.getAliveBrokers.head.id)
 

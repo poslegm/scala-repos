@@ -94,7 +94,9 @@ object Option {
   *  @define bfinfo an implicit value of class `CanBuildFrom` which determines the result class `That` from the current
   *    representation type `Repr` and the new element type `B`.
   */
-@SerialVersionUID(-114498752079829388L) // value computed by serialver for 2.11.2, annotation added in 2.11.4
+@SerialVersionUID(
+  -114498752079829388L
+) // value computed by serialver for 2.11.2, annotation added in 2.11.4
 sealed abstract class Option[+A] extends Product with Serializable { self =>
 
   /** Returns true if the option is $none, false otherwise.
@@ -204,9 +206,9 @@ sealed abstract class Option[+A] extends Product with Serializable { self =>
     *  collection with max size 1.
     */
   class WithFilter(p: A => Boolean) {
-    def map[B](f: A => B): Option[B] = self filter p map f
+    def map[B](f: A => B): Option[B]             = self filter p map f
     def flatMap[B](f: A => Option[B]): Option[B] = self filter p flatMap f
-    def foreach[U](f: A => U): Unit = self filter p foreach f
+    def foreach[U](f: A => U): Unit              = self filter p foreach f
     def withFilter(q: A => Boolean): WithFilter =
       new WithFilter(x => p(x) && q(x))
   }
@@ -331,10 +333,12 @@ sealed abstract class Option[+A] extends Product with Serializable { self =>
   *  @author  Martin Odersky
   *  @version 1.0, 16/07/2003
   */
-@SerialVersionUID(1234815782226070388L) // value computed by serialver for 2.11.2, annotation added in 2.11.4
+@SerialVersionUID(
+  1234815782226070388L
+) // value computed by serialver for 2.11.2, annotation added in 2.11.4
 final case class Some[+A](x: A) extends Option[A] {
   def isEmpty = false
-  def get = x
+  def get     = x
 }
 
 /** This case object represents non-existent values.
@@ -342,8 +346,10 @@ final case class Some[+A](x: A) extends Option[A] {
   *  @author  Martin Odersky
   *  @version 1.0, 16/07/2003
   */
-@SerialVersionUID(5066590221178148012L) // value computed by serialver for 2.11.2, annotation added in 2.11.4
+@SerialVersionUID(
+  5066590221178148012L
+) // value computed by serialver for 2.11.2, annotation added in 2.11.4
 case object None extends Option[Nothing] {
   def isEmpty = true
-  def get = throw new NoSuchElementException("None.get")
+  def get     = throw new NoSuchElementException("None.get")
 }

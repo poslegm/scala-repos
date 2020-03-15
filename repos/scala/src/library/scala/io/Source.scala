@@ -10,7 +10,13 @@ package scala
 package io
 
 import scala.collection.AbstractIterator
-import java.io.{FileInputStream, InputStream, PrintStream, File => JFile, Closeable}
+import java.io.{
+  FileInputStream,
+  InputStream,
+  PrintStream,
+  File => JFile,
+  Closeable
+}
 import java.net.{URI, URL}
 
 /** This object provides convenience methods to create an iterable
@@ -89,14 +95,15 @@ object Source {
     *  `bufferSize`.
     */
   def fromFile(file: JFile, bufferSize: Int)(
-      implicit codec: Codec): BufferedSource = {
+      implicit codec: Codec
+  ): BufferedSource = {
     val inputStream = new FileInputStream(file)
 
     createBufferedSource(
-        inputStream,
-        bufferSize,
-        () => fromFile(file, bufferSize)(codec),
-        () => inputStream.close()
+      inputStream,
+      bufferSize,
+      () => fromFile(file, bufferSize)(codec),
+      () => inputStream.close()
     )(codec) withDescription ("file:" + file.getAbsolutePath)
   }
 
@@ -160,21 +167,24 @@ object Source {
   )(implicit codec: Codec): BufferedSource = {
     // workaround for default arguments being unable to refer to other parameters
     val resetFn =
-      if (reset == null)
-        () =>
-          createBufferedSource(inputStream, bufferSize, reset, close)(codec)
+      if (reset == null)() =>
+        createBufferedSource(inputStream, bufferSize, reset, close)(codec)
       else reset
 
-    new BufferedSource(inputStream, bufferSize)(codec) withReset resetFn withClose close
+    new BufferedSource(inputStream, bufferSize)(
+      codec
+    ) withReset resetFn withClose close
   }
 
   def fromInputStream(is: InputStream, enc: String): BufferedSource =
     fromInputStream(is)(Codec(enc))
 
   def fromInputStream(is: InputStream)(implicit codec: Codec): BufferedSource =
-    createBufferedSource(is,
-                         reset = () => fromInputStream(is)(codec),
-                         close = () => is.close())(codec)
+    createBufferedSource(
+      is,
+      reset = () => fromInputStream(is)(codec),
+      close = () => is.close()
+    )(codec)
 
   /** Reads data from a classpath resource, using either a context classloader (default) or a passed one.
     *
@@ -182,11 +192,12 @@ object Source {
     *  @param  classLoader  classloader to be used, or context classloader if not specified
     *  @return              the buffered source
     */
-  def fromResource(resource: String,
-                   classLoader: ClassLoader = Thread
-                       .currentThread()
-                       .getContextClassLoader())(
-      implicit codec: Codec): BufferedSource =
+  def fromResource(
+      resource: String,
+      classLoader: ClassLoader = Thread
+        .currentThread()
+        .getContextClassLoader()
+  )(implicit codec: Codec): BufferedSource =
     fromInputStream(classLoader.getResourceAsStream(resource))
 }
 
@@ -215,8 +226,8 @@ abstract class Source extends Iterator[Char] with Closeable {
 
   /** description of this source, default empty */
   var descr: String = ""
-  var nerrors = 0
-  var nwarnings = 0
+  var nerrors       = 0
+  var nwarnings     = 0
 
   private def lineNum(line: Int): String =
     (getLines() drop (line - 1) take 1).mkString
@@ -225,19 +236,20 @@ abstract class Source extends Iterator[Char] with Closeable {
     private[this] val sb = new StringBuilder
 
     lazy val iter: BufferedIterator[Char] = Source.this.iter.buffered
-    def isNewline(ch: Char) = ch == '\r' || ch == '\n'
-    def getc() = iter.hasNext && {
-      val ch = iter.next()
-      if (ch == '\n') false
-      else if (ch == '\r') {
-        if (iter.hasNext && iter.head == '\n') iter.next()
+    def isNewline(ch: Char)               = ch == '\r' || ch == '\n'
+    def getc() =
+      iter.hasNext && {
+        val ch = iter.next()
+        if (ch == '\n') false
+        else if (ch == '\r') {
+          if (iter.hasNext && iter.head == '\n') iter.next()
 
-        false
-      } else {
-        sb append ch
-        true
+          false
+        } else {
+          sb append ch
+          true
+        }
       }
-    }
     def hasNext = iter.hasNext
     def next = {
       sb.clear()
@@ -271,7 +283,7 @@ abstract class Source extends Iterator[Char] with Closeable {
 
     /** current line and column */
     var cline = 1
-    var ccol = 1
+    var ccol  = 1
 
     /** default col increment for tabs '\t', set to 4 initially */
     var tabinc = 4
@@ -302,7 +314,7 @@ abstract class Source extends Iterator[Char] with Closeable {
   object NoPositioner extends Positioner(Position) {
     override def next(): Char = iter.next()
   }
-  def ch = positioner.ch
+  def ch  = positioner.ch
   def pos = positioner.pos
 
   /** Reports an error message to the output stream `out`.
@@ -325,10 +337,16 @@ abstract class Source extends Iterator[Char] with Closeable {
     */
   def report(pos: Int, msg: String, out: PrintStream) {
     val line = Position line pos
-    val col = Position column pos
+    val col  = Position column pos
 
     out println "%s:%d:%d: %s%s%s^".format(
-        descr, line, col, msg, lineNum(line), spaces(col - 1))
+      descr,
+      line,
+      col,
+      msg,
+      lineNum(line),
+      spaces(col - 1)
+    )
   }
 
   /**
@@ -342,8 +360,8 @@ abstract class Source extends Iterator[Char] with Closeable {
   }
 
   private[this] var resetFunction: () => Source = null
-  private[this] var closeFunction: () => Unit = null
-  private[this] var positioner: Positioner = RelaxedPositioner
+  private[this] var closeFunction: () => Unit   = null
+  private[this] var positioner: Positioner      = RelaxedPositioner
 
   def withReset(f: () => Source): this.type = {
     resetFunction = f
@@ -378,5 +396,6 @@ abstract class Source extends Iterator[Char] with Closeable {
     if (resetFunction != null) resetFunction()
     else
       throw new UnsupportedOperationException(
-          "Source's reset() method was not set.")
+        "Source's reset() method was not set."
+      )
 }

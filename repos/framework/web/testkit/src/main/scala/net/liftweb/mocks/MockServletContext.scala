@@ -73,14 +73,14 @@ class MockServletContext(var target: String) extends ServletContext {
     new Vector[String]().elements
   def removeAttribute(name: String) {}
   def setAttribute(name: String, o: Object) {}
-  def getContext(path: String): ServletContext = this
-  def getMajorVersion() = 2
-  def getMimeType(file: String): String = null
-  def getMinorVersion() = 3
-  def getRealPath(path: String): String = null
-  def getNamedDispatcher(name: String): RequestDispatcher = null
+  def getContext(path: String): ServletContext              = this
+  def getMajorVersion()                                     = 2
+  def getMimeType(file: String): String                     = null
+  def getMinorVersion()                                     = 3
+  def getRealPath(path: String): String                     = null
+  def getNamedDispatcher(name: String): RequestDispatcher   = null
   def getRequestDispatcher(path: String): RequestDispatcher = null
-  def getResource(path: String): java.net.URL = null
+  def getResource(path: String): java.net.URL               = null
   def getResourceAsStream(path: String): java.io.InputStream = {
     val file = new File(target + path)
     if (file.exists) {
@@ -91,9 +91,9 @@ class MockServletContext(var target: String) extends ServletContext {
   }
 
   def getResourcePaths(path: String): java.util.Set[String] = null
-  def getServerInfo(): String = null
-  def getServlet(name: String): Servlet = null
-  def getServletContextName(): String = null
+  def getServerInfo(): String                               = null
+  def getServlet(name: String): Servlet                     = null
+  def getServletContextName(): String                       = null
   def getServletNames(): java.util.Enumeration[String] =
     new Vector[String]().elements
   def getServlets(): java.util.Enumeration[Servlet] =
@@ -106,34 +106,42 @@ class MockServletContext(var target: String) extends ServletContext {
     e.printStackTrace
     log(msg)
   }
-  def log(msg: String) = println("MockServletContext.log: " + msg)
+  def log(msg: String)         = println("MockServletContext.log: " + msg)
   def getContextPath(): String = null
 
   def addFilter(
       x$1: String,
-      x$2: Class[_ <: javax.servlet.Filter]): FilterRegistration.Dynamic = null
+      x$2: Class[_ <: javax.servlet.Filter]
+  ): FilterRegistration.Dynamic = null
   def addFilter(
-      x$1: String, x$2: javax.servlet.Filter): FilterRegistration.Dynamic =
+      x$1: String,
+      x$2: javax.servlet.Filter
+  ): FilterRegistration.Dynamic =
     null
   def addFilter(x$1: String, x$2: String): FilterRegistration.Dynamic = null
 
   def addListener(listenerClass: Class[_ <: java.util.EventListener]): Unit =
     ()
   def addListener[T <: java.util.EventListener](listener: T): Unit = ()
-  def addListener(listenerClass: String): Unit = ()
+  def addListener(listenerClass: String): Unit                     = ()
 
   def addServlet(
-      servletNAme: String, servletClass: Class[_ <: javax.servlet.Servlet])
-    : ServletRegistration.Dynamic = null
-  def addServlet(servletName: String,
-                 servlet: javax.servlet.Servlet): ServletRegistration.Dynamic =
+      servletNAme: String,
+      servletClass: Class[_ <: javax.servlet.Servlet]
+  ): ServletRegistration.Dynamic = null
+  def addServlet(
+      servletName: String,
+      servlet: javax.servlet.Servlet
+  ): ServletRegistration.Dynamic =
     null
   def addServlet(
-      servletName: String, servletClass: String): ServletRegistration.Dynamic =
+      servletName: String,
+      servletClass: String
+  ): ServletRegistration.Dynamic =
     null
 
   // This remain unimplemented since we can't provide a Null here due toe type restrictions.
-  def createFilter[T <: javax.servlet.Filter](filter: Class[T]): T = ???
+  def createFilter[T <: javax.servlet.Filter](filter: Class[T]): T        = ???
   def createListener[T <: java.util.EventListener](listener: Class[T]): T = ???
   def createServlet[T <: javax.servlet.Servlet](servletClass: Class[T]): T =
     ???
@@ -142,9 +150,9 @@ class MockServletContext(var target: String) extends ServletContext {
     Set.empty[SessionTrackingMode]
 
   def declareRoles(roles: String*): Unit = ()
-  def getClassLoader(): ClassLoader = getClass.getClassLoader
-  def getEffectiveMajorVersion(): Int = 0
-  def getEffectiveMinorVersion(): Int = 0
+  def getClassLoader(): ClassLoader      = getClass.getClassLoader
+  def getEffectiveMajorVersion(): Int    = 0
+  def getEffectiveMinorVersion(): Int    = 0
   def getEffectiveSessionTrackingModes(
       ): java.util.Set[javax.servlet.SessionTrackingMode] = null
   def getFilterRegistration(x$1: String): javax.servlet.FilterRegistration =
@@ -157,10 +165,11 @@ class MockServletContext(var target: String) extends ServletContext {
     null
   def getServletRegistrations(
       ): java.util.Map[String, _ <: javax.servlet.ServletRegistration] = null
-  def getSessionCookieConfig(): javax.servlet.SessionCookieConfig = null
-  def setInitParameter(key: String, value: String): Boolean = true
+  def getSessionCookieConfig(): javax.servlet.SessionCookieConfig      = null
+  def setInitParameter(key: String, value: String): Boolean            = true
   def setSessionTrackingModes(
-      trackingModes: java.util.Set[javax.servlet.SessionTrackingMode]): Unit =
+      trackingModes: java.util.Set[javax.servlet.SessionTrackingMode]
+  ): Unit =
     ()
   def getVirtualServerName(): String = null
 }
@@ -170,7 +179,7 @@ class MockServletContext(var target: String) extends ServletContext {
   * LiftFilter.init
   */
 class MockFilterConfig(servletContext: ServletContext) extends FilterConfig {
-  def getFilterName(): String = "LiftFilter" // as in lift's default web.xml
+  def getFilterName(): String               = "LiftFilter" // as in lift's default web.xml
   def getInitParameter(key: String): String = null
   def getInitParameterNames(): java.util.Enumeration[String] =
     new Vector[String]().elements
@@ -194,9 +203,9 @@ class DoNothingFilterChain extends FilterChain with Logger {
   * @author Steve Jenson (stevej@pobox.com)
   */
 class MockServletInputStream(is: InputStream) extends ServletInputStream {
-  def read() = is.read()
-  def isFinished(): Boolean = is.available() > 0
-  def isReady(): Boolean = true
+  def read()                                                 = is.read()
+  def isFinished(): Boolean                                  = is.available() > 0
+  def isReady(): Boolean                                     = true
   def setReadListener(x$1: javax.servlet.ReadListener): Unit = ()
 }
 
@@ -211,7 +220,7 @@ class MockServletOutputStream(os: ByteArrayOutputStream)
     os.write(b)
   }
 
-  def isReady(): Boolean = true
+  def isReady(): Boolean                                       = true
   def setWriteListener(x$1: javax.servlet.WriteListener): Unit = ()
 }
 
@@ -222,38 +231,40 @@ class MockServletOutputStream(os: ByteArrayOutputStream)
   */
 class MockHttpSession extends HttpSession {
   @volatile protected var values: Map[String, Object] = Map()
-  @volatile protected var attr: Map[String, Object] = Map()
+  @volatile protected var attr: Map[String, Object]   = Map()
 
   import scala.collection.JavaConversions._
 
-  protected var maxii: Int = 0
+  protected var maxii: Int         = 0
   protected var creationTime: Long = System.currentTimeMillis
-  def isNew = false
+  def isNew                        = false
   def invalidate {}
-  def getValue(key: String): Object = values.get(key) match {
-    case Some(v) => v
-    case None => null
-  }
-  def removeValue(key: String): Unit = values -= key
+  def getValue(key: String): Object =
+    values.get(key) match {
+      case Some(v) => v
+      case None    => null
+    }
+  def removeValue(key: String): Unit             = values -= key
   def putValue(key: String, value: Object): Unit = values += (key -> value)
-  def getAttribute(key: String): Object = attr.get(key) match {
-    case Some(v) => v
-    case None => null
-  }
-  def removeAttribute(key: String): Unit = attr -= key
+  def getAttribute(key: String): Object =
+    attr.get(key) match {
+      case Some(v) => v
+      case None    => null
+    }
+  def removeAttribute(key: String): Unit             = attr -= key
   def setAttribute(key: String, value: Object): Unit = attr += (key -> value)
-  def getValueNames(): Array[String] = values.keys.toList.toArray
+  def getValueNames(): Array[String]                 = values.keys.toList.toArray
   def getAttributeNames(): java.util.Enumeration[String] =
     new java.util.Enumeration[String] {
-      private val keys = attr.keys.iterator
-      def hasMoreElements() = keys.hasNext
+      private val keys          = attr.keys.iterator
+      def hasMoreElements()     = keys.hasNext
       def nextElement(): String = keys.next
     }
   def getSessionContext(): HttpSessionContext = null
-  def getMaxInactiveInterval(): Int = maxii
-  def setMaxInactiveInterval(i: Int): Unit = maxii = i
-  def getServletContext(): ServletContext = null
-  def getLastAccessedTime(): Long = 0L
-  def getId(): String = null
-  def getCreationTime(): Long = creationTime
+  def getMaxInactiveInterval(): Int           = maxii
+  def setMaxInactiveInterval(i: Int): Unit    = maxii = i
+  def getServletContext(): ServletContext     = null
+  def getLastAccessedTime(): Long             = 0L
+  def getId(): String                         = null
+  def getCreationTime(): Long                 = creationTime
 }

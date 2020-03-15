@@ -9,7 +9,7 @@ object Test extends App {
   // It consumes 4 Gb of RAM if Lazy is not discarding thunks
 
   for (idx <- Iterator.range(0, 1024)) {
-    val data = new Array[Int](1024 * 1024)
+    val data     = new Array[Int](1024 * 1024)
     val lz: Lazy = new Lazy(data.length)
     buffer += lz
     lz.get

@@ -65,7 +65,7 @@ object UnitReducer {
   /** Minimal `Reducer` derived from a monoid and `unit`. */
   def apply[C, M](u: C => M)(implicit mm: Monoid[M]): Reducer[C, M] =
     new UnitReducer[C, M] {
-      val monoid = mm
+      val monoid     = mm
       def unit(c: C) = u(c)
     }
 }
@@ -76,7 +76,8 @@ object Reducer extends ReducerInstances {
     * sharing than `UnitReducer.apply`.
     */
   def apply[C, M](u: C => M, cs: C => M => M, sc: M => C => M)(
-      implicit mm: Monoid[M]): Reducer[C, M] =
+      implicit mm: Monoid[M]
+  ): Reducer[C, M] =
     reducer(u, cs, sc)
 }
 
@@ -104,9 +105,9 @@ sealed abstract class ReducerInstances {
   implicit def VectorReducer[C]: Reducer[C, Vector[C]] =
     new Reducer[C, Vector[C]] {
       val monoid: Monoid[Vector[C]] = std.vector.vectorMonoid[C]
-      def cons(c: C, m: Vector[C]) = c +: m
-      def snoc(m: Vector[C], c: C) = m :+ c
-      def unit(c: C) = Vector(c)
+      def cons(c: C, m: Vector[C])  = c +: m
+      def snoc(m: Vector[C], c: C)  = m :+ c
+      def unit(c: C)                = Vector(c)
     }
 
   /** The "or" monoid. */
@@ -124,7 +125,7 @@ sealed abstract class ReducerInstances {
   /** Accumulate endomorphisms. */
   implicit def EndoReducer[A]: Reducer[A => A, Endo[A]] = unitReducer(Endo(_))
 
-  implicit def DualReducer[A : Monoid]: Reducer[A, A @@ Tags.Dual] =
+  implicit def DualReducer[A: Monoid]: Reducer[A, A @@ Tags.Dual] =
     unitReducer(Tags.Dual(_: A))(Dual.dualMonoid[A])
 
   import Tags.{Multiplication, First, Last}
@@ -144,7 +145,8 @@ sealed abstract class ReducerInstances {
   implicit val ShortProductReducer: Reducer[Short, Short @@ Multiplication] =
     unitReducer(s => Tag[Short, Multiplication](s))
 
-  implicit val BigIntProductReducer: Reducer[BigInt, BigInt @@ Multiplication] = {
+  implicit val BigIntProductReducer
+      : Reducer[BigInt, BigInt @@ Multiplication] = {
     import std.math.bigInt._
     unitReducer(b => Tag[BigInt, Multiplication](b))
   }
@@ -165,7 +167,8 @@ sealed abstract class ReducerInstances {
 
   /** Alias for [[scalaz.Reducer]]`.apply`. */
   def reducer[C, M](u: C => M, cs: C => M => M, sc: M => C => M)(
-      implicit mm: Monoid[M]): Reducer[C, M] =
+      implicit mm: Monoid[M]
+  ): Reducer[C, M] =
     new Reducer[C, M] {
       val monoid = mm
 
@@ -176,27 +179,30 @@ sealed abstract class ReducerInstances {
       def cons(c: C, m: M): M = cs(c)(m)
     }
 
-  def foldReduce[F[_], A, B](a: F[A])(
-      implicit f: Foldable[F], r: Reducer[A, B]): B =
+  def foldReduce[F[_], A, B](
+      a: F[A]
+  )(implicit f: Foldable[F], r: Reducer[A, B]): B =
     f.foldMap(a)(r.unit(_))(r.monoid)
 
   /** Alias for [[scalaz.UnitReducer]]`.apply`. */
   def unitReducer[C, M](u: C => M)(implicit mm: Monoid[M]): Reducer[C, M] =
     new UnitReducer[C, M] {
-      val monoid = mm
+      val monoid     = mm
       def unit(c: C) = u(c)
     }
 
   def unitConsReducer[C, M](u: C => M, cs: C => M => M)(
-      implicit mm: Monoid[M]): Reducer[C, M] = new Reducer[C, M] {
-    val monoid = mm
+      implicit mm: Monoid[M]
+  ): Reducer[C, M] =
+    new Reducer[C, M] {
+      val monoid = mm
 
-    def unit(c: C) = u(c)
+      def unit(c: C) = u(c)
 
-    def snoc(m: M, c: C): M = mm.append(m, u(c))
+      def snoc(m: M, c: C): M = mm.append(m, u(c))
 
-    def cons(c: C, m: M): M = cs(c)(m)
-  }
+      def cons(c: C, m: M): M = cs(c)(m)
+    }
 
   /** The reducer derived from any monoid.  Not implicit because it is
     * suboptimal for most reducer applications.

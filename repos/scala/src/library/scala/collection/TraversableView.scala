@@ -24,16 +24,16 @@ trait TraversableView[+A, +Coll]
 object TraversableView {
   class NoBuilder[A] extends Builder[A, Nothing] {
     def +=(elem: A): this.type = this
-    def iterator: Iterator[A] = Iterator.empty
+    def iterator: Iterator[A]  = Iterator.empty
     def result() =
       throw new UnsupportedOperationException("TraversableView.Builder.result")
     def clear() {}
   }
   type Coll = TraversableView[_, C] forSome { type C <: Traversable[_] }
-  implicit def canBuildFrom[A]: CanBuildFrom[
-      Coll, A, TraversableView[A, Traversable[_]]] =
+  implicit def canBuildFrom[A]
+      : CanBuildFrom[Coll, A, TraversableView[A, Traversable[_]]] =
     new CanBuildFrom[Coll, A, TraversableView[A, Traversable[_]]] {
       def apply(from: Coll) = new NoBuilder
-      def apply() = new NoBuilder
+      def apply()           = new NoBuilder
     }
 }

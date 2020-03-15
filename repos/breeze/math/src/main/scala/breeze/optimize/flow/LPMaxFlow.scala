@@ -4,7 +4,7 @@ import breeze.optimize.linear.LinearProgram
 import collection.mutable.ArrayBuffer
 
 /**
-  * 
+  *
   * @author dlwh
   */
 class LPMaxFlow[N](val g: FlowGraph[N]) {
@@ -59,7 +59,7 @@ class LPMaxFlow[N](val g: FlowGraph[N]) {
       constraints += (out.reduceLeft(_ + _) <= inc.reduceLeft(_ + _))
     }
 
-    val total = incoming(sink).reduceLeft(_ + _)
+    val total    = incoming(sink).reduceLeft(_ + _)
     val solution = maximize { total subjectTo (constraints: _*) }
 
     (Map.empty ++ edgeMap.mapValues(solution.valueOf(_)), solution.value)
@@ -124,7 +124,7 @@ class LPMaxFlow[N](val g: FlowGraph[N]) {
     val flowTotal = incoming(sink).reduceLeft(_ + _)
     constraints += (flowTotal >= mf)
 
-    val total = costs.reduceLeft(_ + _)
+    val total    = costs.reduceLeft(_ + _)
     val solution = maximize { total * -1.0 subjectTo (constraints: _*) }
 
     (Map.empty ++ edgeMap.mapValues(solution.valueOf(_)), -solution.value)

@@ -13,12 +13,13 @@ object builders {
       def result: Iterable[B] = buf.toList
     }
 
-  implicit def listBuilder[A, B] = new Builder[List[A], List[B], B] {
-    println("new list builder")
-    private val buf = new scala.collection.mutable.ListBuffer[B]
-    def +=(elem: B) { buf += elem }
-    def result: List[B] = buf.toList
-  }
+  implicit def listBuilder[A, B] =
+    new Builder[List[A], List[B], B] {
+      println("new list builder")
+      private val buf = new scala.collection.mutable.ListBuffer[B]
+      def +=(elem: B) { buf += elem }
+      def result: List[B] = buf.toList
+    }
   /*
   def fill[A, Dim1, Dim2, Coll](n1: Int, n2: Int, elem: A)(implicit b1: Builder[Coll, Dim1, A], b2: Builder[Coll, Dim2, Dim1]) = {
     for (i <- 0 until n1) {
@@ -53,11 +54,11 @@ object builders {
   def main(args: Array[String]): Unit = {
     val x1 = new Iter[Int, List[Int]](List(1, 2, 3))
 //    val x2 = new Iter[Int, Array[Int]](List(1, 2, 3))
-    val x3 = new Iter[Int, Iterable[Int]](List(1, 2, 3))
+    val x3            = new Iter[Int, Iterable[Int]](List(1, 2, 3))
     val y1: List[Int] = x1.map(_ + 1)
 //    val y2: Array[Int] = x2.map (_ + 1)
     val y3: Iterable[Int] = x3.map(_ + 1)
-    val z1: List[Int] = y1
+    val z1: List[Int]     = y1
 //    val z2: Array[Int] = y2
     val z3: Iterable[Int] = y3
     println(z1)

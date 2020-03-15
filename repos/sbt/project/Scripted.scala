@@ -5,12 +5,13 @@ import Def.Initialize
 import scala.language.reflectiveCalls
 
 object Scripted {
-  def scriptedPath = file("scripted")
+  def scriptedPath  = file("scripted")
   lazy val scripted = InputKey[Unit]("scripted")
   lazy val scriptedUnpublished = InputKey[Unit](
-      "scripted-unpublished",
-      "Execute scripted without publishing SBT first. Saves you some time when only your test has changed.")
-  lazy val scriptedSource = SettingKey[File]("scripted-source")
+    "scripted-unpublished",
+    "Execute scripted without publishing SBT first. Saves you some time when only your test has changed."
+  )
+  lazy val scriptedSource      = SettingKey[File]("scripted-source")
   lazy val scriptedPrescripted = TaskKey[File => Unit]("scripted-prescripted")
 
   lazy val MavenResolverPluginTest =
@@ -30,7 +31,7 @@ object Scripted {
       }
     val pairMap = pairs.groupBy(_._1).mapValues(_.map(_._2).toSet);
 
-    val id = charClass(c => !c.isWhitespace && c != '/').+.string
+    val id     = charClass(c => !c.isWhitespace && c != '/').+.string
     val groupP = token(id.examples(pairMap.keySet.toSet)) <~ token('/')
 
     // A parser for page definitions
@@ -40,7 +41,7 @@ object Scripted {
       }
     // Grabs the filenames from a given test group in the current page definition.
     def pagedFilenames(group: String, page: ScriptedTestPage): Seq[String] = {
-      val files = pairMap(group).toSeq.sortBy(_.toLowerCase)
+      val files    = pairMap(group).toSeq.sortBy(_.toLowerCase)
       val pageSize = files.size / page.total
       // The last page may loose some values, so we explicitly keep them
       val dropped = files.drop(pageSize * (page.page - 1))
@@ -52,14 +53,14 @@ object Scripted {
     }
     val PagedIds: Parser[Seq[String]] = for {
       group <- groupP
-      page <- pageP
-      files = pagedFilenames(group, page)
+      page  <- pageP
+      files  = pagedFilenames(group, page)
       // TODO -  Fail the parser if we don't have enough files for the given page size
       //if !files.isEmpty
     } yield files map (f => group + '/' + f)
 
-    val testID = (for (group <- groupP; name <- nameP(group)) yield
-      (group, name))
+    val testID =
+      (for (group <- groupP; name <- nameP(group)) yield (group, name))
     val testIdAsGroup = matched(testID) map (test => Seq(test))
     //(token(Space) ~> matched(testID)).*
     (token(Space) ~> (PagedIds | testIdAsGroup)).* map (_.flatten)
@@ -67,30 +68,38 @@ object Scripted {
 
   // Interface to cross class loader
   type SbtScriptedRunner = {
-    def run(resourceBaseDirectory: File,
-            bufferLog: Boolean,
-            tests: Array[String],
-            bootProperties: File,
-            launchOpts: Array[String],
-            prescripted: java.util.List[File]): Unit
+    def run(
+        resourceBaseDirectory: File,
+        bufferLog: Boolean,
+        tests: Array[String],
+        bootProperties: File,
+        launchOpts: Array[String],
+        prescripted: java.util.List[File]
+    ): Unit
   }
 
-  def doScripted(launcher: File,
-                 scriptedSbtClasspath: Seq[Attributed[File]],
-                 scriptedSbtInstance: ScalaInstance,
-                 sourcePath: File,
-                 args: Seq[String],
-                 prescripted: File => Unit): Unit = {
+  def doScripted(
+      launcher: File,
+      scriptedSbtClasspath: Seq[Attributed[File]],
+      scriptedSbtInstance: ScalaInstance,
+      sourcePath: File,
+      args: Seq[String],
+      prescripted: File => Unit
+  ): Unit = {
     System.err.println(
-        s"About to run tests: ${args.mkString("\n * ", "\n * ", "\n")}")
+      s"About to run tests: ${args.mkString("\n * ", "\n * ", "\n")}"
+    )
     val noJLine =
       new classpath.FilteredLoader(scriptedSbtInstance.loader, "jline." :: Nil)
-    val loader = classpath.ClasspathUtilities.toLoader(
-        scriptedSbtClasspath.files, noJLine)
+    val loader =
+      classpath.ClasspathUtilities.toLoader(scriptedSbtClasspath.files, noJLine)
     val bridgeClass = Class.forName("sbt.test.ScriptedRunner", true, loader)
-    val bridge = bridgeClass.newInstance.asInstanceOf[SbtScriptedRunner]
+    val bridge      = bridgeClass.newInstance.asInstanceOf[SbtScriptedRunner]
     val launcherVmOptions =
-      Array("-XX:MaxPermSize=256M", "-Xmx1G") // increased after a failure in scripted source-dependencies/macro
+      Array(
+        "-XX:MaxPermSize=256M",
+        "-Xmx1G"
+      ) // increased after a failure in scripted source-dependencies/macro
     try {
       // Using java.util.List to encode File => Unit.
       val callback = new java.util.AbstractList[File] {
@@ -99,14 +108,16 @@ object Scripted {
           false
         }
         def get(x: Int): sbt.File = ???
-        def size(): Int = 0
+        def size(): Int           = 0
       }
-      bridge.run(sourcePath,
-                 true,
-                 args.toArray,
-                 launcher,
-                 launcherVmOptions,
-                 callback)
+      bridge.run(
+        sourcePath,
+        true,
+        args.toArray,
+        launcher,
+        launcherVmOptions,
+        callback
+      )
     } catch {
       case ite: java.lang.reflect.InvocationTargetException =>
         throw ite.getCause

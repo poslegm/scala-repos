@@ -1,7 +1,7 @@
 object Test extends Application {
   class A {
     def foo[T](x: T) = print(1)
-    def foo(x: C) = print(2)
+    def foo(x: C)    = print(2)
   }
   class C
   class D extends C

@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyObjectWrapper {
   implicit def sfxReadOnlyObjectWrapper2jfx[T <: Any](
-      roow: ReadOnlyObjectWrapper[T]): jfxbp.ReadOnlyObjectWrapper[T] =
+      roow: ReadOnlyObjectWrapper[T]
+  ): jfxbp.ReadOnlyObjectWrapper[T] =
     roow.delegate
 
   /** Creates a new ReadOnlyObjectWrapper instance with a given initial wrapped value. */
@@ -50,7 +51,10 @@ object ReadOnlyObjectWrapper {
     * @tparam T type of the value hold by this object property.
     */
   def apply[T <: Any](
-      bean: Object, name: String, value: T): ReadOnlyObjectWrapper[T] =
+      bean: Object,
+      name: String,
+      value: T
+  ): ReadOnlyObjectWrapper[T] =
     new ReadOnlyObjectWrapper[T](bean, name, value)
 
   /** Creates a new ReadOnlyObjectWrapper with a `delegate` as initial value.
@@ -64,7 +68,8 @@ object ReadOnlyObjectWrapper {
     */
   def apply[J <: Object](value: SFXDelegate[J]): ReadOnlyObjectWrapper[J] =
     new ReadOnlyObjectWrapper[J](
-        new jfxbp.ReadOnlyObjectWrapper[J](value.delegate))
+      new jfxbp.ReadOnlyObjectWrapper[J](value.delegate)
+    )
 
   /** Creates a new ReadOnlyObjectWrapper with a [[scalafx.delegate.SFXDelegate]] as initial value.
     *
@@ -77,16 +82,18 @@ object ReadOnlyObjectWrapper {
     * @param value the initial value.
     * @tparam J the JavaFX type of the value hold by this object property.
     */
-  def apply[J <: Object](bean: Object,
-                         name: String,
-                         value: SFXDelegate[J]): ReadOnlyObjectWrapper[J] =
+  def apply[J <: Object](
+      bean: Object,
+      name: String,
+      value: SFXDelegate[J]
+  ): ReadOnlyObjectWrapper[J] =
     new ReadOnlyObjectWrapper[J](bean, name, value.delegate)
 }
 
 /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/beans/property/ReadOnlyObjectWrapper.html javafx.beans.property.ReadOnlyObjectWrapper]] */
 class ReadOnlyObjectWrapper[T <: Any](
-    override val delegate: jfxbp.ReadOnlyObjectWrapper[T])
-    extends ObjectProperty[T](delegate)
+    override val delegate: jfxbp.ReadOnlyObjectWrapper[T]
+) extends ObjectProperty[T](delegate)
     with SFXDelegate[jfxbp.ReadOnlyObjectWrapper[T]] {
 
   /** Creates a new ReadOnlyObjectWrapper instance.

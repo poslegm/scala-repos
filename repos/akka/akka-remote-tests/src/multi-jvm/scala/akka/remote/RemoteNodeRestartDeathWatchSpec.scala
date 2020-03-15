@@ -24,7 +24,7 @@ import akka.actor.ActorSystem
 import akka.actor.RootActorPath
 
 object RemoteNodeRestartDeathWatchMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
 
   commonConfig(debugConfig(on = false).withFallback(ConfigFactory.parseString("""
@@ -55,15 +55,15 @@ class RemoteNodeRestartDeathWatchMultiJvmNode2
 
 abstract class RemoteNodeRestartDeathWatchSpec
     extends MultiNodeSpec(RemoteNodeRestartDeathWatchMultiJvmSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import RemoteNodeRestartDeathWatchMultiJvmSpec._
 
   override def initialParticipants = roles.size
 
   def identify(role: RoleName, actorName: String): ActorRef = {
-    system.actorSelection(node(role) / "user" / actorName) ! Identify(
-        actorName)
+    system.actorSelection(node(role) / "user" / actorName) ! Identify(actorName)
     expectMsgType[ActorIdentity].ref.get
   }
 
@@ -90,7 +90,8 @@ abstract class RemoteNodeRestartDeathWatchSpec
           // retry because the Subject actor might not be started yet
           awaitAssert {
             system.actorSelection(
-                RootActorPath(secondAddress) / "user" / "subject") ! "shutdown"
+              RootActorPath(secondAddress) / "user" / "subject"
+            ) ! "shutdown"
             expectMsg(1.second, "shutdown-ack")
           }
         }
@@ -107,12 +108,15 @@ abstract class RemoteNodeRestartDeathWatchSpec
         Await.ready(system.whenTerminated, 30.seconds)
 
         val freshSystem =
-          ActorSystem(system.name, ConfigFactory.parseString(s"""
+          ActorSystem(
+            system.name,
+            ConfigFactory.parseString(s"""
                     akka.remote.netty.tcp {
                       hostname = ${addr.host.get}
                       port = ${addr.port.get}
                     }
-                    """).withFallback(system.settings.config))
+                    """).withFallback(system.settings.config)
+          )
         freshSystem.actorOf(Props[Subject], "subject")
 
         Await.ready(freshSystem.whenTerminated, 30.seconds)

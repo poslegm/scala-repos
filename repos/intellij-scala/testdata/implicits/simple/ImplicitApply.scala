@@ -4,8 +4,8 @@ object Main {
     def apply(s: String): Int = 1
   }
   implicit def toRichA(a: A): RichA = null
-  val a = new A()
-  implicit def i2s(x: Int): String = ""
+  val a                             = new A()
+  implicit def i2s(x: Int): String  = ""
   a( /*start*/ 23 /*end*/ )
 }
 /*

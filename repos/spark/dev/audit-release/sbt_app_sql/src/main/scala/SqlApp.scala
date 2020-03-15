@@ -35,7 +35,7 @@ object SparkSqlExample {
         new SparkConf().setAppName("Simple Sql App").setMaster(master)
       case None => new SparkConf().setAppName("Simple Sql App")
     }
-    val sc = new SparkContext(conf)
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     import sqlContext.implicits._
@@ -43,8 +43,7 @@ object SparkSqlExample {
 
     val people = sc.makeRDD(1 to 100, 10).map(x => Person(s"Name$x", x)).toDF()
     people.registerTempTable("people")
-    val teenagers = sql(
-        "SELECT name FROM people WHERE age >= 13 AND age <= 19")
+    val teenagers     = sql("SELECT name FROM people WHERE age >= 13 AND age <= 19")
     val teenagerNames = teenagers.map(t => "Name: " + t(0)).collect()
     teenagerNames.foreach(println)
 
@@ -55,8 +54,10 @@ object SparkSqlExample {
       }
     }
 
-    test(teenagerNames.size == 7,
-         "Unexpected number of selected elements: " + teenagerNames)
+    test(
+      teenagerNames.size == 7,
+      "Unexpected number of selected elements: " + teenagerNames
+    )
     println("Test succeeded")
     sc.stop()
   }

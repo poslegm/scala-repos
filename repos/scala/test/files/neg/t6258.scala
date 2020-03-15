@@ -12,7 +12,7 @@ class X {
   trait Matcher[-T]
 
   def bar[T](m: Matcher[T]) = null
-  def bar[T](i: Int) = null
+  def bar[T](i: Int)        = null
 
   def foo[T](p: PartialFunction[T, Any]): Matcher[T] = null
 

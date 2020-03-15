@@ -21,8 +21,9 @@ trait MonadCombine[F[_]] extends MonadFilter[F] with Alternative[F] {
     }
 
   /** Separate the inner foldable values into the "lefts" and "rights" */
-  def separate[G[_, _], A, B](fgab: F[G[A, B]])(
-      implicit G: Bifoldable[G]): (F[A], F[B]) = {
+  def separate[G[_, _], A, B](
+      fgab: F[G[A, B]]
+  )(implicit G: Bifoldable[G]): (F[A], F[B]) = {
     val as =
       flatMap(fgab)(gab => G.bifoldMap(gab)(pure, _ => empty[A])(algebra[A]))
     val bs =

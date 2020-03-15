@@ -43,7 +43,8 @@ object PrintResolution {
     * @return JavaFX PrintResolution
     */
   implicit def sfxPrintResolution2jfx(
-      pr: PrintResolution): jfxp.PrintResolution =
+      pr: PrintResolution
+  ): jfxp.PrintResolution =
     if (pr != null) pr.delegate else null
 }
 

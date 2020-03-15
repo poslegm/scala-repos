@@ -35,29 +35,32 @@ object CanCopy {
     }
   }
 
-  class OpMapValues[From, V](
-      implicit op: CanCopy[V], map: CanMapValues[From, V, V, From])
-      extends CanCopy[From] {
+  class OpMapValues[From, V](implicit
+      op: CanCopy[V],
+      map: CanMapValues[From, V, V, From]
+  ) extends CanCopy[From] {
     def apply(v: From) = map(v, op.apply(_))
   }
 
   // <editor-fold defaultstate="collapsed" desc=" implicit CanCopy[V] implementations ">
 
-  implicit def opMapValues[From, V](
-      implicit map: CanMapValues[From, V, V, From],
-      op: CanCopy[V]): CanCopy[From] =
+  implicit def opMapValues[From, V](implicit
+      map: CanMapValues[From, V, V, From],
+      op: CanCopy[V]
+  ): CanCopy[From] =
     new OpMapValues[From, V]()(op, map)
 
-  implicit def opArrayAny[V : ClassTag : Field]: OpArray[V] = new OpArray[V]
+  implicit def opArrayAny[V: ClassTag: Field]: OpArray[V] = new OpArray[V]
   implicit object OpArrayI extends OpArray[Int]
   implicit object OpArrayS extends OpArray[Short]
   implicit object OpArrayL extends OpArray[Long]
   implicit object OpArrayF extends OpArray[Float]
   implicit object OpArrayD extends OpArray[Double]
 
-  implicit def canCopyField[V : Field]: CanCopy[V] = new CanCopy[V] {
-    def apply(v1: V) = v1
-  }
+  implicit def canCopyField[V: Field]: CanCopy[V] =
+    new CanCopy[V] {
+      def apply(v1: V) = v1
+    }
 
   // </editor-fold>
 }

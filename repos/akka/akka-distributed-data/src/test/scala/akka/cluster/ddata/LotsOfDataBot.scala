@@ -35,7 +35,10 @@ object LotsOfDataBot {
       // Override the configuration of the port
       val config = ConfigFactory
         .parseString("akka.remote.netty.tcp.port=" + port)
-        .withFallback(ConfigFactory.load(ConfigFactory.parseString("""
+        .withFallback(
+          ConfigFactory.load(
+            ConfigFactory.parseString(
+              """
             passive = off
             max-entries = 100000
             akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
@@ -55,7 +58,10 @@ object LotsOfDataBot {
             }
             akka.cluster.distributed-data.use-offheap-memory = off
             akka.remote.log-frame-size-exceeding = 10000b
-            """)))
+            """
+            )
+          )
+        )
 
       // Create an Akka system
       val system = ActorSystem("ClusterSystem", config)
@@ -71,7 +77,7 @@ class LotsOfDataBot extends Actor with ActorLogging {
   import LotsOfDataBot._
   import Replicator._
 
-  val replicator = DistributedData(context.system).replicator
+  val replicator       = DistributedData(context.system).replicator
   implicit val cluster = Cluster(context.system)
 
   import context.dispatcher
@@ -81,8 +87,8 @@ class LotsOfDataBot extends Actor with ActorLogging {
       context.system.scheduler.schedule(1.seconds, 1.seconds, self, Tick)
     else context.system.scheduler.schedule(20.millis, 20.millis, self, Tick)
 
-  val startTime = System.nanoTime()
-  var count = 1L
+  val startTime  = System.nanoTime()
+  var count      = 1L
   val maxEntries = context.system.settings.config.getInt("max-entries")
 
   def receive = if (isPassive) passive else active

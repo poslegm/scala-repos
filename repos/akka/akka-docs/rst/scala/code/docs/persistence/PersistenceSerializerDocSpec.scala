@@ -28,8 +28,10 @@ class PersistenceSerializerDocSpec extends WordSpec {
       //#custom-serializer-config
     """
 
-  val system = ActorSystem("PersistenceSerializerDocSpec",
-                           ConfigFactory.parseString(customSerializerConfig))
+  val system = ActorSystem(
+    "PersistenceSerializerDocSpec",
+    ConfigFactory.parseString(customSerializerConfig)
+  )
   try {
     SerializationExtension(system)
   } finally {
@@ -41,15 +43,15 @@ class MyPayload
 class MySnapshot
 
 class MyPayloadSerializer extends Serializer {
-  def identifier: Int = 77124
-  def includeManifest: Boolean = false
-  def toBinary(o: AnyRef): Array[Byte] = ???
+  def identifier: Int                                                    = 77124
+  def includeManifest: Boolean                                           = false
+  def toBinary(o: AnyRef): Array[Byte]                                   = ???
   def fromBinary(bytes: Array[Byte], manifest: Option[Class[_]]): AnyRef = ???
 }
 
 class MySnapshotSerializer extends Serializer {
-  def identifier: Int = 77125
-  def includeManifest: Boolean = false
-  def toBinary(o: AnyRef): Array[Byte] = ???
+  def identifier: Int                                                    = 77125
+  def includeManifest: Boolean                                           = false
+  def toBinary(o: AnyRef): Array[Byte]                                   = ???
   def fromBinary(bytes: Array[Byte], manifest: Option[Class[_]]): AnyRef = ???
 }

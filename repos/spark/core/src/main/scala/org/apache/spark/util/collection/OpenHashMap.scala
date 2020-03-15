@@ -31,9 +31,10 @@ import org.apache.spark.annotation.DeveloperApi
   */
 @DeveloperApi
 private[spark] class OpenHashMap[
-    K : ClassTag, @specialized(Long, Int, Double) V : ClassTag](
-    initialCapacity: Int)
-    extends Iterable[(K, V)] with Serializable {
+    K: ClassTag, @specialized(Long, Int, Double) V: ClassTag
+](initialCapacity: Int)
+    extends Iterable[(K, V)]
+    with Serializable {
 
   def this() = this(64)
 
@@ -48,7 +49,7 @@ private[spark] class OpenHashMap[
 
   // Treat the null key differently so we can use nulls in "data" to represent empty items.
   private var haveNullValue = false
-  private var nullValue: V = null.asInstanceOf[V]
+  private var nullValue: V  = null.asInstanceOf[V]
 
   override def size: Int =
     if (haveNullValue) _keySet.size + 1 else _keySet.size
@@ -118,52 +119,51 @@ private[spark] class OpenHashMap[
     }
   }
 
-  override def iterator: Iterator[(K, V)] = new Iterator[(K, V)] {
-    var pos = -1
-    var nextPair: (K, V) = computeNextPair()
+  override def iterator: Iterator[(K, V)] =
+    new Iterator[(K, V)] {
+      var pos              = -1
+      var nextPair: (K, V) = computeNextPair()
 
-    /** Get the next value we should return from next(), or null if we're finished iterating */
-    def computeNextPair(): (K, V) = {
-      if (pos == -1) {
-        // Treat position -1 as looking at the null value
-        if (haveNullValue) {
+      /** Get the next value we should return from next(), or null if we're finished iterating */
+      def computeNextPair(): (K, V) = {
+        if (pos == -1) {
+          // Treat position -1 as looking at the null value
+          if (haveNullValue) {
+            pos += 1
+            return (null.asInstanceOf[K], nullValue)
+          }
           pos += 1
-          return (null.asInstanceOf[K], nullValue)
         }
-        pos += 1
+        pos = _keySet.nextPos(pos)
+        if (pos >= 0) {
+          val ret = (_keySet.getValue(pos), _values(pos))
+          pos += 1
+          ret
+        } else {
+          null
+        }
       }
-      pos = _keySet.nextPos(pos)
-      if (pos >= 0) {
-        val ret = (_keySet.getValue(pos), _values(pos))
-        pos += 1
-        ret
-      } else {
-        null
+
+      def hasNext: Boolean = nextPair != null
+
+      def next(): (K, V) = {
+        val pair = nextPair
+        nextPair = computeNextPair()
+        pair
       }
     }
-
-    def hasNext: Boolean = nextPair != null
-
-    def next(): (K, V) = {
-      val pair = nextPair
-      nextPair = computeNextPair()
-      pair
-    }
-  }
 
   // The following member variables are declared as protected instead of private for the
   // specialization to work (specialized class extends the non-specialized one and needs access
   // to the "private" variables).
   // They also should have been val's. We use var's because there is a Scala compiler bug that
   // would throw illegal access error at runtime if they are declared as val's.
-  protected var grow = (newCapacity: Int) =>
-    {
-      _oldValues = _values
-      _values = new Array[V](newCapacity)
+  protected var grow = (newCapacity: Int) => {
+    _oldValues = _values
+    _values = new Array[V](newCapacity)
   }
 
-  protected var move = (oldPos: Int, newPos: Int) =>
-    {
-      _values(newPos) = _oldValues(oldPos)
+  protected var move = (oldPos: Int, newPos: Int) => {
+    _values(newPos) = _oldValues(oldPos)
   }
 }

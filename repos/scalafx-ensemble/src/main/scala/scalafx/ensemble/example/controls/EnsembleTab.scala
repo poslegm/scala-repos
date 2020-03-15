@@ -36,12 +36,13 @@ import scalafx.scene.text.{Font, Text}
 
 class EnsembleTab extends EnsembleExample {
 
-  def getContent = new VBox {
-    vgrow = Priority.Always
-    hgrow = Priority.Always
-    spacing = 10
-    padding = Insets(20)
-    children = List(
+  def getContent =
+    new VBox {
+      vgrow = Priority.Always
+      hgrow = Priority.Always
+      spacing = 10
+      padding = Insets(20)
+      children = List(
         new Text {
           text = "Ensemble Tabs"
           font = new Font("Verdana", 20)
@@ -49,18 +50,18 @@ class EnsembleTab extends EnsembleExample {
         new TabPane {
           minWidth = 400
           tabs = Seq(
-              new Tab {
-                text = "Tab1 - NonClosable"
-                closable = false
-              },
-              new Tab {
-                text = "Tab2 - NonClosable"
-                closable = false
-              },
-              new Tab {
-                text = "Tab3 - Closable"
-                closable = true
-              }
+            new Tab {
+              text = "Tab1 - NonClosable"
+              closable = false
+            },
+            new Tab {
+              text = "Tab2 - NonClosable"
+              closable = false
+            },
+            new Tab {
+              text = "Tab3 - Closable"
+              closable = true
+            }
           )
         },
         new Text {
@@ -70,19 +71,19 @@ class EnsembleTab extends EnsembleExample {
         new TabPane {
           minWidth = 400
           tabs = Seq(
-              new Tab {
-                text = "Tab 1"
-              },
-              new Tab {
-                text = "Tab 2"
-              },
-              new Tab {
-                text = "Tab 3"
-              }
+            new Tab {
+              text = "Tab 1"
+            },
+            new Tab {
+              text = "Tab 2"
+            },
+            new Tab {
+              text = "Tab 3"
+            }
           )
           tabClosingPolicy = TabClosingPolicy.UNAVAILABLE
           side = Side.TOP
         }
-    )
-  }
+      )
+    }
 }

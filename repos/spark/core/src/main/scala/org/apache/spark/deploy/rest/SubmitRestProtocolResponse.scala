@@ -24,8 +24,8 @@ import java.lang.Boolean
   */
 private[rest] abstract class SubmitRestProtocolResponse
     extends SubmitRestProtocolMessage {
-  var serverSparkVersion: String = null
-  var success: Boolean = null
+  var serverSparkVersion: String   = null
+  var success: Boolean             = null
   var unknownFields: Array[String] = null
   protected override def doValidate(): Unit = {
     super.doValidate()
@@ -48,8 +48,7 @@ private[spark] class CreateSubmissionResponse
 /**
   * A response to a kill request in the REST application submission protocol.
   */
-private[spark] class KillSubmissionResponse
-    extends SubmitRestProtocolResponse {
+private[spark] class KillSubmissionResponse extends SubmitRestProtocolResponse {
   var submissionId: String = null
   protected override def doValidate(): Unit = {
     super.doValidate()
@@ -63,9 +62,9 @@ private[spark] class KillSubmissionResponse
   */
 private[spark] class SubmissionStatusResponse
     extends SubmitRestProtocolResponse {
-  var submissionId: String = null
-  var driverState: String = null
-  var workerId: String = null
+  var submissionId: String   = null
+  var driverState: String    = null
+  var workerId: String       = null
   var workerHostPort: String = null
 
   protected override def doValidate(): Unit = {

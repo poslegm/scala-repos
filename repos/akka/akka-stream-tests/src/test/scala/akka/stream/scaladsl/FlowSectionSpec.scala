@@ -36,9 +36,11 @@ class FlowSectionSpec extends AkkaSpec(FlowSectionSpec.config) {
     "have a nested flow with a different dispatcher" in {
       Source
         .single(1)
-        .via(Flow[Int]
-              .map(sendThreadNameTo(testActor))
-              .withAttributes(dispatcher("my-dispatcher1")))
+        .via(
+          Flow[Int]
+            .map(sendThreadNameTo(testActor))
+            .withAttributes(dispatcher("my-dispatcher1"))
+        )
         .to(Sink.ignore)
         .run()
 
@@ -66,7 +68,7 @@ class FlowSectionSpec extends AkkaSpec(FlowSectionSpec.config) {
 
     "include name in toString" in {
       pending //FIXME: Flow has no simple toString anymore
-      val n = "Uppercase reverser"
+      val n  = "Uppercase reverser"
       val f1 = Flow[String].map(_.toLowerCase)
       val f2 = Flow[String]
         .map(_.toUpperCase)
@@ -79,14 +81,15 @@ class FlowSectionSpec extends AkkaSpec(FlowSectionSpec.config) {
 
     "have an op section with a different dispatcher and name" in {
       val defaultDispatcher = TestProbe()
-      val customDispatcher = TestProbe()
+      val customDispatcher  = TestProbe()
 
       val f1 = Flow[Int].map(sendThreadNameTo(defaultDispatcher.ref))
       val f2 = Flow[Int]
         .map(sendThreadNameTo(customDispatcher.ref))
         .map(x ⇒ x)
         .withAttributes(
-            dispatcher("my-dispatcher1") and name("separate-disptacher"))
+          dispatcher("my-dispatcher1") and name("separate-disptacher")
+        )
 
       Source(0 to 2).via(f1).via(f2).runWith(Sink.ignore)
 

@@ -7,11 +7,13 @@ import org.reactivestreams.Subscriber
 /**
   * INTERNAL API
   */
-private[akka] abstract class FanoutOutputs(val maxBufferSize: Int,
-                                           val initialBufferSize: Int,
-                                           self: ActorRef,
-                                           val pump: Pump)
-    extends DefaultOutputTransferStates with SubscriberManagement[Any] {
+private[akka] abstract class FanoutOutputs(
+    val maxBufferSize: Int,
+    val initialBufferSize: Int,
+    self: ActorRef,
+    val pump: Pump
+) extends DefaultOutputTransferStates
+    with SubscriberManagement[Any] {
 
   override type S = ActorSubscriptionWithCursor[_ >: Any]
   override def createSubscription(subscriber: Subscriber[_ >: Any]): S =
@@ -20,9 +22,9 @@ private[akka] abstract class FanoutOutputs(val maxBufferSize: Int,
   protected var exposedPublisher: ActorPublisher[Any] = _
 
   private var downstreamBufferSpace: Long = 0L
-  private var downstreamCompleted = false
-  override def demandAvailable = downstreamBufferSpace > 0
-  override def demandCount: Long = downstreamBufferSpace
+  private var downstreamCompleted         = false
+  override def demandAvailable            = downstreamBufferSpace > 0
+  override def demandCount: Long          = downstreamBufferSpace
 
   override val subreceive = new SubReceive(waitingExposedPublisher)
 
@@ -76,7 +78,8 @@ private[akka] abstract class FanoutOutputs(val maxBufferSize: Int,
       subreceive.become(downstreamRunning)
     case other ⇒
       throw new IllegalStateException(
-          s"The first message must be ExposedPublisher but was [$other]")
+        s"The first message must be ExposedPublisher but was [$other]"
+      )
   }
 
   protected def downstreamRunning: Actor.Receive = {
@@ -84,12 +87,14 @@ private[akka] abstract class FanoutOutputs(val maxBufferSize: Int,
       subscribePending()
     case RequestMore(subscription, elements) ⇒
       moreRequested(
-          subscription.asInstanceOf[ActorSubscriptionWithCursor[Any]],
-          elements)
+        subscription.asInstanceOf[ActorSubscriptionWithCursor[Any]],
+        elements
+      )
       pump.pump()
     case Cancel(subscription) ⇒
       unregisterSubscription(
-          subscription.asInstanceOf[ActorSubscriptionWithCursor[Any]])
+        subscription.asInstanceOf[ActorSubscriptionWithCursor[Any]]
+      )
       pump.pump()
   }
 }
@@ -107,18 +112,17 @@ private[akka] class FanoutProcessorImpl(_settings: ActorMaterializerSettings)
     extends ActorProcessorImpl(_settings) {
 
   override val primaryOutputs: FanoutOutputs = new FanoutOutputs(
-      settings.maxInputBufferSize,
-      settings.initialInputBufferSize,
-      self,
-      this) {
+    settings.maxInputBufferSize,
+    settings.initialInputBufferSize,
+    self,
+    this
+  ) {
     override def afterShutdown(): Unit = afterFlush()
   }
 
   val running: TransferPhase =
-    TransferPhase(primaryInputs.NeedsInput && primaryOutputs.NeedsDemand) {
-      () ⇒
-        primaryOutputs.enqueueOutputElement(
-            primaryInputs.dequeueInputElement())
+    TransferPhase(primaryInputs.NeedsInput && primaryOutputs.NeedsDemand) { () ⇒
+      primaryOutputs.enqueueOutputElement(primaryInputs.dequeueInputElement())
     }
 
   override def fail(e: Throwable): Unit = {

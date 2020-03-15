@@ -51,29 +51,34 @@ object Checked {
     */
   def tryOrReturn[A](n: A)(orElse: A): A = macro tryOrReturnImpl[A]
 
-  def tryOrElseImpl[A : c.WeakTypeTag](c: Context)(n: c.Expr[A])(
-      orElse: c.Expr[A]): c.Expr[A] = {
-    val tree = CheckedRewriter[c.type](c).rewriteSafe[A](n.tree, orElse.tree)
+  def tryOrElseImpl[A: c.WeakTypeTag](
+      c: Context
+  )(n: c.Expr[A])(orElse: c.Expr[A]): c.Expr[A] = {
+    val tree      = CheckedRewriter[c.type](c).rewriteSafe[A](n.tree, orElse.tree)
     val resetTree = resetLocalAttrs(c)(tree) // See SI-6711
     c.Expr[A](resetTree)
   }
 
-  def checkedImpl[A : c.WeakTypeTag](c: Context)(n: c.Expr[A]): c.Expr[A] = {
+  def checkedImpl[A: c.WeakTypeTag](c: Context)(n: c.Expr[A]): c.Expr[A] = {
     import c.universe._
     tryOrElseImpl[A](c)(n)(
-        c.Expr[A](q"throw new spire.macros.ArithmeticOverflowException()"))
+      c.Expr[A](q"throw new spire.macros.ArithmeticOverflowException()")
+    )
   }
 
-  def optionImpl[A : c.WeakTypeTag](c: Context)(
-      n: c.Expr[A]): c.Expr[Option[A]] = {
+  def optionImpl[A: c.WeakTypeTag](
+      c: Context
+  )(n: c.Expr[A]): c.Expr[Option[A]] = {
     import c.universe._
     tryOrElseImpl[Option[A]](c)(c.Expr[Option[A]](q"Option(${n.tree})"))(
-        c.Expr[Option[A]](q"None"))
+      c.Expr[Option[A]](q"None")
+    )
   }
 
-  def tryOrReturnImpl[A : c.WeakTypeTag](c: Context)(n: c.Expr[A])(
-      orElse: c.Expr[A]): c.Expr[A] = {
-    val tree = CheckedRewriter[c.type](c).rewriteFast[A](n.tree, orElse.tree)
+  def tryOrReturnImpl[A: c.WeakTypeTag](
+      c: Context
+  )(n: c.Expr[A])(orElse: c.Expr[A]): c.Expr[A] = {
+    val tree      = CheckedRewriter[c.type](c).rewriteFast[A](n.tree, orElse.tree)
     val resetTree = resetLocalAttrs(c)(tree) // See SI-6711
     c.Expr[A](resetTree)
   }
@@ -82,19 +87,19 @@ object Checked {
 private[macros] case class CheckedRewriter[C <: Context](c: C) {
   import c.universe._
 
-  def rewriteSafe[A : c.WeakTypeTag](tree: Tree, fallback: Tree): Tree = {
+  def rewriteSafe[A: c.WeakTypeTag](tree: Tree, fallback: Tree): Tree = {
     warnOnSimpleTree(tree)
-    val A = weakTypeOf[A]
-    val aname = freshTermName(c)("checked$attempt$")
-    val fname = freshTermName(c)("checked$fallback$")
+    val A             = weakTypeOf[A]
+    val aname         = freshTermName(c)("checked$attempt$")
+    val fname         = freshTermName(c)("checked$fallback$")
     val attempt: Tree = makeRewriter(fname).transform(tree)
     q"""{ def $fname: $A = $fallback; def $aname: $A = $attempt; $aname }"""
   }
 
-  def rewriteFast[A : c.WeakTypeTag](tree: Tree, fallback: Tree): Tree = {
+  def rewriteFast[A: c.WeakTypeTag](tree: Tree, fallback: Tree): Tree = {
     warnOnSimpleTree(tree)
-    val A = weakTypeOf[A]
-    val fname = freshTermName(c)("checked$fallback$")
+    val A             = weakTypeOf[A]
+    val fname         = freshTermName(c)("checked$fallback$")
     val attempt: Tree = makeRewriter(fname).transform(tree)
     q"""{ def $fname: $A = $fallback; $attempt }"""
   }
@@ -109,7 +114,7 @@ private[macros] case class CheckedRewriter[C <: Context](c: C) {
 
   def makeRewriter(fallback: TermName): Transformer = {
     val LongRewriter = new Rewriter[Long](q"Long.MinValue", fallback)
-    val IntRewriter = new Rewriter[Int](q"Int.MinValue", fallback)
+    val IntRewriter  = new Rewriter[Int](q"Int.MinValue", fallback)
 
     new Transformer {
       val f = IntRewriter(transform _) orElse LongRewriter(transform _)
@@ -120,33 +125,35 @@ private[macros] case class CheckedRewriter[C <: Context](c: C) {
   }
 
   class Rewriter[A](val minValue: Tree, val fallback: TermName)(
-      implicit typeTag: c.WeakTypeTag[A]) {
+      implicit typeTag: c.WeakTypeTag[A]
+  ) {
     val tpe: Type = typeTag.tpe
 
     // unops
     val Negate = termName(c)("unary_$minus")
 
     // binops
-    val Plus = termName(c)("$plus")
+    val Plus  = termName(c)("$plus")
     val Minus = termName(c)("$minus")
     val Times = termName(c)("$times")
-    val Div = termName(c)("$div")
-    val Mod = termName(c)("$percent")
+    val Div   = termName(c)("$div")
+    val Mod   = termName(c)("$percent")
 
-    def binopOk(tree: Tree): Boolean = tree match {
-      case Apply(Select(lhs, method), rhs :: Nil) =>
-        val lt = lhs.tpe.widen
-        val rt = rhs.tpe.widen
-        ((lt weak_<:< tpe) && (rt <:< tpe)) ||
-        ((lt <:< tpe) && (rt weak_<:< tpe))
-      case _ =>
-        false
-    }
+    def binopOk(tree: Tree): Boolean =
+      tree match {
+        case Apply(Select(lhs, method), rhs :: Nil) =>
+          val lt = lhs.tpe.widen
+          val rt = rhs.tpe.widen
+          ((lt weak_<:< tpe) && (rt <:< tpe)) ||
+          ((lt <:< tpe) && (rt weak_<:< tpe))
+        case _ =>
+          false
+      }
 
     def isSimple(tree: Tree): Boolean =
       tree match {
         case Literal(_) | Ident(_) => true
-        case _ => false
+        case _                     => false
       }
 
     def runWithX(rewrite: Tree => Tree, sub: Tree)(f: Tree => Tree): Tree =
@@ -157,7 +164,8 @@ private[macros] case class CheckedRewriter[C <: Context](c: C) {
       }
 
     def runWithXYZ(rewrite: Tree => Tree, lhs: Tree, rhs: Tree)(
-        f: (Tree, Tree, Tree) => Tree): Tree = {
+        f: (Tree, Tree, Tree) => Tree
+    ): Tree = {
       val z = freshTermName(c)("z$")
       if (isSimple(lhs) && isSimple(rhs)) {
         val t = f(lhs, rhs, q"$z")

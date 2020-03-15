@@ -7,7 +7,7 @@ object Test {
     val m = collection.mutable.ListMap[String, Int]()
     var i = 0
     while (i < 2) { m += ("foo" + i) -> i; i = i + 1 }
-    assert(m == Map("foo1" -> 1, "foo0" -> 0))
+    assert(m == Map("foo1"           -> 1, "foo0" -> 0))
     m -= "foo0"
     assert(m == Map("foo1" -> 1))
     // Now checking if it scales as described in SI-6853

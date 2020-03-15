@@ -45,9 +45,10 @@ class ClientReporterTest extends FunSuite with MockitoSugar {
   val reporter = Reporter(logger, "service16").withClient()
 
   val tse = new TestServiceException(
-      "service16",
-      "my cool message",
-      clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress))
+    "service16",
+    "my cool message",
+    clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress)
+  )
 
   test("log entries to a client once upon receive") {
     reporter.handle(tse.throwable)
@@ -69,14 +70,15 @@ class SourceClientReporterTest extends FunSuite with MockitoSugar {
 
   val captor = ArgumentCaptor.forClass(classOf[Seq[LogEntry]])
 
-  val socket = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
+  val socket   = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
   val reporter = Reporter(logger, "service16").withSource(socket).withClient()
 
   val tse = new TestServiceException(
-      "service16",
-      "my cool message",
-      clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress),
-      sourceAddress = Some(socket.getAddress.getHostName))
+    "service16",
+    "my cool message",
+    clientAddress = Some(InetAddress.getLoopbackAddress.getHostAddress),
+    sourceAddress = Some(socket.getAddress.getHostName)
+  )
 
   test("log entries to a client once upon receive") {
     reporter.handle(tse.throwable)
@@ -98,7 +100,7 @@ class ExceptionReporterTest extends FunSuite with MockitoSugar {
     val logger = mock[Scribe.FutureIface]
     when(logger.log(anyObject())).thenReturn(Future.value(ResultCode.Ok))
     val captor = ArgumentCaptor.forClass(classOf[Seq[LogEntry]])
-    val tse = new TestServiceException("service", "my cool message")
+    val tse    = new TestServiceException("service", "my cool message")
 
     val reporter = new ExceptionReporter().apply("service", None)
     reporter.copy(client = logger).handle(tse.throwable)
@@ -111,9 +113,10 @@ class ExceptionReporterTest extends FunSuite with MockitoSugar {
     val captor = ArgumentCaptor.forClass(classOf[Seq[LogEntry]])
     val socket = new InetSocketAddress(InetAddress.getLoopbackAddress, 0)
     val tse = new TestServiceException(
-        "service",
-        "my cool message",
-        clientAddress = Some(socket.getAddress.getHostName))
+      "service",
+      "my cool message",
+      clientAddress = Some(socket.getAddress.getHostName)
+    )
 
     val reporter = new ExceptionReporter().apply("service", Some(socket))
     reporter.copy(client = logger).handle(tse.throwable)
@@ -121,10 +124,10 @@ class ExceptionReporterTest extends FunSuite with MockitoSugar {
   }
 
   test("appends the client address to the exception when provided") {
-    val reporter = new ExceptionReporter
-    val addr = new InetSocketAddress("8.8.8.8", 342)
+    val reporter          = new ExceptionReporter
+    val addr              = new InetSocketAddress("8.8.8.8", 342)
     val factoryWithClient = reporter("qux", Some(addr))
-    val factoryWithout = reporter("qux", None)
+    val factoryWithout    = reporter("qux", None)
 
     assert(factoryWithClient != factoryWithout)
     assert(factoryWithClient == factoryWithout.withClient(addr.getAddress))

@@ -33,10 +33,15 @@ object SerializableLaws {
     if (Platform.isJs) Prop(_ => Result(status = Proof))
     else
       Prop { _ =>
-        import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+        import java.io.{
+          ByteArrayInputStream,
+          ByteArrayOutputStream,
+          ObjectInputStream,
+          ObjectOutputStream
+        }
 
-        val baos = new ByteArrayOutputStream()
-        val oos = new ObjectOutputStream(baos)
+        val baos                   = new ByteArrayOutputStream()
+        val oos                    = new ObjectOutputStream(baos)
         var ois: ObjectInputStream = null
         try {
           oos.writeObject(a)

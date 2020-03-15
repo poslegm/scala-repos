@@ -13,7 +13,7 @@ trait Connector {
 
   import Connector.EventHandler
 
-  val name = "zk-connector"
+  val name               = "zk-connector"
   protected lazy val log = Logger.get(name)
 
   private[this] val listeners = new AtomicReference[List[EventHandler]](Nil)
@@ -83,9 +83,10 @@ object Connector {
     def apply(): Future[ZooKeeper] = nextConnector().apply()
 
     /** Disconnect from all ZooKeeper servers. */
-    def release(): Future[Unit] = Future.join {
-      log.trace("release")
-      connectors map { _.release() }
-    }
+    def release(): Future[Unit] =
+      Future.join {
+        log.trace("release")
+        connectors map { _.release() }
+      }
   }
 }

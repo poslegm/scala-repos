@@ -18,4 +18,4 @@ class Base extends Sub with MixinSubSub {
   override def foo = super.foo
 }
 trait Mixin1 extends Sub with MixinSubSub {}
-class Base1 extends Mixin1 {}
+class Base1  extends Mixin1               {}

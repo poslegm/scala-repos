@@ -22,13 +22,14 @@ import java.util.concurrent.{TimeUnit, LinkedBlockingQueue}
 /**
   * A blocking queue that have size limits on both number of elements and number of bytes.
   */
-class ByteBoundedBlockingQueue[E](val queueNumMessageCapacity: Int,
-                                  val queueByteCapacity: Int,
-                                  sizeFunction: Option[(E) => Int])
-    extends Iterable[E] {
-  private val queue = new LinkedBlockingQueue[E](queueNumMessageCapacity)
+class ByteBoundedBlockingQueue[E](
+    val queueNumMessageCapacity: Int,
+    val queueByteCapacity: Int,
+    sizeFunction: Option[(E) => Int]
+) extends Iterable[E] {
+  private val queue           = new LinkedBlockingQueue[E](queueNumMessageCapacity)
   private var currentByteSize = new AtomicInteger()
-  private val putLock = new Object
+  private val putLock         = new Object
 
   /**
     * Please refer to [[java.util.concurrent.BlockingQueue#offer]]
@@ -43,10 +44,13 @@ class ByteBoundedBlockingQueue[E](val queueNumMessageCapacity: Int,
     * @throws InterruptedException if interrupted during waiting
     */
   def offer(
-      e: E, timeout: Long, unit: TimeUnit = TimeUnit.MICROSECONDS): Boolean = {
+      e: E,
+      timeout: Long,
+      unit: TimeUnit = TimeUnit.MICROSECONDS
+  ): Boolean = {
     if (e == null)
       throw new NullPointerException("Putting null element into queue.")
-    val startTime = SystemTime.nanoseconds
+    val startTime  = SystemTime.nanoseconds
     val expireTime = startTime + unit.toNanos(timeout)
     putLock synchronized {
       var timeoutNanos = expireTime - SystemTime.nanoseconds
@@ -165,26 +169,30 @@ class ByteBoundedBlockingQueue[E](val queueNumMessageCapacity: Int,
     * Iterator for the queue
     * @return Iterator for the queue
     */
-  override def iterator = new Iterator[E]() {
-    private val iter = queue.iterator()
-    private var curr: E = null.asInstanceOf[E]
+  override def iterator =
+    new Iterator[E]() {
+      private val iter    = queue.iterator()
+      private var curr: E = null.asInstanceOf[E]
 
-    def hasNext: Boolean = iter.hasNext
+      def hasNext: Boolean = iter.hasNext
 
-    def next(): E = {
-      curr = iter.next()
-      curr
+      def next(): E = {
+        curr = iter.next()
+        curr
+      }
+
+      def remove() {
+        if (curr == null)
+          throw new IllegalStateException(
+            "Iterator does not have a current element."
+          )
+        iter.remove()
+        if (currentByteSize.addAndGet(
+              -sizeFunction.get(curr)
+            ) < queueByteCapacity)
+          putLock.synchronized(putLock.notify())
+      }
     }
-
-    def remove() {
-      if (curr == null)
-        throw new IllegalStateException(
-            "Iterator does not have a current element.")
-      iter.remove()
-      if (currentByteSize.addAndGet(-sizeFunction.get(curr)) < queueByteCapacity)
-        putLock.synchronized(putLock.notify())
-    }
-  }
 
   /**
     * get the number of elements in the queue

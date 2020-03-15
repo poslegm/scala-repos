@@ -6,8 +6,8 @@ object Transform {
   lazy val inputSourceDirectories =
     SettingKey[Seq[File]]("input-source-directories")
   lazy val inputSourceDirectory = SettingKey[File]("input-source-directory")
-  lazy val inputSources = TaskKey[Seq[File]]("input-sources")
-  lazy val sourceProperties = TaskKey[Map[String, String]]("source-properties")
+  lazy val inputSources         = TaskKey[Seq[File]]("input-sources")
+  lazy val sourceProperties     = TaskKey[Map[String, String]]("source-properties")
 
   lazy val transformResources = TaskKey[Seq[File]]("transform-resources")
   lazy val inputResourceDirectories =
@@ -20,22 +20,26 @@ object Transform {
 
   lazy val conscriptConfigs = TaskKey[Unit]("conscript-configs")
 
-  def conscriptSettings(launch: Reference) = Seq(
-      conscriptConfigs <<= (managedResources in launch in Compile,
-                            sourceDirectory in Compile).map { (res, src) =>
+  def conscriptSettings(launch: Reference) =
+    Seq(
+      conscriptConfigs <<= (
+        managedResources in launch in Compile,
+        sourceDirectory in Compile
+      ).map { (res, src) =>
         val source =
           res.find(_.getName == "sbt.boot.properties") getOrElse sys.error(
-              "No managed boot.properties file.")
+            "No managed boot.properties file."
+          )
         copyConscriptProperties(source, src / "conscript")
         ()
       }
-  )
+    )
   def copyConscriptProperties(source: File, conscriptBase: File): Seq[File] = {
     IO.delete(conscriptBase)
     val pairs = Seq(
-        "sbt.xMain" -> "sbt",
-        "sbt.ScriptMain" -> "scalas",
-        "sbt.ConsoleMain" -> "screpl"
+      "sbt.xMain"       -> "sbt",
+      "sbt.ScriptMain"  -> "scalas",
+      "sbt.ConsoleMain" -> "screpl"
     )
     for ((main, dir) <- pairs) yield {
       val file = conscriptBase / dir / "launchconfig"
@@ -49,11 +53,13 @@ object Transform {
     IO.writeLines(target, IO.readLines(source) map subMain)
   }
 
-  def crossGenSettings = transSourceSettings ++ Seq(
+  def crossGenSettings =
+    transSourceSettings ++ Seq(
       sourceProperties :=
         Map("cross.package0" -> "sbt", "cross.package1" -> "cross")
-  )
-  def transSourceSettings = Seq(
+    )
+  def transSourceSettings =
+    Seq(
       inputSourceDirectory := sourceDirectory.value / "input_sources",
       inputSourceDirectories <<= Seq(inputSourceDirectory).join,
       inputSources <<=
@@ -61,24 +67,25 @@ object Transform {
       fileMappings in transformSources <<= transformSourceMappings,
       transformSources <<=
         (fileMappings in transformSources, sourceProperties) map {
-        (rs, props) =>
-          rs map { case (in, out) => transform(in, out, props) }
-      },
+          (rs, props) => rs map { case (in, out) => transform(in, out, props) }
+        },
       sourceGenerators <+= transformSources
-  )
+    )
   def transformSourceMappings =
     (inputSources, inputSourceDirectories, sourceManaged) map {
       (ss, sdirs, sm) =>
         ((ss --- sdirs) pair (rebase(sdirs, sm) | flat(sm))).toSeq
     }
-  def configSettings = transResourceSettings ++ Seq(
+  def configSettings =
+    transResourceSettings ++ Seq(
       resourceProperties <<=
         (organization, version, scalaVersion, isSnapshot) map {
-        (org, v, sv, isSnapshot) =>
-          Map("org" -> org, "sbt.version" -> v, "scala.version" -> sv)
-      }
-  )
-  def transResourceSettings = Seq(
+          (org, v, sv, isSnapshot) =>
+            Map("org" -> org, "sbt.version" -> v, "scala.version" -> sv)
+        }
+    )
+  def transResourceSettings =
+    Seq(
       inputResourceDirectory := sourceDirectory.value / "input_resources",
       inputResourceDirectories <<= Seq(inputResourceDirectory).join,
       inputResources <<=
@@ -86,11 +93,10 @@ object Transform {
       fileMappings in transformResources <<= transformResourceMappings,
       transformResources <<=
         (fileMappings in transformResources, resourceProperties) map {
-        (rs, props) =>
-          rs map { case (in, out) => transform(in, out, props) }
-      },
+          (rs, props) => rs map { case (in, out) => transform(in, out, props) }
+        },
       resourceGenerators <+= transformResources
-  )
+    )
   def transformResourceMappings =
     (inputResources, inputResourceDirectories, resourceManaged) map {
       (rs, rdirs, rm) =>
@@ -105,8 +111,10 @@ object Transform {
     if (Some(newString) != read(out)) IO.write(out, newString)
     out
   }
-  def read(file: File): Option[String] = try { Some(IO.read(file)) } catch {
-    case _: java.io.IOException => None
-  }
+  def read(file: File): Option[String] =
+    try { Some(IO.read(file)) }
+    catch {
+      case _: java.io.IOException => None
+    }
   lazy val Property = """\$\{\{([\w.-]+)\}\}""".r
 }

@@ -15,8 +15,8 @@ case class MSequitor[A](a_ : A*) extends Seq[A] with MBrace[MSequitor, A] {
       (acc ++ e).asInstanceOf[MSequitor[A]]
     })
   }
-  override def length = a_.length
-  override def iterator = a_.iterator
+  override def length        = a_.length
+  override def iterator      = a_.iterator
   override def apply(n: Int) = a_.apply(n)
 }
 

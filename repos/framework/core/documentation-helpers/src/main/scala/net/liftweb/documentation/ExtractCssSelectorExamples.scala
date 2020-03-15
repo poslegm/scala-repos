@@ -11,27 +11,32 @@ import util.Html5
 import util.Helpers._
 
 sealed trait ExamplePart
-case class ExampleInput(input: String) extends ExamplePart
+case class ExampleInput(input: String)       extends ExamplePart
 case class ExampleFunction(function: String) extends ExamplePart
-case class ExampleOutput(output: String) extends ExamplePart
+case class ExampleOutput(output: String)     extends ExamplePart
 
 case class FileContents(filename: String, contents: String)
-case class ExampleContents(filename: String,
-                           exampleLabel: String,
-                           setupCode: String,
-                           exampleParts: List[ExamplePart])
+case class ExampleContents(
+    filename: String,
+    exampleLabel: String,
+    setupCode: String,
+    exampleParts: List[ExamplePart]
+)
 
 object ExtractCssSelectorExamples extends App {
   private def contentsToProcess(basePath: String): Box[List[FileContents]] = {
     val docsFile = new File(s"$basePath")
 
     for {
-      docsDir <-
-      ((Full(docsFile).filter(_.exists) ?~ s"'$docsFile' should be a directory, but does not exist.")
-            .filter(_.isDirectory) ?~ s"'$docsFile' should be a directory, not a file.")
+      docsDir <- ((Full(docsFile).filter(
+                  _.exists
+                ) ?~ s"'$docsFile' should be a directory, but does not exist.")
+                  .filter(
+                    _.isDirectory
+                  ) ?~ s"'$docsFile' should be a directory, not a file.")
     } yield {
       for {
-        file <- docsDir.listFiles.toList if file.getName.endsWith(".html")
+        file         <- docsDir.listFiles.toList if file.getName.endsWith(".html")
         fileContents <- tryo(Source.fromFile(file).mkString)
       } yield {
         FileContents(file.getName.replace('.', '-'), fileContents)
@@ -39,8 +44,9 @@ object ExtractCssSelectorExamples extends App {
     }
   }
 
-  private def extractPart(partBuilder: (String) => ExamplePart)(
-      ns: NodeSeq): Option[ExamplePart] = {
+  private def extractPart(
+      partBuilder: (String) => ExamplePart
+  )(ns: NodeSeq): Option[ExamplePart] = {
     var part: Option[ExamplePart] = None
 
     val partExtractor =
@@ -68,7 +74,8 @@ object ExtractCssSelectorExamples extends App {
   }
 
   private def extractExamplesFromContents(
-      fileContents: FileContents): List[ExampleContents] = {
+      fileContents: FileContents
+  ): List[ExampleContents] = {
     Html5.parse(fileContents.contents).toList.flatMap { html =>
       var setupCode: String = ""
 
@@ -85,7 +92,7 @@ object ExtractCssSelectorExamples extends App {
 
       val contentExtractor =
         ".selectors" #> { exampleNodes: NodeSeq =>
-          var parts = List[ExamplePart]()
+          var parts        = List[ExamplePart]()
           var exampleLabel = "No label"
 
           var labelExtractor =
@@ -112,7 +119,7 @@ object ExtractCssSelectorExamples extends App {
               }
 
               for {
-                extractor <- specializedPartExtractor
+                extractor     <- specializedPartExtractor
                 extractedPart <- extractor(part)
               } {
                 parts ::= extractedPart
@@ -124,7 +131,11 @@ object ExtractCssSelectorExamples extends App {
           (labelExtractor & partExtractor)(exampleNodes)
 
           exampleContents ::= ExampleContents(
-              fileContents.filename, exampleLabel, setupCode, parts.reverse)
+            fileContents.filename,
+            exampleLabel,
+            setupCode,
+            parts.reverse
+          )
 
           exampleNodes
         }
@@ -138,7 +149,7 @@ object ExtractCssSelectorExamples extends App {
 
   if (args.length < 2) {
     Console.err.println(
-        "Expected two arguments: the base directory of generated HTML and the base directory of the Lift project."
+      "Expected two arguments: the base directory of generated HTML and the base directory of the Lift project."
     )
   } else {
     val examples = for {
@@ -159,11 +170,16 @@ object ExtractCssSelectorExamples extends App {
           val filename = camelify(normalizedFilename.replace('-', '_'))
 
           val examples = for {
-            ExampleContents(_, exampleLabel, setupCode, exampleParts) <- contents
-            i <- (0 to (exampleParts.length / 3))
-            ExampleInput(input) <- exampleParts.lift(i)
+            ExampleContents(
+              _,
+              exampleLabel,
+              setupCode,
+              exampleParts
+            )                         <- contents
+            i                         <- (0 to (exampleParts.length / 3))
+            ExampleInput(input)       <- exampleParts.lift(i)
             ExampleFunction(function) <- exampleParts.lift(i + 1)
-            ExampleOutput(output) <- exampleParts.lift(i + 2)
+            ExampleOutput(output)     <- exampleParts.lift(i + 2)
           } yield {
             s"""
               |    ""\"$exampleLabel""\" in {
@@ -211,7 +227,7 @@ object ExtractCssSelectorExamples extends App {
         }
 
       case Failure(message, _, _) => Console.err.println(message)
-      case _ => Console.err.println("Unknown error.")
+      case _                      => Console.err.println("Unknown error.")
     }
   }
 }

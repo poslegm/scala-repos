@@ -5,12 +5,11 @@ import org.scalatra.test.specs2.MutableScalatraSpec
 
 import scala.concurrent.Future
 
-class AkkaSupportAfterFilterServlet
-    extends ScalatraServlet with FutureSupport {
-  val system = ActorSystem()
-  var actionTime: Long = _
-  var afterTime: Long = _
-  var afterCount: Long = _
+class AkkaSupportAfterFilterServlet extends ScalatraServlet with FutureSupport {
+  val system                      = ActorSystem()
+  var actionTime: Long            = _
+  var afterTime: Long             = _
+  var afterCount: Long            = _
   protected implicit val executor = system.dispatcher
 
   asyncGet("/async") {

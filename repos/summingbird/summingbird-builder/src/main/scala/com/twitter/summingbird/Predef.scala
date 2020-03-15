@@ -37,7 +37,7 @@ package com.twitter.summingbird
 object Predef {
   // Core types
   type AbstractJob = com.twitter.summingbird.AbstractJob
-  type Env = com.twitter.summingbird.Env
+  type Env         = com.twitter.summingbird.Env
 
   // Batcher-related types and objects
   type BatchID = com.twitter.summingbird.batch.BatchID
@@ -49,8 +49,13 @@ object Predef {
   val CompoundStore = com.twitter.summingbird.store.CompoundStore
 
   // Offline stores
-  type VersionedStore[K, V] = com.twitter.summingbird.scalding.store.VersionedBatchStore[
-      K, V, K, (BatchID, V)]
+  type VersionedStore[K, V] =
+    com.twitter.summingbird.scalding.store.VersionedBatchStore[
+      K,
+      V,
+      K,
+      (BatchID, V)
+    ]
   val VersionedStore = com.twitter.summingbird.scalding.store.VersionedStore
 
   // Common options

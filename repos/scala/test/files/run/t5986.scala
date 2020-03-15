@@ -6,9 +6,10 @@ import scala.collection._
 object Test {
 
   class Foo(val name: String, val n: Int) {
-    override def equals(obj: Any): Boolean = obj match {
-      case other: Foo => name == other.name; case _ => false
-    }
+    override def equals(obj: Any): Boolean =
+      obj match {
+        case other: Foo => name == other.name; case _ => false
+      }
     override def hashCode = name.##
     override def toString = "Foo(" + name + ", " + n + ")"
   }
@@ -20,10 +21,10 @@ object Test {
   def check[S <: Set[Foo]](set: S) {
     def output(s: Set[Foo]) = println(s.toList.sorted.mkString(","))
     output(set + new Foo("bar", 2))
+    output(set ++ List(new Foo("bar", 2), new Foo("bar", 3), new Foo("bar", 4)))
     output(
-        set ++ List(new Foo("bar", 2), new Foo("bar", 3), new Foo("bar", 4)))
-    output(set union Set(
-            new Foo("bar", 2), new Foo("baz", 3), new Foo("bazz", 4)))
+      set union Set(new Foo("bar", 2), new Foo("baz", 3), new Foo("bazz", 4))
+    )
   }
 
   def main(args: Array[String]) {

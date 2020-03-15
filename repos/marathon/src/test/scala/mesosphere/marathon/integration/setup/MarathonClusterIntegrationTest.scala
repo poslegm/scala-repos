@@ -21,7 +21,12 @@ trait MarathonClusterIntegrationTest extends SingleMarathonIntegrationTest {
   override protected def beforeAll(configMap: ConfigMap): Unit = {
     super.beforeAll(configMap)
     val parameters =
-      List("--master", config.master, "--event_subscriber", "http_callback") ++ extraMarathonParameters
+      List(
+        "--master",
+        config.master,
+        "--event_subscriber",
+        "http_callback"
+      ) ++ extraMarathonParameters
     config.marathonPorts.tail
       .foreach(port => startMarathon(port, parameters: _*))
   }

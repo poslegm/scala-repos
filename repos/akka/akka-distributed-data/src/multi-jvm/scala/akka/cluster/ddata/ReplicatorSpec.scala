@@ -14,15 +14,18 @@ import akka.testkit._
 import com.typesafe.config.ConfigFactory
 
 object ReplicatorSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.log-dead-letters-during-shutdown = off
-    """))
+    """)
+  )
 
   testTransport(on = true)
 }
@@ -32,7 +35,8 @@ class ReplicatorSpecMultiJvmNode2 extends ReplicatorSpec
 class ReplicatorSpecMultiJvmNode3 extends ReplicatorSpec
 
 class ReplicatorSpec
-    extends MultiNodeSpec(ReplicatorSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(ReplicatorSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import ReplicatorSpec._
   import Replicator._
@@ -40,32 +44,36 @@ class ReplicatorSpec
   override def initialParticipants = roles.size
 
   implicit val cluster = Cluster(system)
-  val replicator = system.actorOf(Replicator.props(ReplicatorSettings(system)
-                                        .withGossipInterval(1.second)
-                                        .withMaxDeltaElements(10)),
-                                  "replicator")
-  val timeout = 2.seconds.dilated
-  val writeTwo = WriteTo(2, timeout)
+  val replicator = system.actorOf(
+    Replicator.props(
+      ReplicatorSettings(system)
+        .withGossipInterval(1.second)
+        .withMaxDeltaElements(10)
+    ),
+    "replicator"
+  )
+  val timeout       = 2.seconds.dilated
+  val writeTwo      = WriteTo(2, timeout)
   val writeMajority = WriteMajority(timeout)
-  val writeAll = WriteAll(timeout)
-  val readTwo = ReadFrom(2, timeout)
-  val readAll = ReadAll(timeout)
-  val readMajority = ReadMajority(timeout)
+  val writeAll      = WriteAll(timeout)
+  val readTwo       = ReadFrom(2, timeout)
+  val readAll       = ReadAll(timeout)
+  val readMajority  = ReadMajority(timeout)
 
-  val KeyA = GCounterKey("A")
-  val KeyB = GCounterKey("B")
-  val KeyC = GCounterKey("C")
-  val KeyD = GCounterKey("D")
-  val KeyE = GCounterKey("E")
+  val KeyA  = GCounterKey("A")
+  val KeyB  = GCounterKey("B")
+  val KeyC  = GCounterKey("C")
+  val KeyD  = GCounterKey("D")
+  val KeyE  = GCounterKey("E")
   val KeyE2 = GCounterKey("E2")
-  val KeyF = GCounterKey("F")
-  val KeyG = ORSetKey[String]("G")
-  val KeyH = ORMapKey[Flag]("H")
-  val KeyI = GSetKey[String]("I")
-  val KeyJ = GSetKey[String]("J")
-  val KeyX = GCounterKey("X")
-  val KeyY = GCounterKey("Y")
-  val KeyZ = GCounterKey("Z")
+  val KeyF  = GCounterKey("F")
+  val KeyG  = ORSetKey[String]("G")
+  val KeyH  = ORMapKey[Flag]("H")
+  val KeyI  = GSetKey[String]("I")
+  val KeyJ  = GSetKey[String]("J")
+  val KeyX  = GCounterKey("X")
+  val KeyY  = GCounterKey("Y")
+  val KeyZ  = GCounterKey("Z")
 
   var afterCounter = 0
   def enterBarrierAfterTestStep(): Unit = {
@@ -164,8 +172,9 @@ class ReplicatorSpec
       // in case user is not using the passed in existing value
       replicator ! Update(KeyJ, GSet(), WriteLocal)(_ + "a" + "b")
       expectMsg(UpdateSuccess(KeyJ, None))
-      replicator ! Update(KeyJ, GSet(), WriteLocal)(
-          _ ⇒ GSet.empty[String] + "c") // normal usage would be `_ + "c"`
+      replicator ! Update(KeyJ, GSet(), WriteLocal)(_ ⇒
+        GSet.empty[String] + "c"
+      ) // normal usage would be `_ + "c"`
       expectMsg(UpdateSuccess(KeyJ, None))
       replicator ! Get(KeyJ, ReadLocal)
       val s = expectMsgPF() { case g @ GetSuccess(KeyJ, _) ⇒ g.get(KeyJ) }
@@ -273,8 +282,9 @@ class ReplicatorSpec
     runOn(first) {
       replicator ! Update(KeyC, GCounter(), writeTwo)(_ + 30)
       expectMsg(UpdateSuccess(KeyC, None))
-      changedProbe.expectMsgPF() { case c @ Changed(KeyC) ⇒ c.get(KeyC).value } should be(
-          30)
+      changedProbe.expectMsgPF() {
+        case c @ Changed(KeyC) ⇒ c.get(KeyC).value
+      } should be(30)
 
       replicator ! Update(KeyY, GCounter(), writeTwo)(_ + 30)
       expectMsg(UpdateSuccess(KeyY, None))
@@ -288,21 +298,24 @@ class ReplicatorSpec
       replicator ! Get(KeyC, ReadLocal)
       val c30 = expectMsgPF() { case g @ GetSuccess(KeyC, _) ⇒ g.get(KeyC) }
       c30.value should be(30)
-      changedProbe.expectMsgPF() { case c @ Changed(KeyC) ⇒ c.get(KeyC).value } should be(
-          30)
+      changedProbe.expectMsgPF() {
+        case c @ Changed(KeyC) ⇒ c.get(KeyC).value
+      } should be(30)
 
       // replicate with gossip after WriteLocal
       replicator ! Update(KeyC, GCounter(), WriteLocal)(_ + 1)
       expectMsg(UpdateSuccess(KeyC, None))
-      changedProbe.expectMsgPF() { case c @ Changed(KeyC) ⇒ c.get(KeyC).value } should be(
-          31)
+      changedProbe.expectMsgPF() {
+        case c @ Changed(KeyC) ⇒ c.get(KeyC).value
+      } should be(31)
 
       replicator ! Delete(KeyY, WriteLocal)
       expectMsg(DeleteSuccess(KeyY))
 
       replicator ! Get(KeyZ, readMajority)
-      expectMsgPF() { case g @ GetSuccess(KeyZ, _) ⇒ g.get(KeyZ).value } should be(
-          30)
+      expectMsgPF() {
+        case g @ GetSuccess(KeyZ, _) ⇒ g.get(KeyZ).value
+      } should be(30)
     }
     enterBarrier("update-c31")
 
@@ -318,8 +331,9 @@ class ReplicatorSpec
           expectMsg(DataDeleted(KeyY))
         }
       }
-      changedProbe.expectMsgPF() { case c @ Changed(KeyC) ⇒ c.get(KeyC).value } should be(
-          31)
+      changedProbe.expectMsgPF() {
+        case c @ Changed(KeyC) ⇒ c.get(KeyC).value
+      } should be(31)
     }
     enterBarrier("verified-c31")
 
@@ -386,8 +400,9 @@ class ReplicatorSpec
           for (n ← 1 to 30) {
             val KeyDn = GCounterKey("D" + n)
             replicator ! Get(KeyDn, ReadLocal)
-            expectMsgPF() { case g @ GetSuccess(KeyDn, _) ⇒ g.get(KeyDn) }.value should be(
-                n)
+            expectMsgPF() {
+              case g @ GetSuccess(KeyDn, _) ⇒ g.get(KeyDn)
+            }.value should be(n)
           }
         }
       }
@@ -440,10 +455,13 @@ class ReplicatorSpec
       val probe2 = TestProbe()
       replicator.tell(Get(KeyE, readMajority), probe2.ref)
       probe2.expectMsgType[GetSuccess[_]]
-      replicator.tell(Update(KeyE, GCounter(), writeMajority, None) { data ⇒
-        probe1.ref ! data.value
-        data + 1
-      }, probe2.ref)
+      replicator.tell(
+        Update(KeyE, GCounter(), writeMajority, None) { data ⇒
+          probe1.ref ! data.value
+          data + 1
+        },
+        probe2.ref
+      )
       // verify read your own writes, without waiting for the UpdateSuccess reply
       // note that the order of the replies are not defined, and therefore we use separate probes
       val probe3 = TestProbe()
@@ -462,18 +480,21 @@ class ReplicatorSpec
       replicator.tell(Get(KeyE, readMajority), probe1.ref)
       probe1.expectMsgType[GetSuccess[_]]
       replicator.tell(
-          Update(KeyE, GCounter(), writeMajority, Some(153))(_ + 1),
-          probe1.ref)
+        Update(KeyE, GCounter(), writeMajority, Some(153))(_ + 1),
+        probe1.ref
+      )
       // verify read your own writes, without waiting for the UpdateSuccess reply
       // note that the order of the replies are not defined, and therefore we use separate probes
       val probe2 = TestProbe()
       replicator.tell(
-          Update(KeyE, GCounter(), writeMajority, Some(154))(_ + 1),
-          probe2.ref)
+        Update(KeyE, GCounter(), writeMajority, Some(154))(_ + 1),
+        probe2.ref
+      )
       val probe3 = TestProbe()
       replicator.tell(
-          Update(KeyE, GCounter(), writeMajority, Some(155))(_ + 1),
-          probe3.ref)
+        Update(KeyE, GCounter(), writeMajority, Some(155))(_ + 1),
+        probe3.ref
+      )
       val probe5 = TestProbe()
       replicator.tell(Get(KeyE, readMajority), probe5.ref)
       probe1.expectMsg(UpdateSuccess(KeyE, Some(153)))
@@ -536,11 +557,13 @@ class ReplicatorSpec
     enterBarrier("a-b-added-to-G")
     runOn(second) {
       replicator ! Get(KeyG, readAll)
-      expectMsgPF() { case g @ GetSuccess(KeyG, _) ⇒ g.get(KeyG).elements } should be(
-          Set("a", "b"))
+      expectMsgPF() {
+        case g @ GetSuccess(KeyG, _) ⇒ g.get(KeyG).elements
+      } should be(Set("a", "b"))
       replicator ! Get(KeyG, ReadLocal)
-      expectMsgPF() { case g @ GetSuccess(KeyG, _) ⇒ g.get(KeyG).elements } should be(
-          Set("a", "b"))
+      expectMsgPF() {
+        case g @ GetSuccess(KeyG, _) ⇒ g.get(KeyG).elements
+      } should be(Set("a", "b"))
     }
     enterBarrierAfterTestStep()
   }
@@ -550,8 +573,10 @@ class ReplicatorSpec
 
     runOn(second) {
       replicator ! Subscribe(KeyH, changedProbe.ref)
-      replicator ! Update(KeyH, ORMap.empty[Flag], writeTwo)(_ +
-          ("a" -> Flag(enabled = false)))
+      replicator ! Update(KeyH, ORMap.empty[Flag], writeTwo)(
+        _ +
+          ("a" -> Flag(enabled = false))
+      )
       changedProbe.expectMsgPF() {
         case c @ Changed(KeyH) ⇒ c.get(KeyH).entries
       } should be(Map("a" -> Flag(enabled = false)))
@@ -560,8 +585,10 @@ class ReplicatorSpec
     enterBarrier("update-h1")
 
     runOn(first) {
-      replicator ! Update(KeyH, ORMap.empty[Flag], writeTwo)(_ +
-          ("a" -> Flag(enabled = true)))
+      replicator ! Update(KeyH, ORMap.empty[Flag], writeTwo)(
+        _ +
+          ("a" -> Flag(enabled = true))
+      )
     }
 
     runOn(second) {
@@ -569,12 +596,13 @@ class ReplicatorSpec
         case c @ Changed(KeyH) ⇒ c.get(KeyH).entries
       } should be(Map("a" -> Flag(enabled = true)))
 
-      replicator ! Update(KeyH, ORMap.empty[Flag], writeTwo)(_ +
-          ("b" -> Flag(enabled = true)))
+      replicator ! Update(KeyH, ORMap.empty[Flag], writeTwo)(
+        _ +
+          ("b" -> Flag(enabled = true))
+      )
       changedProbe.expectMsgPF() {
         case c @ Changed(KeyH) ⇒ c.get(KeyH).entries
-      } should be(
-          Map("a" -> Flag(enabled = true), "b" -> Flag(enabled = true)))
+      } should be(Map("a" -> Flag(enabled = true), "b" -> Flag(enabled = true)))
     }
 
     enterBarrierAfterTestStep()

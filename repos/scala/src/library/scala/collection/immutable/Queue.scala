@@ -37,12 +37,16 @@ import mutable.{Builder, ListBuffer}
   */
 @SerialVersionUID(-7622936493364270175L)
 @deprecatedInheritance(
-    "The implementation details of immutable queues make inheriting from them unwise.",
-    "2.11.0")
+  "The implementation details of immutable queues make inheriting from them unwise.",
+  "2.11.0"
+)
 class Queue[+A] protected (
-    protected val in: List[A], protected val out: List[A])
-    extends AbstractSeq[A] with LinearSeq[A]
-    with GenericTraversableTemplate[A, Queue] with LinearSeqLike[A, Queue[A]]
+    protected val in: List[A],
+    protected val out: List[A]
+) extends AbstractSeq[A]
+    with LinearSeq[A]
+    with GenericTraversableTemplate[A, Queue]
+    with LinearSeqLike[A, Queue[A]]
     with Serializable {
 
   override def companion: GenericCompanion[Queue] = Queue
@@ -58,7 +62,7 @@ class Queue[+A] protected (
     val olen = out.length
     if (n < olen) out.apply(n)
     else {
-      val m = n - olen
+      val m    = n - olen
       val ilen = in.length
       if (m < ilen) in.apply(ilen - m - 1)
       else throw new NoSuchElementException("index out of range")
@@ -89,18 +93,22 @@ class Queue[+A] protected (
     */
   override def length = in.length + out.length
 
-  override def +:[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[Queue[A], B, That]): That = bf match {
-    case _: Queue.GenericCanBuildFrom[_] =>
-      new Queue(in, elem :: out).asInstanceOf[That]
-    case _ => super.+:(elem)(bf)
-  }
+  override def +:[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[Queue[A], B, That]): That =
+    bf match {
+      case _: Queue.GenericCanBuildFrom[_] =>
+        new Queue(in, elem :: out).asInstanceOf[That]
+      case _ => super.+:(elem)(bf)
+    }
 
-  override def :+[B >: A, That](elem: B)(
-      implicit bf: CanBuildFrom[Queue[A], B, That]): That = bf match {
-    case _: Queue.GenericCanBuildFrom[_] => enqueue(elem).asInstanceOf[That]
-    case _ => super.:+(elem)(bf)
-  }
+  override def :+[B >: A, That](
+      elem: B
+  )(implicit bf: CanBuildFrom[Queue[A], B, That]): That =
+    bf match {
+      case _: Queue.GenericCanBuildFrom[_] => enqueue(elem).asInstanceOf[That]
+      case _                               => super.:+(elem)(bf)
+    }
 
   /** Creates a new queue with element added at the end
     *  of the old queue.
@@ -126,12 +134,13 @@ class Queue[+A] protected (
     *  @throws java.util.NoSuchElementException
     *  @return the first element of the queue.
     */
-  def dequeue: (A, Queue[A]) = out match {
-    case Nil if !in.isEmpty =>
-      val rev = in.reverse; (rev.head, new Queue(Nil, rev.tail))
-    case x :: xs => (x, new Queue(in, xs))
-    case _ => throw new NoSuchElementException("dequeue on empty queue")
-  }
+  def dequeue: (A, Queue[A]) =
+    out match {
+      case Nil if !in.isEmpty =>
+        val rev = in.reverse; (rev.head, new Queue(Nil, rev.tail))
+      case x :: xs => (x, new Queue(in, xs))
+      case _       => throw new NoSuchElementException("dequeue on empty queue")
+    }
 
   /** Optionally retrieves the first element and a queue of the remaining elements.
     *
@@ -165,7 +174,7 @@ object Queue extends SeqFactory[Queue] {
     ReusableCBF.asInstanceOf[GenericCanBuildFrom[A]]
   def newBuilder[A]: Builder[A, Queue[A]] =
     new ListBuffer[A] mapResult (x => new Queue[A](Nil, x.toList))
-  override def empty[A]: Queue[A] = EmptyQueue.asInstanceOf[Queue[A]]
+  override def empty[A]: Queue[A]         = EmptyQueue.asInstanceOf[Queue[A]]
   override def apply[A](xs: A*): Queue[A] = new Queue[A](Nil, xs.toList)
 
   private object EmptyQueue extends Queue[Nothing](Nil, Nil) {}

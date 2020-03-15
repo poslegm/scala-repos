@@ -62,7 +62,7 @@ class AssignmentAnnotatorTest extends SimpleTestCase {
     assertMatches(messages("class C(var p: A) { p = A }")) {
       case Nil =>
     }
-    // TODO right expression "B" must have expected type    
+    // TODO right expression "B" must have expected type
 //    assertMatches(messages("class C(var p: A) { p = B }")) {
 //      case Error("B", TypeMismatch()) :: Nil =>
 //    }
@@ -131,7 +131,8 @@ class AssignmentAnnotatorTest extends SimpleTestCase {
 
   def testUpdateOkay() {
     assertMatches(
-        messages("val a = new { def update(x: Int): Unit = () }; a() = 1")) {
+      messages("val a = new { def update(x: Int): Unit = () }; a() = 1")
+    ) {
       case Nil =>
     }
   }
@@ -156,7 +157,8 @@ class AssignmentAnnotatorTest extends SimpleTestCase {
       case Nil =>
     }
     assertMatches(
-        messages("def a(implicit b: B) = A; def a_=(x: A) {}; a = A")) {
+      messages("def a(implicit b: B) = A; def a_=(x: A) {}; a = A")
+    ) {
       case Nil =>
     }
     assertMatches(messages("def a() = A; def a_=(x: A) {}; a = A")) {
@@ -170,19 +172,20 @@ class AssignmentAnnotatorTest extends SimpleTestCase {
     }
   }
 
-  def messages(@Language(value = "Scala", prefix = Header) code: String)
-    : List[Message] = {
+  def messages(
+      @Language(value = "Scala", prefix = Header) code: String
+  ): List[Message] = {
     val assignment =
       (Header + code).parse.depthFirst.findByType(classOf[ScAssignStmt]).get
 
     val annotator = new AssignmentAnnotator() {}
-    val mock = new AnnotatorHolderMock
+    val mock      = new AnnotatorHolderMock
 
     annotator.annotateAssignment(assignment, mock, advancedHighlighting = true)
     mock.annotations
   }
 
-  val TypeMismatch = StartWith("Type mismatch")
+  val TypeMismatch      = StartWith("Type mismatch")
   val ReassignmentToVal = StartWith("Reassignment to val")
 
   case class StartWith(fragment: String) {

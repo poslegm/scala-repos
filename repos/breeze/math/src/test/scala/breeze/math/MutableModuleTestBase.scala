@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
 /**
-  * 
+  *
   * @author dlwh
   */
 trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
@@ -15,20 +15,18 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
   implicit def genTriple: Arbitrary[(V, V, V)]
   implicit def genScalar: Arbitrary[S]
 
-  val TOL = 1E-6
+  val TOL = 1e-6
 
   test("Addition is Associative") {
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, c) = trip
       close((a + b) + c, a + (b + c), TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, c) = trip
-      val ab = a + b
-      val bc = b + c
+      val ab        = a + b
+      val bc        = b + c
       ab += c
       bc += a
       close(ab, bc, TOL)
@@ -36,16 +34,14 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
   }
 
   test("Addition Commutes") {
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
       close(a + b, b + a, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val ab = copy(a)
+      val ab        = copy(a)
       ab += b
       val ba = copy(b)
       ba += a
@@ -54,60 +50,53 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
   }
 
   test("Zero is Zero") {
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, c) = trip
-      val z = zeroLike(a)
+      val z         = zeroLike(a)
       close(a :+ z, a, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val ab = copy(a)
-      val z = zeroLike(a)
+      val ab        = copy(a)
+      val z         = zeroLike(a)
       ab :+= z
       close(a, ab, TOL)
     })
   }
 
   test("a - a == 0") {
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, c) = trip
-      val z = zeroLike(a)
+      val z         = zeroLike(a)
       close(a - a, z, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val z = zeroLike(a)
+      val z         = zeroLike(a)
       a -= a
       close(a, z, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val z = zeroLike(a)
+      val z         = zeroLike(a)
       a :-= a
       close(a, z, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val z = zeroLike(a)
-      val ab = a :- b
+      val z         = zeroLike(a)
+      val ab        = a :- b
       a -= b
       close(a, ab, TOL)
     })
   }
 
   test("Scalar mult distributes over vector addition") {
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S) =>
       val (a, b, _) = trip
       close((a + b) :* s, (b :* s) + (a :* s), TOL)
     })
@@ -117,10 +106,9 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
     //      s == 0 || close( (a + b)/ s, (b / s +a / s), TOL)
     //    })
 
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S) =>
       val (a, b, _) = trip
-      val ab = copy(a)
+      val ab        = copy(a)
       ab += b
       ab *= s
       val ba = copy(a) :* s
@@ -130,27 +118,24 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
   }
 
   test("daxpy is consistent") {
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S) =>
       val (a, b, _) = trip
-      val ac = copy(a)
-      val prod = a + (b :* s)
+      val ac        = copy(a)
+      val prod      = a + (b :* s)
       breeze.linalg.axpy(s, b, ac)
       close(prod, ac, TOL)
     })
   }
 
   test("Scalar mult distributes over field addition") {
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
       val (a, _, _) = trip
-      close((a) :* scalars.+(s, t), (a :* s) + (a :* t), 1E-4)
+      close((a) :* scalars.+(s, t), (a :* s) + (a :* t), 1e-4)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
       val (a, _, _) = trip
-      val ab = copy(a)
+      val ab        = copy(a)
       ab *= s
       ab += (a :* t)
       val ba = copy(a)
@@ -160,16 +145,14 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
   }
 
   test("Compatibility of scalar multiplication with field multiplication") {
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
       val (a, _, _) = trip
       close((a) :* scalars.*(s, t), a :* s :* t, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
+    check(Prop.forAll { (trip: (V, V, V), s: S, t: S) =>
       val (a, _, _) = trip
-      val ab = copy(a)
+      val ab        = copy(a)
       ab *= s
       ab *= t
       val ba = copy(a)
@@ -192,26 +175,23 @@ trait MutableModuleTestBase[V, S] extends FunSuite with Checkers {
 
   // op set
   test("op set works") {
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val ab = copy(a)
+      val ab        = copy(a)
       ab := b
       a + b == (a + ab)
     })
   }
 
   test("1 is 1") {
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, c) = trip
       close(a :* scalars.one, a, TOL)
     })
 
-    check(
-        Prop.forAll { (trip: (V, V, V)) =>
+    check(Prop.forAll { (trip: (V, V, V)) =>
       val (a, b, _) = trip
-      val ab = copy(a)
+      val ab        = copy(a)
       ab *= scalars.one
       close(a, ab, TOL)
     })

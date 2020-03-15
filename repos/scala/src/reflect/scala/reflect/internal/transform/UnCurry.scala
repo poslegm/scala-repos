@@ -36,10 +36,15 @@ trait UnCurry {
           val substitutedResult =
             restpe.substSym(params1, existentiallyAbstractedParam1s)
           apply(
-              MethodType(params ::: existentiallyAbstractedParam1s,
-                         substitutedResult))
+            MethodType(
+              params ::: existentiallyAbstractedParam1s,
+              substitutedResult
+            )
+          )
         case MethodType(
-            params, ExistentialType(tparams, restpe @ MethodType(_, _))) =>
+              params,
+              ExistentialType(tparams, restpe @ MethodType(_, _))
+            ) =>
           abort("unexpected curried method types with intervening existential")
         case MethodType(h :: t, restpe) if h.isImplicit =>
           apply(MethodType(h.cloneSymbol.resetFlag(IMPLICIT) :: t, restpe))
@@ -54,16 +59,17 @@ trait UnCurry {
   }
 
   object DesugaredParameterType {
-    def unapply(tpe: Type): Option[Type] = tpe match {
-      case TypeRef(pre, ByNameParamClass, arg :: Nil) =>
-        Some(functionType(List(), arg))
-      case TypeRef(pre, RepeatedParamClass, arg :: Nil) =>
-        Some(seqType(arg))
-      case TypeRef(pre, JavaRepeatedParamClass, arg :: Nil) =>
-        Some(arrayType(if (isUnboundedGeneric(arg)) ObjectTpe else arg))
-      case _ =>
-        None
-    }
+    def unapply(tpe: Type): Option[Type] =
+      tpe match {
+        case TypeRef(pre, ByNameParamClass, arg :: Nil) =>
+          Some(functionType(List(), arg))
+        case TypeRef(pre, RepeatedParamClass, arg :: Nil) =>
+          Some(seqType(arg))
+        case TypeRef(pre, JavaRepeatedParamClass, arg :: Nil) =>
+          Some(arrayType(if (isUnboundedGeneric(arg)) ObjectTpe else arg))
+        case _ =>
+          None
+      }
   }
 
   private val uncurryType = new TypeMap {

@@ -8,7 +8,7 @@ import akka.remote.testkit.{MultiNodeConfig, MultiNodeSpec, STMultiNodeSpec}
 import akka.remote.testconductor.RoleName
 
 object PiercingShouldKeepQuarantineSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
 
   commonConfig(debugConfig(on = false).withFallback(ConfigFactory.parseString("""
@@ -31,7 +31,8 @@ class PiercingShouldKeepQuarantineSpecMultiJvmNode2
 
 abstract class PiercingShouldKeepQuarantineSpec
     extends MultiNodeSpec(PiercingShouldKeepQuarantineSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import PiercingShouldKeepQuarantineSpec._
 

@@ -22,7 +22,7 @@ import java.text.{NumberFormat, DecimalFormat}
 
 trait TwoFractionDigits {
   def numberOfFractionDigits = 2
-  def scale = 10
+  def scale                  = 10
 }
 
 trait DollarCurrency extends TwoFractionDigits {
@@ -32,21 +32,21 @@ trait DollarCurrency extends TwoFractionDigits {
 /* Various Currencies */
 object AU extends CurrencyZone {
   type Currency = AUD
-  var locale = new Locale("en", "AU")
+  var locale              = new Locale("en", "AU")
   def make(x: BigDecimal) = new Currency { def amount = x }
   abstract class AUD extends AbstractCurrency("AUD") with DollarCurrency {}
 }
 
 object US extends CurrencyZone {
   type Currency = USD
-  var locale = Locale.US
+  var locale              = Locale.US
   def make(x: BigDecimal) = new Currency { def amount = x }
   abstract class USD extends AbstractCurrency("USD") with DollarCurrency {}
 }
 
 object GB extends CurrencyZone {
   type Currency = GBP
-  var locale = Locale.UK
+  var locale              = Locale.UK
   def make(x: BigDecimal) = new Currency { def amount = x }
   abstract class GBP extends AbstractCurrency("GBP") with TwoFractionDigits {
     def currencySymbol = "£"
@@ -56,9 +56,10 @@ object GB extends CurrencyZone {
 object EU extends CurrencyZone {
   type Currency = EUR
   var locale = Locale.GERMANY // guess this is why its a var
-  def make(x: BigDecimal) = new Currency {
-    def amount = x; override val _locale = locale
-  }
+  def make(x: BigDecimal) =
+    new Currency {
+      def amount = x; override val _locale = locale
+    }
   abstract class EUR extends AbstractCurrency("EUR") with TwoFractionDigits {
     def currencySymbol = "€"
   }
@@ -75,18 +76,25 @@ abstract class CurrencyZone {
       make(BigDecimal(x)) // try normal number
     } catch {
       case e: java.lang.NumberFormatException => {
-          try {
+        try {
+          make(
+            BigDecimal(
+              "" + NumberFormat
+                .getNumberInstance(locale)
+                .parse(x)
+            )
+          ) // try with grouping separator
+        } catch {
+          case e: java.text.ParseException => {
             make(
-                BigDecimal("" + NumberFormat
-                      .getNumberInstance(locale)
-                      .parse(x))) // try with grouping separator
-          } catch {
-            case e: java.text.ParseException => {
-                make(BigDecimal("" +
-                        NumberFormat.getCurrencyInstance(locale).parse(x)))
-              } // try with currency symbol and grouping separator
-          }
+              BigDecimal(
+                "" +
+                  NumberFormat.getCurrencyInstance(locale).parse(x)
+              )
+            )
+          } // try with currency symbol and grouping separator
         }
+      }
     }
   }
 
@@ -98,37 +106,42 @@ abstract class CurrencyZone {
 
     val _locale: Locale = locale
     def amount: BigDecimal
-    def floatValue = amount.floatValue
+    def floatValue  = amount.floatValue
     def doubleValue = amount.doubleValue
     def currencySymbol: String
     def numberOfFractionDigits: Int
     def scale: Int
 
     def +(that: Currency): Currency = make(this.amount + that.amount)
-    def +(that: Int): Currency = this + make(that)
+    def +(that: Int): Currency      = this + make(that)
 
     def *(that: Currency): Currency = make(this.amount * that.amount)
-    def *(that: Int): Currency = this * make(that)
+    def *(that: Int): Currency      = this * make(that)
 
     def -(that: Currency): Currency = make(this.amount - that.amount)
-    def -(that: Int): Currency = this - make(that)
+    def -(that: Int): Currency      = this - make(that)
 
     def /(that: Currency): Currency =
       make(
-          new BigDecimal(this.amount.bigDecimal.divide(
-                  that.amount.bigDecimal,
-                  scale,
-                  java.math.BigDecimal.ROUND_HALF_UP)))
+        new BigDecimal(
+          this.amount.bigDecimal.divide(
+            that.amount.bigDecimal,
+            scale,
+            java.math.BigDecimal.ROUND_HALF_UP
+          )
+        )
+      )
     def /(that: Int): Currency = this / make(that)
 
     def compare(that: Currency) = this.amount compare that.amount
 
-    override def equals(that: Any) = that match {
-      case that: AbstractCurrency =>
-        this.designation + this.format("", scale) == that.designation +
-        that.format("", scale)
-      case _ => false
-    }
+    override def equals(that: Any) =
+      that match {
+        case that: AbstractCurrency =>
+          this.designation + this.format("", scale) == that.designation +
+            that.format("", scale)
+        case _ => false
+      }
 
     override def hashCode = (this.designation + format("", scale)).hashCode
 
@@ -159,12 +172,11 @@ abstract class CurrencyZone {
     def get: String = get(numberOfFractionDigits)
 
     def get(numberOfFractionDigits: Int): String = {
-      val nf = NumberFormat.getNumberInstance(_locale)
-      val df = nf.asInstanceOf[DecimalFormat]
+      val nf                = NumberFormat.getNumberInstance(_locale)
+      val df                = nf.asInstanceOf[DecimalFormat]
       val groupingSeparator = df.getDecimalFormatSymbols.getGroupingSeparator
 
-      format("", numberOfFractionDigits).replaceAll(
-          groupingSeparator + "", "");
+      format("", numberOfFractionDigits).replaceAll(groupingSeparator + "", "");
     }
   }
 }

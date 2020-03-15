@@ -44,10 +44,12 @@ private[finagle] object ClientDestTracingFilter {
     */
   def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
     new Stack.Module1[Transporter.EndpointAddr, ServiceFactory[Req, Rep]] {
-      val role = ClientDestTracingFilter.role
+      val role        = ClientDestTracingFilter.role
       val description = "Record remote address of server"
       def make(
-          _addr: Transporter.EndpointAddr, next: ServiceFactory[Req, Rep]) = {
+          _addr: Transporter.EndpointAddr,
+          next: ServiceFactory[Req, Rep]
+      ) = {
         val Transporter.EndpointAddr(addr) = _addr
         new ClientDestTracingFilter(addr) andThen next
       }

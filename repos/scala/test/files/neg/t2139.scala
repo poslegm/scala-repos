@@ -9,7 +9,7 @@ class U {
   def f[T](x: T): T = x
 }
 object H extends App {
-  val u = new U
+  val u      = new U
   val z: Int = (u.f _)(4)
   println("done")
 }

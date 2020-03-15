@@ -18,7 +18,7 @@ class LocalTest extends FunSuite {
   }
 
   test("Local: should have a per-thread definition") {
-    val local = new Local[Int]
+    val local                    = new Local[Int]
     var threadValue: Option[Int] = null
 
     local() = 123
@@ -42,7 +42,7 @@ class LocalTest extends FunSuite {
     val l0 = new Local[Int]
     l0() = 123
     val save0 = Local.save()
-    val l1 = new Local[Int]
+    val l1    = new Local[Int]
     assert(l0() == Some(123))
     l1() = 333
     assert(l1() == Some(333))

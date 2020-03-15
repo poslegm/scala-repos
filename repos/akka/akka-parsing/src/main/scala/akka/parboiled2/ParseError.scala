@@ -19,12 +19,15 @@ package akka.parboiled2
 import scala.annotation.tailrec
 import scala.collection.immutable
 
-case class ParseError(position: Position,
-                      principalPosition: Position,
-                      traces: immutable.Seq[RuleTrace])
-    extends RuntimeException {
-  require(principalPosition.index >= position.index,
-          "principalPosition must be > position")
+case class ParseError(
+    position: Position,
+    principalPosition: Position,
+    traces: immutable.Seq[RuleTrace]
+) extends RuntimeException {
+  require(
+    principalPosition.index >= position.index,
+    "principalPosition must be > position"
+  )
   def format(parser: Parser): String = format(parser.input)
   def format(parser: Parser, formatter: ErrorFormatter): String =
     format(parser.input, formatter)
@@ -39,8 +42,7 @@ case class ParseError(position: Position,
     traces map {
       val commonPrefixLen = RuleTrace.commonNonAtomicPrefixLength(traces)
       if (commonPrefixLen > 0)
-        t ⇒
-          t.copy(prefix = t.prefix.drop(commonPrefixLen)).dropUnreportedPrefix
+        t ⇒ t.copy(prefix = t.prefix.drop(commonPrefixLen)).dropUnreportedPrefix
       else _.dropUnreportedPrefix
     }
 }
@@ -66,7 +68,9 @@ object Position {
 }
 
 case class RuleTrace(
-    prefix: List[RuleTrace.NonTerminal], terminal: RuleTrace.Terminal) {
+    prefix: List[RuleTrace.NonTerminal],
+    terminal: RuleTrace.Terminal
+) {
   import RuleTrace._
 
   /**
@@ -76,13 +80,18 @@ case class RuleTrace(
     */
   def dropUnreportedPrefix: RuleTrace = {
     @tailrec
-    def rec(current: List[NonTerminal],
-            named: List[NonTerminal]): List[NonTerminal] =
+    def rec(
+        current: List[NonTerminal],
+        named: List[NonTerminal]
+    ): List[NonTerminal] =
       current match {
         case NonTerminal(Named(_), _) :: tail ⇒
           rec(tail, if (named.isEmpty) current else named)
         case NonTerminal(RuleCall, _) :: tail ⇒
-          rec(tail, named) // RuleCall elements allow the name to be carried over
+          rec(
+            tail,
+            named
+          ) // RuleCall elements allow the name to be carried over
         case NonTerminal(Atomic, _) :: tail ⇒
           if (named.isEmpty) tail else named
         case x :: tail ⇒
@@ -97,8 +106,8 @@ case class RuleTrace(
     * Wraps this trace with a [[RuleTrace.Named]] wrapper if the given name is non-empty.
     */
   def named(name: String): RuleTrace = {
-    val newHead = NonTerminal(
-        Named(name), if (prefix.isEmpty) 0 else prefix.head.offset)
+    val newHead =
+      NonTerminal(Named(name), if (prefix.isEmpty) 0 else prefix.head.offset)
     if (name.isEmpty) this else copy(prefix = newHead :: prefix)
   }
 }
@@ -111,7 +120,7 @@ object RuleTrace {
       def hasElem(ix: Int, elem: NonTerminal): RuleTrace ⇒ Boolean =
         _.prefix.drop(ix) match {
           case `elem` :: _ ⇒ true
-          case _ ⇒ false
+          case _           ⇒ false
         }
       @tailrec
       def rec(current: List[NonTerminal], namedIx: Int, ix: Int): Int =
@@ -121,9 +130,14 @@ object RuleTrace {
               case Named(_) ⇒
                 rec(tail, if (namedIx >= 0) namedIx else ix, ix + 1)
               case RuleCall ⇒
-                rec(tail, namedIx, ix + 1) // RuleCall elements allow the name to be carried over
+                rec(
+                  tail,
+                  namedIx,
+                  ix + 1
+                ) // RuleCall elements allow the name to be carried over
               case Atomic ⇒
-                if (namedIx >= 0) namedIx else ix // Atomic elements always terminate a common prefix
+                if (namedIx >= 0) namedIx
+                else ix // Atomic elements always terminate a common prefix
               case _ ⇒
                 rec(tail, -1, ix + 1) // otherwise the name chain is broken
             }
@@ -136,45 +150,44 @@ object RuleTrace {
   // to this trace head started matching.
   final case class NonTerminal(key: NonTerminalKey, offset: Int)
   sealed trait NonTerminalKey
-  case object Action extends NonTerminalKey
-  case object AndPredicate extends NonTerminalKey
-  case object Atomic extends NonTerminalKey
-  case object Capture extends NonTerminalKey
-  case object Cut extends NonTerminalKey
-  case object FirstOf extends NonTerminalKey
+  case object Action                                extends NonTerminalKey
+  case object AndPredicate                          extends NonTerminalKey
+  case object Atomic                                extends NonTerminalKey
+  case object Capture                               extends NonTerminalKey
+  case object Cut                                   extends NonTerminalKey
+  case object FirstOf                               extends NonTerminalKey
   final case class IgnoreCaseString(string: String) extends NonTerminalKey
-  final case class MapMatch(map: Map[String, Any]) extends NonTerminalKey
-  final case class Named(name: String) extends NonTerminalKey
-  case object OneOrMore extends NonTerminalKey
-  case object Optional extends NonTerminalKey
-  case object Quiet extends NonTerminalKey
-  case object RuleCall extends NonTerminalKey
-  case object Run extends NonTerminalKey
-  case object RunSubParser extends NonTerminalKey
-  case object Sequence extends NonTerminalKey
-  final case class StringMatch(string: String) extends NonTerminalKey
-  final case class Times(min: Int, max: Int) extends NonTerminalKey
-  case object ZeroOrMore extends NonTerminalKey
+  final case class MapMatch(map: Map[String, Any])  extends NonTerminalKey
+  final case class Named(name: String)              extends NonTerminalKey
+  case object OneOrMore                             extends NonTerminalKey
+  case object Optional                              extends NonTerminalKey
+  case object Quiet                                 extends NonTerminalKey
+  case object RuleCall                              extends NonTerminalKey
+  case object Run                                   extends NonTerminalKey
+  case object RunSubParser                          extends NonTerminalKey
+  case object Sequence                              extends NonTerminalKey
+  final case class StringMatch(string: String)      extends NonTerminalKey
+  final case class Times(min: Int, max: Int)        extends NonTerminalKey
+  case object ZeroOrMore                            extends NonTerminalKey
 
   sealed trait Terminal
-  case object ANY extends Terminal
-  final case class AnyOf(string: String) extends Terminal
-  final case class CharMatch(char: Char) extends Terminal
-  final case class CharPredicateMatch(predicate: CharPredicate)
-      extends Terminal
-  final case class CharRange(from: Char, to: Char) extends Terminal
-  final case class Fail(expected: String) extends Terminal
-  final case class IgnoreCaseChar(char: Char) extends Terminal
-  final case class NoneOf(string: String) extends Terminal
+  case object ANY                                               extends Terminal
+  final case class AnyOf(string: String)                        extends Terminal
+  final case class CharMatch(char: Char)                        extends Terminal
+  final case class CharPredicateMatch(predicate: CharPredicate) extends Terminal
+  final case class CharRange(from: Char, to: Char)              extends Terminal
+  final case class Fail(expected: String)                       extends Terminal
+  final case class IgnoreCaseChar(char: Char)                   extends Terminal
+  final case class NoneOf(string: String)                       extends Terminal
   final case class NotPredicate(base: NotPredicate.Base, baseMatchLength: Int)
       extends Terminal
   case object SemanticPredicate extends Terminal
 
   object NotPredicate {
     sealed trait Base
-    case object Anonymous extends Base
-    final case class Named(name: String) extends Base
-    final case class RuleCall(target: String) extends Base
+    case object Anonymous                                   extends Base
+    final case class Named(name: String)                    extends Base
+    final case class RuleCall(target: String)               extends Base
     final case class Terminal(terminal: RuleTrace.Terminal) extends Base
   }
 }

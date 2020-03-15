@@ -5,7 +5,10 @@ import com.intellij.codeInsight.editorActions.moveUpDown.{LineMover, LineRange}
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.Key
 import com.intellij.psi.{PsiElement, PsiFile}
-import org.jetbrains.plugins.hocon.editor.HoconObjectEntryMover.{PrefixModKey, PrefixModification}
+import org.jetbrains.plugins.hocon.editor.HoconObjectEntryMover.{
+  PrefixModKey,
+  PrefixModification
+}
 import org.jetbrains.plugins.hocon.psi._
 
 import scala.annotation.tailrec
@@ -45,23 +48,29 @@ import scala.annotation.tailrec
   */
 class HoconObjectEntryMover extends LineMover {
   override def checkAvailable(
-      editor: Editor, file: PsiFile, info: MoveInfo, down: Boolean): Boolean =
+      editor: Editor,
+      file: PsiFile,
+      info: MoveInfo,
+      down: Boolean
+  ): Boolean =
     super.checkAvailable(editor, file, info, down) &&
-    !editor.getSelectionModel.hasSelection &&
-    (file match {
-          case hoconFile: HoconPsiFile =>
-            checkAvailableHocon(editor, hoconFile, info, down)
-          case _ =>
-            false
-        })
+      !editor.getSelectionModel.hasSelection &&
+      (file match {
+        case hoconFile: HoconPsiFile =>
+          checkAvailableHocon(editor, hoconFile, info, down)
+        case _ =>
+          false
+      })
 
-  private def checkAvailableHocon(editor: Editor,
-                                  file: HoconPsiFile,
-                                  info: MoveInfo,
-                                  down: Boolean): Boolean = {
+  private def checkAvailableHocon(
+      editor: Editor,
+      file: HoconPsiFile,
+      info: MoveInfo,
+      down: Boolean
+  ): Boolean = {
     val document = editor.getDocument
-    val offset = editor.getCaretModel.getOffset
-    val element = file.findElementAt(offset)
+    val offset   = editor.getCaretModel.getOffset
+    val element  = file.findElementAt(offset)
 
     if (element == null) return false
 
@@ -95,21 +104,24 @@ class HoconObjectEntryMover extends LineMover {
     // Finds ancestor object entry that can be "grabbed and moved" by current offset
     @tailrec def enclosingAnchoredEntry(el: PsiElement): Option[HObjectEntry] =
       el match {
-        case _: PsiFile => None
+        case _: PsiFile                                  => None
         case _ if firstNonCommentLine(el) != currentLine => None
-        case entry: HObjectEntry if movableLines(entry) => Some(entry)
-        case _ => enclosingAnchoredEntry(el.getParent)
+        case entry: HObjectEntry if movableLines(entry)  => Some(entry)
+        case _                                           => enclosingAnchoredEntry(el.getParent)
       }
 
-    def isByEdge(entry: HObjectEntry) = !entry.parent.exists(_.isToplevel) && {
-      // todo suspicious
-      if (down)
-        entry.nextEntry.forall(
-            ne => entry.parent.exists(pp => startLine(ne) == endLine(pp)))
-      else
-        entry.previousEntry.forall(
-            pe => entry.parent.exists(pp => endLine(pe) == startLine(pp)))
-    }
+    def isByEdge(entry: HObjectEntry) =
+      !entry.parent.exists(_.isToplevel) && {
+        // todo suspicious
+        if (down)
+          entry.nextEntry.forall(ne =>
+            entry.parent.exists(pp => startLine(ne) == endLine(pp))
+          )
+        else
+          entry.previousEntry.forall(pe =>
+            entry.parent.exists(pp => endLine(pe) == startLine(pp))
+          )
+      }
 
     def keyString(keyedField: HKeyedField) =
       keyedField.key.map(_.getText).getOrElse("")
@@ -128,7 +140,8 @@ class HoconObjectEntryMover extends LineMover {
       else entry.previousEntry.filter(canInsertBefore)
 
     def fieldToAscendOutOf(
-        field: HObjectField): Option[(HObjectField, List[String])] =
+        field: HObjectField
+    ): Option[(HObjectField, List[String])] =
       if (isByEdge(field)) {
         def edgeLine(element: PsiElement) =
           if (down) endLine(element) else firstNonCommentLine(element)
@@ -139,10 +152,12 @@ class HoconObjectEntryMover extends LineMover {
           .flatMap(_.prefixingField)
           .map(_.enclosingObjectField)
           .filter(of =>
-                field.parent.exists(pp => edgeLine(of) == edgeLine(pp)) &&
-                canInsert(of))
+            field.parent.exists(pp => edgeLine(of) == edgeLine(pp)) &&
+              canInsert(of)
+          )
           .map(of =>
-                (of, of.keyedField.fieldsInPathForward.map(keyString).toList))
+            (of, of.keyedField.fieldsInPathForward.map(keyString).toList)
+          )
       } else None
 
     def canInsertInto(field: HObjectField) =
@@ -164,20 +179,24 @@ class HoconObjectEntryMover extends LineMover {
       if (down) entry.nextEntry else entry.previousEntry
 
     def fieldToDescendInto(
-        field: HObjectField): Option[(HObjectField, List[String])] =
+        field: HObjectField
+    ): Option[(HObjectField, List[String])] =
       for {
         adjacentField <- adjacentEntry(field)
-          .collect({ case f: HObjectField => f })
-          .filter(canInsertInto)
+                          .collect({ case f: HObjectField => f })
+                          .filter(canInsertInto)
         prefixToRemove <- {
           val prefix =
             adjacentField.keyedField.fieldsInPathForward.map(keyString).toList
           val removablePrefix =
-            field.keyedField.fieldsInPathForward.takeWhile {
-              case prefixed: HPrefixedField =>
-                prefixed.subField.getTextRange.contains(offset)
-              case _ => false
-            }.map(keyString).toList
+            field.keyedField.fieldsInPathForward
+              .takeWhile {
+                case prefixed: HPrefixedField =>
+                  prefixed.subField.getTextRange.contains(offset)
+                case _ => false
+              }
+              .map(keyString)
+              .toList
           if (removablePrefix.startsWith(prefix)) Some(prefix) else None
         }
       } yield (adjacentField, prefixToRemove)
@@ -193,22 +212,29 @@ class HoconObjectEntryMover extends LineMover {
             else
               new LineRange(startLine(enclosingField), sourceRange.startLine)
           val mod = PrefixModification(
-              objField.getTextOffset, 0, prefixToAdd.mkString("", ".", "."))
+            objField.getTextOffset,
+            0,
+            prefixToAdd.mkString("", ".", ".")
+          )
           (sourceRange, targetRange, Some(mod))
       } orElse fieldToDescendInto(objField).map {
         case (adjacentField, prefixToRemove) =>
           val targetRange =
             if (down)
-              new LineRange(sourceRange.endLine,
-                            firstNonCommentLine(adjacentField) + 1)
+              new LineRange(
+                sourceRange.endLine,
+                firstNonCommentLine(adjacentField) + 1
+              )
             else new LineRange(endLine(adjacentField), sourceRange.startLine)
           val prefixStr = prefixToRemove.mkString("", ".", ".")
           val needsGuard = document.getCharsSequence
             .charAt(objField.getTextOffset + prefixStr.length)
             .isWhitespace
-          val mod = PrefixModification(objField.getTextOffset,
-                                       prefixStr.length,
-                                       if (needsGuard) "\"\"" else "")
+          val mod = PrefixModification(
+            objField.getTextOffset,
+            prefixStr.length,
+            if (needsGuard) "\"\"" else ""
+          )
           (sourceRange, targetRange, Some(mod))
       }
     }
@@ -247,12 +273,11 @@ class HoconObjectEntryMover extends LineMover {
     rangesOpt.isDefined
   }
 
-  override def beforeMove(
-      editor: Editor, info: MoveInfo, down: Boolean): Unit =
+  override def beforeMove(editor: Editor, info: MoveInfo, down: Boolean): Unit =
     info.getUserData(PrefixModKey).foreach {
       case PrefixModification(offset, length, replacement) =>
         // we need to move caret manually when adding prefix exactly at caret position
-        val caretModel = editor.getCaretModel
+        val caretModel      = editor.getCaretModel
         val shouldMoveCaret = length == 0 && caretModel.getOffset == offset
         editor.getDocument.replaceString(offset, offset + length, replacement)
         if (shouldMoveCaret) {

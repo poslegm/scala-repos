@@ -14,8 +14,8 @@ class RequestHandler(
     envelope: RpcRequestEnvelope,
     project: ActorRef,
     server: ActorRef
-)
-    extends Actor with ActorLogging {
+) extends Actor
+    with ActorLogging {
 
   override def preStart(): Unit = {
     log.debug(envelope.req.toString)
@@ -29,26 +29,28 @@ class RequestHandler(
     }
   }
 
-  def resolveDocSig: Receive = LoggingReceive.withLabel("resolveDocSig") {
-    case None =>
-      self ! FalseResponse
-      context.unbecome()
-    case Some(sig: DocSigPair) =>
-      project ! sig
-      context.unbecome()
-  }
+  def resolveDocSig: Receive =
+    LoggingReceive.withLabel("resolveDocSig") {
+      case None =>
+        self ! FalseResponse
+        context.unbecome()
+      case Some(sig: DocSigPair) =>
+        project ! sig
+        context.unbecome()
+    }
 
   // we can put all manner of timeout / monitoring logic in here
 
-  def receive = LoggingReceive.withLabel("receive") {
-    case err: EnsimeServerError =>
-      server forward RpcResponseEnvelope(Some(envelope.callId), err)
-      context stop self
+  def receive =
+    LoggingReceive.withLabel("receive") {
+      case err: EnsimeServerError =>
+        server forward RpcResponseEnvelope(Some(envelope.callId), err)
+        context stop self
 
-    case response: RpcResponse =>
-      server forward RpcResponseEnvelope(Some(envelope.callId), response)
-      context stop self
-  }
+      case response: RpcResponse =>
+        server forward RpcResponseEnvelope(Some(envelope.callId), response)
+        context stop self
+    }
 }
 object RequestHandler {
   def apply(

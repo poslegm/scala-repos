@@ -40,8 +40,9 @@ object ActivitySource {
     * An ActivitySource for observing file contents. Once observed,
     * each file will be polled once per period.
     */
-  def forFiles(period: Duration = 1.minute)(
-      implicit timer: Timer): ActivitySource[Buf] =
+  def forFiles(
+      period: Duration = 1.minute
+  )(implicit timer: Timer): ActivitySource[Buf] =
     new CachingActivitySource(new FilePollingActivitySource(period)(timer))
 
   /**
@@ -53,12 +54,13 @@ object ActivitySource {
     new CachingActivitySource(new ClassLoaderActivitySource(cl))
 
   private[ActivitySource] class OrElse[T, U >: T](
-      primary: ActivitySource[T], failover: ActivitySource[U])
-      extends ActivitySource[U] {
+      primary: ActivitySource[T],
+      failover: ActivitySource[U]
+  ) extends ActivitySource[U] {
     def get(name: String): Activity[U] = {
       primary.get(name) transform {
         case Activity.Failed(_) => failover.get(name)
-        case state => Activity(Var.value(state))
+        case state              => Activity(Var.value(state))
       }
     }
   }
@@ -72,7 +74,7 @@ class CachingActivitySource[T](underlying: ActivitySource[T])
     extends ActivitySource[T] {
   import com.twitter.io.exp.ActivitySource._
 
-  private[this] val refq = new ReferenceQueue[Activity[T]]
+  private[this] val refq    = new ReferenceQueue[Activity[T]]
   private[this] val forward = new HashMap[String, WeakReference[Activity[T]]]
   private[this] val reverse = new HashMap[WeakReference[Activity[T]], String]
 
@@ -80,39 +82,39 @@ class CachingActivitySource[T](underlying: ActivitySource[T])
     * A caching proxy to the underlying ActivitySource. Vars are cached by
     * name, and are tracked with WeakReferences.
     */
-  def get(name: String): Activity[T] = synchronized {
-    gc()
-    Option(forward.get(name)) flatMap { wr =>
-      Option(wr.get())
-    } match {
-      case Some(v) => v
-      case None =>
-        val v = underlying.get(name)
-        val ref = new WeakReference(v, refq)
-        forward.put(name, ref)
-        reverse.put(ref, name)
-        v
+  def get(name: String): Activity[T] =
+    synchronized {
+      gc()
+      Option(forward.get(name)) flatMap { wr => Option(wr.get()) } match {
+        case Some(v) => v
+        case None =>
+          val v   = underlying.get(name)
+          val ref = new WeakReference(v, refq)
+          forward.put(name, ref)
+          reverse.put(ref, name)
+          v
+      }
     }
-  }
 
   /**
     * Remove garbage collected cache entries.
     */
-  def gc(): Unit = synchronized {
-    var ref = refq.poll()
-    while (ref != null) {
-      val key = reverse.remove(ref)
-      if (key != null) forward.remove(key)
+  def gc(): Unit =
+    synchronized {
+      var ref = refq.poll()
+      while (ref != null) {
+        val key = reverse.remove(ref)
+        if (key != null) forward.remove(key)
 
-      ref = refq.poll()
+        ref = refq.poll()
+      }
     }
-  }
 }
 
 /**
   * An ActivitySource for observing the contents of a file with periodic polling.
   */
-class FilePollingActivitySource private[exp](
+class FilePollingActivitySource private[exp] (
     period: Duration,
     pool: FuturePool
 )(implicit timer: Timer)
@@ -131,9 +133,11 @@ class FilePollingActivitySource private[exp](
         if (file.exists()) {
           pool {
             val reader =
-              new InputStreamReader(new FileInputStream(file),
-                                    InputStreamReader.DefaultMaxBufferSize,
-                                    pool)
+              new InputStreamReader(
+                new FileInputStream(file),
+                InputStreamReader.DefaultMaxBufferSize,
+                pool
+              )
             Reader.readAll(reader) respond {
               case Return(buf) =>
                 value() = Activity.Ok(buf)
@@ -149,9 +153,7 @@ class FilePollingActivitySource private[exp](
         }
       }
 
-      Closable.make { _ =>
-        Future { timerTask.cancel() }
-      }
+      Closable.make { _ => Future { timerTask.cancel() } }
     }
 
     Activity(v)
@@ -161,9 +163,10 @@ class FilePollingActivitySource private[exp](
 /**
   * An ActivitySource for ClassLoader resources.
   */
-class ClassLoaderActivitySource private[exp](
-    classLoader: ClassLoader, pool: FuturePool)
-    extends ActivitySource[Buf] {
+class ClassLoaderActivitySource private[exp] (
+    classLoader: ClassLoader,
+    pool: FuturePool
+) extends ActivitySource[Buf] {
 
   import com.twitter.io.exp.ActivitySource._
 
@@ -174,7 +177,7 @@ class ClassLoaderActivitySource private[exp](
     // This Var is updated at most once since ClassLoader
     // resources don't change (do they?).
     val runOnce = new AtomicBoolean(false)
-    val p = new Promise[Activity.State[Buf]]
+    val p       = new Promise[Activity.State[Buf]]
 
     // Defer loading until the first observation
     val v = Var.async[Activity.State[Buf]](Activity.Pending) { value =>
@@ -184,7 +187,10 @@ class ClassLoaderActivitySource private[exp](
             case null => p.setValue(Activity.Failed(NotFound))
             case stream =>
               val reader = new InputStreamReader(
-                  stream, InputStreamReader.DefaultMaxBufferSize, pool)
+                stream,
+                InputStreamReader.DefaultMaxBufferSize,
+                pool
+              )
               Reader.readAll(reader) respond {
                 case Return(buf) =>
                   p.setValue(Activity.Ok(buf))

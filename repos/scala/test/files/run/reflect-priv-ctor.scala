@@ -14,10 +14,10 @@ object Test {
     val klass = currentMirror reflectClass typeOf[Foo].typeSymbol.asClass
     val init = typeOf[Foo].members find {
       case m: MethodSymbol => m.isConstructor
-      case _ => false
+      case _               => false
     } get
     val ctor = klass reflectConstructor init.asMethod
-    val foo = ctor() // no access?
+    val foo  = ctor() // no access?
     Console println foo
   }
 }

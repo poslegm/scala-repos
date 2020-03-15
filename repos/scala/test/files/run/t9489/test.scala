@@ -1,5 +1,5 @@
 class T {
-  def f(a: A) = g(a.b) // was: "found Int, required B"
+  def f(a: A)    = g(a.b) // was: "found Int, required B"
   def g(b: => B) = null
 }
 

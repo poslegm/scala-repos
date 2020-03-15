@@ -18,7 +18,7 @@ abstract class JavapTest extends ReplTest {
   // give it a pass if javap is broken
   override def show() =
     try {
-      val res = eval().toSeq
+      val res         = eval().toSeq
       val unsupported = res exists (s => baddies exists (s contains _))
       assert((unsupported || yah(res)), res.mkString("", "\n", "\n"))
     } catch { case ae: AssertionError => ae.printStackTrace(sysout) }

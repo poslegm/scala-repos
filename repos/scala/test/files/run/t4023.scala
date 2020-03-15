@@ -4,7 +4,7 @@ object Test {
     private class B2
     object B3
     private object B4
-    object B5 extends B1
+    object B5         extends B1
     private object B6 extends B2
 
     val classes1 = this.getClass.getDeclaredClasses

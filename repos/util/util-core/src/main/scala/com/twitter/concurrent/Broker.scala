@@ -44,12 +44,12 @@ class Broker[T] {
   private[this] def rmElem(elem: AnyRef) {
     state.get match {
       case s @ Sending(q) =>
-        val nextq = q filter { _ ne elem }
+        val nextq     = q filter { _ ne elem }
         val nextState = if (nextq.isEmpty) Quiet else Sending(nextq)
         if (!state.compareAndSet(s, nextState)) rmElem(elem)
 
       case s @ Receiving(q) =>
-        val nextq = q filter { _ ne elem }
+        val nextq     = q filter { _ ne elem }
         val nextState = if (nextq.isEmpty) Quiet else Receiving(nextq)
         if (!state.compareAndSet(s, nextState)) rmElem(elem)
 
@@ -57,37 +57,38 @@ class Broker[T] {
     }
   }
 
-  def send(msg: T): Offer[Unit] = new Offer[Unit] {
-    @tailrec
-    def prepare() = {
-      state.get match {
-        case s @ Receiving(rq) =>
-          if (rq.isEmpty) throw new IllegalStateException()
-          val (recvp, newq) = rq.dequeue
-          val nextState = if (newq.isEmpty) Quiet else Receiving(newq)
-          if (!state.compareAndSet(s, nextState)) prepare()
-          else {
-            val (sendTx, recvTx) = Tx.twoParty(msg)
-            recvp.setValue(recvTx)
-            Future.value(sendTx)
-          }
+  def send(msg: T): Offer[Unit] =
+    new Offer[Unit] {
+      @tailrec
+      def prepare() = {
+        state.get match {
+          case s @ Receiving(rq) =>
+            if (rq.isEmpty) throw new IllegalStateException()
+            val (recvp, newq) = rq.dequeue
+            val nextState     = if (newq.isEmpty) Quiet else Receiving(newq)
+            if (!state.compareAndSet(s, nextState)) prepare()
+            else {
+              val (sendTx, recvTx) = Tx.twoParty(msg)
+              recvp.setValue(recvTx)
+              Future.value(sendTx)
+            }
 
-        case s @ (Quiet | Sending(_)) =>
-          val p = new Promise[Tx[Unit]]
-          val elem: (Promise[Tx[Unit]], T) = (p, msg)
-          p.setInterruptHandler {
-            case _ => rmElem(elem)
-          }
-          val nextState = s match {
-            case Quiet => Sending(Queue(elem))
-            case Sending(q) => Sending(q enqueue elem)
-            case Receiving(_) => throw new IllegalStateException()
-          }
+          case s @ (Quiet | Sending(_)) =>
+            val p                            = new Promise[Tx[Unit]]
+            val elem: (Promise[Tx[Unit]], T) = (p, msg)
+            p.setInterruptHandler {
+              case _ => rmElem(elem)
+            }
+            val nextState = s match {
+              case Quiet        => Sending(Queue(elem))
+              case Sending(q)   => Sending(q enqueue elem)
+              case Receiving(_) => throw new IllegalStateException()
+            }
 
-          if (state.compareAndSet(s, nextState)) p else prepare()
+            if (state.compareAndSet(s, nextState)) p else prepare()
+        }
       }
     }
-  }
 
   val recv: Offer[T] = new Offer[T] {
     @tailrec
@@ -96,7 +97,7 @@ class Broker[T] {
         case s @ Sending(sq) =>
           if (sq.isEmpty) throw new IllegalStateException()
           val ((sendp, msg), newq) = sq.dequeue
-          val nextState = if (newq.isEmpty) Quiet else Sending(newq)
+          val nextState            = if (newq.isEmpty) Quiet else Sending(newq)
           if (!state.compareAndSet(s, nextState)) prepare()
           else {
             val (sendTx, recvTx) = Tx.twoParty(msg)
@@ -108,9 +109,9 @@ class Broker[T] {
           val p = new Promise[Tx[T]]
           p.setInterruptHandler { case _ => rmElem(p) }
           val nextState = s match {
-            case Quiet => Receiving(Queue(p))
+            case Quiet        => Receiving(Queue(p))
             case Receiving(q) => Receiving(q enqueue p)
-            case Sending(_) => throw new IllegalStateException()
+            case Sending(_)   => throw new IllegalStateException()
           }
 
           if (state.compareAndSet(s, nextState)) p else prepare()

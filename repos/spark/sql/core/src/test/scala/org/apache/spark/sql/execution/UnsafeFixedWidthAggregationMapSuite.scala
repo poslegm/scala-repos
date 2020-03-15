@@ -37,18 +37,22 @@ import org.apache.spark.unsafe.types.UTF8String
   * Use [[testWithMemoryLeakDetection]] rather than [[test]] to construct test cases.
   */
 class UnsafeFixedWidthAggregationMapSuite
-    extends SparkFunSuite with Matchers with SharedSQLContext {
+    extends SparkFunSuite
+    with Matchers
+    with SharedSQLContext {
 
   import UnsafeFixedWidthAggregationMap._
 
   private val groupKeySchema = StructType(
-      StructField("product", StringType) :: Nil)
+    StructField("product", StringType) :: Nil
+  )
   private val aggBufferSchema = StructType(
-      StructField("salePrice", IntegerType) :: Nil)
+    StructField("salePrice", IntegerType) :: Nil
+  )
   private def emptyAggregationBuffer: InternalRow = InternalRow(0)
-  private val PAGE_SIZE_BYTES: Long = 1L << 26; // 64 megabytes
+  private val PAGE_SIZE_BYTES: Long               = 1L << 26; // 64 megabytes
 
-  private var memoryManager: TestMemoryManager = null
+  private var memoryManager: TestMemoryManager     = null
   private var taskMemoryManager: TaskMemoryManager = null
 
   def testWithMemoryLeakDetection(name: String)(f: => Unit) {
@@ -66,12 +70,15 @@ class UnsafeFixedWidthAggregationMapSuite
       taskMemoryManager = new TaskMemoryManager(memoryManager, 0)
 
       TaskContext.setTaskContext(
-          new TaskContextImpl(stageId = 0,
-                              partitionId = 0,
-                              taskAttemptId = Random.nextInt(10000),
-                              attemptNumber = 0,
-                              taskMemoryManager = taskMemoryManager,
-                              metricsSystem = null))
+        new TaskContextImpl(
+          stageId = 0,
+          partitionId = 0,
+          taskAttemptId = Random.nextInt(10000),
+          attemptNumber = 0,
+          taskMemoryManager = taskMemoryManager,
+          metricsSystem = null
+        )
+      )
 
       try {
         f
@@ -94,25 +101,37 @@ class UnsafeFixedWidthAggregationMapSuite
   }
 
   testWithMemoryLeakDetection("supported schemas") {
-    assert(supportsAggregationBufferSchema(
-            StructType(StructField("x", DecimalType.USER_DEFAULT) :: Nil)))
-    assert(supportsAggregationBufferSchema(
-            StructType(StructField("x", DecimalType.SYSTEM_DEFAULT) :: Nil)))
-    assert(!supportsAggregationBufferSchema(
-            StructType(StructField("x", StringType) :: Nil)))
-    assert(!supportsAggregationBufferSchema(
-            StructType(StructField("x", ArrayType(IntegerType)) :: Nil)))
+    assert(
+      supportsAggregationBufferSchema(
+        StructType(StructField("x", DecimalType.USER_DEFAULT) :: Nil)
+      )
+    )
+    assert(
+      supportsAggregationBufferSchema(
+        StructType(StructField("x", DecimalType.SYSTEM_DEFAULT) :: Nil)
+      )
+    )
+    assert(
+      !supportsAggregationBufferSchema(
+        StructType(StructField("x", StringType) :: Nil)
+      )
+    )
+    assert(
+      !supportsAggregationBufferSchema(
+        StructType(StructField("x", ArrayType(IntegerType)) :: Nil)
+      )
+    )
   }
 
   testWithMemoryLeakDetection("empty map") {
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        aggBufferSchema,
-        groupKeySchema,
-        taskMemoryManager,
-        1024, // initial capacity,
-        PAGE_SIZE_BYTES,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      aggBufferSchema,
+      groupKeySchema,
+      taskMemoryManager,
+      1024, // initial capacity,
+      PAGE_SIZE_BYTES,
+      false // disable perf metrics
     )
     assert(!map.iterator().next())
     map.free()
@@ -120,13 +139,13 @@ class UnsafeFixedWidthAggregationMapSuite
 
   testWithMemoryLeakDetection("updating values for a single key") {
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        aggBufferSchema,
-        groupKeySchema,
-        taskMemoryManager,
-        1024, // initial capacity
-        PAGE_SIZE_BYTES,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      aggBufferSchema,
+      groupKeySchema,
+      taskMemoryManager,
+      1024, // initial capacity
+      PAGE_SIZE_BYTES,
+      false // disable perf metrics
     )
     val groupKey = InternalRow(UTF8String.fromString("cats"))
 
@@ -147,23 +166,26 @@ class UnsafeFixedWidthAggregationMapSuite
 
   testWithMemoryLeakDetection("inserting large random keys") {
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        aggBufferSchema,
-        groupKeySchema,
-        taskMemoryManager,
-        128, // initial capacity
-        PAGE_SIZE_BYTES,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      aggBufferSchema,
+      groupKeySchema,
+      taskMemoryManager,
+      128, // initial capacity
+      PAGE_SIZE_BYTES,
+      false // disable perf metrics
     )
-    val rand = new Random(42)
+    val rand                   = new Random(42)
     val groupKeys: Set[String] = Seq.fill(512)(rand.nextString(1024)).toSet
     groupKeys.foreach { keyString =>
-      assert(map.getAggregationBuffer(
-              InternalRow(UTF8String.fromString(keyString))) != null)
+      assert(
+        map.getAggregationBuffer(
+          InternalRow(UTF8String.fromString(keyString))
+        ) != null
+      )
     }
 
     val seenKeys = new mutable.HashSet[String]
-    val iter = map.iterator()
+    val iter     = map.iterator()
     while (iter.next()) {
       seenKeys += iter.getKey.getString(0)
     }
@@ -174,13 +196,13 @@ class UnsafeFixedWidthAggregationMapSuite
 
   testWithMemoryLeakDetection("test external sorting") {
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        aggBufferSchema,
-        groupKeySchema,
-        taskMemoryManager,
-        128, // initial capacity
-        PAGE_SIZE_BYTES,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      aggBufferSchema,
+      groupKeySchema,
+      taskMemoryManager,
+      128, // initial capacity
+      PAGE_SIZE_BYTES,
+      false // disable perf metrics
     )
 
     val keys = randomStrings(1024).take(512)
@@ -208,11 +230,11 @@ class UnsafeFixedWidthAggregationMapSuite
     val sorter2 = map.destructAndCreateExternalSorter()
     sorter.merge(sorter2)
 
-    val out = new scala.collection.mutable.ArrayBuffer[String]
+    val out  = new scala.collection.mutable.ArrayBuffer[String]
     val iter = sorter.sortedIterator()
     while (iter.next()) {
       // At here, we also test if copy is correct.
-      val key = iter.getKey.copy()
+      val key   = iter.getKey.copy()
       val value = iter.getValue.copy()
       assert(key.getString(0).length === value.getInt(0))
       out += key.getString(0)
@@ -225,13 +247,13 @@ class UnsafeFixedWidthAggregationMapSuite
   testWithMemoryLeakDetection("test external sorting with an empty map") {
 
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        aggBufferSchema,
-        groupKeySchema,
-        taskMemoryManager,
-        128, // initial capacity
-        PAGE_SIZE_BYTES,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      aggBufferSchema,
+      groupKeySchema,
+      taskMemoryManager,
+      128, // initial capacity
+      PAGE_SIZE_BYTES,
+      false // disable perf metrics
     )
     val sorter = map.destructAndCreateExternalSorter()
 
@@ -251,11 +273,11 @@ class UnsafeFixedWidthAggregationMapSuite
     val sorter2 = map.destructAndCreateExternalSorter()
     sorter.merge(sorter2)
 
-    val out = new scala.collection.mutable.ArrayBuffer[String]
+    val out  = new scala.collection.mutable.ArrayBuffer[String]
     val iter = sorter.sortedIterator()
     while (iter.next()) {
       // At here, we also test if copy is correct.
-      val key = iter.getKey.copy()
+      val key   = iter.getKey.copy()
       val value = iter.getValue.copy()
       assert(key.getString(0).length === value.getInt(0))
       out += key.getString(0)
@@ -268,13 +290,13 @@ class UnsafeFixedWidthAggregationMapSuite
   testWithMemoryLeakDetection("test external sorting with empty records") {
 
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        StructType(Nil),
-        StructType(Nil),
-        taskMemoryManager,
-        128, // initial capacity
-        PAGE_SIZE_BYTES,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      StructType(Nil),
+      StructType(Nil),
+      taskMemoryManager,
+      128, // initial capacity
+      PAGE_SIZE_BYTES,
+      false // disable perf metrics
     )
     (1 to 10).foreach { i =>
       val buf = map.getAggregationBuffer(UnsafeRow.createFromByteArray(0, 0))
@@ -286,8 +308,7 @@ class UnsafeFixedWidthAggregationMapSuite
 
     // Add more keys to the sorter and make sure the results come out sorted.
     (1 to 4096).foreach { i =>
-      map.getAggregationBufferFromUnsafeRow(
-          UnsafeRow.createFromByteArray(0, 0))
+      map.getAggregationBufferFromUnsafeRow(UnsafeRow.createFromByteArray(0, 0))
 
       if ((i % 100) == 0) {
         val sorter2 = map.destructAndCreateExternalSorter()
@@ -298,7 +319,7 @@ class UnsafeFixedWidthAggregationMapSuite
     sorter.merge(sorter2)
 
     var count = 0
-    val iter = sorter.sortedIterator()
+    val iter  = sorter.sortedIterator()
     while (iter.next()) {
       // At here, we also test if copy is correct.
       iter.getKey.copy()
@@ -312,16 +333,17 @@ class UnsafeFixedWidthAggregationMapSuite
   }
 
   testWithMemoryLeakDetection(
-      "convert to external sorter under memory pressure (SPARK-10474)") {
+    "convert to external sorter under memory pressure (SPARK-10474)"
+  ) {
     val pageSize = 4096
     val map = new UnsafeFixedWidthAggregationMap(
-        emptyAggregationBuffer,
-        aggBufferSchema,
-        groupKeySchema,
-        taskMemoryManager,
-        128, // initial capacity
-        pageSize,
-        false // disable perf metrics
+      emptyAggregationBuffer,
+      aggBufferSchema,
+      groupKeySchema,
+      taskMemoryManager,
+      128, // initial capacity
+      pageSize,
+      false // disable perf metrics
     )
 
     val rand = new Random(42)

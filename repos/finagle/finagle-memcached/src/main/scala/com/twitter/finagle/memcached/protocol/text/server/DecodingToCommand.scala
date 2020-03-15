@@ -16,18 +16,18 @@ import text.{TokensWithData, Tokens}
 
 object DecodingToCommand {
   private val NOREPLY = Buf.Utf8("noreply")
-  private val SET = Buf.Utf8("set")
-  private val ADD = Buf.Utf8("add")
+  private val SET     = Buf.Utf8("set")
+  private val ADD     = Buf.Utf8("add")
   private val REPLACE = Buf.Utf8("replace")
-  private val APPEND = Buf.Utf8("append")
+  private val APPEND  = Buf.Utf8("append")
   private val PREPEND = Buf.Utf8("prepend")
-  private val GET = Buf.Utf8("get")
-  private val GETS = Buf.Utf8("gets")
-  private val DELETE = Buf.Utf8("delete")
-  private val INCR = Buf.Utf8("incr")
-  private val DECR = Buf.Utf8("decr")
-  private val QUIT = Buf.Utf8("quit")
-  private val STATS = Buf.Utf8("stats")
+  private val GET     = Buf.Utf8("get")
+  private val GETS    = Buf.Utf8("gets")
+  private val DELETE  = Buf.Utf8("delete")
+  private val INCR    = Buf.Utf8("incr")
+  private val DECR    = Buf.Utf8("decr")
+  private val QUIT    = Buf.Utf8("quit")
+  private val STATS   = Buf.Utf8("stats")
 }
 
 abstract class AbstractDecodingToCommand[C <: AnyRef] extends OneToOneDecoder {
@@ -36,11 +36,12 @@ abstract class AbstractDecodingToCommand[C <: AnyRef] extends OneToOneDecoder {
   // Taken from memcached.c
   private val RealtimeMaxdelta = 60 * 60 * 24 * 30
 
-  def decode(ctx: ChannelHandlerContext, ch: Channel, m: AnyRef) = m match {
-    case Tokens(tokens) => parseNonStorageCommand(tokens)
-    case TokensWithData(tokens, data, _ /*ignore CAS*/ ) =>
-      parseStorageCommand(tokens, data)
-  }
+  def decode(ctx: ChannelHandlerContext, ch: Channel, m: AnyRef) =
+    m match {
+      case Tokens(tokens) => parseNonStorageCommand(tokens)
+      case TokensWithData(tokens, data, _ /*ignore CAS*/ ) =>
+        parseStorageCommand(tokens, data)
+    }
 
   protected def parseNonStorageCommand(tokens: Seq[Buf]): C
   protected def parseStorageCommand(tokens: Seq[Buf], data: Buf): C
@@ -85,30 +86,30 @@ class DecodingToCommand extends AbstractDecodingToCommand[Command] {
   protected def parseStorageCommand(tokens: Seq[Buf], data: Buf) = {
     validateAnyStorageCommand(tokens)
     val commandName = tokens.head
-    val args = tokens.tail
+    val args        = tokens.tail
     commandName match {
-      case SET => tupled(Set)(validateStorageCommand(args, data))
-      case ADD => tupled(Add)(validateStorageCommand(args, data))
+      case SET     => tupled(Set)(validateStorageCommand(args, data))
+      case ADD     => tupled(Add)(validateStorageCommand(args, data))
       case REPLACE => tupled(Replace)(validateStorageCommand(args, data))
-      case APPEND => tupled(Append)(validateStorageCommand(args, data))
+      case APPEND  => tupled(Append)(validateStorageCommand(args, data))
       case PREPEND => tupled(Prepend)(validateStorageCommand(args, data))
-      case _ => throw new NonexistentCommand(Buf.slowHexString(commandName))
+      case _       => throw new NonexistentCommand(Buf.slowHexString(commandName))
     }
   }
 
   protected def parseNonStorageCommand(tokens: Seq[Buf]) = {
     validateAnyStorageCommand(tokens)
     val commandName = tokens.head
-    val args = tokens.tail
+    val args        = tokens.tail
     commandName match {
-      case GET => Get(args)
-      case GETS => Gets(args)
+      case GET    => Get(args)
+      case GETS   => Gets(args)
       case DELETE => Delete(validateDeleteCommand(args))
-      case INCR => tupled(Incr)(validateArithmeticCommand(args))
-      case DECR => tupled(Decr)(validateArithmeticCommand(args))
-      case QUIT => Quit()
-      case STATS => Stats(args)
-      case _ => throw new NonexistentCommand(Buf.slowHexString(commandName))
+      case INCR   => tupled(Incr)(validateArithmeticCommand(args))
+      case DECR   => tupled(Decr)(validateArithmeticCommand(args))
+      case QUIT   => Quit()
+      case STATS  => Stats(args)
+      case _      => throw new NonexistentCommand(Buf.slowHexString(commandName))
     }
   }
 }

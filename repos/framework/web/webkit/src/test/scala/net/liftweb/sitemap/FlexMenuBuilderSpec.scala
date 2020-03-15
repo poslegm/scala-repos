@@ -27,7 +27,7 @@ object FlexMenuBuilderSpec extends WebSpec(FlexMenuBuilderSpecBoot.boot _) {
   val html1 = <div data-lift="MenuBuilder.builder?group=hometabsv2"></div>
 
   "FlexMenuBuilder" should {
-    val testUrl = "http://foo.com/help"
+    val testUrl     = "http://foo.com/help"
     val testUrlPath = "http://foo.com/index1"
 
     "Link to Self" withSFor (testUrl) in {
@@ -90,13 +90,14 @@ object FlexMenuBuilderSpec extends WebSpec(FlexMenuBuilderSpecBoot.boot _) {
   */
 object FlexMenuBuilderSpecBoot {
   def boot() {
-    def siteMap = SiteMap(
+    def siteMap =
+      SiteMap(
         Menu.i("Home") / "index",
         Menu.i("Help") / "help" submenus
-        (Menu.i("Home1") / "index1", Menu.i("Home2") / "index2"),
+          (Menu.i("Home1") / "index1", Menu.i("Home2") / "index2"),
         Menu.i("Help2") / "help2" submenus
-        (Menu.i("Home3") / "index3", Menu.i("Home4") / "index4")
-    )
+          (Menu.i("Home3") / "index3", Menu.i("Home4") / "index4")
+      )
     LiftRules.setSiteMap(siteMap)
   }
 }

@@ -35,12 +35,24 @@ import java.util.Arrays
   * @see <a href="http://en.wikipedia.org/wiki/Mersenne_twister">Mersenne Twister @ Wikipedia</a>
   * @author <a href="mailto:dusan.kysel@gmail.com">Du&#x0161;an Kysel</a>
   */
-final class MersenneTwister64 protected[random](
-    mt: Array[Long], mti0: Int = 313)
-    extends LongBasedGenerator {
+final class MersenneTwister64 protected[random] (
+    mt: Array[Long],
+    mti0: Int = 313
+) extends LongBasedGenerator {
   // N + 1 = 313
 
-  import MersenneTwister64.{UpperMask, LowerMask, N, M, N_M, N_1, M_N, M_1, BYTES, mag01}
+  import MersenneTwister64.{
+    UpperMask,
+    LowerMask,
+    N,
+    M,
+    N_M,
+    N_1,
+    M_N,
+    M_1,
+    BYTES,
+    mag01
+  }
 
   private var mti = mti0
 
@@ -48,11 +60,9 @@ final class MersenneTwister64 protected[random](
 
   def getSeedBytes(): Array[Byte] = {
     val bytes = new Array[Byte](BYTES)
-    val bb = ByteBuffer.wrap(bytes)
+    val bb    = ByteBuffer.wrap(bytes)
 
-    cfor(0)(_ < N, _ + 1) { i =>
-      bb.putLong(mt(i))
-    }
+    cfor(0)(_ < N, _ + 1) { i => bb.putLong(mt(i)) }
     bb.putInt(mti)
     bytes
   }
@@ -60,9 +70,7 @@ final class MersenneTwister64 protected[random](
   def setSeedBytes(bytes: Array[Byte]): Unit = {
     val bs = if (bytes.length < BYTES) Arrays.copyOf(bytes, BYTES) else bytes
     val bb = ByteBuffer.wrap(bs)
-    cfor(0)(_ < N, _ + 1) { i =>
-      mt(i) = bb.getLong()
-    }
+    cfor(0)(_ < N, _ + 1) { i => mt(i) = bb.getLong() }
     mti = bb.getInt
   }
 

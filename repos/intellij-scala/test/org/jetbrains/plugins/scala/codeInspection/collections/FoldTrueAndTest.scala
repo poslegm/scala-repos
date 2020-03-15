@@ -12,7 +12,7 @@ class FoldTrueAndTest extends OperationsOnCollectionInspectionTest {
   def test_1() {
     val selected = s"List(false).${START}foldLeft(true){_ && _}$END"
     check(selected)
-    val text = "List(false).foldLeft(true){_ && _}"
+    val text   = "List(false).foldLeft(true){_ && _}"
     val result = "List(false).forall(_)"
     testFix(text, result, hint)
   }
@@ -21,7 +21,7 @@ class FoldTrueAndTest extends OperationsOnCollectionInspectionTest {
     val selected = s"""def a(x: String) = false
                      |List("a").$START/:(true) (_ && a(_))$END""".stripMargin
     check(selected)
-    val text = """def a(x: String) = false
+    val text   = """def a(x: String) = false
                  |List("a")./:(true) (_ && a(_))""".stripMargin
     val result = """def a(x: String) = false
                    |List("a").forall(a(_))""".stripMargin
@@ -32,7 +32,7 @@ class FoldTrueAndTest extends OperationsOnCollectionInspectionTest {
     val selected = s"""def a(x: String) = false
                      |List("a").${START}fold(true) ((x,y) => x && a(y))$END""".stripMargin
     check(selected)
-    val text = """def a(x: String) = false
+    val text   = """def a(x: String) = false
                  |List("a").fold(true) ((x,y) => x && a(y))""".stripMargin
     val result = """def a(x: String) = false
                    |List("a").forall(y => a(y))""".stripMargin
@@ -47,7 +47,8 @@ class FoldTrueAndTest extends OperationsOnCollectionInspectionTest {
   }
 
   def testWithoutSideEffect(): Unit = {
-    doTest(s"""
+    doTest(
+      s"""
          |List(0).${START}foldLeft(true) {(x, y) =>
          |  x && {
          |    var z = 1
@@ -55,7 +56,8 @@ class FoldTrueAndTest extends OperationsOnCollectionInspectionTest {
          |    z + y % 2 == 1
          |  }
          |}$END
-       """.stripMargin, """
+       """.stripMargin,
+      """
          |List(0).foldLeft(true) {(x, y) =>
          |  x && {
          |    var z = 1
@@ -63,13 +65,15 @@ class FoldTrueAndTest extends OperationsOnCollectionInspectionTest {
          |    z + y % 2 == 1
          |  }
          |}
-       """.stripMargin, """
+       """.stripMargin,
+      """
         |List(0).forall(y => {
         |  var z = 1
         |  z += 1
         |  z + y % 2 == 1
         |})
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def testWithSideEffect(): Unit = {

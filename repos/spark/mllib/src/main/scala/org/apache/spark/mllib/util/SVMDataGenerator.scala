@@ -41,17 +41,18 @@ object SVMDataGenerator {
     if (args.length < 2) {
       // scalastyle:off println
       println(
-          "Usage: SVMGenerator " +
-          "<master> <output_dir> [num_examples] [num_features] [num_partitions]")
+        "Usage: SVMGenerator " +
+          "<master> <output_dir> [num_examples] [num_features] [num_partitions]"
+      )
       // scalastyle:on println
       System.exit(1)
     }
 
     val sparkMaster: String = args(0)
-    val outputPath: String = args(1)
-    val nexamples: Int = if (args.length > 2) args(2).toInt else 1000
-    val nfeatures: Int = if (args.length > 3) args(3).toInt else 2
-    val parts: Int = if (args.length > 4) args(4).toInt else 2
+    val outputPath: String  = args(1)
+    val nexamples: Int      = if (args.length > 2) args(2).toInt else 1000
+    val nfeatures: Int      = if (args.length > 3) args(3).toInt else 2
+    val parts: Int          = if (args.length > 4) args(4).toInt else 2
 
     val sc = new SparkContext(sparkMaster, "SVMGenerator")
 
@@ -68,7 +69,7 @@ object SVMDataGenerator {
         }
         val yD =
           blas.ddot(trueWeights.length, x, 1, trueWeights, 1) +
-          rnd.nextGaussian() * 0.1
+            rnd.nextGaussian() * 0.1
         val y = if (yD < 0) 0.0 else 1.0
         LabeledPoint(y, Vectors.dense(x))
       }

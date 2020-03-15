@@ -20,13 +20,13 @@ import scala.compat.java8.FutureConverters._
   * INTERNAL API
   */
 private[http] final case class RequestContextImpl(
-    underlying: ScalaRequestContext)
-    extends RequestContext {
+    underlying: ScalaRequestContext
+) extends RequestContext {
   // provides auto-conversion to japi.RouteResult
   import RouteResultImpl._
 
   def request: jm.HttpRequest = underlying.request
-  def unmatchedPath: String = underlying.unmatchedPath.toString
+  def unmatchedPath: String   = underlying.unmatchedPath.toString
 
   def completeWith(futureResult: Future[RouteResult]): RouteResult =
     futureResult.flatMap {
@@ -49,7 +49,8 @@ private[http] final case class RequestContextImpl(
         underlying.complete(value)
       case _ ⇒
         throw new IllegalArgumentException(
-            s"Unsupported marshaller: $marshaller")
+          s"Unsupported marshaller: $marshaller"
+        )
     }
   def complete(response: jm.HttpResponse): RouteResult =
     underlying.complete(response.asScala)
@@ -63,6 +64,6 @@ private[http] final case class RequestContextImpl(
     underlying.executionContext
   def materializer(): Materializer = underlying.materializer
 
-  override def settings: RoutingSettings = underlying.settings
+  override def settings: RoutingSettings      = underlying.settings
   override def parserSettings: ParserSettings = underlying.parserSettings
 }

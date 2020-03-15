@@ -39,8 +39,7 @@ class BlockManagerId private (
     private var host_ : String,
     private var port_ : Int,
     private var nettyPort_ : Int
-)
-    extends Externalizable {
+) extends Externalizable {
 
   private def this() = this(null, null, 0, 0) // For deserialization only
 
@@ -89,13 +88,14 @@ class BlockManagerId private (
   override def hashCode: Int =
     (executorId.hashCode * 41 + host.hashCode) * 41 + port + nettyPort
 
-  override def equals(that: Any) = that match {
-    case id: BlockManagerId =>
-      executorId == id.executorId && port == id.port && host == id.host &&
-      nettyPort == id.nettyPort
-    case _ =>
-      false
-  }
+  override def equals(that: Any) =
+    that match {
+      case id: BlockManagerId =>
+        executorId == id.executorId && port == id.port && host == id.host &&
+          nettyPort == id.nettyPort
+      case _ =>
+        false
+    }
 }
 
 object BlockManagerId {
@@ -153,10 +153,10 @@ class MapStatus(var location: BlockManagerId, var compressedSizes: Array[Byte])
 }
 
 class MapStatusTest extends FunSuite {
-  def register[T : ClassTag : Pickler : Unpickler : FastTypeTag](): Unit = {
-    val clazz = classTag[T].runtimeClass
-    val p = implicitly[Pickler[T]]
-    val up = implicitly[Unpickler[T]]
+  def register[T: ClassTag: Pickler: Unpickler: FastTypeTag](): Unit = {
+    val clazz  = classTag[T].runtimeClass
+    val p      = implicitly[Pickler[T]]
+    val up     = implicitly[Unpickler[T]]
     val tagKey = implicitly[FastTypeTag[T]].key
     internal.currentRuntime.picklers.registerPickler(tagKey, p)
     internal.currentRuntime.picklers.registerUnpickler(tagKey, up)
@@ -165,14 +165,14 @@ class MapStatusTest extends FunSuite {
   register[MapStatus]
 
   test("main") {
-    val bid = BlockManagerId("0", "localhost", 8080, 8090)
-    val ms = new MapStatus(bid, Array[Byte](1, 2, 3, 4))
+    val bid           = BlockManagerId("0", "localhost", 8080, 8090)
+    val ms            = new MapStatus(bid, Array[Byte](1, 2, 3, 4))
     val sizes: String = ms.compressedSizes.mkString(",")
 
-    val p = (ms: Any).pickle
+    val p  = (ms: Any).pickle
     val up = p.unpickle[Any]
 
-    val ms2 = up.asInstanceOf[MapStatus]
+    val ms2            = up.asInstanceOf[MapStatus]
     val sizes2: String = ms2.compressedSizes.mkString(",")
     assert(sizes == sizes2, "same array expected")
   }

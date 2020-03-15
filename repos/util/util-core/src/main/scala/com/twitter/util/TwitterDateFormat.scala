@@ -22,16 +22,17 @@ object TwitterDateFormat {
     val stripped = stripSingleQuoted(pattern)
     if (stripped.contains('Y') && !(stripped.contains('w'))) {
       throw new IllegalArgumentException(
-          "Invalid date format uses 'Y' for week-of-year without 'w': %s"
-            .format(pattern))
+        "Invalid date format uses 'Y' for week-of-year without 'w': %s"
+          .format(pattern)
+      )
     }
   }
 
   /** Patterns can contain quoted strings 'foo' which we should ignore in checking the pattern */
   private[util] def stripSingleQuoted(pattern: String): String = {
-    val buf = new StringBuilder(pattern.size)
+    val buf        = new StringBuilder(pattern.size)
     var startIndex = 0
-    var endIndex = 0
+    var endIndex   = 0
     while (startIndex >= 0 && startIndex < pattern.size) {
       endIndex = pattern.indexOf('\'', startIndex)
       if (endIndex < 0) {
@@ -43,7 +44,8 @@ object TwitterDateFormat {
         endIndex = pattern.indexOf('\'', startIndex)
         if (endIndex < 0) {
           throw new IllegalArgumentException(
-              "Unmatched quote in date format: %s".format(pattern))
+            "Unmatched quote in date format: %s".format(pattern)
+          )
         }
         startIndex = endIndex + 1
       }

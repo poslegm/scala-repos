@@ -16,9 +16,7 @@ object StackRegistry {
     // reflection of params to case classes.
     // TODO: we might be able to make this avoid reflection with Showable
     val modules: Seq[Module] = stack.tails.map { node =>
-      val raw = node.head.parameters.map { p =>
-        params(p)
-      }
+      val raw = node.head.parameters.map { p => params(p) }
       val reflected = raw.foldLeft(Seq.empty[(String, String)]) {
         case (seq, p: Product) =>
           // TODO: many case classes have a $outer field because they close over an outside scope.
@@ -32,7 +30,7 @@ object StackRegistry {
       Module(node.head.role.name, node.head.description, reflected)
     }.toSeq
 
-    val name: String = params[Label].label
+    val name: String            = params[Label].label
     val protocolLibrary: String = params[ProtocolLibrary].name
   }
 
@@ -40,7 +38,10 @@ object StackRegistry {
     * The module describing a given Param for a Stack element.
     */
   case class Module(
-      name: String, description: String, fields: Seq[(String, String)])
+      name: String,
+      description: String,
+      fields: Seq[(String, String)]
+  )
 }
 
 /**
@@ -67,9 +68,10 @@ trait StackRegistry {
   /**
     * Returns any registered [[Entry Entries]] that had the same [[Label]].
     */
-  def registeredDuplicates: Seq[Entry] = synchronized {
-    duplicates.values.flatten.toSeq
-  }
+  def registeredDuplicates: Seq[Entry] =
+    synchronized {
+      duplicates.values.flatten.toSeq
+    }
 
   /** Registers an `addr` and `stk`. */
   def register(addr: String, stk: Stack[_], params: Stack.Params): Unit = {
@@ -79,7 +81,7 @@ trait StackRegistry {
       if (registry.contains(entry.name)) {
         val updated = duplicates.get(entry.name) match {
           case Some(values) => values :+ entry
-          case None => Seq(entry)
+          case None         => Seq(entry)
         }
         duplicates += entry.name -> updated
       }
@@ -112,12 +114,14 @@ trait StackRegistry {
       case Module(paramName, _, reflected) =>
         reflected.foreach {
           case (field, value) =>
-            val key = Seq(registryName,
-                          entry.protocolLibrary,
-                          entry.name,
-                          entry.addr,
-                          paramName,
-                          field)
+            val key = Seq(
+              registryName,
+              entry.protocolLibrary,
+              entry.name,
+              entry.addr,
+              paramName,
+              field
+            )
             if (gRegistry.put(key, value).isEmpty) numEntries.incrementAndGet()
         }
     }
@@ -125,17 +129,19 @@ trait StackRegistry {
 
   private[this] def removeEntries(entry: Entry): Unit = {
     val gRegistry = GlobalRegistry.get
-    val name = entry.name
+    val name      = entry.name
     entry.modules.foreach {
       case Module(paramName, _, reflected) =>
         reflected.foreach {
           case (field, value) =>
-            val key = Seq(registryName,
-                          entry.protocolLibrary,
-                          name,
-                          entry.addr,
-                          paramName,
-                          field)
+            val key = Seq(
+              registryName,
+              entry.protocolLibrary,
+              name,
+              entry.addr,
+              paramName,
+              field
+            )
             if (gRegistry.remove(key).isDefined) numEntries.decrementAndGet()
         }
     }
@@ -148,8 +154,9 @@ trait StackRegistry {
   def registrants: Iterable[Entry] = synchronized { registry.values }
 
   // added for tests
-  private[finagle] def clear(): Unit = synchronized {
-    registry = Map.empty[String, Entry]
-    duplicates = Map.empty[String, Seq[Entry]]
-  }
+  private[finagle] def clear(): Unit =
+    synchronized {
+      registry = Map.empty[String, Entry]
+      duplicates = Map.empty[String, Seq[Entry]]
+    }
 }

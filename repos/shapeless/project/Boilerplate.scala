@@ -30,34 +30,35 @@ object Boilerplate {
   implicit class BlockHelper(val sc: StringContext) extends AnyVal {
     def block(args: Any*): String = {
       val interpolated = sc.standardInterpolator(treatEscapes, args)
-      val rawLines = interpolated split '\n'
+      val rawLines     = interpolated split '\n'
       val trimmedLines = rawLines map { _ dropWhile (_.isWhitespace) }
       trimmedLines mkString "\n"
     }
   }
 
   val templates: Seq[Template] = List(
-      GenTuplerInstances,
-      GenFnToProductInstances,
-      GenFnFromProductInstances,
-      GenCaseInst,
-      GenPolyApply,
-      GenPolyInst,
-      GenCases,
-      GenPolyNTraits,
-      GenNats,
-      GenTupleTypeableInstances,
-      GenSizedBuilder,
-      GenHMapBuilder,
-      GenUnpackInstances
+    GenTuplerInstances,
+    GenFnToProductInstances,
+    GenFnFromProductInstances,
+    GenCaseInst,
+    GenPolyApply,
+    GenPolyInst,
+    GenCases,
+    GenPolyNTraits,
+    GenNats,
+    GenTupleTypeableInstances,
+    GenSizedBuilder,
+    GenHMapBuilder,
+    GenUnpackInstances
   )
 
   /** Returns a seq of the generated files.  As a side-effect, it actually generates them... */
-  def gen(dir: File) = for (t <- templates) yield {
-    val tgtFile = dir / "shapeless" / t.filename
-    IO.write(tgtFile, t.body)
-    tgtFile
-  }
+  def gen(dir: File) =
+    for (t <- templates) yield {
+      val tgtFile = dir / "shapeless" / t.filename
+      IO.write(tgtFile, t.body)
+      tgtFile
+    }
 
   val header =
     """
@@ -82,16 +83,16 @@ object Boilerplate {
 
   class TemplateVals(val arity: Int) {
     val synTypes = (0 until arity) map (n => (n + 'A').toChar)
-    val synVals = (0 until arity) map (n => (n + 'a').toChar)
+    val synVals  = (0 until arity) map (n => (n + 'a').toChar)
     val synTypedVals =
       (synVals zip synTypes) map { case (v, t) => v + ":" + t }
 
-    val `A..N` = synTypes.mkString(", ")
+    val `A..N`     = synTypes.mkString(", ")
     val `A..N,Res` = (synTypes :+ "Res") mkString ", "
-    val `a..n` = synVals.mkString(", ")
-    val `A::N` = (synTypes :+ "HNil") mkString "::"
-    val `a::n` = (synVals :+ "HNil") mkString "::"
-    val `_.._` = Seq.fill(arity)("_").mkString(", ")
+    val `a..n`     = synVals.mkString(", ")
+    val `A::N`     = (synTypes :+ "HNil") mkString "::"
+    val `a::n`     = (synVals :+ "HNil") mkString "::"
+    val `_.._`     = Seq.fill(arity)("_").mkString(", ")
     val `(A..N)` =
       if (arity == 1) "Tuple1[A]" else synTypes.mkString("(", ", ", ")")
     val `(_.._)` =
@@ -117,7 +118,7 @@ object Boilerplate {
         rawContents flatMap { _ filter (_ startsWith "-") map (_.tail) }
       val postBody =
         rawContents.head dropWhile (_ startsWith "|") dropWhile
-        (_ startsWith "-") map (_.tail)
+          (_ startsWith "-") map (_.tail)
       (headerLines ++ preBody ++ instances ++ postBody) mkString "\n"
     }
   }
@@ -171,7 +172,7 @@ object Boilerplate {
 
     def content(tv: TemplateVals) = {
       import tv._
-      val fnType = s"(${`A..N`}) => Res"
+      val fnType      = s"(${`A..N`}) => Res"
       val hlistFnType = s"(${`A::N`}) => Res"
       val fnBody =
         if (arity == 0) "fn()"
@@ -209,7 +210,7 @@ object Boilerplate {
 
     def content(tv: TemplateVals) = {
       import tv._
-      val fnType = s"(${`A..N`}) => Res"
+      val fnType      = s"(${`A..N`}) => Res"
       val hlistFnType = s"(${`A::N`}) => Res"
 
       block"""
@@ -484,9 +485,9 @@ object Boilerplate {
     val filename = "unpack.scala"
     def content(tv: TemplateVals) = {
       import tv._
-      val typeblock = "FF[" + `A..N` + "], FF, " + `A..N`
+      val typeblock   = "FF[" + `A..N` + "], FF, " + `A..N`
       val hktypeblock = "FF[" + `_.._` + "], " + `A..N`
-      val traitname = s"Unpack${arity}"
+      val traitname   = s"Unpack${arity}"
       block"""
         |
         -

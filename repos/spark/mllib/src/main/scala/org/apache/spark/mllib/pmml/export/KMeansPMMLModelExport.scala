@@ -38,10 +38,10 @@ private[mllib] class KMeansPMMLModelExport(model: KMeansModel)
     pmml.getHeader.setDescription("k-means clustering")
 
     if (model.clusterCenters.length > 0) {
-      val clusterCenter = model.clusterCenters(0)
-      val fields = new SArray[FieldName](clusterCenter.size)
+      val clusterCenter  = model.clusterCenters(0)
+      val fields         = new SArray[FieldName](clusterCenter.size)
       val dataDictionary = new DataDictionary
-      val miningSchema = new MiningSchema
+      val miningSchema   = new MiningSchema
       val comparisonMeasure = new ComparisonMeasure()
         .setKind(ComparisonMeasure.Kind.DISTANCE)
         .setMeasure(new SquaredEuclidean())
@@ -56,11 +56,15 @@ private[mllib] class KMeansPMMLModelExport(model: KMeansModel)
       for (i <- 0 until clusterCenter.size) {
         fields(i) = FieldName.create("field_" + i)
         dataDictionary.addDataFields(
-            new DataField(fields(i), OpType.CONTINUOUS, DataType.DOUBLE))
+          new DataField(fields(i), OpType.CONTINUOUS, DataType.DOUBLE)
+        )
         miningSchema.addMiningFields(
-            new MiningField(fields(i)).setUsageType(FieldUsageType.ACTIVE))
-        clusteringModel.addClusteringFields(new ClusteringField(fields(i))
-              .setCompareFunction(CompareFunctionType.ABS_DIFF))
+          new MiningField(fields(i)).setUsageType(FieldUsageType.ACTIVE)
+        )
+        clusteringModel.addClusteringFields(
+          new ClusteringField(fields(i))
+            .setCompareFunction(CompareFunctionType.ABS_DIFF)
+        )
       }
 
       dataDictionary.setNumberOfFields(dataDictionary.getDataFields.size)
@@ -68,10 +72,12 @@ private[mllib] class KMeansPMMLModelExport(model: KMeansModel)
       for (i <- model.clusterCenters.indices) {
         val cluster = new Cluster()
           .setName("cluster_" + i)
-          .setArray(new org.dmg.pmml.Array()
-                .setType(Array.Type.REAL)
-                .setN(clusterCenter.size)
-                .setValue(model.clusterCenters(i).toArray.mkString(" ")))
+          .setArray(
+            new org.dmg.pmml.Array()
+              .setType(Array.Type.REAL)
+              .setN(clusterCenter.size)
+              .setValue(model.clusterCenters(i).toArray.mkString(" "))
+          )
         // we don't have the size of the single cluster but only the centroids (withValue)
         // .withSize(value)
         clusteringModel.addClusters(cluster)

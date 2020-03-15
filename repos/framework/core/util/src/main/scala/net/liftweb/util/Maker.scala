@@ -63,7 +63,8 @@ trait SimpleInjector extends Injector {
     * the scope of the call.
     */
   abstract class Inject[T](_default: Vendor[T])(implicit man: Manifest[T])
-      extends StackableMaker[T] with Vendor[T] {
+      extends StackableMaker[T]
+      with Vendor[T] {
     registerInjection(this)(man)
 
     /**
@@ -105,31 +106,37 @@ trait Maker[T] {
 }
 
 object Maker {
-  def apply[T](value: T): Maker[T] = new Maker[T] {
-    implicit def make: Box[T] = Full(value)
-  }
-  def apply[T](func: () => T): Maker[T] = new Maker[T] {
-    implicit def make: Box[T] = Full(func())
-  }
-  def apply[T](func: Box[() => T]): Maker[T] = new Maker[T] {
-    implicit def make: Box[T] = func.map(_.apply())
-  }
-  def apply1[T](box: Box[T]): Maker[T] = new Maker[T] {
-    implicit def make: Box[T] = box
-  }
-  def apply2[T](func: Box[() => Box[T]]): Maker[T] = new Maker[T] {
-    implicit def make: Box[T] = func.flatMap(_.apply())
-  }
-  def apply3[T](func: () => Box[T]): Maker[T] = new Maker[T] {
-    implicit def make: Box[T] = func.apply()
-  }
+  def apply[T](value: T): Maker[T] =
+    new Maker[T] {
+      implicit def make: Box[T] = Full(value)
+    }
+  def apply[T](func: () => T): Maker[T] =
+    new Maker[T] {
+      implicit def make: Box[T] = Full(func())
+    }
+  def apply[T](func: Box[() => T]): Maker[T] =
+    new Maker[T] {
+      implicit def make: Box[T] = func.map(_.apply())
+    }
+  def apply1[T](box: Box[T]): Maker[T] =
+    new Maker[T] {
+      implicit def make: Box[T] = box
+    }
+  def apply2[T](func: Box[() => Box[T]]): Maker[T] =
+    new Maker[T] {
+      implicit def make: Box[T] = func.flatMap(_.apply())
+    }
+  def apply3[T](func: () => Box[T]): Maker[T] =
+    new Maker[T] {
+      implicit def make: Box[T] = func.apply()
+    }
 
-  implicit def vToMake[T](v: T): Maker[T] = this.apply(v)
-  implicit def vToMake[T](v: () => T): Maker[T] = this.apply(v)
-  implicit def vToMakeB1[T](v: Box[T]): Maker[T] = this.apply1(v)
-  implicit def vToMakeB2[T](v: Box[() => T]): Maker[T] = this.apply(v)
+  implicit def vToMake[T](v: T): Maker[T]                   = this.apply(v)
+  implicit def vToMake[T](v: () => T): Maker[T]             = this.apply(v)
+  implicit def vToMakeB1[T](v: Box[T]): Maker[T]            = this.apply1(v)
+  implicit def vToMakeB2[T](v: Box[() => T]): Maker[T]      = this.apply(v)
   implicit def vToMakeB3[T](v: Box[() => Box[T]]): Maker[T] = this.apply2(v)
-  implicit def vToMakeB4[T](v: () => Box[T]): Maker[T] = this.apply3(v)
+  implicit def vToMakeB4[T](v: () => Box[T]): Maker[T]      = this.apply3(v)
 }
 
 /**
@@ -141,10 +148,11 @@ trait StackableMaker[T] extends Maker[T] {
   private val _stack: ThreadLocal[List[PValueHolder[Maker[T]]]] =
     new ThreadLocal
 
-  private def stack: List[PValueHolder[Maker[T]]] = _stack.get() match {
-    case null => Nil
-    case x => x
-  }
+  private def stack: List[PValueHolder[Maker[T]]] =
+    _stack.get() match {
+      case null => Nil
+      case x    => x
+    }
 
   /**
     * Changes to the stack of Makers made by this method are thread-local!
@@ -177,7 +185,7 @@ trait StackableMaker[T] extends Maker[T] {
       case x :: rest =>
         x.get.make match {
           case Full(v) => Full(v)
-          case _ => find(rest)
+          case _       => find(rest)
         }
     }
 
@@ -227,19 +235,22 @@ class VendorJBridge {
   * A companion to the Vendor trait
   */
 object Vendor {
-  def apply[T](f: () => T): Vendor[T] = new Vendor[T] {
-    implicit def vend: T = f()
-    implicit def make: Box[T] = Full(f())
-  }
+  def apply[T](f: () => T): Vendor[T] =
+    new Vendor[T] {
+      implicit def vend: T      = f()
+      implicit def make: Box[T] = Full(f())
+    }
 
-  def apply[T](f: T): Vendor[T] = new Vendor[T] {
-    implicit def vend: T = f
-    implicit def make: Box[T] = Full(f)
-  }
+  def apply[T](f: T): Vendor[T] =
+    new Vendor[T] {
+      implicit def vend: T      = f
+      implicit def make: Box[T] = Full(f)
+    }
 
-  implicit def valToVendor[T](value: T): Vendor[T] = apply(value)
+  implicit def valToVendor[T](value: T): Vendor[T]    = apply(value)
   implicit def funcToVendor[T](f: () => T): Vendor[T] = apply(f)
 }
 
 case class FormBuilderLocator[T](func: (T, T => Unit) => NodeSeq)(
-    implicit val manifest: Manifest[T])
+    implicit val manifest: Manifest[T]
+)

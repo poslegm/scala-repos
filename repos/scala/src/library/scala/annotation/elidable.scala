@@ -86,15 +86,15 @@ object elidable {
     *  With no simple remedy at hand, the issue is now at least documented,
     *  and aliases `MAXIMUM` and `MINIMUM` are offered.
     */
-  final val ALL = Int.MinValue // Level.ALL.intValue()
-  final val FINEST = 300 // Level.FINEST.intValue()
-  final val FINER = 400 // Level.FINER.intValue()
-  final val FINE = 500 // Level.FINE.intValue()
-  final val CONFIG = 700 // Level.CONFIG.intValue()
-  final val INFO = 800 // Level.INFO.intValue()
-  final val WARNING = 900 // Level.WARNING.intValue()
-  final val SEVERE = 1000 // Level.SEVERE.intValue()
-  final val OFF = Int.MaxValue // Level.OFF.intValue()
+  final val ALL     = Int.MinValue // Level.ALL.intValue()
+  final val FINEST  = 300          // Level.FINEST.intValue()
+  final val FINER   = 400          // Level.FINER.intValue()
+  final val FINE    = 500          // Level.FINE.intValue()
+  final val CONFIG  = 700          // Level.CONFIG.intValue()
+  final val INFO    = 800          // Level.INFO.intValue()
+  final val WARNING = 900          // Level.WARNING.intValue()
+  final val SEVERE  = 1000         // Level.SEVERE.intValue()
+  final val OFF     = Int.MaxValue // Level.OFF.intValue()
 
   // a couple aliases for the confusing ALL and OFF
   final val MAXIMUM = OFF
@@ -105,17 +105,17 @@ object elidable {
 
   // for command line parsing so we can use names or ints
   val byName: Map[String, Int] = Map(
-      "FINEST" -> FINEST,
-      "FINER" -> FINER,
-      "FINE" -> FINE,
-      "CONFIG" -> CONFIG,
-      "INFO" -> INFO,
-      "WARNING" -> WARNING,
-      "SEVERE" -> SEVERE,
-      "ASSERTION" -> ASSERTION,
-      "ALL" -> ALL,
-      "OFF" -> OFF,
-      "MAXIMUM" -> MAXIMUM,
-      "MINIMUM" -> MINIMUM
+    "FINEST"    -> FINEST,
+    "FINER"     -> FINER,
+    "FINE"      -> FINE,
+    "CONFIG"    -> CONFIG,
+    "INFO"      -> INFO,
+    "WARNING"   -> WARNING,
+    "SEVERE"    -> SEVERE,
+    "ASSERTION" -> ASSERTION,
+    "ALL"       -> ALL,
+    "OFF"       -> OFF,
+    "MAXIMUM"   -> MAXIMUM,
+    "MINIMUM"   -> MINIMUM
   )
 }

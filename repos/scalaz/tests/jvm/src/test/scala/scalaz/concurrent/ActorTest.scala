@@ -6,10 +6,10 @@ import java.util.concurrent._
 import ConcurrentTest._
 
 object ActorTest extends SpecLite {
-  val NumOfMessages = 1000
-  val NumOfThreads = 4
+  val NumOfMessages          = 1000
+  val NumOfThreads           = 4
   val NumOfMessagesPerThread = NumOfMessages / NumOfThreads
-  implicit val executor = Executors.newFixedThreadPool(NumOfThreads)
+  implicit val executor      = Executors.newFixedThreadPool(NumOfThreads)
 
   "code executes async" in {
     val latch = new CountDownLatch(1)
@@ -27,9 +27,9 @@ object ActorTest extends SpecLite {
   }
 
   "actors exchange messages without loss" in {
-    val latch = new CountDownLatch(NumOfMessages)
+    val latch              = new CountDownLatch(NumOfMessages)
     var actor1: Actor[Int] = null
-    val actor2 = Actor[Int]((i: Int) => actor1 ! i - 1)
+    val actor2             = Actor[Int]((i: Int) => actor1 ! i - 1)
     actor1 = Actor[Int] { (i: Int) =>
       if (i == latch.getCount) {
         latch.countDown()

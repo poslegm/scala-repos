@@ -25,14 +25,14 @@ import test.illTyped
 
 package GenericTestsAux {
   sealed trait Fruit
-  case class Apple() extends Fruit
-  case class Pear() extends Fruit
+  case class Apple()  extends Fruit
+  case class Pear()   extends Fruit
   case class Banana() extends Fruit
   case class Orange() extends Fruit
 
   object showFruit extends Poly1 {
-    implicit def caseApple = at[Apple](_ => "Pomme")
-    implicit def casePear = at[Pear](_ => "Poire")
+    implicit def caseApple  = at[Apple](_ => "Pomme")
+    implicit def casePear   = at[Pear](_ => "Poire")
     implicit def caseBanana = at[Banana](_ => "Banane")
     implicit def caseOrange = at[Orange](_ => "Orange")
   }
@@ -42,7 +42,7 @@ package GenericTestsAux {
 
   sealed trait Tree[T]
   case class Node[T](left: Tree[T], right: Tree[T]) extends Tree[T]
-  case class Leaf[T](t: T) extends Tree[T]
+  case class Leaf[T](t: T)                          extends Tree[T]
 
   sealed trait Enum
   case object A extends Enum
@@ -56,7 +56,7 @@ package GenericTestsAux {
   }
 
   sealed trait L
-  case object N extends L
+  case object N                extends L
   case class C(hd: Int, tl: L) extends L
 
   case class Company(depts: List[Dept])
@@ -77,9 +77,10 @@ package GenericTestsAux {
   object star extends starLP {
     implicit def caseString = at[String](_ + "*")
 
-    implicit def caseIso[T, L <: HList](
-        implicit gen: Generic.Aux[T, L],
-        mapper: Lazy[hl.Mapper.Aux[this.type, L, L]]) =
+    implicit def caseIso[T, L <: HList](implicit
+        gen: Generic.Aux[T, L],
+        mapper: Lazy[hl.Mapper.Aux[this.type, L, L]]
+    ) =
       at[T](t => gen.from(mapper.value(gen.to(t))))
   }
 
@@ -90,19 +91,21 @@ package GenericTestsAux {
   object inc extends incLP {
     implicit val caseInt = at[Int](_ + 1)
 
-    implicit def caseProduct[T, L <: HList](
-        implicit gen: Generic.Aux[T, L],
-        mapper: hl.Mapper.Aux[this.type, L, L]) =
+    implicit def caseProduct[T, L <: HList](implicit
+        gen: Generic.Aux[T, L],
+        mapper: hl.Mapper.Aux[this.type, L, L]
+    ) =
       at[T](t => gen.from(gen.to(t).map(inc)))
 
-    implicit def caseCoproduct[T, L <: Coproduct](
-        implicit gen: Generic.Aux[T, L],
-        mapper: cp.Mapper.Aux[this.type, L, L]) =
+    implicit def caseCoproduct[T, L <: Coproduct](implicit
+        gen: Generic.Aux[T, L],
+        mapper: cp.Mapper.Aux[this.type, L, L]
+    ) =
       at[T](t => gen.from(gen.to(t).map(inc)))
   }
 
   sealed trait AbstractNonCC
-  class NonCCA(val i: Int, val s: String) extends AbstractNonCC
+  class NonCCA(val i: Int, val s: String)     extends AbstractNonCC
   class NonCCB(val b: Boolean, val d: Double) extends AbstractNonCC
 
   class NonCCWithCompanion private (val i: Int, val s: String)
@@ -118,18 +121,18 @@ package GenericTestsAux {
   }
 
   sealed trait Xor[+A, +B]
-  case class Left[+LA](a: LA) extends Xor[LA, Nothing]
+  case class Left[+LA](a: LA)  extends Xor[LA, Nothing]
   case class Right[+RB](b: RB) extends Xor[Nothing, RB]
 
   sealed trait Base[BA, BB]
   case class Swap[SA, SB](a: SA, b: SB) extends Base[SB, SA]
 
   sealed trait Overlapping
-  sealed trait OA extends Overlapping
+  sealed trait OA           extends Overlapping
   case class OAC(s: String) extends OA
-  sealed trait OB extends Overlapping
+  sealed trait OB           extends Overlapping
   case class OBC(s: String) extends OB
-  case class OAB(i: Int) extends OA with OB
+  case class OAB(i: Int)    extends OA with OB
 }
 
 class GenericTests {
@@ -137,7 +140,7 @@ class GenericTests {
   import scala.collection.immutable.{:: => Cons}
   import test._
 
-  type ABP = Apple :+: Banana :+: Pear :+: CNil
+  type ABP  = Apple :+: Banana :+: Pear :+: CNil
   type APBO = Apple :+: Banana :+: Orange :+: Pear :+: CNil
 
   type ABC = A.type :+: B.type :+: C.type :+: CNil
@@ -159,7 +162,7 @@ class GenericTests {
 
   @Test
   def testProductVarargs {
-    val p = PersonWithPseudonims("Joe Soap", "X", "M", "Z")
+    val p   = PersonWithPseudonims("Joe Soap", "X", "M", "Z")
     val gen = Generic[PersonWithPseudonims]
 
     val p0 = gen.to(p)
@@ -180,9 +183,9 @@ class GenericTests {
     typed[Generic[(Int, String)] { type Repr = Int :: String :: HNil }](gen2)
 
     val gen3 = Generic[(Int, String, Boolean)]
-    typed[
-        Generic[(Int, String, Boolean)] { type Repr = Int :: String :: Boolean :: HNil }](
-        gen3)
+    typed[Generic[
+      (Int, String, Boolean)
+    ] { type Repr = Int :: String :: Boolean :: HNil }](gen3)
   }
 
   @Test
@@ -202,7 +205,9 @@ class GenericTests {
     val e0 = star(e)
     typed[Employee](e0)
     assertEquals(
-        Employee(Person("Joe Soap*", "Brighton*", 23), Salary(2000)), e0)
+      Employee(Person("Joe Soap*", "Brighton*", 23), Salary(2000)),
+      e0
+    )
   }
 
   @Test
@@ -286,9 +291,9 @@ class GenericTests {
 
   @Test
   def testOverlappingCoproducts {
-    val gen = Generic[Overlapping]
+    val gen            = Generic[Overlapping]
     val o: Overlapping = OAB(1)
-    val o0 = gen.to(o)
+    val o0             = gen.to(o)
     typed[OAB :+: OAC :+: OBC :+: CNil](o0)
 
     val o1 = gen.from(o0)
@@ -389,7 +394,7 @@ class GenericTests {
     assertEquals(Some(24), o0)
 
     val oo: Option[Option[Int]] = Option(Option(23))
-    val oo0 = inc(oo)
+    val oo0                     = inc(oo)
     typed[Option[Option[Int]]](oo0)
     assertEquals(Some(Some(24)), oo0)
   }
@@ -438,12 +443,12 @@ class GenericTests {
 
   @Test
   def testAbstractNonCC {
-    val ncca = new NonCCA(23, "foo")
-    val nccb = new NonCCB(true, 2.0)
+    val ncca                = new NonCCA(23, "foo")
+    val nccb                = new NonCCB(true, 2.0)
     val ancc: AbstractNonCC = ncca
 
-    val genA = Generic[NonCCA]
-    val genB = Generic[NonCCB]
+    val genA   = Generic[NonCCA]
+    val genB   = Generic[NonCCB]
     val genAbs = Generic[AbstractNonCC]
 
     val rA = genA.to(ncca)
@@ -515,7 +520,7 @@ class GenericTests {
 
   @Test
   def testNestedInherited {
-    val n0 = O.Nested(23, "foo")
+    val n0   = O.Nested(23, "foo")
     val repr = O.gen.to(n0)
     typed[Int :: String :: HNil](repr)
     val n1 = O.gen.from(repr)
@@ -634,17 +639,23 @@ class GenericTests {
     def apply[T](implicit tc: TC[T]): TC[T] = tc
 
     implicit def hnilTC: TC[HNil] = new TC[HNil] {}
-    implicit def hconsTC[H, T <: HList](
-        implicit hd: Lazy[TC[H]], tl: Lazy[TC[T]]): TC[H :: T] =
+    implicit def hconsTC[H, T <: HList](implicit
+        hd: Lazy[TC[H]],
+        tl: Lazy[TC[T]]
+    ): TC[H :: T] =
       new TC[H :: T] {}
 
     implicit def cnilTC: TC[CNil] = new TC[CNil] {}
-    implicit def cconsTC[H, T <: Coproduct](
-        implicit hd: Lazy[TC[H]], tl: Lazy[TC[T]]): TC[H :+: T] =
+    implicit def cconsTC[H, T <: Coproduct](implicit
+        hd: Lazy[TC[H]],
+        tl: Lazy[TC[T]]
+    ): TC[H :+: T] =
       new TC[H :+: T] {}
 
-    implicit def projectTC[F, G](
-        implicit gen: Generic.Aux[F, G], tc: Lazy[TC[G]]): TC[F] = new TC[F] {}
+    implicit def projectTC[F, G](implicit
+        gen: Generic.Aux[F, G],
+        tc: Lazy[TC[G]]
+    ): TC[F] = new TC[F] {}
   }
 
   @Test
@@ -659,8 +670,10 @@ package GenericTestsAux2 {
   object Foo {
     implicit val deriveHNil: Foo[HNil] = ???
 
-    implicit def deriveLabelledGeneric[A, Rec <: HList](
-        implicit gen: Generic.Aux[A, Rec], auto: Foo[Rec]): Foo[A] = ???
+    implicit def deriveLabelledGeneric[A, Rec <: HList](implicit
+        gen: Generic.Aux[A, Rec],
+        auto: Foo[Rec]
+    ): Foo[A] = ???
   }
 
   class Bar[A]
@@ -668,11 +681,15 @@ package GenericTestsAux2 {
   object Bar {
     implicit def cnil: Bar[CNil] = ???
 
-    implicit def deriveCoproduct[H, T <: Coproduct](
-        implicit headFoo: Foo[H], tailAux: Bar[T]): Bar[H :+: T] = ???
+    implicit def deriveCoproduct[H, T <: Coproduct](implicit
+        headFoo: Foo[H],
+        tailAux: Bar[T]
+    ): Bar[H :+: T] = ???
 
-    implicit def labelledGeneric[A, U <: Coproduct](
-        implicit gen: Generic.Aux[A, U], auto: Bar[U]): Bar[A] = ???
+    implicit def labelledGeneric[A, U <: Coproduct](implicit
+        gen: Generic.Aux[A, U],
+        auto: Bar[U]
+    ): Bar[A] = ???
   }
 
   class Outer1 {
@@ -690,9 +707,9 @@ package GenericTestsAux2 {
     }
     val wrapper = new Wrapper
     import wrapper.Color
-    case object Red extends Color
+    case object Red   extends Color
     case object Green extends Color
-    case object Blue extends Color
+    case object Blue  extends Color
 
     implicitly[Bar[Color]]
   }
@@ -702,18 +719,18 @@ package GenericTestsAux2 {
       sealed trait Color
     }
     val wrapper = new Wrapper
-    case object Red extends wrapper.Color
+    case object Red   extends wrapper.Color
     case object Green extends wrapper.Color
-    case object Blue extends wrapper.Color
+    case object Blue  extends wrapper.Color
 
     implicitly[Bar[wrapper.Color]]
   }
 
   object Outer4 {
     val wrapper = new Wrapper
-    case object Red extends wrapper.Color
+    case object Red   extends wrapper.Color
     case object Green extends wrapper.Color
-    case object Blue extends wrapper.Color
+    case object Blue  extends wrapper.Color
 
     class Wrapper {
       sealed trait Color
@@ -744,7 +761,7 @@ object MixedCCNonCCNested {
     object T1 {
       sealed abstract class Tree
       final case class Node(left: Tree, right: Tree, v: Int) extends Tree
-      case object Leaf extends Tree
+      case object Leaf                                       extends Tree
     }
 
     Generic[T1.Tree]
@@ -752,15 +769,15 @@ object MixedCCNonCCNested {
     Generic[Tree]
 
     sealed trait A
-    sealed case class B(i: Int, s: String) extends A
-    case object C extends A
-    sealed trait D extends A
+    sealed case class B(i: Int, s: String)          extends A
+    case object C                                   extends A
+    sealed trait D                                  extends A
     final case class E(a: Double, b: Option[Float]) extends D
-    case object F extends D
-    sealed abstract class Foo extends D
-    case object Baz extends Foo
-    final class Bar extends Foo
-    final class Baz(val i1: Int, val s1: String) extends Foo
+    case object F                                   extends D
+    sealed abstract class Foo                       extends D
+    case object Baz                                 extends Foo
+    final class Bar                                 extends Foo
+    final class Baz(val i1: Int, val s1: String)    extends Foo
 
     Generic[A]
     Generic[B]
@@ -778,7 +795,7 @@ object MixedCCNonCCNested {
     object T1 {
       sealed abstract class Tree
       final case class Node(left: Tree, right: Tree, v: Int) extends Tree
-      case object Leaf extends Tree
+      case object Leaf                                       extends Tree
     }
 
     Generic[T1.Tree]
@@ -786,15 +803,15 @@ object MixedCCNonCCNested {
     Generic[Tree]
 
     sealed trait A
-    sealed case class B(i: Int, s: String) extends A
-    case object C extends A
-    sealed trait D extends A
+    sealed case class B(i: Int, s: String)          extends A
+    case object C                                   extends A
+    sealed trait D                                  extends A
     final case class E(a: Double, b: Option[Float]) extends D
-    case object F extends D
-    sealed abstract class Foo extends D
-    case object Baz extends Foo
-    final class Bar extends Foo
-    final class Baz(val i1: Int, val s1: String) extends Foo
+    case object F                                   extends D
+    sealed abstract class Foo                       extends D
+    case object Baz                                 extends Foo
+    final class Bar                                 extends Foo
+    final class Baz(val i1: Int, val s1: String)    extends Foo
 
     Generic[A]
     Generic[B]
@@ -812,7 +829,7 @@ object MixedCCNonCCNested {
   object T1 {
     sealed abstract class Tree
     final case class Node(left: Tree, right: Tree, v: Int) extends Tree
-    case object Leaf extends Tree
+    case object Leaf                                       extends Tree
   }
 
   Generic[T1.Tree]
@@ -820,15 +837,15 @@ object MixedCCNonCCNested {
   Generic[Tree]
 
   sealed trait A
-  sealed case class B(i: Int, s: String) extends A
-  case object C extends A
-  sealed trait D extends A
+  sealed case class B(i: Int, s: String)          extends A
+  case object C                                   extends A
+  sealed trait D                                  extends A
   final case class E(a: Double, b: Option[Float]) extends D
-  case object F extends D
-  sealed abstract class Foo extends D
-  case object Baz extends Foo
-  final class Bar extends Foo
-  final class Baz(val i1: Int, val s1: String) extends Foo
+  case object F                                   extends D
+  sealed abstract class Foo                       extends D
+  case object Baz                                 extends Foo
+  final class Bar                                 extends Foo
+  final class Baz(val i1: Int, val s1: String)    extends Foo
 
   Generic[A]
   Generic[B]
@@ -908,7 +925,7 @@ class TestEnum {
     import EnumDefns0._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -923,7 +940,7 @@ class TestEnum {
     import EnumDefns1._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -938,7 +955,7 @@ class TestEnum {
     import EnumDefns2._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -953,7 +970,7 @@ class TestEnum {
     import EnumDefns3._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -969,7 +986,7 @@ class TestEnum {
     import EnumVal._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -985,7 +1002,7 @@ class TestEnum {
     import EnumVal._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -1001,7 +1018,7 @@ class TestEnum {
     import EnumVal._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -1017,7 +1034,7 @@ class TestEnum {
     import EnumVal._
 
     val gen = Generic[EnumVal]
-    val a0 = gen.to(BarA)
+    val a0  = gen.to(BarA)
     assert(a0 == Inl(BarA))
 
     val b0 = gen.to(BarB)
@@ -1033,7 +1050,7 @@ package TestPrefixes1 {
     case class CC(i: Int, s: String)
 
     sealed trait Sum
-    case class SumI(i: Int) extends Sum
+    case class SumI(i: Int)    extends Sum
     case class SumS(s: String) extends Sum
   }
 
@@ -1089,7 +1106,7 @@ object PathVariants {
 
 object PrivateCtorDefns {
   sealed trait PublicFamily
-  case class PublicChild() extends PublicFamily
+  case class PublicChild()          extends PublicFamily
   private case class PrivateChild() extends PublicFamily
 }
 
@@ -1113,16 +1130,16 @@ object Thrift {
         val a: Double,
         val b: String,
         val _passthroughFields: scala.collection.immutable.Map[Short, Byte]
-    )
-        extends TProduct {
+    ) extends TProduct {
       def this(
           a: Double,
           b: String
-      ) = this(
+      ) =
+        this(
           a,
           b,
           Map.empty
-      )
+        )
     }
   }
 

@@ -17,13 +17,17 @@ object ConnectionContext {
     scaladsl.ConnectionContext.https(sslContext)
 
   /** Used to serve HTTPS traffic. */
-  def https(sslContext: SSLContext,
-            enabledCipherSuites: Optional[JCollection[String]],
-            enabledProtocols: Optional[JCollection[String]],
-            clientAuth: Optional[TLSClientAuth],
-            sslParameters: Optional[SSLParameters]) =
+  def https(
+      sslContext: SSLContext,
+      enabledCipherSuites: Optional[JCollection[String]],
+      enabledProtocols: Optional[JCollection[String]],
+      clientAuth: Optional[TLSClientAuth],
+      sslParameters: Optional[SSLParameters]
+  ) =
     scaladsl.ConnectionContext.https(
-        sslContext, sslParameters = OptionConverters.toScala(sslParameters))
+      sslContext,
+      sslParameters = OptionConverters.toScala(sslParameters)
+    )
   //#https-context-creation
 
   /** Used to serve HTTP traffic. */
@@ -40,13 +44,13 @@ abstract class ConnectionContext {
 
 abstract class HttpConnectionContext
     extends akka.http.javadsl.ConnectionContext {
-  override final def isSecure = false
+  override final def isSecure       = false
   override final def getDefaultPort = 80
 }
 
 abstract class HttpsConnectionContext
     extends akka.http.javadsl.ConnectionContext {
-  override final def isSecure = true
+  override final def isSecure       = true
   override final def getDefaultPort = 443
 
   /** Java API */

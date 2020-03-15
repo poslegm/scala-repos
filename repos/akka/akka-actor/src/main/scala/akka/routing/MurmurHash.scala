@@ -39,12 +39,12 @@ object MurmurHash {
   final private val visibleMixer: Int = 0x52dce729
   final private val hiddenMixerA: Int = 0x7b7d159c
   final private val hiddenMixerB: Int = 0x6bce6396
-  final private val finalMixer1: Int = 0x85ebca6b
-  final private val finalMixer2: Int = 0xc2b2ae35
+  final private val finalMixer1: Int  = 0x85ebca6b
+  final private val finalMixer2: Int  = 0xc2b2ae35
 
   // Arbitrary values used for hashing certain classes
   final private val seedString: Int = 0xf7ca7fd2
-  final private val seedArray: Int = 0x3c074a61
+  final private val seedArray: Int  = 0x3c074a61
 
   /** The first 23 magic integers from the first stream are stored here */
   private val storedMagicA: Array[Int] =
@@ -130,15 +130,13 @@ object MurmurHash {
     */
   def symmetricHash[T](xs: TraversableOnce[T], seed: Int): Int = {
     var a, b, n = 0
-    var c = 1
-    xs.foreach(
-        i ⇒
-          {
-        val h = i.##
-        a += h
-        b ^= h
-        if (h != 0) c *= h
-        n += 1
+    var c       = 1
+    xs.foreach(i ⇒ {
+      val h = i.##
+      a += h
+      b ^= h
+      if (h != 0) c *= h
+      n += 1
     })
     var h = startHash(seed * n)
     h = extendHash(h, a, storedMagicA(0), storedMagicB(0))

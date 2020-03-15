@@ -61,14 +61,14 @@ class ConversionsSpec extends Specification with XmlMatchers {
 
     "be created by a constant that can be converted to a String" in {
       implicit def intToString(in: Int): String = in.toString
-      val sf: StringFunc = 55
+      val sf: StringFunc                        = 55
 
       sf.func() must_== "55"
     }
 
     "be created by a function that can be converted to a String" in {
       implicit def intToString(in: Int): String = in.toString
-      val sf: StringFunc = () => 55
+      val sf: StringFunc                        = () => 55
 
       sf.func() must_== "55"
     }
@@ -90,14 +90,14 @@ class ConversionsSpec extends Specification with XmlMatchers {
 
     "be created by a constant that can be converted to a NodeSeq" in {
       implicit def intToNS(in: Int): NodeSeq = <a>{in}</a>
-      val sf: NodeSeqFunc = 55
+      val sf: NodeSeqFunc                    = 55
 
       sf.func() must ==/(<a>55</a>)
     }
 
     "be created by a function that can be converted to a NodeSeq" in {
       implicit def intToNodeSeq(in: Int): NodeSeq = <a>{in}</a>
-      val sf: NodeSeqFunc = () => 55
+      val sf: NodeSeqFunc                         = () => 55
 
       sf.func() must ==/(<a>55</a>)
     }

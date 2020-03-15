@@ -8,10 +8,12 @@ import lila.db.Implicits._
 import lila.game.{Game, GameRepo, Pov}
 import lila.user.User
 
-final class InsightApi(storage: Storage,
-                       userCacheApi: UserCacheApi,
-                       pipeline: AggregationPipeline,
-                       indexer: Indexer) {
+final class InsightApi(
+    storage: Storage,
+    userCacheApi: UserCacheApi,
+    pipeline: AggregationPipeline,
+    indexer: Indexer
+) {
 
   import lila.insight.{Dimension => D, Metric => M}
   import InsightApi._
@@ -22,9 +24,9 @@ final class InsightApi(storage: Storage,
       case None =>
         for {
           count <- storage count user.id
-          ecos <- storage ecos user.id
-          c = UserCache(user.id, count, ecos, DateTime.now)
-          _ <- userCacheApi save c
+          ecos  <- storage ecos user.id
+          c      = UserCache(user.id, count, ecos, DateTime.now)
+          _     <- userCacheApi save c
         } yield c
     }
 
@@ -54,19 +56,22 @@ final class InsightApi(storage: Storage,
     }
 
   def indexAll(user: User) =
-    indexer.all(user).mon(_.insight.index.time) >> userCacheApi.remove(user.id) >>- lila.mon.insight.index
+    indexer.all(user).mon(_.insight.index.time) >> userCacheApi.remove(
+      user.id
+    ) >>- lila.mon.insight.index
       .count()
 
   def updateGame(g: Game) =
-    Pov(g).map { pov =>
-      pov.player.userId ?? { userId =>
-        storage find Entry.povToId(pov) flatMap {
-          _ ?? { old =>
-            indexer.update(g, userId, old)
+    Pov(g)
+      .map { pov =>
+        pov.player.userId ?? { userId =>
+          storage find Entry.povToId(pov) flatMap {
+            _ ?? { old => indexer.update(g, userId, old) }
           }
         }
       }
-    }.sequenceFu.void
+      .sequenceFu
+      .void
 }
 
 object InsightApi {
@@ -74,8 +79,8 @@ object InsightApi {
   sealed trait UserStatus
   object UserStatus {
     case object NoGame extends UserStatus
-    case object Empty extends UserStatus
-    case object Stale extends UserStatus
-    case object Fresh extends UserStatus
+    case object Empty  extends UserStatus
+    case object Stale  extends UserStatus
+    case object Fresh  extends UserStatus
   }
 }

@@ -44,15 +44,20 @@ private[hive] class SparkExecuteStatementOperation(
     parentSession: HiveSession,
     statement: String,
     confOverlay: JMap[String, String],
-    runInBackground: Boolean = true)(
-    hiveContext: HiveContext, sessionToActivePool: SMap[SessionHandle, String])
+    runInBackground: Boolean = true
+)(hiveContext: HiveContext, sessionToActivePool: SMap[SessionHandle, String])
     extends ExecuteStatementOperation(
-        parentSession, statement, confOverlay, runInBackground) with Logging {
+      parentSession,
+      statement,
+      confOverlay,
+      runInBackground
+    )
+    with Logging {
 
-  private var result: DataFrame = _
-  private var iter: Iterator[SparkRow] = _
+  private var result: DataFrame          = _
+  private var iter: Iterator[SparkRow]   = _
   private var dataTypes: Array[DataType] = _
-  private var statementId: String = _
+  private var statementId: String        = _
 
   private lazy val resultSchema: TableSchema = {
     if (result == null || result.queryExecution.analyzed.output.size == 0) {
@@ -61,7 +66,10 @@ private[hive] class SparkExecuteStatementOperation(
       logInfo(s"Result Schema: ${result.queryExecution.analyzed.output}")
       val schema = result.queryExecution.analyzed.output.map { attr =>
         new FieldSchema(
-            attr.name, HiveMetastoreTypes.toMetastoreType(attr.dataType), "")
+          attr.name,
+          HiveMetastoreTypes.toMetastoreType(attr.dataType),
+          ""
+        )
       }
       new TableSchema(schema.asJava)
     }
@@ -75,7 +83,10 @@ private[hive] class SparkExecuteStatementOperation(
   }
 
   def addNonNullColumnValue(
-      from: SparkRow, to: ArrayBuffer[Any], ordinal: Int) {
+      from: SparkRow,
+      to: ArrayBuffer[Any],
+      ordinal: Int
+  ) {
     dataTypes(ordinal) match {
       case StringType =>
         to += from.getString(ordinal)
@@ -117,11 +128,11 @@ private[hive] class SparkExecuteStatementOperation(
     } else {
       // maxRowsL here typically maps to java.sql.Statement.getFetchSize, which is an int
       val maxRows = maxRowsL.toInt
-      var curRow = 0
+      var curRow  = 0
       while (curRow < maxRows && iter.hasNext) {
         val sparkRow = iter.next()
-        val row = ArrayBuffer[Any]()
-        var curCol = 0
+        val row      = ArrayBuffer[Any]()
+        var curCol   = 0
         while (curCol < sparkRow.length) {
           if (sparkRow.isNullAt(curCol)) {
             row += null
@@ -170,9 +181,11 @@ private[hive] class SparkExecuteStatementOperation(
           } catch {
             case e: Exception =>
               setOperationException(new HiveSQLException(e))
-              logError("Error running hive query as user : " +
-                       sparkServiceUGI.getShortUserName(),
-                       e)
+              logError(
+                "Error running hive query as user : " +
+                  sparkServiceUGI.getShortUserName(),
+                e
+              )
           }
         }
       }
@@ -186,9 +199,10 @@ private[hive] class SparkExecuteStatementOperation(
         case rejected: RejectedExecutionException =>
           setState(OperationState.ERROR)
           throw new HiveSQLException(
-              "The background threadpool cannot accept" +
+            "The background threadpool cannot accept" +
               " new task for execution, please retry the operation",
-              rejected)
+            rejected
+          )
         case NonFatal(e) =>
           logError(s"Error executing query in background", e)
           setState(OperationState.ERROR)
@@ -207,11 +221,12 @@ private[hive] class SparkExecuteStatementOperation(
     Thread.currentThread().setContextClassLoader(executionHiveClassLoader)
 
     HiveThriftServer2.listener.onStatementStart(
-        statementId,
-        parentSession.getSessionHandle.getSessionId.toString,
-        statement,
-        statementId,
-        parentSession.getUsername)
+      statementId,
+      parentSession.getSessionHandle.getSessionId.toString,
+      statement,
+      statementId,
+      parentSession.getUsername
+    )
     hiveContext.sparkContext.setJobGroup(statementId, statement)
     sessionToActivePool.get(parentSession.getSessionHandle).foreach { pool =>
       hiveContext.sparkContext.setLocalProperty("spark.scheduler.pool", pool)
@@ -223,11 +238,12 @@ private[hive] class SparkExecuteStatementOperation(
         case SetCommand(Some((SQLConf.THRIFTSERVER_POOL.key, Some(value)))) =>
           sessionToActivePool(parentSession.getSessionHandle) = value
           logInfo(
-              s"Setting spark.scheduler.pool=$value for future statements in this session.")
+            s"Setting spark.scheduler.pool=$value for future statements in this session."
+          )
         case _ =>
       }
-      HiveThriftServer2.listener.onStatementParsed(
-          statementId, result.queryExecution.toString())
+      HiveThriftServer2.listener
+        .onStatementParsed(statementId, result.queryExecution.toString())
       iter = {
         val useIncrementalCollect = hiveContext
           .getConf("spark.sql.thriftServer.incrementalCollect", "false")
@@ -254,7 +270,10 @@ private[hive] class SparkExecuteStatementOperation(
         logError(s"Error executing query, currentState $currentState, ", e)
         setState(OperationState.ERROR)
         HiveThriftServer2.listener.onStatementError(
-            statementId, e.getMessage, SparkUtils.exceptionString(e))
+          statementId,
+          e.getMessage,
+          SparkUtils.exceptionString(e)
+        )
         throw new HiveSQLException(e.toString)
     }
     setState(OperationState.FINISHED)

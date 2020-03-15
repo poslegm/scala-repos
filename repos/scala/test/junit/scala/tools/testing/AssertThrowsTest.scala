@@ -9,9 +9,9 @@ import AssertUtil.assertThrows
 
 @RunWith(classOf[JUnit4])
 class AssertThrowsTest {
-  class Foo extends Exception
+  class Foo    extends Exception
   class SubFoo extends Foo
-  class Bar extends Exception
+  class Bar    extends Exception
 
   @Test
   def catchFoo = assertThrows[Foo] { throw new Foo }
@@ -21,15 +21,17 @@ class AssertThrowsTest {
 
   @Test
   def rethrowBar =
-    assertTrue("exception wasn't rethrown", {
-      try {
-        assertThrows[Foo] { throw new Bar }
-        false
-      } catch {
-        case bar: Bar => true
-        case e: Throwable => fail(s"expected Bar but got $e"); false
+    assertTrue(
+      "exception wasn't rethrown", {
+        try {
+          assertThrows[Foo] { throw new Bar }
+          false
+        } catch {
+          case bar: Bar     => true
+          case e: Throwable => fail(s"expected Bar but got $e"); false
+        }
       }
-    })
+    )
 
   @Test
   def errorIfNoThrow: Unit = {
@@ -39,6 +41,7 @@ class AssertThrowsTest {
       case e: AssertionError => return
     }
     fail(
-        "assertThrows should error if the tested expression does not throw anything")
+      "assertThrows should error if the tested expression does not throw anything"
+    )
   }
 }

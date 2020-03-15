@@ -19,9 +19,12 @@ import java.util.concurrent.Callable
 class GuavaCache[K, V](cache: GCache[K, Future[V]])
     extends ConcurrentMapCache[K, V](cache.asMap) {
   override def getOrElseUpdate(k: K)(v: => Future[V]): Future[V] =
-    cache.get(k, new Callable[Future[V]] {
-      def call(): Future[V] = v
-    })
+    cache.get(
+      k,
+      new Callable[Future[V]] {
+        def call(): Future[V] = v
+      }
+    )
 }
 
 /**
@@ -50,11 +53,10 @@ object GuavaCache {
     * [[com.google.common.cache.LoadingCache]].
     */
   def fromLoadingCache[K, V](
-      cache: LoadingCache[K, Future[V]]): K => Future[V] = {
+      cache: LoadingCache[K, Future[V]]
+  ): K => Future[V] = {
     val evicting = EvictingCache.lazily(new LoadingFutureCache(cache));
-    { key: K =>
-      evicting.get(key).get.interruptible()
-    }
+    { key: K => evicting.get(key).get.interruptible() }
   }
 
   /**
@@ -62,6 +64,8 @@ object GuavaCache {
     * [[com.google.common.cache.Cache]].
     */
   def fromCache[K, V](
-      fn: K => Future[V], cache: GCache[K, Future[V]]): K => Future[V] =
+      fn: K => Future[V],
+      cache: GCache[K, Future[V]]
+  ): K => Future[V] =
     FutureCache.default(fn, new GuavaCache(cache))
 }

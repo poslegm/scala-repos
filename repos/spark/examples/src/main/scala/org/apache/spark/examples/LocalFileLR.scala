@@ -30,7 +30,7 @@ import breeze.linalg.{DenseVector, Vector}
   * org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS based on your needs.
   */
 object LocalFileLR {
-  val D = 10 // Number of dimensions
+  val D    = 10 // Number of dimensions
   val rand = new Random(42)
 
   case class DataPoint(x: Vector[Double], y: Double)
@@ -41,19 +41,21 @@ object LocalFileLR {
   }
 
   def showWarning() {
-    System.err.println("""WARN: This is a naive implementation of Logistic Regression and is given as an example!
+    System.err.println(
+      """WARN: This is a naive implementation of Logistic Regression and is given as an example!
         |Please use either org.apache.spark.mllib.classification.LogisticRegressionWithSGD or
         |org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
         |for more conventional use.
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def main(args: Array[String]) {
 
     showWarning()
 
-    val lines = scala.io.Source.fromFile(args(0)).getLines().toArray
-    val points = lines.map(parsePoint _)
+    val lines      = scala.io.Source.fromFile(args(0)).getLines().toArray
+    val points     = lines.map(parsePoint _)
     val ITERATIONS = args(1).toInt
 
     // Initialize w to a random value

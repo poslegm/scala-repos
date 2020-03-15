@@ -15,22 +15,25 @@ import scala.concurrent.duration._
 /**
   * WS client config
   */
-case class WSClientConfig(connectionTimeout: Duration = 2.minutes,
-                          idleTimeout: Duration = 2.minutes,
-                          requestTimeout: Duration = 2.minutes,
-                          followRedirects: Boolean = true,
-                          useProxyProperties: Boolean = true,
-                          userAgent: Option[String] = None,
-                          compressionEnabled: Boolean = false,
-                          ssl: SSLConfig = SSLConfig())
+case class WSClientConfig(
+    connectionTimeout: Duration = 2.minutes,
+    idleTimeout: Duration = 2.minutes,
+    requestTimeout: Duration = 2.minutes,
+    followRedirects: Boolean = true,
+    useProxyProperties: Boolean = true,
+    userAgent: Option[String] = None,
+    compressionEnabled: Boolean = false,
+    ssl: SSLConfig = SSLConfig()
+)
 
 /**
   * This class creates a DefaultWSClientConfig object from the play.api.Configuration.
   */
 @Singleton
-class WSConfigParser @Inject()(
-    configuration: Configuration, environment: Environment)
-    extends Provider[WSClientConfig] {
+class WSConfigParser @Inject() (
+    configuration: Configuration,
+    environment: Environment
+) extends Provider[WSClientConfig] {
 
   def get = parse()
 
@@ -40,10 +43,10 @@ class WSConfigParser @Inject()(
       PlayConfig(configuration).getDeprecatedWithFallback("play.ws", "ws")
 
     val connectionTimeout = config.get[Duration]("timeout.connection")
-    val idleTimeout = config.get[Duration]("timeout.idle")
-    val requestTimeout = config.get[Duration]("timeout.request")
+    val idleTimeout       = config.get[Duration]("timeout.idle")
+    val requestTimeout    = config.get[Duration]("timeout.request")
 
-    val followRedirects = config.get[Boolean]("followRedirects")
+    val followRedirects    = config.get[Boolean]("followRedirects")
     val useProxyProperties = config.get[Boolean]("useProxyProperties")
 
     val userAgent = config.get[Option[String]]("useragent")
@@ -51,15 +54,19 @@ class WSConfigParser @Inject()(
     val compressionEnabled = config.get[Boolean]("compressionEnabled")
 
     val sslConfig = new SSLConfigParser(
-        config.get[PlayConfig]("ssl"), environment.classLoader).parse()
+      config.get[PlayConfig]("ssl"),
+      environment.classLoader
+    ).parse()
 
-    WSClientConfig(connectionTimeout = connectionTimeout,
-                   idleTimeout = idleTimeout,
-                   requestTimeout = requestTimeout,
-                   followRedirects = followRedirects,
-                   useProxyProperties = useProxyProperties,
-                   userAgent = userAgent,
-                   compressionEnabled = compressionEnabled,
-                   ssl = sslConfig)
+    WSClientConfig(
+      connectionTimeout = connectionTimeout,
+      idleTimeout = idleTimeout,
+      requestTimeout = requestTimeout,
+      followRedirects = followRedirects,
+      useProxyProperties = useProxyProperties,
+      userAgent = userAgent,
+      compressionEnabled = compressionEnabled,
+      ssl = sslConfig
+    )
   }
 }

@@ -97,11 +97,13 @@ import java.util.concurrent.atomic.AtomicInteger
  * It is caller's responsibility to enforce it. Simultaneous add calls are thread-safe.
  */
 @nonthreadsafe
-private[timer] class TimingWheel(tickMs: Long,
-                                 wheelSize: Int,
-                                 startMs: Long,
-                                 taskCounter: AtomicInteger,
-                                 queue: DelayQueue[TimerTaskList]) {
+private[timer] class TimingWheel(
+    tickMs: Long,
+    wheelSize: Int,
+    startMs: Long,
+    taskCounter: AtomicInteger,
+    queue: DelayQueue[TimerTaskList]
+) {
 
   private[this] val interval = tickMs * wheelSize
   private[this] val buckets = Array.tabulate[TimerTaskList](wheelSize) { _ =>
@@ -119,11 +121,11 @@ private[timer] class TimingWheel(tickMs: Long,
     synchronized {
       if (overflowWheel == null) {
         overflowWheel = new TimingWheel(
-            tickMs = interval,
-            wheelSize = wheelSize,
-            startMs = currentTime,
-            taskCounter = taskCounter,
-            queue
+          tickMs = interval,
+          wheelSize = wheelSize,
+          startMs = currentTime,
+          taskCounter = taskCounter,
+          queue
         )
       }
     }
@@ -141,7 +143,7 @@ private[timer] class TimingWheel(tickMs: Long,
     } else if (expiration < currentTime + interval) {
       // Put in its own bucket
       val virtualId = expiration / tickMs
-      val bucket = buckets((virtualId % wheelSize.toLong).toInt)
+      val bucket    = buckets((virtualId % wheelSize.toLong).toInt)
       bucket.add(timerTaskEntry)
 
       // Set the bucket expiration time

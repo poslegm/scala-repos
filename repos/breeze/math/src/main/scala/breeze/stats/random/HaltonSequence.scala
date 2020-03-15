@@ -18,8 +18,8 @@ class HaltonSequence(dim: Int) extends Rand[DenseVector[Double]] {
   def draw() = {
     count += 1
     val arr = primes.map { prime =>
-      var h = 0.0
-      var f = 1.0
+      var h       = 0.0
+      var f       = 1.0
       var k: Long = count
       while (k > 0) {
         f /= prime

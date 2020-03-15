@@ -32,8 +32,8 @@ import org.apache.spark.util.Utils
 class FailureSuite extends SparkFunSuite with BeforeAndAfter with Logging {
 
   private val batchDuration: Duration = Milliseconds(1000)
-  private val numBatches = 30
-  private var directory: File = null
+  private val numBatches              = 30
+  private var directory: File         = null
 
   before {
     directory = Utils.createTempDir()
@@ -53,11 +53,17 @@ class FailureSuite extends SparkFunSuite with BeforeAndAfter with Logging {
 
   test("multiple failures with map") {
     MasterFailureTest.testMap(
-        directory.getAbsolutePath, numBatches, batchDuration)
+      directory.getAbsolutePath,
+      numBatches,
+      batchDuration
+    )
   }
 
   test("multiple failures with updateStateByKey") {
     MasterFailureTest.testUpdateStateByKey(
-        directory.getAbsolutePath, numBatches, batchDuration)
+      directory.getAbsolutePath,
+      numBatches,
+      batchDuration
+    )
   }
 }

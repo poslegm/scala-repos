@@ -12,7 +12,7 @@ import sbt.internal.util.Types._
 object TaskRunnerSortTest extends Properties("TaskRunnerSort") {
   property("sort") = forAll(TaskListGen, MaxWorkersGen) {
     (list: List[Int], workers: Int) =>
-      val a = list.toArray
+      val a      = list.toArray
       val sorted = a.toArray
       java.util.Arrays.sort(sorted)
       ("Workers: " + workers) |: ("Array: " + a.toList) |: {
@@ -24,7 +24,7 @@ object TaskRunnerSortTest extends Properties("TaskRunnerSort") {
   final def sortDirect(a: Seq[Int]): Seq[Int] = {
     if (a.length < 2) a
     else {
-      val pivot = a(0)
+      val pivot     = a(0)
       val (lt, gte) = a.view.drop(1).partition(_ < pivot)
       sortDirect(lt) ++ List(pivot) ++ sortDirect(gte)
     }
@@ -33,7 +33,7 @@ object TaskRunnerSortTest extends Properties("TaskRunnerSort") {
     if (a.length < 200) task(sortDirect(a))
     else {
       task(a) flatMap { a =>
-        val pivot = a(0)
+        val pivot     = a(0)
         val (lt, gte) = a.view.drop(1).partition(_ < pivot)
         Test.t2(sort(lt), sort(gte)) map {
           case (l, g) => l ++ List(pivot) ++ g

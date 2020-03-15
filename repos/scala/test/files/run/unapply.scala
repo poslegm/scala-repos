@@ -10,7 +10,7 @@ object Test {
 
 // this class is used for representation
 class Bar {
-  var size: Int = 50
+  var size: Int    = 50
   var name: String = "medium"
 }
 
@@ -33,25 +33,31 @@ object VarFoo {
 }
 
 object Foo {
-  def unapply(x: Any): Option[Product2[Int, String]] = x match {
-    case y: Bar => Some(y.size, y.name)
-    case _ => None
-  }
-  def doMatch1(b: Bar) = b match {
-    case Foo(s: Int, n: String) => (s, n)
-  }
-  def doMatch2(b: Bar) = b match {
-    case Fii() => null
-  }
-  def doMatch3(b: Bar) = b match {
-    case Faa(n: String) => n
-  }
-  def doMatch4(b: Bar) = (b: Any) match {
-    case FaaPrecise(n: String) => n
-  }
-  def doMatch5(b: Bar) = (b: Any) match {
-    case FaaPreciseSome(n: String) => n
-  }
+  def unapply(x: Any): Option[Product2[Int, String]] =
+    x match {
+      case y: Bar => Some(y.size, y.name)
+      case _      => None
+    }
+  def doMatch1(b: Bar) =
+    b match {
+      case Foo(s: Int, n: String) => (s, n)
+    }
+  def doMatch2(b: Bar) =
+    b match {
+      case Fii() => null
+    }
+  def doMatch3(b: Bar) =
+    b match {
+      case Faa(n: String) => n
+    }
+  def doMatch4(b: Bar) =
+    (b: Any) match {
+      case FaaPrecise(n: String) => n
+    }
+  def doMatch5(b: Bar) =
+    (b: Any) match {
+      case FaaPreciseSome(n: String) => n
+    }
   def run() {
     val b = new Bar
     assert(doMatch1(b) == (50, "medium"))
@@ -61,50 +67,55 @@ object Foo {
     assert(doMatch5(b) == "medium")
     implicit val bc: Int = 3
     assert(
-        7 ==
+      7 ==
         (4 match {
           case VarFoo(x) => x
-        }))
+        })
+    )
   }
 }
 
 // same, but now object is not top-level
 object Mas {
   object Gaz {
-    def unapply(x: Any): Option[Product2[Int, String]] = x match {
-      case y: Baz => Some(y.size, y.name)
-      case _ => None
-    }
+    def unapply(x: Any): Option[Product2[Int, String]] =
+      x match {
+        case y: Baz => Some(y.size, y.name)
+        case _      => None
+      }
   }
   class Baz {
-    var size: Int = 60
+    var size: Int    = 60
     var name: String = "too large"
   }
   def run() {
     val b = new Baz
     assert(
-        (60, "too large") ==
+      (60, "too large") ==
         (b match {
           case Gaz(s: Int, n: String) => (s, n)
-        }))
+        })
+    )
   }
 }
 
 object LisSeqArr {
   def run() {
     assert(
-        (1, 2) ==
-        ((List(1, 2, 3): Any) match { case List(x, y, _ *) => (x, y) }))
+      (1, 2) ==
+        ((List(1, 2, 3): Any) match { case List(x, y, _*) => (x, y) })
+    )
     assert(
-        (1, 2) ==
-        ((List(1, 2, 3): Any) match { case Seq(x, y, _ *) => (x, y) }))
+      (1, 2) ==
+        ((List(1, 2, 3): Any) match { case Seq(x, y, _*) => (x, y) })
+    )
   }
 }
 
 object StreamFoo {
   def sum(stream: Stream[Int]): Int =
     stream match {
-      case Stream.Empty => 0
+      case Stream.Empty        => 0
       case Stream.cons(hd, tl) => hd + sum(tl)
     }
   def run() {

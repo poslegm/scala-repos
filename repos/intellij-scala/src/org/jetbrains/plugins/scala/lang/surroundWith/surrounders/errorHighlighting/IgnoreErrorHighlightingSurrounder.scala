@@ -15,12 +15,14 @@ class IgnoreErrorHighlightingSurrounder extends Surrounder {
 
   def isApplicable(elements: Array[PsiElement]): Boolean = true
 
-  def surroundElements(project: Project,
-                       editor: Editor,
-                       elements: Array[PsiElement]): TextRange = {
+  def surroundElements(
+      project: Project,
+      editor: Editor,
+      elements: Array[PsiElement]
+  ): TextRange = {
     val start = elements(0).getTextRange.getStartOffset
-    val end = elements(elements.length - 1).getTextRange.getEndOffset
-    val text = "/*_*/"
+    val end   = elements(elements.length - 1).getTextRange.getEndOffset
+    val text  = "/*_*/"
     editor.getDocument.insertString(end, text)
     editor.getDocument.insertString(start, text)
     new TextRange(end + 2 * text.length, end + 2 * text.length)

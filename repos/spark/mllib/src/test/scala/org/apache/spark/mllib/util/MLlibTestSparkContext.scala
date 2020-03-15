@@ -23,7 +23,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
 
 trait MLlibTestSparkContext extends BeforeAndAfterAll { self: Suite =>
-  @transient var sc: SparkContext = _
+  @transient var sc: SparkContext       = _
   @transient var sqlContext: SQLContext = _
 
   override def beforeAll() {

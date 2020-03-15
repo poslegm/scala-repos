@@ -6,7 +6,7 @@ object test {
   implicit def RichC(c: C): RichC = null
 
   val richC: RichC = null
-  val c: C = null
+  val c: C         = null
 
   /*start*/
   (richC[Int]("abc"), c("abc"), c[Int](" ")) /*end*/

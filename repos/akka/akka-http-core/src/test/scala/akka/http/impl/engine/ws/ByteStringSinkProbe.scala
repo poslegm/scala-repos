@@ -35,7 +35,7 @@ trait ByteStringSinkProbe {
 object ByteStringSinkProbe {
   def apply()(implicit system: ActorSystem): ByteStringSinkProbe =
     new ByteStringSinkProbe {
-      val probe = TestSubscriber.probe[ByteString]()
+      val probe                           = TestSubscriber.probe[ByteString]()
       val sink: Sink[ByteString, NotUsed] = Sink.fromSubscriber(probe)
 
       def expectNoBytes(): Unit = {
@@ -66,8 +66,8 @@ object ByteStringSinkProbe {
 
       def expectSubscriptionAndComplete(): Unit =
         probe.expectSubscriptionAndComplete()
-      def expectComplete(): Unit = probe.expectComplete()
-      def expectError(): Throwable = probe.expectError()
+      def expectComplete(): Unit              = probe.expectComplete()
+      def expectError(): Throwable            = probe.expectError()
       def expectError(cause: Throwable): Unit = probe.expectError(cause)
 
       def request(n: Long): Unit = probe.request(n)

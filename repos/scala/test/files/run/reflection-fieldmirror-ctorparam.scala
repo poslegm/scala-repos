@@ -9,8 +9,8 @@ object Test extends App {
   val a = new A(42)
 
   val im: InstanceMirror = cm.reflect(a)
-  val cs = im.symbol
-  val f = cs.info.decl(TermName("x")).asTerm
+  val cs                 = im.symbol
+  val f                  = cs.info.decl(TermName("x")).asTerm
   try {
     val fm: FieldMirror = im.reflectField(f)
     println(fm.get)

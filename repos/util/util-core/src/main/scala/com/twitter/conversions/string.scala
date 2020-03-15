@@ -46,7 +46,7 @@ object string {
       */
     def regexSub(re: Regex)(replace: Regex.MatchData => String): String = {
       var offset = 0
-      val out = new StringBuilder()
+      val out    = new StringBuilder()
 
       for (m <- re.findAllIn(wrapped).matchData) {
         if (m.start > offset) {
@@ -81,7 +81,7 @@ object string {
           case '\r' => "\\r"
           case '\n' => "\\n"
           case '\t' => "\\t"
-          case '"' => "\\\""
+          case '"'  => "\\\""
           case '\\' => "\\\\"
           case c =>
             if (c <= 255) {
@@ -111,19 +111,23 @@ object string {
         val ch = m.group(1).charAt(0) match {
           // holy crap! this is terrible:
           case 'u' =>
-            Character.valueOf(Integer
-                  .valueOf(m.group(1).substring(1), 16)
-                  .asInstanceOf[Int]
-                  .toChar)
+            Character.valueOf(
+              Integer
+                .valueOf(m.group(1).substring(1), 16)
+                .asInstanceOf[Int]
+                .toChar
+            )
           case 'x' =>
-            Character.valueOf(Integer
-                  .valueOf(m.group(1).substring(1), 16)
-                  .asInstanceOf[Int]
-                  .toChar)
+            Character.valueOf(
+              Integer
+                .valueOf(m.group(1).substring(1), 16)
+                .asInstanceOf[Int]
+                .toChar
+            )
           case 'r' => '\r'
           case 'n' => '\n'
           case 't' => '\t'
-          case x => x
+          case x   => x
         }
         ch.toString
       }

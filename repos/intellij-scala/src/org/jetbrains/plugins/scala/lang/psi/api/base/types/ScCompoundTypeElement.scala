@@ -16,7 +16,8 @@ trait ScCompoundTypeElement extends ScTypeElement {
 }
 
 object ScCompoundTypeElement {
-  def unapply(cte: ScCompoundTypeElement)
-    : Option[(Seq[ScTypeElement], Option[ScRefinement])] =
+  def unapply(
+      cte: ScCompoundTypeElement
+  ): Option[(Seq[ScTypeElement], Option[ScRefinement])] =
     Option(cte.components, cte.refinement)
 }

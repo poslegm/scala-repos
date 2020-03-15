@@ -20,14 +20,15 @@ object DoubleBuffer {
     TypedArrayDoubleBuffer.wrap(array)
 }
 
-abstract class DoubleBuffer private[nio](
+abstract class DoubleBuffer private[nio] (
     _capacity: Int,
     private[nio] val _array: Array[Double],
-    private[nio] val _arrayOffset: Int)
-    extends Buffer(_capacity) with Comparable[DoubleBuffer] {
+    private[nio] val _arrayOffset: Int
+) extends Buffer(_capacity)
+    with Comparable[DoubleBuffer] {
 
-  private[nio] type ElementType = Double
-  private[nio] type BufferType = DoubleBuffer
+  private[nio] type ElementType    = Double
+  private[nio] type BufferType     = DoubleBuffer
   private[nio] type TypedArrayType = Float64Array
 
   def this(_capacity: Int) = this(_capacity, null, -1)
@@ -83,10 +84,11 @@ abstract class DoubleBuffer private[nio](
   override def hashCode(): Int =
     GenBuffer(this).generic_hashCode(DoubleBuffer.HashSeed)
 
-  override def equals(that: Any): Boolean = that match {
-    case that: DoubleBuffer => compareTo(that) == 0
-    case _ => false
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: DoubleBuffer => compareTo(that) == 0
+      case _                  => false
+    }
 
   @noinline
   def compareTo(that: DoubleBuffer): Int =
@@ -102,11 +104,19 @@ abstract class DoubleBuffer private[nio](
 
   @inline
   private[nio] def load(
-      startIndex: Int, dst: Array[Double], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      dst: Array[Double],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_load(startIndex, dst, offset, length)
 
   @inline
   private[nio] def store(
-      startIndex: Int, src: Array[Double], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      src: Array[Double],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_store(startIndex, src, offset, length)
 }

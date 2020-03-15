@@ -29,13 +29,13 @@ package object duration {
   object fromNow
 
   type TimeUnit = java.util.concurrent.TimeUnit
-  final val DAYS = java.util.concurrent.TimeUnit.DAYS
-  final val HOURS = java.util.concurrent.TimeUnit.HOURS
+  final val DAYS         = java.util.concurrent.TimeUnit.DAYS
+  final val HOURS        = java.util.concurrent.TimeUnit.HOURS
   final val MICROSECONDS = java.util.concurrent.TimeUnit.MICROSECONDS
   final val MILLISECONDS = java.util.concurrent.TimeUnit.MILLISECONDS
-  final val MINUTES = java.util.concurrent.TimeUnit.MINUTES
-  final val NANOSECONDS = java.util.concurrent.TimeUnit.NANOSECONDS
-  final val SECONDS = java.util.concurrent.TimeUnit.SECONDS
+  final val MINUTES      = java.util.concurrent.TimeUnit.MINUTES
+  final val NANOSECONDS  = java.util.concurrent.TimeUnit.NANOSECONDS
+  final val SECONDS      = java.util.concurrent.TimeUnit.SECONDS
 
   implicit def pairIntToDuration(p: (Int, TimeUnit)): Duration =
     Duration(p._1.toLong, p._2)
@@ -45,25 +45,29 @@ package object duration {
     (d.length, d.unit)
 
   implicit final class DurationInt(private val n: Int)
-      extends AnyVal with DurationConversions {
+      extends AnyVal
+      with DurationConversions {
     override protected def durationIn(unit: TimeUnit): FiniteDuration =
       Duration(n.toLong, unit)
   }
 
   implicit final class DurationLong(private val n: Long)
-      extends AnyVal with DurationConversions {
+      extends AnyVal
+      with DurationConversions {
     override protected def durationIn(unit: TimeUnit): FiniteDuration =
       Duration(n, unit)
   }
 
   implicit final class DurationDouble(private val d: Double)
-      extends AnyVal with DurationConversions {
+      extends AnyVal
+      with DurationConversions {
     override protected def durationIn(unit: TimeUnit): FiniteDuration =
       Duration(d, unit) match {
         case f: FiniteDuration => f
         case _ =>
           throw new IllegalArgumentException(
-              "Duration DSL not applicable to " + d)
+            "Duration DSL not applicable to " + d
+          )
       }
   }
 
@@ -71,12 +75,12 @@ package object duration {
    * Avoid reflection based invocation by using non-duck type
    */
   implicit final class IntMult(private val i: Int) extends AnyVal {
-    def *(d: Duration) = d * i.toDouble
+    def *(d: Duration)       = d * i.toDouble
     def *(d: FiniteDuration) = d * i.toLong
   }
 
   implicit final class LongMult(private val i: Long) extends AnyVal {
-    def *(d: Duration) = d * i.toDouble
+    def *(d: Duration)       = d * i.toDouble
     def *(d: FiniteDuration) = d * i.toLong
   }
 

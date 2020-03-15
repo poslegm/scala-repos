@@ -14,9 +14,12 @@ class ThriftIfaceTest extends FunSuite with AssertionsForJUnit {
     }
 
     intercept[IllegalArgumentException] {
-      ThriftMux.serveIface("localhost:*", new FakeThriftIface {
-        def query(x: String) = Future.value(x)
-      })
+      ThriftMux.serveIface(
+        "localhost:*",
+        new FakeThriftIface {
+          def query(x: String) = Future.value(x)
+        }
+      )
     }
   }
 }

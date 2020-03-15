@@ -11,7 +11,7 @@ class Bla { def foo: Bla = this }
 
 // NOTE: inferred types show unmoored skolems, should pack them to display properly as bounded wildcards
 object T {
-  val aBlaSAM = (new S(new Bla)).map(_.foo)
+  val aBlaSAM            = (new S(new Bla)).map(_.foo)
   val fun: Fun[Bla, Bla] = (x: Bla) => x
-  val aBlaSAMX = (new S(new Bla)).map(fun)
+  val aBlaSAMX           = (new S(new Bla)).map(fun)
 }

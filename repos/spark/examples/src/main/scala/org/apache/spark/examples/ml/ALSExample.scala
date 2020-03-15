@@ -37,17 +37,19 @@ object ALSExample {
     def parseRating(str: String): Rating = {
       val fields = str.split("::")
       assert(fields.size == 4)
-      Rating(fields(0).toInt,
-             fields(1).toInt,
-             fields(2).toFloat,
-             fields(3).toLong)
+      Rating(
+        fields(0).toInt,
+        fields(1).toInt,
+        fields(2).toFloat,
+        fields(3).toLong
+      )
     }
   }
   // $example off$
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("ALSExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("ALSExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
 

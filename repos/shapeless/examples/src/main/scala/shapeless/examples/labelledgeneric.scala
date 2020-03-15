@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Miles Sabin 
+ * Copyright (c) 2014 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import shapeless._
 
 /**
   * LabelledGeneric examples.
-  * 
+  *
   * @author Miles Sabin
   */
 object LabelledGenericExamples extends App {
@@ -30,13 +30,18 @@ object LabelledGenericExamples extends App {
 
   case class Book(author: String, title: String, id: Int, price: Double)
   case class ExtendedBook(
-      author: String, title: String, id: Int, price: Double, inPrint: Boolean)
+      author: String,
+      title: String,
+      id: Int,
+      price: Double,
+      inPrint: Boolean
+  )
 
-  val bookGen = LabelledGeneric[Book]
+  val bookGen    = LabelledGeneric[Book]
   val bookExtGen = LabelledGeneric[ExtendedBook]
 
-  val tapl = Book(
-      "Benjamin Pierce", "Types and Programming Languages", 262162091, 44.11)
+  val tapl =
+    Book("Benjamin Pierce", "Types and Programming Languages", 262162091, 44.11)
 
   val rec = bookGen.to(tapl)
 
@@ -59,10 +64,10 @@ object LabelledGenericExamples extends App {
   // internationalization Shapeless style?
   case class Libro(autor: String, `título`: String, id: Int, precio: Double)
 
-  val libroGen = LabelledGeneric[Libro]
+  val libroGen  = LabelledGeneric[Libro]
   val libroKeys = Keys[libroGen.Repr]
-  val libroRec = rec.values.zipWithKeys(libroKeys())
-  val libro = libroGen.from(libroRec) // static type is Libro
+  val libroRec  = rec.values.zipWithKeys(libroKeys())
+  val libro     = libroGen.from(libroRec) // static type is Libro
   println(libro)
   println
 }
@@ -80,9 +85,10 @@ trait Field {
 }
 
 object Field {
-  def apply[K0, V0](sample: FieldType[K0, V0]) = new Field {
-    type K = K0; type V = V0
-  }
+  def apply[K0, V0](sample: FieldType[K0, V0]) =
+    new Field {
+      type K = K0; type V = V0
+    }
 }
 
 object OldWineNewBottles extends App {
@@ -95,7 +101,7 @@ object OldWineNewBottles extends App {
   val from = From("foo", "bar")
 
   val fromGen = LabelledGeneric[From]
-  val toGen = LabelledGeneric[To]
+  val toGen   = LabelledGeneric[To]
 
   // Define the type of the i field by example
   val iField = Field('i ->> 0)

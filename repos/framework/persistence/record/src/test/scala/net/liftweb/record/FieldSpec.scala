@@ -43,13 +43,14 @@ object FieldSpec extends Specification {
 
   lazy val session = new LiftSession("", randomString(20), Empty)
 
-  def passBasicTests[A](example: A,
-                        example2: A,
-                        mandatory: MandatoryTypedField[A],
-                        legacyOptional: MandatoryTypedField[A],
-                        optional: OptionalTypedField[A],
-                        canCheckDefaultValues: Boolean = true)(
-      implicit m: scala.reflect.Manifest[A]) = {
+  def passBasicTests[A](
+      example: A,
+      example2: A,
+      mandatory: MandatoryTypedField[A],
+      legacyOptional: MandatoryTypedField[A],
+      optional: OptionalTypedField[A],
+      canCheckDefaultValues: Boolean = true
+  )(implicit m: scala.reflect.Manifest[A]) = {
     def commonBehaviorsForMandatory(in: MandatoryTypedField[A]): Unit = {
 
       if (canCheckDefaultValues) {
@@ -107,7 +108,8 @@ object FieldSpec extends Specification {
       }
 
       "which have readable and writable boxed values" in S.initIfUninitted(
-          session) {
+        session
+      ) {
         in.setBox(Full(example))
         in.valueBox.isDefined must_== true
         in.valueBox must_== Full(example)
@@ -118,11 +120,11 @@ object FieldSpec extends Specification {
       if (canCheckDefaultValues) {
         "which correctly clear back to the default box value" in S
           .initIfUninitted(session) {
-          in.setBox(Full(example))
-          in.valueBox.isDefined must_== true
-          in.clear
-          in.valueBox must_== in.defaultValueBox
-        }
+            in.setBox(Full(example))
+            in.valueBox.isDefined must_== true
+            in.clear
+            in.valueBox must_== in.defaultValueBox
+          }
       }
 
       "which capture error conditions set in" in {
@@ -255,11 +257,13 @@ object FieldSpec extends Specification {
     success
   }
 
-  def passConversionTests[A](example: A,
-                             mandatory: MandatoryTypedField[A],
-                             jsexp: JsExp,
-                             jvalue: JValue,
-                             formPattern: Box[NodeSeq]) = {
+  def passConversionTests[A](
+      example: A,
+      mandatory: MandatoryTypedField[A],
+      jsexp: JsExp,
+      jvalue: JValue,
+      formPattern: Box[NodeSeq]
+  ) = {
 
     "convert to JsExp" in S.initIfUninitted(session) {
       mandatory.set(example)
@@ -288,13 +292,16 @@ object FieldSpec extends Specification {
           formXml must beLike {
             case Full(fprime) =>
               val f = ("* [name]" #> ".*" & "select *" #>
-                  (((ns: NodeSeq) =>
-                        ns.filter {
-                          case e: Elem =>
-                            e.attribute("selected").map(_.text) == Some(
-                                "selected")
-                          case _ => false
-                        }) andThen "* [value]" #> ".*"))(fprime)
+                ((
+                    (ns: NodeSeq) =>
+                      ns.filter {
+                        case e: Elem =>
+                          e.attribute("selected").map(_.text) == Some(
+                            "selected"
+                          )
+                        case _ => false
+                      }
+                ) andThen "* [value]" #> ".*"))(fprime)
               val ret: Boolean = Helpers.compareXml(f, fp)
               ret must_== true
           }
@@ -316,131 +323,155 @@ object FieldSpec extends Specification {
    */
 
   "BooleanField" should {
-    val rec = FieldTypeTestRecord.createRecord
-    val bool = true
+    val rec   = FieldTypeTestRecord.createRecord
+    val bool  = true
     val bool2 = false
-    passBasicTests(bool,
-                   bool2,
-                   rec.mandatoryBooleanField,
-                   rec.legacyOptionalBooleanField,
-                   rec.optionalBooleanField)
+    passBasicTests(
+      bool,
+      bool2,
+      rec.mandatoryBooleanField,
+      rec.legacyOptionalBooleanField,
+      rec.optionalBooleanField
+    )
     passConversionTests(
-        bool,
-        rec.mandatoryBooleanField,
-        JsTrue,
-        JBool(bool),
-        Full(<input checked="checked" tabindex="1" value="true" type="checkbox" name=".*" id="mandatoryBooleanField_id"></input><input value="false" type="hidden" name=".*"></input>)
+      bool,
+      rec.mandatoryBooleanField,
+      JsTrue,
+      JBool(bool),
+      Full(
+        <input checked="checked" tabindex="1" value="true" type="checkbox" name=".*" id="mandatoryBooleanField_id"></input><input value="false" type="hidden" name=".*"></input>
+      )
     )
     "support java.lang.Boolean" in {
       rec.mandatoryBooleanField.setFromAny(java.lang.Boolean.TRUE)
       rec.optionalBooleanField.setFromAny(java.lang.Boolean.TRUE)
       (rec.mandatoryBooleanField.get &&
-          (rec.optionalBooleanField.get getOrElse false)) must_== true
+      (rec.optionalBooleanField.get getOrElse false)) must_== true
     }
     "support Full(java.lang.Boolean)" in {
       rec.mandatoryBooleanField.setFromAny(Full(java.lang.Boolean.TRUE))
       rec.optionalBooleanField.setFromAny(Full(java.lang.Boolean.TRUE))
       (rec.mandatoryBooleanField.get &&
-          (rec.optionalBooleanField.get getOrElse false)) must_== true
+      (rec.optionalBooleanField.get getOrElse false)) must_== true
     }
     "support Some(java.lang.Boolean)" in {
       rec.mandatoryBooleanField.setFromAny(Some(java.lang.Boolean.TRUE))
       rec.optionalBooleanField.setFromAny(Some(java.lang.Boolean.TRUE))
       (rec.mandatoryBooleanField.get &&
-          (rec.optionalBooleanField.get getOrElse false)) must_== true
+      (rec.optionalBooleanField.get getOrElse false)) must_== true
     }
   }
 
   "CountryField" should {
     val session = new LiftSession("", randomString(20), Empty)
     S.initIfUninitted(session) {
-      val rec = FieldTypeTestRecord.createRecord
-      val country = Countries.Canada
+      val rec      = FieldTypeTestRecord.createRecord
+      val country  = Countries.Canada
       val country2 = Countries.USA
-      passBasicTests(country,
-                     country2,
-                     rec.mandatoryCountryField,
-                     rec.legacyOptionalCountryField,
-                     rec.optionalCountryField)
+      passBasicTests(
+        country,
+        country2,
+        rec.mandatoryCountryField,
+        rec.legacyOptionalCountryField,
+        rec.optionalCountryField
+      )
       passConversionTests(
-          country,
-          rec.mandatoryCountryField,
-          Str(country.toString),
-          JInt(country.id),
-          Full(<select tabindex="1" name=".*" id="mandatoryCountryField_id"><option value=".*" selected="selected">{country.toString}</option></select>)
+        country,
+        rec.mandatoryCountryField,
+        Str(country.toString),
+        JInt(country.id),
+        Full(
+          <select tabindex="1" name=".*" id="mandatoryCountryField_id"><option value=".*" selected="selected">{
+            country.toString
+          }</option></select>
+        )
       )
     }
   }
 
   "DateTimeField" should {
     val rec = FieldTypeTestRecord.createRecord
-    val dt = Calendar.getInstance
+    val dt  = Calendar.getInstance
     val dt2 = Calendar.getInstance
     dt2.add(Calendar.DATE, 1)
     val dtStr = toInternetDate(dt.getTime)
     // don't try to use the default value of date/time typed fields, because it changes from moment to moment!
-    passBasicTests(dt,
-                   dt2,
-                   rec.mandatoryDateTimeField,
-                   rec.legacyOptionalDateTimeField,
-                   rec.optionalDateTimeField,
-                   false)
+    passBasicTests(
+      dt,
+      dt2,
+      rec.mandatoryDateTimeField,
+      rec.legacyOptionalDateTimeField,
+      rec.optionalDateTimeField,
+      false
+    )
     passConversionTests(
-        dt,
-        rec.mandatoryDateTimeField,
-        Str(dtStr),
-        JString(dtStr),
-        Full(<input name=".*" type="text" tabindex="1" value={dtStr} id="mandatoryDateTimeField_id"></input>)
+      dt,
+      rec.mandatoryDateTimeField,
+      Str(dtStr),
+      JString(dtStr),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        dtStr
+      } id="mandatoryDateTimeField_id"></input>)
     )
   }
 
   "DateTimeField with custom format" should {
     val rec = CustomFormatDateTimeRecord.createRecord
-    val dt = Calendar.getInstance
+    val dt  = Calendar.getInstance
     val dtStr =
       rec.customFormatDateTimeField.formats.dateFormat.format(dt.getTime)
     passConversionTests(
-        dt,
-        rec.customFormatDateTimeField,
-        Str(dtStr),
-        JString(dtStr),
-        Full(<input name=".*" type="text" tabindex="1" value={toInternetDate(dt.getTime)} id="customFormatDateTimeField_id"></input>)
+      dt,
+      rec.customFormatDateTimeField,
+      Str(dtStr),
+      JString(dtStr),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        toInternetDate(dt.getTime)
+      } id="customFormatDateTimeField_id"></input>)
     )
   }
 
   "DecimalField" should {
     val rec = FieldTypeTestRecord.createRecord
-    val bd = BigDecimal("12.34")
+    val bd  = BigDecimal("12.34")
     val bd2 = BigDecimal("1.22")
-    passBasicTests(bd,
-                   bd2,
-                   rec.mandatoryDecimalField,
-                   rec.legacyOptionalDecimalField,
-                   rec.optionalDecimalField)
+    passBasicTests(
+      bd,
+      bd2,
+      rec.mandatoryDecimalField,
+      rec.legacyOptionalDecimalField,
+      rec.optionalDecimalField
+    )
     passConversionTests(
-        bd,
-        rec.mandatoryDecimalField,
-        JsRaw(bd.toString),
-        JString(bd.toString),
-        Full(<input name=".*" type="text" tabindex="1" value={bd.toString} id="mandatoryDecimalField_id"></input>)
+      bd,
+      rec.mandatoryDecimalField,
+      JsRaw(bd.toString),
+      JString(bd.toString),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        bd.toString
+      } id="mandatoryDecimalField_id"></input>)
     )
   }
 
   "DoubleField" should {
     val rec = FieldTypeTestRecord.createRecord
-    val d = 12.34
-    val d2 = 1.00
-    passBasicTests(d,
-                   d2,
-                   rec.mandatoryDoubleField,
-                   rec.legacyOptionalDoubleField,
-                   rec.optionalDoubleField)
+    val d   = 12.34
+    val d2  = 1.00
+    passBasicTests(
+      d,
+      d2,
+      rec.mandatoryDoubleField,
+      rec.legacyOptionalDoubleField,
+      rec.optionalDoubleField
+    )
     passConversionTests(
-        d,
-        rec.mandatoryDoubleField,
-        JsRaw(d.toString),
-        JDouble(d),
-        Full(<input name=".*" type="text" tabindex="1" value={d.toString} id="mandatoryDoubleField_id"></input>)
+      d,
+      rec.mandatoryDoubleField,
+      JsRaw(d.toString),
+      JDouble(d),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        d.toString
+      } id="mandatoryDoubleField_id"></input>)
     )
 
     "get set from JInt" in {
@@ -451,20 +482,24 @@ object FieldSpec extends Specification {
 
   "EmailField" should {
     val session = new LiftSession("", randomString(20), Empty)
-    val rec = FieldTypeTestRecord.createRecord
-    val email = "foo@bar.baz"
-    val email2 = "foo2@bar.baz"
-    passBasicTests(email,
-                   email2,
-                   rec.mandatoryEmailField,
-                   rec.legacyOptionalEmailField,
-                   rec.optionalEmailField)
+    val rec     = FieldTypeTestRecord.createRecord
+    val email   = "foo@bar.baz"
+    val email2  = "foo2@bar.baz"
+    passBasicTests(
+      email,
+      email2,
+      rec.mandatoryEmailField,
+      rec.legacyOptionalEmailField,
+      rec.optionalEmailField
+    )
     passConversionTests(
-        email,
-        rec.mandatoryEmailField,
-        Str(email),
-        JString(email),
-        Full(<input name=".*" type="text" maxlength="100" tabindex="1" value={email} id="mandatoryEmailField_id"></input>)
+      email,
+      rec.mandatoryEmailField,
+      Str(email),
+      JString(email),
+      Full(<input name=".*" type="text" maxlength="100" tabindex="1" value={
+        email
+      } id="mandatoryEmailField_id"></input>)
     )
     "pass validation if field is optional and value is Empty" in {
       S.initIfUninitted(session) {
@@ -494,37 +529,47 @@ object FieldSpec extends Specification {
 
   "EnumField" should {
     val rec = FieldTypeTestRecord.createRecord
-    val ev = MyTestEnum.TWO
+    val ev  = MyTestEnum.TWO
     val ev2 = MyTestEnum.ONE
-    passBasicTests(ev,
-                   ev2,
-                   rec.mandatoryEnumField,
-                   rec.legacyOptionalEnumField,
-                   rec.optionalEnumField)
+    passBasicTests(
+      ev,
+      ev2,
+      rec.mandatoryEnumField,
+      rec.legacyOptionalEnumField,
+      rec.optionalEnumField
+    )
     passConversionTests(
-        ev,
-        rec.mandatoryEnumField,
-        Str(ev.toString),
-        JInt(ev.id),
-        Full(<select tabindex="1" name=".*" id="mandatoryEnumField_id"><option value=".*" selected="selected">{ev.toString}</option></select>)
+      ev,
+      rec.mandatoryEnumField,
+      Str(ev.toString),
+      JInt(ev.id),
+      Full(
+        <select tabindex="1" name=".*" id="mandatoryEnumField_id"><option value=".*" selected="selected">{
+          ev.toString
+        }</option></select>
+      )
     )
   }
 
   "IntField" should {
-    val rec = FieldTypeTestRecord.createRecord
-    val num = 123
+    val rec  = FieldTypeTestRecord.createRecord
+    val num  = 123
     val num2 = 456
-    passBasicTests(num,
-                   num2,
-                   rec.mandatoryIntField,
-                   rec.legacyOptionalIntField,
-                   rec.optionalIntField)
+    passBasicTests(
+      num,
+      num2,
+      rec.mandatoryIntField,
+      rec.legacyOptionalIntField,
+      rec.optionalIntField
+    )
     passConversionTests(
-        num,
-        rec.mandatoryIntField,
-        JsRaw(num.toString),
-        JInt(num),
-        Full(<input name=".*" type="text" tabindex="1" value={num.toString} id="mandatoryIntField_id"></input>)
+      num,
+      rec.mandatoryIntField,
+      JsRaw(num.toString),
+      JInt(num),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        num.toString
+      } id="mandatoryIntField_id"></input>)
     )
 
     "get set from JDouble" in {
@@ -537,11 +582,13 @@ object FieldSpec extends Specification {
     val rec = CustomTypeIntFieldRecord.createRecord
     val num = 123
     passConversionTests(
-        num,
-        rec.customIntField,
-        JsRaw(num.toString),
-        JInt(num),
-        Full(<input name=".*" type="number" tabindex="1" value={num.toString} id="customIntField_id"></input>)
+      num,
+      rec.customIntField,
+      JsRaw(num.toString),
+      JInt(num),
+      Full(<input name=".*" type="number" tabindex="1" value={
+        num.toString
+      } id="customIntField_id"></input>)
     )
   }
 
@@ -549,34 +596,40 @@ object FieldSpec extends Specification {
     val rec = FieldTypeTestRecord.createRecord
     val example = java.util.Locale.getDefault.toString match {
       case "en_US" => "en_GB"
-      case _ => "en_US"
+      case _       => "en_US"
     }
     val example2 = java.util.Locale.getDefault.toString match {
       case "es_ES" => "en_NZ"
-      case _ => "es_ES"
+      case _       => "es_ES"
     }
-    passBasicTests(example,
-                   example2,
-                   rec.mandatoryLocaleField,
-                   rec.legacyOptionalLocaleField,
-                   rec.optionalLocaleField)
+    passBasicTests(
+      example,
+      example2,
+      rec.mandatoryLocaleField,
+      rec.legacyOptionalLocaleField,
+      rec.optionalLocaleField
+    )
   }
 
   "LongField" should {
-    val rec = FieldTypeTestRecord.createRecord
-    val lng = 1234L
+    val rec  = FieldTypeTestRecord.createRecord
+    val lng  = 1234L
     val lng2 = 5678L
-    passBasicTests(lng,
-                   lng2,
-                   rec.mandatoryLongField,
-                   rec.legacyOptionalLongField,
-                   rec.optionalLongField)
+    passBasicTests(
+      lng,
+      lng2,
+      rec.mandatoryLongField,
+      rec.legacyOptionalLongField,
+      rec.optionalLongField
+    )
     passConversionTests(
-        lng,
-        rec.mandatoryLongField,
-        JsRaw(lng.toString),
-        JInt(lng),
-        Full(<input name=".*" type="text" tabindex="1" value={lng.toString} id="mandatoryLongField_id"></input>)
+      lng,
+      rec.mandatoryLongField,
+      JsRaw(lng.toString),
+      JInt(lng),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        lng.toString
+      } id="mandatoryLongField_id"></input>)
     )
 
     "get set from JDouble" in {
@@ -590,7 +643,7 @@ object FieldSpec extends Specification {
       val rec = PasswordTestRecord.createRecord.password("")
 
       rec.validate must_==
-      (FieldError(rec.password, Text(S.?("password.must.be.set"))) :: Nil)
+        (FieldError(rec.password, Text(S.?("password.must.be.set"))) :: Nil)
     }
 
     "correctly validate the unencrypted value" in S.initIfUninitted(session) {
@@ -599,7 +652,7 @@ object FieldSpec extends Specification {
 
       rec.password("1234")
       rec.validate must_==
-      (FieldError(rec.password, Text(S.?("password.too.short"))) :: Nil)
+        (FieldError(rec.password, Text(S.?("password.too.short"))) :: Nil)
     }
 
     "match with encrypted value" in {
@@ -607,28 +660,33 @@ object FieldSpec extends Specification {
       rec.password.match_?("testpassword") must_== true
 
       rec.password.set(
-          "$2a$10$6CJWdXpKoP8bVTjGH8SbKOWevNQVL8MkYVlBLmqtywVi7dp/YgPXC")
+        "$2a$10$6CJWdXpKoP8bVTjGH8SbKOWevNQVL8MkYVlBLmqtywVi7dp/YgPXC"
+      )
       rec.password.match_?("dummyPassw0rd") must_== true
     }
   }
 
   "PostalCodeField" should {
     val session = new LiftSession("", randomString(20), Empty)
-    val rec = FieldTypeTestRecord.createRecord
-    val zip = "02452"
-    val zip2 = "03344"
+    val rec     = FieldTypeTestRecord.createRecord
+    val zip     = "02452"
+    val zip2    = "03344"
     rec.mandatoryCountryField.set(Countries.USA)
-    passBasicTests(zip,
-                   zip2,
-                   rec.mandatoryPostalCodeField,
-                   rec.legacyOptionalPostalCodeField,
-                   rec.optionalPostalCodeField)
+    passBasicTests(
+      zip,
+      zip2,
+      rec.mandatoryPostalCodeField,
+      rec.legacyOptionalPostalCodeField,
+      rec.optionalPostalCodeField
+    )
     passConversionTests(
-        zip,
-        rec.mandatoryPostalCodeField,
-        Str(zip),
-        JString(zip),
-        Full(<input name=".*" type="text" maxlength="32" tabindex="1" value={zip} id="mandatoryPostalCodeField_id"></input>)
+      zip,
+      rec.mandatoryPostalCodeField,
+      Str(zip),
+      JString(zip),
+      Full(<input name=".*" type="text" maxlength="32" tabindex="1" value={
+        zip
+      } id="mandatoryPostalCodeField_id"></input>)
     )
     "pass validation if field is optional and value is Empty" in {
       S.initIfUninitted(session) {
@@ -658,20 +716,24 @@ object FieldSpec extends Specification {
 
   "StringField" should {
     {
-      val rec = FieldTypeTestRecord.createRecord
-      val str = "foobar"
+      val rec  = FieldTypeTestRecord.createRecord
+      val str  = "foobar"
       val str2 = "foobaz"
-      passBasicTests(str,
-                     str2,
-                     rec.mandatoryStringField,
-                     rec.legacyOptionalStringField,
-                     rec.optionalStringField)
+      passBasicTests(
+        str,
+        str2,
+        rec.mandatoryStringField,
+        rec.legacyOptionalStringField,
+        rec.optionalStringField
+      )
       passConversionTests(
-          str,
-          rec.mandatoryStringField,
-          Str(str),
-          JString(str),
-          Full(<input name=".*" type="text" maxlength="100" tabindex="1" value={str} id="mandatoryStringField_id"></input>)
+        str,
+        rec.mandatoryStringField,
+        Str(str),
+        JString(str),
+        Full(<input name=".*" type="text" maxlength="100" tabindex="1" value={
+          str
+        } id="mandatoryStringField_id"></input>)
       )
     }
 
@@ -679,13 +741,14 @@ object FieldSpec extends Specification {
       val rec = StringTestRecord.createRecord
 
       rec.validate must_==
-      (FieldError(
-              rec.string,
-              Text("String field name must be at least 3 characters.")) :: Nil)
+        (FieldError(
+          rec.string,
+          Text("String field name must be at least 3 characters.")
+        ) :: Nil)
     }
 
     "honor harnessed validators" in {
-      val rec = ValidationTestRecord.createRecord
+      val rec   = ValidationTestRecord.createRecord
       val field = rec.stringFieldWithValidation
 
       "which always succeed" in {
@@ -695,8 +758,8 @@ object FieldSpec extends Specification {
 
       "which always fail" in {
         val fieldError = FieldError(field, Text("failed"))
-        field.validationHarness = s =>
-          FieldError(rec.stringFieldWithValidation, Text("failed")) :: Nil
+        field.validationHarness =
+          s => FieldError(rec.stringFieldWithValidation, Text("failed")) :: Nil
         rec.validate must_== (fieldError :: Nil)
       }
 
@@ -710,7 +773,7 @@ object FieldSpec extends Specification {
     }
 
     "support filtering" in {
-      val rec = FilterTestRecord.createRecord
+      val rec   = FilterTestRecord.createRecord
       val field = rec.stringFieldWithFiltering
 
       "which does nothing" in {
@@ -750,20 +813,26 @@ object FieldSpec extends Specification {
   }
 
   "TextareaField" should {
-    val rec = FieldTypeTestRecord.createRecord
-    val txt = "foobar"
+    val rec  = FieldTypeTestRecord.createRecord
+    val txt  = "foobar"
     val txt2 = "foobaz"
-    passBasicTests(txt,
-                   txt2,
-                   rec.mandatoryTextareaField,
-                   rec.legacyOptionalTextareaField,
-                   rec.optionalTextareaField)
+    passBasicTests(
+      txt,
+      txt2,
+      rec.mandatoryTextareaField,
+      rec.legacyOptionalTextareaField,
+      rec.optionalTextareaField
+    )
     passConversionTests(
-        txt,
-        rec.mandatoryTextareaField,
-        Str(txt),
-        JString(txt),
-        Full(<textarea name=".*" rows="8" tabindex="1" cols="20" id="mandatoryTextareaField_id">{txt}</textarea>)
+      txt,
+      rec.mandatoryTextareaField,
+      Str(txt),
+      JString(txt),
+      Full(
+        <textarea name=".*" rows="8" tabindex="1" cols="20" id="mandatoryTextareaField_id">{
+          txt
+        }</textarea>
+      )
     )
   }
 
@@ -771,43 +840,53 @@ object FieldSpec extends Specification {
     val rec = FieldTypeTestRecord.createRecord
     val example = java.util.TimeZone.getDefault.getID match {
       case "America/New_York" => "Europe/London"
-      case _ => "America/New_York"
+      case _                  => "America/New_York"
     }
     val example2 = java.util.TimeZone.getDefault.getID match {
       case "America/Chicago" => "Europe/Paris"
-      case _ => "America/Chicago"
+      case _                 => "America/Chicago"
     }
-    passBasicTests(example,
-                   example2,
-                   rec.mandatoryTimeZoneField,
-                   rec.legacyOptionalTimeZoneField,
-                   rec.optionalTimeZoneField)
+    passBasicTests(
+      example,
+      example2,
+      rec.mandatoryTimeZoneField,
+      rec.legacyOptionalTimeZoneField,
+      rec.optionalTimeZoneField
+    )
     passConversionTests(
-        example,
-        rec.mandatoryTimeZoneField,
-        Str(example),
-        JString(example),
-        Full(<select tabindex="1" name=".*" id="mandatoryTimeZoneField_id"><option value=".*" selected="selected">{example}</option></select>)
+      example,
+      rec.mandatoryTimeZoneField,
+      Str(example),
+      JString(example),
+      Full(
+        <select tabindex="1" name=".*" id="mandatoryTimeZoneField_id"><option value=".*" selected="selected">{
+          example
+        }</option></select>
+      )
     )
   }
 
   "JodaTimeField" should {
-    val rec = FieldTypeTestRecord.createRecord
-    val dt = DateTime.now
-    val dt2 = DateTime.now.plusDays(1)
+    val rec   = FieldTypeTestRecord.createRecord
+    val dt    = DateTime.now
+    val dt2   = DateTime.now.plusDays(1)
     val dtStr = JodaHelpers.dateTimeFormatter.print(dt)
-    passBasicTests(dt,
-                   dt2,
-                   rec.mandatoryJodaTimeField,
-                   rec.legacyOptionalJodaTimeField,
-                   rec.optionalJodaTimeField,
-                   false)
+    passBasicTests(
+      dt,
+      dt2,
+      rec.mandatoryJodaTimeField,
+      rec.legacyOptionalJodaTimeField,
+      rec.optionalJodaTimeField,
+      false
+    )
     passConversionTests(
-        dt,
-        rec.mandatoryJodaTimeField,
-        Num(dt.getMillis),
-        JInt(dt.getMillis),
-        Full(<input name=".*" type="text" tabindex="1" value={dtStr} id="mandatoryJodaTimeField_id"></input>)
+      dt,
+      rec.mandatoryJodaTimeField,
+      Num(dt.getMillis),
+      JInt(dt.getMillis),
+      Full(<input name=".*" type="text" tabindex="1" value={
+        dtStr
+      } id="mandatoryJodaTimeField_id"></input>)
     )
   }
 }

@@ -15,7 +15,7 @@ class ClusterTest extends FunSuite {
   case class WrappedInt(val value: Int)
 
   class ClusterHelper {
-    val N = 10
+    val N        = 10
     val cluster1 = new DynamicCluster[Int]()
     val cluster2 = cluster1.map(a => WrappedInt(a))
   }
@@ -26,7 +26,7 @@ class ClusterTest extends FunSuite {
 
     0 until N foreach { cluster1.add(_) }
     val (seq, changes) = cluster2.snap
-    var set = seq.toSet
+    var set            = seq.toSet
     changes foreach { spool =>
       spool foreach {
         case Cluster.Add(elem) => set += elem
@@ -39,11 +39,12 @@ class ClusterTest extends FunSuite {
   }
 
   test(
-      "Cluster map should remove mapped objects in the same order they were received (for each key)") {
+    "Cluster map should remove mapped objects in the same order they were received (for each key)"
+  ) {
     val h = new ClusterHelper
     import h._
 
-    val changes = mutable.Queue[Cluster.Change[WrappedInt]]()
+    val changes    = mutable.Queue[Cluster.Change[WrappedInt]]()
     val (_, spool) = cluster2.snap
     spool foreach { _ foreach { changes enqueue _ } }
     cluster1.add(1)
@@ -51,12 +52,13 @@ class ClusterTest extends FunSuite {
     cluster1.add(1)
     cluster1.add(2)
     assert(
-        changes.toSeq == Seq(
-            Cluster.Add(WrappedInt(1)),
-            Cluster.Add(WrappedInt(2)),
-            Cluster.Add(WrappedInt(1)),
-            Cluster.Add(WrappedInt(2))
-        ))
+      changes.toSeq == Seq(
+        Cluster.Add(WrappedInt(1)),
+        Cluster.Add(WrappedInt(2)),
+        Cluster.Add(WrappedInt(1)),
+        Cluster.Add(WrappedInt(2))
+      )
+    )
 
     cluster1.del(1)
     assert(changes.size == 5)
@@ -79,7 +81,7 @@ class ClusterTest extends FunSuite {
 
   test("Cluster ready should wait on cluster initialization") {
     val cluster = new DynamicCluster[Int]()
-    val ready = cluster.ready
+    val ready   = cluster.ready
     assert(!ready.isDefined)
     cluster.del(1)
     assert(!ready.isDefined)
@@ -95,7 +97,8 @@ class ClusterTest extends FunSuite {
   // Cluster initialization should honor global timeout as well as timeout specified
   // together with the requests
   test(
-      "Cluster ready should honor timeout while waiting for cluster to initialize") {
+    "Cluster ready should honor timeout while waiting for cluster to initialize"
+  ) {
     val cluster =
       new DynamicCluster[SocketAddress](Seq[SocketAddress]()) //empty cluster
     val client = ClientBuilder()

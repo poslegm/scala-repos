@@ -9,7 +9,7 @@ trait OuterTrait {
 
 object OuterObject extends OuterTrait {
   object Inner extends InnerTrait {
-    type Element = String
+    type Element             = String
     override type Collection = Seq[Inner.Element]
   }
 }

@@ -36,13 +36,17 @@ object Priority extends SFXEnumDelegateCompanion[jfxsl.Priority, Priority] {
 
   val Always = new Priority(jfxsl.Priority.ALWAYS)
   @deprecated(
-      "Use Always; ALWAYS will be removed in a future release", "2.2.60")
-  val ALWAYS = Always
+    "Use Always; ALWAYS will be removed in a future release",
+    "2.2.60"
+  )
+  val ALWAYS    = Always
   val Sometimes = new Priority(jfxsl.Priority.SOMETIMES)
   @deprecated(
-      "Use Sometimes; SOMETIMES will be removed in a future release", "2.2.60")
+    "Use Sometimes; SOMETIMES will be removed in a future release",
+    "2.2.60"
+  )
   val SOMETIMES = Sometimes
-  val Never = new Priority(jfxsl.Priority.NEVER)
+  val Never     = new Priority(jfxsl.Priority.NEVER)
   @deprecated("Use Never; NEVER will be removed in a future release", "2.2.60")
   val NEVER = Never
 

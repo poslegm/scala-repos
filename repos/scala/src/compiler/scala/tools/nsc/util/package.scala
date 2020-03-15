@@ -7,13 +7,20 @@ package scala
 package tools
 package nsc
 
-import java.io.{OutputStream, PrintStream, ByteArrayOutputStream, PrintWriter, StringWriter, Reader}
+import java.io.{
+  OutputStream,
+  PrintStream,
+  ByteArrayOutputStream,
+  PrintWriter,
+  StringWriter,
+  Reader
+}
 
 package object util {
   // forwarder for old code that builds against 2.9 and 2.10
   val Chars = scala.reflect.internal.Chars
 
-  type Set[T <: AnyRef] = scala.reflect.internal.util.Set[T]
+  type Set[T <: AnyRef]             = scala.reflect.internal.util.Set[T]
   type HashSet[T >: Null <: AnyRef] = scala.reflect.internal.util.HashSet[T]
   val HashSet = scala.reflect.internal.util.HashSet
 
@@ -25,12 +32,13 @@ package object util {
     */
   def waitingForThreads[T](body: => T) = {
     val (result, created) = trackingThreads(body)
-    val threads = created filterNot (_.isDaemon)
+    val threads           = created filterNot (_.isDaemon)
 
     // As long as there are non-daemon, live threads (the latter
     // condition should exclude shutdown hooks) we will wait.
-    while (threads exists (_.isAlive)) threads filter (_.isAlive) foreach
-    (_.join())
+    while (threads exists (_.isAlive))
+      threads filter (_.isAlive) foreach
+        (_.join())
 
     result
   }
@@ -39,16 +47,16 @@ package object util {
     *  which were created during its execution.
     */
   def trackingThreads[T](body: => T): (T, Seq[Thread]) = {
-    val ts1 = sys.allThreads()
+    val ts1    = sys.allThreads()
     val result = body
-    val ts2 = sys.allThreads()
+    val ts2    = sys.allThreads()
 
     (result, ts2 filterNot (ts1 contains _))
   }
 
   def stringFromReader(reader: Reader) = {
     val writer = new StringWriter()
-    var c = reader.read()
+    var c      = reader.read()
     while (c != -1) {
       writer.write(c)
       c = reader.read()
@@ -60,7 +68,7 @@ package object util {
   /** Generate a string using a routine that wants to write on a stream. */
   def stringFromWriter(writer: PrintWriter => Unit): String = {
     val stringWriter = new StringWriter()
-    val stream = new NewLinePrintWriter(stringWriter)
+    val stream       = new NewLinePrintWriter(stringWriter)
     writer(stream)
     stream.close()
     stringWriter.toString
@@ -81,7 +89,9 @@ package object util {
     */
   def stackTraceHeadString(ex: Throwable): String = {
     val frame =
-      ex.getStackTrace.dropWhile(_.getClassName contains "Predef") take 1 mkString ""
+      ex.getStackTrace.dropWhile(
+        _.getClassName contains "Predef"
+      ) take 1 mkString ""
     val msg = ex.getMessage match {
       case null | "" => ""; case s => s"""("$s")"""
     }
@@ -91,7 +101,8 @@ package object util {
   }
 
   implicit class StackTraceOps(private val e: Throwable)
-      extends AnyVal with StackTracing {
+      extends AnyVal
+      with StackTracing {
 
     /** Format the stack trace, returning the prefix consisting of frames that satisfy
       *  a given predicate.
@@ -128,14 +139,15 @@ package object util {
   type BatchSourceFile = scala.reflect.internal.util.BatchSourceFile
 
   @deprecated(
-      "Moved to scala.reflect.internal.util.AbstractFileClassLoader", "2.11.0")
-  type AbstractFileClassLoader = scala.reflect.internal.util.AbstractFileClassLoader
+    "Moved to scala.reflect.internal.util.AbstractFileClassLoader",
+    "2.11.0"
+  )
+  type AbstractFileClassLoader =
+    scala.reflect.internal.util.AbstractFileClassLoader
 
-  @deprecated(
-      "Moved to scala.reflect.internal.util.ScalaClassLoader", "2.11.0")
+  @deprecated("Moved to scala.reflect.internal.util.ScalaClassLoader", "2.11.0")
   val ScalaClassLoader = scala.reflect.internal.util.ScalaClassLoader
 
-  @deprecated(
-      "Moved to scala.reflect.internal.util.ScalaClassLoader", "2.11.0")
+  @deprecated("Moved to scala.reflect.internal.util.ScalaClassLoader", "2.11.0")
   type ScalaClassLoader = scala.reflect.internal.util.ScalaClassLoader
 }

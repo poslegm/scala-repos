@@ -10,11 +10,11 @@ import java.net.URI
 import ScopeFilter.Data
 
 object ScopeFilter {
-  type ScopeFilter = Base[Scope]
-  type AxisFilter[T] = Base[ScopeAxis[T]]
-  type ProjectFilter = AxisFilter[Reference]
+  type ScopeFilter         = Base[Scope]
+  type AxisFilter[T]       = Base[ScopeAxis[T]]
+  type ProjectFilter       = AxisFilter[Reference]
   type ConfigurationFilter = AxisFilter[ConfigKey]
-  type TaskFilter = AxisFilter[AttributeKey[_]]
+  type TaskFilter          = AxisFilter[AttributeKey[_]]
 
   /**
     * Constructs a Scope filter from filters for the individual axes.
@@ -23,16 +23,17 @@ object ScopeFilter {
     * If a task filter is not supplied, global is selected.
     * Generally, always specify the project axis.
     */
-  def apply(projects: ProjectFilter = inProjects(ThisProject),
-            configurations: ConfigurationFilter = globalAxis,
-            tasks: TaskFilter = globalAxis): ScopeFilter =
+  def apply(
+      projects: ProjectFilter = inProjects(ThisProject),
+      configurations: ConfigurationFilter = globalAxis,
+      tasks: TaskFilter = globalAxis
+  ): ScopeFilter =
     new ScopeFilter {
       private[sbt] def apply(data: Data): Scope => Boolean = {
         val pf = projects(data)
         val cf = configurations(data)
         val tf = tasks(data)
-        s =>
-          pf(s.project) && cf(s.config) && tf(s.task)
+        s => pf(s.project) && cf(s.config) && tf(s.task)
       }
     }
 
@@ -40,30 +41,29 @@ object ScopeFilter {
     new ScopeFilter {
       private[sbt] def apply(data: Data): Scope => Boolean = {
         val d = delegate(data)
-        scope =>
-          {
-            val accept = d(scope)
-            println((if (accept) "ACCEPT " else "reject ") + scope)
-            accept
-          }
+        scope => {
+          val accept = d(scope)
+          println((if (accept) "ACCEPT " else "reject ") + scope)
+          accept
+        }
       }
     }
 
-  final class SettingKeyAll[T] private[sbt](i: Initialize[T]) {
+  final class SettingKeyAll[T] private[sbt] (i: Initialize[T]) {
 
     /**
       * Evaluates the initialization in all scopes selected by the filter.  These are dynamic dependencies, so
       * static inspections will not show them.
       */
-    def all(sfilter: => ScopeFilter): Initialize[Seq[T]] = Def.bind(getData) {
-      data =>
+    def all(sfilter: => ScopeFilter): Initialize[Seq[T]] =
+      Def.bind(getData) { data =>
         data.allScopes.toSeq
           .filter(sfilter(data))
           .map(s => Project.inScope(s, i))
           .join
-    }
+      }
   }
-  final class TaskKeyAll[T] private[sbt](i: Initialize[Task[T]]) {
+  final class TaskKeyAll[T] private[sbt] (i: Initialize[Task[T]]) {
 
     /**
       * Evaluates the task in all scopes selected by the filter.  These are dynamic dependencies, so
@@ -108,27 +108,35 @@ object ScopeFilter {
       * Selects Scopes that have a project axis that is aggregated by `ref`, transitively if `transitive` is true.
       * If `includeRoot` is true, Scopes with `ref` itself as the project axis value are also selected.
       */
-    def inAggregates(ref: ProjectReference,
-                     transitive: Boolean = true,
-                     includeRoot: Boolean = true): ProjectFilter =
-      byDeps(ref,
-             transitive = transitive,
-             includeRoot = includeRoot,
-             aggregate = true,
-             classpath = false)
+    def inAggregates(
+        ref: ProjectReference,
+        transitive: Boolean = true,
+        includeRoot: Boolean = true
+    ): ProjectFilter =
+      byDeps(
+        ref,
+        transitive = transitive,
+        includeRoot = includeRoot,
+        aggregate = true,
+        classpath = false
+      )
 
     /**
       * Selects Scopes that have a project axis that is a dependency of `ref`, transitively if `transitive` is true.
       * If `includeRoot` is true, Scopes with `ref` itself as the project axis value are also selected.
       */
-    def inDependencies(ref: ProjectReference,
-                       transitive: Boolean = true,
-                       includeRoot: Boolean = true): ProjectFilter =
-      byDeps(ref,
-             transitive = transitive,
-             includeRoot = includeRoot,
-             aggregate = false,
-             classpath = true)
+    def inDependencies(
+        ref: ProjectReference,
+        transitive: Boolean = true,
+        includeRoot: Boolean = true
+    ): ProjectFilter =
+      byDeps(
+        ref,
+        transitive = transitive,
+        includeRoot = includeRoot,
+        aggregate = false,
+        classpath = true
+      )
 
     /** Selects Scopes that have a project axis with one of the provided values.*/
     def inProjects(projects: ProjectReference*): ProjectFilter =
@@ -156,47 +164,55 @@ object ScopeFilter {
     * Information provided to Scope filters.  These provide project relationships,
     * project reference resolution, and the list of all static Scopes.
     */
-  private final class Data(val units: Map[URI, LoadedBuildUnit],
-                           val resolve: ProjectReference => ProjectRef,
-                           val allScopes: Set[Scope])
+  private final class Data(
+      val units: Map[URI, LoadedBuildUnit],
+      val resolve: ProjectReference => ProjectRef,
+      val allScopes: Set[Scope]
+  )
 
   /** Constructs a Data instance from the list of static scopes and the project relationships.*/
   private[this] val getData: Initialize[Data] = Def.setting {
-    val build = Keys.loadedBuild.value
-    val scopes = Def.StaticScopes.value
+    val build   = Keys.loadedBuild.value
+    val scopes  = Def.StaticScopes.value
     val thisRef = Keys.thisProjectRef.?.value
     val current = thisRef match {
       case Some(ProjectRef(uri, _)) => uri
-      case None => build.root
+      case None                     => build.root
     }
     val rootProject = Load.getRootProject(build.units)
     val resolve: ProjectReference => ProjectRef = p =>
       (p, thisRef) match {
         case (ThisProject, Some(pref)) => pref
-        case _ => Scope.resolveProjectRef(current, rootProject, p)
-    }
+        case _                         => Scope.resolveProjectRef(current, rootProject, p)
+      }
     new Data(build.units, resolve, scopes)
   }
 
   private[this] def getDependencies(
       structure: Map[URI, LoadedBuildUnit],
       classpath: Boolean,
-      aggregate: Boolean): ProjectRef => Seq[ProjectRef] =
+      aggregate: Boolean
+  ): ProjectRef => Seq[ProjectRef] =
     ref =>
       Project.getProject(ref, structure).toList flatMap { p =>
         (if (classpath) p.dependencies.map(_.project) else Nil) ++
-        (if (aggregate) p.aggregate else Nil)
-    }
+          (if (aggregate) p.aggregate else Nil)
+      }
 
-  private[this] def byDeps(ref: ProjectReference,
-                           transitive: Boolean,
-                           includeRoot: Boolean,
-                           aggregate: Boolean,
-                           classpath: Boolean): ProjectFilter =
+  private[this] def byDeps(
+      ref: ProjectReference,
+      transitive: Boolean,
+      includeRoot: Boolean,
+      aggregate: Boolean,
+      classpath: Boolean
+  ): ProjectFilter =
     inResolvedProjects { data =>
       val resolvedRef = data.resolve(ref)
       val direct = getDependencies(
-          data.units, classpath = classpath, aggregate = aggregate)
+        data.units,
+        classpath = classpath,
+        aggregate = aggregate
+      )
       if (transitive) {
         val full = Dag.topologicalSort(resolvedRef)(direct)
         if (includeRoot) full else full dropRight 1
@@ -210,13 +226,15 @@ object ScopeFilter {
     inResolvedProjects(data => projects.map(data.resolve))
 
   private[this] def inResolvedProjects(
-      projects: Data => Seq[ProjectRef]): ProjectFilter =
+      projects: Data => Seq[ProjectRef]
+  ): ProjectFilter =
     selectAxis(data => projects(data).toSet)
 
-  private[this] def globalAxis[T]: AxisFilter[T] = new AxisFilter[T] {
-    private[sbt] def apply(data: Data): ScopeAxis[T] => Boolean =
-      _ == Global
-  }
+  private[this] def globalAxis[T]: AxisFilter[T] =
+    new AxisFilter[T] {
+      private[sbt] def apply(data: Data): ScopeAxis[T] => Boolean =
+        _ == Global
+    }
   private[this] def selectAny[T]: AxisFilter[T] =
     selectAxis(const(const(true)))
   private[this] def selectAxis[T](f: Data => T => Boolean): AxisFilter[T] =
@@ -226,7 +244,7 @@ object ScopeFilter {
         s =>
           s match {
             case Select(t) => g(t)
-            case _ => false
+            case _         => false
           }
       }
     }
@@ -241,32 +259,32 @@ object ScopeFilter {
     def --(other: Base[In]): Base[In] = this && -other
 
     /** Constructs a filter that selects values that match this filter and `other`.*/
-    def &&(other: Base[In]): Base[In] = new Base[In] {
-      private[sbt] def apply(data: Data): In => Boolean = {
-        val a = self(data)
-        val b = other(data)
-        s =>
-          a(s) && b(s)
+    def &&(other: Base[In]): Base[In] =
+      new Base[In] {
+        private[sbt] def apply(data: Data): In => Boolean = {
+          val a = self(data)
+          val b = other(data)
+          s => a(s) && b(s)
+        }
       }
-    }
 
     /** Constructs a filter that selects values that match this filter or `other`.*/
-    def ||(other: Base[In]): Base[In] = new Base[In] {
-      private[sbt] def apply(data: Data): In => Boolean = {
-        val a = self(data)
-        val b = other(data)
-        s =>
-          a(s) || b(s)
+    def ||(other: Base[In]): Base[In] =
+      new Base[In] {
+        private[sbt] def apply(data: Data): In => Boolean = {
+          val a = self(data)
+          val b = other(data)
+          s => a(s) || b(s)
+        }
       }
-    }
 
     /** Constructs a filter that selects values that do not match this filter.*/
-    def unary_- : Base[In] = new Base[In] {
-      private[sbt] def apply(data: Data): In => Boolean = {
-        val a = self(data)
-        s =>
-          !a(s)
+    def unary_- : Base[In] =
+      new Base[In] {
+        private[sbt] def apply(data: Data): In => Boolean = {
+          val a = self(data)
+          s => !a(s)
+        }
       }
-    }
   }
 }

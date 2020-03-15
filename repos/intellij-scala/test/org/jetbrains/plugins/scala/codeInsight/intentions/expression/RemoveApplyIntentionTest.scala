@@ -12,21 +12,21 @@ class RemoveApplyIntentionTest extends ScalaIntentionTestBase {
   val familyName = RemoveApplyIntention.familyName
 
   def testRemoveApply() {
-    val text = "val l = List.apply<caret>(1, 3, 4)"
+    val text       = "val l = List.apply<caret>(1, 3, 4)"
     val resultText = "val l = List<caret>(1, 3, 4)"
 
     doTest(text, resultText)
   }
 
   def testRemoveApply2() {
-    val text = "new AAAA().ap<caret>ply(1)"
+    val text       = "new AAAA().ap<caret>ply(1)"
     val resultText = "new AAAA()<caret>(1)"
 
     doTest(text, resultText)
   }
 
   def testRemoveApply3() {
-    val text = """
+    val text       = """
         |object D {
         |  def foo() = B
         |
@@ -45,7 +45,7 @@ class RemoveApplyIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testRemoveApply4() {
-    val text = """
+    val text       = """
         |object D {
         |  def foo() = B
         |
@@ -64,14 +64,14 @@ class RemoveApplyIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testRemoveApply5() {
-    val text = "(foo()).a<caret>pply(1)"
+    val text       = "(foo()).a<caret>pply(1)"
     val resultText = "(foo())<caret> (1)"
 
     doTest(text, resultText)
   }
 
   def testRemoveApply6() {
-    val text = """
+    val text       = """
         |object D {
         |  def foo()(implicit x: String) = B
         |  implicit val s: String = ""
@@ -94,7 +94,7 @@ class RemoveApplyIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testRemoveApply7() {
-    val text = """
+    val text       = """
         |object P {
         |  class AAAA()(implicit s: String) extends (Int => Int) {
         |    def this(x: Int) {
@@ -127,7 +127,7 @@ class RemoveApplyIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testRemoveApply8() {
-    val text = """
+    val text       = """
         |object A {
         |  def foo = B
         |  def foo(x: Int) = B

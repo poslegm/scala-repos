@@ -7,7 +7,12 @@ import java.util.Collections
 import com.intellij.debugger.engine._
 import com.intellij.debugger.jdi.VirtualMachineProxyImpl
 import com.intellij.debugger.requests.ClassPrepareRequestor
-import com.intellij.debugger.{MultiRequestPositionManager, NoDataException, PositionManager, SourcePosition}
+import com.intellij.debugger.{
+  MultiRequestPositionManager,
+  NoDataException,
+  PositionManager,
+  SourcePosition
+}
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.{DumbService, Project}
 import com.intellij.openapi.roots.impl.DirectoryIndex
@@ -16,7 +21,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi._
 import com.intellij.psi.search.{FilenameIndex, GlobalSearchScope}
 import com.intellij.psi.util.CachedValueProvider.Result
-import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager, PsiTreeUtil}
+import com.intellij.psi.util.{
+  CachedValueProvider,
+  CachedValuesManager,
+  PsiTreeUtil
+}
 import com.intellij.util.{Processor, Query}
 import com.sun.jdi._
 import com.sun.jdi.request.ClassPrepareRequest
@@ -29,10 +38,17 @@ import org.jetbrains.plugins.scala.debugger.evaluation.util.DebuggerUtil
 import org.jetbrains.plugins.scala.extensions._
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
-import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.{ScBindingPattern, ScConstructorPattern, ScInfixPattern}
+import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.{
+  ScBindingPattern,
+  ScConstructorPattern,
+  ScInfixPattern
+}
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 import org.jetbrains.plugins.scala.lang.psi.api.statements._
-import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{ScParameter, ScParameters}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.params.{
+  ScParameter,
+  ScParameters
+}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef._
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager
 import org.jetbrains.plugins.scala.lang.psi.types.ValueClassType
@@ -50,7 +66,8 @@ import scala.util.Try
   * @author ilyas
   */
 class ScalaPositionManager(val debugProcess: DebugProcess)
-    extends PositionManager with MultiRequestPositionManager
+    extends PositionManager
+    with MultiRequestPositionManager
     with LocationLineManager {
 
   protected[debugger] val caches = new ScalaPositionManagerCaches(debugProcess)
@@ -65,7 +82,9 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     val position = for {
       loc <- location.toOption
       psiFile <- getPsiFileByReferenceType(
-          debugProcess.getProject, loc.declaringType).toOption
+                  debugProcess.getProject,
+                  loc.declaringType
+                ).toOption
       lineNumber = exactLineNumber(location) if lineNumber >= 0
     } yield {
       calcPosition(psiFile, location, lineNumber).getOrElse {
@@ -74,13 +93,14 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     }
     position match {
       case Some(p) => p
-      case None => throw NoDataException.INSTANCE
+      case None    => throw NoDataException.INSTANCE
     }
   }
 
   @NotNull
   def getAllClasses(
-      @NotNull position: SourcePosition): util.List[ReferenceType] = {
+      @NotNull position: SourcePosition
+  ): util.List[ReferenceType] = {
 
     val file = position.getFile
     throwIfNotScalaFile(file)
@@ -89,11 +109,13 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
       file.getUserData(ScalaCompilingEvaluator.classNameKey)
 
     def hasLocations(
-        refType: ReferenceType, position: SourcePosition): Boolean = {
+        refType: ReferenceType,
+        position: SourcePosition
+    ): Boolean = {
       try {
         val generated =
           generatedClassName != null &&
-          refType.name().contains(generatedClassName)
+            refType.name().contains(generatedClassName)
         lazy val sameFile =
           getPsiFileByReferenceType(file.getProject, refType) == file
 
@@ -116,8 +138,9 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
         if (isCompiledWithIndyLambdas(file)) {
           val nonStrictParents =
             Iterator(onTheLine.head) ++ onTheLine.head.parentsInFile
-          nonStrictParents.find(
-              p => ScalaEvaluatorBuilderUtil.isGenerateNonAnonfunClass(p))
+          nonStrictParents.find(p =>
+            ScalaEvaluatorBuilderUtil.isGenerateNonAnonfunClass(p)
+          )
         } else None
 
       val sourceImages = onTheLine ++ nonLambdaParent
@@ -137,15 +160,16 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
       }
     }
     val packageName: Option[String] = Option(
-        inReadAction(file.asInstanceOf[ScalaFile].getPackageName))
+      inReadAction(file.asInstanceOf[ScalaFile].getPackageName)
+    )
 
     val foundWithPattern =
       if (namePatterns.isEmpty) Nil
       else
         filterAllClasses(
-            c =>
-              hasLocations(c, position) && namePatterns.exists(_.matches(c)),
-            packageName)
+          c => hasLocations(c, position) && namePatterns.exists(_.matches(c)),
+          packageName
+        )
 
     (exactClasses ++ foundWithPattern).distinct.asJava
   }
@@ -153,7 +177,8 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
   @NotNull
   def locationsOfLine(
       @NotNull refType: ReferenceType,
-      @NotNull position: SourcePosition): util.List[Location] = {
+      @NotNull position: SourcePosition
+  ): util.List[Location] = {
 
     throwIfNotScalaFile(position.getFile)
     checkForIndyLambdas(refType)
@@ -168,14 +193,17 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
   def createPrepareRequest(
       @NotNull requestor: ClassPrepareRequestor,
-      @NotNull position: SourcePosition): ClassPrepareRequest = {
+      @NotNull position: SourcePosition
+  ): ClassPrepareRequest = {
     throw new IllegalStateException(
-        "This class implements MultiRequestPositionManager, corresponding createPrepareRequests version should be used")
+      "This class implements MultiRequestPositionManager, corresponding createPrepareRequests version should be used"
+    )
   }
 
   override def createPrepareRequests(
       requestor: ClassPrepareRequestor,
-      position: SourcePosition): util.List[ClassPrepareRequest] = {
+      position: SourcePosition
+  ): util.List[ClassPrepareRequest] = {
     def isLocalOrUnderDelayedInit(definition: PsiClass): Boolean = {
       DebuggerUtil.isLocalClass(definition) || isDelayedInit(definition)
     }
@@ -183,7 +211,8 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     def findEnclosingTypeDefinition: Option[ScTypeDefinition] = {
       @tailrec
       def notLocalEnclosingTypeDefinition(
-          element: PsiElement): Option[ScTypeDefinition] = {
+          element: PsiElement
+      ): Option[ScTypeDefinition] = {
         PsiTreeUtil.getParentOfType(element, classOf[ScTypeDefinition]) match {
           case null => None
           case td if DebuggerUtil.isLocalClass(td) =>
@@ -196,7 +225,7 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     }
 
     def createPrepareRequest(position: SourcePosition): ClassPrepareRequest = {
-      val qName = new Ref[String](null)
+      val qName         = new Ref[String](null)
       val waitRequestor = new Ref[ClassPrepareRequestor](null)
       inReadAction {
         val sourceImage = findReferenceTypeSourceImage(position)
@@ -212,18 +241,20 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
             qName.set(if (insideMacro) specificName + "*" else specificName)
           case _ =>
             findEnclosingTypeDefinition.foreach(typeDef =>
-                  qName.set(typeDef.getQualifiedNameForDebugger + "*"))
+              qName.set(typeDef.getQualifiedNameForDebugger + "*")
+            )
         }
         // Enclosing type definition is not found
         if (qName.get == null) {
           qName.set(SCRIPT_HOLDER_CLASS_NAME + "*")
         }
-        waitRequestor.set(new ScalaPositionManager.MyClassPrepareRequestor(
-                position, requestor))
+        waitRequestor.set(
+          new ScalaPositionManager.MyClassPrepareRequestor(position, requestor)
+        )
       }
 
-      debugProcess.getRequestsManager.createClassPrepareRequest(
-          waitRequestor.get, qName.get)
+      debugProcess.getRequestsManager
+        .createClassPrepareRequest(waitRequestor.get, qName.get)
     }
 
     val file = position.getFile
@@ -240,16 +271,18 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     if (!checkScalaFile(file)) throw NoDataException.INSTANCE
   }
 
-  private def checkScalaFile(file: PsiFile): Boolean = file match {
-    case sf: ScalaFile => !sf.isCompiled
-    case _ => false
-  }
+  private def checkScalaFile(file: PsiFile): Boolean =
+    file match {
+      case sf: ScalaFile => !sf.isCompiled
+      case _             => false
+    }
 
   private def filterAllClasses(
       condition: ReferenceType => Boolean,
-      packageName: Option[String]): Seq[ReferenceType] = {
+      packageName: Option[String]
+  ): Seq[ReferenceType] = {
     def samePackage(refType: ReferenceType) = {
-      val name = refType.name()
+      val name    = refType.name()
       val lastDot = name.lastIndexOf('.')
       val refTypePackageName =
         if (lastDot < 0) "" else name.substring(0, lastDot)
@@ -264,7 +297,7 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     import scala.collection.JavaConverters._
     for {
       refType <- debugProcess.getVirtualMachineProxy.allClasses.asScala
-                    if isAppropriate(refType)
+      if isAppropriate(refType)
     } yield {
       refType
     }
@@ -272,21 +305,27 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
   @Nullable
   private def findReferenceTypeSourceImage(
-      @NotNull position: SourcePosition): PsiElement = {
+      @NotNull position: SourcePosition
+  ): PsiElement = {
     val element = nonWhitespaceElement(position)
     findGeneratingClassOrMethodParent(element)
   }
 
   protected def nonWhitespaceElement(
-      @NotNull position: SourcePosition): PsiElement = {
+      @NotNull position: SourcePosition
+  ): PsiElement = {
     val file = position.getFile
     @tailrec
     def nonWhitespaceInner(
-        element: PsiElement, document: Document): PsiElement = {
+        element: PsiElement,
+        document: Document
+    ): PsiElement = {
       element match {
         case null => null
         case ws: PsiWhiteSpace
-            if document.getLineNumber(element.getTextRange.getEndOffset) == position.getLine =>
+            if document.getLineNumber(
+              element.getTextRange.getEndOffset
+            ) == position.getLine =>
           val nextElement =
             file.findElementAt(element.getTextRange.getEndOffset)
           nonWhitespaceInner(nextElement, document)
@@ -306,9 +345,11 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     }
   }
 
-  private def calcPosition(file: PsiFile,
-                           location: Location,
-                           lineNumber: Int): Option[SourcePosition] = {
+  private def calcPosition(
+      file: PsiFile,
+      location: Location,
+      lineNumber: Int
+  ): Option[SourcePosition] = {
     throwIfNotScalaFile(file)
 
     def isDefaultArgument(method: Method) = {
@@ -320,8 +361,10 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
       } else (false, "")
     }
 
-    def findDefaultArg(possiblePositions: Seq[PsiElement],
-                       defaultArgIndex: String): Option[PsiElement] = {
+    def findDefaultArg(
+        possiblePositions: Seq[PsiElement],
+        defaultArgIndex: String
+    ): Option[PsiElement] = {
       try {
         val paramNumber = defaultArgIndex.toInt - 1
         possiblePositions.find {
@@ -340,15 +383,16 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
     def calcElement(): Option[PsiElement] = {
       val possiblePositions = positionsOnLine(file, lineNumber)
-      val currentMethod = location.method()
+      val currentMethod     = location.method()
 
       lazy val (isDefaultArg, defaultArgIndex) = isDefaultArgument(
-          currentMethod)
+        currentMethod
+      )
 
       def findPsiElementForIndyLambda(): Option[PsiElement] = {
         val lambdas = lambdasOnLine(file, lineNumber)
-        val methods = indyLambdaMethodsOnLine(
-            location.declaringType(), lineNumber)
+        val methods =
+          indyLambdaMethodsOnLine(location.declaringType(), lineNumber)
         val methodsToLambdas = methods.zip(lambdas).toMap
         methodsToLambdas.get(currentMethod)
       }
@@ -361,15 +405,17 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
         findDefaultArg(possiblePositions, defaultArgIndex)
       } else if (!isAnonfun(currentMethod)) {
         possiblePositions.find {
-          case e: PsiElement if isLambda(e) => false
+          case e: PsiElement if isLambda(e)               => false
           case (e: ScExpression) childOf (p: ScParameter) => false
-          case _ => true
+          case _                                          => true
         }
       } else {
         val generatingPsiElem = findElementByReferenceType(
-            location.declaringType())
+          location.declaringType()
+        )
         possiblePositions.find(p =>
-              generatingPsiElem.contains(findGeneratingClassOrMethodParent(p)))
+          generatingPsiElem.contains(findGeneratingClassOrMethodParent(p))
+        )
       }
     }
 
@@ -383,7 +429,10 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
         cachedSourceName(refType) match {
           case Some(srcName) =>
             val files = FilenameIndex.getFilesByName(
-                debugProcess.getProject, srcName, debugProcess.getSearchScope)
+              debugProcess.getProject,
+              srcName,
+              debugProcess.getSearchScope
+            )
             files.headOption
           case _ => None
         }
@@ -395,15 +444,17 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
   @Nullable
   private def getPsiFileByReferenceType(
-      project: Project, refType: ReferenceType): PsiFile = {
+      project: Project,
+      refType: ReferenceType
+  ): PsiFile = {
     if (refType == null) return null
     if (refTypeToFileCache.contains(refType))
       return refTypeToFileCache(refType)
 
     def searchForMacroDebugging(qName: String): PsiFile = {
       val directoryIndex: DirectoryIndex = DirectoryIndex.getInstance(project)
-      val dotIndex = qName.lastIndexOf(".")
-      val packageName = if (dotIndex > 0) qName.substring(0, dotIndex) else ""
+      val dotIndex                       = qName.lastIndexOf(".")
+      val packageName                    = if (dotIndex > 0) qName.substring(0, dotIndex) else ""
       val query: Query[VirtualFile] =
         directoryIndex.getDirectoriesByPackageName(packageName, true)
       val fileNameWithoutExtension =
@@ -419,7 +470,7 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
           var isFound = false
           for {
             fileName <- fileNames if !isFound
-            vFile <- vDir.findChild(fileName).toOption
+            vFile    <- vDir.findChild(fileName).toOption
           } {
             val psiFile: PsiFile =
               PsiManager.getInstance(project).findFile(vFile)
@@ -508,7 +559,8 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
   }
 
   private def findElementByReferenceTypeInner(
-      refType: ReferenceType): Option[PsiElement] = {
+      refType: ReferenceType
+  ): Option[PsiElement] = {
 
     val byName = findByQualName(refType) orElse findByShortName(refType)
     if (byName.isDefined) return byName
@@ -522,8 +574,8 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     if (refTypeLineNumbers.isEmpty) return None
 
     val firstRefTypeLine = refTypeLineNumbers.min
-    val lastRefTypeLine = refTypeLineNumbers.max
-    val refTypeLines = firstRefTypeLine to lastRefTypeLine
+    val lastRefTypeLine  = refTypeLineNumbers.max
+    val refTypeLines     = firstRefTypeLine to lastRefTypeLine
 
     val file = getPsiFileByReferenceType(project, refType)
     if (!checkScalaFile(file)) return None
@@ -533,7 +585,7 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
     def elementLineRange(elem: PsiElement, document: Document) = {
       val startLine = document.getLineNumber(elem.getTextRange.getStartOffset)
-      val endLine = document.getLineNumber(elem.getTextRange.getEndOffset)
+      val endLine   = document.getLineNumber(elem.getTextRange.getEndOffset)
       startLine to endLine
     }
 
@@ -556,8 +608,8 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
       }
       if (lastRefTypeLine - firstRefTypeLine >= 2) {
         val offsetsInTheMiddle = Seq(
-            document.getLineEndOffset(firstRefTypeLine),
-            document.getLineEndOffset(firstRefTypeLine + 1)
+          document.getLineEndOffset(firstRefTypeLine),
+          document.getLineEndOffset(firstRefTypeLine + 1)
         )
         offsetsInTheMiddle.flatMap(findAt).distinct
       } else {
@@ -577,8 +629,9 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
         .map(_.signature())
       if (applySignature.isEmpty) candidates
       else {
-        candidates.filter(
-            l => applySignature == DebuggerUtil.lambdaJVMSignature(l))
+        candidates.filter(l =>
+          applySignature == DebuggerUtil.lambdaJVMSignature(l)
+        )
       }
     }
 
@@ -599,31 +652,38 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     if (filteredWithSignature.size == 1)
       return filteredWithSignature.headOption
 
-    val byContainingClasses = filteredWithSignature.groupBy(
-        c => findGeneratingClassOrMethodParent(c.getParent))
+    val byContainingClasses = filteredWithSignature.groupBy(c =>
+      findGeneratingClassOrMethodParent(c.getParent)
+    )
     if (byContainingClasses.size > 1) {
       findContainingClass(refType) match {
         case Some(e) => return byContainingClasses.get(e).flatMap(_.headOption)
-        case None =>
+        case None    =>
       }
     }
     filteredWithSignature.headOption
   }
 
   private def findClassByQualName(
-      qName: String, isScalaObject: Boolean): Option[PsiClass] = {
+      qName: String,
+      isScalaObject: Boolean
+  ): Option[PsiClass] = {
     val project = debugProcess.getProject
 
     val cacheManager = ScalaShortNamesCacheManager.getInstance(project)
     val classes =
       if (qName.endsWith(packageSuffix))
         Option(
-            cacheManager.getPackageObjectByName(
-                qName.stripSuffix(packageSuffix),
-                GlobalSearchScope.allScope(project))).toSeq
+          cacheManager.getPackageObjectByName(
+            qName.stripSuffix(packageSuffix),
+            GlobalSearchScope.allScope(project)
+          )
+        ).toSeq
       else
         cacheManager.getClassesByFQName(
-            qName.replace(packageSuffix, "."), debugProcess.getSearchScope)
+          qName.replace(packageSuffix, "."),
+          debugProcess.getSearchScope
+        )
 
     val clazz =
       if (classes.length == 1) classes.headOption
@@ -635,7 +695,7 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
   }
 
   private def findByQualName(refType: ReferenceType): Option[PsiClass] = {
-    val originalQName = NameTransformer.decode(refType.name)
+    val originalQName         = NameTransformer.decode(refType.name)
     val endsWithPackageSuffix = originalQName.endsWith(packageSuffix)
     val withoutSuffix =
       if (endsWithPackageSuffix) originalQName.stripSuffix(packageSuffix)
@@ -667,10 +727,10 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
           .replace(packageSuffix, ".")
           .stripSuffix("$")
           .stripSuffix("$class")
-    val lastDollar = withoutSuffix.lastIndexOf('$')
-    val lastDot = withoutSuffix.lastIndexOf('.')
-    val index = Seq(lastDollar, lastDot, 0).max + 1
-    val name = withoutSuffix.drop(index)
+    val lastDollar    = withoutSuffix.lastIndexOf('$')
+    val lastDot       = withoutSuffix.lastIndexOf('.')
+    val index         = Seq(lastDollar, lastDot, 0).max + 1
+    val name          = withoutSuffix.drop(index)
     val isScalaObject = originalQName.endsWith("$")
 
     val cacheManager = ScalaShortNamesCacheManager.getInstance(project)
@@ -686,13 +746,15 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
     } else None
   }
 
-  private def findContainingClass(refType: ReferenceType): Option[PsiElement] = {
+  private def findContainingClass(
+      refType: ReferenceType
+  ): Option[PsiElement] = {
     def classesByName(s: String) = {
       val vm = debugProcess.getVirtualMachineProxy
       vm.classesByName(s).asScala
     }
 
-    val name = NameTransformer.decode(refType.name())
+    val name  = NameTransformer.decode(refType.name())
     val index = name.lastIndexOf("$$")
     if (index < 0) return None
 
@@ -704,8 +766,8 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
 object ScalaPositionManager {
   private val SCRIPT_HOLDER_CLASS_NAME: String = "Main$$anon$1"
-  private val packageSuffix = ".package$"
-  private val delayedInitBody = "delayedInit$body"
+  private val packageSuffix                    = ".package$"
+  private val delayedInitBody                  = "delayedInit$body"
 
   private val isCompiledWithIndyLambdasCache =
     mutable.HashMap[PsiFile, Boolean]()
@@ -715,10 +777,11 @@ object ScalaPositionManager {
     val debugProcess = scPosManager.debugProcess
 
     instances.put(debugProcess, scPosManager)
-    debugProcess.addDebugProcessListener(
-        new DebugProcessAdapter {
+    debugProcess.addDebugProcessListener(new DebugProcessAdapter {
       override def processDetached(
-          process: DebugProcess, closedByUser: Boolean): Unit = {
+          process: DebugProcess,
+          closedByUser: Boolean
+      ): Unit = {
         ScalaPositionManager.instances.remove(process)
         debugProcess.removeDebugProcessListener(this)
       }
@@ -739,7 +802,7 @@ object ScalaPositionManager {
   private def getVM(debugProcess: DebugProcess) = {
     debugProcess.getVirtualMachineProxy match {
       case impl: VirtualMachineProxyImpl => Option(impl.getVirtualMachine)
-      case _ => None
+      case _                             => None
     }
   }
 
@@ -748,7 +811,7 @@ object ScalaPositionManager {
 
     val scFile = file match {
       case sf: ScalaFile => sf
-      case _ => return Seq.empty
+      case _             => return Seq.empty
     }
     val cacheProvider =
       new CachedValueProvider[mutable.HashMap[Int, Seq[PsiElement]]] {
@@ -762,7 +825,8 @@ object ScalaPositionManager {
   }
 
   def checkedLineNumber(location: Location): Int =
-    try location.lineNumber() - 1 catch { case ie: InternalError => -1 }
+    try location.lineNumber() - 1
+    catch { case ie: InternalError => -1 }
 
   def cachedSourceName(refType: ReferenceType) = {
     ScalaPositionManager
@@ -772,19 +836,23 @@ object ScalaPositionManager {
   }
 
   private def positionsOnLineInner(
-      file: ScalaFile, lineNumber: Int): Seq[PsiElement] = {
+      file: ScalaFile,
+      lineNumber: Int
+  ): Seq[PsiElement] = {
     inReadAction {
       val document =
         PsiDocumentManager.getInstance(file.getProject).getDocument(file)
       if (document == null || lineNumber >= document.getLineCount)
         return Seq.empty
       val startLine = document.getLineStartOffset(lineNumber)
-      val endLine = document.getLineEndOffset(lineNumber)
+      val endLine   = document.getLineEndOffset(lineNumber)
 
       def elementsOnTheLine(
-          file: ScalaFile, lineNumber: Int): Seq[PsiElement] = {
+          file: ScalaFile,
+          lineNumber: Int
+      ): Seq[PsiElement] = {
         val result = ArrayBuffer[PsiElement]()
-        var elem = file.findElementAt(startLine)
+        var elem   = file.findElementAt(startLine)
 
         while (elem != null && elem.getTextOffset <= endLine) {
           elem match {
@@ -793,7 +861,7 @@ object ScalaPositionManager {
             case ElementType(t)
                 if ScalaTokenTypes.WHITES_SPACES_AND_COMMENTS_TOKEN_SET
                   .contains(t) ||
-                ScalaTokenTypes.BRACES_TOKEN_SET.contains(t) =>
+                  ScalaTokenTypes.BRACES_TOKEN_SET.contains(t) =>
             case _ =>
               result += elem
           }
@@ -820,10 +888,10 @@ object ScalaPositionManager {
             true
           case callRefId childOf ((ref: ScReferenceExpression) childOf (_: ScMethodCall))
               if ref.nameId == callRefId &&
-              ref.getTextRange.getStartOffset < startLine =>
+                ref.getTextRange.getStartOffset < startLine =>
             true
           case _: ScTypeDefinition => true
-          case _ => false
+          case _                   => false
         }
         val maxExpressionPatternOrTypeDef = filteredParents
           .find(!_.isInstanceOf[ScBlock])
@@ -846,7 +914,7 @@ object ScalaPositionManager {
   }
 
   def isIndyLambda(m: Method): Boolean = {
-    val name = m.name()
+    val name       = m.name()
     val lastDollar = name.lastIndexOf('$')
     lastDollar > 0 && name.substring(0, lastDollar).endsWith("$anonfun")
   }
@@ -867,16 +935,19 @@ object ScalaPositionManager {
   }
 
   def indyLambdaMethodsOnLine(
-      refType: ReferenceType, lineNumber: Int): Seq[Method] = {
+      refType: ReferenceType,
+      lineNumber: Int
+  ): Seq[Method] = {
     def ordinal(m: Method) = {
-      val name = m.name()
+      val name       = m.name()
       val lastDollar = name.lastIndexOf('$')
       Try(name.substring(lastDollar + 1).toInt).getOrElse(-1)
     }
 
     val all = refType.methods().asScala.filter(isIndyLambda)
-    val onLine = all.filter(
-        m => Try(!m.locationsOfLine(lineNumber + 1).isEmpty).getOrElse(false))
+    val onLine = all.filter(m =>
+      Try(!m.locationsOfLine(lineNumber + 1).isEmpty).getOrElse(false)
+    )
     onLine.sortBy(ordinal)
   }
 
@@ -896,10 +967,10 @@ object ScalaPositionManager {
       case null => null
       case elem
           if ScalaEvaluatorBuilderUtil.isGenerateClass(elem) ||
-          isLambda(elem) =>
+            isLambda(elem) =>
         elem
       case InsideMacro(macroCall) => macroCall
-      case elem => findGeneratingClassOrMethodParent(elem.getParent)
+      case elem                   => findGeneratingClassOrMethodParent(elem.getParent)
     }
   }
 
@@ -927,12 +998,13 @@ object ScalaPositionManager {
   }
 
   object InsideAsync {
-    def unapply(elem: PsiElement): Option[ScMethodCall] = elem match {
-      case InsideMacro(call @ ScMethodCall(ref: ScReferenceExpression, _))
-          if ref.refName == "async" =>
-        Some(call)
-      case _ => None
-    }
+    def unapply(elem: PsiElement): Option[ScMethodCall] =
+      elem match {
+        case InsideMacro(call @ ScMethodCall(ref: ScReferenceExpression, _))
+            if ref.refName == "async" =>
+          Some(call)
+        case _ => None
+      }
   }
 
   def isInsideMacro(elem: PsiElement): Boolean =
@@ -947,30 +1019,36 @@ object ScalaPositionManager {
 
     td match {
       case _: ScObject => s"$name$$"
-      case _: ScTrait => s"$name$$class"
-      case _ => name
+      case _: ScTrait  => s"$name$$class"
+      case _           => name
     }
   }
 
-  def isDelayedInit(cl: PsiClass) = cl match {
-    case obj: ScObject =>
-      val manager: ScalaPsiManager = ScalaPsiManager.instance(obj.getProject)
-      val clazz: PsiClass =
-        manager.getCachedClass(obj.getResolveScope, "scala.DelayedInit").orNull
-      clazz != null && manager.cachedDeepIsInheritor(obj, clazz)
-    case _ => false
-  }
+  def isDelayedInit(cl: PsiClass) =
+    cl match {
+      case obj: ScObject =>
+        val manager: ScalaPsiManager = ScalaPsiManager.instance(obj.getProject)
+        val clazz: PsiClass =
+          manager
+            .getCachedClass(obj.getResolveScope, "scala.DelayedInit")
+            .orNull
+        clazz != null && manager.cachedDeepIsInheritor(obj, clazz)
+      case _ => false
+    }
 
   private class MyClassPrepareRequestor(
-      position: SourcePosition, requestor: ClassPrepareRequestor)
-      extends ClassPrepareRequestor {
+      position: SourcePosition,
+      requestor: ClassPrepareRequestor
+  ) extends ClassPrepareRequestor {
     private val sourceFile = position.getFile
     private val sourceName = sourceFile.getName
     private def sourceNameOf(refType: ReferenceType): Option[String] =
       ScalaPositionManager.cachedSourceName(refType)
 
     def processClassPrepare(
-        debuggerProcess: DebugProcess, referenceType: ReferenceType) {
+        debuggerProcess: DebugProcess,
+        referenceType: ReferenceType
+    ) {
       val positionManager: CompoundPositionManager =
         debuggerProcess.asInstanceOf[DebugProcessImpl].getPositionManager
 
@@ -990,11 +1068,12 @@ object ScalaPositionManager {
 
   private class NamePattern(elem: PsiElement) {
     private val containingFile = elem.getContainingFile
-    private val sourceName = containingFile.getName
+    private val sourceName     = containingFile.getName
     private val isGeneratedForCompilingEvaluator =
       containingFile.getUserData(ScalaCompilingEvaluator.classNameKey) != null
     private var compiledWithIndyLambdas = isCompiledWithIndyLambdas(
-        containingFile)
+      containingFile
+    )
     private val exactName: Option[String] = {
       elem match {
         case td: ScTypeDefinition if !DebuggerUtil.isLocalClass(td) =>
@@ -1008,7 +1087,7 @@ object ScalaPositionManager {
       if (exactName.isDefined) Seq.empty
       else
         inReadAction {
-          val forElem = partsFor(elem).toIterator
+          val forElem    = partsFor(elem).toIterator
           val forParents = elem.parentsInFile.flatMap(e => partsFor(e))
           (forElem ++ forParents).toSeq.reverse
         }
@@ -1031,11 +1110,13 @@ object ScalaPositionManager {
       val lastParts =
         Seq.fill(anonfunCount - 1)(Seq("$apply", "$anonfun")).flatten
       val containingClass = findGeneratingClassOrMethodParent(elem.getParent)
-      val owner = PsiTreeUtil.getParentOfType(elem,
-                                              classOf[ScFunctionDefinition],
-                                              classOf[ScTypeDefinition],
-                                              classOf[ScPatternDefinition],
-                                              classOf[ScVariableDefinition])
+      val owner = PsiTreeUtil.getParentOfType(
+        elem,
+        classOf[ScFunctionDefinition],
+        classOf[ScTypeDefinition],
+        classOf[ScPatternDefinition],
+        classOf[ScVariableDefinition]
+      )
       val firstParts =
         if (PsiTreeUtil.isAncestor(owner, containingClass, true))
           Seq("$anonfun")
@@ -1082,7 +1163,7 @@ object ScalaPositionManager {
 
       exactName match {
         case Some(qName) => qName == name
-        case None => checkParts(name)
+        case None        => checkParts(name)
       }
     }
   }
@@ -1102,12 +1183,14 @@ object ScalaPositionManager {
   }
 
   private[debugger] class ScalaPositionManagerCaches(
-      debugProcess: DebugProcess) {
+      debugProcess: DebugProcess
+  ) {
 
-    debugProcess.addDebugProcessListener(
-        new DebugProcessAdapter {
+    debugProcess.addDebugProcessListener(new DebugProcessAdapter {
       override def processDetached(
-          process: DebugProcess, closedByUser: Boolean): Unit = {
+          process: DebugProcess,
+          closedByUser: Boolean
+      ): Unit = {
         clear()
         process.removeDebugProcessListener(this)
       }
@@ -1121,7 +1204,7 @@ object ScalaPositionManager {
     val lineToCustomizedLocationCache =
       mutable.HashMap[(ReferenceType, Int), Seq[Location]]()
     val seenRefTypes = mutable.Set[ReferenceType]()
-    val sourceNames = mutable.HashMap[ReferenceType, Option[String]]()
+    val sourceNames  = mutable.HashMap[ReferenceType, Option[String]]()
 
     def cachedSourceName(refType: ReferenceType): Option[String] =
       sourceNames.getOrElseUpdate(refType, Try(refType.sourceName()).toOption)

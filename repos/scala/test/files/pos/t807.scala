@@ -11,11 +11,11 @@ trait BraceMatcher extends Matcher {
   trait BracePair {
     trait BraceLink extends Link;
     trait OpenLink extends BraceLink {
-      type Self = OpenLink;
+      type Self  = OpenLink;
       type Match = CloseLink;
     }
     trait CloseLink extends BraceLink {
-      type Self = CloseLink;
+      type Self  = CloseLink;
       type Match = OpenLink;
     }
   }
@@ -23,21 +23,22 @@ trait BraceMatcher extends Matcher {
 trait IfElseMatcher extends BraceMatcher {
   trait IfElseLink extends Link;
   trait IfLink extends IfElseLink {
-    type Self = IfLink;
+    type Self  = IfLink;
     type Match = ElseImpl;
   }
   trait ElseImpl extends IfElseLink with HasLinks {
-    type Self = ElseImpl;
+    type Self  = ElseImpl;
     type Match = IfLink;
     override def link(b: Boolean) = this;
   }
   val parenPair: BracePair;
   trait IfWithParenImpl extends HasLinks {
-    object ifLink extends IfLink;
+    object ifLink    extends IfLink;
     object openParen extends parenPair.OpenLink;
-    override def link(b: Boolean): Link = b match {
-      case true => ifLink;
-      case false => openParen;
-    }
+    override def link(b: Boolean): Link =
+      b match {
+        case true  => ifLink;
+        case false => openParen;
+      }
   }
 }

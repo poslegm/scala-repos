@@ -2,21 +2,30 @@ package akka.camel.internal
 
 import org.scalatest.Matchers
 import scala.concurrent.duration._
-import org.scalatest.{GivenWhenThen, BeforeAndAfterEach, BeforeAndAfterAll, WordSpecLike}
+import org.scalatest.{
+  GivenWhenThen,
+  BeforeAndAfterEach,
+  BeforeAndAfterAll,
+  WordSpecLike
+}
 import akka.actor.{Props, ActorSystem}
 import akka.testkit.{TimingTest, TestProbe, TestKit}
 import akka.camel.internal.ActivationProtocol._
 
 class ActivationTrackerTest
-    extends TestKit(ActorSystem("test")) with WordSpecLike with Matchers
-    with BeforeAndAfterAll with BeforeAndAfterEach with GivenWhenThen {
+    extends TestKit(ActorSystem("test"))
+    with WordSpecLike
+    with Matchers
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with GivenWhenThen {
 
   override protected def afterAll() { shutdown() }
 
-  var actor: TestProbe = _
-  var awaiting: Awaiting = _
+  var actor: TestProbe          = _
+  var awaiting: Awaiting        = _
   var anotherAwaiting: Awaiting = _
-  val cause = new Exception("cause of failure")
+  val cause                     = new Exception("cause of failure")
 
   override protected def beforeEach() {
     actor = TestProbe()
@@ -28,7 +37,7 @@ class ActivationTrackerTest
     system.actorOf(Props[ActivationTracker], name = "activationTrackker")
   "ActivationTracker" must {
     def publish(msg: Any) = at ! msg
-    implicit def timeout = remainingOrDefault
+    implicit def timeout  = remainingOrDefault
     "forwards activation message to all awaiting parties" taggedAs TimingTest in {
       awaiting.awaitActivation()
       anotherAwaiting.awaitActivation()
@@ -121,12 +130,13 @@ class ActivationTrackerTest
   }
 
   class Awaiting(actor: TestProbe) {
-    val probe = TestProbe()
-    def awaitActivation() = at.tell(AwaitActivation(actor.ref), probe.ref)
+    val probe               = TestProbe()
+    def awaitActivation()   = at.tell(AwaitActivation(actor.ref), probe.ref)
     def awaitDeActivation() = at.tell(AwaitDeActivation(actor.ref), probe.ref)
-    def verifyActivated()(implicit timeout: FiniteDuration) = within(timeout) {
-      probe.expectMsg(EndpointActivated(actor.ref))
-    }
+    def verifyActivated()(implicit timeout: FiniteDuration) =
+      within(timeout) {
+        probe.expectMsg(EndpointActivated(actor.ref))
+      }
     def verifyDeActivated()(implicit timeout: FiniteDuration) =
       within(timeout) { probe.expectMsg(EndpointDeActivated(actor.ref)) }
 

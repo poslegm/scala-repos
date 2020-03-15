@@ -13,7 +13,7 @@ object LibTest extends JasmineTest {
     }
 
     it("should append an element") {
-      def count = Lib.jQuery("p").length.asInstanceOf[Int]
+      def count    = Lib.jQuery("p").length.asInstanceOf[Int]
       val oldCount = count
       Lib.appendDocument("foo")
       expect(count - oldCount).toEqual(1)

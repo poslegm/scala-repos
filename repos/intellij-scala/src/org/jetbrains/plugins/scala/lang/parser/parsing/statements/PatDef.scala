@@ -21,7 +21,7 @@ import org.jetbrains.plugins.scala.lang.parser.util.ParserUtils
 //TODO: Rewrite this
 object PatDef {
   def parse(builder: ScalaPsiBuilder): Boolean = {
-    val someMarker = builder.mark
+    val someMarker      = builder.mark
     val pattern2sMarker = builder.mark
 
     if (!Pattern2.parse(builder, forDef = true)) {

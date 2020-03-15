@@ -31,7 +31,7 @@ object GradientBoostedTreeRegressorExample {
   def main(args: Array[String]): Unit = {
     val conf =
       new SparkConf().setAppName("GradientBoostedTreeRegressorExample")
-    val sc = new SparkContext(conf)
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$

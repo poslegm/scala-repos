@@ -27,7 +27,7 @@ import locator.Locator
   * An implementation of [[org.saddle.Index]] generic in type T for which there is an Ordering[T]
   * and a ST[T] available in the implicit context.
   */
-class IndexAny[T : ST : ORD](keys: Vec[T]) extends Index[T] {
+class IndexAny[T: ST: ORD](keys: Vec[T]) extends Index[T] {
   val scalarTag = keys.scalarTag
 
   private lazy val (lmap, IndexProperties(contiguous, monotonic)) =
@@ -47,8 +47,9 @@ class IndexAny[T : ST : ORD](keys: Vec[T]) extends Index[T] {
 
   def without(locs: Array[Int]): Index[T] = Index(array.remove(keys, locs))
 
-  def concat[B, C](x: Index[B])(
-      implicit wd: Promoter[T, B, C], mc: ST[C], oc: ORD[C]): Index[C] =
+  def concat[B, C](
+      x: Index[B]
+  )(implicit wd: Promoter[T, B, C], mc: ST[C], oc: ORD[C]): Index[C] =
     Index(util.Concat.append[T, B, C](toArray, x.toArray))
 
   def isMonotonic: Boolean = monotonic
@@ -106,7 +107,7 @@ class IndexAny[T : ST : ORD](keys: Vec[T]) extends Index[T] {
     @tailrec def bSearch(lo: Int = 0, hi: Int = a.length - 1): Int = {
       if (lo > hi) -(lo + 1)
       else {
-        val mid: Int = (lo + hi) >>> 1
+        val mid: Int  = (lo + hi) >>> 1
         val midVal: T = a(mid)
         if (scalarTag.lt(midVal, key)) bSearch(mid + 1, hi)
         else if (scalarTag.gt(midVal, key)) bSearch(lo, mid - 1)
@@ -116,8 +117,7 @@ class IndexAny[T : ST : ORD](keys: Vec[T]) extends Index[T] {
     bSearch(0, a.length - 1)
   }
 
-  def map[@spec(Boolean, Int, Long, Double) B : ST : ORD](
-      f: T => B): Index[B] =
+  def map[@spec(Boolean, Int, Long, Double) B: ST: ORD](f: T => B): Index[B] =
     Index(VecImpl.map(keys)(f).toArray)
 
   def toArray: Array[T] = keys.toArray
@@ -127,7 +127,7 @@ class IndexAny[T : ST : ORD](keys: Vec[T]) extends Index[T] {
     o match {
       case rv: IndexInt =>
         (this eq rv) || (this.length == rv.length) && {
-          var i = 0
+          var i  = 0
           var eq = true
           while (eq && i < this.length) {
             eq &&= raw(i) == rv.raw(i)

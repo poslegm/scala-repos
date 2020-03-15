@@ -30,10 +30,12 @@ import org.apache.spark.sql.types.StructType
 /**
   * Instructions on how to partition the table among workers.
   */
-private[sql] case class JDBCPartitioningInfo(column: String,
-                                             lowerBound: Long,
-                                             upperBound: Long,
-                                             numPartitions: Int)
+private[sql] case class JDBCPartitioningInfo(
+    column: String,
+    lowerBound: Long,
+    upperBound: Long,
+    numPartitions: Int
+)
 
 private[sql] object JDBCRelation {
 
@@ -55,16 +57,16 @@ private[sql] object JDBCRelation {
     if (partitioning == null) return Array[Partition](JDBCPartition(null, 0))
 
     val numPartitions = partitioning.numPartitions
-    val column = partitioning.column
+    val column        = partitioning.column
     if (numPartitions == 1) return Array[Partition](JDBCPartition(null, 0))
     // Overflow and silliness can happen if you subtract then divide.
     // Here we get a little roundoff, but that's (hopefully) OK.
     val stride: Long =
       (partitioning.upperBound / numPartitions -
-          partitioning.lowerBound / numPartitions)
-    var i: Int = 0
+        partitioning.lowerBound / numPartitions)
+    var i: Int             = 0
     var currentValue: Long = partitioning.lowerBound
-    var ans = new ArrayBuffer[Partition]()
+    var ans                = new ArrayBuffer[Partition]()
     while (i < numPartitions) {
       val lowerBound = if (i != 0) s"$column >= $currentValue" else null
       currentValue += stride
@@ -85,13 +87,16 @@ private[sql] object JDBCRelation {
   }
 }
 
-private[sql] case class JDBCRelation(url: String,
-                                     table: String,
-                                     parts: Array[Partition],
-                                     properties: Properties = new Properties(
-                                           ))(
-    @transient val sqlContext: SQLContext)
-    extends BaseRelation with PrunedFilteredScan with InsertableRelation {
+private[sql] case class JDBCRelation(
+    url: String,
+    table: String,
+    parts: Array[Partition],
+    properties: Properties = new Properties(
+      )
+)(@transient val sqlContext: SQLContext)
+    extends BaseRelation
+    with PrunedFilteredScan
+    with InsertableRelation {
 
   override val needConversion: Boolean = false
 
@@ -104,17 +109,21 @@ private[sql] case class JDBCRelation(url: String,
   }
 
   override def buildScan(
-      requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
+      requiredColumns: Array[String],
+      filters: Array[Filter]
+  ): RDD[Row] = {
     // Rely on a type erasure hack to pass RDD[InternalRow] back as RDD[Row]
     JDBCRDD
-      .scanTable(sqlContext.sparkContext,
-                 schema,
-                 url,
-                 properties,
-                 table,
-                 requiredColumns,
-                 filters,
-                 parts)
+      .scanTable(
+        sqlContext.sparkContext,
+        schema,
+        url,
+        properties,
+        table,
+        requiredColumns,
+        filters,
+        parts
+      )
       .asInstanceOf[RDD[Row]]
   }
 

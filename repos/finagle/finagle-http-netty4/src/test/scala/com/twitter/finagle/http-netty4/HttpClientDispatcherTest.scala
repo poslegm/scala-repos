@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class HttpClientDispatcherTest extends FunSuite {
   def mkPair[A, B] = {
-    val inQ = new AsyncQueue[A]
+    val inQ  = new AsyncQueue[A]
     val outQ = new AsyncQueue[B]
     (new QueueTransport[A, B](inQ, outQ), new QueueTransport[B, A](outQ, inQ))
   }
@@ -31,8 +31,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
   test("streaming request body") {
     val (clientT, serverT) = mkPair[Any, Any]
-    val disp = new HttpClientDispatcher(clientT)
-    val req = Request()
+    val disp               = new HttpClientDispatcher(clientT)
+    val req                = Request()
     req.setChunked(true)
     val f = disp(req)
     assert(!f.isDefined)
@@ -49,31 +49,25 @@ class HttpClientDispatcherTest extends FunSuite {
     val c = res.reader.read(Int.MaxValue)
     assert(!c.isDefined)
     req.writer.write(Buf.Utf8("a"))
-    serverT.read().flatMap { c =>
-      serverT.write(c)
-    }
+    serverT.read().flatMap { c => serverT.write(c) }
     assert(Await.result(c, timeout) == Some(Buf.Utf8("a")))
 
     val cc = res.reader.read(Int.MaxValue)
     assert(!cc.isDefined)
     req.writer.write(Buf.Utf8("some other thing"))
-    serverT.read() flatMap { c =>
-      serverT.write(c)
-    }
+    serverT.read() flatMap { c => serverT.write(c) }
     assert(Await.result(cc, timeout) == Some(Buf.Utf8("some other thing")))
 
     val last = res.reader.read(Int.MaxValue)
     assert(!last.isDefined)
     req.close()
-    serverT.read() flatMap { c =>
-      serverT.write(c)
-    }
+    serverT.read() flatMap { c => serverT.write(c) }
     assert(Await.result(last, timeout).isEmpty)
   }
 
   test("invalid message") {
     val (in, out) = mkPair[Any, Any]
-    val disp = new HttpClientDispatcher(in)
+    val disp      = new HttpClientDispatcher(in)
     out.write("invalid message")
     intercept[IllegalArgumentException] {
       Await.result(disp(Request()), timeout)
@@ -88,14 +82,14 @@ class HttpClientDispatcherTest extends FunSuite {
 
   test("unchunked response") {
     val (clientT, serverT) = mkPair[Any, Any]
-    val disp = new HttpClientDispatcher(clientT)
+    val disp               = new HttpClientDispatcher(clientT)
     val httpRes = new DefaultFullHttpResponse(
-        NettyHttp.HttpVersion.HTTP_1_1,
-        NettyHttp.HttpResponseStatus.OK,
-        Unpooled.wrappedBuffer("hello".getBytes("UTF-8"))
+      NettyHttp.HttpVersion.HTTP_1_1,
+      NettyHttp.HttpResponseStatus.OK,
+      Unpooled.wrappedBuffer("hello".getBytes("UTF-8"))
     )
     val req = Request()
-    val f = disp(req)
+    val f   = disp(req)
     Await.result(serverT.read(), timeout)
     serverT.write(httpRes)
     val res = Await.result(f, timeout)
@@ -104,12 +98,12 @@ class HttpClientDispatcherTest extends FunSuite {
 
   def chunk(content: String): NettyHttp.HttpContent =
     new NettyHttp.DefaultHttpContent(
-        BufAsByteBuf.Owned(Buf.Utf8(content))
+      BufAsByteBuf.Owned(Buf.Utf8(content))
     )
 
   test("chunked response") {
     val (in, out) = mkPair[Any, Any]
-    val disp = new HttpClientDispatcher(in)
+    val disp      = new HttpClientDispatcher(in)
     val httpRes: NettyHttp.HttpContent =
       new NettyHttp.DefaultHttpContent(Unpooled.EMPTY_BUFFER)
 
@@ -131,8 +125,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
   test("error in the middle of a chunked response") {
     val (clientT, serverT) = mkPair[Any, Any]
-    val clientTSpy = spy(clientT)
-    val disp = new HttpClientDispatcher(clientTSpy)
+    val clientTSpy         = spy(clientT)
+    val disp               = new HttpClientDispatcher(clientTSpy)
     val httpRes: NettyHttp.HttpContent =
       new NettyHttp.DefaultHttpContent(Unpooled.EMPTY_BUFFER)
 
@@ -162,7 +156,7 @@ class HttpClientDispatcherTest extends FunSuite {
       OpTransport[Any, Any](Write(_ => true, writep), Close(Future.Done))
 
     val disp = new HttpClientDispatcher(transport)
-    val req = Request()
+    val req  = Request()
     req.setChunked(true)
 
     val f = disp(req)
@@ -186,14 +180,15 @@ class HttpClientDispatcherTest extends FunSuite {
 
     val readp = new Promise[Nothing]
     val transport = OpTransport[Any, Any](
-        // First write the initial request.
-        Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
-        // Read the response
-        Read(readp),
-        Close(Future.Done))
+      // First write the initial request.
+      Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
+      // Read the response
+      Read(readp),
+      Close(Future.Done)
+    )
 
     val disp = new HttpClientDispatcher(transport)
-    val req = Request()
+    val req  = Request()
     req.setChunked(true)
 
     val f = disp(req)
@@ -217,16 +212,17 @@ class HttpClientDispatcherTest extends FunSuite {
 
     val chunkp = new Promise[Unit]
     val transport = OpTransport[Any, Any](
-        // First write the initial request.
-        Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
-        // Read the response
-        Read(Future.never),
-        // Then we try to write the chunk
-        Write(_.isInstanceOf[NettyHttp.HttpContent], chunkp),
-        Close(Future.Done))
+      // First write the initial request.
+      Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
+      // Read the response
+      Read(Future.never),
+      // Then we try to write the chunk
+      Write(_.isInstanceOf[NettyHttp.HttpContent], chunkp),
+      Close(Future.Done)
+    )
 
     val disp = new HttpClientDispatcher(transport)
-    val req = Request()
+    val req  = Request()
     req.setChunked(true)
 
     val f = disp(req)
@@ -250,7 +246,7 @@ class HttpClientDispatcherTest extends FunSuite {
 
   test("ensure denial of new-style dtab headers") {
     // create a test dispatcher and its transport mechanism
-    val (in, out) = mkPair[Any, Any]
+    val (in, out)  = mkPair[Any, Any]
     val dispatcher = new HttpClientDispatcher(in)
 
     // prepare a request and add a correct looking new-style dtab header
@@ -272,8 +268,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
     // send back an http ok to the dispatcher
     val sentResult = new NettyHttp.DefaultHttpResponse(
-        NettyHttp.HttpVersion.HTTP_1_1,
-        NettyHttp.HttpResponseStatus.OK
+      NettyHttp.HttpVersion.HTTP_1_1,
+      NettyHttp.HttpResponseStatus.OK
     )
     out.write(sentResult)
 
@@ -289,7 +285,7 @@ class HttpClientDispatcherTest extends FunSuite {
 
   test("ensure denial of old-style dtab headers") {
     // create a test dispatcher and its transport mechanism
-    val (in, out) = mkPair[Any, Any]
+    val (in, out)  = mkPair[Any, Any]
     val dispatcher = new HttpClientDispatcher(in)
 
     // prepare a request and add a correct looking new-style dtab header
@@ -312,8 +308,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
     // send back an http ok to the dispatcher
     val sentResult = new NettyHttp.DefaultHttpResponse(
-        NettyHttp.HttpVersion.HTTP_1_1,
-        NettyHttp.HttpResponseStatus.OK
+      NettyHttp.HttpVersion.HTTP_1_1,
+      NettyHttp.HttpResponseStatus.OK
     )
     out.write(sentResult)
 
@@ -330,12 +326,12 @@ class HttpClientDispatcherTest extends FunSuite {
   test("ensure transmission of dtab local") {
     Dtab.unwind {
       // create a test dispatcher and its transport mechanism
-      val (in, out) = mkPair[Any, Any]
+      val (in, out)  = mkPair[Any, Any]
       val dispatcher = new HttpClientDispatcher(in)
 
       // prepare a request and a simple dtab with one dentry
       val sentRequest = Request()
-      val sentDtab = Dtab.read("/s => /srv/smf1")
+      val sentDtab    = Dtab.read("/s => /srv/smf1")
 
       // augment dtab.local and dispatch the request
       Dtab.local ++= sentDtab
@@ -353,8 +349,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
       // send back an http ok to the dispatcher
       val sentResult = new NettyHttp.DefaultHttpResponse(
-          NettyHttp.HttpVersion.HTTP_1_1,
-          NettyHttp.HttpResponseStatus.OK
+        NettyHttp.HttpVersion.HTTP_1_1,
+        NettyHttp.HttpResponseStatus.OK
       )
       out.write(sentResult)
 
@@ -394,7 +390,7 @@ class HttpClientDispatcherTest extends FunSuite {
 
   test("write failures are wrapped as WriteExceptions") {
     val disp = new HttpClientDispatcher(failingT)
-    val d = disp(Request())
+    val d    = disp(Request())
     intercept[WriteException] { Await.result(d, 2.seconds) }
   }
 
@@ -432,7 +428,7 @@ class HttpClientDispatcherTest extends FunSuite {
     sealed trait Op[In, Out]
     case class Write[In, Out](accept: In => Boolean, res: Future[Unit])
         extends Op[In, Out]
-    case class Read[In, Out](res: Future[Out]) extends Op[In, Out]
+    case class Read[In, Out](res: Future[Out])   extends Op[In, Out]
     case class Close[In, Out](res: Future[Unit]) extends Op[In, Out]
 
     def apply[In, Out](ops: Op[In, Out]*) = new OpTransport(ops.toList)
@@ -444,42 +440,45 @@ class HttpClientDispatcherTest extends FunSuite {
 
     var ops = _ops
 
-    def read() = ops match {
-      case Read(res) :: rest =>
-        ops = rest
-        res
-      case _ =>
-        fail(s"Expected ${ops.headOption}; got read()")
-    }
+    def read() =
+      ops match {
+        case Read(res) :: rest =>
+          ops = rest
+          res
+        case _ =>
+          fail(s"Expected ${ops.headOption}; got read()")
+      }
 
-    def write(in: In) = ops match {
-      case Write(accept, res) :: rest =>
-        if (!accept(in)) fail(s"Did not accept write $in")
+    def write(in: In) =
+      ops match {
+        case Write(accept, res) :: rest =>
+          if (!accept(in)) fail(s"Did not accept write $in")
 
-        ops = rest
-        res
-      case _ =>
-        fail(s"Expected ${ops.headOption}; got write($in)")
-    }
+          ops = rest
+          res
+        case _ =>
+          fail(s"Expected ${ops.headOption}; got write($in)")
+      }
 
-    def close(deadline: Time) = ops match {
-      case Close(res) :: rest =>
-        ops = rest
-        status = Status.Closed
-        res respond {
-          case Return(()) =>
-            onClose.setValue(new Exception("closed"))
-          case Throw(exc) =>
-            onClose.setValue(exc)
-        }
-      case _ =>
-        fail(s"Expected ${ops.headOption}; got close($deadline)")
-    }
+    def close(deadline: Time) =
+      ops match {
+        case Close(res) :: rest =>
+          ops = rest
+          status = Status.Closed
+          res respond {
+            case Return(()) =>
+              onClose.setValue(new Exception("closed"))
+            case Throw(exc) =>
+              onClose.setValue(exc)
+          }
+        case _ =>
+          fail(s"Expected ${ops.headOption}; got close($deadline)")
+      }
 
-    var status: Status = Status.Open
-    val onClose = new Promise[Throwable]
-    def localAddress = new java.net.SocketAddress {}
-    def remoteAddress = new java.net.SocketAddress {}
+    var status: Status  = Status.Open
+    val onClose         = new Promise[Throwable]
+    def localAddress    = new java.net.SocketAddress {}
+    def remoteAddress   = new java.net.SocketAddress {}
     val peerCertificate = None
   }
 }

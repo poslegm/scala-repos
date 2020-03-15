@@ -54,10 +54,9 @@ trait StringHelpers {
     val list = props
       .split(",")
       .toList
-      .map(in =>
-            {
-          val pair = in.roboSplit("=")
-          (pair(0), unquote(pair(1)))
+      .map(in => {
+        val pair = in.roboSplit("=")
+        (pair(0), unquote(pair(1)))
       })
     val map: Map[String, String] = Map.empty
 
@@ -73,8 +72,8 @@ trait StringHelpers {
     */
   def processString(msg: String, subst: Map[String, String]): String = {
     val pattern = Pattern.compile("\\<\\%\\=([^\\%]*)\\%\\>")
-    val m = pattern.matcher(msg)
-    val ret = new StringBuffer
+    val m       = pattern.matcher(msg)
+    val ret     = new StringBuffer
     while (m.find) {
       m.appendReplacement(ret, subst(m.group(1).trim))
     }
@@ -84,11 +83,11 @@ trait StringHelpers {
 
   /**
     * Turn a string of format "FooBar" into snake case "foo_bar"
-    * 
+    *
     * Note: snakify is not reversible, ie. in general the following will _not_ be true:
-    * 
+    *
     * s == camelify(snakify(s))
-    * 
+    *
     * @return the underscored string
     */
   def snakify(name: String) =
@@ -106,13 +105,14 @@ trait StringHelpers {
     * @return the CamelCased string
     */
   def camelify(name: String): String = {
-    def loop(x: List[Char]): List[Char] = (x: @unchecked) match {
-      case '_' :: '_' :: rest => loop('_' :: rest)
-      case '_' :: c :: rest => Character.toUpperCase(c) :: loop(rest)
-      case '_' :: Nil => Nil
-      case c :: rest => c :: loop(rest)
-      case Nil => Nil
-    }
+    def loop(x: List[Char]): List[Char] =
+      (x: @unchecked) match {
+        case '_' :: '_' :: rest => loop('_' :: rest)
+        case '_' :: c :: rest   => Character.toUpperCase(c) :: loop(rest)
+        case '_' :: Nil         => Nil
+        case c :: rest          => c :: loop(rest)
+        case Nil                => Nil
+      }
     if (name == null) ""
     else loop('_' :: name.toList).mkString
   }
@@ -139,10 +139,10 @@ trait StringHelpers {
   def capify(in: String): String = {
     val tmp = ((in match {
       case null => ""
-      case s => s
+      case s    => s
     }).trim match {
       case "" => "n/a"
-      case s => s
+      case s  => s
     }).toLowerCase
     val sb = new GoodSB
     capify(tmp, 0, 250, false, false, sb)
@@ -154,13 +154,16 @@ trait StringHelpers {
     * @param msg string where replacements should be done
     * @param subst map of [regular expression with groups, replacement]
     */
-  private def capify(in: String,
-                     pos: Int,
-                     max: Int,
-                     lastLetter: Boolean,
-                     lastSymbol: Boolean,
-                     out: GoodSB): Unit = {
-    if (pos >= max || pos >= in.length) return else {
+  private def capify(
+      in: String,
+      pos: Int,
+      max: Int,
+      lastLetter: Boolean,
+      lastSymbol: Boolean,
+      out: GoodSB
+  ): Unit = {
+    if (pos >= max || pos >= in.length) return
+    else {
       in.charAt(pos) match {
         case c if Character.isDigit(c) =>
           out.append(c); capify(in, pos + 1, max, false, false, out)
@@ -197,10 +200,9 @@ trait StringHelpers {
             lastRand
           }
 
-        sb.append(
-            (randNum & 0x1f) match {
+        sb.append((randNum & 0x1f) match {
           case n if n < 26 => ('A' + n).toChar
-          case n => ('0' + (n - 26)).toChar
+          case n           => ('0' + (n - 26)).toChar
         })
         addChar(pos + 1, randNum >> 5, sb)
       }
@@ -226,15 +228,18 @@ trait StringHelpers {
     * @return a pair containing the first and second parts
     */
   def splitColonPair(
-      in: String, first: String, second: String): (String, String) = {
+      in: String,
+      first: String,
+      second: String
+  ): (String, String) = {
     (in match {
-      case null => List("")
+      case null                      => List("")
       case s if s.indexOf(".") != -1 => s.roboSplit("\\.")
-      case s => s.roboSplit(":")
+      case s                         => s.roboSplit(":")
     }) match {
       case f :: s :: _ => (f, s)
-      case f :: Nil => (f, second)
-      case _ => (first, second)
+      case f :: Nil    => (f, second)
+      case _           => (first, second)
     }
   }
 
@@ -257,7 +262,7 @@ trait StringHelpers {
       tin.trim.toList match {
         case '-' :: xs => -p(xs)
         case '+' :: xs => p(xs)
-        case xs => p(xs)
+        case xs        => p(xs)
       }
     }
   }
@@ -281,7 +286,7 @@ trait StringHelpers {
   def roboSplit(what: String, sep: String): List[String] =
     what match {
       case null => Nil
-      case s => s.split(sep).toList.map(_.trim).filter(_.length > 0)
+      case s    => s.split(sep).toList.map(_.trim).filter(_.length > 0)
     }
 
   /**
@@ -292,30 +297,30 @@ trait StringHelpers {
     what match {
       case null => Nil
       case str => {
-          val ret = new scala.collection.mutable.ListBuffer[String]
+        val ret = new scala.collection.mutable.ListBuffer[String]
 
-          val len = str.length
-          var pos = 0
-          var lastPos = 0
+        val len     = str.length
+        var pos     = 0
+        var lastPos = 0
 
-          while (pos < len) {
-            if (str.charAt(pos) == sep) {
-              if (pos > lastPos) {
-                val ns = str.substring(lastPos, pos)
-                ret += ns
-              }
-
-              lastPos = pos + 1
+        while (pos < len) {
+          if (str.charAt(pos) == sep) {
+            if (pos > lastPos) {
+              val ns = str.substring(lastPos, pos)
+              ret += ns
             }
-            pos += 1
-          }
 
-          if (pos > lastPos) {
-            ret += str.substring(lastPos, pos)
+            lastPos = pos + 1
           }
-
-          ret.toList
+          pos += 1
         }
+
+        if (pos > lastPos) {
+          ret += str.substring(lastPos, pos)
+        }
+
+        ret.toList
+      }
     }
 
   /**
@@ -328,8 +333,7 @@ trait StringHelpers {
       what.indexOf(sep) match {
         case -1 => Nil
         case n =>
-          List(
-              (what.substring(0, n).trim, what.substring(n + sep.length).trim))
+          List((what.substring(0, n).trim, what.substring(n + sep.length).trim))
       }
   }
 
@@ -341,13 +345,13 @@ trait StringHelpers {
     if (what eq null) "null"
     else {
       val len = what.length
-      val sb = new GoodSB(len * 2)
+      val sb  = new GoodSB(len * 2)
       sb.append('"')
       var pos = 0
       while (pos < len) {
         what.charAt(pos) match {
           case c @ ('\\' | '\'') => sb.append(escChar(c))
-          case '"' => sb.append("\\\"")
+          case '"'               => sb.append("\\\"")
           case c if c < ' ' || c > '~' || c == ']' || c.toInt >= 127 =>
             sb.append(escChar(c))
           case c => sb.append(c)
@@ -368,13 +372,14 @@ trait StringHelpers {
     else {
       val toDo = what.toList.reverse
 
-      def commaIt(in: List[Char]): List[Char] = in match {
-        case Nil => in
-        case x :: Nil => in
-        case x1 :: x2 :: Nil => in
-        case x1 :: x2 :: x3 :: Nil => in
-        case x1 :: x2 :: x3 :: xs => x1 :: x2 :: x3 :: ',' :: commaIt(xs)
-      }
+      def commaIt(in: List[Char]): List[Char] =
+        in match {
+          case Nil                   => in
+          case x :: Nil              => in
+          case x1 :: x2 :: Nil       => in
+          case x1 :: x2 :: x3 :: Nil => in
+          case x1 :: x2 :: x3 :: xs  => x1 :: x2 :: x3 :: ',' :: commaIt(xs)
+        }
       commaIt(toDo).reverse.mkString("")
     }
   }
@@ -398,10 +403,11 @@ trait StringHelpers {
     *
     * @return Full(s.trim) if s is not null or blank, Empty otherwise
     */
-  def emptyForBlank(s: String) = blankForNull(s).trim match {
-    case "" => Empty
-    case s => Full(s)
-  }
+  def emptyForBlank(s: String) =
+    blankForNull(s).trim match {
+      case "" => Empty
+      case s  => Full(s)
+    }
 }
 
 /**

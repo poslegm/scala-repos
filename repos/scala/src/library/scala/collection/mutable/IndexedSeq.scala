@@ -18,11 +18,12 @@ import generic._
   *  $indexedSeqInfo
   */
 trait IndexedSeq[A]
-    extends Seq[A] with scala.collection.IndexedSeq[A]
+    extends Seq[A]
+    with scala.collection.IndexedSeq[A]
     with GenericTraversableTemplate[A, IndexedSeq]
     with IndexedSeqLike[A, IndexedSeq[A]] {
   override def companion: GenericCompanion[IndexedSeq] = IndexedSeq
-  override def seq: IndexedSeq[A] = this
+  override def seq: IndexedSeq[A]                      = this
 }
 
 /** $factoryInfo

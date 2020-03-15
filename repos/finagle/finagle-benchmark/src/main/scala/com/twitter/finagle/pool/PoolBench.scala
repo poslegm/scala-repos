@@ -25,26 +25,26 @@ class PoolBench extends StdBenchAnnotations {
   var loadedRatio: Double = _
 
   var watermark: ServiceFactory[Int, Int] = _
-  var cache: ServiceFactory[Int, Int] = _
-  var buffer: ServiceFactory[Int, Int] = _
-  var composed: ServiceFactory[Int, Int] = _
+  var cache: ServiceFactory[Int, Int]     = _
+  var buffer: ServiceFactory[Int, Int]    = _
+  var composed: ServiceFactory[Int, Int]  = _
 
   @Setup
   def loadPools() {
-    watermark = new WatermarkPool(
-        underlying, lowWatermark = 1, highWatermark = poolSize)
-    cache = new CachingPool(
-        underlying, poolSize, Duration.Top, DefaultTimer.twitter)
+    watermark =
+      new WatermarkPool(underlying, lowWatermark = 1, highWatermark = poolSize)
+    cache =
+      new CachingPool(underlying, poolSize, Duration.Top, DefaultTimer.twitter)
     buffer = new BufferingPool(underlying, poolSize)
     composed = new WatermarkPool(
-        new CachingPool(
-            new BufferingPool(underlying, poolSize),
-            poolSize,
-            Duration.Top,
-            DefaultTimer.twitter
-        ),
-        lowWatermark = 1,
-        highWatermark = poolSize
+      new CachingPool(
+        new BufferingPool(underlying, poolSize),
+        poolSize,
+        Duration.Top,
+        DefaultTimer.twitter
+      ),
+      lowWatermark = 1,
+      highWatermark = poolSize
     )
 
     for (i <- 0 until (poolSize * loadedRatio).toInt) {

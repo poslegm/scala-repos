@@ -23,7 +23,7 @@ case class Path(elems: Buf*) {
   def ++(that: Path) =
     if (that.isEmpty) this
     else Path((elems ++ that.elems): _*)
-  def size = elems.size
+  def size    = elems.size
   def isEmpty = elems.isEmpty
 
   lazy val showElems =
@@ -31,13 +31,13 @@ case class Path(elems: Buf*) {
       // We're extra careful with allocation here because any time
       // there are nonbase delegations, we need to serialize the paths
       // to strings
-      val nbuf = buf.length
+      val nbuf  = buf.length
       val bytes = Buf.ByteArray.Owned.extract(buf)
       if (Path.showableAsString(bytes, nbuf))
         new String(bytes, 0, nbuf, Path.Utf8Charset)
       else {
         val str = new StringBuilder(nbuf * 4)
-        var i = 0
+        var i   = 0
         while (i < nbuf) {
           str.append("\\x")
           str.append(Integer.toString((bytes(i) >> 4) & 0xf, 16))
@@ -66,8 +66,8 @@ object Path {
     * [[com.twitter.app.Flag]]s
     */
   implicit val flaggable: Flaggable[Path] = new Flaggable[Path] {
-    override def default = None
-    def parse(s: String) = Path.read(s)
+    override def default          = None
+    def parse(s: String)          = Path.read(s)
     override def show(path: Path) = path.show
   }
 
@@ -139,18 +139,16 @@ object Path {
   object Utf8 {
     def apply(elems: String*): Path = {
       val elems8 =
-        elems map { el =>
-          Buf.Utf8(el)
-        }
+        elems map { el => Buf.Utf8(el) }
       Path(elems8: _*)
     }
 
     def unapplySeq(path: Path): Option[Seq[String]] = {
-      val Path(elems @ _ *) = path
+      val Path(elems @ _*) = path
 
-      val n = elems.size
+      val n      = elems.size
       val elemss = new Array[String](n)
-      var i = 0
+      var i      = 0
       while (i < n) {
         elems(i) match {
           case Buf.Utf8(s) =>

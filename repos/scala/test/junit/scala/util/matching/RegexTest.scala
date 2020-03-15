@@ -18,7 +18,7 @@ class RegexTest {
   }
 
   @Test def t8022Match(): Unit = {
-    val R = """(\d)""".r
+    val R      = """(\d)""".r
     val matchh = R.findFirstMatchIn("a1").get
     // Testing 2.10.x compatibility of the return types of unapplySeq
     val x :: Nil = R.unapplySeq(matchh: Any).get
@@ -28,9 +28,9 @@ class RegexTest {
   }
 
   @Test def t8787nullMatch() = {
-    val r = """\d+""".r
+    val r         = """\d+""".r
     val s: String = null
-    val x = s match { case r() => 1; case _ => 2 }
+    val x         = s match { case r() => 1; case _ => 2 }
     assertEquals(2, x)
   }
 
@@ -40,7 +40,7 @@ class RegexTest {
     val z =
       ((r findAllMatchIn s).toList :+ null) flatMap {
         case r(x, y) => Some((x.toInt, y.toInt))
-        case _ => None
+        case _       => None
       }
     assertEquals(List((1, 2), (3, 4), (5, 6)), z)
   }

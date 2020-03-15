@@ -7,9 +7,9 @@ package html.page.diagram
 object DiagramStats {
 
   class TimeTracker(title: String) {
-    var totalTime: Long = 0l
-    var maxTime: Long = 0l
-    var instances: Int = 0
+    var totalTime: Long = 0L
+    var maxTime: Long   = 0L
+    var instances: Int  = 0
 
     def addTime(ms: Long) = {
       if (maxTime < ms) maxTime = ms
@@ -31,13 +31,13 @@ object DiagramStats {
     }
   }
 
-  private[this] val filterTrack = new TimeTracker("diagrams model filtering")
-  private[this] val modelTrack = new TimeTracker("diagrams model generation")
-  private[this] val dotGenTrack = new TimeTracker("dot diagram generation")
-  private[this] val dotRunTrack = new TimeTracker("dot process running")
-  private[this] val svgTrack = new TimeTracker("svg processing")
+  private[this] val filterTrack  = new TimeTracker("diagrams model filtering")
+  private[this] val modelTrack   = new TimeTracker("diagrams model generation")
+  private[this] val dotGenTrack  = new TimeTracker("dot diagram generation")
+  private[this] val dotRunTrack  = new TimeTracker("dot process running")
+  private[this] val svgTrack     = new TimeTracker("svg processing")
   private[this] var brokenImages = 0
-  private[this] var fixedImages = 0
+  private[this] var fixedImages  = 0
 
   def printStats(settings: Settings) = {
     if (settings.docDiagramsDebug) {
@@ -53,12 +53,12 @@ object DiagramStats {
     }
   }
 
-  def addFilterTime(ms: Long) = filterTrack.addTime(ms)
-  def addModelTime(ms: Long) = modelTrack.addTime(ms)
+  def addFilterTime(ms: Long)        = filterTrack.addTime(ms)
+  def addModelTime(ms: Long)         = modelTrack.addTime(ms)
   def addDotGenerationTime(ms: Long) = dotGenTrack.addTime(ms)
-  def addDotRunningTime(ms: Long) = dotRunTrack.addTime(ms)
-  def addSvgTime(ms: Long) = svgTrack.addTime(ms)
+  def addDotRunningTime(ms: Long)    = dotRunTrack.addTime(ms)
+  def addSvgTime(ms: Long)           = svgTrack.addTime(ms)
 
   def addBrokenImage(): Unit = brokenImages += 1
-  def addFixedImage(): Unit = fixedImages += 1
+  def addFixedImage(): Unit  = fixedImages += 1
 }

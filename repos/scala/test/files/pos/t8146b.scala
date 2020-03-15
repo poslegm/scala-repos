@@ -10,15 +10,16 @@ trait Column[T]
 abstract class Shape[Level <: ShapeLevel, -Mixed_, Unpacked_, Packed_]
 
 trait ShapeLevel
-trait NestedShapeLevel extends ShapeLevel
-trait FlatShapeLevel extends NestedShapeLevel
+trait NestedShapeLevel  extends ShapeLevel
+trait FlatShapeLevel    extends NestedShapeLevel
 trait ColumnsShapeLevel extends FlatShapeLevel
 
 trait ProvenShape[U]
 
 object ProvenShape {
   implicit def proveShapeOf[T, U](v: T)(
-      implicit sh: Shape[_ <: FlatShapeLevel, T, U, _]): ProvenShape[U] = ???
+      implicit sh: Shape[_ <: FlatShapeLevel, T, U, _]
+  ): ProvenShape[U] = ???
 }
 
 sealed abstract class HList {
@@ -38,28 +39,36 @@ final object HNil extends HList {
 // Success is more likely when not using these aliases
 object syntax {
   type ::[+H, +T <: HList] = HCons[H, T]
-  type HNil = HNil.type
+  type HNil                = HNil.type
 }
 
 class HListBench {
 
   import syntax._
 
-  implicit def columnShape[T, Level <: ShapeLevel]: Shape[
-      Level, Column[T], T, Column[T]] = ???
+  implicit def columnShape[T, Level <: ShapeLevel]
+      : Shape[Level, Column[T], T, Column[T]] = ???
   implicit def provenShape[T, P](
-      implicit shape: Shape[_ <: FlatShapeLevel, T, _, P])
-    : Shape[FlatShapeLevel, ProvenShape[T], T, P] = ???
+      implicit shape: Shape[_ <: FlatShapeLevel, T, _, P]
+  ): Shape[FlatShapeLevel, ProvenShape[T], T, P] = ???
   final class HListShape[
-      Level <: ShapeLevel, M <: HList, U <: HList, P <: HList](
-      val shapes: Seq[Shape[_ <: ShapeLevel, _, _, _]])
+      Level <: ShapeLevel, M <: HList, U <: HList, P <: HList
+  ](val shapes: Seq[Shape[_ <: ShapeLevel, _, _, _]])
       extends Shape[Level, M, U, P]
   implicit def hnilShape[Level <: ShapeLevel] =
     new HListShape[Level, HNil.type, HNil.type, HNil.type](Nil)
   implicit def hconsShape[
-      Level <: ShapeLevel, M1, M2 <: HList, U1, U2 <: HList, P1, P2 <: HList](
-      implicit s1: Shape[_ <: Level, M1, U1, P1],
-      s2: HListShape[_ <: Level, M2, U2, P2]) =
+      Level <: ShapeLevel,
+      M1,
+      M2 <: HList,
+      U1,
+      U2 <: HList,
+      P1,
+      P2 <: HList
+  ](implicit
+      s1: Shape[_ <: Level, M1, U1, P1],
+      s2: HListShape[_ <: Level, M2, U2, P2]
+  ) =
     new HListShape[Level, M1 :: M2, U1 :: U2, P1 :: P2](s1 +: s2.shapes)
 
   trait A[T] {
@@ -68,7 +77,8 @@ class HListBench {
 
   trait B
       extends A[
-          Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: HNil] {
+        Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: Int :: HNil
+      ] {
 
     def c: Column[Int]
 

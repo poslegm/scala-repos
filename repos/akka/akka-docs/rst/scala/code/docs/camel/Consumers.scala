@@ -63,7 +63,7 @@ object Consumers {
     import scala.concurrent.duration._
 
     class Consumer4 extends Consumer {
-      def endpointUri = "jetty:http://localhost:8877/camel/default"
+      def endpointUri           = "jetty:http://localhost:8877/camel/default"
       override def replyTimeout = 500 millis
       def receive = {
         case msg: CamelMessage =>

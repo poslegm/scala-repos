@@ -15,12 +15,12 @@ class ListTest {
     */
   @Test
   def testIteratorGC(): Unit = {
-    var num = 0
+    var num            = 0
     var emptyIterators = Seq.empty[(Iterator[Int], WeakReference[List[Int]])]
 
     do {
       val list = List.fill(10000)(num)
-      val ref = WeakReference(list)
+      val ref  = WeakReference(list)
 
       val i = list.iterator
 

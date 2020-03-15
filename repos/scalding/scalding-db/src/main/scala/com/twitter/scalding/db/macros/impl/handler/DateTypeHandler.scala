@@ -10,23 +10,24 @@ import com.twitter.scalding.db.macros.impl.FieldName
 
 object DateTypeHandler {
 
-  def apply[T](c: Context)(
-      implicit accessorTree: List[c.universe.MethodSymbol],
+  def apply[T](c: Context)(implicit
+      accessorTree: List[c.universe.MethodSymbol],
       fieldName: FieldName,
       defaultValue: Option[c.Expr[String]],
       annotationInfo: List[(c.universe.Type, Option[Int])],
-      nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
+      nullable: Boolean
+  ): scala.util.Try[List[ColumnFormat[c.type]]] = {
     import c.universe._
 
     val helper = new {
-      val ctx: c.type = c
-      val cfieldName = fieldName
+      val ctx: c.type     = c
+      val cfieldName      = fieldName
       val cannotationInfo = annotationInfo
     } with AnnotationHelper
 
     val extracted = for {
       (nextHelper, dateAnno) <- helper.dateAnnotation
-      _ <- nextHelper.validateFinished
+      _                      <- nextHelper.validateFinished
     } yield (dateAnno)
 
     extracted.flatMap { t =>

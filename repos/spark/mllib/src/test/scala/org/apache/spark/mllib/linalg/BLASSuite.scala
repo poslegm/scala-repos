@@ -53,23 +53,22 @@ class BLASSuite extends SparkFunSuite {
   }
 
   test("scal") {
-    val a = 0.1
+    val a  = 0.1
     val sx = Vectors.sparse(3, Array(0, 2), Array(1.0, -2.0))
     val dx = Vectors.dense(1.0, 0.0, -2.0)
 
     scal(a, sx)
-    assert(
-        sx ~== Vectors.sparse(3, Array(0, 2), Array(0.1, -0.2)) absTol 1e-15)
+    assert(sx ~== Vectors.sparse(3, Array(0, 2), Array(0.1, -0.2)) absTol 1e-15)
 
     scal(a, dx)
     assert(dx ~== Vectors.dense(0.1, 0.0, -0.2) absTol 1e-15)
   }
 
   test("axpy") {
-    val alpha = 0.1
-    val sx = Vectors.sparse(3, Array(0, 2), Array(1.0, -2.0))
-    val dx = Vectors.dense(1.0, 0.0, -2.0)
-    val dy = Array(2.0, 1.0, 0.0)
+    val alpha    = 0.1
+    val sx       = Vectors.sparse(3, Array(0, 2), Array(1.0, -2.0))
+    val dx       = Vectors.dense(1.0, 0.0, -2.0)
+    val dy       = Array(2.0, 1.0, 0.0)
     val expected = Vectors.dense(2.1, 1.0, -0.2)
 
     val dy1 = Vectors.dense(dy.clone())
@@ -132,10 +131,11 @@ class BLASSuite extends SparkFunSuite {
   test("spr") {
     // test dense vector
     val alpha = 0.1
-    val x = new DenseVector(Array(1.0, 2, 2.1, 4))
-    val U = new DenseVector(Array(1.0, 2, 2, 3, 3, 3, 4, 4, 4, 4))
+    val x     = new DenseVector(Array(1.0, 2, 2.1, 4))
+    val U     = new DenseVector(Array(1.0, 2, 2, 3, 3, 3, 4, 4, 4, 4))
     val expected = new DenseVector(
-        Array(1.1, 2.2, 2.4, 3.21, 3.42, 3.441, 4.4, 4.8, 4.84, 5.6))
+      Array(1.1, 2.2, 2.4, 3.21, 3.42, 3.441, 4.4, 4.8, 4.84, 5.6)
+    )
 
     spr(alpha, x, U)
     assert(U ~== expected absTol 1e-9)
@@ -157,54 +157,31 @@ class BLASSuite extends SparkFunSuite {
   }
 
   test("syr") {
-    val dA = new DenseMatrix(4,
-                             4,
-                             Array(0.0,
-                                   1.2,
-                                   2.2,
-                                   3.1,
-                                   1.2,
-                                   3.2,
-                                   5.3,
-                                   4.6,
-                                   2.2,
-                                   5.3,
-                                   1.8,
-                                   3.0,
-                                   3.1,
-                                   4.6,
-                                   3.0,
-                                   0.8))
-    val x = new DenseVector(Array(0.0, 2.7, 3.5, 2.1))
+    val dA = new DenseMatrix(
+      4,
+      4,
+      Array(0.0, 1.2, 2.2, 3.1, 1.2, 3.2, 5.3, 4.6, 2.2, 5.3, 1.8, 3.0, 3.1,
+        4.6, 3.0, 0.8)
+    )
+    val x     = new DenseVector(Array(0.0, 2.7, 3.5, 2.1))
     val alpha = 0.15
 
-    val expected = new DenseMatrix(4,
-                                   4,
-                                   Array(0.0,
-                                         1.2,
-                                         2.2,
-                                         3.1,
-                                         1.2,
-                                         4.2935,
-                                         6.7175,
-                                         5.4505,
-                                         2.2,
-                                         6.7175,
-                                         3.6375,
-                                         4.1025,
-                                         3.1,
-                                         5.4505,
-                                         4.1025,
-                                         1.4615))
+    val expected = new DenseMatrix(
+      4,
+      4,
+      Array(0.0, 1.2, 2.2, 3.1, 1.2, 4.2935, 6.7175, 5.4505, 2.2, 6.7175,
+        3.6375, 4.1025, 3.1, 5.4505, 4.1025, 1.4615)
+    )
 
     syr(alpha, x, dA)
 
     assert(dA ~== expected absTol 1e-15)
 
     val dB = new DenseMatrix(
-        3,
-        4,
-        Array(0.0, 1.2, 2.2, 3.1, 1.2, 3.2, 5.3, 4.6, 2.2, 5.3, 1.8, 3.0))
+      3,
+      4,
+      Array(0.0, 1.2, 2.2, 3.1, 1.2, 3.2, 5.3, 4.6, 2.2, 5.3, 1.8, 3.0)
+    )
 
     withClue("Matrix A must be a symmetric Matrix") {
       intercept[Exception] {
@@ -230,73 +207,55 @@ class BLASSuite extends SparkFunSuite {
     }
 
     val xSparse = new SparseVector(4, Array(0, 2, 3), Array(1.0, 3.0, 4.0))
-    val dD = new DenseMatrix(4,
-                             4,
-                             Array(0.0,
-                                   1.2,
-                                   2.2,
-                                   3.1,
-                                   1.2,
-                                   3.2,
-                                   5.3,
-                                   4.6,
-                                   2.2,
-                                   5.3,
-                                   1.8,
-                                   3.0,
-                                   3.1,
-                                   4.6,
-                                   3.0,
-                                   0.8))
+    val dD = new DenseMatrix(
+      4,
+      4,
+      Array(0.0, 1.2, 2.2, 3.1, 1.2, 3.2, 5.3, 4.6, 2.2, 5.3, 1.8, 3.0, 3.1,
+        4.6, 3.0, 0.8)
+    )
     syr(0.1, xSparse, dD)
-    val expectedSparse = new DenseMatrix(4,
-                                         4,
-                                         Array(0.1,
-                                               1.2,
-                                               2.5,
-                                               3.5,
-                                               1.2,
-                                               3.2,
-                                               5.3,
-                                               4.6,
-                                               2.5,
-                                               5.3,
-                                               2.7,
-                                               4.2,
-                                               3.5,
-                                               4.6,
-                                               4.2,
-                                               2.4))
+    val expectedSparse = new DenseMatrix(
+      4,
+      4,
+      Array(0.1, 1.2, 2.5, 3.5, 1.2, 3.2, 5.3, 4.6, 2.5, 5.3, 2.7, 4.2, 3.5,
+        4.6, 4.2, 2.4)
+    )
     assert(dD ~== expectedSparse absTol 1e-15)
   }
 
   test("gemm") {
     val dA = new DenseMatrix(
-        4,
-        3,
-        Array(0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3.0))
+      4,
+      3,
+      Array(0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3.0)
+    )
     val sA = new SparseMatrix(
-        4, 3, Array(0, 1, 3, 4), Array(1, 0, 2, 3), Array(1.0, 2.0, 1.0, 3.0))
+      4,
+      3,
+      Array(0, 1, 3, 4),
+      Array(1, 0, 2, 3),
+      Array(1.0, 2.0, 1.0, 3.0)
+    )
 
     val B = new DenseMatrix(3, 2, Array(1.0, 0.0, 0.0, 0.0, 2.0, 1.0))
     val expected =
       new DenseMatrix(4, 2, Array(0.0, 1.0, 0.0, 0.0, 4.0, 0.0, 2.0, 3.0))
     val BTman = new DenseMatrix(2, 3, Array(1.0, 0.0, 0.0, 2.0, 0.0, 1.0))
-    val BT = B.transpose
+    val BT    = B.transpose
 
     assert(dA.multiply(B) ~== expected absTol 1e-15)
     assert(sA.multiply(B) ~== expected absTol 1e-15)
 
     val C1 =
       new DenseMatrix(4, 2, Array(1.0, 0.0, 2.0, 1.0, 0.0, 0.0, 1.0, 0.0))
-    val C2 = C1.copy
-    val C3 = C1.copy
-    val C4 = C1.copy
-    val C5 = C1.copy
-    val C6 = C1.copy
-    val C7 = C1.copy
-    val C8 = C1.copy
-    val C9 = C1.copy
+    val C2  = C1.copy
+    val C3  = C1.copy
+    val C4  = C1.copy
+    val C5  = C1.copy
+    val C6  = C1.copy
+    val C7  = C1.copy
+    val C8  = C1.copy
+    val C9  = C1.copy
     val C10 = C1.copy
     val C11 = C1.copy
     val C12 = C1.copy
@@ -333,18 +292,21 @@ class BLASSuite extends SparkFunSuite {
     }
 
     val dATman = new DenseMatrix(
-        3,
-        4,
-        Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0))
-    val sATman = new SparseMatrix(3,
-                                  4,
-                                  Array(0, 1, 2, 3, 4),
-                                  Array(1, 0, 1, 2),
-                                  Array(2.0, 1.0, 1.0, 3.0))
+      3,
+      4,
+      Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0)
+    )
+    val sATman = new SparseMatrix(
+      3,
+      4,
+      Array(0, 1, 2, 3, 4),
+      Array(1, 0, 1, 2),
+      Array(2.0, 1.0, 1.0, 3.0)
+    )
 
     val dATT = dATman.transpose
     val sATT = sATman.transpose
-    val BTT = BTman.transpose.asInstanceOf[DenseMatrix]
+    val BTT  = BTman.transpose.asInstanceOf[DenseMatrix]
 
     assert(dATT.multiply(B) ~== expected absTol 1e-15)
     assert(sATT.multiply(B) ~== expected absTol 1e-15)
@@ -381,26 +343,35 @@ class BLASSuite extends SparkFunSuite {
   test("gemv") {
 
     val dA = new DenseMatrix(
-        4,
-        3,
-        Array(0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3.0))
+      4,
+      3,
+      Array(0.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3.0)
+    )
     val sA = new SparseMatrix(
-        4, 3, Array(0, 1, 3, 4), Array(1, 0, 2, 3), Array(1.0, 2.0, 1.0, 3.0))
+      4,
+      3,
+      Array(0, 1, 3, 4),
+      Array(1, 0, 2, 3),
+      Array(1.0, 2.0, 1.0, 3.0)
+    )
 
     val dA2 = new DenseMatrix(
-        4,
-        3,
-        Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0),
-        true)
-    val sA2 = new SparseMatrix(4,
-                               3,
-                               Array(0, 1, 2, 3, 4),
-                               Array(1, 0, 1, 2),
-                               Array(2.0, 1.0, 1.0, 3.0),
-                               true)
+      4,
+      3,
+      Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0),
+      true
+    )
+    val sA2 = new SparseMatrix(
+      4,
+      3,
+      Array(0, 1, 2, 3, 4),
+      Array(1, 0, 1, 2),
+      Array(2.0, 1.0, 1.0, 3.0),
+      true
+    )
 
-    val dx = new DenseVector(Array(1.0, 2.0, 3.0))
-    val sx = dx.toSparse
+    val dx       = new DenseVector(Array(1.0, 2.0, 3.0))
+    val sx       = dx.toSparse
     val expected = new DenseVector(Array(4.0, 1.0, 2.0, 9.0))
 
     assert(dA.multiply(dx) ~== expected absTol 1e-15)
@@ -408,15 +379,15 @@ class BLASSuite extends SparkFunSuite {
     assert(dA.multiply(sx) ~== expected absTol 1e-15)
     assert(sA.multiply(sx) ~== expected absTol 1e-15)
 
-    val y1 = new DenseVector(Array(1.0, 3.0, 1.0, 0.0))
-    val y2 = y1.copy
-    val y3 = y1.copy
-    val y4 = y1.copy
-    val y5 = y1.copy
-    val y6 = y1.copy
-    val y7 = y1.copy
-    val y8 = y1.copy
-    val y9 = y1.copy
+    val y1  = new DenseVector(Array(1.0, 3.0, 1.0, 0.0))
+    val y2  = y1.copy
+    val y3  = y1.copy
+    val y4  = y1.copy
+    val y5  = y1.copy
+    val y6  = y1.copy
+    val y7  = y1.copy
+    val y8  = y1.copy
+    val y9  = y1.copy
     val y10 = y1.copy
     val y11 = y1.copy
     val y12 = y1.copy
@@ -484,14 +455,17 @@ class BLASSuite extends SparkFunSuite {
     }
 
     val dAT = new DenseMatrix(
-        3,
-        4,
-        Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0))
-    val sAT = new SparseMatrix(3,
-                               4,
-                               Array(0, 1, 2, 3, 4),
-                               Array(1, 0, 1, 2),
-                               Array(2.0, 1.0, 1.0, 3.0))
+      3,
+      4,
+      Array(0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 3.0)
+    )
+    val sAT = new SparseMatrix(
+      3,
+      4,
+      Array(0, 1, 2, 3, 4),
+      Array(1, 0, 1, 2),
+      Array(2.0, 1.0, 1.0, 3.0)
+    )
 
     val dATT = dAT.transpose
     val sATT = sAT.transpose

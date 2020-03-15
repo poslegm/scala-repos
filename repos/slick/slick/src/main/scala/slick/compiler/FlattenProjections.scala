@@ -14,49 +14,52 @@ import TypeUtil._
 class FlattenProjections extends Phase {
   val name = "flattenProjections"
 
-  def apply(state: CompilerState) = state.map { tree =>
-    val translations =
-      new HashMap[TypeSymbol, Map[List[TermSymbol], TermSymbol]]
-    def tr(n: Node, topLevel: Boolean): Node = n match {
-      case Pure(v, ts) =>
-        logger.debug(s"Flattening projection $ts")
-        val (newV, newTranslations) =
-          flattenProjection(tr(v, false), !topLevel)
-        translations += ts -> newTranslations
-        logger.debug(
-            s"Adding translation for $ts: ($newTranslations, ${newV.nodeType})")
-        val res = Pure(newV, ts)
-        logger.debug("Flattened projection to", res)
-        res
-      case p: PathElement =>
-        logger.debug("Analyzing " + p.pathString + " with symbols " +
-                     translations.keySet.mkString(", "),
-                     p)
-        val p2 = splitPath(p, translations.keySet) match {
-          case Some((base, rest, tsym)) =>
-            logger.debug("Found " + p.pathString + " with local part " +
-                Path.toString(rest) + " over " + tsym)
-            val paths = translations(tsym)
-            logger.debug(s"  Translation for $tsym: $paths")
-            Select(base.untypedPath, paths(rest))
-          case None => p.untypedPath
+  def apply(state: CompilerState) =
+    state.map { tree =>
+      val translations =
+        new HashMap[TypeSymbol, Map[List[TermSymbol], TermSymbol]]
+      def tr(n: Node, topLevel: Boolean): Node =
+        n match {
+          case Pure(v, ts) =>
+            logger.debug(s"Flattening projection $ts")
+            val (newV, newTranslations) =
+              flattenProjection(tr(v, false), !topLevel)
+            translations += ts -> newTranslations
+            logger.debug(
+              s"Adding translation for $ts: ($newTranslations, ${newV.nodeType})"
+            )
+            val res = Pure(newV, ts)
+            logger.debug("Flattened projection to", res)
+            res
+          case p: PathElement =>
+            logger.debug(
+              "Analyzing " + p.pathString + " with symbols " +
+                translations.keySet.mkString(", "),
+              p
+            )
+            val p2 = splitPath(p, translations.keySet) match {
+              case Some((base, rest, tsym)) =>
+                logger.debug(
+                  "Found " + p.pathString + " with local part " +
+                    Path.toString(rest) + " over " + tsym
+                )
+                val paths = translations(tsym)
+                logger.debug(s"  Translation for $tsym: $paths")
+                Select(base.untypedPath, paths(rest))
+              case None => p.untypedPath
+            }
+            logger.debug("Translated " + p.pathString + " to:", p2)
+            p2
+          case n: Bind =>
+            n.mapChildren { ch => tr(ch, topLevel && (ch ne n.from)) }
+          case u: Union =>
+            n.mapChildren { ch => tr(ch, true) }
+          case Library.SilentCast(ch) :@ tpe =>
+            Library.SilentCast.typed(tpe.structuralRec, tr(ch, false))
+          case n => n.mapChildren(tr(_, false))
         }
-        logger.debug("Translated " + p.pathString + " to:", p2)
-        p2
-      case n: Bind =>
-        n.mapChildren { ch =>
-          tr(ch, topLevel && (ch ne n.from))
-        }
-      case u: Union =>
-        n.mapChildren { ch =>
-          tr(ch, true)
-        }
-      case Library.SilentCast(ch) :@ tpe =>
-        Library.SilentCast.typed(tpe.structuralRec, tr(ch, false))
-      case n => n.mapChildren(tr(_, false))
+      tr(tree, true).infer()
     }
-    tr(tree, true).infer()
-  }
 
   /** Split a path into the shortest part with a NominalType and the rest on
     * top of it. Returns `None` if there is no NominalType with one of the
@@ -64,10 +67,13 @@ class FlattenProjections extends Phase {
     * where `tsym` is the symbol that was found and `base` is the Node in the path
     * which has a NominalType of that symbol. `rest` is a (possibly empty) path of
     * symbols on top of `base`. */
-  def splitPath(n: PathElement, candidates: scala.collection.Set[TypeSymbol])
-    : Option[(PathElement, List[TermSymbol], TypeSymbol)] = {
+  def splitPath(
+      n: PathElement,
+      candidates: scala.collection.Set[TypeSymbol]
+  ): Option[(PathElement, List[TermSymbol], TypeSymbol)] = {
     def checkType(
-        tpe: Type): Option[(PathElement, List[TermSymbol], TypeSymbol)] =
+        tpe: Type
+    ): Option[(PathElement, List[TermSymbol], TypeSymbol)] =
       tpe match {
         case NominalType(tsym, _) if candidates contains tsym =>
           Some((n, Nil, tsym))
@@ -77,7 +83,7 @@ class FlattenProjections extends Phase {
       case Select(in, field) =>
         splitPath(in.asInstanceOf[PathElement], candidates) match {
           case Some((n, p, tsym)) => Some((n, field :: p, tsym))
-          case None => checkType(n.nodeType)
+          case None               => checkType(n.nodeType)
         }
       case _: Ref => checkType(n.nodeType)
     }
@@ -91,8 +97,9 @@ class FlattenProjections extends Phase {
     *   columns on both sides have to match up. */
   def flattenProjection(
       n: Node,
-      collapse: Boolean): (StructNode, Map[List[TermSymbol], TermSymbol]) = {
-    val defs = new ArrayBuffer[(TermSymbol, Node)]
+      collapse: Boolean
+  ): (StructNode, Map[List[TermSymbol], TermSymbol]) = {
+    val defs  = new ArrayBuffer[(TermSymbol, Node)]
     val defsM = new HashMap[Node, TermSymbol]
     val paths = new HashMap[List[TermSymbol], TermSymbol]
     def flatten(n: Node, path: List[TermSymbol]) {
@@ -113,14 +120,14 @@ class FlattenProjections extends Phase {
               case _ =>
                 val sym = new AnonSymbol
                 logger.debug(s"Adding definition: $sym -> $n")
-                defs += sym -> n
-                defsM += n -> sym
+                defs += sym   -> n
+                defsM += n    -> sym
                 paths += path -> sym
             }
           } else {
             val sym = new AnonSymbol
             logger.debug(s"Adding definition: $sym -> $n")
-            defs += sym -> n
+            defs += sym   -> n
             paths += path -> sym
           }
       }

@@ -5,27 +5,26 @@ import java.security.MessageDigest
 /** Type-class for generic hashing
   */
 trait Hashable[-T, +R] extends (T => R) { self =>
-  override def andThen[A](fn: (R) => A): Hashable[T, A] = new Hashable[T, A] {
-    override def apply(t: T) = fn(self.apply(t))
-  }
-  override def compose[A](fn: (A) => T): Hashable[A, R] = new Hashable[A, R] {
-    override def apply(a: A) = self.apply(fn(a))
-  }
+  override def andThen[A](fn: (R) => A): Hashable[T, A] =
+    new Hashable[T, A] {
+      override def apply(t: T) = fn(self.apply(t))
+    }
+  override def compose[A](fn: (A) => T): Hashable[A, R] =
+    new Hashable[A, R] {
+      override def apply(a: A) = self.apply(fn(a))
+    }
 }
 
 trait LowPriorityHashable {
   // XOR the high 32 bits into the low to get a int:
   implicit def toInt[T](implicit h: Hashable[T, Long]): Hashable[T, Int] =
-    h.andThen { long =>
-      (long >> 32).toInt ^ long.toInt
-    }
+    h.andThen { long => (long >> 32).toInt ^ long.toInt }
 
   // Get the UTF-8 bytes of a string to hash it
   implicit def fromString[T](
-      implicit h: Hashable[Array[Byte], T]): Hashable[String, T] =
-    h.compose { s: String =>
-      s.getBytes
-    }
+      implicit h: Hashable[Array[Byte], T]
+  ): Hashable[String, T] =
+    h.compose { s: String => s.getBytes }
 }
 
 object Hashable extends LowPriorityHashable {
@@ -41,9 +40,10 @@ object Hashable extends LowPriorityHashable {
   def hash[T, R](t: T)(implicit hasher: Hashable[T, R]): R = hasher(t)
 
   // Some standard hashing:
-  def hashCode[T]: Hashable[T, Int] = new Hashable[T, Int] {
-    def apply(t: T) = t.hashCode
-  }
+  def hashCode[T]: Hashable[T, Int] =
+    new Hashable[T, Int] {
+      def apply(t: T) = t.hashCode
+    }
 
   private[this] val MaxUnsignedInt: Long = 0xFFFFFFFFL
 
@@ -54,9 +54,9 @@ object Hashable extends LowPriorityHashable {
   val FNV1_32 = new Hashable[Array[Byte], Int] {
     def apply(key: Array[Byte]) = {
       val PRIME: Int = 16777619
-      var i = 0
-      val len = key.length
-      var rv: Long = 0x811c9dc5L
+      var i          = 0
+      val len        = key.length
+      var rv: Long   = 0x811C9DC5L
       while (i < len) {
         rv = (rv * PRIME) ^ (key(i) & 0xff)
         i += 1
@@ -74,9 +74,9 @@ object Hashable extends LowPriorityHashable {
   val FNV1A_32 = new Hashable[Array[Byte], Int] {
     def apply(key: Array[Byte]): Int = {
       val PRIME: Int = 16777619
-      var i = 0
-      val len = key.length
-      var rv: Long = 0x811c9dc5L
+      var i          = 0
+      val len        = key.length
+      var rv: Long   = 0x811C9DC5L
       while (i < len) {
         rv = (rv ^ (key(i) & 0xff)) * PRIME
         i += 1
@@ -94,9 +94,9 @@ object Hashable extends LowPriorityHashable {
   val FNV1_64 = new Hashable[Array[Byte], Long] {
     def apply(key: Array[Byte]): Long = {
       val PRIME: Long = 1099511628211L
-      var i = 0
-      val len = key.length
-      var rv: Long = 0xcbf29ce484222325L
+      var i           = 0
+      val len         = key.length
+      var rv: Long    = 0xCBF29CE484222325L
       while (i < len) {
         rv = (rv * PRIME) ^ (key(i) & 0xff)
         i += 1
@@ -114,9 +114,9 @@ object Hashable extends LowPriorityHashable {
   val FNV1A_64 = new Hashable[Array[Byte], Long] {
     def apply(key: Array[Byte]): Long = {
       val PRIME: Long = 1099511628211L
-      var i = 0
-      val len = key.length
-      var rv: Long = 0xcbf29ce484222325L
+      var i           = 0
+      val len         = key.length
+      var rv: Long    = 0xCBF29CE484222325L
       while (i < len) {
         rv = (rv ^ (key(i) & 0xff)) * PRIME
         i += 1
@@ -130,13 +130,14 @@ object Hashable extends LowPriorityHashable {
   // the idea here of cloning the MessageDigest is from Google's Guava.
   // it shaves off a significant amount of clock time and object allocations
   private[this] val MessageDigestMd5 = MessageDigest.getInstance("MD5")
-  private[this] val Md5SupportsClone: Boolean = try {
-    MessageDigestMd5.clone()
-    true
-  } catch {
-    case _: CloneNotSupportedException =>
-      false
-  }
+  private[this] val Md5SupportsClone: Boolean =
+    try {
+      MessageDigestMd5.clone()
+      true
+    } catch {
+      case _: CloneNotSupportedException =>
+        false
+    }
   private[this] def newMd5MessageDigest(): MessageDigest = {
     if (Md5SupportsClone) MessageDigestMd5.clone().asInstanceOf[MessageDigest]
     else MessageDigest.getInstance("MD5")
@@ -153,7 +154,7 @@ object Hashable extends LowPriorityHashable {
 
       val d = hasher.digest()
       (d(0) & 0xff) | ((d(1) & 0xff) << 8) | ((d(2) & 0xff) << 16) |
-      ((d(3) & 0xff) << 24)
+        ((d(3) & 0xff) << 24)
     }
 
     override def toString() = "Ketama"
@@ -164,15 +165,15 @@ object Hashable extends LowPriorityHashable {
     */
   val CRC32_ITU = new Hashable[Array[Byte], Int] {
     def apply(key: Array[Byte]): Int = {
-      var i = 0
-      val len = key.length
+      var i        = 0
+      val len      = key.length
       var rv: Long = MaxUnsignedInt
       while (i < len) {
         rv = rv ^ (key(i) & 0xff)
         var j = 0
         while (j < 8) {
           if ((rv & 1) != 0) {
-            rv = (rv >> 1) ^ 0xedb88320L
+            rv = (rv >> 1) ^ 0xEDB88320L
           } else {
             rv >>= 1
           }
@@ -210,7 +211,7 @@ object Hashable extends LowPriorityHashable {
         hash += hash >>> 11
       }
 
-      val rem = key.length % 4
+      val rem    = key.length % 4
       val offset = key.length - rem
       rem match {
         case 3 =>
@@ -276,7 +277,7 @@ object Hashable extends LowPriorityHashable {
         c ^= b; c -= rot(b, 24)
       }
 
-      var block = 0
+      var block     = 0
       val numBlocks = (key.length - 1) / 12
       while (block < numBlocks) {
         val offset = block * 12
@@ -300,7 +301,7 @@ object Hashable extends LowPriorityHashable {
       }
 
       val remaining = key.length - (numBlocks * 12)
-      val offset = numBlocks * 12
+      val offset    = numBlocks * 12
 
       if (remaining > 0) a += key(offset)
       if (remaining > 1) a += key(offset + 1) << 8

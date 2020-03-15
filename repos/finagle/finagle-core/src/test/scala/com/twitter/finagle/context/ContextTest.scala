@@ -7,13 +7,13 @@ import com.twitter.util.{Await, Future, Promise}
 
 @RunWith(classOf[JUnitRunner])
 class ContextTest extends FunSuite with AssertionsForJUnit {
-  val ctx = new LocalContext
-  val a = new ctx.Key[String]
-  val b = new ctx.Key[Int]
+  val ctx        = new LocalContext
+  val a          = new ctx.Key[String]
+  val b          = new ctx.Key[Int]
   val DefaultStr = "theDefault"
-  val StrFn = () => DefaultStr
+  val StrFn      = () => DefaultStr
   val DefaultInt = 999
-  val IntFn = () => DefaultInt
+  val IntFn      = () => DefaultInt
 
   test("Context.let binds") {
     assert(!ctx.contains(a))

@@ -33,7 +33,7 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
   import TestGraphGenerators._
   import MemoryArbitraries._
 
-  implicit def sink1: Memory#Sink[Int] = sample[Int => Unit]
+  implicit def sink1: Memory#Sink[Int]        = sample[Int => Unit]
   implicit def sink2: Memory#Sink[(Int, Int)] = sample[((Int, Int)) => Unit]
 
   implicit def testStore: Memory#Store[Int, Int] = MMap[Int, Int]()
@@ -47,18 +47,16 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
   implicit def genProducer: Arbitrary[TailProducer[Memory, _]] =
     Arbitrary(genGraph)
 
-  val testFn = { i: Int =>
-    List((i -> i))
-  }
+  val testFn = { i: Int => List((i -> i)) }
 
-  def sample[T : Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
+  def sample[T: Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
 
   var dumpNumber = 1
   def dumpGraph[P <: Platform[P]](dag: Dag[P]): String = {
     import java.io._
     import com.twitter.summingbird.viz.VizGraph
     val targetPath = "/tmp/failingGraph" + dumpNumber + ".dot"
-    val writer2 = new PrintWriter(new File(targetPath))
+    val writer2    = new PrintWriter(new File(targetPath))
     VizGraph(dag, writer2)
     writer2.close()
     dumpNumber = dumpNumber + 1
@@ -69,7 +67,7 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
     import java.io._
     import com.twitter.summingbird.viz.VizGraph
     val targetPath = "/tmp/failingProducerGraph" + dumpNumber + ".dot"
-    val writer2 = new PrintWriter(new File(targetPath))
+    val writer2    = new PrintWriter(new File(targetPath))
     VizGraph(tail, writer2)
     writer2.close()
     dumpNumber = dumpNumber + 1
@@ -92,41 +90,36 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
   }
 
   property("Must have at least one producer in each MemoryNode") = forAll {
-    (dag: MemoryDag) =>
-      dag.nodes.forall { n =>
-        n.members.size > 0
-      }
+    (dag: MemoryDag) => dag.nodes.forall { n => n.members.size > 0 }
   }
 
-  property("If a Node contains a Summer, all other producers must be NOP's") = forAll {
-    (dag: MemoryDag) =>
-      summersOnlyShareNoOps(dag)
-  }
+  property("If a Node contains a Summer, all other producers must be NOP's") =
+    forAll { (dag: MemoryDag) => summersOnlyShareNoOps(dag) }
 
-  property("The first producer in a online node cannot be a NamedProducer") = forAll {
-    (dag: MemoryDag) =>
+  property("The first producer in a online node cannot be a NamedProducer") =
+    forAll { (dag: MemoryDag) =>
       dag.nodes.forall { n =>
         val inError = n.members.last.isInstanceOf[NamedProducer[_, _]]
         if (inError) dumpGraph(dag)
         !inError
       }
-  }
+    }
 
   property(
-      "0 or more merge producers at the start of every online bolts, followed by 1+ non-merge producers and no other merge producers following those.") = forAll {
-    (dag: MemoryDag) =>
-      dag.nodes.forall { n =>
-        val (_, inError) = n.members.foldLeft((false, false)) {
-          case ((seenMergeProducer, inError), producer) =>
-            producer match {
-              case MergedProducer(_, _) => (true, inError)
-              case NamedProducer(_, _) => (seenMergeProducer, inError)
-              case _ => (seenMergeProducer, (inError || seenMergeProducer))
-            }
-        }
-        if (inError) dumpGraph(dag)
-        !inError
+    "0 or more merge producers at the start of every online bolts, followed by 1+ non-merge producers and no other merge producers following those."
+  ) = forAll { (dag: MemoryDag) =>
+    dag.nodes.forall { n =>
+      val (_, inError) = n.members.foldLeft((false, false)) {
+        case ((seenMergeProducer, inError), producer) =>
+          producer match {
+            case MergedProducer(_, _) => (true, inError)
+            case NamedProducer(_, _)  => (seenMergeProducer, inError)
+            case _                    => (seenMergeProducer, (inError || seenMergeProducer))
+          }
       }
+      if (inError) dumpGraph(dag)
+      !inError
+    }
   }
 
   property("No producer is repeated") = forAll { (dag: MemoryDag) =>
@@ -134,8 +127,7 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
       sum + n.members.size
     }
     val allProducersSet = dag.nodes.foldLeft(Set[Producer[Memory, _]]()) {
-      (runningSet, n) =>
-        runningSet | n.members.toSet
+      (runningSet, n) => runningSet | n.members.toSet
     }
     numAllProducers == allProducersSet.size
   }
@@ -153,7 +145,7 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
       dag.nodes.forall { n =>
         val success = n match {
           case _: SourceNode[_] => true
-          case _ => dag.dependenciesOf(n).size > 0
+          case _                => dag.dependenciesOf(n).size > 0
         }
         if (!success) dumpGraph(dag)
         success
@@ -161,17 +153,17 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
   }
 
   property(
-      "Sources must have no incoming dependencies, and they must have dependants") = forAll {
-    (dag: MemoryDag) =>
-      dag.nodes.forall { n =>
-        val success = n match {
-          case _: SourceNode[_] =>
-            dag.dependenciesOf(n).size == 0 && dag.dependantsOf(n).size > 0
-          case _ => true
-        }
-        if (!success) dumpGraph(dag)
-        success
+    "Sources must have no incoming dependencies, and they must have dependants"
+  ) = forAll { (dag: MemoryDag) =>
+    dag.nodes.forall { n =>
+      val success = n match {
+        case _: SourceNode[_] =>
+          dag.dependenciesOf(n).size == 0 && dag.dependantsOf(n).size > 0
+        case _ => true
       }
+      if (!success) dumpGraph(dag)
+      success
+    }
   }
 
   property("Prior to a summer the Node should be a FlatMap Node") = forAll {
@@ -181,8 +173,7 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
         val success = firstP match {
           case Summer(_, _, _) =>
             dag.dependenciesOf(n).size > 0 && dag.dependenciesOf(n).forall {
-              otherN =>
-                otherN.isInstanceOf[FlatMapNode[_]]
+              otherN => otherN.isInstanceOf[FlatMapNode[_]]
             }
           case _ => true
         }
@@ -208,34 +199,32 @@ object TopologyPlannerLaws extends Properties("Online Dag") {
 
   property("Nodes in the DAG should have unique names") = forAll {
     (dag: MemoryDag) =>
-      val allNames = dag.nodes.toList.map { n =>
-        dag.getNodeName(n)
-      }
+      val allNames = dag.nodes.toList.map { n => dag.getNodeName(n) }
       allNames.size == allNames.distinct.size
   }
 
   property(
-      "Running through the optimizer should only reduce the number of nodes") = forAll {
-    (tail: TailProducer[Memory, _]) =>
-      val (_, stripped) = StripNamedNode(tail)
-      Producer.entireGraphOf(stripped).size <= Producer
-        .entireGraphOf(tail)
-        .size
+    "Running through the optimizer should only reduce the number of nodes"
+  ) = forAll { (tail: TailProducer[Memory, _]) =>
+    val (_, stripped) = StripNamedNode(tail)
+    Producer.entireGraphOf(stripped).size <= Producer
+      .entireGraphOf(tail)
+      .size
   }
 
   property(
-      "The number of non-named nodes should remain constant running with StripNamedNode") = forAll {
-    (tail: TailProducer[Memory, _]) =>
-      def countNonNamed(tail: Producer[Memory, _]): Int = {
-        Producer
-          .entireGraphOf(tail)
-          .collect {
-            case NamedProducer(_, _) => 0
-            case _ => 1
-          }
-          .sum
-      }
-      val (_, stripped) = StripNamedNode(tail)
-      countNonNamed(tail) == countNonNamed(stripped)
+    "The number of non-named nodes should remain constant running with StripNamedNode"
+  ) = forAll { (tail: TailProducer[Memory, _]) =>
+    def countNonNamed(tail: Producer[Memory, _]): Int = {
+      Producer
+        .entireGraphOf(tail)
+        .collect {
+          case NamedProducer(_, _) => 0
+          case _                   => 1
+        }
+        .sum
+    }
+    val (_, stripped) = StripNamedNode(tail)
+    countNonNamed(tail) == countNonNamed(stripped)
   }
 }

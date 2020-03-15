@@ -43,23 +43,24 @@ package enumfieldspecs {
   class EnumRec extends MongoRecord[EnumRec] with ObjectIdPk[EnumRec] {
     def meta = EnumRec
 
-    object dow extends EnumField(this, WeekDay)
+    object dow         extends EnumField(this, WeekDay)
     object dowOptional extends OptionalEnumField(this, WeekDay)
     object jsonobj extends JsonObjectField[EnumRec, JsonObj](this, JsonObj) {
       def defaultValue = JsonObj(WeekDay.Mon)
     }
 
-    override def equals(other: Any): Boolean = other match {
-      case that: EnumRec =>
-        this.id.get == that.id.get && this.dow.value == that.dow.value &&
-        this.dowOptional.valueBox == that.dowOptional.valueBox &&
-        this.jsonobj.value == that.jsonobj.value
-      case _ => false
-    }
+    override def equals(other: Any): Boolean =
+      other match {
+        case that: EnumRec =>
+          this.id.get == that.id.get && this.dow.value == that.dow.value &&
+            this.dowOptional.valueBox == that.dowOptional.valueBox &&
+            this.jsonobj.value == that.jsonobj.value
+        case _ => false
+      }
   }
   object EnumRec extends EnumRec with MongoMetaRecord[EnumRec] {
     override def collectionName = "enumrecs"
-    override def formats = super.formats + new EnumSerializer(WeekDay)
+    override def formats        = super.formats + new EnumSerializer(WeekDay)
   }
 }
 

@@ -17,28 +17,34 @@ package distributions
  limitations under the License.
  */
 
-import org.apache.commons.math3.distribution.{AbstractIntegerDistribution => ApacheIntegerDistribution, AbstractRealDistribution => ApacheRealDistribution, FDistribution => ApacheFDistribution}
+import org.apache.commons.math3.distribution.{
+  AbstractIntegerDistribution => ApacheIntegerDistribution,
+  AbstractRealDistribution => ApacheRealDistribution,
+  FDistribution => ApacheFDistribution
+}
 
 trait ApacheContinuousDistribution
-    extends ContinuousDistr[Double] with HasCdf with HasInverseCdf {
+    extends ContinuousDistr[Double]
+    with HasCdf
+    with HasInverseCdf {
   protected val inner: ApacheRealDistribution
 
-  def unnormalizedLogPdf(x: Double) = math.log(inner.density(x))
-  override def pdf(x: Double) = inner.density(x)
-  lazy val logNormalizer = 1.0
-  def draw() = inner.sample()
-  def drawMany(n: Int): Array[Double] = inner.sample(n)
+  def unnormalizedLogPdf(x: Double)     = math.log(inner.density(x))
+  override def pdf(x: Double)           = inner.density(x)
+  lazy val logNormalizer                = 1.0
+  def draw()                            = inner.sample()
+  def drawMany(n: Int): Array[Double]   = inner.sample(n)
   def probability(x: Double, y: Double) = inner.probability(x, y)
-  def inverseCdf(p: Double) = inner.inverseCumulativeProbability(p)
-  def mean: Double = inner.getNumericalMean()
-  def variance: Double = inner.getNumericalVariance()
+  def inverseCdf(p: Double)             = inner.inverseCumulativeProbability(p)
+  def mean: Double                      = inner.getNumericalMean()
+  def variance: Double                  = inner.getNumericalVariance()
 
   override def cdf(x: Double): Double = inner.cumulativeProbability(x)
 }
 
 trait ApacheDiscreteDistribution extends DiscreteDistr[Int] {
   protected val inner: ApacheIntegerDistribution
-  def probabilityOf(x: Int) = inner.probability(x)
-  def draw() = inner.sample()
+  def probabilityOf(x: Int)        = inner.probability(x)
+  def draw()                       = inner.sample()
   def drawMany(n: Int): Array[Int] = inner.sample(n)
 }

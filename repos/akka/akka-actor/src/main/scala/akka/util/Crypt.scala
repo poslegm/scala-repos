@@ -6,7 +6,7 @@ package akka.util
 import java.security.{MessageDigest, SecureRandom}
 @deprecated(message = "Not in use.", since = "2.4-M1")
 object Crypt {
-  val hex = "0123456789ABCDEF"
+  val hex           = "0123456789ABCDEF"
   val lineSeparator = System.getProperty("line.separator")
 
   lazy val random = SecureRandom.getInstance("SHA1PRNG")

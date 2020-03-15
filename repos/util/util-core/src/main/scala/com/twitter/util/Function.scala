@@ -27,7 +27,7 @@ abstract class Function[-T1, +R] extends PartialFunction[T1, R] {
     * These overrides do nothing but delegate to super. They are necessary for Java
     * compatibility.
     */
-  override def compose[A](g: A => T1): A => R = super.compose(g)
+  override def compose[A](g: A => T1): A => R                = super.compose(g)
   override def andThen[A](g: R => A): PartialFunction[T1, A] = super.andThen(g)
 
   override def isDefinedAt(x: T1) = true
@@ -56,17 +56,19 @@ object Function {
     * Creates a T => R from a JavaFunction. Used for easier interop
     * between Java 8 and Twitter Util libraries.
     */
-  def func[T, R](f: JavaFunction[T, R]) = new Function[T, R] {
-    override def apply(value: T): R = f(value)
-  }
+  def func[T, R](f: JavaFunction[T, R]) =
+    new Function[T, R] {
+      override def apply(value: T): R = f(value)
+    }
 
   /**
     * Creates a T => Unit from a JavaConsumer.
     * Useful for e.g. future.onSuccess
     */
-  def cons[T](f: JavaConsumer[T]) = new Function[T, Unit] {
-    override def apply(value: T): Unit = f(value)
-  }
+  def cons[T](f: JavaConsumer[T]) =
+    new Function[T, Unit] {
+      override def apply(value: T): Unit = f(value)
+    }
 
   /**
     * like `func`, but deals with checked exceptions as well
@@ -106,5 +108,5 @@ abstract class Command[-T1] extends (T1 => Unit) {
     * compatibility.
     */
   override def andThen[A](g: (Unit) => A) = super.andThen(g)
-  override def compose[A](g: (A) => T1) = super.compose(g)
+  override def compose[A](g: (A) => T1)   = super.compose(g)
 }

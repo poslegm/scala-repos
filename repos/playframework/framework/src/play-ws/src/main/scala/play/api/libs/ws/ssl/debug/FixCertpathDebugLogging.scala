@@ -24,10 +24,12 @@ object FixCertpathDebugLogging {
     .getLogger("play.api.libs.ws.ssl.debug.FixCertpathDebugLogging")
 
   class MonkeyPatchSunSecurityUtilDebugAction(
-      val newDebug: Debug, val newOptions: String)
-      extends FixLoggingAction {
+      val newDebug: Debug,
+      val newOptions: String
+  ) extends FixLoggingAction {
     val logger = org.slf4j.LoggerFactory.getLogger(
-        "play.api.libs.ws.ssl.debug.FixCertpathDebugLogging.MonkeyPatchSunSecurityUtilDebugAction")
+      "play.api.libs.ws.ssl.debug.FixCertpathDebugLogging.MonkeyPatchSunSecurityUtilDebugAction"
+    )
 
     val initialResource = "/sun/security/provider/certpath/Builder.class"
 
@@ -62,9 +64,9 @@ object FixCertpathDebugLogging {
       logger.debug(s"run: debugType = $debugType")
 
       val debugValue = if (isUsingDebug) newDebug else null
-      var isPatched = false
+      var isPatched  = false
       for (debugClass <- findClasses;
-      debugField <- debugClass.getDeclaredFields) {
+           debugField <- debugClass.getDeclaredFields) {
         if (isValidField(debugField, debugType)) {
           logger.debug(s"run: Patching $debugClass with $debugValue")
           monkeyPatchField(debugField, debugValue)
@@ -106,20 +108,21 @@ object FixCertpathDebugLogging {
   }
 
   def apply(newOptions: String, debugOption: Option[Debug] = None) {
-    logger.trace(
-        s"apply: newOptions = $newOptions, debugOption = $debugOption")
+    logger.trace(s"apply: newOptions = $newOptions, debugOption = $debugOption")
     try {
       val newDebug = debugOption match {
         case Some(d) => d
-        case None => new Debug()
+        case None    => new Debug()
       }
-      val action = new MonkeyPatchSunSecurityUtilDebugAction(
-          newDebug, newOptions)
+      val action =
+        new MonkeyPatchSunSecurityUtilDebugAction(newDebug, newOptions)
       AccessController.doPrivileged(action)
     } catch {
       case NonFatal(e) =>
         throw new IllegalStateException(
-            "CertificateDebug configuration error", e)
+          "CertificateDebug configuration error",
+          e
+        )
     }
   }
 }

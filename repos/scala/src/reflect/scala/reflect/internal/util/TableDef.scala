@@ -18,39 +18,41 @@ class TableDef[T](_cols: Column[T]*) {
   // Below this point should all be considered private/internal.
   private var cols: List[Column[T]] = _cols.toList
 
-  def defaultSep(index: Int) = if (index > (cols.size - 2)) "" else " "
+  def defaultSep(index: Int)   = if (index > (cols.size - 2)) "" else " "
   def sepAfter(i: Int): String = defaultSep(i)
-  def sepWidths = cols.indices map (i => sepAfter(i).length)
+  def sepWidths                = cols.indices map (i => sepAfter(i).length)
 
-  def colNames = cols map (_.name)
-  def colFunctions = cols map (_.f)
-  def colApply(el: T) = colFunctions map (f => f(el))
+  def colNames                          = cols map (_.name)
+  def colFunctions                      = cols map (_.f)
+  def colApply(el: T)                   = colFunctions map (f => f(el))
   def retThis(body: => Unit): this.type = { body; this }
 
   class Table(val rows: Seq[T]) extends Seq[T] {
-    def iterator = rows.iterator
+    def iterator          = rows.iterator
     def apply(index: Int) = rows(index)
-    def length = rows.length
+    def length            = rows.length
 
     def maxColWidth(col: Column[T]) =
       col.name +: (rows map col.f) map (_.toString.length) max
     def specs = cols map (_ formatSpec rows)
 
-    val colWidths = cols map maxColWidth
-    val rowFormat = mkFormatString(sepAfter)
+    val colWidths  = cols map maxColWidth
+    val rowFormat  = mkFormatString(sepAfter)
     val headFormat = mkFormatString(i => " " * sepWidths(i))
-    val argLists = rows map colApply
+    val argLists   = rows map colApply
 
     val headers = List(
-        headFormat.format(colNames: _*),
-        (colWidths, sepWidths).zipped map ((w1, w2) => "-" * w1 + " " * w2) mkString
+      headFormat.format(colNames: _*),
+      (colWidths, sepWidths).zipped map ((w1, w2) =>
+        "-" * w1 + " " * w2
+      ) mkString
     )
 
     def mkFormatString(sepf: Int => String): String =
       specs.zipWithIndex map { case (c, i) => c + sepf(i) } mkString
 
     def toFormattedSeq = argLists map (xs => rowFormat.format(xs: _*))
-    def allToSeq = headers ++ toFormattedSeq
+    def allToSeq       = headers ++ toFormattedSeq
 
     override def toString = allToSeq mkString "\n"
   }

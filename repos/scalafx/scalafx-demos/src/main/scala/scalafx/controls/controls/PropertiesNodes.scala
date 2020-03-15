@@ -44,8 +44,7 @@ import scalafx.scene.text.{FontWeight, TextAlignment}
   * @param target Node to be manipulated
   * @param title TitledPane titled
   */
-abstract class PropertiesNodes[T](target: T, title: String)
-    extends TitledPane {
+abstract class PropertiesNodes[T](target: T, title: String) extends TitledPane {
 
   private var index = 0
 
@@ -70,12 +69,16 @@ abstract class PropertiesNodes[T](target: T, title: String)
     * @param control Control Node
     */
   protected def addNode(title: String, control: Node) {
-    controlsPane.add(new Label {
-      font = PropertiesNodes.TitleFont
-      labelFor = control
-      text = title
-      textAlignment = TextAlignment.Right
-    }.asInstanceOf[Node], 0, index)
+    controlsPane.add(
+      new Label {
+        font = PropertiesNodes.TitleFont
+        labelFor = control
+        text = title
+        textAlignment = TextAlignment.Right
+      }.asInstanceOf[Node],
+      0,
+      index
+    )
     controlsPane.add(control, 1, index)
     index += 1
   }
@@ -102,10 +105,12 @@ abstract class PropertiesNodes[T](target: T, title: String)
     index += 1
   }
 
-  protected def fillDoublePropertyFromText(property: DoubleProperty,
-                                           field: TextField,
-                                           cleanAfterAction: Boolean = true,
-                                           onError: () => Unit = () => ()) {
+  protected def fillDoublePropertyFromText(
+      property: DoubleProperty,
+      field: TextField,
+      cleanAfterAction: Boolean = true,
+      onError: () => Unit = () => ()
+  ) {
     try {
       val txt = field.text.get
       property.value = txt.toDouble
@@ -118,10 +123,12 @@ abstract class PropertiesNodes[T](target: T, title: String)
     }
   }
 
-  protected def fillIntPropertyFromText(property: IntegerProperty,
-                                        field: TextField,
-                                        cleanAfterAction: Boolean = true,
-                                        onError: () => Unit = () => ()) {
+  protected def fillIntPropertyFromText(
+      property: IntegerProperty,
+      field: TextField,
+      cleanAfterAction: Boolean = true,
+      onError: () => Unit = () => ()
+  ) {
     try {
       val txt = field.text.get
       property.value = txt.toInt
@@ -146,9 +153,10 @@ abstract class PropertiesNodes[T](target: T, title: String)
       tooltip = if (tip.isEmpty) null else Tooltip(tip)
     }
 
-  protected def getLabel(property: StringProperty) = new Label {
-    text <== property
-  }
+  protected def getLabel(property: StringProperty) =
+    new Label {
+      text <== property
+    }
 
   delegate.text = title
   content = controlsPane
@@ -156,7 +164,7 @@ abstract class PropertiesNodes[T](target: T, title: String)
 
 object PropertiesNodes {
 
-  private val lblBase = new Label
+  private val lblBase  = new Label
   private val fontBase = lblBase.font.get()
 
   val TitleFont = font(fontBase.getFamily, FontWeight.Bold, fontBase.getSize)

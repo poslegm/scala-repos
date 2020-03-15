@@ -2,7 +2,13 @@ package com.twitter.finagle.service
 
 import com.twitter.conversions.time._
 import com.twitter.finagle.stats.InMemoryStatsReceiver
-import com.twitter.finagle.{FailedFastException, Service, ServiceFactory, SourcedException, Status}
+import com.twitter.finagle.{
+  FailedFastException,
+  Service,
+  ServiceFactory,
+  SourcedException,
+  Status
+}
 import com.twitter.util._
 import java.util.concurrent.atomic.AtomicInteger
 import org.junit.runner.RunWith
@@ -16,29 +22,37 @@ import scala.language.reflectiveCalls
 
 @RunWith(classOf[JUnitRunner])
 class FailFastFactoryTest
-    extends FunSuite with MockitoSugar with Conductors
+    extends FunSuite
+    with MockitoSugar
+    with Conductors
     with IntegrationPatience {
 
-  def newCtx() = new {
-    val timer = new MockTimer
-    val backoffs = 1.second #:: 2.seconds #:: Stream.empty[Duration]
-    val service = mock[Service[Int, Int]]
-    when(service.close(any[Time])).thenReturn(Future.Done)
-    val underlying = mock[ServiceFactory[Int, Int]]
-    when(underlying.status).thenReturn(Status.Open)
-    when(underlying.close(any[Time])).thenReturn(Future.Done)
-    val stats = new InMemoryStatsReceiver
-    val label = "test"
-    val failfast = new FailFastFactory(
-        underlying, stats, timer, label, backoffs = backoffs)
+  def newCtx() =
+    new {
+      val timer    = new MockTimer
+      val backoffs = 1.second #:: 2.seconds #:: Stream.empty[Duration]
+      val service  = mock[Service[Int, Int]]
+      when(service.close(any[Time])).thenReturn(Future.Done)
+      val underlying = mock[ServiceFactory[Int, Int]]
+      when(underlying.status).thenReturn(Status.Open)
+      when(underlying.close(any[Time])).thenReturn(Future.Done)
+      val stats = new InMemoryStatsReceiver
+      val label = "test"
+      val failfast = new FailFastFactory(
+        underlying,
+        stats,
+        timer,
+        label,
+        backoffs = backoffs
+      )
 
-    val p, q, r = new Promise[Service[Int, Int]]
-    when(underlying()).thenReturn(p)
-    val pp = failfast()
-    assert(pp.isDefined == false)
-    assert(failfast.isAvailable)
-    assert(timer.tasks.isEmpty)
-  }
+      val p, q, r = new Promise[Service[Int, Int]]
+      when(underlying()).thenReturn(p)
+      val pp = failfast()
+      assert(pp.isDefined == false)
+      assert(failfast.isAvailable)
+      assert(timer.tasks.isEmpty)
+    }
 
   test("pass through whenever everything is fine") {
     Time.withCurrentTimeFrozen { tc =>
@@ -120,7 +134,7 @@ class FailFastFactoryTest
       assert {
         failfast().poll match {
           case Some(Throw(_: FailedFastException)) => true
-          case _ => false
+          case _                                   => false
         }
       }
       verify(underlying).apply() // nothing new
@@ -145,7 +159,7 @@ class FailFastFactoryTest
       assert {
         failfast().poll match {
           case Some(Return(s)) => s eq service
-          case _ => false
+          case _               => false
         }
       }
     }
@@ -166,9 +180,9 @@ class FailFastFactoryTest
       assert(failfast.status == underlying.status)
 
       val status = underlying.status match {
-        case Status.Open => Status.Closed
+        case Status.Open   => Status.Closed
         case Status.Closed => Status.Open
-        case status => fail(s"bad status $status")
+        case status        => fail(s"bad status $status")
       }
       when(underlying.status).thenReturn(status)
       assert(failfast.status == underlying.status)
@@ -181,7 +195,7 @@ class FailFastFactoryTest
       import ctx._
 
       val pp2 = failfast()
-      val e = new Exception
+      val e   = new Exception
       p() = Throw(e)
 
       assert(pp.poll == Some(Throw(e)))
@@ -190,9 +204,11 @@ class FailFastFactoryTest
       val ffe = intercept[FailedFastException] {
         failfast().poll.get.get
       }
-      assert(ffe
-            .getMessage()
-            .contains("twitter.github.io/finagle/guide/FAQ.html"))
+      assert(
+        ffe
+          .getMessage()
+          .contains("twitter.github.io/finagle/guide/FAQ.html")
+      )
     }
   }
 
@@ -208,9 +224,9 @@ class FailFastFactoryTest
         ctx.p() = Throw(new Exception)
         ctx.failfast().poll match {
           case Some(Throw(ex: FailedFastException)) => {
-              ex.serviceName = "threadOne"
-              assert(beat == 0)
-            }
+            ex.serviceName = "threadOne"
+            assert(beat == 0)
+          }
           case _ => throw new Exception
         }
         threadCompletionCount.incrementAndGet()
@@ -222,8 +238,8 @@ class FailFastFactoryTest
         ctx.p() = Throw(new Exception)
         ctx.failfast().poll match {
           case Some(Throw(ex: FailedFastException)) => {
-              assert(ex.serviceName == SourcedException.UnspecifiedServiceName)
-            }
+            assert(ex.serviceName == SourcedException.UnspecifiedServiceName)
+          }
           case _ => throw new Exception
         }
         threadCompletionCount.incrementAndGet()
@@ -241,7 +257,12 @@ class FailFastFactoryTest
       import ctx._
 
       val failfast = new FailFastFactory(
-          underlying, stats, timer, label, backoffs = Stream.empty)
+        underlying,
+        stats,
+        timer,
+        label,
+        backoffs = Stream.empty
+      )
       failfast()
     }
   }

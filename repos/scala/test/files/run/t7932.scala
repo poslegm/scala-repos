@@ -1,7 +1,7 @@
 class Category[M[_, _]]
 trait M[F] {
   type X[a, b] = F
-  def category: Category[X] = null
+  def category: Category[X]       = null
   def category1: Category[Tuple2] = null
 }
 abstract class C extends M[Float]

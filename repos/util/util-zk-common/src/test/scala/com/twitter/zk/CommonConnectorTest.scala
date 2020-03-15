@@ -17,8 +17,8 @@ import com.twitter.util.{Await, FuturePool, RandomSocket}
 
 @RunWith(classOf[JUnitRunner])
 class CommonConnectorTest extends WordSpec with BeforeAndAfter {
-  val timeout = 2.seconds
-  val port = RandomSocket.nextPort()
+  val timeout   = 2.seconds
+  val port      = RandomSocket.nextPort()
   val addresses = new InetSocketAddress("localhost", port) :: Nil
 
   "CommonConnector" should {
@@ -55,9 +55,10 @@ class CommonConnectorTest extends WordSpec with BeforeAndAfter {
 
         "have 'zookeeper' in '/'" in {
           assert(
-              Await.result(zkClient("/").getChildren(), timeout).children map {
-            _.name
-          } contains ("zookeeper"))
+            Await.result(zkClient("/").getChildren(), timeout).children map {
+              _.name
+            } contains ("zookeeper")
+          )
         }
       }
   }

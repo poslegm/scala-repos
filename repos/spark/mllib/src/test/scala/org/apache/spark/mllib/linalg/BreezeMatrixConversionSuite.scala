@@ -23,17 +23,19 @@ import org.apache.spark.SparkFunSuite
 
 class BreezeMatrixConversionSuite extends SparkFunSuite {
   test("dense matrix to breeze") {
-    val mat = Matrices.dense(3, 2, Array(0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
+    val mat    = Matrices.dense(3, 2, Array(0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
     val breeze = mat.toBreeze.asInstanceOf[BDM[Double]]
     assert(breeze.rows === mat.numRows)
     assert(breeze.cols === mat.numCols)
-    assert(breeze.data.eq(mat.asInstanceOf[DenseMatrix].values),
-           "should not copy data")
+    assert(
+      breeze.data.eq(mat.asInstanceOf[DenseMatrix].values),
+      "should not copy data"
+    )
   }
 
   test("dense breeze matrix to matrix") {
     val breeze = new BDM[Double](3, 2, Array(0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
-    val mat = Matrices.fromBreeze(breeze).asInstanceOf[DenseMatrix]
+    val mat    = Matrices.fromBreeze(breeze).asInstanceOf[DenseMatrix]
     assert(mat.numRows === breeze.rows)
     assert(mat.numCols === breeze.cols)
     assert(mat.values.eq(breeze.data), "should not copy data")
@@ -45,23 +47,25 @@ class BreezeMatrixConversionSuite extends SparkFunSuite {
   }
 
   test("sparse matrix to breeze") {
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(1, 2, 1, 2)
-    val mat = Matrices.sparse(3, 2, colPtrs, rowIndices, values)
-    val breeze = mat.toBreeze.asInstanceOf[BSM[Double]]
+    val mat        = Matrices.sparse(3, 2, colPtrs, rowIndices, values)
+    val breeze     = mat.toBreeze.asInstanceOf[BSM[Double]]
     assert(breeze.rows === mat.numRows)
     assert(breeze.cols === mat.numCols)
-    assert(breeze.data.eq(mat.asInstanceOf[SparseMatrix].values),
-           "should not copy data")
+    assert(
+      breeze.data.eq(mat.asInstanceOf[SparseMatrix].values),
+      "should not copy data"
+    )
   }
 
   test("sparse breeze matrix to sparse matrix") {
-    val values = Array(1.0, 2.0, 4.0, 5.0)
-    val colPtrs = Array(0, 2, 4)
+    val values     = Array(1.0, 2.0, 4.0, 5.0)
+    val colPtrs    = Array(0, 2, 4)
     val rowIndices = Array(1, 2, 1, 2)
-    val breeze = new BSM[Double](values, 3, 2, colPtrs, rowIndices)
-    val mat = Matrices.fromBreeze(breeze).asInstanceOf[SparseMatrix]
+    val breeze     = new BSM[Double](values, 3, 2, colPtrs, rowIndices)
+    val mat        = Matrices.fromBreeze(breeze).asInstanceOf[SparseMatrix]
     assert(mat.numRows === breeze.rows)
     assert(mat.numCols === breeze.cols)
     assert(mat.values.eq(breeze.data), "should not copy data")

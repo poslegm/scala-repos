@@ -31,15 +31,18 @@ private[spark] sealed trait TaskResult[T]
 
 /** A reference to a DirectTaskResult that has been stored in the worker's BlockManager. */
 private[spark] case class IndirectTaskResult[T](blockId: BlockId, size: Int)
-    extends TaskResult[T] with Serializable
+    extends TaskResult[T]
+    with Serializable
 
 /** A TaskResult that contains the task's return value and accumulator updates. */
 private[spark] class DirectTaskResult[T](
-    var valueBytes: ByteBuffer, var accumUpdates: Seq[AccumulableInfo])
-    extends TaskResult[T] with Externalizable {
+    var valueBytes: ByteBuffer,
+    var accumUpdates: Seq[AccumulableInfo]
+) extends TaskResult[T]
+    with Externalizable {
 
   private var valueObjectDeserialized = false
-  private var valueObject: T = _
+  private var valueObject: T          = _
 
   def this() = this(null.asInstanceOf[ByteBuffer], null)
 
@@ -51,24 +54,25 @@ private[spark] class DirectTaskResult[T](
       accumUpdates.foreach(out.writeObject)
     }
 
-  override def readExternal(in: ObjectInput): Unit = Utils.tryOrIOException {
-    val blen = in.readInt()
-    val byteVal = new Array[Byte](blen)
-    in.readFully(byteVal)
-    valueBytes = ByteBuffer.wrap(byteVal)
+  override def readExternal(in: ObjectInput): Unit =
+    Utils.tryOrIOException {
+      val blen    = in.readInt()
+      val byteVal = new Array[Byte](blen)
+      in.readFully(byteVal)
+      valueBytes = ByteBuffer.wrap(byteVal)
 
-    val numUpdates = in.readInt
-    if (numUpdates == 0) {
-      accumUpdates = null
-    } else {
-      val _accumUpdates = new ArrayBuffer[AccumulableInfo]
-      for (i <- 0 until numUpdates) {
-        _accumUpdates += in.readObject.asInstanceOf[AccumulableInfo]
+      val numUpdates = in.readInt
+      if (numUpdates == 0) {
+        accumUpdates = null
+      } else {
+        val _accumUpdates = new ArrayBuffer[AccumulableInfo]
+        for (i <- 0 until numUpdates) {
+          _accumUpdates += in.readObject.asInstanceOf[AccumulableInfo]
+        }
+        accumUpdates = _accumUpdates
       }
-      accumUpdates = _accumUpdates
+      valueObjectDeserialized = false
     }
-    valueObjectDeserialized = false
-  }
 
   /**
     * When `value()` is called at the first time, it needs to deserialize `valueObject` from

@@ -7,9 +7,9 @@ class Plugin(val global: Global) extends NscPlugin {
   import global._
   import analyzer._
 
-  val name = "macroRuntime"
+  val name        = "macroRuntime"
   val description = "A sample analyzer plugin that overrides macroRuntime."
-  val components = Nil
+  val components  = Nil
   addMacroPlugin(MacroPlugin)
 
   object MacroPlugin extends MacroPlugin {

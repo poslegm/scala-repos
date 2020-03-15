@@ -22,14 +22,16 @@ import akka.actor.ExtensionIdProvider
   * dead.
   */
 private[akka] object AddressTerminatedTopic
-    extends ExtensionId[AddressTerminatedTopic] with ExtensionIdProvider {
+    extends ExtensionId[AddressTerminatedTopic]
+    with ExtensionIdProvider {
   override def get(system: ActorSystem): AddressTerminatedTopic =
     super.get(system)
 
   override def lookup = AddressTerminatedTopic
 
   override def createExtension(
-      system: ExtendedActorSystem): AddressTerminatedTopic =
+      system: ExtendedActorSystem
+  ): AddressTerminatedTopic =
     new AddressTerminatedTopic
 }
 

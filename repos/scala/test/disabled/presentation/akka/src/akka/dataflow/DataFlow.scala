@@ -49,11 +49,10 @@ object DataFlow {
   def thread[A <: AnyRef, R <: AnyRef](body: Function[A, R]) =
     actorOf(new ReactiveEventBasedThread(body.apply)).start()
 
-  private class ReactiveEventBasedThread[A <: AnyRef, T <: AnyRef](
-      body: A => T)
+  private class ReactiveEventBasedThread[A <: AnyRef, T <: AnyRef](body: A => T)
       extends Actor {
     def receive = {
-      case Exit => self.stop()
+      case Exit    => self.stop()
       case message => self.reply(body(message.asInstanceOf[A]))
     }
   }
@@ -61,7 +60,7 @@ object DataFlow {
   private object DataFlowVariable {
     private sealed abstract class DataFlowVariableMessage
     private case class Set[T <: Any](value: T) extends DataFlowVariableMessage
-    private object Get extends DataFlowVariableMessage
+    private object Get                         extends DataFlowVariableMessage
   }
 
   /**
@@ -73,7 +72,7 @@ object DataFlow {
 
     def this() = this(1000 * 60)
 
-    private val value = new AtomicReference[Option[T]](None)
+    private val value          = new AtomicReference[Option[T]](None)
     private val blockedReaders = new ConcurrentLinkedQueue[ActorRef]
 
     private class In[T <: Any](dataFlow: DataFlowVariable[T]) extends Actor {
@@ -81,11 +80,13 @@ object DataFlow {
       def receive = {
         case s @ Set(v) =>
           if (dataFlow.value.compareAndSet(None, Some(v.asInstanceOf[T]))) {
-            while (dataFlow.blockedReaders.peek ne null) dataFlow.blockedReaders.poll ! s
+            while (dataFlow.blockedReaders.peek ne null)
+              dataFlow.blockedReaders.poll ! s
           } else
             throw new DataFlowVariableException(
-                "Attempt to change data flow variable (from [" +
-                dataFlow.value.get + "] to [" + v + "])")
+              "Attempt to change data flow variable (from [" +
+                dataFlow.value.get + "] to [" + v + "])"
+            )
         case Exit => self.stop()
       }
     }
@@ -97,10 +98,10 @@ object DataFlow {
         case Get =>
           dataFlow.value.get match {
             case Some(value) => self reply value
-            case None => readerFuture = self.senderFuture
+            case None        => readerFuture = self.senderFuture
           }
         case Set(v: T) => readerFuture.map(_ completeWithResult v)
-        case Exit => self.stop()
+        case Exit      => self.stop()
       }
     }
 
@@ -113,8 +114,9 @@ object DataFlow {
       if (this.value.get.isEmpty) in ! Set(ref())
       else
         throw new DataFlowVariableException(
-            "Attempt to change data flow variable (from [" + this.value.get +
-            "] to [" + ref() + "])")
+          "Attempt to change data flow variable (from [" + this.value.get +
+            "] to [" + ref() + "])"
+        )
     }
 
     /**
@@ -130,8 +132,9 @@ object DataFlow {
       if (this.value.get.isEmpty) in ! Set(value)
       else
         throw new DataFlowVariableException(
-            "Attempt to change data flow variable (from [" + this.value.get +
-            "] to [" + value + "])")
+          "Attempt to change data flow variable (from [" + this.value.get +
+            "] to [" + value + "])"
+        )
     }
 
     /**
@@ -152,19 +155,23 @@ object DataFlow {
       value.get getOrElse {
         val out = actorOf(new Out(this)).start()
 
-        val result = try {
-          blockedReaders offer out
-          (out !! Get).as[T]
-        } catch {
-          case e: Exception =>
-            EventHandler.error(e, this, e.getMessage)
-            out ! Exit
-            throw e
-        }
+        val result =
+          try {
+            blockedReaders offer out
+            (out !! Get).as[T]
+          } catch {
+            case e: Exception =>
+              EventHandler.error(e, this, e.getMessage)
+              out ! Exit
+              throw e
+          }
 
         result.getOrElse(
-            throw new DataFlowVariableException("Timed out (after " +
-                timeoutMs + " milliseconds) while waiting for result"))
+          throw new DataFlowVariableException(
+            "Timed out (after " +
+              timeoutMs + " milliseconds) while waiting for result"
+          )
+        )
       }
     }
 

@@ -19,8 +19,8 @@ import it.unimi.dsi.fastutil.ints.IntArrays
 import org.saddle.Buffer
 
 class BufferInt(sz: Int = Buffer.INIT_CAPACITY) extends Buffer[Int] {
-  var list = Array.ofDim[Int](sz)
-  var count = 0
+  var list   = Array.ofDim[Int](sz)
+  var count  = 0
   var remain = sz
 
   def apply(loc: Int) = list(loc)
@@ -41,5 +41,5 @@ class BufferInt(sz: Int = Buffer.INIT_CAPACITY) extends Buffer[Int] {
 
 object BufferInt {
   def apply(sz: Int) = new BufferInt(sz)
-  def apply() = new BufferInt()
+  def apply()        = new BufferInt()
 }

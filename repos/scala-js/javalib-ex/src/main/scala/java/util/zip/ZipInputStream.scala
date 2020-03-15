@@ -27,7 +27,7 @@ class ZipInputStream(in: InputStream) extends InflaterInputStream(in) {
         new Uint8Array(in.buffer, in.offset, in.length)
       case _ =>
         val arr = new js.Array[Int]
-        var x = in.read()
+        var x   = in.read()
         while (x != -1) {
           arr.push(x)
           x = in.read()
@@ -35,7 +35,7 @@ class ZipInputStream(in: InputStream) extends InflaterInputStream(in) {
         new Uint8Array(arr)
     }
 
-    val zip = js.Dynamic.newInstance(g.JSZip)(data)
+    val zip     = js.Dynamic.newInstance(g.JSZip)(data)
     val entries = zip.files.asInstanceOf[js.Dictionary[js.Dynamic]]
 
     entries.iterator
@@ -62,12 +62,13 @@ class ZipInputStream(in: InputStream) extends InflaterInputStream(in) {
     closeEntry()
     if (entryIter.hasNext) {
       val (name, jsEntry) = entryIter.next()
-      val res = new ZipEntry(name)
+      val res             = new ZipEntry(name)
       res.setTime(jsEntry.date.asInstanceOf[js.Date].getTime().toLong)
       res.setComment(jsEntry.comment.asInstanceOf[String])
 
       inner = new ArrayBufferInputStream(
-          jsEntry.asArrayBuffer().asInstanceOf[ArrayBuffer])
+        jsEntry.asArrayBuffer().asInstanceOf[ArrayBuffer]
+      )
 
       res
     } else null

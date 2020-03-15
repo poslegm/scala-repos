@@ -42,10 +42,11 @@ class InMemoryStatsReceiver extends StatsReceiver {
   def counter(name: String*): ReadableCounter =
     new ReadableCounter {
 
-      def incr(delta: Int): Unit = counters.synchronized {
-        val oldValue = apply()
-        counters(name) = oldValue + delta
-      }
+      def incr(delta: Int): Unit =
+        counters.synchronized {
+          val oldValue = apply()
+          counters(name) = oldValue + delta
+        }
       def apply(): Int = counters.getOrElse(name, 0)
 
       override def toString: String =
@@ -57,10 +58,11 @@ class InMemoryStatsReceiver extends StatsReceiver {
     */
   def stat(name: String*): ReadableStat =
     new ReadableStat {
-      def add(value: Float): Unit = stats.synchronized {
-        val oldValue = apply()
-        stats(name) = oldValue :+ value
-      }
+      def add(value: Float): Unit =
+        stats.synchronized {
+          val oldValue = apply()
+          stats(name) = oldValue :+ value
+        }
       def apply(): Seq[Float] = stats.getOrElse(name, Seq.empty)
 
       override def toString: String = {
@@ -91,7 +93,7 @@ class InMemoryStatsReceiver extends StatsReceiver {
         // avoid holding a reference to `f`
         val current = gauges.get(name) match {
           case Some(fn) => fn()
-          case None => -0.0f
+          case None     => -0.0f
         }
         s"Gauge(${name.mkString("/")}=$current)"
       }
@@ -106,12 +108,12 @@ class InMemoryStatsReceiver extends StatsReceiver {
     * Dumps this in-memory stats receiver to the given [[PrintStream]].
     */
   def print(p: PrintStream): Unit = {
-    for ((k, v) <- counters) p.printf(
-        "%s %d\n", k.mkString("/"), v: java.lang.Integer)
-    for ((k, g) <- gauges) p.printf(
-        "%s %f\n", k.mkString("/"), g(): java.lang.Float)
-    for ((k, s) <- stats if s.size > 0) p.printf(
-        "%s %f\n", k.mkString("/"), (s.sum / s.size): java.lang.Float)
+    for ((k, v) <- counters)
+      p.printf("%s %d\n", k.mkString("/"), v: java.lang.Integer)
+    for ((k, g) <- gauges)
+      p.printf("%s %f\n", k.mkString("/"), g(): java.lang.Float)
+    for ((k, s) <- stats if s.size > 0)
+      p.printf("%s %f\n", k.mkString("/"), (s.sum / s.size): java.lang.Float)
   }
 
   /**

@@ -3,7 +3,7 @@ object SCL3865 {
     import ColorType._, PositionType._
 
     def foo(s: Set[(ColorType, PositionType)]): Int = 1
-    def foo(s: Int): Boolean = false
+    def foo(s: Int): Boolean                        = false
 
     /*start*/
     foo(Set((Blue, Left), (Blue, Right), (Red, Left), (Red, Right))) /*end*/

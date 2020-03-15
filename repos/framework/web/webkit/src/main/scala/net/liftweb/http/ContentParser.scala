@@ -56,14 +56,14 @@ object ContentParser {
     * @return your parser wrapped up to handle an `InputStream`
     */
   def toInputStreamParser(
-      simpleParser: String => Box[NodeSeq]): InputStream => Box[NodeSeq] = {
-    is: InputStream =>
-      for {
-        bytes <- Helpers.tryo(Helpers.readWholeStream(is))
-        elems <- simpleParser(new String(bytes, "UTF-8"))
-      } yield {
-        elems
-      }
+      simpleParser: String => Box[NodeSeq]
+  ): InputStream => Box[NodeSeq] = { is: InputStream =>
+    for {
+      bytes <- Helpers.tryo(Helpers.readWholeStream(is))
+      elems <- simpleParser(new String(bytes, "UTF-8"))
+    } yield {
+      elems
+    }
   }
 
   /**
@@ -85,7 +85,8 @@ object ContentParser {
   def apply(
       templateSuffix: String,
       parseFunction: String => Box[NodeSeq],
-      surroundFunction: NodeSeq => NodeSeq = defaultSurround): ContentParser =
+      surroundFunction: NodeSeq => NodeSeq = defaultSurround
+  ): ContentParser =
     new ContentParser {
       override def templateSuffixes: Seq[String] = Seq(templateSuffix)
       override def parse(content: InputStream): Box[NodeSeq] =
@@ -98,12 +99,14 @@ object ContentParser {
     * A fully-specified `ContentParser` which handles multiple filename suffixes, operates on an `InputStream`, and
     * surrounds the top-level templates with the default surround
     */
-  def apply(templateSuffixesSeq: Seq[String],
-            parseF: InputStream => Box[NodeSeq],
-            surroundF: NodeSeq => NodeSeq): ContentParser =
+  def apply(
+      templateSuffixesSeq: Seq[String],
+      parseF: InputStream => Box[NodeSeq],
+      surroundF: NodeSeq => NodeSeq
+  ): ContentParser =
     new ContentParser {
-      override def templateSuffixes: Seq[String] = templateSuffixesSeq
+      override def templateSuffixes: Seq[String]             = templateSuffixesSeq
       override def parse(content: InputStream): Box[NodeSeq] = parseF(content)
-      override def surround(content: NodeSeq): NodeSeq = surroundF(content)
+      override def surround(content: NodeSeq): NodeSeq       = surroundF(content)
     }
 }

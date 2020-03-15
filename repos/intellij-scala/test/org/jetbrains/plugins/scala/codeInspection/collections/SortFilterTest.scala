@@ -14,7 +14,7 @@ class SortFilterTest extends OperationsOnCollectionInspectionTest {
     val selected = s"List(0, 1).${START}sorted.filter(_ => true)$END"
     check(selected)
 
-    val text = "List(0, 1).sorted.filter(_ => true)"
+    val text   = "List(0, 1).sorted.filter(_ => true)"
     val result = "List(0, 1).filter(_ => true).sorted"
     testFix(text, result, hint)
   }
@@ -24,7 +24,7 @@ class SortFilterTest extends OperationsOnCollectionInspectionTest {
       s"List(0, 1).${START}sortWith((x, y) => x < y).filter(_ => true)$END"
     check(selected)
 
-    val text = "List(0, 1).sortWith((x, y) => x < y).filter(_ => true)"
+    val text   = "List(0, 1).sortWith((x, y) => x < y).filter(_ => true)"
     val result = "List(0, 1).filter(_ => true).sortWith((x, y) => x < y)"
     testFix(text, result, hint)
   }
@@ -34,7 +34,7 @@ class SortFilterTest extends OperationsOnCollectionInspectionTest {
       s"List(0, 1).${START}sortBy[String](_.toString).filter(_ => true)$END"
     check(selected)
 
-    val text = "List(0, 1).sortBy[String](_.toString).filter(_ => true)"
+    val text   = "List(0, 1).sortBy[String](_.toString).filter(_ => true)"
     val result = "List(0, 1).filter(_ => true).sortBy[String](_.toString)"
     testFix(text, result, hint)
   }
@@ -44,7 +44,7 @@ class SortFilterTest extends OperationsOnCollectionInspectionTest {
       s"List(0, 1).${START}sortBy[String](_.toString) filter (_ => true)$END"
     check(selected)
 
-    val text = "List(0, 1).sortBy[String](_.toString) filter (_ => true)"
+    val text   = "List(0, 1).sortBy[String](_.toString) filter (_ => true)"
     val result = "List(0, 1).filter(_ => true).sortBy[String](_.toString)"
     testFix(text, result, hint)
   }

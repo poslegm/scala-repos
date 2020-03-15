@@ -23,22 +23,41 @@ object Test extends InteractiveTest {
           val runDefinitions = currentRun.runDefinitions
           import runDefinitions._
           assert(
-              TypeTagsClass.map(sym => getMemberClass(sym, tpnme.TypeTag)) == TypeTagClass)
-          assert(TypeTagsClass.map(sym =>
-                    getMemberClass(sym, tpnme.WeakTypeTag)) == WeakTypeTagClass)
-          assert(TypeTagsClass.map(sym =>
-                    getMemberModule(sym, nme.WeakTypeTag)) == WeakTypeTagModule)
+            TypeTagsClass.map(sym =>
+              getMemberClass(sym, tpnme.TypeTag)
+            ) == TypeTagClass
+          )
           assert(
-              getMemberMethod(ReflectPackage, nme.materializeClassTag) == materializeClassTag)
-          assert(ReflectApiPackage.map(sym =>
-                    getMemberMethod(sym, nme.materializeWeakTypeTag)) == materializeWeakTypeTag)
-          assert(ReflectApiPackage.map(sym =>
-                    getMemberMethod(sym, nme.materializeTypeTag)) == materializeTypeTag)
+            TypeTagsClass.map(sym =>
+              getMemberClass(sym, tpnme.WeakTypeTag)
+            ) == WeakTypeTagClass
+          )
+          assert(
+            TypeTagsClass.map(sym =>
+              getMemberModule(sym, nme.WeakTypeTag)
+            ) == WeakTypeTagModule
+          )
+          assert(
+            getMemberMethod(
+              ReflectPackage,
+              nme.materializeClassTag
+            ) == materializeClassTag
+          )
+          assert(
+            ReflectApiPackage.map(sym =>
+              getMemberMethod(sym, nme.materializeWeakTypeTag)
+            ) == materializeWeakTypeTag
+          )
+          assert(
+            ReflectApiPackage.map(sym =>
+              getMemberMethod(sym, nme.materializeTypeTag)
+            ) == materializeTypeTag
+          )
           ()
         }
       }.get match {
         case Right(t) => t.printStackTrace
-        case Left(_) =>
+        case Left(_)  =>
       }
     }
     resolveTypeTagHyperlink()

@@ -59,7 +59,7 @@ private[sbtplugin] final class FrameworkDetector(jsEnv: JSEnv) {
       }
     """
 
-    val vf = new MemVirtualJSFile("frameworkDetector.js").withContent(code)
+    val vf      = new MemVirtualJSFile("frameworkDetector.js").withContent(code)
     val console = new StoreConsole
 
     val runner = jsEnv.jsRunner(vf)
@@ -80,7 +80,7 @@ private[sbtplugin] final class FrameworkDetector(jsEnv: JSEnv) {
 
 object FrameworkDetector {
   private class StoreConsole extends JSConsole {
-    val buf = mutable.Buffer.empty[String]
+    val buf                 = mutable.Buffer.empty[String]
     def log(msg: Any): Unit = buf += msg.toString
   }
 

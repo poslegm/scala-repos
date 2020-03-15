@@ -19,16 +19,19 @@ class TTwitterServerFilterTest extends FunSuite {
     // Upgrade the protocol.
     val service = new Service[Array[Byte], Array[Byte]] {
       def apply(req: Array[Byte]) =
-        Future.value(ClientId.current
-              .map(_.name)
-              .getOrElse("NOCLIENT")
-              .getBytes(Charsets.Utf8))
+        Future.value(
+          ClientId.current
+            .map(_.name)
+            .getOrElse("NOCLIENT")
+            .getBytes(Charsets.Utf8)
+        )
     }
 
     val upgraded = {
       val buffer = new OutputBuffer(protocolFactory)
       buffer().writeMessageBegin(
-          new TMessage(ThriftTracing.CanTraceMethodName, TMessageType.CALL, 0))
+        new TMessage(ThriftTracing.CanTraceMethodName, TMessageType.CALL, 0)
+      )
       val options = new thrift.ConnectionOptions
       options.write(buffer())
       buffer().writeMessageEnd()
@@ -46,17 +49,22 @@ class TTwitterServerFilterTest extends FunSuite {
       val header = new thrift.RequestHeader
       header.setClient_id(new thrift.ClientId("testclient"))
       val bytes =
-        ByteArrays.concat(OutputBuffer.messageToArray(header, protocolFactory),
-                          buffer.toArray)
+        ByteArrays.concat(
+          OutputBuffer.messageToArray(header, protocolFactory),
+          buffer.toArray
+        )
 
       filter(bytes, service) map { bytes =>
         // Strip the response header.
         InputBuffer.peelMessage(
-            bytes, new thrift.ResponseHeader, protocolFactory)
+          bytes,
+          new thrift.ResponseHeader,
+          protocolFactory
+        )
       }
     }
     assert(req.isDefined)
-    val rep = Await.result(req)
+    val rep      = Await.result(req)
     val clientId = new String(rep, Charsets.Utf8)
     assert(clientId == "testclient")
   }

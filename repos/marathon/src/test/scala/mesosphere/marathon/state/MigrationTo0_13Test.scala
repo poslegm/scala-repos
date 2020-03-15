@@ -15,7 +15,9 @@ import mesosphere.util.state.memory.InMemoryStore
 import org.scalatest.{GivenWhenThen, Matchers}
 
 class MigrationTo0_13Test
-    extends MarathonSpec with GivenWhenThen with Matchers {
+    extends MarathonSpec
+    with GivenWhenThen
+    with Matchers {
 
   test("migrate tasks in zk") {
     val f = new Fixture
@@ -60,7 +62,8 @@ class MigrationTo0_13Test
   }
 
   test(
-      "Already migrated tasks will be excluded from a subsequent migration attempt") {
+    "Already migrated tasks will be excluded from a subsequent migration attempt"
+  ) {
     val f = new Fixture
     Given("some tasks that are stored in old path style")
     val appId = "/test/app1".toRootPath
@@ -82,12 +85,15 @@ class MigrationTo0_13Test
     val task2 = MarathonTestHelper.dummyTaskProto(appId)
     f.legacyTaskStore.store(appId, task2).futureValue
     f.entityStore.names().futureValue should contain(
-        appId.safePath + ":" + task2.getId)
+      appId.safePath + ":" + task2.getId
+    )
 
     And("we run the migration again")
     f.migration.migrateTasks().futureValue
 
-    Then("Only the second task is considered and the first one does not crash the migration")
+    Then(
+      "Only the second task is considered and the first one does not crash the migration"
+    )
     val taskKeys2 = f.taskRepo.tasksKeys(appId).futureValue
     taskKeys2 should have size 2
     taskKeys2 should contain(task1.getId)
@@ -98,7 +104,7 @@ class MigrationTo0_13Test
 
   test("migrating frameworkId to framework:id") {
     import FrameworkIdValues._
-    val f = new Fixture
+    val f           = new Fixture
     val frameworkId = FrameworkId("myFramework")
 
     Given("a frameworkId under the old key")
@@ -133,7 +139,7 @@ class MigrationTo0_13Test
 
   test("migrating frameworkId is skipped if framework:id already exists") {
     import FrameworkIdValues._
-    val f = new Fixture
+    val f           = new Fixture
     val frameworkId = FrameworkId("myFramework")
 
     Given("An existing framework:id")
@@ -155,28 +161,31 @@ class MigrationTo0_13Test
   class Fixture {
     lazy val uuidGenerator =
       Generators.timeBasedGenerator(EthernetAddress.fromInterface())
-    lazy val state = new InMemoryStore
-    lazy val metrics = new Metrics(new MetricRegistry)
+    lazy val state           = new InMemoryStore
+    lazy val metrics         = new Metrics(new MetricRegistry)
     lazy val legacyTaskStore = new LegacyTaskStore(state)
     lazy val entityStore = new MarathonStore[MarathonTaskState](
-        store = state,
-        metrics = metrics,
-        newState = () =>
-            MarathonTaskState(
-                MarathonTask
-                  .newBuilder()
-                  .setId(UUID.randomUUID().toString)
-                  .build()),
-        prefix = TaskRepository.storePrefix)
+      store = state,
+      metrics = metrics,
+      newState = () =>
+        MarathonTaskState(
+          MarathonTask
+            .newBuilder()
+            .setId(UUID.randomUUID().toString)
+            .build()
+        ),
+      prefix = TaskRepository.storePrefix
+    )
     lazy val taskRepo = {
       val metrics = new Metrics(new MetricRegistry)
       new TaskRepository(entityStore, metrics)
     }
     lazy val frameworkIdStore = new MarathonStore[FrameworkId](
-        store = state,
-        metrics = metrics,
-        newState = () => new FrameworkId(UUID.randomUUID().toString),
-        prefix = "" // don't set the prefix so we don't have to use PersistentStore for testing
+      store = state,
+      metrics = metrics,
+      newState = () => new FrameworkId(UUID.randomUUID().toString),
+      prefix =
+        "" // don't set the prefix so we don't have to use PersistentStore for testing
     )
 
     lazy val migration = new MigrationTo0_13(taskRepo, state)
@@ -199,7 +208,7 @@ import scala.concurrent.Future
 
 private[state] class LegacyTaskStore(store: PersistentStore) {
 
-  val PREFIX = "task:"
+  val PREFIX       = "task:"
   val ID_DELIMITER = ":"
 
   private[this] def getKey(appId: PathId, taskId: String): String = {
@@ -207,7 +216,9 @@ private[state] class LegacyTaskStore(store: PersistentStore) {
   }
 
   private[this] def serialize(
-      task: MarathonTask, sink: ObjectOutputStream): Unit = {
+      task: MarathonTask,
+      sink: ObjectOutputStream
+  ): Unit = {
     val size = task.getSerializedSize
     sink.writeInt(size)
     sink.write(task.toByteArray)
@@ -216,9 +227,9 @@ private[state] class LegacyTaskStore(store: PersistentStore) {
 
   def store(appId: PathId, task: MarathonTask): Future[PersistentEntity] = {
     val byteStream = new ByteArrayOutputStream()
-    val output = new ObjectOutputStream(byteStream)
+    val output     = new ObjectOutputStream(byteStream)
     serialize(task, output)
-    val bytes = byteStream.toByteArray
+    val bytes       = byteStream.toByteArray
     val key: String = getKey(appId, task.getId)
     store.create(key, bytes)
   }

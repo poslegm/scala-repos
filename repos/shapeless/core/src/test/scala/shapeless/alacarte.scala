@@ -27,7 +27,7 @@ package ALaCarteTestsAux {
     val ops = Ops
   }
 
-  object Foo extends FooDefns.CaseClassCompanion
+  object Foo                           extends FooDefns.CaseClassCompanion
   class Foo(val i: Int, val s: String) extends FooDefns.CaseClass
 }
 
@@ -68,7 +68,7 @@ class ALaCarteTests {
 
   @Test
   def testPolyEquality {
-    val foo = Foo(23, "foo")
+    val foo  = Foo(23, "foo")
     val foo2 = Foo(23, "foo")
     val foo3 = Foo(13, "bar")
     assertEquals(foo, foo2)
@@ -78,13 +78,13 @@ class ALaCarteTests {
 
   @Test
   def testCopy {
-    val foo = Foo(23, "foo")
+    val foo     = Foo(23, "foo")
     val fooCopy = foo.copy()
     assertFalse(fooCopy eq foo)
     assertEquals(foo, fooCopy)
     assertEquals(foo.hashCode, fooCopy.hashCode)
 
-    val mod = Foo(13, "foo")
+    val mod    = Foo(13, "foo")
     val fooMod = foo.copy(i = 13)
     assertFalse(fooMod eq foo)
     assertEquals(mod, fooMod)
@@ -93,7 +93,7 @@ class ALaCarteTests {
 
   @Test
   def testToString {
-    val foo = Foo(23, "foo")
+    val foo    = Foo(23, "foo")
     val fooStr = foo.toString
     assertEquals("Foo(23,foo)", fooStr)
   }

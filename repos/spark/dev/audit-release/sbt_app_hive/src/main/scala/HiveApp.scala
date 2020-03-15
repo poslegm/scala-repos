@@ -35,7 +35,7 @@ object SparkSqlExample {
         new SparkConf().setAppName("Simple Sql App").setMaster(master)
       case None => new SparkConf().setAppName("Simple Sql App")
     }
-    val sc = new SparkContext(conf)
+    val sc          = new SparkContext(conf)
     val hiveContext = new HiveContext(sc)
 
     import hiveContext._
@@ -53,8 +53,10 @@ object SparkSqlExample {
       }
     }
 
-    test(results.size == 5,
-         "Unexpected number of selected elements: " + results)
+    test(
+      results.size == 5,
+      "Unexpected number of selected elements: " + results
+    )
     println("Test succeeded")
     sc.stop()
   }

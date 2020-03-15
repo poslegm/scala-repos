@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 @RunWith(classOf[JUnitRunner])
 class StatsReceiverTest extends FunSuite {
   test("RollupStatsReceiver counter/stats") {
-    val mem = new InMemoryStatsReceiver
+    val mem      = new InMemoryStatsReceiver
     val receiver = new RollupStatsReceiver(mem)
 
     receiver.counter("toto", "titi", "tata").incr()
@@ -32,8 +32,8 @@ class StatsReceiverTest extends FunSuite {
       var c = 0
       def incr(delta: Int) { c += delta }
     }
-    val c1 = new MemCounter
-    val c2 = new MemCounter
+    val c1               = new MemCounter
+    val c2               = new MemCounter
     val broadcastCounter = BroadcastCounter(Seq(c1, c2))
     assert(c1.c == 0)
     assert(c2.c == 0)
@@ -46,15 +46,15 @@ class StatsReceiverTest extends FunSuite {
       var values: Seq[Float] = ArrayBuffer.empty[Float]
       def add(f: Float) { values = values :+ f }
     }
-    val s1 = new MemStat
-    val s2 = new MemStat
+    val s1            = new MemStat
+    val s2            = new MemStat
     val broadcastStat = BroadcastStat(Seq(s1, s2))
     assert(s1.values == Seq.empty)
     assert(s2.values == Seq.empty)
 
-    broadcastStat.add(1F)
-    assert(s1.values == Seq(1F))
-    assert(s2.values == Seq(1F))
+    broadcastStat.add(1f)
+    assert(s1.values == Seq(1f))
+    assert(s2.values == Seq(1f))
   }
 
   test("StatsReceiver time") {
@@ -76,27 +76,33 @@ class StatsReceiverTest extends FunSuite {
   test("StatsReceiver timeFuture") {
     val receiver = spy(new InMemoryStatsReceiver)
 
-    Await.ready(Stat.timeFuture(receiver.stat("2", "chainz")) { Future.Unit },
-                1.second)
+    Await.ready(
+      Stat.timeFuture(receiver.stat("2", "chainz")) { Future.Unit },
+      1.second
+    )
     verify(receiver, times(1)).stat("2", "chainz")
 
     Await.ready(
-        Stat.timeFuture(receiver.stat("2", "chainz"), TimeUnit.MINUTES) {
-      Future.Unit
-    }, 1.second)
+      Stat.timeFuture(receiver.stat("2", "chainz"), TimeUnit.MINUTES) {
+        Future.Unit
+      },
+      1.second
+    )
     verify(receiver, times(2)).stat("2", "chainz")
 
     val stat = receiver.stat("2", "chainz")
     verify(receiver, times(3)).stat("2", "chainz")
 
     Await.result(
-        Stat.timeFuture(stat, TimeUnit.HOURS) { Future.Unit }, 1.second)
+      Stat.timeFuture(stat, TimeUnit.HOURS) { Future.Unit },
+      1.second
+    )
     verify(receiver, times(3)).stat("2", "chainz")
   }
 
   test("StatsReceiver.scope: prefix stats by a scope string") {
     val receiver = new InMemoryStatsReceiver
-    val scoped = receiver.scope("foo")
+    val scoped   = receiver.scope("foo")
     receiver.counter("bar").incr()
     scoped.counter("baz").incr()
 
@@ -106,7 +112,7 @@ class StatsReceiverTest extends FunSuite {
 
   test("StatsReceiver.scope: don't prefix with the empty string") {
     val receiver = new InMemoryStatsReceiver
-    val scoped = receiver.scope("")
+    val scoped   = receiver.scope("")
     receiver.counter("bar").incr()
     scoped.counter("baz").incr()
 
@@ -116,7 +122,7 @@ class StatsReceiverTest extends FunSuite {
 
   test("StatsReceiver.scope: no namespace") {
     val receiver = new InMemoryStatsReceiver
-    val scoped = receiver.scope()
+    val scoped   = receiver.scope()
     receiver.counter("bar").incr()
 
     assert(receiver.counters(Seq("bar")) == 1)
@@ -124,7 +130,7 @@ class StatsReceiverTest extends FunSuite {
 
   test("StatsReceiver.scope: multiple prefixes") {
     val receiver = new InMemoryStatsReceiver
-    val scoped = receiver.scope("foo", "bar", "shoe")
+    val scoped   = receiver.scope("foo", "bar", "shoe")
     scoped.counter("baz").incr()
 
     assert(receiver.counters(Seq("foo", "bar", "shoe", "baz")) == 1)
@@ -143,46 +149,55 @@ class StatsReceiverTest extends FunSuite {
   test("toString") {
     assert("NullStatsReceiver" == NullStatsReceiver.toString)
     assert(
-        "NullStatsReceiver" == NullStatsReceiver
-          .scope("hi")
-          .scopeSuffix("bye")
-          .toString)
+      "NullStatsReceiver" == NullStatsReceiver
+        .scope("hi")
+        .scopeSuffix("bye")
+        .toString
+    )
 
     assert(
-        "BlacklistStatsReceiver(NullStatsReceiver)" == new BlacklistStatsReceiver(
-            NullStatsReceiver, { _ =>
-      false
-    }).toString)
+      "BlacklistStatsReceiver(NullStatsReceiver)" == new BlacklistStatsReceiver(
+        NullStatsReceiver,
+        { _ => false }
+      ).toString
+    )
 
     val inMem = new InMemoryStatsReceiver()
     assert("InMemoryStatsReceiver" == inMem.toString)
 
     assert("InMemoryStatsReceiver/scope1" == inMem.scope("scope1").toString)
     assert(
-        "InMemoryStatsReceiver/scope1/scope2" == inMem
-          .scope("scope1")
-          .scope("scope2")
-          .toString)
+      "InMemoryStatsReceiver/scope1/scope2" == inMem
+        .scope("scope1")
+        .scope("scope2")
+        .toString
+    )
 
     assert(
-        "InMemoryStatsReceiver/begin/end" == inMem
-          .scopeSuffix("end")
-          .scope("begin")
-          .toString)
+      "InMemoryStatsReceiver/begin/end" == inMem
+        .scopeSuffix("end")
+        .scope("begin")
+        .toString
+    )
 
     assert(
-        "InMemoryStatsReceiver/begin/mid/end" == inMem
-          .scope("begin")
-          .scopeSuffix("end")
-          .scope("mid")
-          .toString)
+      "InMemoryStatsReceiver/begin/mid/end" == inMem
+        .scope("begin")
+        .scopeSuffix("end")
+        .scope("mid")
+        .toString
+    )
 
     assert(
-        "Broadcast(InMemoryStatsReceiver, InMemoryStatsReceiver)" == BroadcastStatsReceiver(
-            Seq(inMem, inMem)).toString)
+      "Broadcast(InMemoryStatsReceiver, InMemoryStatsReceiver)" == BroadcastStatsReceiver(
+        Seq(inMem, inMem)
+      ).toString
+    )
 
     assert(
-        "Broadcast(InMemoryStatsReceiver, InMemoryStatsReceiver, InMemoryStatsReceiver)" == BroadcastStatsReceiver(
-            Seq(inMem, inMem, inMem)).toString)
+      "Broadcast(InMemoryStatsReceiver, InMemoryStatsReceiver, InMemoryStatsReceiver)" == BroadcastStatsReceiver(
+        Seq(inMem, inMem, inMem)
+      ).toString
+    )
   }
 }

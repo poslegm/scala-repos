@@ -46,17 +46,18 @@ import javax.servlet.http._
   * @author Steve Jenson (stevej@pobox.com)
   */
 class MockHttpServletResponse(
-    var writer: PrintWriter, var outputStream: ServletOutputStream)
-    extends HttpServletResponse {
-  protected var statusCode: Int = 200
-  protected var statusString: String = "OK"
-  protected var contentType = "text/html"
-  protected var contentLength: Int = 0
+    var writer: PrintWriter,
+    var outputStream: ServletOutputStream
+) extends HttpServletResponse {
+  protected var statusCode: Int                    = 200
+  protected var statusString: String               = "OK"
+  protected var contentType                        = "text/html"
+  protected var contentLength: Int                 = 0
   protected var headers: Map[String, List[String]] = Map()
-  protected var cookies: List[Cookie] = Nil
-  protected var locale: Locale = Locale.getDefault
-  protected var bufferSize: Int = 0
-  protected var charEncoding = "ISO-8859-1" // yes, that's HTTP's default
+  protected var cookies: List[Cookie]              = Nil
+  protected var locale: Locale                     = Locale.getDefault
+  protected var bufferSize: Int                    = 0
+  protected var charEncoding                       = "ISO-8859-1" // yes, that's HTTP's default
 
   def setStatus(i: Int, s: String): Unit = {
     statusCode = i
@@ -129,7 +130,7 @@ class MockHttpServletResponse(
   def addCookie(cookie: Cookie) = {
     cookies = cookie :: cookies
   }
-  def getLocale: Locale = locale
+  def getLocale: Locale    = locale
   def setLocale(l: Locale) = locale = l
   def reset {
     // well, reset all the state to it's original values. yikes. later.
@@ -141,14 +142,14 @@ class MockHttpServletResponse(
   def flushBuffer {
     // flush the buffer
   }
-  def getBufferSize(): Int = bufferSize
-  def setBufferSize(i: Int): Unit = bufferSize = i
-  def setContentType(t: String): Unit = contentType = t
-  def setContentLength(l: Int): Unit = contentLength = l
-  def setCharacterEncoding(e: String): Unit = charEncoding = e
-  def getWriter(): PrintWriter = writer
+  def getBufferSize(): Int                   = bufferSize
+  def setBufferSize(i: Int): Unit            = bufferSize = i
+  def setContentType(t: String): Unit        = contentType = t
+  def setContentLength(l: Int): Unit         = contentLength = l
+  def setCharacterEncoding(e: String): Unit  = charEncoding = e
+  def getWriter(): PrintWriter               = writer
   def getOutputStream(): ServletOutputStream = outputStream
-  def getContentType(): String = contentType
-  def getCharacterEncoding(): String = charEncoding
-  def setContentLengthLong(l: Long): Unit = contentType = l.toString
+  def getContentType(): String               = contentType
+  def getCharacterEncoding(): String         = charEncoding
+  def setContentLengthLong(l: Long): Unit    = contentType = l.toString
 }

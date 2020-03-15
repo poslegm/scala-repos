@@ -48,7 +48,9 @@ class BasicTest extends ApplicabilityTestBase {
       case ExcessArgument(Expression("A")) :: Nil =>
     }
     assertProblems("()", "(A, B)") {
-      case ExcessArgument(Expression("A")) :: ExcessArgument(Expression("B")) :: Nil =>
+      case ExcessArgument(Expression("A")) :: ExcessArgument(
+            Expression("B")
+          ) :: Nil =>
     }
     assertProblems("(p: A)", "(A, B)") {
       case ExcessArgument(Expression("B")) :: Nil =>
@@ -62,16 +64,17 @@ class BasicTest extends ApplicabilityTestBase {
     //for functions and for constructors there are different message
     //reason: you can't apply eta-expansion for constructors
     assertProblems("(p: A)", "") {
-      case MissedParametersClause(_) :: Nil =>
+      case MissedParametersClause(_) :: Nil            =>
       case MissedValueParameter(Parameter("p")) :: Nil =>
     }
     assertProblems("(a: A, b: B)", "") {
       case MissedParametersClause(_) :: Nil =>
       case MissedValueParameter(Parameter("a")) :: MissedValueParameter(
-          Parameter("b")) :: Nil =>
+            Parameter("b")
+          ) :: Nil =>
     }
     assertProblems("(a: A)(b: B)", "") {
-      case MissedParametersClause(_) :: Nil =>
+      case MissedParametersClause(_) :: Nil            =>
       case MissedValueParameter(Parameter("a")) :: Nil =>
     }
   }
@@ -85,7 +88,8 @@ class BasicTest extends ApplicabilityTestBase {
     }
     assertProblems("(a: A, b: B)", "()") {
       case MissedValueParameter(Parameter("a")) :: MissedValueParameter(
-          Parameter("b")) :: Nil =>
+            Parameter("b")
+          ) :: Nil =>
     }
   }
 
@@ -95,7 +99,9 @@ class BasicTest extends ApplicabilityTestBase {
     }
     assertProblems("(a: A, b: B)", "(B, A)") {
       case TypeMismatch(Expression("B"), Type("A")) :: TypeMismatch(
-          Expression("A"), Type("B")) :: Nil =>
+            Expression("A"),
+            Type("B")
+          ) :: Nil =>
     }
   }
 }

@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -53,10 +53,10 @@ private object MissingSpireOps {
     def loop(sum: Double, count: Double, acc: List[Double]): Double =
       acc match {
         case x :: tail => loop(sum + x, count + 1, tail)
-        case Nil => sum / count
+        case Nil       => sum / count
       }
 
-    loop(0D, 0D, xs)
+    loop(0d, 0d, xs)
   }
 }
 
@@ -71,27 +71,32 @@ import MissingSpireOps._
   */
 sealed trait DecisionTree[ /*@specialized(Double) */ A] {
   def apply(v: Array[Double]): A = {
-    @tailrec def loop(tree: DecisionTree[A]): A = tree match {
-      case Split(i, boundary, left, right) =>
-        if (v(i) <= boundary) loop(left) else loop(right)
-      case Leaf(k) =>
-        k
-    }
+    @tailrec def loop(tree: DecisionTree[A]): A =
+      tree match {
+        case Split(i, boundary, left, right) =>
+          if (v(i) <= boundary) loop(left) else loop(right)
+        case Leaf(k) =>
+          k
+      }
 
     loop(this)
   }
 }
 
-case class Split[ /*@specialized(Double) */ A](variable: Int,
-                                               boundary: Double,
-                                               left: DecisionTree[A],
-                                               right: DecisionTree[A])
-    extends DecisionTree[A]
+case class Split[ /*@specialized(Double) */ A](
+    variable: Int,
+    boundary: Double,
+    left: DecisionTree[A],
+    right: DecisionTree[A]
+) extends DecisionTree[A]
 
 case class Leaf[ /*@specialized(Double) */ A](value: A) extends DecisionTree[A]
 
 case class TreeMakerOptions(
-    features: Int, featuresSampled: Int, minSplitSize: Int) {
+    features: Int,
+    featuresSampled: Int,
+    minSplitSize: Int
+) {
   // Probability that we'll see a feature at least once if we sample features maxTries times.
   private val q = 0.95
   private val p = featuresSampled / features.toDouble
@@ -116,14 +121,16 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
   protected type Region <: RegionLike
   protected def Region: RegionCompanion
 
-  def makeTreeInitial(dependent: Array[A],
-                      independent: Array[Array[Double]],
-                      opts: TreeMakerOptions): DecisionTree[A] = {
+  def makeTreeInitial(
+      dependent: Array[A],
+      independent: Array[Array[Double]],
+      opts: TreeMakerOptions
+  ): DecisionTree[A] = {
     require(independent.length > 0, "Cannot make a decision without points.")
 
     def predictors(): Array[Int] = {
       val indices: Array[Int] = (0 until opts.featuresSampled).toArray
-      var i = indices.length
+      var i                   = indices.length
       while (i < opts.features) {
         val j = nextInt(i + 1)
         if (j < indices.length) indices(j) = i
@@ -134,7 +141,7 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
 
     def region(members: Array[Int]): Region = {
       val region = Region.empty
-      var i = 0
+      var i      = 0
       while (i < members.length) {
         region += dependent(members(i))
         i += 1
@@ -157,7 +164,7 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
       }
 
       val newOrder = new Array[Int](split.length)
-      var j = 0
+      var j        = 0
       i = 0
       while (i < newOrder.length && j < order.length) {
         val m = order(j)
@@ -179,18 +186,18 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
       if (members.size < opts.minSplitSize || tries > opts.maxTries) {
         Leaf(region(members).value)
       } else {
-        val vars = predictors()
-        val region0 = region(members)
+        val vars     = predictors()
+        val region0  = region(members)
         var minError = region0.error
-        var minVar = -1 // index of the feature that so far has the lowest cost
-        var minIdx = -1 // index of the split point in the feature array
+        var minVar   = -1 // index of the feature that so far has the lowest cost
+        var minIdx   = -1 // index of the split point in the feature array
 
         var f = 0
         while (f < vars.length) {
-          var leftRegion = Region.empty
+          var leftRegion  = Region.empty
           var rightRegion = region0.copy()
-          val axis = vars(f)
-          val order = orders(axis)
+          val axis        = vars(f)
+          val order       = orders(axis)
 
           var j = 0
           while (j < order.length - 1) {
@@ -198,7 +205,7 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
             rightRegion -= dependent(order(j))
             val error =
               (leftRegion.error * (j + 1) + rightRegion.error *
-                  (order.length - j - 1)) / order.length
+                (order.length - j - 1)) / order.length
             if (error < minError) {
               minError = error
               minVar = axis
@@ -215,10 +222,10 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
           growTree(orders, tries + 1)
         } else {
           val featureOrder = orders(minVar)
-          val leftSplit = featureOrder take (minIdx + 1)
-          val rightSplit = featureOrder drop (minIdx + 1)
+          val leftSplit    = featureOrder take (minIdx + 1)
+          val rightSplit   = featureOrder drop (minIdx + 1)
 
-          var leftOrders = new Array[Array[Int]](orders.length)
+          var leftOrders  = new Array[Array[Int]](orders.length)
           var rightOrders = new Array[Array[Int]](orders.length)
 
           leftOrders(minVar) = leftSplit
@@ -238,7 +245,7 @@ trait TreeMaker[ /*@specialized(Double) */ A] {
 
           val boundary =
             (independent(featureOrder(minIdx))(minVar) +
-                independent(featureOrder(minIdx + 1))(minVar)) / 2
+              independent(featureOrder(minIdx + 1))(minVar)) / 2
           Split(minVar, boundary, growTree(leftOrders), growTree(rightOrders))
         }
       }
@@ -258,8 +265,10 @@ class RegressionTreeMaker extends TreeMaker[Double] {
   // TODO: Use incremental mean.
 
   protected final class SquaredError(
-      var sum: Double, var sumSq: Double, var count: Int)
-      extends RegionLike {
+      var sum: Double,
+      var sumSq: Double,
+      var count: Int
+  ) extends RegionLike {
     def +=(k: Double) {
       sum += k
       sumSq += (k * k)
@@ -281,7 +290,7 @@ class RegressionTreeMaker extends TreeMaker[Double] {
 
   protected type Region = SquaredError
   object Region extends RegionCompanion {
-    def empty = new SquaredError(0D, 0D, 0)
+    def empty = new SquaredError(0d, 0d, 0)
   }
 }
 
@@ -308,13 +317,13 @@ class ClassificationTreeMaker[K] extends TreeMaker[K] {
     }
 
     def error: Double = {
-      val iter = m.values().iterator()
-      var sumSqP = 0D
+      val iter   = m.values().iterator()
+      var sumSqP = 0d
       while (iter.hasNext) {
         val p = iter.next().toDouble / n
         sumSqP += p * p
       }
-      1D - sumSqP
+      1d - sumSqP
     }
 
     def value: K = m.asScala.maxBy(_._2)._1
@@ -337,13 +346,13 @@ sealed trait Forest[A] {
 
 case class RegressionForest(trees: List[DecisionTree[Double]])
     extends Forest[Double] {
-  def predict(v: Array[Double]): Double = meanSeq(trees map (_ (v)))
-  def ++(that: Forest[Double]) = RegressionForest(trees ++ that.trees)
+  def predict(v: Array[Double]): Double = meanSeq(trees map (_(v)))
+  def ++(that: Forest[Double])          = RegressionForest(trees ++ that.trees)
 }
 
 object RegressionForest {
   implicit object RegressionForestMonoid extends Monoid[RegressionForest] {
-    def zero: RegressionForest = RegressionForest(Nil)
+    def zero: RegressionForest                              = RegressionForest(Nil)
     def append(x: RegressionForest, y: => RegressionForest) = x ++ y
   }
 }
@@ -371,60 +380,63 @@ object ClassificationForest {
     }
 }
 
-trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
+trait RandomForestLibModule[M[+_]] extends ColumnarTableLibModule[M] {
   private def makeArrays(table: Table): M[Array[Array[Double]]] = {
     extract(table) {
-      case (c: HomogeneousArrayColumn[_]) =>
-        { (row: Int) =>
-          c(row).asInstanceOf[Array[Double]]
-        }
+      case (c: HomogeneousArrayColumn[_]) => { (row: Int) =>
+        c(row).asInstanceOf[Array[Double]]
+      }
     }
   }
 
-  private def collapse[@specialized(Double) A : Manifest](
-      chunks0: List[Array[A]]): Array[A] = {
-    val len = chunks0.foldLeft(0)(_ + _.length)
+  private def collapse[@specialized(Double) A: Manifest](
+      chunks0: List[Array[A]]
+  ): Array[A] = {
+    val len   = chunks0.foldLeft(0)(_ + _.length)
     val array = new Array[A](len)
-    def mkArray(init: Int, chunks: List[Array[A]]): Unit = chunks match {
-      case chunk :: tail =>
-        var i = 0
-        var j = init
-        while (j < array.length && i < chunk.length) {
-          array(j) = chunk(i)
-          i += 1
-          j += 1
-        }
-        mkArray(j, tail)
+    def mkArray(init: Int, chunks: List[Array[A]]): Unit =
+      chunks match {
+        case chunk :: tail =>
+          var i = 0
+          var j = init
+          while (j < array.length && i < chunk.length) {
+            array(j) = chunk(i)
+            i += 1
+            j += 1
+          }
+          mkArray(j, tail)
 
-      case Nil =>
-    }
+        case Nil =>
+      }
     mkArray(0, chunks0)
     array
   }
 
-  private def sliceToArray[@specialized(Double) A : Manifest](
-      slice: Slice, zero: => A)(
-      pf: PartialFunction[Column, Int => A]): Option[Array[A]] = {
+  private def sliceToArray[@specialized(Double) A: Manifest](
+      slice: Slice,
+      zero: => A
+  )(pf: PartialFunction[Column, Int => A]): Option[Array[A]] = {
     slice.columns.values.collectFirst {
       case c if pf.isDefinedAt(c) => {
-          val extract = pf(c)
-          val xs = new Array[A](slice.size)
-          var i = 0
-          while (i < xs.length) {
-            if (c.isDefinedAt(i)) {
-              xs(i) = extract(i)
-            } else {
-              xs(i) = zero
-            }
-            i += 1
+        val extract = pf(c)
+        val xs      = new Array[A](slice.size)
+        var i       = 0
+        while (i < xs.length) {
+          if (c.isDefinedAt(i)) {
+            xs(i) = extract(i)
+          } else {
+            xs(i) = zero
           }
-          xs
+          i += 1
         }
+        xs
+      }
     }
   }
 
-  private def extract[@specialized(Double) A : Manifest](table: Table)(
-      pf: PartialFunction[Column, Int => A]): M[Array[A]] = {
+  private def extract[@specialized(Double) A: Manifest](
+      table: Table
+  )(pf: PartialFunction[Column, Int => A]): M[Array[A]] = {
     def die = sys.error("Cannot handle undefined rows. Expected dense column.")
 
     def loop(stream: StreamT[M, Slice], acc: List[Array[A]]): M[Array[A]] = {
@@ -445,14 +457,20 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
 
     override def _libMorphism2 =
       super._libMorphism2 ++ Set(
-          RandomForestClassification, RandomForestRegression)
+        RandomForestClassification,
+        RandomForestRegression
+      )
 
     object RandomForestClassification
         extends RandomForest[RValue, ClassificationForest[RValue]](
-            Vector("std", "stats"), "rfClassification") {
+          Vector("std", "stats"),
+          "rfClassification"
+        ) {
       def extractDependent(table: Table): M[Array[RValue]] = {
-        def loop(stream: StreamT[M, Slice],
-                 acc: List[Array[RValue]]): M[Array[RValue]] = {
+        def loop(
+            stream: StreamT[M, Slice],
+            acc: List[Array[RValue]]
+        ): M[Array[RValue]] = {
           stream.uncons flatMap {
             case Some((head, tail)) =>
               loop(tail, Array.tabulate(head.size)(head.toRValue(_)) :: acc)
@@ -465,10 +483,12 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
         loop(table.slices, Nil)
       }
 
-      def makeTree(dependent: Array[RValue],
-                   independent: Array[Array[Double]]): DecisionTree[RValue] = {
-        val treeMaker = new ClassificationTreeMaker[RValue]()
-        val dimension = independent.headOption map (_.length) getOrElse 0
+      def makeTree(
+          dependent: Array[RValue],
+          independent: Array[Array[Double]]
+      ): DecisionTree[RValue] = {
+        val treeMaker       = new ClassificationTreeMaker[RValue]()
+        val dimension       = independent.headOption map (_.length) getOrElse 0
         val featuresSampled = math.max(2, math.sqrt(dimension).toInt)
 
         val opts = TreeMakerOptions(dimension, featuresSampled, 3)
@@ -480,7 +500,9 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
         ClassificationForest(trees.toList)
 
       def makeColumns(
-          defined: BitSet, values: Array[RValue]): Map[ColumnRef, Column] = {
+          defined: BitSet,
+          values: Array[RValue]
+      ): Map[ColumnRef, Column] = {
         var i = 0
         while (i < values.length) {
           if (!defined(i)) {
@@ -494,10 +516,10 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
       }
 
       def findError(actual: Array[RValue], predicted: Array[RValue]): Double = {
-        var correct = 0D
-        var i = 0
+        var correct = 0d
+        var i       = 0
         while (i < actual.length) {
-          correct += (if (actual(i) == predicted(i)) 1D else 0D)
+          correct += (if (actual(i) == predicted(i)) 1d else 0d)
           i += 1
         }
         correct / actual.length
@@ -506,24 +528,27 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
 
     object RandomForestRegression
         extends RandomForest[Double, RegressionForest](
-            Vector("std", "stats"), "rfRegression") {
+          Vector("std", "stats"),
+          "rfRegression"
+        ) {
       import trans._
 
       def extractDependent(table: Table): M[Array[Double]] = {
-        val spec = DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble)
+        val spec   = DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble)
         val table0 = table.transform(spec)
 
         extract[Double](table0) {
           case col: DoubleColumn =>
-            (row: Int) =>
-              col(row)
+            (row: Int) => col(row)
         }
       }
 
-      def makeTree(dependent: Array[Double],
-                   independent: Array[Array[Double]]): DecisionTree[Double] = {
-        val treeMaker = new RegressionTreeMaker()
-        val dimension = independent.headOption map (_.length) getOrElse 0
+      def makeTree(
+          dependent: Array[Double],
+          independent: Array[Array[Double]]
+      ): DecisionTree[Double] = {
+        val treeMaker       = new RegressionTreeMaker()
+        val dimension       = independent.headOption map (_.length) getOrElse 0
         val featuresSampled = math.max(2, (dimension / 3).toInt)
 
         val opts = TreeMakerOptions(dimension, featuresSampled, 5)
@@ -535,7 +560,9 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
         RegressionForest(trees.toList)
 
       def makeColumns(
-          defined: BitSet, values: Array[Double]): Map[ColumnRef, Column] = {
+          defined: BitSet,
+          values: Array[Double]
+      ): Map[ColumnRef, Column] = {
         val col = new ArrayDoubleColumn(defined, values)
         Map(ColumnRef(CPath.Identity, CDouble) -> col)
       }
@@ -544,36 +571,37 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
         val actualMean = actual.qmean
 
         val diffs = actual - predicted
-        val num = diffs dot diffs
+        val num   = diffs dot diffs
 
-        var den = 0D
-        var i = 0
+        var den = 0d
+        var i   = 0
         while (i < actual.length) {
           val dx = actual(i) - actualMean
           den += dx * dx
           i += 1
         }
 
-        1D - num / den
+        1d - num / den
       }
     }
 
-    abstract class RandomForest[A : Manifest, F <: Forest[A]: Monoid](
-        namespace: Vector[String], name: String)
-        extends Morphism2(namespace, name) {
+    abstract class RandomForest[A: Manifest, F <: Forest[A]: Monoid](
+        namespace: Vector[String],
+        name: String
+    ) extends Morphism2(namespace, name) {
       import trans._
       import TransSpecModule._
 
-      val tpe = BinaryOperationType(
-          JType.JUniverseT, JType.JUniverseT, JObjectUnfixedT)
+      val tpe =
+        BinaryOperationType(JType.JUniverseT, JType.JUniverseT, JObjectUnfixedT)
 
-      val independent = "predictors"
-      val dependent = "dependent"
-      val chunkSize = 3
-      val numChunks = 10
+      val independent       = "predictors"
+      val dependent         = "dependent"
+      val chunkSize         = 3
+      val numChunks         = 10
       val varianceThreshold = 0.001
-      val sampleSize = 10000
-      val maxForestSize = 2000
+      val sampleSize        = 10000
+      val maxForestSize     = 2000
 
       val independentSpec =
         trans.DerefObjectStatic(TransSpec1.Id, CPathField(independent))
@@ -586,19 +614,20 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
 
       def extractDependent(table: Table): M[Array[A]]
 
-      def makeTree(dependent: Array[A],
-                   independent: Array[Array[Double]]): DecisionTree[A]
+      def makeTree(
+          dependent: Array[A],
+          independent: Array[Array[Double]]
+      ): DecisionTree[A]
 
       def forest(trees: Seq[DecisionTree[A]]): F
 
-      def makeColumns(
-          defined: BitSet, values: Array[A]): Map[ColumnRef, Column]
+      def makeColumns(defined: BitSet, values: Array[A]): Map[ColumnRef, Column]
 
       def findError(actual: Array[A], predicted: Array[A]): Double
 
       def makeForests(table0: Table): M[Seq[(JType, F)]] = {
         val spec0 = trans.DeepMap1(TransSpec1.Id, cf.util.CoerceToDouble)
-        val spec = makeTableTrans(Map(CPathField(independent) -> spec0))
+        val spec  = makeTableTrans(Map(CPathField(independent) -> spec0))
 
         val table = table0.transform(spec)
 
@@ -606,21 +635,23 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
           table.transform(independentSpec).schemas map { _.toList }
 
         schemas flatMap
-        (_ traverse { tpe =>
-              makeForest(table, tpe) map (tpe -> _)
-            })
+          (_ traverse { tpe => makeForest(table, tpe) map (tpe -> _) })
       }
 
       def makeForest(
-          table: Table, tpe: JType, prev: F = Monoid[F].zero): M[F] = {
+          table: Table,
+          tpe: JType,
+          prev: F = Monoid[F].zero
+      ): M[F] = {
         if (prev.trees.size > maxForestSize) {
           M.point(prev)
         } else {
           val numTrainingSamples = chunkSize * numChunks
-          val numOfSamples = numTrainingSamples + numChunks
+          val numOfSamples       = numTrainingSamples + numChunks
 
           val jtype = JObjectFixedT(
-              Map(independent -> tpe, dependent -> JType.JUniverseT))
+            Map(independent -> tpe, dependent -> JType.JUniverseT)
+          )
           val specs =
             (0 until numOfSamples) map { _ =>
               trans.Typed(TransSpec1.Id, jtype)
@@ -632,25 +663,24 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
             val validationSamples: List[Table] =
               (samples drop numTrainingSamples).toList
 
-            def withData[B](table: Table)(
-                f: (Array[A], Array[Array[Double]]) => B): M[B] = {
+            def withData[B](
+                table: Table
+            )(f: (Array[A], Array[Array[Double]]) => B): M[B] = {
               val indepTable = table.transform(independentSpec).toArray[Double]
-              val depTable = table.transform(dependentSpec)
+              val depTable   = table.transform(dependentSpec)
 
               for {
-                features <- makeArrays(indepTable)
+                features   <- makeArrays(indepTable)
                 prediction <- extractDependent(depTable)
               } yield f(prediction, features)
             }
 
             val treesM: M[List[DecisionTree[A]]] =
-              trainingSamples traverse { table =>
-                withData(table)(makeTree)
-              }
+              trainingSamples traverse { table => withData(table)(makeTree) }
 
             def variance(values: List[Double]): Double = {
               val mean = meanSeq(values)
-              val sumSq = values.foldLeft(0D) { (acc, x) =>
+              val sumSq = values.foldLeft(0d) { (acc, x) =>
                 val dx = x - mean
                 acc + dx * dx
               }
@@ -688,30 +718,35 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
         }
       }
 
-      def morph1Apply(forests: Seq[(JType, F)]) = new Morph1Apply {
-        import TransSpecModule._
+      def morph1Apply(forests: Seq[(JType, F)]) =
+        new Morph1Apply {
+          import TransSpecModule._
 
-        def apply(table: Table, ctx: MorphContext): M[Table] = {
+          def apply(table: Table, ctx: MorphContext): M[Table] = {
 
-          lazy val models: Map[String, (JType, F)] = forests.zipWithIndex.map({
-            case (elem, i) =>
-              ("model" + (i + 1)) -> elem
-          })(collection.breakOut)
+            lazy val models: Map[String, (JType, F)] =
+              forests.zipWithIndex.map({
+                case (elem, i) =>
+                  ("model" + (i + 1)) -> elem
+              })(collection.breakOut)
 
-          lazy val specs: Seq[TransSpec1] = models.map({
-            case (modelId, (jtype, _)) =>
-              trans.WrapObject(trans.TypedSubsumes(TransSpec1.Id, jtype),
-                               modelId)
-          })(collection.breakOut)
+            lazy val specs: Seq[TransSpec1] = models.map({
+              case (modelId, (jtype, _)) =>
+                trans.WrapObject(
+                  trans.TypedSubsumes(TransSpec1.Id, jtype),
+                  modelId
+                )
+            })(collection.breakOut)
 
-          lazy val spec: TransSpec1 = liftToValues(
-              OuterObjectConcat(specs: _*))
+            lazy val spec: TransSpec1 = liftToValues(
+              OuterObjectConcat(specs: _*)
+            )
 
-          lazy val objectTable: Table = table.transform(spec)
+            lazy val objectTable: Table = table.transform(spec)
 
-          def predict(stream: StreamT[M, Slice]): StreamT[M, Slice] = {
-            StreamT(stream.uncons map {
-              case Some((head, tail)) => {
+            def predict(stream: StreamT[M, Slice]): StreamT[M, Slice] = {
+              StreamT(stream.uncons map {
+                case Some((head, tail)) => {
                   val valueColumns =
                     models.foldLeft(Map.empty[ColumnRef, Column]) {
                       case (acc, (modelId, (_, forest))) =>
@@ -722,34 +757,33 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
                           .toArray[Double]
                         val vecsOpt =
                           sliceToArray[Array[Double]](modelSlice, null) {
-                            case (c: HomogeneousArrayColumn[_]) =>
-                              { (row: Int) =>
-                                c(row).asInstanceOf[Array[Double]]
-                              }
+                            case (c: HomogeneousArrayColumn[_]) => {
+                              (row: Int) => c(row).asInstanceOf[Array[Double]]
+                            }
                           }
 
-                        val defined: BitSet = BitSetUtil.create()
+                        val defined: BitSet  = BitSetUtil.create()
                         val values: Array[A] = new Array[A](head.size)
 
-                        vecsOpt map {
-                          vectors =>
-                            var i = 0
-                            while (i < vectors.length) {
-                              val v = vectors(i)
-                              if (v != null) {
-                                defined.set(i)
-                                values(i) = forest.predict(v)
-                              }
-                              i += 1
+                        vecsOpt map { vectors =>
+                          var i = 0
+                          while (i < vectors.length) {
+                            val v = vectors(i)
+                            if (v != null) {
+                              defined.set(i)
+                              values(i) = forest.predict(v)
                             }
+                            i += 1
+                          }
                         }
 
                         val cols = makeColumns(defined, values)
                         acc ++ cols map {
                           case (ColumnRef(cpath, ctype), col) =>
                             ColumnRef(
-                                CPath(paths.Value, CPathField(modelId)) \ cpath,
-                                ctype) -> col
+                              CPath(paths.Value, CPathField(modelId)) \ cpath,
+                              ctype
+                            ) -> col
                         }
                     }
                   val keyColumns =
@@ -758,30 +792,28 @@ trait RandomForestLibModule[M[+ _]] extends ColumnarTableLibModule[M] {
                   StreamT.Yield(Slice(columns, head.size), predict(tail))
                 }
 
-              case None =>
-                StreamT.Done
-            })
-          }
-
-          val predictions =
-            if (forests.isEmpty) {
-              Table.empty
-            } else {
-              Table(predict(objectTable.slices), objectTable.size)
+                case None =>
+                  StreamT.Done
+              })
             }
 
-          M.point(predictions)
+            val predictions =
+              if (forests.isEmpty) {
+                Table.empty
+              } else {
+                Table(predict(objectTable.slices), objectTable.size)
+              }
+
+            M.point(predictions)
+          }
         }
-      }
 
       def alignCustom(t1: Table, t2: Table): M[(Table, Morph1Apply)] = {
         val trainingTable =
           t1.transform(trans.DerefObjectStatic(TransSpec1.Id, paths.Value))
         val forestsM = makeForests(trainingTable)
 
-        forestsM map { forests =>
-          (t2, morph1Apply(forests))
-        }
+        forestsM map { forests => (t2, morph1Apply(forests)) }
       }
     }
   }

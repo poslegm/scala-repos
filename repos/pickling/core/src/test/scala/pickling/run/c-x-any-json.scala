@@ -7,7 +7,7 @@ case class C(x: Any)
 
 class CXAnyJsonTest extends FunSuite {
   test("main") {
-    val c = new C(2)
+    val c    = new C(2)
     val pckl = c.pickle
     assert(pckl.toString === """
       |JSONPickle({

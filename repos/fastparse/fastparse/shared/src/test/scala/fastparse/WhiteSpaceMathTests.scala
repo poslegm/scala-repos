@@ -31,7 +31,7 @@ object WhiteSpaceMathTests extends TestSuite {
 
   val divMul: P[Int] = P(factor ~ (CharIn("*/").! ~/ factor).rep).map(eval)
   val addSub: P[Int] = P(divMul ~ (CharIn("+-").! ~/ divMul).rep).map(eval)
-  val expr: P[Int] = P(" ".rep ~ addSub ~ " ".rep ~ End)
+  val expr: P[Int]   = P(" ".rep ~ addSub ~ " ".rep ~ End)
 
   val tests = TestSuite {
     'pass {
@@ -50,17 +50,17 @@ object WhiteSpaceMathTests extends TestSuite {
     }
     'fail {
       def check(input: String, expectedTrace: String) = {
-        val failure = expr.parse(input).asInstanceOf[Parsed.Failure]
+        val failure     = expr.parse(input).asInstanceOf[Parsed.Failure]
         val actualTrace = failure.extra.traced.trace
         assert(expectedTrace.trim == actualTrace.trim)
       }
       * - check(
-          "(  +  )",
-          """ expr:1:1 / addSub:1:1 / divMul:1:1 / factor:1:1 / parens:1:1 / addSub:1:4 / divMul:1:4 / factor:1:4 / (number | parens):1:4 ..."+  )" """
+        "(  +  )",
+        """ expr:1:1 / addSub:1:1 / divMul:1:1 / factor:1:1 / parens:1:1 / addSub:1:4 / divMul:1:4 / factor:1:4 / (number | parens):1:4 ..."+  )" """
       )
       * - check(
-          "1  +  - ",
-          """ expr:1:1 / addSub:1:1 / divMul:1:7 / factor:1:7 / (number | parens):1:7 ..."- " """
+        "1  +  - ",
+        """ expr:1:1 / addSub:1:1 / divMul:1:7 / factor:1:7 / (number | parens):1:7 ..."- " """
       )
     }
   }

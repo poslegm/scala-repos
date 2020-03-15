@@ -10,7 +10,9 @@ import org.scalatest.{BeforeAndAfter, Matchers}
   * Common  tests for all persistent stores.
   */
 trait PersistentStoreTest
-    extends IntegrationFunSuite with Matchers with BeforeAndAfter {
+    extends IntegrationFunSuite
+    with Matchers
+    with BeforeAndAfter {
 
   //this parameter is used for futureValue timeouts
   implicit val patienceConfig = PatienceConfig(Span(10, Seconds))
@@ -29,7 +31,7 @@ trait PersistentStoreTest
     val entity = fetch("foo")
     entity should be('empty)
     val stored = persistentStore.create("foo", "Hello".getBytes).futureValue
-    val read = fetch("foo")
+    val read   = fetch("foo")
     read should be('defined)
     read.get.bytes should be("Hello".getBytes)
   }
@@ -38,7 +40,8 @@ trait PersistentStoreTest
     val entity = fetch("foo2")
     entity should be('empty)
     persistentStore.create("foo", "Hello".getBytes).futureValue.bytes should be(
-        "Hello".getBytes)
+      "Hello".getBytes
+    )
     whenReady(persistentStore.create("foo", "Hello again".getBytes).failed) {
       _ shouldBe a[StoreCommandFailedException]
     }
@@ -48,10 +51,10 @@ trait PersistentStoreTest
     val entity = fetch("foo")
     entity should be('empty)
     val stored = persistentStore.create("foo", "Hello".getBytes).futureValue
-    val read = fetch("foo")
+    val read   = fetch("foo")
     read should be('defined)
     read.get.bytes should be("Hello".getBytes)
-    val update = store(read.get.withNewContent("Hello again".getBytes))
+    val update    = store(read.get.withNewContent("Hello again".getBytes))
     val readAgain = fetch("foo")
     readAgain should be('defined)
     readAgain.get.bytes should be("Hello again".getBytes)
@@ -61,8 +64,8 @@ trait PersistentStoreTest
     val entity = fetch("foo")
     entity should be('empty)
     val stored = persistentStore.create("foo", "Hello".getBytes).futureValue
-    val read = fetch("foo")
-    val read2 = fetch("foo")
+    val read   = fetch("foo")
+    val read2  = fetch("foo")
     read should be('defined)
     read2 should be('defined)
     read.get.bytes should be("Hello".getBytes)
@@ -71,9 +74,11 @@ trait PersistentStoreTest
       .update(read.get.withNewContent("Hello again".getBytes))
       .futureValue
       .bytes should be("Hello again".getBytes)
-    whenReady(persistentStore
-          .update(read2.get.withNewContent("Will be None".getBytes))
-          .failed) { _ shouldBe a[StoreCommandFailedException] }
+    whenReady(
+      persistentStore
+        .update(read2.get.withNewContent("Will be None".getBytes))
+        .failed
+    ) { _ shouldBe a[StoreCommandFailedException] }
     val readAgain = fetch("foo")
     readAgain.get.bytes should be("Hello again".getBytes)
   }
@@ -86,7 +91,7 @@ trait PersistentStoreTest
     val entity = fetch("foo")
     entity should be('empty)
     val stored = persistentStore.create("foo", "Hello".getBytes).futureValue
-    val read = fetch("foo")
+    val read   = fetch("foo")
     read should be('defined)
     read.get.bytes should be("Hello".getBytes)
     val result = persistentStore.delete("foo")

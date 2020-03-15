@@ -3,7 +3,7 @@ package p
 trait NRoot[A]
 
 object FastComplex {
-  final def sqrt(x: Double): Double = Math.sqrt(x)
+  final def sqrt(x: Double): Double                 = Math.sqrt(x)
   final def sqrt[A](a: A)(implicit ev: NRoot[A]): A = ???
 
   object Inner {

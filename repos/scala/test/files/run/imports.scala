@@ -9,7 +9,7 @@ object checker {
     Console.print("In " + location + ", " + what + ".toString() returns ");
     Console.flush;
     val string: String = if (value == null) "null" else value.toString();
-    val test = if (string == location) "ok" else "KO";
+    val test           = if (string == location) "ok" else "KO";
     Console.println(string + " -> " + test);
     Console.flush;
   }
@@ -25,8 +25,8 @@ class C_ico() {
   o_ico.v_ico = this;
   import o_ico.v_ico;
   override def toString(): String = "C_ico";
-  def method: C_ico = v_ico;
-  val field: C_ico = v_ico;
+  def method: C_ico               = v_ico;
+  val field: C_ico                = v_ico;
 
   check("C_ico", "v_ico ", v_ico);
   check("C_ico", "field ", field);
@@ -51,8 +51,8 @@ import o_ioc.v_ioc;
 class C_ioc() {
   o_ioc.v_ioc = this;
   override def toString(): String = "C_ioc";
-  def method: C_ioc = v_ioc;
-  val field: C_ioc = v_ioc;
+  def method: C_ioc               = v_ioc;
+  val field: C_ioc                = v_ioc;
 
   check("C_ioc", "v_ioc ", v_ioc);
   check("C_ioc", "field ", field);
@@ -72,8 +72,8 @@ import o_oic.v_oic;
 class C_oic() {
   o_oic.v_oic = this;
   override def toString(): String = "C_oic";
-  def method: C_oic = v_oic;
-  val field: C_oic = v_oic;
+  def method: C_oic               = v_oic;
+  val field: C_oic                = v_oic;
 
   check("C_oic", "v_oic ", v_oic);
   check("C_oic", "field ", field);

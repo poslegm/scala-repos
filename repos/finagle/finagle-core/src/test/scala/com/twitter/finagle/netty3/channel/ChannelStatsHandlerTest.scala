@@ -14,11 +14,11 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class ChannelStatsHandlerTest extends FunSpec with MockitoSugar {
   trait SocketTest {
-    val e = mock[ChannelStateEvent]
-    val chanWritable = mock[Channel]
+    val e              = mock[ChannelStateEvent]
+    val chanWritable   = mock[Channel]
     val chanUnwritable = mock[Channel]
-    val ctxWritable = mock[ChannelHandlerContext]
-    val ctxUnwritable = mock[ChannelHandlerContext]
+    val ctxWritable    = mock[ChannelHandlerContext]
+    val ctxUnwritable  = mock[ChannelHandlerContext]
     when(chanWritable.isWritable).thenReturn(true)
     when(chanUnwritable.isWritable).thenReturn(false)
     when(ctxWritable.getChannel()).thenReturn(chanWritable)
@@ -26,7 +26,7 @@ class ChannelStatsHandlerTest extends FunSpec with MockitoSugar {
   }
 
   trait InMemoryStatsTest extends SocketTest {
-    val sr = new InMemoryStatsReceiver()
+    val sr      = new InMemoryStatsReceiver()
     val handler = new ChannelStatsHandler(sr)
   }
 
@@ -41,9 +41,9 @@ class ChannelStatsHandlerTest extends FunSpec with MockitoSugar {
       val handler = new ChannelStatsHandler(sr)
       connectionsIs(0)
 
-      val e = mock[ChannelStateEvent]
+      val e   = mock[ChannelStateEvent]
       val ctx = mock[ChannelHandlerContext]
-      val al = new AtomicLong()
+      val al  = new AtomicLong()
       val obj = (al, al).asInstanceOf[Object]
       when(ctx.getAttachment()).thenReturn(obj, obj)
       handler.channelOpen(ctx, e)
@@ -66,7 +66,8 @@ class ChannelStatsHandlerTest extends FunSpec with MockitoSugar {
           handler.channelInterestChanged(ctxUnwritable, e)
           assert(sr.counters(Seq("socket_writable_ms")) == 25.minutes.inMillis)
           assert(
-              sr.counters(Seq("socket_unwritable_ms")) == 10.minutes.inMillis)
+            sr.counters(Seq("socket_unwritable_ms")) == 10.minutes.inMillis
+          )
         }
       }
     }
@@ -77,7 +78,7 @@ class ChannelStatsHandlerTest extends FunSpec with MockitoSugar {
       val handler = new ChannelStatsHandler(sr)
 
       val ctx = mock[ChannelHandlerContext]
-      val al = new AtomicLong
+      val al  = new AtomicLong
 
       val counters = (al, al).asInstanceOf[Object]
       when(ctx.getAttachment()).thenReturn(counters, counters)

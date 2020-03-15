@@ -17,39 +17,41 @@ package scala.concurrent
   */
 class Channel[A] {
   class LinkedList[A] {
-    var elem: A = _
+    var elem: A             = _
     var next: LinkedList[A] = null
   }
-  private var written = new LinkedList[A] // FIFO queue, realized through
+  private var written     = new LinkedList[A] // FIFO queue, realized through
   private var lastWritten = written // aliasing of a linked list
-  private var nreaders = 0
+  private var nreaders    = 0
 
   /** Append a value to the FIFO queue to be read by `read`.
     *  This operation is nonblocking and can be executed by any thread.
     *
     * @param x object to enqueue to this channel
     */
-  def write(x: A) = synchronized {
-    lastWritten.elem = x
-    lastWritten.next = new LinkedList[A]
-    lastWritten = lastWritten.next
-    if (nreaders > 0) notify()
-  }
+  def write(x: A) =
+    synchronized {
+      lastWritten.elem = x
+      lastWritten.next = new LinkedList[A]
+      lastWritten = lastWritten.next
+      if (nreaders > 0) notify()
+    }
 
   /** Retrieve the next waiting object from the FIFO queue,
     *  blocking if necessary until an object is available.
     *
     * @return next object dequeued from this channel
     */
-  def read: A = synchronized {
-    while (written.next == null) {
-      try {
-        nreaders += 1
-        wait()
-      } finally nreaders -= 1
+  def read: A =
+    synchronized {
+      while (written.next == null) {
+        try {
+          nreaders += 1
+          wait()
+        } finally nreaders -= 1
+      }
+      val x = written.elem
+      written = written.next
+      x
     }
-    val x = written.elem
-    written = written.next
-    x
-  }
 }

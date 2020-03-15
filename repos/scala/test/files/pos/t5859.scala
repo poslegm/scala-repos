@@ -1,6 +1,6 @@
 class A {
   def f(xs: List[Int], ys: AnyRef*) = ()
-  def f(xs: AnyRef*) = ()
+  def f(xs: AnyRef*)                = ()
 
   f()
   f(List[AnyRef](): _*)

@@ -15,63 +15,68 @@ class ScalaCompilerSettings(state: ScalaCompilerSettingsState) {
 
   var compileOrder: CompileOrder = _
 
-  var nameHashing: Boolean = _
+  var nameHashing: Boolean         = _
   var recompileOnMacroDef: Boolean = _
-  var transitiveStep: Int = _
+  var transitiveStep: Int          = _
   var recompileAllFraction: Double = _
 
-  var dynamics: Boolean = _
-  var postfixOps: Boolean = _
-  var reflectiveCalls: Boolean = _
+  var dynamics: Boolean            = _
+  var postfixOps: Boolean          = _
+  var reflectiveCalls: Boolean     = _
   var implicitConversions: Boolean = _
-  var higherKinds: Boolean = _
-  var existentials: Boolean = _
-  var macros: Boolean = _
-  var experimental: Boolean = _
+  var higherKinds: Boolean         = _
+  var existentials: Boolean        = _
+  var macros: Boolean              = _
+  var experimental: Boolean        = _
 
-  var warnings: Boolean = _
+  var warnings: Boolean            = _
   var deprecationWarnings: Boolean = _
-  var uncheckedWarnings: Boolean = _
-  var featureWarnings: Boolean = _
-  var optimiseBytecode: Boolean = _
-  var explainTypeErrors: Boolean = _
-  var specialization: Boolean = _
-  var continuations: Boolean = _
+  var uncheckedWarnings: Boolean   = _
+  var featureWarnings: Boolean     = _
+  var optimiseBytecode: Boolean    = _
+  var explainTypeErrors: Boolean   = _
+  var specialization: Boolean      = _
+  var continuations: Boolean       = _
 
   var debuggingInfoLevel: DebuggingInfoLevel = _
   var additionalCompilerOptions: Seq[String] = _
-  var plugins: Seq[String] = _
+  var plugins: Seq[String]                   = _
 
   private val ToggleOptions: Seq[(String, () => Boolean, Boolean => Unit)] =
-    Seq(("-language:dynamics", () => dynamics, dynamics = _),
-        ("-language:postfixOps", () => postfixOps, postfixOps = _),
-        ("-language:reflectiveCalls",
-         () => reflectiveCalls,
-         reflectiveCalls = _),
-        ("-language:implicitConversions",
-         () => implicitConversions,
-         implicitConversions = _),
-        ("-language:higherKinds", () => higherKinds, higherKinds = _),
-        ("-language:existentials", () => existentials, existentials = _),
-        ("-language:experimental.macros", () => macros, macros = _),
-        ("-Xexperimental", () => experimental, experimental = _),
-        ("-nowarn", () => !warnings, (b: Boolean) => warnings = !b),
-        ("-deprecation", () => deprecationWarnings, deprecationWarnings = _),
-        ("-unchecked", () => uncheckedWarnings, uncheckedWarnings = _),
-        ("-feature", () => featureWarnings, featureWarnings = _),
-        ("-optimise", () => optimiseBytecode, optimiseBytecode = _),
-        ("-explaintypes", () => explainTypeErrors, explainTypeErrors = _),
-        ("-no-specialization",
-         () => !specialization,
-         (b: Boolean) => specialization = !b),
-        ("-P:continuations:enable", () => continuations, continuations = _))
+    Seq(
+      ("-language:dynamics", () => dynamics, dynamics = _),
+      ("-language:postfixOps", () => postfixOps, postfixOps = _),
+      ("-language:reflectiveCalls", () => reflectiveCalls, reflectiveCalls = _),
+      (
+        "-language:implicitConversions",
+        () => implicitConversions,
+        implicitConversions = _
+      ),
+      ("-language:higherKinds", () => higherKinds, higherKinds = _),
+      ("-language:existentials", () => existentials, existentials = _),
+      ("-language:experimental.macros", () => macros, macros = _),
+      ("-Xexperimental", () => experimental, experimental = _),
+      ("-nowarn", () => !warnings, (b: Boolean) => warnings = !b),
+      ("-deprecation", () => deprecationWarnings, deprecationWarnings = _),
+      ("-unchecked", () => uncheckedWarnings, uncheckedWarnings = _),
+      ("-feature", () => featureWarnings, featureWarnings = _),
+      ("-optimise", () => optimiseBytecode, optimiseBytecode = _),
+      ("-explaintypes", () => explainTypeErrors, explainTypeErrors = _),
+      (
+        "-no-specialization",
+        () => !specialization,
+        (b: Boolean) => specialization = !b
+      ),
+      ("-P:continuations:enable", () => continuations, continuations = _)
+    )
 
   private val DebuggingOptions: Map[String, DebuggingInfoLevel] = Map(
-      "-g:none" -> DebuggingInfoLevel.None,
-      "-g:source" -> DebuggingInfoLevel.Source,
-      "-g:line" -> DebuggingInfoLevel.Line,
-      "-g:vars" -> DebuggingInfoLevel.Vars,
-      "-g:notailcalls" -> DebuggingInfoLevel.Notailcalls)
+    "-g:none"        -> DebuggingInfoLevel.None,
+    "-g:source"      -> DebuggingInfoLevel.Source,
+    "-g:line"        -> DebuggingInfoLevel.Line,
+    "-g:vars"        -> DebuggingInfoLevel.Vars,
+    "-g:notailcalls" -> DebuggingInfoLevel.Notailcalls
+  )
 
   private val PluginOptionPattern = "-Xplugin:(.+)".r
 
@@ -95,7 +100,11 @@ class ScalaCompilerSettings(state: ScalaCompilerSettingsState) {
 
   def sbtIncOptions =
     SbtIncrementalOptions(
-        nameHashing, recompileOnMacroDef, transitiveStep, recompileAllFraction)
+      nameHashing,
+      recompileOnMacroDef,
+      transitiveStep,
+      recompileAllFraction
+    )
 
   private def initFrom0(options: Seq[String]) {
     val optionToSetter = ToggleOptions.map(it => (it._1, it._3)).toMap
@@ -120,14 +129,15 @@ class ScalaCompilerSettings(state: ScalaCompilerSettingsState) {
     }
   }
 
-  private def normalized(options: Seq[String]): Seq[String] = options.flatMap {
-    case "-language:macros" =>
-      Seq("-language:experimental.macros")
-    case option =>
-      if (option.startsWith("-language:"))
-        option.substring(10).split(",").map("-language:" + _)
-      else Seq(option)
-  }
+  private def normalized(options: Seq[String]): Seq[String] =
+    options.flatMap {
+      case "-language:macros" =>
+        Seq("-language:experimental.macros")
+      case option =>
+        if (option.startsWith("-language:"))
+          option.substring(10).split(",").map("-language:" + _)
+        else Seq(option)
+    }
 
   def loadState(state: ScalaCompilerSettingsState) {
     compileOrder = state.compileOrder

@@ -15,13 +15,14 @@ class GraphZipSpec extends TwoStreamsSetup {
 
   override type Outputs = (Int, Int)
 
-  override def fixture(b: GraphDSL.Builder[_]): Fixture = new Fixture(b) {
-    val zip = b.add(Zip[Int, Int]())
+  override def fixture(b: GraphDSL.Builder[_]): Fixture =
+    new Fixture(b) {
+      val zip = b.add(Zip[Int, Int]())
 
-    override def left: Inlet[Int] = zip.in0
-    override def right: Inlet[Int] = zip.in1
-    override def out: Outlet[(Int, Int)] = zip.out
-  }
+      override def left: Inlet[Int]        = zip.in0
+      override def right: Inlet[Int]       = zip.in1
+      override def out: Outlet[(Int, Int)] = zip.out
+    }
 
   "Zip" must {
 
@@ -81,13 +82,12 @@ class GraphZipSpec extends TwoStreamsSetup {
     }
 
     "complete even if no pending demand" in {
-      val upstream1 = TestPublisher.probe[Int]()
-      val upstream2 = TestPublisher.probe[String]()
+      val upstream1  = TestPublisher.probe[Int]()
+      val upstream2  = TestPublisher.probe[String]()
       val downstream = TestSubscriber.probe[(Int, String)]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create(Sink.fromSubscriber(downstream)) {
+        .fromGraph(GraphDSL.create(Sink.fromSubscriber(downstream)) {
           implicit b ⇒ out ⇒
             val zip = b.add(Zip[Int, String]())
 
@@ -111,13 +111,12 @@ class GraphZipSpec extends TwoStreamsSetup {
     }
 
     "complete if both sides complete before requested with elements pending" in {
-      val upstream1 = TestPublisher.probe[Int]()
-      val upstream2 = TestPublisher.probe[String]()
+      val upstream1  = TestPublisher.probe[Int]()
+      val upstream2  = TestPublisher.probe[String]()
       val downstream = TestSubscriber.probe[(Int, String)]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create(Sink.fromSubscriber(downstream)) {
+        .fromGraph(GraphDSL.create(Sink.fromSubscriber(downstream)) {
           implicit b ⇒ out ⇒
             val zip = b.add(Zip[Int, String]())
 
@@ -140,13 +139,12 @@ class GraphZipSpec extends TwoStreamsSetup {
     }
 
     "complete if one side complete before requested with elements pending" in {
-      val upstream1 = TestPublisher.probe[Int]()
-      val upstream2 = TestPublisher.probe[String]()
+      val upstream1  = TestPublisher.probe[Int]()
+      val upstream2  = TestPublisher.probe[String]()
       val downstream = TestSubscriber.probe[(Int, String)]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create(Sink.fromSubscriber(downstream)) {
+        .fromGraph(GraphDSL.create(Sink.fromSubscriber(downstream)) {
           implicit b ⇒ out ⇒
             val zip = b.add(Zip[Int, String]())
 
@@ -170,13 +168,12 @@ class GraphZipSpec extends TwoStreamsSetup {
     }
 
     "complete if one side complete before requested with elements pending 2" in {
-      val upstream1 = TestPublisher.probe[Int]()
-      val upstream2 = TestPublisher.probe[String]()
+      val upstream1  = TestPublisher.probe[Int]()
+      val upstream2  = TestPublisher.probe[String]()
       val downstream = TestSubscriber.probe[(Int, String)]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create(Sink.fromSubscriber(downstream)) {
+        .fromGraph(GraphDSL.create(Sink.fromSubscriber(downstream)) {
           implicit b ⇒ out ⇒
             val zip = b.add(Zip[Int, String]())
 
@@ -232,7 +229,7 @@ class GraphZipSpec extends TwoStreamsSetup {
       val subscriber1 = setup(soonToFailPublisher, nonemptyPublisher(1 to 4))
       subscriber1.expectSubscriptionAndError(TestException)
 
-      val subscriber2 = setup(nonemptyPublisher(1 to 4), soonToFailPublisher)
+      val subscriber2   = setup(nonemptyPublisher(1 to 4), soonToFailPublisher)
       val subscription2 = subscriber2.expectSubscriptionAndError(TestException)
     }
   }

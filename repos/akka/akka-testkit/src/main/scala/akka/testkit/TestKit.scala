@@ -54,10 +54,12 @@ object TestActor {
   case object NullMessage extends Message {
     override def msg: AnyRef =
       throw new IllegalActorStateException(
-          "last receive did not dequeue a message")
+        "last receive did not dequeue a message"
+      )
     override def sender: ActorRef =
       throw new IllegalActorStateException(
-          "last receive did not dequeue a message")
+        "last receive did not dequeue a message"
+      )
   }
 
   val FALSE = (x: Any) ⇒ false
@@ -75,17 +77,19 @@ class TestActor(queue: BlockingDeque[TestActor.Message]) extends Actor {
   var autopilot: AutoPilot = NoAutoPilot
 
   def receive = {
-    case SetIgnore(ign) ⇒ ignore = ign
-    case Watch(ref) ⇒ context.watch(ref)
-    case UnWatch(ref) ⇒ context.unwatch(ref)
+    case SetIgnore(ign)      ⇒ ignore = ign
+    case Watch(ref)          ⇒ context.watch(ref)
+    case UnWatch(ref)        ⇒ context.unwatch(ref)
     case SetAutoPilot(pilot) ⇒ autopilot = pilot
     case x: AnyRef ⇒
       autopilot = autopilot.run(sender(), x) match {
         case KeepRunning ⇒ autopilot
-        case other ⇒ other
+        case other       ⇒ other
       }
       val observe =
-        ignore map (ignoreFunc ⇒ !ignoreFunc.applyOrElse(x, FALSE)) getOrElse true
+        ignore map (ignoreFunc ⇒
+          !ignoreFunc.applyOrElse(x, FALSE)
+        ) getOrElse true
       if (observe) queue.offerLast(RealMessage(x, sender()))
   }
 
@@ -120,7 +124,7 @@ trait TestKitBase {
   implicit val system: ActorSystem
   val testKitSettings = TestKitExtension(system)
 
-  private val queue = new LinkedBlockingDeque[Message]()
+  private val queue                      = new LinkedBlockingDeque[Message]()
   private[akka] var lastMessage: Message = NullMessage
 
   def lastSender = lastMessage.sender
@@ -137,12 +141,17 @@ trait TestKitBase {
   val testActor: ActorRef = {
     val impl = system.asInstanceOf[ExtendedActorSystem]
     val ref = impl.systemActorOf(
-        TestActor.props(queue).withDispatcher(CallingThreadDispatcher.Id),
-        "%s-%d".format(testActorName, TestKit.testActorId.incrementAndGet))
-    awaitCond(ref match {
-      case r: RepointableRef ⇒ r.isStarted
-      case _ ⇒ true
-    }, 3.seconds.dilated, 10.millis)
+      TestActor.props(queue).withDispatcher(CallingThreadDispatcher.Id),
+      "%s-%d".format(testActorName, TestKit.testActorId.incrementAndGet)
+    )
+    awaitCond(
+      ref match {
+        case r: RepointableRef ⇒ r.isStarted
+        case _                 ⇒ true
+      },
+      3.seconds.dilated,
+      10.millis
+    )
     ref
   }
 
@@ -209,30 +218,34 @@ trait TestKitBase {
     * block or throw an [[AssertionError]] if no `within` block surrounds this
     * call.
     */
-  def remaining: FiniteDuration = end match {
-    case f: FiniteDuration ⇒ f - now
-    case _ ⇒
-      throw new AssertionError(
-          "`remaining` may not be called outside of `within`")
-  }
+  def remaining: FiniteDuration =
+    end match {
+      case f: FiniteDuration ⇒ f - now
+      case _ ⇒
+        throw new AssertionError(
+          "`remaining` may not be called outside of `within`"
+        )
+    }
 
   /**
     * Obtain time remaining for execution of the innermost enclosing `within`
     * block or missing that it returns the given duration.
     */
-  def remainingOr(duration: FiniteDuration): FiniteDuration = end match {
-    case x if x eq Duration.Undefined ⇒ duration
-    case x if !x.isFinite ⇒
-      throw new IllegalArgumentException("`end` cannot be infinite")
-    case f: FiniteDuration ⇒ f - now
-  }
+  def remainingOr(duration: FiniteDuration): FiniteDuration =
+    end match {
+      case x if x eq Duration.Undefined ⇒ duration
+      case x if !x.isFinite ⇒
+        throw new IllegalArgumentException("`end` cannot be infinite")
+      case f: FiniteDuration ⇒ f - now
+    }
 
-  private def remainingOrDilated(max: Duration): FiniteDuration = max match {
-    case x if x eq Duration.Undefined ⇒ remainingOrDefault
-    case x if !x.isFinite ⇒
-      throw new IllegalArgumentException("max duration cannot be infinite")
-    case f: FiniteDuration ⇒ f.dilated
-  }
+  private def remainingOrDilated(max: Duration): FiniteDuration =
+    max match {
+      case x if x eq Duration.Undefined ⇒ remainingOrDefault
+      case x if !x.isFinite ⇒
+        throw new IllegalArgumentException("max duration cannot be infinite")
+      case f: FiniteDuration ⇒ f.dilated
+    }
 
   /**
     * Query queue status.
@@ -249,10 +262,12 @@ trait TestKitBase {
     * Note that the timeout is scaled using Duration.dilated,
     * which uses the configuration entry "akka.test.timefactor".
     */
-  def awaitCond(p: ⇒ Boolean,
-                max: Duration = Duration.Undefined,
-                interval: Duration = 100.millis,
-                message: String = "") {
+  def awaitCond(
+      p: ⇒ Boolean,
+      max: Duration = Duration.Undefined,
+      interval: Duration = 100.millis,
+      message: String = ""
+  ) {
     val _max = remainingOrDilated(max)
     val stop = now + _max
 
@@ -279,19 +294,23 @@ trait TestKitBase {
     * Note that the timeout is scaled using Duration.dilated,
     * which uses the configuration entry "akka.test.timefactor".
     */
-  def awaitAssert(a: ⇒ Any,
-                  max: Duration = Duration.Undefined,
-                  interval: Duration = 100.millis) {
+  def awaitAssert(
+      a: ⇒ Any,
+      max: Duration = Duration.Undefined,
+      interval: Duration = 100.millis
+  ) {
     val _max = remainingOrDilated(max)
     val stop = now + _max
 
     @tailrec
     def poll(t: Duration) {
-      val failed = try { a; false } catch {
-        case NonFatal(e) ⇒
-          if ((now + t) >= stop) throw e
-          true
-      }
+      val failed =
+        try { a; false }
+        catch {
+          case NonFatal(e) ⇒
+            if ((now + t) >= stop) throw e
+            true
+        }
       if (failed) {
         Thread.sleep(t.toMillis)
         poll((stop - now) min interval)
@@ -318,12 +337,13 @@ trait TestKitBase {
     * }}}
     */
   def within[T](min: FiniteDuration, max: FiniteDuration)(f: ⇒ T): T = {
-    val _max = max.dilated
+    val _max  = max.dilated
     val start = now
-    val rem = if (end == Duration.Undefined) Duration.Inf else end - start
+    val rem   = if (end == Duration.Undefined) Duration.Inf else end - start
     assert(
-        rem >= min,
-        s"required min time $min not possible, only ${format(min.unit, rem)} left")
+      rem >= min,
+      s"required min time $min not possible, only ${format(min.unit, rem)} left"
+    )
 
     lastWasNoMsg = false
 
@@ -331,16 +351,20 @@ trait TestKitBase {
     val prev_end = end
     end = start + max_diff
 
-    val ret = try f finally end = prev_end
+    val ret =
+      try f
+      finally end = prev_end
 
     val diff = now - start
     assert(
-        min <= diff,
-        s"block took ${format(min.unit, diff)}, should at least have been $min")
+      min <= diff,
+      s"block took ${format(min.unit, diff)}, should at least have been $min"
+    )
     if (!lastWasNoMsg) {
       assert(
-          diff <= max_diff,
-          s"block took ${format(_max.unit, diff)}, exceeding ${format(_max.unit, max_diff)}")
+        diff <= max_diff,
+        s"block took ${format(_max.unit, diff)}, exceeding ${format(_max.unit, max_diff)}"
+      )
     }
 
     ret
@@ -377,12 +401,17 @@ trait TestKitBase {
     expectMsg_internal(max.dilated, obj, Some(hint))
 
   private def expectMsg_internal[T](
-      max: Duration, obj: T, hint: Option[String] = None): T = {
-    val o = receiveOne(max)
+      max: Duration,
+      obj: T,
+      hint: Option[String] = None
+  ): T = {
+    val o                 = receiveOne(max)
     val hintOrEmptyString = hint.map(": " + _).getOrElse("")
-    assert(o ne null,
-           s"timeout ($max) during expectMsg while waiting for $obj" +
-           hintOrEmptyString)
+    assert(
+      o ne null,
+      s"timeout ($max) during expectMsg while waiting for $obj" +
+        hintOrEmptyString
+    )
     assert(obj == o, s"expected $obj, found $o" + hintOrEmptyString)
     o.asInstanceOf[T]
   }
@@ -398,9 +427,10 @@ trait TestKitBase {
     * @return the received object as transformed by the partial function
     */
   def expectMsgPF[T](max: Duration = Duration.Undefined, hint: String = "")(
-      f: PartialFunction[Any, T]): T = {
+      f: PartialFunction[Any, T]
+  ): T = {
     val _max = remainingOrDilated(max)
-    val o = receiveOne(_max)
+    val o    = receiveOne(_max)
     assert(o ne null, s"timeout (${_max}) during expectMsg: $hint")
     assert(f.isDefinedAt(o), s"expected: $hint but got unexpected message $o")
     f(o)
@@ -413,7 +443,9 @@ trait TestKitBase {
     * @return the received Terminated message
     */
   def expectTerminated(
-      target: ActorRef, max: Duration = Duration.Undefined): Terminated =
+      target: ActorRef,
+      max: Duration = Duration.Undefined
+  ): Terminated =
     expectMsgPF(max, "Terminated " + target) {
       case t @ Terminated(`target`) ⇒ t
     }
@@ -427,16 +459,18 @@ trait TestKitBase {
     *         partial function returned true
     */
   def fishForMessage(max: Duration = Duration.Undefined, hint: String = "")(
-      f: PartialFunction[Any, Boolean]): Any = {
+      f: PartialFunction[Any, Boolean]
+  ): Any = {
     val _max = remainingOrDilated(max)
-    val end = now + _max
+    val end  = now + _max
     @tailrec
     def recv: Any = {
       val o = receiveOne(end - now)
+      assert(o ne null, s"timeout (${_max}) during fishForMessage, hint: $hint")
       assert(
-          o ne null, s"timeout (${_max}) during fishForMessage, hint: $hint")
-      assert(f.isDefinedAt(o),
-             s"fishForMessage($hint) found unexpected message $o")
+        f.isDefinedAt(o),
+        s"fishForMessage($hint) found unexpected message $o"
+      )
       if (f(o)) o else recv
     }
     recv
@@ -447,7 +481,9 @@ trait TestKitBase {
     */
   def expectMsgType[T](implicit t: ClassTag[T]): T =
     expectMsgClass_internal(
-        remainingOrDefault, t.runtimeClass.asInstanceOf[Class[T]])
+      remainingOrDefault,
+      t.runtimeClass.asInstanceOf[Class[T]]
+    )
 
   /**
     * Receive one message from the test actor and assert that it conforms to the
@@ -475,7 +511,10 @@ trait TestKitBase {
   def expectMsgClass[C](max: FiniteDuration, c: Class[C]): C =
     expectMsgClass_internal(max.dilated, c)
 
-  private def expectMsgClass_internal[C](max: FiniteDuration, c: Class[C]): C = {
+  private def expectMsgClass_internal[C](
+      max: FiniteDuration,
+      c: Class[C]
+  ): C = {
     val o = receiveOne(max)
     assert(o ne null, s"timeout ($max) during expectMsgClass waiting for $c")
     assert(BoxedType(c) isInstance o, s"expected $c, found ${o.getClass} ($o)")
@@ -501,8 +540,9 @@ trait TestKitBase {
   private def expectMsgAnyOf_internal[T](max: FiniteDuration, obj: T*): T = {
     val o = receiveOne(max)
     assert(
-        o ne null,
-        s"timeout ($max) during expectMsgAnyOf waiting for ${obj.mkString("(", ", ", ")")}")
+      o ne null,
+      s"timeout ($max) during expectMsgAnyOf waiting for ${obj.mkString("(", ", ", ")")}"
+    )
     assert(obj exists (_ == o), s"found unexpected $o")
     o.asInstanceOf[T]
   }
@@ -524,12 +564,14 @@ trait TestKitBase {
     expectMsgAnyClassOf_internal(max.dilated, obj: _*)
 
   private def expectMsgAnyClassOf_internal[C](
-      max: FiniteDuration, obj: Class[_ <: C]*): C = {
+      max: FiniteDuration,
+      obj: Class[_ <: C]*
+  ): C = {
     val o = receiveOne(max)
     assert(
-        o ne null,
-        s"timeout ($max) during expectMsgAnyClassOf waiting for ${obj.mkString(
-            "(", ", ", ")")}")
+      o ne null,
+      s"timeout ($max) during expectMsgAnyClassOf waiting for ${obj.mkString("(", ", ", ")")}"
+    )
     assert(obj exists (c ⇒ BoxedType(c) isInstance o), s"found unexpected $o")
     o.asInstanceOf[C]
   }
@@ -556,24 +598,35 @@ trait TestKitBase {
   def expectMsgAllOf[T](max: FiniteDuration, obj: T*): immutable.Seq[T] =
     expectMsgAllOf_internal(max.dilated, obj: _*)
 
-  private def checkMissingAndUnexpected(missing: Seq[Any],
-                                        unexpected: Seq[Any],
-                                        missingMessage: String,
-                                        unexpectedMessage: String): Unit = {
-    assert(missing.isEmpty && unexpected.isEmpty,
-           (if (missing.isEmpty)
-              "" else missing.mkString(missingMessage + " [", ", ", "] ")) +
-           (if (unexpected.isEmpty) ""
-            else unexpected.mkString(unexpectedMessage + " [", ", ", "]")))
+  private def checkMissingAndUnexpected(
+      missing: Seq[Any],
+      unexpected: Seq[Any],
+      missingMessage: String,
+      unexpectedMessage: String
+  ): Unit = {
+    assert(
+      missing.isEmpty && unexpected.isEmpty,
+      (if (missing.isEmpty)
+         ""
+       else missing.mkString(missingMessage + " [", ", ", "] ")) +
+        (if (unexpected.isEmpty) ""
+         else unexpected.mkString(unexpectedMessage + " [", ", ", "]"))
+    )
   }
 
   private def expectMsgAllOf_internal[T](
-      max: FiniteDuration, obj: T*): immutable.Seq[T] = {
-    val recv = receiveN_internal(obj.size, max)
-    val missing = obj filterNot (x ⇒ recv exists (x == _))
+      max: FiniteDuration,
+      obj: T*
+  ): immutable.Seq[T] = {
+    val recv       = receiveN_internal(obj.size, max)
+    val missing    = obj filterNot (x ⇒ recv exists (x == _))
     val unexpected = recv filterNot (x ⇒ obj exists (x == _))
     checkMissingAndUnexpected(
-        missing, unexpected, "not found", "found unexpected")
+      missing,
+      unexpected,
+      "not found",
+      "found unexpected"
+    )
     recv.asInstanceOf[immutable.Seq[T]]
   }
 
@@ -592,17 +645,25 @@ trait TestKitBase {
     * being thrown in case of timeout.
     */
   def expectMsgAllClassOf[T](
-      max: FiniteDuration, obj: Class[_ <: T]*): immutable.Seq[T] =
+      max: FiniteDuration,
+      obj: Class[_ <: T]*
+  ): immutable.Seq[T] =
     internalExpectMsgAllClassOf(max.dilated, obj: _*)
 
   private def internalExpectMsgAllClassOf[T](
-      max: FiniteDuration, obj: Class[_ <: T]*): immutable.Seq[T] = {
-    val recv = receiveN_internal(obj.size, max)
+      max: FiniteDuration,
+      obj: Class[_ <: T]*
+  ): immutable.Seq[T] = {
+    val recv    = receiveN_internal(obj.size, max)
     val missing = obj filterNot (x ⇒ recv exists (_.getClass eq BoxedType(x)))
     val unexpected =
       recv filterNot (x ⇒ obj exists (c ⇒ BoxedType(c) eq x.getClass))
     checkMissingAndUnexpected(
-        missing, unexpected, "not found", "found non-matching object(s)")
+      missing,
+      unexpected,
+      "not found",
+      "found non-matching object(s)"
+    )
     recv.asInstanceOf[immutable.Seq[T]]
   }
 
@@ -624,17 +685,25 @@ trait TestKitBase {
     * may be counter-intuitive.
     */
   def expectMsgAllConformingOf[T](
-      max: FiniteDuration, obj: Class[_ <: T]*): immutable.Seq[T] =
+      max: FiniteDuration,
+      obj: Class[_ <: T]*
+  ): immutable.Seq[T] =
     internalExpectMsgAllConformingOf(max.dilated, obj: _*)
 
   private def internalExpectMsgAllConformingOf[T](
-      max: FiniteDuration, obj: Class[_ <: T]*): immutable.Seq[T] = {
-    val recv = receiveN_internal(obj.size, max)
+      max: FiniteDuration,
+      obj: Class[_ <: T]*
+  ): immutable.Seq[T] = {
+    val recv    = receiveN_internal(obj.size, max)
     val missing = obj filterNot (x ⇒ recv exists (BoxedType(x) isInstance _))
     val unexpected =
       recv filterNot (x ⇒ obj exists (c ⇒ BoxedType(c) isInstance x))
     checkMissingAndUnexpected(
-        missing, unexpected, "not found", "found non-matching object(s)")
+      missing,
+      unexpected,
+      "not found",
+      "found non-matching object(s)"
+    )
     recv.asInstanceOf[immutable.Seq[T]]
   }
 
@@ -673,11 +742,12 @@ trait TestKitBase {
     * assert(series == (1 to 7).toList)
     * }}}
     */
-  def receiveWhile[T](max: Duration = Duration.Undefined,
-                      idle: Duration = Duration.Inf,
-                      messages: Int = Int.MaxValue)(
-      f: PartialFunction[AnyRef, T]): immutable.Seq[T] = {
-    val stop = now + remainingOrDilated(max)
+  def receiveWhile[T](
+      max: Duration = Duration.Undefined,
+      idle: Duration = Duration.Inf,
+      messages: Int = Int.MaxValue
+  )(f: PartialFunction[AnyRef, T]): immutable.Seq[T] = {
+    val stop         = now + remainingOrDilated(max)
     var msg: Message = NullMessage
 
     @tailrec
@@ -718,13 +788,18 @@ trait TestKitBase {
   def receiveN(n: Int, max: FiniteDuration): immutable.Seq[AnyRef] =
     receiveN_internal(n, max.dilated)
 
-  private def receiveN_internal(n: Int, max: Duration): immutable.Seq[AnyRef] = {
+  private def receiveN_internal(
+      n: Int,
+      max: Duration
+  ): immutable.Seq[AnyRef] = {
     val stop = max + now
     for { x ← 1 to n } yield {
       val timeout = stop - now
-      val o = receiveOne(timeout)
-      assert(o ne null,
-             s"timeout ($max) while expecting $n messages (got ${x - 1})")
+      val o       = receiveOne(timeout)
+      assert(
+        o ne null,
+        s"timeout ($max) while expecting $n messages (got ${x - 1})"
+      )
       o
     }
   }
@@ -761,9 +836,11 @@ trait TestKitBase {
     *
     * If verifySystemShutdown is true, then an exception will be thrown on failure.
     */
-  def shutdown(actorSystem: ActorSystem = system,
-               duration: Duration = 5.seconds.dilated.min(10.seconds),
-               verifySystemShutdown: Boolean = false) {
+  def shutdown(
+      actorSystem: ActorSystem = system,
+      duration: Duration = 5.seconds.dilated.min(10.seconds),
+      verifySystemShutdown: Boolean = false
+  ) {
     TestKit.shutdownActorSystem(actorSystem, duration, verifySystemShutdown)
   }
 
@@ -824,10 +901,12 @@ object TestKit {
     * Await until the given condition evaluates to `true` or the timeout
     * expires, whichever comes first.
     */
-  def awaitCond(p: ⇒ Boolean,
-                max: Duration,
-                interval: Duration = 100.millis,
-                noThrow: Boolean = false): Boolean = {
+  def awaitCond(
+      p: ⇒ Boolean,
+      max: Duration,
+      interval: Duration = 100.millis,
+      noThrow: Boolean = false
+  ): Boolean = {
     val stop = now + max
 
     @tailrec
@@ -858,16 +937,20 @@ object TestKit {
     *
     * If verifySystemShutdown is true, then an exception will be thrown on failure.
     */
-  def shutdownActorSystem(actorSystem: ActorSystem,
-                          duration: Duration = 10.seconds,
-                          verifySystemShutdown: Boolean = false): Unit = {
+  def shutdownActorSystem(
+      actorSystem: ActorSystem,
+      duration: Duration = 10.seconds,
+      verifySystemShutdown: Boolean = false
+  ): Unit = {
     actorSystem.terminate()
-    try Await.ready(actorSystem.whenTerminated, duration) catch {
+    try Await.ready(actorSystem.whenTerminated, duration)
+    catch {
       case _: TimeoutException ⇒
         val msg = "Failed to stop [%s] within [%s] \n%s".format(
-            actorSystem.name,
-            duration,
-            actorSystem.asInstanceOf[ActorSystemImpl].printTree)
+          actorSystem.name,
+          duration,
+          actorSystem.asInstanceOf[ActorSystemImpl].printTree
+        )
         if (verifySystemShutdown) throw new RuntimeException(msg)
         else actorSystem.log.warning(msg)
     }
@@ -952,7 +1035,8 @@ private[testkit] abstract class CachingPartialFunction[A, B <: AnyRef]
 
   var cache: B = _
   final def isDefinedAt(x: A): Boolean =
-    try { cache = `match`(x); true } catch {
+    try { cache = `match`(x); true }
+    catch {
       case NoMatch ⇒ cache = null.asInstanceOf[B]; false
     }
   final override def apply(x: A): B = cache

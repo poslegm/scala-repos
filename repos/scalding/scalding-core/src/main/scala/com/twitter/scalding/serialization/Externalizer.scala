@@ -37,5 +37,6 @@ object Externalizer {
 class Externalizer[T] extends ChillExtern[T] {
   protected override def kryo =
     new KryoHadoop(
-        ScalaAnyRefMapConfig(Map("scalding.kryo.setreferences" -> "true")))
+      ScalaAnyRefMapConfig(Map("scalding.kryo.setreferences" -> "true"))
+    )
 }

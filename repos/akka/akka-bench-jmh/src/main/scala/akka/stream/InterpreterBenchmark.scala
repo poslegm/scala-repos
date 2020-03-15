@@ -3,7 +3,10 @@ package akka.stream
 import akka.event._
 import akka.stream.impl.fusing.{GraphInterpreterSpecKit, GraphStages}
 import akka.stream.impl.fusing.GraphStages
-import akka.stream.impl.fusing.GraphInterpreter.{DownstreamBoundaryStageLogic, UpstreamBoundaryStageLogic}
+import akka.stream.impl.fusing.GraphInterpreter.{
+  DownstreamBoundaryStageLogic,
+  UpstreamBoundaryStageLogic
+}
 import akka.stream.stage._
 import org.openjdk.jmh.annotations._
 
@@ -27,8 +30,8 @@ class InterpreterBenchmark {
     new GraphInterpreterSpecKit {
       new TestSetup {
         val identities = Vector.fill(numberOfIds)(GraphStages.identity[Int])
-        val source = new GraphDataSource("source", data100k)
-        val sink = new GraphDataSink[Int]("sink", data100k.size)
+        val source     = new GraphDataSource("source", data100k)
+        val sink       = new GraphDataSink[Int]("sink", data100k.size)
 
         val b = builder(identities: _*)
           .connect(source, identities.head.in)
@@ -51,21 +54,24 @@ object InterpreterBenchmark {
 
   case class GraphDataSource[T](override val toString: String, data: Vector[T])
       extends UpstreamBoundaryStageLogic[T] {
-    var idx: Int = 0
+    var idx: Int                            = 0
     override val out: akka.stream.Outlet[T] = Outlet[T]("out")
     out.id = 0
 
-    setHandler(out, new OutHandler {
-      override def onPull(): Unit = {
-        if (idx < data.size) {
-          push(out, data(idx))
-          idx += 1
-        } else {
-          completeStage()
+    setHandler(
+      out,
+      new OutHandler {
+        override def onPull(): Unit = {
+          if (idx < data.size) {
+            push(out, data(idx))
+            idx += 1
+          } else {
+            completeStage()
+          }
         }
+        override def onDownstreamFinish(): Unit = completeStage()
       }
-      override def onDownstreamFinish(): Unit = completeStage()
-    })
+    )
   }
 
   case class GraphDataSink[T](override val toString: String, var expected: Int)
@@ -73,13 +79,16 @@ object InterpreterBenchmark {
     override val in: akka.stream.Inlet[T] = Inlet[T]("in")
     in.id = 0
 
-    setHandler(in, new InHandler {
-      override def onPush(): Unit = {
-        expected -= 1
-        if (expected > 0) pull(in)
-        // Otherwise do nothing, it will exit the interpreter
+    setHandler(
+      in,
+      new InHandler {
+        override def onPush(): Unit = {
+          expected -= 1
+          if (expected > 0) pull(in)
+          // Otherwise do nothing, it will exit the interpreter
+        }
       }
-    })
+    )
 
     def requestOne(): Unit = pull(in)
   }
@@ -89,7 +98,9 @@ object InterpreterBenchmark {
       true
     override def publish(event: Event): Unit = ()
     override def unsubscribe(
-        subscriber: Subscriber, from: Classifier): Boolean = true
+        subscriber: Subscriber,
+        from: Classifier
+    ): Boolean                                             = true
     override def unsubscribe(subscriber: Subscriber): Unit = ()
   }
 }

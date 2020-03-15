@@ -29,42 +29,50 @@ object GradientTester extends SerializableLogging {
     * @tparam T
     * @return differences in each component
     */
-  def test[K, T](f: DiffFunction[T],
-                 x: T,
-                 randFraction: Double = 0.01,
-                 skipZeros: Boolean = false,
-                 epsilon: Double = 1E-8,
-                 tolerance: Double = 1E-3,
-                 toString: K => String = { (_: K).toString })(
-      implicit view2: T <:< NumericOps[T],
+  def test[K, T](
+      f: DiffFunction[T],
+      x: T,
+      randFraction: Double = 0.01,
+      skipZeros: Boolean = false,
+      epsilon: Double = 1e-8,
+      tolerance: Double = 1e-3,
+      toString: K => String = { (_: K).toString }
+  )(implicit
+      view2: T <:< NumericOps[T],
       view: T <:< Tensor[K, Double],
       copy: CanCopy[T],
       canNorm: norm.Impl[T, Double],
-      opSub: OpSub.Impl2[T, T, T]) = {
+      opSub: OpSub.Impl2[T, T, T]
+  ) = {
     val indices = Rand
       .subsetsOfSize(
-          x.keysIterator.toIndexedSeq, (x.size * randFraction + 1).toInt)
+        x.keysIterator.toIndexedSeq,
+        (x.size * randFraction + 1).toInt
+      )
       .get()
     testIndices(f, x, indices, skipZeros, toString, epsilon, tolerance)
   }
 
-  def testIndices[T, K](f: DiffFunction[T],
-                        x: T,
-                        indices: Traversable[K],
-                        skipZeros: Boolean = false,
-                        toString: (K) => String = { (_: K).toString },
-                        epsilon: Double = 1e-8,
-                        tolerance: Double = 1E-3)(
-      implicit view2: T <:< NumericOps[T],
+  def testIndices[T, K](
+      f: DiffFunction[T],
+      x: T,
+      indices: Traversable[K],
+      skipZeros: Boolean = false,
+      toString: (K) => String = { (_: K).toString },
+      epsilon: Double = 1e-8,
+      tolerance: Double = 1e-3
+  )(implicit
+      view2: T <:< NumericOps[T],
       view: T <:< Tensor[K, Double],
       copy: CanCopy[T],
       canNorm: norm.Impl[T, Double],
-      opSub: OpSub.Impl2[T, T, T]): T = {
+      opSub: OpSub.Impl2[T, T, T]
+  ): T = {
     val (fx, trueGrad) = f.calculate(x)
-    val xx = copy(x)
-    val differences = opSub(x, x)
-    var ok, tried = 0
-    val sz = indices.size
+    val xx             = copy(x)
+    val differences    = opSub(x, x)
+    var ok, tried      = 0
+    val sz             = indices.size
     for (k <- indices) {
       if (skipZeros && trueGrad(k) == 0.0) {
         logger.debug(s"Zero Grad: ${toString(k)}")
@@ -75,21 +83,24 @@ object GradientTester extends SerializableLogging {
         xx(k) -= epsilon
         val relDif =
           (grad -
-              trueGrad(k)).abs / math.max(trueGrad(k).abs, grad.abs).max(1E-4)
+            trueGrad(k)).abs / math.max(trueGrad(k).abs, grad.abs).max(1e-4)
         if (relDif < tolerance) {
           ok += 1
           logger.debug(s"OK: ${toString(k)} $relDif")
         } else {
-          logger.warn(toString(k) +
+          logger.warn(
+            toString(k) +
               " relDif: %.3e [eps : %e, calculated: %4.3e empirical: %4.3e]"
-                .format(relDif, epsilon, trueGrad(k), grad))
+                .format(relDif, epsilon, trueGrad(k), grad)
+          )
         }
         differences(k) = relDif
         tried += 1
       }
       if (tried % 100 == 0 || tried == sz) {
         logger.info(
-            f"Checked $tried of ${sz} (out of dimension ${x.size}). ${ok * 100.0 / tried}%.4g%% ok.")
+          f"Checked $tried of ${sz} (out of dimension ${x.size}). ${ok * 100.0 / tried}%.4g%% ok."
+        )
       }
     }
     differences

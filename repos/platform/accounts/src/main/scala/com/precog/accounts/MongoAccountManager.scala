@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -59,15 +59,20 @@ trait ZKAccountIdSource extends AccountManager[Future] {
   def zkc: ZkClient
   def settings: ZkAccountManagerSettings
 
-  def newAccountId: Future[String] = M.point {
-    if (!zkc.exists(settings.zkAccountIdPath)) {
-      zkc.createPersistent(settings.zkAccountIdPath, true)
-    }
+  def newAccountId: Future[String] =
+    M.point {
+      if (!zkc.exists(settings.zkAccountIdPath)) {
+        zkc.createPersistent(settings.zkAccountIdPath, true)
+      }
 
-    val createdPath = zkc.createPersistentSequential(
-        settings.zkAccountIdPath, Array.empty[Byte])
-    createdPath.substring(createdPath.length - 10) //last 10 characters are a sequential int
-  }
+      val createdPath = zkc.createPersistentSequential(
+        settings.zkAccountIdPath,
+        Array.empty[Byte]
+      )
+      createdPath.substring(
+        createdPath.length - 10
+      ) //last 10 characters are a sequential int
+    }
 }
 
 trait MongoAccountManagerSettings {
@@ -80,8 +85,10 @@ trait MongoAccountManagerSettings {
 }
 
 abstract class MongoAccountManager(
-    mongo: Mongo, database: Database, settings: MongoAccountManagerSettings)(
-    implicit val M: Monad[Future])
+    mongo: Mongo,
+    database: Database,
+    settings: MongoAccountManagerSettings
+)(implicit val M: Monad[Future])
     extends AccountManager[Future] {
   import Account._
 
@@ -93,84 +100,99 @@ abstract class MongoAccountManager(
   // Ensure indices for account lookup on apiKey, accountId, or email
   database(ensureIndex("apiKey_index").on(".apiKey").in(settings.accounts))
   database(
-      ensureIndex("accountId_index").on(".accountId").in(settings.accounts))
+    ensureIndex("accountId_index").on(".accountId").in(settings.accounts)
+  )
   database(ensureIndex("email_index").on(".email").in(settings.accounts))
   // Ensure reset token lookup by token Id
   database(
-      ensureIndex("reset_token_index").on(".tokenId").in(settings.resetTokens))
+    ensureIndex("reset_token_index").on(".tokenId").in(settings.resetTokens)
+  )
 
   def newAccountId: Future[String]
 
-  def createAccount(email: String,
-                    password: String,
-                    creationDate: DateTime,
-                    plan: AccountPlan,
-                    parent: Option[AccountId],
-                    profile: Option[JValue])(
-      f: AccountId => Future[APIKey]): Future[Account] = {
+  def createAccount(
+      email: String,
+      password: String,
+      creationDate: DateTime,
+      plan: AccountPlan,
+      parent: Option[AccountId],
+      profile: Option[JValue]
+  )(f: AccountId => Future[APIKey]): Future[Account] = {
     for {
       accountId <- newAccountId
-      path = Path(accountId)
-      apiKey <- f(accountId)
+      path       = Path(accountId)
+      apiKey    <- f(accountId)
       account <- {
         val salt = randomSalt()
-        val account0 = Account(accountId,
-                               email,
-                               saltAndHashSHA256(password, salt),
-                               salt,
-                               creationDate,
-                               apiKey,
-                               path,
-                               plan,
-                               parent,
-                               Some(creationDate),
-                               profile)
+        val account0 = Account(
+          accountId,
+          email,
+          saltAndHashSHA256(password, salt),
+          salt,
+          creationDate,
+          apiKey,
+          path,
+          plan,
+          parent,
+          Some(creationDate),
+          profile
+        )
 
-        database(insert(account0.serialize.asInstanceOf[JObject])
-              .into(settings.accounts)) map { _ =>
-          account0
-        }
+        database(
+          insert(account0.serialize.asInstanceOf[JObject])
+            .into(settings.accounts)
+        ) map { _ => account0 }
       }
     } yield account
   }
 
   private def findOneMatching[A](
-      keyName: String, keyValue: String, collection: String)(
-      implicit extractor: Extractor[A]): Future[Option[A]] = {
+      keyName: String,
+      keyValue: String,
+      collection: String
+  )(implicit extractor: Extractor[A]): Future[Option[A]] = {
     database(selectOne().from(collection).where(keyName === keyValue)) map {
       _.map(_.deserialize(extractor))
     }
   }
 
   private def findAllMatching[A](
-      keyName: String, keyValue: String, collection: String)(
-      implicit extractor: Extractor[A]): Future[Set[A]] = {
+      keyName: String,
+      keyValue: String,
+      collection: String
+  )(implicit extractor: Extractor[A]): Future[Set[A]] = {
     database(selectAll.from(collection).where(keyName === keyValue)) map {
       _.map(_.deserialize(extractor)).toSet
     }
   }
 
   private def findAll[A](
-      collection: String)(implicit extract: Extractor[A]): Future[Seq[A]] =
+      collection: String
+  )(implicit extract: Extractor[A]): Future[Seq[A]] =
     database(selectAll.from(collection)) map {
       _.map(_.deserialize(extract)).toSeq
     }
 
   def generateResetToken(account: Account): Future[ResetTokenId] =
     generateResetToken(
-        account,
-        (new DateTime).plusMinutes(settings.resetTokenExpirationMinutes))
+      account,
+      (new DateTime).plusMinutes(settings.resetTokenExpirationMinutes)
+    )
 
   def generateResetToken(
-      account: Account, expiration: DateTime): Future[ResetTokenId] = {
+      account: Account,
+      expiration: DateTime
+  ): Future[ResetTokenId] = {
     val tokenId = java.util.UUID.randomUUID.toString.replace("-", "")
 
-    val token = ResetToken(
-        tokenId, account.accountId, account.email, expiration)
+    val token =
+      ResetToken(tokenId, account.accountId, account.email, expiration)
 
     logger.debug("Saving new reset token " + token)
-    database(insert(token.serialize.asInstanceOf[JObject])
-          .into(settings.resetTokens)).map { _ =>
+    database(
+      insert(token.serialize.asInstanceOf[JObject])
+        .into(settings.resetTokens)
+    ).map { _ =>
       logger.debug("Save complete on reset token " + token)
       tokenId
     }
@@ -178,15 +200,19 @@ abstract class MongoAccountManager(
 
   def markResetTokenUsed(tokenId: ResetTokenId): Future[PrecogUnit] = {
     logger.debug("Marking reset token %s as used".format(tokenId))
-    database(update(settings.resetTokens)
-          .set("usedAt" set (new DateTime).serialize)
-          .where("tokenId" === tokenId)).map { _ =>
+    database(
+      update(settings.resetTokens)
+        .set("usedAt" set (new DateTime).serialize)
+        .where("tokenId" === tokenId)
+    ).map { _ =>
       logger.debug("Reset token %s marked as used".format(tokenId)); PrecogUnit
     }
   }
 
-  def findResetToken(accountId: AccountId,
-                     tokenId: ResetTokenId): Future[Option[ResetToken]] =
+  def findResetToken(
+      accountId: AccountId,
+      tokenId: ResetTokenId
+  ): Future[Option[ResetToken]] =
     findOneMatching[ResetToken]("tokenId", tokenId, settings.resetTokens)
 
   def findAccountByAPIKey(apiKey: String) =
@@ -207,9 +233,7 @@ abstract class MongoAccountManager(
           update(settings.accounts)
             .set(updateObj)
             .where("accountId" === account.accountId)
-        } map { _ =>
-          true
-        }
+        } map { _ => true }
 
       case None =>
         M.point(false)
@@ -220,17 +244,19 @@ abstract class MongoAccountManager(
     findAccountById(accountId).flatMap {
       case ot @ Some(account) =>
         for {
-          _ <- database(insert(account.serialize.asInstanceOf[JObject])
-                .into(settings.deletedAccounts))
           _ <- database(
-              remove.from(settings.accounts).where("accountId" === accountId))
+                insert(account.serialize.asInstanceOf[JObject])
+                  .into(settings.deletedAccounts)
+              )
+          _ <- database(
+                remove.from(settings.accounts).where("accountId" === accountId)
+              )
         } yield { ot }
       case None =>
         M.point(None)
     }
   }
 
-  def close() = database.disconnect.fallbackTo(M.point(())).flatMap { _ =>
-    mongo.close
-  }
+  def close() =
+    database.disconnect.fallbackTo(M.point(())).flatMap { _ => mongo.close }
 }

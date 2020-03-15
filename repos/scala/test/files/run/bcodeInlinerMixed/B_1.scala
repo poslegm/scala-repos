@@ -13,7 +13,7 @@
 
 class B {
   @inline final def flop = A_1.bar
-  def g = flop
+  def g                  = flop
 }
 class C {
   def h(b: B) = b.flop

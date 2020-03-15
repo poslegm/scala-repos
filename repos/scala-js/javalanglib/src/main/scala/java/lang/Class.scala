@@ -4,17 +4,17 @@ import scala.scalajs.js
 
 @js.native
 private trait ScalaJSClassData[A] extends js.Object {
-  val name: String = js.native
-  val isPrimitive: scala.Boolean = js.native
-  val isInterface: scala.Boolean = js.native
+  val name: String                = js.native
+  val isPrimitive: scala.Boolean  = js.native
+  val isInterface: scala.Boolean  = js.native
   val isArrayClass: scala.Boolean = js.native
-  val isRawJSType: scala.Boolean = js.native
+  val isRawJSType: scala.Boolean  = js.native
 
   def isInstance(obj: Object): scala.Boolean = js.native
-  def getFakeInstance(): Object = js.native
+  def getFakeInstance(): Object              = js.native
 
   def getSuperclass(): Class[_ >: A] = js.native
-  def getComponentType(): Class[_] = js.native
+  def getComponentType(): Class[_]   = js.native
 
   def newArrayOfThisClass(dimensions: js.Array[Int]): AnyRef = js.native
 }
@@ -23,7 +23,7 @@ final class Class[A] private (data: ScalaJSClassData[A]) extends Object {
 
   override def toString(): String = {
     (if (isInterface()) "interface " else if (isPrimitive()) "" else "class ") +
-    getName()
+      getName()
   }
 
   def isInstance(obj: Object): scala.Boolean =
@@ -80,9 +80,10 @@ final class Class[A] private (data: ScalaJSClassData[A]) extends Object {
   @inline // optimize for the Unchecked case, where this becomes identity()
   def cast(obj: Object): A = {
     scala.scalajs.runtime.SemanticsUtils.asInstanceOfCheck(
-        (this eq classOf[Nothing]) ||
+      (this eq classOf[Nothing]) ||
         (obj != null && !isRawJSType && !isInstance(obj)),
-        new ClassCastException(obj + " is not an instance of " + getName))
+      new ClassCastException(obj + " is not an instance of " + getName)
+    )
     obj.asInstanceOf[A]
   }
 

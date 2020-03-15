@@ -21,7 +21,7 @@ class NewFormatSpec extends AbstractSpec {
       val allFiles = new File(rootPath).listFiles.toList
       foreach(allFiles) { path =>
         println(s"$path")
-        val lines = Source.fromFile(path).getLines().toList
+        val lines           = Source.fromFile(path).getLines().toList
         val (_, statements) = splitter(path, lines)
         statements.nonEmpty must be_==(true).setMessage(s"""
                                |***should contains statements***

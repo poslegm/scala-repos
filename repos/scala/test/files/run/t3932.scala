@@ -5,7 +5,7 @@ abstract class C {
   def g1 = (f == f)
 }
 object O1 extends C {
-  val f = new Foo()
+  val f  = new Foo()
   def g2 = (f == f)
 }
 object O2 extends C {

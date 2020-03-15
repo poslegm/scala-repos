@@ -1,6 +1,6 @@
 class C[@specialized(Int) A](a: A) {
   lazy val b = (a, a)
-  def c = b
+  def c      = b
 }
 object Test {
   def main(args: Array[String]) {

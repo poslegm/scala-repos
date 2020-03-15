@@ -21,11 +21,14 @@ import scala.collection.JavaConversions._
   * @author Rado Buransky (buransky.com)
   */
 class ScalaGenerateToStringWizard(
-    project: Project, classMembers: Seq[ScNamedElement])
-    extends AbstractWizard[Step](
-        ScalaBundle.message(
-            "org.jetbrains.plugins.scala.codeInsight.generation.ui.toString.title"),
-        project) {
+    project: Project,
+    classMembers: Seq[ScNamedElement]
+) extends AbstractWizard[Step](
+      ScalaBundle.message(
+        "org.jetbrains.plugins.scala.codeInsight.generation.ui.toString.title"
+      ),
+      project
+    ) {
 
   override def showAndGetOk() = {
     val result = super.showAndGetOk()
@@ -33,7 +36,8 @@ class ScalaGenerateToStringWizard(
     if (this.isOK) {
       val settings = ScalaProjectSettings.getInstance(project)
       settings.setGenerateToStringWithFieldNames(
-          toStringPanel.checkBox.isSelected)
+        toStringPanel.checkBox.isSelected
+      )
     }
 
     result
@@ -52,10 +56,12 @@ class ScalaGenerateToStringWizard(
   private lazy val toStringPanel = {
     val allFields = classMembers.map(new ScalaMemberInfo(_))
     val panel = new ScalaToStringMemberSelectionPanel(
-        ScalaBundle.message(
-            "org.jetbrains.plugins.scala.codeInsight.generation.ui.toString.fields"),
-        allFields,
-        null)
+      ScalaBundle.message(
+        "org.jetbrains.plugins.scala.codeInsight.generation.ui.toString.fields"
+      ),
+      allFields,
+      null
+    )
     panel.getTable.setMemberInfoModel(new ScalaToStringMemberInfoModel)
     panel
   }
@@ -65,9 +71,9 @@ class ScalaGenerateToStringWizard(
   }
 
   private class ToStringStep(
-      panel: AbstractMemberSelectionPanel[ScNamedElement, ScalaMemberInfo])
-      extends StepAdapter {
-    override def getComponent = panel
+      panel: AbstractMemberSelectionPanel[ScNamedElement, ScalaMemberInfo]
+  ) extends StepAdapter {
+    override def getComponent                 = panel
     override def getPreferredFocusedComponent = panel.getTable
   }
 
@@ -77,7 +83,8 @@ class ScalaGenerateToStringWizard(
 
     val settings = ScalaProjectSettings.getInstance(project)
     toStringPanel.checkBox.setSelected(
-        settings.isGenerateToStringWithFieldNames)
+      settings.isGenerateToStringWithFieldNames
+    )
   }
 
   toStringPanel.getTable.getModel

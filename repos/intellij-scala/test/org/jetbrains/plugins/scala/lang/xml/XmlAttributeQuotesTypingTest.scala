@@ -11,7 +11,7 @@ class XmlAttributeQuotesTypingTest
     extends ScalaLightCodeInsightFixtureTestAdapter {
 
   def testQuotesAfterFirstAttribute() {
-    val text = "class A { val xml = <aaa attr" + CARET_MARKER + "\n}"
+    val text        = "class A { val xml = <aaa attr" + CARET_MARKER + "\n}"
     val assumedStub = "class A { val xml = <aaa attr=\"\"\n}"
 
     checkGeneratedTextAfterTyping(text, assumedStub, '=')
@@ -20,7 +20,7 @@ class XmlAttributeQuotesTypingTest
   def testQuotesAfterSecondAttribute() {
     val text =
       "class A { val xml = <aaa attr1=\"blahlbha\" attr2" + CARET_MARKER +
-      "\n}"
+        "\n}"
     val assumedStub =
       "class A { val xml = <aaa attr1=\"blahlbha\" attr2=\"\"\n}"
 
@@ -45,7 +45,7 @@ class XmlAttributeQuotesTypingTest
   }
 
   def testDeleteFirstQuote1() {
-    val text = "class A { val xml = <aaa attr=\"" + CARET_MARKER + "\"   }"
+    val text        = "class A { val xml = <aaa attr=\"" + CARET_MARKER + "\"   }"
     val assumedStub = "class A { val xml = <aaa attr=   }"
 
     checkGeneratedTextAfterBackspace(text, assumedStub)

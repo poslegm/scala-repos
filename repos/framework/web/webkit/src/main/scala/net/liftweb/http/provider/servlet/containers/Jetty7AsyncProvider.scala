@@ -33,40 +33,44 @@ object Jetty7AsyncProvider extends AsyncProviderMeta {
   // contSupport below gets inferred as a Class[?0] existential.
   import scala.language.existentials
 
-  private val (hasContinuations_?,
-               contSupport,
-               getContinuation,
-               getAttribute,
-               setAttribute,
-               suspendMeth,
-               setTimeout,
-               resumeMeth,
-               isExpired,
-               isResumed) = {
+  private val (
+    hasContinuations_?,
+    contSupport,
+    getContinuation,
+    getAttribute,
+    setAttribute,
+    suspendMeth,
+    setTimeout,
+    resumeMeth,
+    isExpired,
+    isResumed
+  ) = {
     try {
       val cc =
         Class.forName("org.eclipse.jetty.continuation.ContinuationSupport")
       val meth =
         cc.getMethod("getContinuation", classOf[javax.servlet.ServletRequest])
-      val cci = Class.forName("org.eclipse.jetty.continuation.Continuation")
+      val cci          = Class.forName("org.eclipse.jetty.continuation.Continuation")
       val getAttribute = cci.getMethod("getAttribute", classOf[String])
       val setAttribute =
         cci.getMethod("setAttribute", classOf[String], classOf[AnyRef])
-      val suspend = cci.getMethod("suspend")
+      val suspend    = cci.getMethod("suspend")
       val setTimeout = cci.getMethod("setTimeout", java.lang.Long.TYPE)
-      val resume = cci.getMethod("resume")
-      val isExpired = cci.getMethod("isExpired")
-      val isResumed = cci.getMethod("isResumed")
-      (true,
-       (cc),
-       (meth),
-       (getAttribute),
-       (setAttribute),
-       (suspend),
-       setTimeout,
-       resume,
-       isExpired,
-       isResumed)
+      val resume     = cci.getMethod("resume")
+      val isExpired  = cci.getMethod("isExpired")
+      val isResumed  = cci.getMethod("isResumed")
+      (
+        true,
+        (cc),
+        (meth),
+        (getAttribute),
+        (setAttribute),
+        (suspend),
+        setTimeout,
+        resume,
+        isExpired,
+        isResumed
+      )
     } catch {
       case e: Exception =>
         (false, null, null, null, null, null, null, null, null, null)
@@ -102,12 +106,12 @@ class Jetty7AsyncProvider(req: HTTPRequest) extends ServletAsyncProvider {
     else if (Props.inGAE) None
     else {
       val cont = getContinuation.invoke(contSupport, servletReq)
-      val ret = getAttribute.invoke(cont, "__liftCometState")
+      val ret  = getAttribute.invoke(cont, "__liftCometState")
       try {
         setAttribute.invoke(cont, "__liftCometState", null)
         ret match {
           case (r: Req, lr: LiftResponse) => Some(r -> lr)
-          case _ => None
+          case _                          => None
         }
       } catch {
         case e: Exception => None

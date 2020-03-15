@@ -23,21 +23,31 @@ object Import {
     val playForkOptions =
       TaskKey[PlayForkOptions]("playForkRunOptions", "Fork run options")
     val playForkLogSbtEvents = SettingKey[Boolean](
-        "playForkLogSbtEvents",
-        "Determines whether events from sbt server are logged in fork run")
+      "playForkLogSbtEvents",
+      "Determines whether events from sbt server are logged in fork run"
+    )
     val playForkCompileTimeout = SettingKey[Duration](
-        "playForkCompileTimeout", "Timeout for requested compiles")
+      "playForkCompileTimeout",
+      "Timeout for requested compiles"
+    )
     val playForkShutdownTimeout = SettingKey[FiniteDuration](
-        "playForkShutdownTimeout",
-        "Timeout for shutdown of forked process before forcibly shutting down")
-    val playForkConfig = TaskKey[ForkConfig](
-        "playForkConfig", "All setup settings for forked run")
+      "playForkShutdownTimeout",
+      "Timeout for shutdown of forked process before forcibly shutting down"
+    )
+    val playForkConfig =
+      TaskKey[ForkConfig]("playForkConfig", "All setup settings for forked run")
     val playForkNotifyStart = InputKey[Unit](
-        "playForkNotifyStart", "For notifying sbt with the play server url")
+      "playForkNotifyStart",
+      "For notifying sbt with the play server url"
+    )
     val playForkStarted = TaskKey[String => Unit](
-        "playForkStarted", "Callback for play server start")
+      "playForkStarted",
+      "Callback for play server start"
+    )
     val playForkReload = TaskKey[CompileResult](
-        "playForkReload", "Information needed for forked reloads")
+      "playForkReload",
+      "Information needed for forked reloads"
+    )
   }
 }
 
@@ -54,7 +64,8 @@ object PlayForkRun extends AutoPlugin {
 
   val ForkRun = config("fork-run").hide
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       ivyConfigurations += ForkRun,
       libraryDependencies +=
         "com.typesafe.play" %% "fork-run" % play.core.PlayVersion.current % ForkRun.name,
@@ -71,24 +82,27 @@ object PlayForkRun extends AutoPlugin {
       playForkNotifyStart <<= serverStartedTask,
       playForkStarted <<= publishUrlTask,
       playForkReload <<= compileTask,
-      SerializersKeys.registeredSerializers ++= Serializers.serializers.map(
-          x => RegisteredSerializer(x.serializer, x.unserializer, x.manifest))
-  )
+      SerializersKeys.registeredSerializers ++= Serializers.serializers.map(x =>
+        RegisteredSerializer(x.serializer, x.unserializer, x.manifest)
+      )
+    )
 
   val allInput: Parser[String] = {
     import sbt.complete.DefaultParsers._
     (token(Space) ~> token(any.*.string, "<arg>")).?.map(_.fold("")(" ".+))
   }
 
-  def selectRunTask = Def.inputTaskDyn[Unit] {
-    val input = allInput.parsed
-    val forked = (fork in (Compile, run)).value
-    val runInput = if (forked) playForkRun else playRun
-    runInput.toTask(input)
-  }
+  def selectRunTask =
+    Def.inputTaskDyn[Unit] {
+      val input    = allInput.parsed
+      val forked   = (fork in (Compile, run)).value
+      val runInput = if (forked) playForkRun else playRun
+      runInput.toTask(input)
+    }
 
-  def forkOptionsTask = Def.task[PlayForkOptions] {
-    PlayForkOptions(
+  def forkOptionsTask =
+    Def.task[PlayForkOptions] {
+      PlayForkOptions(
         workingDirectory = baseDirectory.value,
         jvmOptions = (javaOptions in (Compile, run)).value,
         classpath = (managedClasspath in ForkRun).value.files,
@@ -97,43 +111,54 @@ object PlayForkRun extends AutoPlugin {
           playForkConfig.key.label,
         logLevel = ((logLevel in (Compile, run)) ?? Level.Info).value,
         logSbtEvents = playForkLogSbtEvents.value,
-        shutdownTimeout = playForkShutdownTimeout.value)
-  }
+        shutdownTimeout = playForkShutdownTimeout.value
+      )
+    }
 
-  def forkRunTask = Def.inputTask[Unit] {
-    val args = Def.spaceDelimited().parsed
-    val jobService = BackgroundJobServiceKeys.jobService.value
-    val handle = jobService.runInBackgroundThread(resolvedScoped.value, {
-      (_, uiContext) =>
-        // use normal task streams log rather than the background run logger
-        PlayForkProcess(playForkOptions.value, args, streams.value.log)
-    })
-    PlayConsoleInteractionMode.waitForCancel()
-    jobService.stop(handle)
-    jobService.waitFor(handle)
-  }
+  def forkRunTask =
+    Def.inputTask[Unit] {
+      val args       = Def.spaceDelimited().parsed
+      val jobService = BackgroundJobServiceKeys.jobService.value
+      val handle = jobService.runInBackgroundThread(
+        resolvedScoped.value,
+        { (_, uiContext) =>
+          // use normal task streams log rather than the background run logger
+          PlayForkProcess(playForkOptions.value, args, streams.value.log)
+        }
+      )
+      PlayConsoleInteractionMode.waitForCancel()
+      jobService.stop(handle)
+      jobService.waitFor(handle)
+    }
 
-  def backgroundForkRunTask = Def.inputTask[BackgroundJobHandle] {
-    val args = Def.spaceDelimited().parsed
-    BackgroundJobServiceKeys.jobService.value
-      .runInBackgroundThread(resolvedScoped.value, { (logger, uiContext) =>
-      PlayForkProcess(playForkOptions.value, args, logger)
-    })
-  }
+  def backgroundForkRunTask =
+    Def.inputTask[BackgroundJobHandle] {
+      val args = Def.spaceDelimited().parsed
+      BackgroundJobServiceKeys.jobService.value
+        .runInBackgroundThread(
+          resolvedScoped.value,
+          { (logger, uiContext) =>
+            PlayForkProcess(playForkOptions.value, args, logger)
+          }
+        )
+    }
 
-  def forkConfigTask = Def.task[ForkConfig] {
-    ForkConfig(
+  def forkConfigTask =
+    Def.task[ForkConfig] {
+      ForkConfig(
         projectDirectory = baseDirectory.value,
         javaOptions = (javaOptions in Runtime).value,
-        dependencyClasspath = PlayInternalKeys.playDependencyClasspath.value.files,
+        dependencyClasspath =
+          PlayInternalKeys.playDependencyClasspath.value.files,
         allAssets = PlayInternalKeys.playAllAssets.value,
-        docsClasspath = (managedClasspath in PlayRun.DocsApplication).value.files,
+        docsClasspath =
+          (managedClasspath in PlayRun.DocsApplication).value.files,
         docsJar = PlayKeys.playDocsJar.value,
         devSettings = PlayKeys.devSettings.value,
         defaultHttpPort = PlayKeys.playDefaultPort.value,
         defaultHttpAddress = PlayKeys.playDefaultAddress.value,
-        watchService = ForkConfig.identifyWatchService(
-              PlayKeys.fileWatchService.value),
+        watchService =
+          ForkConfig.identifyWatchService(PlayKeys.fileWatchService.value),
         monitoredFiles = PlayKeys.playMonitoredFiles.value,
         targetDirectory = target.value,
         pollInterval = pollInterval.value,
@@ -143,23 +168,27 @@ object PlayForkRun extends AutoPlugin {
           playForkReload.key.label,
         compileTimeout = playForkCompileTimeout.value.toMillis,
         mainClass = (mainClass in (Compile, run)).value.get
-    )
-  }
+      )
+    }
 
-  def serverStartedTask = Def.inputTask[Unit] {
-    val url = allInput.parsed.trim
-    playForkStarted.value(url)
-  }
+  def serverStartedTask =
+    Def.inputTask[Unit] {
+      val url = allInput.parsed.trim
+      playForkStarted.value(url)
+    }
 
-  def publishUrlTask = Def.task[String => Unit] { url =>
-    SendEventServiceKeys.sendEventService.value
-      .sendEvent(PlayServerStarted(url))(Serializers.playServerStartedPickler)
-  }
+  def publishUrlTask =
+    Def.task[String => Unit] { url =>
+      SendEventServiceKeys.sendEventService.value
+        .sendEvent(PlayServerStarted(url))(Serializers.playServerStartedPickler)
+    }
 
-  def compileTask = Def.task[CompileResult] {
-    PlayReload.compile(
+  def compileTask =
+    Def.task[CompileResult] {
+      PlayReload.compile(
         () => PlayInternalKeys.playReload.result.value,
         () => PlayInternalKeys.playReloaderClasspath.result.value,
-        () => Option(streamsManager.value))
-  }
+        () => Option(streamsManager.value)
+      )
+    }
 }

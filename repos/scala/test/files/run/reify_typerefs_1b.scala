@@ -12,7 +12,7 @@ object Test extends App {
     List(Expression, Expression)
   };
 
-  val toolbox = cm.mkToolBox()
+  val toolbox   = cm.mkToolBox()
   val evaluated = toolbox.eval(code.tree)
   println("evaluated = " + evaluated)
 }

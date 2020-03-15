@@ -11,11 +11,20 @@ import mesosphere.marathon.api.v2.json.AppUpdate
 import mesosphere.marathon.core.launchqueue.LaunchQueue
 import mesosphere.marathon.core.task.Task
 import mesosphere.marathon.core.task.tracker.TaskTracker
-import mesosphere.marathon.event.{AppTerminatedEvent, DeploymentFailed, DeploymentSuccess, LocalLeadershipEvent}
+import mesosphere.marathon.event.{
+  AppTerminatedEvent,
+  DeploymentFailed,
+  DeploymentSuccess,
+  LocalLeadershipEvent
+}
 import mesosphere.marathon.health.HealthCheckManager
 import mesosphere.marathon.state._
 import mesosphere.marathon.upgrade.DeploymentManager._
-import mesosphere.marathon.upgrade.{DeploymentManager, DeploymentPlan, TaskKillActor}
+import mesosphere.marathon.upgrade.{
+  DeploymentManager,
+  DeploymentPlan,
+  TaskKillActor
+}
 import mesosphere.mesos.protos
 import org.apache.mesos.Protos.{Status, TaskID}
 import org.apache.mesos.SchedulerDriver
@@ -43,21 +52,25 @@ class MarathonSchedulerActor private (
     marathonSchedulerDriverHolder: MarathonSchedulerDriverHolder,
     leaderInfo: LeaderInfo,
     eventBus: EventStream,
-    cancellationTimeout: FiniteDuration = 1.minute)
-    extends Actor with ActorLogging with Stash {
+    cancellationTimeout: FiniteDuration = 1.minute
+) extends Actor
+    with ActorLogging
+    with Stash {
   import context.dispatcher
   import mesosphere.marathon.MarathonSchedulerActor._
 
-  var lockedApps = Set.empty[PathId]
-  var schedulerActions: SchedulerActions = _
-  var deploymentManager: ActorRef = _
-  var historyActor: ActorRef = _
+  var lockedApps                              = Set.empty[PathId]
+  var schedulerActions: SchedulerActions      = _
+  var deploymentManager: ActorRef             = _
+  var historyActor: ActorRef                  = _
   var activeReconciliation: Option[Future[_]] = None
 
   override def preStart(): Unit = {
     schedulerActions = createSchedulerActions(self)
     deploymentManager = context.actorOf(
-        deploymentManagerProps(schedulerActions), "DeploymentManager")
+      deploymentManagerProps(schedulerActions),
+      "DeploymentManager"
+    )
     historyActor = context.actorOf(historyActorProps, "HistoryActor")
 
     leaderInfo.subscribe(self)
@@ -69,30 +82,31 @@ class MarathonSchedulerActor private (
 
   def receive: Receive = suspended
 
-  def suspended: Receive = LoggingReceive.withLabel("suspended") {
-    case LocalLeadershipEvent.ElectedAsLeader =>
-      log.info("Starting scheduler actor")
-      deploymentRepository.all() onComplete {
-        case Success(deployments) => self ! RecoverDeployments(deployments)
-        case Failure(_) => self ! RecoverDeployments(Nil)
-      }
+  def suspended: Receive =
+    LoggingReceive.withLabel("suspended") {
+      case LocalLeadershipEvent.ElectedAsLeader =>
+        log.info("Starting scheduler actor")
+        deploymentRepository.all() onComplete {
+          case Success(deployments) => self ! RecoverDeployments(deployments)
+          case Failure(_)           => self ! RecoverDeployments(Nil)
+        }
 
-    case RecoverDeployments(deployments) =>
-      deployments.foreach { plan =>
-        log.info(s"Recovering deployment:\n$plan")
-        deploy(context.system.deadLetters, Deploy(plan, force = false))
-      }
+      case RecoverDeployments(deployments) =>
+        deployments.foreach { plan =>
+          log.info(s"Recovering deployment:\n$plan")
+          deploy(context.system.deadLetters, Deploy(plan, force = false))
+        }
 
-      log.info("Scheduler actor ready")
-      unstashAll()
-      context.become(started)
-      self ! ReconcileHealthChecks
+        log.info("Scheduler actor ready")
+        unstashAll()
+        context.become(started)
+        self ! ReconcileHealthChecks
 
-    case LocalLeadershipEvent.Standby =>
-    // ignore, FIXME: When we get this while recovering deployments, we become active
+      case LocalLeadershipEvent.Standby =>
+      // ignore, FIXME: When we get this while recovering deployments, we become active
 
-    case _ => stash()
-  }
+      case _ => stash()
+    }
 
   //TODO: fix style issue and enable this scalastyle check
   //scalastyle:off cyclomatic.complexity method.length
@@ -122,7 +136,7 @@ class MarathonSchedulerActor private (
             // the self notification MUST happen before informing the initiator
             // if we want to ensure that we trigger a new reconciliation for
             // the first call after the last ReconcileTasks.answer has been received.
-            .andThen { case _ => self ! ReconcileFinished }
+              .andThen { case _ => self ! ReconcileFinished }
           case Some(active) =>
             log.info("task reconciliation still active, reusing result")
             active
@@ -161,10 +175,12 @@ class MarathonSchedulerActor private (
         val origSender = sender()
         withLockFor(appId) {
           val promise = Promise[Unit]()
-          context.actorOf(TaskKillActor.props(
-                  driver, appId, taskTracker, eventBus, taskIds, promise))
+          context.actorOf(
+            TaskKillActor
+              .props(driver, appId, taskTracker, eventBus, taskIds, promise)
+          )
           val res = for {
-            _ <- promise.future
+            _         <- promise.future
             Some(app) <- appRepository.currentVersion(appId)
           } yield schedulerActions.scale(driver, app)
 
@@ -206,9 +222,11 @@ class MarathonSchedulerActor private (
     * @param origSender The original sender of the Deploy message.
     * @return
     */
-  def awaitCancellation(plan: DeploymentPlan,
-                        origSender: ActorRef,
-                        cancellationHandler: Cancellable): Receive =
+  def awaitCancellation(
+      plan: DeploymentPlan,
+      origSender: ActorRef,
+      cancellationHandler: Cancellable
+  ): Receive =
     sharedHandlers.andThen[Unit] { _ =>
       if (tryDeploy(plan, origSender)) {
         cancellationHandler.cancel()
@@ -216,7 +234,8 @@ class MarathonSchedulerActor private (
     } orElse {
       case CancellationTimeoutExceeded =>
         val reason = new TimeoutException(
-            "Exceeded timeout for canceling conflicting deployments.")
+          "Exceeded timeout for canceling conflicting deployments."
+        )
         deploymentFailed(plan, reason)
         origSender ! CommandFailed(Deploy(plan, force = true), reason)
         unstashAll()
@@ -274,7 +293,7 @@ class MarathonSchedulerActor private (
 
   def deploy(origSender: ActorRef, cmd: Deploy): Unit = {
     val plan = cmd.plan
-    val ids = plan.affectedApplicationIds
+    val ids  = plan.affectedApplicationIds
 
     val res = withLockFor(ids) {
       deploy(driver, plan)
@@ -285,13 +304,10 @@ class MarathonSchedulerActor private (
         if (origSender != Actor.noSender) origSender ! cmd.answer
       case Failure(e: LockingFailedException) if cmd.force =>
         deploymentManager ! CancelConflictingDeployments(plan)
-        val cancellationHandler = context.system.scheduler.scheduleOnce(
-            cancellationTimeout,
-            self,
-            CancellationTimeoutExceeded)
+        val cancellationHandler = context.system.scheduler
+          .scheduleOnce(cancellationTimeout, self, CancellationTimeoutExceeded)
 
-        context.become(
-            awaitCancellation(plan, origSender, cancellationHandler))
+        context.become(awaitCancellation(plan, origSender, cancellationHandler))
       case Failure(e: LockingFailedException) =>
         deploymentManager
           .ask(RetrieveRunningDeployments)(2.seconds)
@@ -299,7 +315,8 @@ class MarathonSchedulerActor private (
           .foreach {
             case RunningDeployments(plans) =>
               def intersectsWithNewPlan(
-                  existingPlan: DeploymentPlan): Boolean = {
+                  existingPlan: DeploymentPlan
+              ): Boolean = {
                 existingPlan.affectedApplicationIds
                   .intersect(plan.affectedApplicationIds)
                   .nonEmpty
@@ -309,7 +326,9 @@ class MarathonSchedulerActor private (
                   p.id
               }
               origSender ! CommandFailed(
-                  cmd, AppLockedException(relatedDeploymentIds))
+                cmd,
+                AppLockedException(relatedDeploymentIds)
+              )
           }
     }
   }
@@ -336,31 +355,36 @@ class MarathonSchedulerActor private (
 }
 
 object MarathonSchedulerActor {
-  def props(createSchedulerActions: ActorRef => SchedulerActions,
-            deploymentManagerProps: SchedulerActions => Props,
-            historyActorProps: Props,
-            appRepository: AppRepository,
-            deploymentRepository: DeploymentRepository,
-            healthCheckManager: HealthCheckManager,
-            taskTracker: TaskTracker,
-            taskQueue: LaunchQueue,
-            marathonSchedulerDriverHolder: MarathonSchedulerDriverHolder,
-            leaderInfo: LeaderInfo,
-            eventBus: EventStream,
-            cancellationTimeout: FiniteDuration = 1.minute): Props = {
+  def props(
+      createSchedulerActions: ActorRef => SchedulerActions,
+      deploymentManagerProps: SchedulerActions => Props,
+      historyActorProps: Props,
+      appRepository: AppRepository,
+      deploymentRepository: DeploymentRepository,
+      healthCheckManager: HealthCheckManager,
+      taskTracker: TaskTracker,
+      taskQueue: LaunchQueue,
+      marathonSchedulerDriverHolder: MarathonSchedulerDriverHolder,
+      leaderInfo: LeaderInfo,
+      eventBus: EventStream,
+      cancellationTimeout: FiniteDuration = 1.minute
+  ): Props = {
     Props(
-        new MarathonSchedulerActor(createSchedulerActions,
-                                   deploymentManagerProps,
-                                   historyActorProps,
-                                   appRepository,
-                                   deploymentRepository,
-                                   healthCheckManager,
-                                   taskTracker,
-                                   taskQueue,
-                                   marathonSchedulerDriverHolder,
-                                   leaderInfo,
-                                   eventBus,
-                                   cancellationTimeout))
+      new MarathonSchedulerActor(
+        createSchedulerActions,
+        deploymentManagerProps,
+        historyActorProps,
+        appRepository,
+        deploymentRepository,
+        healthCheckManager,
+        taskTracker,
+        taskQueue,
+        marathonSchedulerDriverHolder,
+        leaderInfo,
+        eventBus,
+        cancellationTimeout
+      )
+    )
   }
 
   case class RecoverDeployments(deployments: Seq[DeploymentPlan])
@@ -396,8 +420,8 @@ object MarathonSchedulerActor {
   case object RetrieveRunningDeployments
 
   sealed trait Event
-  case class AppScaled(appId: PathId) extends Event
-  case object TasksReconciled extends Event
+  case class AppScaled(appId: PathId)                extends Event
+  case object TasksReconciled                        extends Event
   case class DeploymentStarted(plan: DeploymentPlan) extends Event
   case class TasksKilled(appId: PathId, taskIds: Iterable[Task.Id])
       extends Event
@@ -410,7 +434,8 @@ object MarathonSchedulerActor {
 
   implicit class AnswerOps[A](val f: Future[A]) extends AnyVal {
     def sendAnswer(receiver: ActorRef, cmd: Command)(
-        implicit ec: ExecutionContext): Future[A] = {
+        implicit ec: ExecutionContext
+    ): Future[A] = {
       f onComplete {
         case Success(_) =>
           receiver ! cmd.answer
@@ -424,14 +449,16 @@ object MarathonSchedulerActor {
   }
 }
 
-class SchedulerActions(appRepository: AppRepository,
-                       groupRepository: GroupRepository,
-                       healthCheckManager: HealthCheckManager,
-                       taskTracker: TaskTracker,
-                       taskQueue: LaunchQueue,
-                       eventBus: EventStream,
-                       val schedulerActor: ActorRef,
-                       config: MarathonConf)(implicit ec: ExecutionContext) {
+class SchedulerActions(
+    appRepository: AppRepository,
+    groupRepository: GroupRepository,
+    healthCheckManager: HealthCheckManager,
+    taskTracker: TaskTracker,
+    taskQueue: LaunchQueue,
+    eventBus: EventStream,
+    val schedulerActor: ActorRef,
+    config: MarathonConf
+)(implicit ec: ExecutionContext) {
   import mesosphere.mesos.protos.Implicits._
 
   private[this] val log = LoggerFactory.getLogger(getClass)
@@ -489,7 +516,7 @@ class SchedulerActions(appRepository: AppRepository,
 
         for (unknownAppId <- tasksByApp.allAppIdsWithTasks -- appIds) {
           log.warn(
-              s"App $unknownAppId exists in TaskTracker, but not App store. " +
+            s"App $unknownAppId exists in TaskTracker, but not App store. " +
               "The app was likely terminated. Will now expunge."
           )
           for (orphanTask <- tasksByApp.marathonAppTasks(unknownAppId)) {
@@ -512,8 +539,8 @@ class SchedulerActions(appRepository: AppRepository,
   def reconcileHealthChecks(): Unit = {
     for {
       apps <- groupRepository
-        .rootGroup()
-        .map(_.map(_.transitiveApps).getOrElse(Set.empty))
+               .rootGroup()
+               .map(_.map(_.transitiveApps).getOrElse(Set.empty))
       app <- apps
     } healthCheckManager.reconcileWith(app.id)
   }
@@ -523,9 +550,11 @@ class SchedulerActions(appRepository: AppRepository,
     * command, and constraints) are applied consistently across running
     * application instances.
     */
-  private def update(driver: SchedulerDriver,
-                     updatedApp: AppDefinition,
-                     appUpdate: AppUpdate): Unit = {
+  private def update(
+      driver: SchedulerDriver,
+      updatedApp: AppDefinition,
+      appUpdate: AppUpdate
+  ): Unit = {
     // TODO: implement app instance restart logic
   }
 
@@ -534,11 +563,12 @@ class SchedulerActions(appRepository: AppRepository,
     */
   def scale(driver: SchedulerDriver, app: AppDefinition): Unit = {
     val launchedCount = taskTracker.countLaunchedAppTasksSync(app.id)
-    val targetCount = app.instances
+    val targetCount   = app.instances
 
     if (targetCount > launchedCount) {
       log.info(
-          s"Need to scale ${app.id} from $launchedCount up to $targetCount instances")
+        s"Need to scale ${app.id} from $launchedCount up to $targetCount instances"
+      )
 
       val queuedOrRunning =
         taskQueue.get(app.id).map(_.finalTaskCount).getOrElse(launchedCount)
@@ -546,15 +576,18 @@ class SchedulerActions(appRepository: AppRepository,
 
       if (toQueue > 0) {
         log.info(
-            s"Queueing $toQueue new tasks for ${app.id} ($queuedOrRunning queued or running)")
+          s"Queueing $toQueue new tasks for ${app.id} ($queuedOrRunning queued or running)"
+        )
         taskQueue.add(app, toQueue)
       } else {
         log.info(
-            s"Already queued or started $queuedOrRunning tasks for ${app.id}. Not scaling.")
+          s"Already queued or started $queuedOrRunning tasks for ${app.id}. Not scaling."
+        )
       }
     } else if (targetCount < launchedCount) {
       log.info(
-          s"Scaling ${app.id} from $launchedCount down to $targetCount instances")
+        s"Scaling ${app.id} from $launchedCount down to $targetCount instances"
+      )
       taskQueue.purge(app.id)
 
       val toKill = taskTracker
@@ -567,14 +600,15 @@ class SchedulerActions(appRepository: AppRepository,
       }
     } else {
       log.info(
-          s"Already running ${app.instances} instances of ${app.id}. Not scaling.")
+        s"Already running ${app.instances} instances of ${app.id}. Not scaling."
+      )
     }
   }
 
   def scale(driver: SchedulerDriver, appId: PathId): Future[Unit] = {
     currentAppVersion(appId).map {
       case Some(app) => scale(driver, app)
-      case _ => log.warn(s"App $appId does not exist. Not scaling.")
+      case _         => log.warn(s"App $appId does not exist. Not scaling.")
     }
   }
 

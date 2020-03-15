@@ -53,7 +53,8 @@ object AccessibleAction
     *
     */
   val BlockDecrement = new AccessibleAction(
-      jfxs.AccessibleAction.BLOCK_DECREMENT)
+    jfxs.AccessibleAction.BLOCK_DECREMENT
+  )
 
   /**
     * Request that the node be incremented by a large value.
@@ -62,7 +63,8 @@ object AccessibleAction
     * Used by Slider, ScrollBar, and others
     */
   val BlockIncrement = new AccessibleAction(
-      jfxs.AccessibleAction.BLOCK_INCREMENT)
+    jfxs.AccessibleAction.BLOCK_INCREMENT
+  )
 
   /**
     * Request that the node should become collapsed.
@@ -145,7 +147,8 @@ object AccessibleAction
     * </ul>
     */
   val ShowTextRange = new AccessibleAction(
-      jfxs.AccessibleAction.SHOW_TEXT_RANGE)
+    jfxs.AccessibleAction.SHOW_TEXT_RANGE
+  )
 
   /**
     * Request the node to set the selection to a list of items.
@@ -158,7 +161,8 @@ object AccessibleAction
     * </ul>
     */
   val SetSelectedItems = new AccessibleAction(
-      jfxs.AccessibleAction.SET_SELECTED_ITEMS)
+    jfxs.AccessibleAction.SET_SELECTED_ITEMS
+  )
 
   /**
     * Request the node to set the selection to range of text.
@@ -172,7 +176,8 @@ object AccessibleAction
     * </ul>
     */
   val SetTextSelection = new AccessibleAction(
-      jfxs.AccessibleAction.SET_TEXT_SELECTION)
+    jfxs.AccessibleAction.SET_TEXT_SELECTION
+  )
 
   /**
     * Request the node to set the current text.
@@ -211,7 +216,8 @@ object AccessibleAction
     */
   val ShowMenu = new AccessibleAction(jfxs.AccessibleAction.SHOW_MENU)
 
-  protected override def unsortedValues: Array[AccessibleAction] = Array(
+  protected override def unsortedValues: Array[AccessibleAction] =
+    Array(
       BlockDecrement,
       BlockIncrement,
       Collapse,
@@ -227,9 +233,8 @@ object AccessibleAction
       SetText,
       SetValue,
       ShowMenu
-  )
+    )
 }
 
-sealed case class AccessibleAction(
-    override val delegate: jfxs.AccessibleAction)
+sealed case class AccessibleAction(override val delegate: jfxs.AccessibleAction)
     extends SFXEnumDelegate[jfxs.AccessibleAction]

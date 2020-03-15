@@ -11,7 +11,7 @@ class MergeElseIfIntentionTest extends ScalaIntentionTestBase {
   val familyName = MergeElseIfIntention.familyName
 
   def testMergeElseIf() {
-    val text = """
+    val text       = """
         |class MergeElseIf {
         |  def mthd() {
         |    val a: Int = 0
@@ -46,7 +46,7 @@ class MergeElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeElseIf2() {
-    val text = """
+    val text       = """
         |class MergeElseIf {
         |  def mthd() {
         |    val a: Int = 0
@@ -77,7 +77,7 @@ class MergeElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeElseIf3() {
-    val text = """
+    val text       = """
         |class MergeElseIf {
         |  def mthd() {
         |    val a: Int = 0
@@ -112,7 +112,7 @@ class MergeElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeElseIf4() {
-    val text = """
+    val text       = """
         |class MergeElseIf {
         |  def mthd() {
         |    val a: Int = 0
@@ -145,7 +145,7 @@ class MergeElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeElseIf5() {
-    val text = """
+    val text       = """
         |class MergeElseIf {
         |  def mthd() {
         |    val a: Int = 0
@@ -177,7 +177,7 @@ class MergeElseIfIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMergeElseIf6() {
-    val text = """
+    val text       = """
         |class MergeElseIf {
         |  def mthd() {
         |    val a: Int = 0

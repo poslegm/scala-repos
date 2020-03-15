@@ -4,14 +4,19 @@ package org.ensime.server
 
 import akka.actor.Props
 import java.net.{InetSocketAddress, ServerSocket, Socket}
-import org.ensime.fixture.{EnsimeConfigFixture, IsolatedEnsimeConfigFixture, IsolatedTestKitFixture}
+import org.ensime.fixture.{
+  EnsimeConfigFixture,
+  IsolatedEnsimeConfigFixture,
+  IsolatedTestKitFixture
+}
 import org.ensime.util.EnsimeSpec
 import scala.concurrent.duration._
 import org.ensime.util.file._
 import scala.util.{Properties, Try}
 
 class ServerStartupSpec
-    extends EnsimeSpec with IsolatedEnsimeConfigFixture
+    extends EnsimeSpec
+    with IsolatedEnsimeConfigFixture
     with IsolatedTestKitFixture {
 
   val original = EnsimeConfigFixture.EmptyTestProject
@@ -41,7 +46,7 @@ class ServerStartupSpec
 
         // this can fail randomly. No general solution.
         val preferredHttp = 10001
-        val preferredTcp = 10002
+        val preferredTcp  = 10002
 
         (config.cacheDir / "http").writeString(preferredHttp.toString)
         (config.cacheDir / "port").writeString(preferredTcp.toString)
@@ -51,7 +56,7 @@ class ServerStartupSpec
 
         eventually(timeout(30 seconds), interval(1 second)) {
           val http = new Socket
-          val tcp = new Socket
+          val tcp  = new Socket
 
           try {
             http.connect(new InetSocketAddress("127.0.0.1", preferredHttp))

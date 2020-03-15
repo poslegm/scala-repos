@@ -19,7 +19,7 @@ class ResolvePropertyKeyTest extends ScalaResolveTestCase {
   }
 
   def testMain() {
-    val ref: PsiReference = findReferenceAtCaret
+    val ref: PsiReference      = findReferenceAtCaret
     val psiElement: PsiElement = ref.resolve
     Assert.assertTrue(psiElement.isInstanceOf[IProperty])
   }

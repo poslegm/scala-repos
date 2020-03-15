@@ -1,6 +1,6 @@
 object Test {
-  val source = 0 to 99
-  val idxes = (-1 to 2) ++ (97 to 100)
+  val source            = 0 to 99
+  val idxes             = (-1 to 2) ++ (97 to 100)
   def str(xs: Seq[Int]) = xs.mkString("(", ", ", ")")
 
   def f(tgt: Seq[Int]) = {

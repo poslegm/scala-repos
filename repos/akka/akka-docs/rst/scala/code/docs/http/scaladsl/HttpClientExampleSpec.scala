@@ -21,11 +21,11 @@ class HttpClientExampleSpec extends WordSpec with Matchers {
 
     import scala.concurrent.Future
 
-    implicit val system = ActorSystem()
+    implicit val system       = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
-    val connectionFlow: Flow[
-        HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
+    val connectionFlow
+        : Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
       Http().outgoingConnection("akka.io")
     val responseFuture: Future[HttpResponse] = Source
       .single(HttpRequest(uri = "/"))
@@ -45,7 +45,7 @@ class HttpClientExampleSpec extends WordSpec with Matchers {
     import scala.concurrent.Future
     import scala.util.Try
 
-    implicit val system = ActorSystem()
+    implicit val system       = ActorSystem()
     implicit val materializer = ActorMaterializer()
     // construct a pool client flow with context type `Int`
     val poolClientFlow = Http().cachedHostConnectionPool[Int]("akka.io")
@@ -65,7 +65,7 @@ class HttpClientExampleSpec extends WordSpec with Matchers {
 
     import scala.concurrent.Future
 
-    implicit val system = ActorSystem()
+    implicit val system       = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
     val responseFuture: Future[HttpResponse] =
@@ -98,8 +98,10 @@ class HttpClientExampleSpec extends WordSpec with Matchers {
 
       def receive = {
         case HttpResponse(StatusCodes.OK, headers, entity, _) =>
-          log.info("Got response, body: " +
-              entity.dataBytes.runFold(ByteString(""))(_ ++ _))
+          log.info(
+            "Got response, body: " +
+              entity.dataBytes.runFold(ByteString(""))(_ ++ _)
+          )
         case HttpResponse(code, _, _, _) =>
           log.info("Request failed, response code: " + code)
       }

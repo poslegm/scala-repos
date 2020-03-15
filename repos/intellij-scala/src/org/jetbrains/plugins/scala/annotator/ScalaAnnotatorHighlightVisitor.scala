@@ -24,29 +24,31 @@ class ScalaAnnotatorHighlightVisitor(project: Project)
     extends HighlightVisitor {
   def order: Int = 0
 
-  private var myHolder: HighlightInfoHolder = null
-  private var myRefCountHolder: ScalaRefCountHolder = null
+  private var myHolder: HighlightInfoHolder            = null
+  private var myRefCountHolder: ScalaRefCountHolder    = null
   private var myAnnotationHolder: AnnotationHolderImpl = null
 
-  override def suitableForFile(file: PsiFile): Boolean = file match {
-    case _: ScalaFile => true
-    case otherFile => ScalaLanguageDerivative hasDerivativeOnFile otherFile
-  }
+  override def suitableForFile(file: PsiFile): Boolean =
+    file match {
+      case _: ScalaFile => true
+      case otherFile    => ScalaLanguageDerivative hasDerivativeOnFile otherFile
+    }
 
   def visit(element: PsiElement) {
     runAnnotator(element)
   }
 
-  def analyze(file: PsiFile,
-              updateWholeFile: Boolean,
-              holder: HighlightInfoHolder,
-              action: Runnable): Boolean = {
+  def analyze(
+      file: PsiFile,
+      updateWholeFile: Boolean,
+      holder: HighlightInfoHolder,
+      action: Runnable
+  ): Boolean = {
 //    val time = System.currentTimeMillis()
     var success = true
     try {
       myHolder = holder
-      myAnnotationHolder = new AnnotationHolderImpl(
-          holder.getAnnotationSession)
+      myAnnotationHolder = new AnnotationHolderImpl(holder.getAnnotationSession)
       if (updateWholeFile) {
         val project: Project = file.getProject
         val refCountHolder: ScalaRefCountHolder =

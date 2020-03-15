@@ -11,19 +11,20 @@ import org.ensime.api._
 import org.ensime.core.PositionBackCompat
 
 trait ReportHandler {
-  def messageUser(str: String): Unit = {}
-  def clearAllScalaNotes(): Unit = {}
+  def messageUser(str: String): Unit            = {}
+  def clearAllScalaNotes(): Unit                = {}
   def reportScalaNotes(notes: List[Note]): Unit = {}
-  def clearAllJavaNotes(): Unit = {}
-  def reportJavaNotes(notes: List[Note]): Unit = {}
+  def clearAllJavaNotes(): Unit                 = {}
+  def reportJavaNotes(notes: List[Note]): Unit  = {}
 }
 
 class PresentationReporter(handler: ReportHandler)
-    extends Reporter with PositionBackCompat {
+    extends Reporter
+    with PositionBackCompat {
 
-  val log = LoggerFactory.getLogger(classOf[PresentationReporter])
+  val log             = LoggerFactory.getLogger(classOf[PresentationReporter])
   private var enabled = true
-  def enable(): Unit = { enabled = true }
+  def enable(): Unit  = { enabled = true }
   def disable(): Unit = { enabled = false }
 
   override def reset(): Unit = {
@@ -34,7 +35,11 @@ class PresentationReporter(handler: ReportHandler)
   }
 
   override def info0(
-      pos: Position, msg: String, severity: Severity, force: Boolean): Unit = {
+      pos: Position,
+      msg: String,
+      severity: Severity,
+      force: Boolean
+  ): Unit = {
     severity.count += 1
     try {
       if (severity.id == 0) {
@@ -43,7 +48,7 @@ class PresentationReporter(handler: ReportHandler)
         if (enabled) {
           if (pos.isDefined) {
             val source = pos.source
-            val f = source.file.absolute.path
+            val f      = source.file.absolute.path
             val posColumn =
               if (pos.point == -1) {
                 0
@@ -52,13 +57,13 @@ class PresentationReporter(handler: ReportHandler)
               }
 
             val note = new Note(
-                f,
-                formatMessage(msg),
-                NoteSeverity(severity.id),
-                pos.startOrCursor,
-                pos.endOrCursor,
-                pos.line,
-                posColumn
+              f,
+              formatMessage(msg),
+              NoteSeverity(severity.id),
+              pos.startOrCursor,
+              pos.endOrCursor,
+              pos.line,
+              posColumn
             )
             handler.reportScalaNotes(List(note))
           }
@@ -73,7 +78,7 @@ class PresentationReporter(handler: ReportHandler)
   def formatMessage(msg: String): String = {
     augmentString(msg).map {
       case '\n' | '\r' => ' '
-      case c => c
+      case c           => c
     }
   }
 }

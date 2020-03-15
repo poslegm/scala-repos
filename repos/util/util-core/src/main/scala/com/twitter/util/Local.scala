@@ -11,7 +11,7 @@ object Local {
     */
   type Context = Array[Option[_]]
 
-  private[this] val localCtx = new ThreadLocal[Context]
+  private[this] val localCtx            = new ThreadLocal[Context]
   @volatile private[this] var size: Int = 0
 
   /**
@@ -24,10 +24,11 @@ object Local {
     */
   def restore(saved: Context): Unit = localCtx.set(saved)
 
-  private def add(): Int = synchronized {
-    size += 1
-    size - 1
-  }
+  private def add(): Int =
+    synchronized {
+      size += 1
+      size - 1
+    }
 
   private def set(i: Int, v: Option[_]): Unit = {
     assert(i < size)
@@ -67,7 +68,8 @@ object Local {
   def let[U](ctx: Context)(f: => U): U = {
     val saved = save()
     restore(ctx)
-    try f finally restore(saved)
+    try f
+    finally restore(saved)
   }
 
   /**
@@ -83,12 +85,12 @@ object Local {
     */
   def closed[R](fn: () => R): () => R = {
     val closure = Local.save()
-    () =>
-      {
-        val save = Local.save()
-        Local.restore(closure)
-        try fn() finally Local.restore(save)
-      }
+    () => {
+      val save = Local.save()
+      Local.restore(closure)
+      try fn()
+      finally Local.restore(save)
+    }
   }
 }
 
@@ -137,7 +139,8 @@ final class Local[T] {
   def let[U](value: T)(f: => U): U = {
     val saved = apply()
     set(Some(value))
-    try f finally set(saved)
+    try f
+    finally set(saved)
   }
 
   /**
@@ -147,7 +150,8 @@ final class Local[T] {
   def letClear[U](f: => U): U = {
     val saved = apply()
     clear()
-    try f finally set(saved)
+    try f
+    finally set(saved)
   }
 
   /**

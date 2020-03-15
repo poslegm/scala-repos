@@ -1,6 +1,10 @@
 package org.jetbrains.plugins.scala.debugger.evaluation
 
-import com.intellij.debugger.engine.evaluation.{CodeFragmentKind, TextWithImports, TextWithImportsImpl}
+import com.intellij.debugger.engine.evaluation.{
+  CodeFragmentKind,
+  TextWithImports,
+  TextWithImportsImpl
+}
 import com.intellij.debugger.impl.EditorTextProvider
 import com.intellij.openapi.util.{Pair, TextRange}
 import com.intellij.psi.PsiElement
@@ -21,41 +25,52 @@ import scala.util.Try
 class ScalaEditorTextProvider extends EditorTextProvider {
   def getEditorText(elementAtCaret: PsiElement): TextWithImports = {
     val result: String = findExpressionInner(
-        elementAtCaret, allowMethodCalls = true).map(_.getText).getOrElse("")
+      elementAtCaret,
+      allowMethodCalls = true
+    ).map(_.getText).getOrElse("")
     new TextWithImportsImpl(CodeFragmentKind.EXPRESSION, result)
   }
 
   def findExpression(
       element: PsiElement,
-      allowMethodCalls: Boolean): Pair[PsiElement, TextRange] = {
+      allowMethodCalls: Boolean
+  ): Pair[PsiElement, TextRange] = {
     findExpressionInner(element, allowMethodCalls) match {
       case None => null
       case Some(elem) =>
         Try {
           val expressionCopy =
             ScalaPsiElementFactory.createExpressionWithContextFromText(
-                elem.getText, elem.getContext, elem)
+              elem.getText,
+              elem.getContext,
+              elem
+            )
           new Pair[PsiElement, TextRange](expressionCopy, elem.getTextRange)
         }.toOption.orNull
     }
   }
 
   private def findExpressionInner(
-      element: PsiElement, allowMethodCalls: Boolean): Option[PsiElement] = {
+      element: PsiElement,
+      allowMethodCalls: Boolean
+  ): Option[PsiElement] = {
     def allowed(expr: ScExpression) =
       if (SideEffectsUtil.hasNoSideEffects(expr) || allowMethodCalls)
-        Some(expr) else None
+        Some(expr)
+      else None
 
-    PsiTreeUtil.getParentOfType(element,
-                                classOf[ScExpression],
-                                classOf[ScParameter],
-                                classOf[ScBindingPattern]) match {
+    PsiTreeUtil.getParentOfType(
+      element,
+      classOf[ScExpression],
+      classOf[ScParameter],
+      classOf[ScBindingPattern]
+    ) match {
       case (ref: ScReferenceExpression) childOf (mc: ScMethodCall) =>
         allowed(mc)
       case (ref: ScReferenceExpression) childOf (inf: ScInfixExpr)
           if inf.operation == ref =>
         allowed(inf)
-      case expr: ScExpression => allowed(expr)
+      case expr: ScExpression  => allowed(expr)
       case b: ScBindingPattern => Some(b.nameId)
       case p: ScParameter if !p.isCallByNameParameter || allowMethodCalls =>
         Some(p.nameId)

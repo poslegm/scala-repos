@@ -21,7 +21,7 @@ import org.apache.spark.TaskContext
 
 class FakeTask(stageId: Int, prefLocs: Seq[TaskLocation] = Nil)
     extends Task[Int](stageId, 0, 0, Seq.empty) {
-  override def runTask(context: TaskContext): Int = 0
+  override def runTask(context: TaskContext): Int    = 0
   override def preferredLocations: Seq[TaskLocation] = prefLocs
 }
 
@@ -35,9 +35,11 @@ object FakeTask {
     createTaskSet(numTasks, 0, prefLocs: _*)
   }
 
-  def createTaskSet(numTasks: Int,
-                    stageAttemptId: Int,
-                    prefLocs: Seq[TaskLocation]*): TaskSet = {
+  def createTaskSet(
+      numTasks: Int,
+      stageAttemptId: Int,
+      prefLocs: Seq[TaskLocation]*
+  ): TaskSet = {
     if (prefLocs.size != 0 && prefLocs.size != numTasks) {
       throw new IllegalArgumentException("Wrong number of task locations")
     }

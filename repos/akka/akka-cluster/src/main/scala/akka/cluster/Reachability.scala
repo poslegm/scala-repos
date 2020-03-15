@@ -12,22 +12,28 @@ import scala.collection.breakOut
 private[cluster] object Reachability {
   val empty = new Reachability(Vector.empty, Map.empty)
 
-  def apply(records: immutable.IndexedSeq[Record],
-            versions: Map[UniqueAddress, Long]): Reachability =
+  def apply(
+      records: immutable.IndexedSeq[Record],
+      versions: Map[UniqueAddress, Long]
+  ): Reachability =
     new Reachability(records, versions)
 
   def create(
       records: immutable.Seq[Record],
-      versions: Map[UniqueAddress, Long]): Reachability = records match {
-    case r: immutable.IndexedSeq[Record] ⇒ apply(r, versions)
-    case _ ⇒ apply(records.toVector, versions)
-  }
+      versions: Map[UniqueAddress, Long]
+  ): Reachability =
+    records match {
+      case r: immutable.IndexedSeq[Record] ⇒ apply(r, versions)
+      case _                               ⇒ apply(records.toVector, versions)
+    }
 
   @SerialVersionUID(1L)
-  final case class Record(observer: UniqueAddress,
-                          subject: UniqueAddress,
-                          status: ReachabilityStatus,
-                          version: Long)
+  final case class Record(
+      observer: UniqueAddress,
+      subject: UniqueAddress,
+      status: ReachabilityStatus,
+      version: Long
+  )
 
   sealed trait ReachabilityStatus
   @SerialVersionUID(1L)
@@ -56,8 +62,8 @@ private[cluster] object Reachability {
 @SerialVersionUID(1L)
 private[cluster] class Reachability private (
     val records: immutable.IndexedSeq[Reachability.Record],
-    val versions: Map[UniqueAddress, Long])
-    extends Serializable {
+    val versions: Map[UniqueAddress, Long]
+) extends Serializable {
 
   import Reachability._
 
@@ -66,7 +72,7 @@ private[cluster] class Reachability private (
       if (records.isEmpty) {
         val observerRowsMap =
           Map.empty[UniqueAddress, Map[UniqueAddress, Reachability.Record]]
-        val allTerminated = Set.empty[UniqueAddress]
+        val allTerminated  = Set.empty[UniqueAddress]
         val allUnreachable = Set.empty[UniqueAddress]
         (observerRowsMap, allUnreachable, allTerminated)
       } else {
@@ -80,7 +86,7 @@ private[cluster] class Reachability private (
 
         records foreach { r ⇒
           val m = mapBuilder.get(r.observer) match {
-            case None ⇒ Map(r.subject -> r)
+            case None    ⇒ Map(r.subject -> r)
             case Some(m) ⇒ m.updated(r.subject, r)
           }
           mapBuilder += (r.observer -> m)
@@ -89,8 +95,8 @@ private[cluster] class Reachability private (
           else if (r.status == Terminated) terminatedBuilder += r.subject
         }
 
-        val observerRowsMap: Map[
-            UniqueAddress, Map[UniqueAddress, Reachability.Record]] =
+        val observerRowsMap
+            : Map[UniqueAddress, Map[UniqueAddress, Reachability.Record]] =
           mapBuilder.toMap
         val allTerminated: Set[UniqueAddress] = terminatedBuilder.result()
         val allUnreachable: Set[UniqueAddress] =
@@ -107,37 +113,43 @@ private[cluster] class Reachability private (
 
   @transient private lazy val cache = new Cache
 
-  private def observerRows(observer: UniqueAddress)
-    : Option[Map[UniqueAddress, Reachability.Record]] =
+  private def observerRows(
+      observer: UniqueAddress
+  ): Option[Map[UniqueAddress, Reachability.Record]] =
     cache.observerRowsMap.get(observer)
 
   def unreachable(
-      observer: UniqueAddress, subject: UniqueAddress): Reachability =
+      observer: UniqueAddress,
+      subject: UniqueAddress
+  ): Reachability =
     change(observer, subject, Unreachable)
 
-  def reachable(
-      observer: UniqueAddress, subject: UniqueAddress): Reachability =
+  def reachable(observer: UniqueAddress, subject: UniqueAddress): Reachability =
     change(observer, subject, Reachable)
 
   def terminated(
-      observer: UniqueAddress, subject: UniqueAddress): Reachability =
+      observer: UniqueAddress,
+      subject: UniqueAddress
+  ): Reachability =
     change(observer, subject, Terminated)
 
   private def currentVersion(observer: UniqueAddress): Long =
     versions.get(observer) match {
-      case None ⇒ 0
+      case None    ⇒ 0
       case Some(v) ⇒ v
     }
 
   private def nextVersion(observer: UniqueAddress): Long =
     currentVersion(observer) + 1
 
-  private def change(observer: UniqueAddress,
-                     subject: UniqueAddress,
-                     status: ReachabilityStatus): Reachability = {
-    val v = nextVersion(observer)
+  private def change(
+      observer: UniqueAddress,
+      subject: UniqueAddress,
+      status: ReachabilityStatus
+  ): Reachability = {
+    val v           = nextVersion(observer)
     val newVersions = versions.updated(observer, v)
-    val newRecord = Record(observer, subject, status, v)
+    val newRecord   = Record(observer, subject, status, v)
     observerRows(observer) match {
       case None if status == Reachable ⇒ this
       case None ⇒
@@ -151,7 +163,9 @@ private[cluster] class Reachability private (
                 }) {
               // all Reachable, prune by removing the records of the observer, and bump the version
               new Reachability(
-                  records.filterNot(_.observer == observer), newVersions)
+                records.filterNot(_.observer == observer),
+                newVersions
+              )
             } else new Reachability(records :+ newRecord, newVersions)
           case Some(oldRecord) ⇒
             if (oldRecord.status == Terminated || oldRecord.status == status)
@@ -162,7 +176,9 @@ private[cluster] class Reachability private (
                   }) {
                 // all Reachable, prune by removing the records of the observer, and bump the version
                 new Reachability(
-                    records.filterNot(_.observer == observer), newVersions)
+                  records.filterNot(_.observer == observer),
+                  newVersions
+                )
               } else {
                 val newRecords =
                   records.updated(records.indexOf(oldRecord), newRecord)
@@ -173,8 +189,10 @@ private[cluster] class Reachability private (
     }
   }
 
-  def merge(allowed: immutable.Set[UniqueAddress],
-            other: Reachability): Reachability = {
+  def merge(
+      allowed: immutable.Set[UniqueAddress],
+      other: Reachability
+  ): Reachability = {
     val recordBuilder = new immutable.VectorBuilder[Record]
     recordBuilder.sizeHint(math.max(this.records.size, other.records.size))
     var newVersions = versions
@@ -233,12 +251,14 @@ private[cluster] class Reachability private (
     }
 
   def status(
-      observer: UniqueAddress, subject: UniqueAddress): ReachabilityStatus =
+      observer: UniqueAddress,
+      subject: UniqueAddress
+  ): ReachabilityStatus =
     observerRows(observer) match {
       case None ⇒ Reachable
       case Some(observerRows) ⇒
         observerRows.get(subject) match {
-          case None ⇒ Reachable
+          case None         ⇒ Reachable
           case Some(record) ⇒ record.status
         }
     }
@@ -290,7 +310,7 @@ private[cluster] class Reachability private (
 
   def recordsFrom(observer: UniqueAddress): immutable.IndexedSeq[Record] = {
     observerRows(observer) match {
-      case None ⇒ Vector.empty
+      case None       ⇒ Vector.empty
       case Some(rows) ⇒ rows.valuesIterator.toVector
     }
   }
@@ -299,22 +319,23 @@ private[cluster] class Reachability private (
   override def hashCode: Int = versions.hashCode
 
   // only used for testing
-  override def equals(obj: Any): Boolean = obj match {
-    case other: Reachability ⇒
-      records.size == other.records.size && versions == versions &&
-      cache.observerRowsMap == other.cache.observerRowsMap
-    case _ ⇒ false
-  }
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case other: Reachability ⇒
+        records.size == other.records.size && versions == versions &&
+          cache.observerRowsMap == other.cache.observerRowsMap
+      case _ ⇒ false
+    }
 
   override def toString: String = {
     val rows = for {
-      observer ← versions.keys.toSeq.sorted
+      observer   ← versions.keys.toSeq.sorted
       rowsOption = observerRows(observer)
-          if rowsOption.isDefined // compilation err for subject <- rowsOption
-      rows = rowsOption.get
+      if rowsOption.isDefined // compilation err for subject <- rowsOption
+      rows    = rowsOption.get
       subject ← rows.keys.toSeq.sorted
     } yield {
-      val record = rows(subject)
+      val record     = rows(subject)
       val aggregated = status(subject)
       s"${observer.address} -> ${subject.address}: ${record.status} [$aggregated] (${record.version})"
     }

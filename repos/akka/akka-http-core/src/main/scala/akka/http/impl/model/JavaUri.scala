@@ -16,22 +16,23 @@ import scala.compat.java8.OptionConverters._
 case class JavaUri(uri: sm.Uri) extends jm.Uri {
   def isRelative: Boolean = uri.isRelative
   def isAbsolute: Boolean = uri.isAbsolute
-  def isEmpty: Boolean = uri.isEmpty
+  def isEmpty: Boolean    = uri.isEmpty
 
-  def scheme(): String = uri.scheme
-  def host(): jm.Host = uri.authority.host
-  def port(): Int = uri.authority.port
+  def scheme(): String   = uri.scheme
+  def host(): jm.Host    = uri.authority.host
+  def port(): Int        = uri.authority.port
   def userInfo(): String = uri.authority.userinfo
 
   def path(): String = uri.path.toString
 
   def pathSegments(): jl.Iterable[String] = {
     import sm.Uri.Path._
-    def gatherSegments(path: sm.Uri.Path): List[String] = path match {
-      case Empty ⇒ Nil
-      case Segment(head, tail) ⇒ head :: gatherSegments(tail)
-      case Slash(tail) ⇒ gatherSegments(tail)
-    }
+    def gatherSegments(path: sm.Uri.Path): List[String] =
+      path match {
+        case Empty               ⇒ Nil
+        case Segment(head, tail) ⇒ head :: gatherSegments(tail)
+        case Slash(tail)         ⇒ gatherSegments(tail)
+      }
     import collection.JavaConverters._
     gatherSegments(uri.path).asJava
   }
@@ -51,9 +52,9 @@ case class JavaUri(uri: sm.Uri) extends jm.Uri {
 
   def scheme(scheme: String): jm.Uri = t(_.withScheme(scheme))
 
-  def host(host: jm.Host): jm.Uri = t(_.withHost(host.asScala))
-  def host(host: String): jm.Uri = t(_.withHost(host))
-  def port(port: Int): jm.Uri = t(_.withPort(port))
+  def host(host: jm.Host): jm.Uri        = t(_.withHost(host.asScala))
+  def host(host: String): jm.Uri         = t(_.withHost(host))
+  def port(port: Int): jm.Uri            = t(_.withPort(port))
   def userInfo(userInfo: String): jm.Uri = t(_.withUserInfo(userInfo))
 
   def path(path: String): jm.Uri = t(_.withPath(sm.Uri.Path(path)))
@@ -64,13 +65,14 @@ case class JavaUri(uri: sm.Uri) extends jm.Uri {
     t(_.withRawQueryString(rawQuery))
   def query(query: jm.Query): jm.Uri = t(_.withQuery(query.asScala))
 
-  def addPathSegment(segment: String): jm.Uri = t { u ⇒
-    val newPath =
-      if (u.path.endsWithSlash) u.path ++ sm.Uri.Path(segment)
-      else u.path ++ sm.Uri.Path./(segment)
+  def addPathSegment(segment: String): jm.Uri =
+    t { u ⇒
+      val newPath =
+        if (u.path.endsWithSlash) u.path ++ sm.Uri.Path(segment)
+        else u.path ++ sm.Uri.Path./(segment)
 
-    u.withPath(newPath)
-  }
+      u.withPath(newPath)
+    }
 
   def fragment(fragment: Optional[String]): jm.Uri =
     t(_.copy(fragment = fragment.asScala))

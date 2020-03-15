@@ -17,7 +17,13 @@
 package com.twitter.summingbird.scalding.batch
 
 import com.twitter.algebird.monad.{StateWithError, Reader}
-import com.twitter.algebird.{Interval, Intersection, InclusiveLower, ExclusiveUpper, InclusiveUpper}
+import com.twitter.algebird.{
+  Interval,
+  Intersection,
+  InclusiveLower,
+  ExclusiveUpper,
+  InclusiveUpper
+}
 import com.twitter.summingbird.batch.{BatchID, Batcher, Timestamp}
 import com.twitter.summingbird.scalding._
 import com.twitter.scalding.Mode
@@ -35,17 +41,21 @@ trait BatchedSink[T] extends Sink[T] {
     * Instances may choose to write out materialized streams
     * by implementing this. This is what readStream returns.
     */
-  def writeStream(batchID: BatchID, stream: TimedPipe[T])(
-      implicit flowDef: FlowDef, mode: Mode): Unit
+  def writeStream(batchID: BatchID, stream: TimedPipe[T])(implicit
+      flowDef: FlowDef,
+      mode: Mode
+  ): Unit
 
   /**
     * in will completely cover these batches
     * Return a new FlowToPipe with the write as a side effect
     */
   protected def writeBatches(
-      inter: Interval[BatchID], in: FlowToPipe[T]): FlowToPipe[T] =
+      inter: Interval[BatchID],
+      in: FlowToPipe[T]
+  ): FlowToPipe[T] =
     Reader[FlowInput, TimedPipe[T]] { (flowMode: (FlowDef, Mode)) =>
-      val iter = BatchID.toIterable(inter)
+      val iter   = BatchID.toIterable(inter)
       val inPipe = in(flowMode)
 
       // TODO (https://github.com/twitter/summingbird/issues/92): a
@@ -54,10 +64,13 @@ trait BatchedSink[T] extends Sink[T] {
       // We need to write each of these.
       iter.foreach { batch =>
         val range = batcher.toInterval(batch)
-        writeStream(batch, inPipe.filter {
-          case (time, _) =>
-            range(time)
-        })(flowMode._1, flowMode._2)
+        writeStream(
+          batch,
+          inPipe.filter {
+            case (time, _) =>
+              range(time)
+          }
+        )(flowMode._1, flowMode._2)
       }
       inPipe
     }
@@ -68,15 +81,17 @@ trait BatchedSink[T] extends Sink[T] {
       // This object combines some common scalding batching operations:
       val batchOps = new BatchedOperations(batcher)
 
-      val batchStreams = batchOps.coverIt(timeSpan).map { b =>
-        (b, readStream(b, mode))
-      }
+      val batchStreams =
+        batchOps.coverIt(timeSpan).map { b => (b, readStream(b, mode)) }
 
       // Maybe an inclusive interval of batches to pull from incoming
-      val batchesToWrite: Option[(BatchID, BatchID)] = batchStreams.dropWhile {
-        _._2.isDefined
-      }.map { _._1 }.toList match {
-        case Nil => None
+      val batchesToWrite: Option[(BatchID, BatchID)] = batchStreams
+        .dropWhile {
+          _._2.isDefined
+        }
+        .map { _._1 }
+        .toList match {
+        case Nil  => None
         case list => Some((list.min, list.max))
       }
 
@@ -95,19 +110,23 @@ trait BatchedSink[T] extends Sink[T] {
       }
 
       def mergeExistingAndBuilt(
-          optBuilt: Option[(Interval[BatchID], FlowToPipe[T])])
-        : Try[((Interval[Timestamp], Mode), FlowToPipe[T])] = {
+          optBuilt: Option[(Interval[BatchID], FlowToPipe[T])]
+      ): Try[((Interval[Timestamp], Mode), FlowToPipe[T])] = {
         val (aBatches, aFlows) = existing.unzip
-        val flows = aFlows ++ (optBuilt.map { _._2 })
+        val flows              = aFlows ++ (optBuilt.map { _._2 })
         val batches =
           aBatches ++
-          (optBuilt.map { pair =>
-                BatchID.toIterable(pair._1)
-              }.getOrElse(Iterable.empty))
+            (optBuilt
+              .map { pair => BatchID.toIterable(pair._1) }
+              .getOrElse(Iterable.empty))
 
         if (flows.isEmpty)
-          Left(List("Zero batches requested, should never occur: " +
-                  timeSpan.toString))
+          Left(
+            List(
+              "Zero batches requested, should never occur: " +
+                timeSpan.toString
+            )
+          )
         else {
           // it is a static (i.e. independent from input) bug if this get ever throws
           val available = batchOps.intersect(batches, timeSpan).get

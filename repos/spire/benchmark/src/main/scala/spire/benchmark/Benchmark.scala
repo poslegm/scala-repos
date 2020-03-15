@@ -31,7 +31,8 @@ trait MyBenchmark extends SimpleBenchmark with FixtureSupport {
   * Extend this to create a main object which will run 'cls' (a benchmark).
   */
 abstract class MyRunner(
-    val cls: java.lang.Class[_ <: com.google.caliper.Benchmark]) {
+    val cls: java.lang.Class[_ <: com.google.caliper.Benchmark]
+) {
   def main(args: Array[String]): Unit = Runner.main(cls, args: _*)
 }
 
@@ -43,11 +44,11 @@ trait BenchmarkData extends MyBenchmark {
   //val size = 4 * 1000 * 1000
   //val size = 20 * 1000 * 1000
 
-  lazy val ints = init(size)(nextInt)
-  lazy val longs = init(size)(nextLong)
-  lazy val floats = init(size)(nextFloat)
+  lazy val ints    = init(size)(nextInt)
+  lazy val longs   = init(size)(nextLong)
+  lazy val floats  = init(size)(nextFloat)
   lazy val doubles = init(size)(nextDouble)
 
-  lazy val complexes = init(size)(nextComplex)
+  lazy val complexes  = init(size)(nextComplex)
   lazy val fcomplexes = init(size)(FastComplex(nextFloat(), nextFloat()))
 }

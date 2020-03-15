@@ -19,7 +19,12 @@ package org.apache.spark.mllib.feature
 
 import org.apache.spark.annotation.{DeveloperApi, Since}
 import org.apache.spark.internal.Logging
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.linalg.{
+  DenseVector,
+  SparseVector,
+  Vector,
+  Vectors
+}
 import org.apache.spark.mllib.stat.MultivariateOnlineSummarizer
 import org.apache.spark.rdd.RDD
 
@@ -32,7 +37,7 @@ import org.apache.spark.rdd.RDD
   * @param withStd True by default. Scales the data to unit standard deviation.
   */
 @Since("1.1.0")
-class StandardScaler @Since("1.1.0")(withMean: Boolean, withStd: Boolean)
+class StandardScaler @Since("1.1.0") (withMean: Boolean, withStd: Boolean)
     extends Logging {
 
   @Since("1.1.0")
@@ -52,13 +57,15 @@ class StandardScaler @Since("1.1.0")(withMean: Boolean, withStd: Boolean)
   def fit(data: RDD[Vector]): StandardScalerModel = {
     // TODO: skip computation if both withMean and withStd are false
     val summary = data.treeAggregate(new MultivariateOnlineSummarizer)(
-        (aggregator, data) => aggregator.add(data),
-        (aggregator1, aggregator2) => aggregator1.merge(aggregator2))
+      (aggregator, data) => aggregator.add(data),
+      (aggregator1, aggregator2) => aggregator1.merge(aggregator2)
+    )
     new StandardScalerModel(
-        Vectors.dense(summary.variance.toArray.map(v => math.sqrt(v))),
-        summary.mean,
-        withStd,
-        withMean)
+      Vectors.dense(summary.variance.toArray.map(v => math.sqrt(v))),
+      summary.mean,
+      withStd,
+      withMean
+    )
   }
 }
 
@@ -71,23 +78,27 @@ class StandardScaler @Since("1.1.0")(withMean: Boolean, withStd: Boolean)
   * @param withMean whether to center the data before scaling
   */
 @Since("1.1.0")
-class StandardScalerModel @Since("1.3.0")(
+class StandardScalerModel @Since("1.3.0") (
     @Since("1.3.0") val std: Vector,
     @Since("1.1.0") val mean: Vector,
     @Since("1.3.0") var withStd: Boolean,
-    @Since("1.3.0") var withMean: Boolean)
-    extends VectorTransformer {
+    @Since("1.3.0") var withMean: Boolean
+) extends VectorTransformer {
 
   /**
     */
   @Since("1.3.0")
   def this(std: Vector, mean: Vector) {
     this(std, mean, withStd = std != null, withMean = mean != null)
-    require(this.withStd || this.withMean,
-            "at least one of std or mean vectors must be provided")
+    require(
+      this.withStd || this.withMean,
+      "at least one of std or mean vectors must be provided"
+    )
     if (this.withStd && this.withMean) {
-      require(mean.size == std.size,
-              "mean and std vectors must have equal size if both are provided")
+      require(
+        mean.size == std.size,
+        "mean and std vectors must have equal size if both are provided"
+      )
     }
   }
 
@@ -97,8 +108,10 @@ class StandardScalerModel @Since("1.3.0")(
   @Since("1.3.0")
   @DeveloperApi
   def setWithMean(withMean: Boolean): this.type = {
-    require(!(withMean && this.mean == null),
-            "cannot set withMean to true while mean is null")
+    require(
+      !(withMean && this.mean == null),
+      "cannot set withMean to true while mean is null"
+    )
     this.withMean = withMean
     this
   }
@@ -106,8 +119,10 @@ class StandardScalerModel @Since("1.3.0")(
   @Since("1.3.0")
   @DeveloperApi
   def setWithStd(withStd: Boolean): this.type = {
-    require(!(withStd && this.std == null),
-            "cannot set withStd to true while std is null")
+    require(
+      !(withStd && this.std == null),
+      "cannot set withStd to true while std is null"
+    )
     this.withStd = withStd
     this
   }
@@ -135,12 +150,14 @@ class StandardScalerModel @Since("1.3.0")(
       vector match {
         case DenseVector(vs) =>
           val values = vs.clone()
-          val size = values.length
+          val size   = values.length
           if (withStd) {
             var i = 0
             while (i < size) {
-              values(i) = if (std(i) != 0.0)
-                (values(i) - localShift(i)) * (1.0 / std(i)) else 0.0
+              values(i) =
+                if (std(i) != 0.0)
+                  (values(i) - localShift(i)) * (1.0 / std(i))
+                else 0.0
               i += 1
             }
           } else {
@@ -153,14 +170,15 @@ class StandardScalerModel @Since("1.3.0")(
           Vectors.dense(values)
         case v =>
           throw new IllegalArgumentException(
-              "Do not support vector type " + v.getClass)
+            "Do not support vector type " + v.getClass
+          )
       }
     } else if (withStd) {
       vector match {
         case DenseVector(vs) =>
           val values = vs.clone()
-          val size = values.length
-          var i = 0
+          val size   = values.length
+          var i      = 0
           while (i < size) {
             values(i) *= (if (std(i) != 0.0) 1.0 / std(i) else 0.0)
             i += 1
@@ -170,17 +188,18 @@ class StandardScalerModel @Since("1.3.0")(
           // For sparse vector, the `index` array inside sparse vector object will not be changed,
           // so we can re-use it to save memory.
           val values = vs.clone()
-          val nnz = values.length
-          var i = 0
+          val nnz    = values.length
+          var i      = 0
           while (i < nnz) {
             values(i) *=
-            (if (std(indices(i)) != 0.0) 1.0 / std(indices(i)) else 0.0)
+              (if (std(indices(i)) != 0.0) 1.0 / std(indices(i)) else 0.0)
             i += 1
           }
           Vectors.sparse(size, indices, values)
         case v =>
           throw new IllegalArgumentException(
-              "Do not support vector type " + v.getClass)
+            "Do not support vector type " + v.getClass
+          )
       }
     } else {
       // Note that it's safe since we always assume that the data in RDD should be immutable.

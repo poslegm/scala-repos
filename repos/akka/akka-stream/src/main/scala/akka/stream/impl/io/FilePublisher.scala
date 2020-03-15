@@ -20,23 +20,31 @@ import scala.util.control.NonFatal
 
 /** INTERNAL API */
 private[akka] object FilePublisher {
-  def props(f: File,
-            completionPromise: Promise[IOResult],
-            chunkSize: Int,
-            initialBuffer: Int,
-            maxBuffer: Int) = {
+  def props(
+      f: File,
+      completionPromise: Promise[IOResult],
+      chunkSize: Int,
+      initialBuffer: Int,
+      maxBuffer: Int
+  ) = {
     require(chunkSize > 0, s"chunkSize must be > 0 (was $chunkSize)")
     require(
-        initialBuffer > 0, s"initialBuffer must be > 0 (was $initialBuffer)")
-    require(maxBuffer >= initialBuffer,
-            s"maxBuffer must be >= initialBuffer (was $maxBuffer)")
+      initialBuffer > 0,
+      s"initialBuffer must be > 0 (was $initialBuffer)"
+    )
+    require(
+      maxBuffer >= initialBuffer,
+      s"maxBuffer must be >= initialBuffer (was $maxBuffer)"
+    )
 
-    Props(classOf[FilePublisher],
-          f,
-          completionPromise,
-          chunkSize,
-          initialBuffer,
-          maxBuffer).withDeploy(Deploy.local)
+    Props(
+      classOf[FilePublisher],
+      f,
+      completionPromise,
+      chunkSize,
+      initialBuffer,
+      maxBuffer
+    ).withDeploy(Deploy.local)
   }
 
   private case object Continue extends DeadLetterSuppression
@@ -46,17 +54,19 @@ private[akka] object FilePublisher {
 }
 
 /** INTERNAL API */
-private[akka] final class FilePublisher(f: File,
-                                        completionPromise: Promise[IOResult],
-                                        chunkSize: Int,
-                                        initialBuffer: Int,
-                                        maxBuffer: Int)
-    extends akka.stream.actor.ActorPublisher[ByteString] with ActorLogging {
+private[akka] final class FilePublisher(
+    f: File,
+    completionPromise: Promise[IOResult],
+    chunkSize: Int,
+    initialBuffer: Int,
+    maxBuffer: Int
+) extends akka.stream.actor.ActorPublisher[ByteString]
+    with ActorLogging {
   import FilePublisher._
 
   var eofReachedAtOffset = Long.MinValue
 
-  val buf = ByteBuffer.allocate(chunkSize)
+  val buf            = ByteBuffer.allocate(chunkSize)
   var readBytesTotal = 0L
   var availableChunks: Vector[ByteString] =
     Vector.empty // TODO possibly resign read-ahead-ing and make fusable as Stage
@@ -76,8 +86,8 @@ private[akka] final class FilePublisher(f: File,
 
   def receive = {
     case ActorPublisherMessage.Request(elements) ⇒ readAndSignal(maxBuffer)
-    case Continue ⇒ readAndSignal(maxBuffer)
-    case ActorPublisherMessage.Cancel ⇒ context.stop(self)
+    case Continue                                ⇒ readAndSignal(maxBuffer)
+    case ActorPublisherMessage.Cancel            ⇒ context.stop(self)
   }
 
   def readAndSignal(maxReadAhead: Int): Unit =
@@ -88,7 +98,8 @@ private[akka] final class FilePublisher(f: File,
     }
 
   @tailrec private def signalOnNexts(
-      chunks: Vector[ByteString]): Vector[ByteString] =
+      chunks: Vector[ByteString]
+  ): Vector[ByteString] =
     if (chunks.nonEmpty && totalDemand > 0) {
       onNext(chunks.head)
       signalOnNexts(chunks.tail)
@@ -100,16 +111,20 @@ private[akka] final class FilePublisher(f: File,
   /** BLOCKING I/O READ */
   @tailrec
   def readAhead(
-      maxChunks: Int, chunks: Vector[ByteString]): Vector[ByteString] =
+      maxChunks: Int,
+      chunks: Vector[ByteString]
+  ): Vector[ByteString] =
     if (chunks.size <= maxChunks && isActive && !eofEncountered) {
-      (try chan.read(buf) catch {
+      (try chan.read(buf)
+      catch {
         case NonFatal(ex) ⇒ onErrorThenStop(ex); Int.MinValue
       }) match {
         case -1 ⇒ // EOF
           eofReachedAtOffset = chan.position
           log.debug(
-              "No more bytes available to read (got `-1` from `read`), marking final bytes of file @ " +
-              eofReachedAtOffset)
+            "No more bytes available to read (got `-1` from `read`), marking final bytes of file @ " +
+              eofReachedAtOffset
+          )
           chunks
         case 0 ⇒
           readAhead(maxChunks, chunks) // had nothing to read into this chunk

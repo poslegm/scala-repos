@@ -7,7 +7,7 @@ import com.twitter.util.{Time, Future}
   * Mock objects for testing.
   */
 class MockService extends Service[Request, Result] {
-  var requests = List[Request]()
+  var requests  = List[Request]()
   val resultSet = new ResultSet(fields = Seq(), rows = Seq())
 
   def apply(request: Request): Future[Result] = {

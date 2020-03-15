@@ -11,8 +11,8 @@ object Test {
       implicit val age = 18
 
       val per = Person()
-      val p = per.pickle
-      val up = p.unpickle[Person]
+      val p   = per.pickle
+      val up  = p.unpickle[Person]
       assert(per == up)
     }
   }

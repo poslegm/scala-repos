@@ -20,7 +20,10 @@ package org.apache.spark.examples.ml
 
 import org.apache.spark.{SparkConf, SparkContext}
 // $example on$
-import org.apache.spark.ml.classification.{BinaryLogisticRegressionSummary, LogisticRegression}
+import org.apache.spark.ml.classification.{
+  BinaryLogisticRegressionSummary,
+  LogisticRegression
+}
 // $example off$
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.functions.max
@@ -28,8 +31,8 @@ import org.apache.spark.sql.functions.max
 object LogisticRegressionSummaryExample {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("LogisticRegressionSummaryExample")
-    val sc = new SparkContext(conf)
+    val conf   = new SparkConf().setAppName("LogisticRegressionSummaryExample")
+    val sc     = new SparkContext(conf)
     val sqlCtx = new SQLContext(sc)
     import sqlCtx.implicits._
 
@@ -66,7 +69,7 @@ object LogisticRegressionSummaryExample {
     println(binarySummary.areaUnderROC)
 
     // Set the model threshold to maximize F-Measure
-    val fMeasure = binarySummary.fMeasureByThreshold
+    val fMeasure    = binarySummary.fMeasureByThreshold
     val maxFMeasure = fMeasure.select(max("F-Measure")).head().getDouble(0)
     val bestThreshold = fMeasure
       .where($"F-Measure" === maxFMeasure)

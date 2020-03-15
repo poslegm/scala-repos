@@ -23,7 +23,9 @@ object PerformanceSpec extends MultiNodeConfig {
   val n4 = role("n4")
   val n5 = role("n5")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = ERROR
     akka.stdout-loglevel = ERROR
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
@@ -34,7 +36,8 @@ object PerformanceSpec extends MultiNodeConfig {
     akka.testconductor.barrier-timeout = 60 s
     akka.cluster.distributed-data.gossip-interval = 1 s
     akka.actor.serialize-messages = off
-    """))
+    """)
+  )
 
   def countDownProps(latch: TestLatch): Props =
     Props(new CountDown(latch)).withDeploy(Deploy.local)
@@ -55,7 +58,8 @@ class PerformanceSpecMultiJvmNode4 extends PerformanceSpec
 class PerformanceSpecMultiJvmNode5 extends PerformanceSpec
 
 class PerformanceSpec
-    extends MultiNodeSpec(PerformanceSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(PerformanceSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
   import PerformanceSpec._
   import Replicator._
@@ -63,10 +67,10 @@ class PerformanceSpec
   override def initialParticipants = roles.size
 
   implicit val cluster = Cluster(system)
-  val replicator = DistributedData(system).replicator
-  val timeout = 3.seconds.dilated
-  val factor = 1 // use 3 here for serious tuning
-  val repeatCount = 3 // use at least 10 here for serious tuning
+  val replicator       = DistributedData(system).replicator
+  val timeout          = 3.seconds.dilated
+  val factor           = 1 // use 3 here for serious tuning
+  val repeatCount      = 3 // use at least 10 here for serious tuning
 
   def join(from: RoleName, to: RoleName): Unit = {
     runOn(from) {
@@ -75,17 +79,20 @@ class PerformanceSpec
     enterBarrier(from.name + "-joined")
   }
 
-  def repeat(description: String,
-             keys: Iterable[ORSetKey[Int]],
-             n: Int,
-             expectedAfterReplication: Option[Set[Int]] = None)(
+  def repeat(
+      description: String,
+      keys: Iterable[ORSetKey[Int]],
+      n: Int,
+      expectedAfterReplication: Option[Set[Int]] = None
+  )(
       block: (ORSetKey[Int], Int, ActorRef) ⇒ Unit,
-      afterEachKey: ORSetKey[Int] ⇒ Unit = _ ⇒ ()): Unit = {
+      afterEachKey: ORSetKey[Int] ⇒ Unit = _ ⇒ ()
+  ): Unit = {
 
     keys.foreach { key ⇒
       val startTime = System.nanoTime()
       runOn(n1) {
-        val latch = TestLatch(n)
+        val latch   = TestLatch(n)
         val replyTo = system.actorOf(countDownProps(latch))
 
         var i = 0
@@ -101,9 +108,9 @@ class PerformanceSpec
         enterBarrier("repeat-" + key + "-after-awaitReplicated")
       }
       runOn(n1) {
-        val endTime = System.nanoTime()
+        val endTime    = System.nanoTime()
         val durationMs = (endTime - startTime).nanos.toMillis
-        val tps = (n * 1000.0 / durationMs).toInt
+        val tps        = (n * 1000.0 / durationMs).toInt
         println(s"## $n $description took $durationMs ms, $tps TPS")
       }
 
@@ -113,10 +120,10 @@ class PerformanceSpec
   }
 
   def awaitReplicated(
-      keys: Iterable[ORSetKey[Int]], expectedData: Set[Int]): Unit =
-    keys.foreach { key ⇒
-      awaitReplicated(key, expectedData)
-    }
+      keys: Iterable[ORSetKey[Int]],
+      expectedData: Set[Int]
+  ): Unit =
+    keys.foreach { key ⇒ awaitReplicated(key, expectedData) }
 
   def awaitReplicated(key: ORSetKey[Int], expectedData: Set[Int]): Unit = {
     within(20.seconds) {
@@ -147,12 +154,15 @@ class PerformanceSpec
     }
 
     "be great for ORSet Update WriteLocal" taggedAs PerformanceTest in {
-      val keys = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("A" + n))
-      val n = 1000 * factor
+      val keys         = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("A" + n))
+      val n            = 1000 * factor
       val expectedData = (0 until n).toSet
-      repeat("ORSet Update WriteLocal", keys, n)({ (key, i, replyTo) ⇒
-        replicator.tell(Update(key, ORSet(), WriteLocal)(_ + i), replyTo)
-      }, key ⇒ awaitReplicated(key, expectedData))
+      repeat("ORSet Update WriteLocal", keys, n)(
+        { (key, i, replyTo) ⇒
+          replicator.tell(Update(key, ORSet(), WriteLocal)(_ + i), replyTo)
+        },
+        key ⇒ awaitReplicated(key, expectedData)
+      )
 
       enterBarrier("after-1")
     }
@@ -166,8 +176,8 @@ class PerformanceSpec
     }
 
     "be good for ORSet Update WriteLocal and gossip replication" taggedAs PerformanceTest in {
-      val keys = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("B" + n))
-      val n = 200 * factor
+      val keys     = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("B" + n))
+      val n        = 200 * factor
       val expected = Some((0 until n).toSet)
       repeat("ORSet Update WriteLocal + gossip", keys, n, expected) {
         (key, i, replyTo) ⇒
@@ -177,8 +187,8 @@ class PerformanceSpec
     }
 
     "be good for ORSet Update WriteLocal and gossip of existing keys" taggedAs PerformanceTest in {
-      val keys = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("B" + n))
-      val n = 200 * factor
+      val keys     = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("B" + n))
+      val n        = 200 * factor
       val expected = Some((0 until n).toSet ++ (0 until n).map(-_).toSet)
       repeat("ORSet Update WriteLocal existing + gossip", keys, n, expected) {
         (key, i, replyTo) ⇒
@@ -188,8 +198,8 @@ class PerformanceSpec
     }
 
     "be good for ORSet Update WriteTwo and gossip replication" taggedAs PerformanceTest in {
-      val keys = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("C" + n))
-      val n = 200 * factor
+      val keys     = (1 to repeatCount).map(n ⇒ ORSetKey[Int]("C" + n))
+      val n        = 200 * factor
       val expected = Some((0 until n).toSet)
       val writeTwo = WriteTo(2, timeout)
       repeat("ORSet Update WriteTwo + gossip", keys, n, expected) {
@@ -201,19 +211,19 @@ class PerformanceSpec
 
     "be awesome for GCounter Update WriteLocal" taggedAs PerformanceTest in {
       val startTime = System.nanoTime()
-      val n = 1000 * factor
-      val key = GCounterKey("D")
+      val n         = 1000 * factor
+      val key       = GCounterKey("D")
       runOn(n1, n2, n3) {
-        val latch = TestLatch(n)
+        val latch   = TestLatch(n)
         val replyTo = system.actorOf(countDownProps(latch))
-        for (_ ← 0 until n) replicator.tell(
-            Update(key, GCounter(), WriteLocal)(_ + 1), replyTo)
+        for (_ ← 0 until n)
+          replicator.tell(Update(key, GCounter(), WriteLocal)(_ + 1), replyTo)
         Await.ready(latch, 5.seconds + (1.second * factor))
         enterBarrier("update-done-6")
         runOn(n1) {
-          val endTime = System.nanoTime()
+          val endTime    = System.nanoTime()
           val durationMs = (endTime - startTime).nanos.toMillis
-          val tps = (3 * n * 1000.0 / durationMs).toInt
+          val tps        = (3 * n * 1000.0 / durationMs).toInt
           println(s"## ${3 * n} GCounter Update took $durationMs ms, $tps TPS")
         }
       }
@@ -233,11 +243,10 @@ class PerformanceSpec
       }
       enterBarrier("replication-done-6")
       runOn(n1) {
-        val endTime = System.nanoTime()
+        val endTime    = System.nanoTime()
         val durationMs = (endTime - startTime).nanos.toMillis
-        val tps = (n * 1000.0 / durationMs).toInt
-        println(
-            s"## $n GCounter Update + gossip took $durationMs ms, $tps TPS")
+        val tps        = (n * 1000.0 / durationMs).toInt
+        println(s"## $n GCounter Update + gossip took $durationMs ms, $tps TPS")
       }
 
       enterBarrier("after-6")

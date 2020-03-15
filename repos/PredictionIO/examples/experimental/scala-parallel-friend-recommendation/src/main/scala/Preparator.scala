@@ -8,14 +8,13 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-import scala.io.Source // ADDED
+import scala.io.Source                 // ADDED
 import io.prediction.controller.Params // ADDED
 
 // ADDED CustomPreparatorParams case class
 case class CustomPreparatorParams(
     val filepath: String
-)
-    extends Params
+) extends Params
 
 class IdentityPreparator(pp: EmptyPreparatorParams)
     extends PPreparator[TrainingData, TrainingData] {

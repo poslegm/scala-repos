@@ -16,9 +16,9 @@ import scala.collection.mutable.Buffer
 @RunWith(classOf[JUnitRunner])
 class CoordinatorTest extends FunSuite with LocalConductors with MockitoSugar {
   trait Ctx {
-    val ctr = mock[ByteCounter]
+    val ctr   = mock[ByteCounter]
     val coord = new Coordinator(ctr)
-    val nfo = mock[JvmInfo]
+    val nfo   = mock[JvmInfo]
     when(ctr.info).thenReturn(nfo)
     when(ctr.rate()).thenReturn(1)
   }
@@ -88,9 +88,10 @@ class CoordinatorTest extends FunSuite with LocalConductors with MockitoSugar {
 
     Time.withCurrentTimeFrozen { ctl =>
       localThread(conductor) {
-        coord.sleepUntilGc({ () =>
-          when(nfo.generation()).thenReturn(x)
-        }, 20.milliseconds)
+        coord.sleepUntilGc(
+          { () => when(nfo.generation()).thenReturn(x) },
+          20.milliseconds
+        )
       }
 
       localThread(conductor) {
@@ -169,9 +170,9 @@ class CoordinatorTest extends FunSuite with LocalConductors with MockitoSugar {
     when(nfo.remaining()).thenReturn(10.megabytes)
     when(nfo.generation()).thenReturn(0)
 
-    val maxWait = Duration.Top
+    val maxWait            = Duration.Top
     @volatile var npending = 1
-    val log = Logger.getAnonymousLogger()
+    val log                = Logger.getAnonymousLogger()
 
     val conductor = new Conductor
     import conductor._
@@ -179,10 +180,10 @@ class CoordinatorTest extends FunSuite with LocalConductors with MockitoSugar {
     Time.withCurrentTimeFrozen { ctl =>
       localThread(conductor) {
         coord.sleepUntilFinishedDraining(
-            space,
-            maxWait,
-            () => npending,
-            log
+          space,
+          maxWait,
+          () => npending,
+          log
         )
       }
 

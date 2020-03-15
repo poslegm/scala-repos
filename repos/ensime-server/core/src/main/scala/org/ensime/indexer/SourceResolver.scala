@@ -14,14 +14,14 @@ import org.ensime.util.map._
 // mutable: lookup of user's source files are atomically updated
 class SourceResolver(
     config: EnsimeConfig
-)(
-    implicit vfs: EnsimeVFS
-)
-    extends FileChangeListener with SLF4JLogging {
+)(implicit
+    vfs: EnsimeVFS
+) extends FileChangeListener
+    with SLF4JLogging {
 
   // it's not worth doing incremental updates - this is cheap
   // (but it would be nice to have a "debounce" throttler)
-  def fileAdded(f: FileObject) = update()
+  def fileAdded(f: FileObject)   = update()
   def fileRemoved(f: FileObject) = update()
   def fileChanged(f: FileObject) = {}
 
@@ -33,9 +33,9 @@ class SourceResolver(
         all.get(clazz) flatMap {
           _.find(_.getName.getBaseName == filename)
         } match {
-          case s @ Some(_) => s
+          case s @ Some(_)               => s
           case None if clazz.path == Nil => None
-          case _ => resolve(clazz.parent, source)
+          case _                         => resolve(clazz.parent, source)
         }
     }
 
@@ -44,25 +44,26 @@ class SourceResolver(
     all = recalculate
   }
 
-  private def scan(f: FileObject) = f.findFiles(SourceSelector) match {
-    case null => Nil
-    case res => res.toList
-  }
+  private def scan(f: FileObject) =
+    f.findFiles(SourceSelector) match {
+      case null => Nil
+      case res  => res.toList
+    }
 
   private val depSources = {
     val srcJars =
       config.referenceSourceJars.toSet ++ {
         for {
           (_, module) <- config.modules
-          srcArchive <- module.referenceSourceJars
+          srcArchive  <- module.referenceSourceJars
         } yield srcArchive
       }
     for {
       srcJarFile <- srcJars.toList
       // interestingly, this is able to handle zip files
-      srcJar = vfs.vjar(srcJarFile)
+      srcJar    = vfs.vjar(srcJarFile)
       srcEntry <- scan(srcJar)
-      inferred = infer(srcJar, srcEntry)
+      inferred  = infer(srcJar, srcEntry)
       // continue to hold a reference to source jars
       // so that we can access their contents elsewhere.
       // this does mean we have a file handler, sorry.
@@ -73,9 +74,9 @@ class SourceResolver(
   private def userSources = {
     for {
       (_, module) <- config.modules.toList
-      root <- module.sourceRoots
-      dir = vfs.vfile(root)
-      file <- scan(dir)
+      root        <- module.sourceRoots
+      dir          = vfs.vfile(root)
+      file        <- scan(dir)
     } yield (infer(dir, file), file)
   }.toMultiMapSet
 

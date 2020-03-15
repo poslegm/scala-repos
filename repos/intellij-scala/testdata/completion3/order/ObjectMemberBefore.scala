@@ -1,5 +1,5 @@
 object ObjectMemberBefore {
-  def foo = "get data"
+  def foo    = "get data"
   val format = 56
 }
 

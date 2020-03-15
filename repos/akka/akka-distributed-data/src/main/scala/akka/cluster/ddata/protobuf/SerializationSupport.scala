@@ -56,39 +56,45 @@ trait SerializationSupport {
   def compress(msg: MessageLite): Array[Byte] = {
     val bos = new ByteArrayOutputStream(BufferSize)
     val zip = new GZIPOutputStream(bos)
-    try msg.writeTo(zip) finally zip.close()
+    try msg.writeTo(zip)
+    finally zip.close()
     bos.toByteArray
   }
 
   def decompress(bytes: Array[Byte]): Array[Byte] = {
-    val in = new GZIPInputStream(new ByteArrayInputStream(bytes))
-    val out = new ByteArrayOutputStream()
+    val in     = new GZIPInputStream(new ByteArrayInputStream(bytes))
+    val out    = new ByteArrayOutputStream()
     val buffer = new Array[Byte](BufferSize)
 
-    @tailrec def readChunk(): Unit = in.read(buffer) match {
-      case -1 ⇒ ()
-      case n ⇒
-        out.write(buffer, 0, n)
-        readChunk()
-    }
+    @tailrec def readChunk(): Unit =
+      in.read(buffer) match {
+        case -1 ⇒ ()
+        case n ⇒
+          out.write(buffer, 0, n)
+          readChunk()
+      }
 
-    try readChunk() finally in.close()
+    try readChunk()
+    finally in.close()
     out.toByteArray
   }
 
-  def addressToProto(address: Address): dm.Address.Builder = address match {
-    case Address(_, _, Some(host), Some(port)) ⇒
-      dm.Address.newBuilder().setHostname(host).setPort(port)
-    case _ ⇒
-      throw new IllegalArgumentException(
-          s"Address [${address}] could not be serialized: host or port missing.")
-  }
+  def addressToProto(address: Address): dm.Address.Builder =
+    address match {
+      case Address(_, _, Some(host), Some(port)) ⇒
+        dm.Address.newBuilder().setHostname(host).setPort(port)
+      case _ ⇒
+        throw new IllegalArgumentException(
+          s"Address [${address}] could not be serialized: host or port missing."
+        )
+    }
 
   def addressFromProto(address: dm.Address): Address =
     Address(addressProtocol, system.name, address.getHostname, address.getPort)
 
   def uniqueAddressToProto(
-      uniqueAddress: UniqueAddress): dm.UniqueAddress.Builder =
+      uniqueAddress: UniqueAddress
+  ): dm.UniqueAddress.Builder =
     dm.UniqueAddress
       .newBuilder()
       .setAddress(addressToProto(uniqueAddress.address))
@@ -96,14 +102,16 @@ trait SerializationSupport {
 
   def uniqueAddressFromProto(uniqueAddress: dm.UniqueAddress): UniqueAddress =
     UniqueAddress(
-        addressFromProto(uniqueAddress.getAddress), uniqueAddress.getUid)
+      addressFromProto(uniqueAddress.getAddress),
+      uniqueAddress.getUid
+    )
 
   def resolveActorRef(path: String): ActorRef =
     system.provider.resolveActorRef(path)
 
   def otherMessageToProto(msg: Any): dm.OtherMessage = {
     def buildOther(): dm.OtherMessage = {
-      val m = msg.asInstanceOf[AnyRef]
+      val m             = msg.asInstanceOf[AnyRef]
       val msgSerializer = serialization.findSerializerFor(m)
       val builder = dm.OtherMessage
         .newBuilder()
@@ -118,7 +126,8 @@ trait SerializationSupport {
         case _ ⇒
           if (msgSerializer.includeManifest)
             builder.setMessageManifest(
-                ByteString.copyFromUtf8(m.getClass.getName))
+              ByteString.copyFromUtf8(m.getClass.getName)
+            )
       }
 
       builder.build()
@@ -129,7 +138,8 @@ trait SerializationSupport {
     // but when serializing for digests it must be set here.
     if (Serialization.currentTransportInformation.value == null)
       Serialization.currentTransportInformation
-        .withValue(transportInformation) { buildOther() } else buildOther()
+        .withValue(transportInformation) { buildOther() }
+    else buildOther()
   }
 
   def otherMessageFromBinary(bytes: Array[Byte]): AnyRef =
@@ -140,9 +150,11 @@ trait SerializationSupport {
       if (other.hasMessageManifest) other.getMessageManifest.toStringUtf8
       else ""
     serialization
-      .deserialize(other.getEnclosedMessage.toByteArray,
-                   other.getSerializerId,
-                   manifest)
+      .deserialize(
+        other.getEnclosedMessage.toByteArray,
+        other.getSerializerId,
+        manifest
+      )
       .get
   }
 }
@@ -151,4 +163,5 @@ trait SerializationSupport {
   * Java API
   */
 abstract class AbstractSerializationSupport
-    extends JSerializer with SerializationSupport
+    extends JSerializer
+    with SerializationSupport

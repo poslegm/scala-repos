@@ -13,9 +13,9 @@ object Arguments {
 
   case class Parser(optionPrefix: Char) {
 
-    val options: Set[String] = new HashSet
-    val prefixes: Set[String] = new HashSet
-    val optionalArgs: Set[String] = new HashSet
+    val options: Set[String]                = new HashSet
+    val prefixes: Set[String]               = new HashSet
+    val optionalArgs: Set[String]           = new HashSet
     val prefixedBindings: Map[String, Char] = new HashMap
     val optionalBindings: Map[String, Char] = new HashMap
 
@@ -63,66 +63,73 @@ object Arguments {
     def parse(args: Array[String], res: Arguments) {
       if (args != null) {
         var i = 0
-        while (i < args.length) if ((args(i) == null) ||
-                                    (args(i).length() == 0)) i += 1
-        else if (args(i).charAt(0) != optionPrefix) {
-          res.addOther(args(i))
-          i += 1
-        } else if (options contains args(i)) {
-          res.addOption(args(i))
-          i += 1
-        } else if (optionalArgs contains args(i)) {
-          if ((i + 1) == args.length) {
-            error("missing argument for '" + args(i) + "'")
+        while (i < args.length)
+          if ((args(i) == null) ||
+              (args(i).length() == 0)) i += 1
+          else if (args(i).charAt(0) != optionPrefix) {
+            res.addOther(args(i))
             i += 1
-          } else {
-            res.addArgument(args(i), args(i + 1))
-            i += 2
-          }
-        } else if (optionalBindings contains args(i)) {
-          if ((i + 1) == args.length) {
-            error("missing argument for '" + args(i) + "'")
+          } else if (options contains args(i)) {
+            res.addOption(args(i))
             i += 1
-          } else {
-            res.addBinding(
-                args(i), parseBinding(args(i + 1), optionalBindings(args(i))));
-            i += 2
-          }
-        } else {
-          var iter = prefixes.iterator
-          val j = i
-          while ( (i == j) && iter.hasNext) {
-            val prefix = iter.next
-            if (args(i) startsWith prefix) {
-              res.addPrefixed(
-                  prefix, args(i).substring(prefix.length()).trim());
+          } else if (optionalArgs contains args(i)) {
+            if ((i + 1) == args.length) {
+              error("missing argument for '" + args(i) + "'")
               i += 1
+            } else {
+              res.addArgument(args(i), args(i + 1))
+              i += 2
             }
-          }
-          if (i == j) {
-            val iter = prefixedBindings.keysIterator;
-            while ( (i == j) && iter.hasNext) {
+          } else if (optionalBindings contains args(i)) {
+            if ((i + 1) == args.length) {
+              error("missing argument for '" + args(i) + "'")
+              i += 1
+            } else {
+              res.addBinding(
+                args(i),
+                parseBinding(args(i + 1), optionalBindings(args(i)))
+              );
+              i += 2
+            }
+          } else {
+            var iter = prefixes.iterator
+            val j    = i
+            while ((i == j) && iter.hasNext) {
               val prefix = iter.next
               if (args(i) startsWith prefix) {
-                val arg = args(i).substring(prefix.length()).trim()
-                i = i + 1
-                res.addBinding(
-                    prefix, parseBinding(arg, prefixedBindings(prefix)));
+                res.addPrefixed(
+                  prefix,
+                  args(i).substring(prefix.length()).trim()
+                );
+                i += 1
               }
             }
             if (i == j) {
-              error("unknown option '" + args(i) + "'")
-              i = i + 1
+              val iter = prefixedBindings.keysIterator;
+              while ((i == j) && iter.hasNext) {
+                val prefix = iter.next
+                if (args(i) startsWith prefix) {
+                  val arg = args(i).substring(prefix.length()).trim()
+                  i = i + 1
+                  res.addBinding(
+                    prefix,
+                    parseBinding(arg, prefixedBindings(prefix))
+                  );
+                }
+              }
+              if (i == j) {
+                error("unknown option '" + args(i) + "'")
+                i = i + 1
+              }
             }
           }
-        }
       }
     }
   }
 
   def parse(options: String*)(args: Array[String]): Arguments = {
     val parser = new Parser('-')
-    val iter = options.iterator
+    val iter   = options.iterator
     while (iter.hasNext) parser withOption iter.next
     parser.parse(args)
   }
@@ -130,11 +137,11 @@ object Arguments {
 
 class Arguments {
 
-  private val options: Set[String] = new HashSet
-  private val arguments: Map[String, String] = new HashMap
-  private val prefixes: Map[String, Set[String]] = new HashMap
+  private val options: Set[String]                       = new HashSet
+  private val arguments: Map[String, String]             = new HashMap
+  private val prefixes: Map[String, Set[String]]         = new HashMap
   private val bindings: Map[String, Map[String, String]] = new HashMap
-  private val others: Buffer[String] = new ListBuffer
+  private val others: Buffer[String]                     = new ListBuffer
 
   def addOption(option: String): Unit = options += option
 
@@ -170,25 +177,25 @@ class Arguments {
 
   def getSuffixes(prefix: String): Set[String] =
     prefixes.get(prefix) match {
-      case None => new HashSet
+      case None      => new HashSet
       case Some(set) => set
     }
 
   def containsSuffix(prefix: String, suffix: String): Boolean =
     prefixes.get(prefix) match {
-      case None => false
+      case None      => false
       case Some(set) => set contains suffix
     }
 
   def getBindings(tag: String): Map[String, String] =
     bindings.get(tag) match {
-      case None => new HashMap
+      case None      => new HashMap
       case Some(map) => map
     }
 
   def getBinding(option: String, key: String): Option[String] =
     bindings.get(option) match {
-      case None => None
+      case None      => None
       case Some(map) => map get key
     }
 

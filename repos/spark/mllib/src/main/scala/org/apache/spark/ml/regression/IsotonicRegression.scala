@@ -27,8 +27,12 @@ import org.apache.spark.ml.param.shared._
 import org.apache.spark.ml.regression.IsotonicRegressionModel.IsotonicRegressionModelWriter
 import org.apache.spark.ml.util._
 import org.apache.spark.mllib.linalg.{Vector, Vectors, VectorUDT}
-import org.apache.spark.mllib.regression.{IsotonicRegression => MLlibIsotonicRegression}
-import org.apache.spark.mllib.regression.{IsotonicRegressionModel => MLlibIsotonicRegressionModel}
+import org.apache.spark.mllib.regression.{
+  IsotonicRegression => MLlibIsotonicRegression
+}
+import org.apache.spark.mllib.regression.{
+  IsotonicRegressionModel => MLlibIsotonicRegressionModel
+}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions.{col, lit, udf}
@@ -39,8 +43,12 @@ import org.apache.spark.storage.StorageLevel
   * Params for isotonic regression.
   */
 private[regression] trait IsotonicRegressionBase
-    extends Params with HasFeaturesCol with HasLabelCol with HasPredictionCol
-    with HasWeightCol with Logging {
+    extends Params
+    with HasFeaturesCol
+    with HasLabelCol
+    with HasPredictionCol
+    with HasWeightCol
+    with Logging {
 
   /**
     * Param for whether the output sequence should be isotonic/increasing (true) or
@@ -49,10 +57,11 @@ private[regression] trait IsotonicRegressionBase
     * @group param
     */
   final val isotonic: BooleanParam = new BooleanParam(
-      this,
-      "isotonic",
-      "whether the output sequence should be isotonic/increasing (true) or" +
-      "antitonic/decreasing (false)")
+    this,
+    "isotonic",
+    "whether the output sequence should be isotonic/increasing (true) or" +
+      "antitonic/decreasing (false)"
+  )
 
   /** @group getParam */
   final def getIsotonic: Boolean = $(isotonic)
@@ -63,9 +72,10 @@ private[regression] trait IsotonicRegressionBase
     * @group param
     */
   final val featureIndex: IntParam = new IntParam(
-      this,
-      "featureIndex",
-      "The index of the feature if featuresCol is a vector column, no effect otherwise.")
+    this,
+    "featureIndex",
+    "The index of the feature if featuresCol is a vector column, no effect otherwise."
+  )
 
   /** @group getParam */
   final def getFeatureIndex: Int = $(featureIndex)
@@ -81,13 +91,12 @@ private[regression] trait IsotonicRegressionBase
     * Extracts (label, feature, weight) from input dataset.
     */
   protected[ml] def extractWeightedLabeledPoints(
-      dataset: DataFrame): RDD[(Double, Double, Double)] = {
+      dataset: DataFrame
+  ): RDD[(Double, Double, Double)] = {
     val f =
       if (dataset.schema($(featuresCol)).dataType.isInstanceOf[VectorUDT]) {
-        val idx = $(featureIndex)
-        val extract = udf { v: Vector =>
-          v(idx)
-        }
+        val idx     = $(featureIndex)
+        val extract = udf { v: Vector => v(idx) }
         extract(col($(featuresCol)))
       } else {
         col($(featuresCol))
@@ -111,14 +120,17 @@ private[regression] trait IsotonicRegressionBase
     * @return output schema
     */
   protected[ml] def validateAndTransformSchema(
-      schema: StructType, fitting: Boolean): StructType = {
+      schema: StructType,
+      fitting: Boolean
+  ): StructType = {
     if (fitting) {
       SchemaUtils.checkColumnType(schema, $(labelCol), DoubleType)
       if (hasWeightCol) {
         SchemaUtils.checkColumnType(schema, $(weightCol), DoubleType)
       } else {
         logInfo(
-            "The weight column is not defined. Treat all instance weights as 1.0.")
+          "The weight column is not defined. Treat all instance weights as 1.0."
+        )
       }
     }
     val featuresType = schema($(featuresCol)).dataType
@@ -138,9 +150,10 @@ private[regression] trait IsotonicRegressionBase
   */
 @Since("1.5.0")
 @Experimental
-class IsotonicRegression @Since("1.5.0")(
-    @Since("1.5.0") override val uid: String)
-    extends Estimator[IsotonicRegressionModel] with IsotonicRegressionBase
+class IsotonicRegression @Since("1.5.0") (
+    @Since("1.5.0") override val uid: String
+) extends Estimator[IsotonicRegressionModel]
+    with IsotonicRegressionBase
     with DefaultParamsWritable {
 
   @Since("1.5.0")
@@ -177,7 +190,7 @@ class IsotonicRegression @Since("1.5.0")(
   override def fit(dataset: DataFrame): IsotonicRegressionModel = {
     validateAndTransformSchema(dataset.schema, fitting = true)
     // Extract columns from data.  If dataset is persisted, do not persist oldDataset.
-    val instances = extractWeightedLabeledPoints(dataset)
+    val instances         = extractWeightedLabeledPoints(dataset)
     val handlePersistence = dataset.rdd.getStorageLevel == StorageLevel.NONE
     if (handlePersistence) instances.persist(StorageLevel.MEMORY_AND_DISK)
 
@@ -213,10 +226,11 @@ object IsotonicRegression extends DefaultParamsReadable[IsotonicRegression] {
   */
 @Since("1.5.0")
 @Experimental
-class IsotonicRegressionModel private[ml](
+class IsotonicRegressionModel private[ml] (
     override val uid: String,
-    private val oldModel: MLlibIsotonicRegressionModel)
-    extends Model[IsotonicRegressionModel] with IsotonicRegressionBase
+    private val oldModel: MLlibIsotonicRegressionModel
+) extends Model[IsotonicRegressionModel]
+    with IsotonicRegressionBase
     with MLWritable {
 
   /** @group setParam */
@@ -252,14 +266,10 @@ class IsotonicRegressionModel private[ml](
   override def transform(dataset: DataFrame): DataFrame = {
     val predict = dataset.schema($(featuresCol)).dataType match {
       case DoubleType =>
-        udf { feature: Double =>
-          oldModel.predict(feature)
-        }
+        udf { feature: Double => oldModel.predict(feature) }
       case _: VectorUDT =>
         val idx = $(featureIndex)
-        udf { features: Vector =>
-          oldModel.predict(features(idx))
-        }
+        udf { features: Vector => oldModel.predict(features(idx)) }
     }
     dataset.withColumn($(predictionCol), predict(col($(featuresCol))))
   }
@@ -287,20 +297,24 @@ object IsotonicRegressionModel extends MLReadable[IsotonicRegressionModel] {
   /** [[MLWriter]] instance for [[IsotonicRegressionModel]] */
   private[IsotonicRegressionModel] class IsotonicRegressionModelWriter(
       instance: IsotonicRegressionModel
-  )
-      extends MLWriter with Logging {
+  ) extends MLWriter
+      with Logging {
 
-    private case class Data(boundaries: Array[Double],
-                            predictions: Array[Double],
-                            isotonic: Boolean)
+    private case class Data(
+        boundaries: Array[Double],
+        predictions: Array[Double],
+        isotonic: Boolean
+    )
 
     override protected def saveImpl(path: String): Unit = {
       // Save metadata and Params
       DefaultParamsWriter.saveMetadata(instance, path, sc)
       // Save model data: boundaries, predictions, isotonic
-      val data = Data(instance.oldModel.boundaries,
-                      instance.oldModel.predictions,
-                      instance.oldModel.isotonic)
+      val data = Data(
+        instance.oldModel.boundaries,
+        instance.oldModel.predictions,
+        instance.oldModel.isotonic
+      )
       val dataPath = new Path(path, "data").toString
       sqlContext
         .createDataFrame(Seq(data))
@@ -324,12 +338,13 @@ object IsotonicRegressionModel extends MLReadable[IsotonicRegressionModel] {
         .parquet(dataPath)
         .select("boundaries", "predictions", "isotonic")
         .head()
-      val boundaries = data.getAs[Seq[Double]](0).toArray
+      val boundaries  = data.getAs[Seq[Double]](0).toArray
       val predictions = data.getAs[Seq[Double]](1).toArray
-      val isotonic = data.getBoolean(2)
+      val isotonic    = data.getBoolean(2)
       val model = new IsotonicRegressionModel(
-          metadata.uid,
-          new MLlibIsotonicRegressionModel(boundaries, predictions, isotonic))
+        metadata.uid,
+        new MLlibIsotonicRegressionModel(boundaries, predictions, isotonic)
+      )
 
       DefaultParamsReader.getAndSetParams(model, metadata)
       model

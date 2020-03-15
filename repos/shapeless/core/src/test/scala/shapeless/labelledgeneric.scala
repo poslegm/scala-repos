@@ -29,53 +29,66 @@ import union._
 object LabelledGenericTestsAux {
   case class Book(author: String, title: String, id: Int, price: Double)
   case class ExtendedBook(
-      author: String, title: String, id: Int, price: Double, inPrint: Boolean)
+      author: String,
+      title: String,
+      id: Int,
+      price: Double,
+      inPrint: Boolean
+  )
   case class BookWithMultipleAuthors(title: String, id: Int, authors: String*)
 
-  val tapl = Book(
-      "Benjamin Pierce", "Types and Programming Languages", 262162091, 44.11)
-  val tapl2 = Book("Benjamin Pierce",
-                   "Types and Programming Languages (2nd Ed.)",
-                   262162091,
-                   46.11)
-  val taplExt = ExtendedBook("Benjamin Pierce",
-                             "Types and Programming Languages",
-                             262162091,
-                             44.11,
-                             true)
+  val tapl =
+    Book("Benjamin Pierce", "Types and Programming Languages", 262162091, 44.11)
+  val tapl2 = Book(
+    "Benjamin Pierce",
+    "Types and Programming Languages (2nd Ed.)",
+    262162091,
+    46.11
+  )
+  val taplExt = ExtendedBook(
+    "Benjamin Pierce",
+    "Types and Programming Languages",
+    262162091,
+    44.11,
+    true
+  )
   val dp = BookWithMultipleAuthors(
-      "Design Patterns",
-      201633612,
-      "Erich Gamma",
-      "Richard Helm",
-      "Ralph Johnson",
-      "John Vlissides"
+    "Design Patterns",
+    201633612,
+    "Erich Gamma",
+    "Richard Helm",
+    "Ralph Johnson",
+    "John Vlissides"
   )
 
   val taplRecord =
     ('author ->> "Benjamin Pierce") ::
-    ('title ->> "Types and Programming Languages") :: ('id ->> 262162091) ::
-    ('price ->> 44.11) :: HNil
+      ('title ->> "Types and Programming Languages") :: ('id ->> 262162091) ::
+      ('price ->> 44.11) :: HNil
 
   val dpRecord =
     ('title ->> "Design Patterns") :: ('id ->> 201633612) ::
-    ('authors ->> Seq("Erich Gamma",
-                      "Richard Helm",
-                      "Ralph Johnson",
-                      "John Vlissides")) :: HNil
+      ('authors ->> Seq(
+        "Erich Gamma",
+        "Richard Helm",
+        "Ralph Johnson",
+        "John Vlissides"
+      )) :: HNil
 
-  type BookRec = Record.`'author -> String, 'title -> String, 'id -> Int, 'price -> Double`.T
-  type BookKeys = Keys[BookRec]
+  type BookRec =
+    Record.`'author -> String, 'title -> String, 'id -> Int, 'price -> Double`.T
+  type BookKeys   = Keys[BookRec]
   type BookValues = Values[BookRec]
 
-  type BookWithMultipleAuthorsRec = Record.`'title -> String, 'id -> Int, 'authors -> Seq[String]`.T
+  type BookWithMultipleAuthorsRec =
+    Record.`'title -> String, 'id -> Int, 'authors -> Seq[String]`.T
 
   sealed trait Tree
   case class Node(left: Tree, right: Tree) extends Tree
-  case class Leaf(value: Int) extends Tree
+  case class Leaf(value: Int)              extends Tree
 
   sealed trait AbstractNonCC
-  class NonCCA(val i: Int, val s: String) extends AbstractNonCC
+  class NonCCA(val i: Int, val s: String)     extends AbstractNonCC
   class NonCCB(val b: Boolean, val d: Double) extends AbstractNonCC
 
   class NonCCWithCompanion private (val i: Int, val s: String)
@@ -95,7 +108,7 @@ object ScalazTaggedAux {
   import labelled.FieldType
 
   type Tagged[A, T] = { type Tag = T; type Self = A }
-  type @@[T, Tag] = Tagged[T, Tag]
+  type @@[T, Tag]   = Tagged[T, Tag]
 
   trait CustomTag
   case class Dummy(i: Int @@ CustomTag)
@@ -122,26 +135,30 @@ object ScalazTaggedAux {
       def apply() = "HNil"
     }
 
-    implicit def hconsTCTagged[K <: Symbol, H, HT, T <: HList](
-        implicit key: Witness.Aux[K],
+    implicit def hconsTCTagged[K <: Symbol, H, HT, T <: HList](implicit
+        key: Witness.Aux[K],
         headTC: Lazy[TC[H @@ HT]],
-        tailTC: Lazy[TC[T]]): TC[FieldType[K, H @@ HT] :: T] =
+        tailTC: Lazy[TC[T]]
+    ): TC[FieldType[K, H @@ HT] :: T] =
       new TC[FieldType[K, H @@ HT] :: T] {
         def apply() =
           s"${key.value.name}: ${headTC.value()} :: ${tailTC.value()}"
       }
 
-    implicit def hconsTC[K <: Symbol, H, T <: HList](
-        implicit key: Witness.Aux[K],
+    implicit def hconsTC[K <: Symbol, H, T <: HList](implicit
+        key: Witness.Aux[K],
         headTC: Lazy[TC[H]],
-        tailTC: Lazy[TC[T]]): TC[FieldType[K, H] :: T] =
+        tailTC: Lazy[TC[T]]
+    ): TC[FieldType[K, H] :: T] =
       new TC[FieldType[K, H] :: T] {
         def apply() =
           s"${key.value.name}: ${headTC.value()} :: ${tailTC.value()}"
       }
 
-    implicit def projectTC[F, G](
-        implicit lgen: LabelledGeneric.Aux[F, G], tc: Lazy[TC[G]]): TC[F] =
+    implicit def projectTC[F, G](implicit
+        lgen: LabelledGeneric.Aux[F, G],
+        tc: Lazy[TC[G]]
+    ): TC[F] =
       new TC[F] {
         def apply() = s"Proj(${tc.value()})"
       }
@@ -165,13 +182,15 @@ class LabelledGenericTests {
 
     val keys = b0.keys
     assertEquals(
-        'author.narrow :: 'title.narrow :: 'id.narrow :: 'price.narrow :: HNil,
-        keys)
+      'author.narrow :: 'title.narrow :: 'id.narrow :: 'price.narrow :: HNil,
+      keys
+    )
 
     val values = b0.values
     assertEquals(
-        "Benjamin Pierce" :: "Types and Programming Languages" :: 262162091 :: 44.11 :: HNil,
-        values)
+      "Benjamin Pierce" :: "Types and Programming Languages" :: 262162091 :: 44.11 :: HNil,
+      values
+    )
   }
 
   @Test
@@ -187,11 +206,13 @@ class LabelledGenericTests {
 
     val values = b0.values
     assertEquals(
-        "Design Patterns" :: 201633612 :: Seq("Erich Gamma",
-                                              "Richard Helm",
-                                              "Ralph Johnson",
-                                              "John Vlissides") :: HNil,
-        values
+      "Design Patterns" :: 201633612 :: Seq(
+        "Erich Gamma",
+        "Richard Helm",
+        "Ralph Johnson",
+        "John Vlissides"
+      ) :: HNil,
+      values
     )
   }
 
@@ -292,7 +313,7 @@ class LabelledGenericTests {
 
   @Test
   def testExtension {
-    val gen = LabelledGeneric[Book]
+    val gen  = LabelledGeneric[Book]
     val gen2 = LabelledGeneric[ExtendedBook]
 
     val b0 = gen.to(tapl)
@@ -309,23 +330,23 @@ class LabelledGenericTests {
 
     val gen = LabelledGeneric[Tree]
 
-    val t = Node(Node(Leaf(1), Leaf(2)), Leaf(3))
+    val t  = Node(Node(Leaf(1), Leaf(2)), Leaf(3))
     val gt = gen.to(t)
     typed[TreeUnion](gt)
   }
 
   @Test
   def testAbstractNonCC {
-    val ncca = new NonCCA(23, "foo")
-    val nccb = new NonCCB(true, 2.0)
+    val ncca                = new NonCCA(23, "foo")
+    val nccb                = new NonCCB(true, 2.0)
     val ancc: AbstractNonCC = ncca
 
     type NonCCARec = Record.`'i -> Int, 's -> String`.T
     type NonCCBRec = Record.`'b -> Boolean, 'd -> Double`.T
-    type AbsUnion = Union.`'NonCCA -> NonCCA, 'NonCCB -> NonCCB`.T
+    type AbsUnion  = Union.`'NonCCA -> NonCCA, 'NonCCB -> NonCCB`.T
 
-    val genA = LabelledGeneric[NonCCA]
-    val genB = LabelledGeneric[NonCCB]
+    val genA   = LabelledGeneric[NonCCA]
+    val genB   = LabelledGeneric[NonCCB]
     val genAbs = LabelledGeneric[AbstractNonCC]
 
     val rA = genA.to(ncca)

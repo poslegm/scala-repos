@@ -15,7 +15,8 @@ trait PredefinedToEntityMarshallers extends MultipartMarshallers {
   implicit val ByteArrayMarshaller: ToEntityMarshaller[Array[Byte]] =
     byteArrayMarshaller(`application/octet-stream`)
   def byteArrayMarshaller(
-      contentType: ContentType): ToEntityMarshaller[Array[Byte]] =
+      contentType: ContentType
+  ): ToEntityMarshaller[Array[Byte]] =
     Marshaller.withFixedContentType(contentType) { bytes ⇒
       HttpEntity(contentType, bytes)
     }
@@ -23,7 +24,8 @@ trait PredefinedToEntityMarshallers extends MultipartMarshallers {
   implicit val ByteStringMarshaller: ToEntityMarshaller[ByteString] =
     byteStringMarshaller(`application/octet-stream`)
   def byteStringMarshaller(
-      contentType: ContentType): ToEntityMarshaller[ByteString] =
+      contentType: ContentType
+  ): ToEntityMarshaller[ByteString] =
     Marshaller.withFixedContentType(contentType) { bytes ⇒
       HttpEntity(contentType, bytes)
     }
@@ -31,23 +33,26 @@ trait PredefinedToEntityMarshallers extends MultipartMarshallers {
   implicit val CharArrayMarshaller: ToEntityMarshaller[Array[Char]] =
     charArrayMarshaller(`text/plain`)
   def charArrayMarshaller(
-      mediaType: MediaType.WithOpenCharset): ToEntityMarshaller[Array[Char]] =
+      mediaType: MediaType.WithOpenCharset
+  ): ToEntityMarshaller[Array[Char]] =
     Marshaller.withOpenCharset(mediaType) { (value, charset) ⇒
       marshalCharArray(value, mediaType withCharset charset)
     }
   def charArrayMarshaller(
-      mediaType: MediaType.WithFixedCharset): ToEntityMarshaller[Array[Char]] =
+      mediaType: MediaType.WithFixedCharset
+  ): ToEntityMarshaller[Array[Char]] =
     Marshaller.withFixedContentType(mediaType) { value ⇒
       marshalCharArray(value, mediaType)
     }
 
   private def marshalCharArray(
       value: Array[Char],
-      contentType: ContentType.NonBinary): HttpEntity.Strict =
+      contentType: ContentType.NonBinary
+  ): HttpEntity.Strict =
     if (value.length > 0) {
       val charBuffer = CharBuffer.wrap(value)
       val byteBuffer = contentType.charset.nioCharset.encode(charBuffer)
-      val array = new Array[Byte](byteBuffer.remaining())
+      val array      = new Array[Byte](byteBuffer.remaining())
       byteBuffer.get(array)
       HttpEntity(contentType, array)
     } else HttpEntity.Empty
@@ -58,17 +63,18 @@ trait PredefinedToEntityMarshallers extends MultipartMarshallers {
     }
 
   implicit val StringMarshaller: ToEntityMarshaller[String] = stringMarshaller(
-      `text/plain`)
+    `text/plain`
+  )
   def stringMarshaller(
-      mediaType: MediaType.WithOpenCharset): ToEntityMarshaller[String] =
+      mediaType: MediaType.WithOpenCharset
+  ): ToEntityMarshaller[String] =
     Marshaller.withOpenCharset(mediaType) { (s, cs) ⇒
       HttpEntity(mediaType withCharset cs, s)
     }
   def stringMarshaller(
-      mediaType: MediaType.WithFixedCharset): ToEntityMarshaller[String] =
-    Marshaller.withFixedContentType(mediaType) { s ⇒
-      HttpEntity(mediaType, s)
-    }
+      mediaType: MediaType.WithFixedCharset
+  ): ToEntityMarshaller[String] =
+    Marshaller.withFixedContentType(mediaType) { s ⇒ HttpEntity(mediaType, s) }
 
   implicit val FormDataMarshaller: ToEntityMarshaller[FormData] =
     Marshaller.withOpenCharset(`application/x-www-form-urlencoded`) {

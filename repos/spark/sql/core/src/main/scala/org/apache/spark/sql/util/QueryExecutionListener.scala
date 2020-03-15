@@ -59,7 +59,10 @@ trait QueryExecutionListener {
     */
   @DeveloperApi
   def onFailure(
-      funcName: String, qe: QueryExecution, exception: Exception): Unit
+      funcName: String,
+      qe: QueryExecution,
+      exception: Exception
+  ): Unit
 }
 
 /**
@@ -68,34 +71,40 @@ trait QueryExecutionListener {
   * Manager for [[QueryExecutionListener]]. See [[org.apache.spark.sql.SQLContext.listenerManager]].
   */
 @Experimental
-class ExecutionListenerManager private[sql]() extends Logging {
+class ExecutionListenerManager private[sql] () extends Logging {
 
   /**
     * Registers the specified [[QueryExecutionListener]].
     */
   @DeveloperApi
-  def register(listener: QueryExecutionListener): Unit = writeLock {
-    listeners += listener
-  }
+  def register(listener: QueryExecutionListener): Unit =
+    writeLock {
+      listeners += listener
+    }
 
   /**
     * Unregisters the specified [[QueryExecutionListener]].
     */
   @DeveloperApi
-  def unregister(listener: QueryExecutionListener): Unit = writeLock {
-    listeners -= listener
-  }
+  def unregister(listener: QueryExecutionListener): Unit =
+    writeLock {
+      listeners -= listener
+    }
 
   /**
     * Removes all the registered [[QueryExecutionListener]].
     */
   @DeveloperApi
-  def clear(): Unit = writeLock {
-    listeners.clear()
-  }
+  def clear(): Unit =
+    writeLock {
+      listeners.clear()
+    }
 
   private[sql] def onSuccess(
-      funcName: String, qe: QueryExecution, duration: Long): Unit = {
+      funcName: String,
+      qe: QueryExecution,
+      duration: Long
+  ): Unit = {
     readLock {
       withErrorHandling { listener =>
         listener.onSuccess(funcName, qe, duration)
@@ -104,7 +113,10 @@ class ExecutionListenerManager private[sql]() extends Logging {
   }
 
   private[sql] def onFailure(
-      funcName: String, qe: QueryExecution, exception: Exception): Unit = {
+      funcName: String,
+      qe: QueryExecution,
+      exception: Exception
+  ): Unit = {
     readLock {
       withErrorHandling { listener =>
         listener.onFailure(funcName, qe, exception)
@@ -132,7 +144,8 @@ class ExecutionListenerManager private[sql]() extends Logging {
   private def readLock[A](f: => A): A = {
     val rl = lock.readLock()
     rl.lock()
-    try f finally {
+    try f
+    finally {
       rl.unlock()
     }
   }
@@ -141,7 +154,8 @@ class ExecutionListenerManager private[sql]() extends Logging {
   private def writeLock[A](f: => A): A = {
     val wl = lock.writeLock()
     wl.lock()
-    try f finally {
+    try f
+    finally {
       wl.unlock()
     }
   }

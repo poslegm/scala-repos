@@ -10,27 +10,29 @@ object Test extends App {
     // not on the classpath. We just skip over those classes.
     // PENDING: for now we also allow missing $anonfun classes: the optimizer may eliminate some closures
     // that are referred to in EnclosingClass attributes. SI-9136
-    val allowedMissingPackages = Set(
-        "jline", "org.apache.tools.ant", "$anonfun")
+    val allowedMissingPackages =
+      Set("jline", "org.apache.tools.ant", "$anonfun")
 
     def ok(t: Throwable) = {
-      allowedMissingPackages.exists(
-          p => t.getMessage.replace('/', '.').contains(p))
+      allowedMissingPackages.exists(p =>
+        t.getMessage.replace('/', '.').contains(p)
+      )
     }
 
-    def unapply(t: Throwable): Option[Throwable] = t match {
-      case _: NoClassDefFoundError | _: ClassNotFoundException |
-          _: TypeNotPresentException if ok(t) =>
-        Some(t)
-      case _ => None
-    }
+    def unapply(t: Throwable): Option[Throwable] =
+      t match {
+        case _: NoClassDefFoundError | _: ClassNotFoundException |
+            _: TypeNotPresentException if ok(t) =>
+          Some(t)
+        case _ => None
+      }
   }
 
   jarsOrDirectories foreach testClasses
 
   def testClasses(jarOrDirectory: String): Unit = {
     val classPath = AbstractFile.getDirectory(new java.io.File(jarOrDirectory))
-    val basePath = classPath.path + "/"
+    val basePath  = classPath.path + "/"
 
     def flatten(f: AbstractFile, s: String): Iterator[(AbstractFile, String)] =
       if (f.isClassContainer)
@@ -67,7 +69,7 @@ object Test extends App {
         cls.getDeclaredClasses
       } catch {
         case AllowedMissingClass(_) =>
-        case t: Throwable => faulty += ((name, t))
+        case t: Throwable           => faulty += ((name, t))
       }
     }
 

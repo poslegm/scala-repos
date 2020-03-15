@@ -21,7 +21,12 @@ import scala.reflect.ClassTag
 
 import org.apache.spark.SparkContext
 import org.apache.spark.annotation.Since
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.linalg.{
+  DenseVector,
+  SparseVector,
+  Vector,
+  Vectors
+}
 import org.apache.spark.mllib.linalg.BLAS.dot
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.{PartitionwiseSampledRDD, RDD}
@@ -36,7 +41,7 @@ object MLUtils {
 
   private[mllib] lazy val EPSILON = {
     var eps = 1.0
-    while ( (1.0 + (eps / 2.0)) != 1.0) {
+    while ((1.0 + (eps / 2.0)) != 1.0) {
       eps /= 2.0
     }
     eps
@@ -62,10 +67,12 @@ object MLUtils {
     * @return labeled data stored as an RDD[LabeledPoint]
     */
   @Since("1.0.0")
-  def loadLibSVMFile(sc: SparkContext,
-                     path: String,
-                     numFeatures: Int,
-                     minPartitions: Int): RDD[LabeledPoint] = {
+  def loadLibSVMFile(
+      sc: SparkContext,
+      path: String,
+      numFeatures: Int,
+      minPartitions: Int
+  ): RDD[LabeledPoint] = {
     val parsed = sc
       .textFile(path, minPartitions)
       .map(_.trim)
@@ -85,15 +92,16 @@ object MLUtils {
           .unzip
 
         // check if indices are one-based and in ascending order
-        var previous = -1
-        var i = 0
+        var previous      = -1
+        var i             = 0
         val indicesLength = indices.length
         while (i < indicesLength) {
           val current = indices(i)
           require(
-              current > previous,
-              s"indices should be one-based and in ascending order;" +
-              " found current=$current, previous=$previous; line=\"$line\"")
+            current > previous,
+            s"indices should be one-based and in ascending order;" +
+              " found current=$current, previous=$previous; line=\"$line\""
+          )
           previous = current
           i += 1
         }
@@ -107,10 +115,12 @@ object MLUtils {
         numFeatures
       } else {
         parsed.persist(StorageLevel.MEMORY_ONLY)
-        parsed.map {
-          case (label, indices, values) =>
-            indices.lastOption.getOrElse(0)
-        }.reduce(math.max) + 1
+        parsed
+          .map {
+            case (label, indices, values) =>
+              indices.lastOption.getOrElse(0)
+          }
+          .reduce(math.max) + 1
       }
 
     parsed.map {
@@ -123,13 +133,16 @@ object MLUtils {
 
   @Since("1.0.0")
   @deprecated(
-      "use method without multiclass argument, which no longer has effect",
-      "1.1.0")
-  def loadLibSVMFile(sc: SparkContext,
-                     path: String,
-                     multiclass: Boolean,
-                     numFeatures: Int,
-                     minPartitions: Int): RDD[LabeledPoint] =
+    "use method without multiclass argument, which no longer has effect",
+    "1.1.0"
+  )
+  def loadLibSVMFile(
+      sc: SparkContext,
+      path: String,
+      multiclass: Boolean,
+      numFeatures: Int,
+      minPartitions: Int
+  ): RDD[LabeledPoint] =
     loadLibSVMFile(sc, path, numFeatures, minPartitions)
 
   /**
@@ -138,25 +151,35 @@ object MLUtils {
     */
   @Since("1.0.0")
   def loadLibSVMFile(
-      sc: SparkContext, path: String, numFeatures: Int): RDD[LabeledPoint] =
+      sc: SparkContext,
+      path: String,
+      numFeatures: Int
+  ): RDD[LabeledPoint] =
     loadLibSVMFile(sc, path, numFeatures, sc.defaultMinPartitions)
 
   @Since("1.0.0")
   @deprecated(
-      "use method without multiclass argument, which no longer has effect",
-      "1.1.0")
-  def loadLibSVMFile(sc: SparkContext,
-                     path: String,
-                     multiclass: Boolean,
-                     numFeatures: Int): RDD[LabeledPoint] =
+    "use method without multiclass argument, which no longer has effect",
+    "1.1.0"
+  )
+  def loadLibSVMFile(
+      sc: SparkContext,
+      path: String,
+      multiclass: Boolean,
+      numFeatures: Int
+  ): RDD[LabeledPoint] =
     loadLibSVMFile(sc, path, numFeatures)
 
   @Since("1.0.0")
   @deprecated(
-      "use method without multiclass argument, which no longer has effect",
-      "1.1.0")
+    "use method without multiclass argument, which no longer has effect",
+    "1.1.0"
+  )
   def loadLibSVMFile(
-      sc: SparkContext, path: String, multiclass: Boolean): RDD[LabeledPoint] =
+      sc: SparkContext,
+      path: String,
+      multiclass: Boolean
+  ): RDD[LabeledPoint] =
     loadLibSVMFile(sc, path)
 
   /**
@@ -199,7 +222,10 @@ object MLUtils {
     */
   @Since("1.1.0")
   def loadVectors(
-      sc: SparkContext, path: String, minPartitions: Int): RDD[Vector] =
+      sc: SparkContext,
+      path: String,
+      minPartitions: Int
+  ): RDD[Vector] =
     sc.textFile(path, minPartitions).map(Vectors.parse)
 
   /**
@@ -218,7 +244,10 @@ object MLUtils {
     */
   @Since("1.1.0")
   def loadLabeledPoints(
-      sc: SparkContext, path: String, minPartitions: Int): RDD[LabeledPoint] =
+      sc: SparkContext,
+      path: String,
+      minPartitions: Int
+  ): RDD[LabeledPoint] =
     sc.textFile(path, minPartitions).map(LabeledPoint.parse)
 
   /**
@@ -246,8 +275,8 @@ object MLUtils {
   @deprecated("Should use MLUtils.loadLabeledPoints instead.", "1.0.1")
   def loadLabeledData(sc: SparkContext, dir: String): RDD[LabeledPoint] = {
     sc.textFile(dir).map { line =>
-      val parts = line.split(',')
-      val label = parts(0).toDouble
+      val parts    = line.split(',')
+      val label    = parts(0).toDouble
       val features = Vectors.dense(parts(1).trim().split(' ').map(_.toDouble))
       LabeledPoint(label, features)
     }
@@ -278,8 +307,11 @@ object MLUtils {
     * element, the validation data, containing a unique 1/kth of the data. Where k=numFolds.
     */
   @Since("1.0.0")
-  def kFold[T : ClassTag](
-      rdd: RDD[T], numFolds: Int, seed: Int): Array[(RDD[T], RDD[T])] = {
+  def kFold[T: ClassTag](
+      rdd: RDD[T],
+      numFolds: Int,
+      seed: Int
+  ): Array[(RDD[T], RDD[T])] = {
     kFold(rdd, numFolds, seed.toLong)
   }
 
@@ -287,12 +319,18 @@ object MLUtils {
     * Version of [[kFold()]] taking a Long seed.
     */
   @Since("2.0.0")
-  def kFold[T : ClassTag](
-      rdd: RDD[T], numFolds: Int, seed: Long): Array[(RDD[T], RDD[T])] = {
+  def kFold[T: ClassTag](
+      rdd: RDD[T],
+      numFolds: Int,
+      seed: Long
+  ): Array[(RDD[T], RDD[T])] = {
     val numFoldsF = numFolds.toFloat
     (1 to numFolds).map { fold =>
       val sampler = new BernoulliCellSampler[T](
-          (fold - 1) / numFoldsF, fold / numFoldsF, complement = false)
+        (fold - 1) / numFoldsF,
+        fold / numFoldsF,
+        complement = false
+      )
       val validation = new PartitionwiseSampledRDD(rdd, sampler, true, seed)
       val training =
         new PartitionwiseSampledRDD(rdd, sampler.cloneComplement(), true, seed)
@@ -307,19 +345,19 @@ object MLUtils {
   def appendBias(vector: Vector): Vector = {
     vector match {
       case dv: DenseVector =>
-        val inputValues = dv.values
-        val inputLength = inputValues.length
+        val inputValues  = dv.values
+        val inputLength  = inputValues.length
         val outputValues = Array.ofDim[Double](inputLength + 1)
         System.arraycopy(inputValues, 0, outputValues, 0, inputLength)
         outputValues(inputLength) = 1.0
         Vectors.dense(outputValues)
       case sv: SparseVector =>
-        val inputValues = sv.values
-        val inputIndices = sv.indices
+        val inputValues       = sv.values
+        val inputIndices      = sv.indices
         val inputValuesLength = inputValues.length
-        val dim = sv.size
-        val outputValues = Array.ofDim[Double](inputValuesLength + 1)
-        val outputIndices = Array.ofDim[Int](inputValuesLength + 1)
+        val dim               = sv.size
+        val outputValues      = Array.ofDim[Double](inputValuesLength + 1)
+        val outputIndices     = Array.ofDim[Int](inputValuesLength + 1)
         System.arraycopy(inputValues, 0, outputValues, 0, inputValuesLength)
         System.arraycopy(inputIndices, 0, outputIndices, 0, inputValuesLength)
         outputValues(inputValuesLength) = 1.0
@@ -327,7 +365,8 @@ object MLUtils {
         Vectors.sparse(dim + 1, outputIndices, outputValues)
       case _ =>
         throw new IllegalArgumentException(
-            s"Do not support vector type ${vector.getClass}")
+          s"Do not support vector type ${vector.getClass}"
+        )
     }
   }
 
@@ -347,17 +386,19 @@ object MLUtils {
     * @param precision desired relative precision for the squared distance
     * @return squared distance between v1 and v2 within the specified precision
     */
-  private[mllib] def fastSquaredDistance(v1: Vector,
-                                         norm1: Double,
-                                         v2: Vector,
-                                         norm2: Double,
-                                         precision: Double = 1e-6): Double = {
+  private[mllib] def fastSquaredDistance(
+      v1: Vector,
+      norm1: Double,
+      v2: Vector,
+      norm2: Double,
+      precision: Double = 1e-6
+  ): Double = {
     val n = v1.size
     require(v2.size == n)
     require(norm1 >= 0.0 && norm2 >= 0.0)
     val sumSquaredNorm = norm1 * norm1 + norm2 * norm2
-    val normDiff = norm1 - norm2
-    var sqDist = 0.0
+    val normDiff       = norm1 - norm2
+    var sqDist         = 0.0
     /*
      * The relative error is
      * <pre>
@@ -380,7 +421,7 @@ object MLUtils {
       sqDist = math.max(sumSquaredNorm - 2.0 * dotValue, 0.0)
       val precisionBound2 =
         EPSILON * (sumSquaredNorm + 2.0 * math.abs(dotValue)) /
-        (sqDist + EPSILON)
+          (sqDist + EPSILON)
       if (precisionBound2 > precision) {
         sqDist = Vectors.sqdist(v1, v2)
       }

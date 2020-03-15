@@ -26,14 +26,13 @@ object StashCreationBenchmark {
 @Warmup(iterations = 5)
 @Measurement(iterations = 10)
 class StashCreationBenchmark {
-  val conf = ConfigFactory.parseString("""
+  val conf                         = ConfigFactory.parseString("""
     my-dispatcher = {
       stash-capacity = 1000
     }
     """)
-  implicit val system: ActorSystem = ActorSystem(
-      "StashCreationBenchmark", conf)
-  val probe = TestProbe()
+  implicit val system: ActorSystem = ActorSystem("StashCreationBenchmark", conf)
+  val probe                        = TestProbe()
 
   @TearDown(Level.Trial)
   def shutdown(): Unit = {
@@ -54,7 +53,8 @@ class StashCreationBenchmark {
   @OutputTimeUnit(TimeUnit.MICROSECONDS)
   def testCustom: Boolean = {
     val stash = system.actorOf(
-        StashCreationBenchmark.props.withDispatcher("my-dispatcher"))
+      StashCreationBenchmark.props.withDispatcher("my-dispatcher")
+    )
     stash.tell("hello", probe.ref)
     probe.expectMsg("hello")
     true

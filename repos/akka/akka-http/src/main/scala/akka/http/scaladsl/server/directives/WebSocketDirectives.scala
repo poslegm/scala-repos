@@ -21,7 +21,7 @@ trait WebSocketDirectives {
   def extractUpgradeToWebSocket: Directive1[UpgradeToWebSocket] =
     optionalHeaderValueByType[UpgradeToWebSocket](()).flatMap {
       case Some(upgrade) ⇒ provide(upgrade)
-      case None ⇒ reject(ExpectedWebSocketRequestRejection)
+      case None          ⇒ reject(ExpectedWebSocketRequestRejection)
     }
 
   /**
@@ -43,7 +43,9 @@ trait WebSocketDirectives {
     * rejects other requests with an [[ExpectedWebSocketRequestRejection]] or an [[UnsupportedWebSocketSubprotocolRejection]].
     */
   def handleWebSocketMessagesForProtocol(
-      handler: Flow[Message, Message, Any], subprotocol: String): Route =
+      handler: Flow[Message, Message, Any],
+      subprotocol: String
+  ): Route =
     handleWebSocketMessagesForOptionalProtocol(handler, Some(subprotocol))
 
   /**
@@ -59,12 +61,16 @@ trait WebSocketDirectives {
     */
   def handleWebSocketMessagesForOptionalProtocol(
       handler: Flow[Message, Message, Any],
-      subprotocol: Option[String]): Route =
+      subprotocol: Option[String]
+  ): Route =
     extractUpgradeToWebSocket { upgrade ⇒
-      if (subprotocol.forall(
-              sub ⇒ upgrade.requestedProtocols.exists(_ equalsIgnoreCase sub)))
+      if (subprotocol.forall(sub ⇒
+            upgrade.requestedProtocols.exists(_ equalsIgnoreCase sub)
+          ))
         complete(upgrade.handleMessages(handler, subprotocol))
       else
-        reject(UnsupportedWebSocketSubprotocolRejection(subprotocol.get)) // None.forall == true
+        reject(
+          UnsupportedWebSocketSubprotocolRejection(subprotocol.get)
+        ) // None.forall == true
     }
 }

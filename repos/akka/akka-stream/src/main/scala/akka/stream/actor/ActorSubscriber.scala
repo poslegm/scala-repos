@@ -20,16 +20,18 @@ object ActorSubscriber {
     * INTERNAL API
     */
   private[akka] final case class OnSubscribe(subscription: Subscription)
-      extends DeadLetterSuppression with NoSerializationVerificationNeeded
+      extends DeadLetterSuppression
+      with NoSerializationVerificationNeeded
 }
 
 sealed abstract class ActorSubscriberMessage
-    extends DeadLetterSuppression with NoSerializationVerificationNeeded
+    extends DeadLetterSuppression
+    with NoSerializationVerificationNeeded
 
 object ActorSubscriberMessage {
-  final case class OnNext(element: Any) extends ActorSubscriberMessage
+  final case class OnNext(element: Any)      extends ActorSubscriberMessage
   final case class OnError(cause: Throwable) extends ActorSubscriberMessage
-  case object OnComplete extends ActorSubscriberMessage
+  case object OnComplete                     extends ActorSubscriberMessage
 
   /**
     * Java API: get the singleton instance of the `OnComplete` message
@@ -95,12 +97,13 @@ object WatermarkRequestStrategy {
   * Requests up to the `highWatermark` when the `remainingRequested` is
   * below the `lowWatermark`. This a good strategy when the actor performs work itself.
   */
-final case class WatermarkRequestStrategy(
-    highWatermark: Int, lowWatermark: Int)
+final case class WatermarkRequestStrategy(highWatermark: Int, lowWatermark: Int)
     extends RequestStrategy {
   require(lowWatermark >= 0, "lowWatermark must be >= 0")
   require(
-      highWatermark >= lowWatermark, "highWatermark must be >= lowWatermark")
+    highWatermark >= lowWatermark,
+    "highWatermark must be >= lowWatermark"
+  )
 
   /**
     * Create [[WatermarkRequestStrategy]] with `lowWatermark` as half of
@@ -169,10 +172,10 @@ trait ActorSubscriber extends Actor {
   import ActorSubscriber._
   import ActorSubscriberMessage._
 
-  private[this] val state = ActorSubscriberState(context.system)
+  private[this] val state                              = ActorSubscriberState(context.system)
   private[this] var subscription: Option[Subscription] = None
-  private[this] var requested: Long = 0
-  private[this] var _canceled = false
+  private[this] var requested: Long                    = 0
+  private[this] var _canceled                          = false
 
   protected def requestStrategy: RequestStrategy
 
@@ -181,31 +184,31 @@ trait ActorSubscriber extends Actor {
   /**
     * INTERNAL API
     */
-  protected[akka] override def aroundReceive(
-      receive: Receive, msg: Any): Unit = msg match {
-    case _: OnNext ⇒
-      requested -= 1
-      if (!_canceled) {
+  protected[akka] override def aroundReceive(receive: Receive, msg: Any): Unit =
+    msg match {
+      case _: OnNext ⇒
+        requested -= 1
+        if (!_canceled) {
+          super.aroundReceive(receive, msg)
+          request(requestStrategy.requestDemand(remainingRequested))
+        }
+      case OnSubscribe(sub) ⇒
+        if (subscription.isEmpty) {
+          subscription = Some(sub)
+          if (_canceled) {
+            context.stop(self)
+            sub.cancel()
+          } else if (requested != 0) sub.request(remainingRequested)
+        } else sub.cancel()
+      case OnComplete | OnError(_) ⇒
+        if (!_canceled) {
+          _canceled = true
+          super.aroundReceive(receive, msg)
+        }
+      case _ ⇒
         super.aroundReceive(receive, msg)
         request(requestStrategy.requestDemand(remainingRequested))
-      }
-    case OnSubscribe(sub) ⇒
-      if (subscription.isEmpty) {
-        subscription = Some(sub)
-        if (_canceled) {
-          context.stop(self)
-          sub.cancel()
-        } else if (requested != 0) sub.request(remainingRequested)
-      } else sub.cancel()
-    case OnComplete | OnError(_) ⇒
-      if (!_canceled) {
-        _canceled = true
-        super.aroundReceive(receive, msg)
-      }
-    case _ ⇒
-      super.aroundReceive(receive, msg)
-      request(requestStrategy.requestDemand(remainingRequested))
-  }
+    }
 
   /**
     * INTERNAL API
@@ -234,10 +237,14 @@ trait ActorSubscriber extends Actor {
     * INTERNAL API
     */
   protected[akka] override def aroundPreRestart(
-      reason: Throwable, message: Option[Any]): Unit = {
+      reason: Throwable,
+      message: Option[Any]
+  ): Unit = {
     // some state must survive restart
     state.set(
-        self, ActorSubscriberState.State(subscription, requested, _canceled))
+      self,
+      ActorSubscriberState.State(subscription, requested, _canceled)
+    )
     super.aroundPreRestart(reason, message)
   }
 
@@ -275,7 +282,8 @@ trait ActorSubscriber extends Actor {
           context.stop(self)
           s.cancel()
         case _ ⇒
-          _canceled = true // cancel will be signaled once a subscription arrives
+          _canceled =
+            true // cancel will be signaled once a subscription arrives
       }
     }
 
@@ -316,18 +324,23 @@ private[akka] final class ActorSubscriberImpl[T](val impl: ActorRef)
   * Some state must survive restarts.
   */
 private[akka] object ActorSubscriberState
-    extends ExtensionId[ActorSubscriberState] with ExtensionIdProvider {
+    extends ExtensionId[ActorSubscriberState]
+    with ExtensionIdProvider {
   override def get(system: ActorSystem): ActorSubscriberState =
     super.get(system)
 
   override def lookup() = ActorSubscriberState
 
   override def createExtension(
-      system: ExtendedActorSystem): ActorSubscriberState =
+      system: ExtendedActorSystem
+  ): ActorSubscriberState =
     new ActorSubscriberState
 
   final case class State(
-      subscription: Option[Subscription], requested: Long, canceled: Boolean)
+      subscription: Option[Subscription],
+      requested: Long,
+      canceled: Boolean
+  )
 }
 
 /**
@@ -380,4 +393,5 @@ object AbstractActorSubscriber {
   * @see [[akka.stream.actor.ActorSubscriber]]
   */
 abstract class AbstractActorSubscriber
-    extends AbstractActor with ActorSubscriber
+    extends AbstractActor
+    with ActorSubscriber

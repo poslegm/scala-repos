@@ -18,7 +18,7 @@ class Literals(val s: StringContext) extends AnyVal {
   def r(): Rational = macro Macros.rational
 
   def poly(args: Any*): Polynomial[Rational] = {
-    val sb = new StringBuilder
+    val sb   = new StringBuilder
     val lits = s.parts.iterator
     val vars = args.map(_.toString).iterator
 

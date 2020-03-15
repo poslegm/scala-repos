@@ -32,10 +32,11 @@ import org.apache.spark.sql.internal.SQLConf
 class HiveCompatibilitySuite extends HiveQueryFileTest with BeforeAndAfter {
   // TODO: bundle in jar files... get from classpath
   private lazy val hiveQueryDir = TestHive.getHiveFile(
-      "ql/src/test/queries/clientpositive".split("/").mkString(File.separator))
+    "ql/src/test/queries/clientpositive".split("/").mkString(File.separator)
+  )
 
-  private val originalTimeZone = TimeZone.getDefault
-  private val originalLocale = Locale.getDefault
+  private val originalTimeZone        = TimeZone.getDefault
+  private val originalLocale          = Locale.getDefault
   private val originalColumnBatchSize = TestHive.conf.columnBatchSize
   private val originalInMemoryPartitionPruning =
     TestHive.conf.inMemoryPartitionPruning
@@ -66,7 +67,9 @@ class HiveCompatibilitySuite extends HiveQueryFileTest with BeforeAndAfter {
     Locale.setDefault(originalLocale)
     TestHive.setConf(SQLConf.COLUMN_BATCH_SIZE, originalColumnBatchSize)
     TestHive.setConf(
-        SQLConf.IN_MEMORY_PARTITION_PRUNING, originalInMemoryPartitionPruning)
+      SQLConf.IN_MEMORY_PARTITION_PRUNING,
+      originalInMemoryPartitionPruning
+    )
     TestHive.sessionState.functionRegistry.restore()
 
     // For debugging dump some statistics about how much time was spent in various optimizer rules.
@@ -75,7 +78,8 @@ class HiveCompatibilitySuite extends HiveQueryFileTest with BeforeAndAfter {
   }
 
   /** A list of tests deemed out of scope currently and thus completely disregarded. */
-  override def blackList: Seq[String] = Seq(
+  override def blackList: Seq[String] =
+    Seq(
       // These tests use hooks that are not on the classpath and thus break all subsequent execution.
       "hook_order",
       "hook_context_cs",
@@ -230,7 +234,7 @@ class HiveCompatibilitySuite extends HiveQueryFileTest with BeforeAndAfter {
       "nullformatCTAS", // SPARK-7411: need to finish CTAS parser
 
       // The isolated classloader seemed to make some of our test reset mechanisms less robust.
-      "combine1", // This test changes compression settings in a way that breaks all subsequent tests.
+      "combine1",          // This test changes compression settings in a way that breaks all subsequent tests.
       "load_dyn_part14.*", // These work alone but fail when run with other tests...
 
       // the answer is sensitive for jdk version
@@ -286,13 +290,14 @@ class HiveCompatibilitySuite extends HiveQueryFileTest with BeforeAndAfter {
       "udf_round",
       "udf_round_3",
       "view_cast"
-  )
+    )
 
   /**
     * The set of tests that are believed to be working in catalyst. Tests not on whiteList or
     * blacklist are implicitly marked as ignored.
     */
-  override def whiteList: Seq[String] = Seq(
+  override def whiteList: Seq[String] =
+    Seq(
       "add_part_exist",
       "add_part_multiple",
       "add_partition_no_whitelist",
@@ -1019,5 +1024,5 @@ class HiveCompatibilitySuite extends HiveQueryFileTest with BeforeAndAfter {
       "view",
       "view_cast",
       "view_inputs"
-  )
+    )
 }

@@ -13,16 +13,22 @@ object KleisliUsage extends App {
   case class Continent(name: String, countries: List[Country] = List.empty)
   case class Country(name: String, cities: List[City] = List.empty)
   case class City(
-      name: String, isCapital: Boolean = false, inhabitants: Int = 20)
+      name: String,
+      isCapital: Boolean = false,
+      inhabitants: Int = 20
+  )
 
   val data: List[Continent] = List(
-      Continent("Europe"),
-      Continent(
-          "America",
-          List(Country("USA", List(City("Washington"), City("New York"))))),
-      Continent(
-          "Asia",
-          List(Country("India", List(City("New Dehli"), City("Calcutta"))))))
+    Continent("Europe"),
+    Continent(
+      "America",
+      List(Country("USA", List(City("Washington"), City("New York"))))
+    ),
+    Continent(
+      "Asia",
+      List(Country("India", List(City("New Dehli"), City("Calcutta"))))
+    )
+  )
 
   def continents(name: String): List[Continent] =
     data.filter(k => k.name.contains(name))
@@ -70,7 +76,7 @@ object KleisliUsage extends App {
   // the form A => M[B] with a function of the form
   // AA => A, resulting in a kleisli function of the form
   // AA => M[B]
-  def index(i: Int) = data(i).name
+  def index(i: Int)    = data(i).name
   val allCitiesByIndex = allCities local index
   allCitiesByIndex(1).map(println)
 }

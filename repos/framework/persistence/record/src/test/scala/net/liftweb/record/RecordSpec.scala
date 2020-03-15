@@ -44,7 +44,7 @@ object RecordSpec extends Specification {
     val rec = FieldTypeTestRecord.createRecord
     val allExpectedFieldNames: List[String] = (for {
       typeName <- "Binary Boolean Country DateTime Decimal Double Email Enum Int Locale Long PostalCode String Textarea TimeZone JodaTime"
-        .split(" ")
+                   .split(" ")
       flavor <- "mandatory legacyOptional optional".split(" ")
     } yield flavor + typeName + "Field").toList
 
@@ -75,9 +75,10 @@ object RecordSpec extends Specification {
   "Record lifecycle callbacks" should {
     def testOneHarness(
         scope: String,
-        f: LifecycleTestRecord => HarnessedLifecycleCallbacks) = {
+        f: LifecycleTestRecord => HarnessedLifecycleCallbacks
+    ) = {
       ("be called before validation when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).beforeValidationHarness = () => triggered = true
         rec.foreachCallback(_.beforeValidation)
@@ -85,7 +86,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called after validation when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).afterValidationHarness = () => triggered = true
         rec.foreachCallback(_.afterValidation)
@@ -93,9 +94,9 @@ object RecordSpec extends Specification {
       }
 
       ("be called around validate when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec             = LifecycleTestRecord.createRecord
         var triggeredBefore = false
-        var triggeredAfter = false
+        var triggeredAfter  = false
         f(rec).beforeValidationHarness = () => triggeredBefore = true
         f(rec).afterValidationHarness = () => triggeredAfter = true
         rec.validate must_== Nil
@@ -104,7 +105,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called before save when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).beforeSaveHarness = () => triggered = true
         rec.foreachCallback(_.beforeSave)
@@ -112,7 +113,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called before create when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).beforeCreateHarness = () => triggered = true
         rec.foreachCallback(_.beforeCreate)
@@ -120,7 +121,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called before update when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).beforeUpdateHarness = () => triggered = true
         rec.foreachCallback(_.beforeUpdate)
@@ -128,7 +129,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called after save when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).afterSaveHarness = () => triggered = true
         rec.foreachCallback(_.afterSave)
@@ -136,7 +137,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called after create when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).afterCreateHarness = () => triggered = true
         rec.foreachCallback(_.afterCreate)
@@ -144,7 +145,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called after update when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).afterUpdateHarness = () => triggered = true
         rec.foreachCallback(_.afterUpdate)
@@ -152,7 +153,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called before delete when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).beforeDeleteHarness = () => triggered = true
         rec.foreachCallback(_.beforeDelete)
@@ -160,7 +161,7 @@ object RecordSpec extends Specification {
       }
 
       ("be called after delete when specified at " + scope) in {
-        val rec = LifecycleTestRecord.createRecord
+        val rec       = LifecycleTestRecord.createRecord
         var triggered = false
         f(rec).afterDeleteHarness = () => triggered = true
         rec.foreachCallback(_.afterDelete)
@@ -169,16 +170,17 @@ object RecordSpec extends Specification {
     }
 
     testOneHarness(
-        "the field level",
-        rec => rec.stringFieldWithCallbacks: HarnessedLifecycleCallbacks)
+      "the field level",
+      rec => rec.stringFieldWithCallbacks: HarnessedLifecycleCallbacks
+    )
   }
 
   "Record" should {
     val session = new LiftSession("", randomString(20), Empty)
     S.initIfUninitted(session) {
       val gu: Array[Byte] = Array(18, 19, 20)
-      val cal = Calendar.getInstance
-      val dt: DateTime = DateTime.now
+      val cal             = Calendar.getInstance
+      val dt: DateTime    = DateTime.now
 
       val fttr = FieldTypeTestRecord.createRecord
         .mandatoryBinaryField(gu)
@@ -199,71 +201,71 @@ object RecordSpec extends Specification {
         .mandatoryJodaTimeField(dt)
 
       val fttrJValue: JValue =
-        ("mandatoryBooleanField" -> false) ~ ("mandatoryCountryField" -> 1) ~
-        ("mandatoryDateTimeField" -> Helpers.toInternetDate(cal.getTime)) ~
-        ("mandatoryDecimalField" -> "3.14") ~
-        ("mandatoryDoubleField" -> 1999.0) ~
-        ("mandatoryEmailField" -> "test@liftweb.net") ~
-        ("mandatoryEnumField" -> 0) ~ ("mandatoryIntField" -> 99) ~
-        ("mandatoryLocaleField" -> "en_US") ~ ("mandatoryLongField" -> 100) ~
-        ("mandatoryPostalCodeField" -> "55401") ~
-        ("mandatoryStringField" -> "foobar") ~
-        ("mandatoryTextareaField" -> "foobar") ~
-        ("mandatoryTimeZoneField" -> "America/Chicago") ~
-        ("mandatoryBinaryField" -> "EhMU") ~
-        ("mandatoryJodaTimeField" -> dt.getMillis)
+        ("mandatoryBooleanField"      -> false) ~ ("mandatoryCountryField" -> 1) ~
+          ("mandatoryDateTimeField"   -> Helpers.toInternetDate(cal.getTime)) ~
+          ("mandatoryDecimalField"    -> "3.14") ~
+          ("mandatoryDoubleField"     -> 1999.0) ~
+          ("mandatoryEmailField"      -> "test@liftweb.net") ~
+          ("mandatoryEnumField"       -> 0) ~ ("mandatoryIntField" -> 99) ~
+          ("mandatoryLocaleField"     -> "en_US") ~ ("mandatoryLongField" -> 100) ~
+          ("mandatoryPostalCodeField" -> "55401") ~
+          ("mandatoryStringField"     -> "foobar") ~
+          ("mandatoryTextareaField"   -> "foobar") ~
+          ("mandatoryTimeZoneField"   -> "America/Chicago") ~
+          ("mandatoryBinaryField"     -> "EhMU") ~
+          ("mandatoryJodaTimeField"   -> dt.getMillis)
 
       val fttrJson: String = compactRender(fttrJValue)
 
       val fttrAsJsObj = JsObj(
-          ("mandatoryBooleanField", JsFalse),
-          ("mandatoryCountryField", Str(Countries.USA.toString)),
-          ("mandatoryDateTimeField", Str(Helpers.toInternetDate(cal.getTime))),
-          ("mandatoryDecimalField", Num(3.14)),
-          ("mandatoryDoubleField", Num(1999.0)),
-          ("mandatoryEmailField", Str("test@liftweb.net")),
-          ("mandatoryEnumField", Str(MyTestEnum.ONE.toString)),
-          ("mandatoryIntField", Num(99)),
-          ("mandatoryLocaleField", Str("en_US")),
-          ("mandatoryLongField", Num(100)),
-          ("mandatoryPostalCodeField", Str("55401")),
-          ("mandatoryStringField", Str("foobar")),
-          ("mandatoryTextareaField", Str("foobar")),
-          ("mandatoryTimeZoneField", Str("America/Chicago")),
-          ("mandatoryBinaryField", Str("121314")),
-          ("mandatoryJodaTimeField", Num(dt.getMillis)),
-          ("legacyOptionalBooleanField", JsNull),
-          ("optionalBooleanField", JsNull),
-          ("legacyOptionalCountryField", JsNull),
-          ("optionalCountryField", JsNull),
-          ("legacyOptionalDateTimeField", JsNull),
-          ("optionalDateTimeField", JsNull),
-          ("legacyOptionalDecimalField", JsNull),
-          ("optionalDecimalField", JsNull),
-          ("legacyOptionalDoubleField", JsNull),
-          ("optionalDoubleField", JsNull),
-          ("legacyOptionalEmailField", JsNull),
-          ("optionalEmailField", JsNull),
-          ("legacyOptionalEnumField", JsNull),
-          ("optionalEnumField", JsNull),
-          ("legacyOptionalIntField", JsNull),
-          ("optionalIntField", JsNull),
-          ("legacyOptionalLocaleField", JsNull),
-          ("optionalLocaleField", JsNull),
-          ("legacyOptionalLongField", JsNull),
-          ("optionalLongField", JsNull),
-          ("legacyOptionalPostalCodeField", JsNull),
-          ("optionalPostalCodeField", JsNull),
-          ("legacyOptionalStringField", JsNull),
-          ("optionalStringField", JsNull),
-          ("legacyOptionalTextareaField", JsNull),
-          ("optionalTextareaField", JsNull),
-          ("legacyOptionalTimeZoneField", JsNull),
-          ("optionalTimeZoneField", JsNull),
-          ("optionalBinaryField", JsNull),
-          ("legacyOptionalBinaryField", JsNull),
-          ("legacyOptionalJodaTimeField", JsNull),
-          ("optionalJodaTimeField", JsNull)
+        ("mandatoryBooleanField", JsFalse),
+        ("mandatoryCountryField", Str(Countries.USA.toString)),
+        ("mandatoryDateTimeField", Str(Helpers.toInternetDate(cal.getTime))),
+        ("mandatoryDecimalField", Num(3.14)),
+        ("mandatoryDoubleField", Num(1999.0)),
+        ("mandatoryEmailField", Str("test@liftweb.net")),
+        ("mandatoryEnumField", Str(MyTestEnum.ONE.toString)),
+        ("mandatoryIntField", Num(99)),
+        ("mandatoryLocaleField", Str("en_US")),
+        ("mandatoryLongField", Num(100)),
+        ("mandatoryPostalCodeField", Str("55401")),
+        ("mandatoryStringField", Str("foobar")),
+        ("mandatoryTextareaField", Str("foobar")),
+        ("mandatoryTimeZoneField", Str("America/Chicago")),
+        ("mandatoryBinaryField", Str("121314")),
+        ("mandatoryJodaTimeField", Num(dt.getMillis)),
+        ("legacyOptionalBooleanField", JsNull),
+        ("optionalBooleanField", JsNull),
+        ("legacyOptionalCountryField", JsNull),
+        ("optionalCountryField", JsNull),
+        ("legacyOptionalDateTimeField", JsNull),
+        ("optionalDateTimeField", JsNull),
+        ("legacyOptionalDecimalField", JsNull),
+        ("optionalDecimalField", JsNull),
+        ("legacyOptionalDoubleField", JsNull),
+        ("optionalDoubleField", JsNull),
+        ("legacyOptionalEmailField", JsNull),
+        ("optionalEmailField", JsNull),
+        ("legacyOptionalEnumField", JsNull),
+        ("optionalEnumField", JsNull),
+        ("legacyOptionalIntField", JsNull),
+        ("optionalIntField", JsNull),
+        ("legacyOptionalLocaleField", JsNull),
+        ("optionalLocaleField", JsNull),
+        ("legacyOptionalLongField", JsNull),
+        ("optionalLongField", JsNull),
+        ("legacyOptionalPostalCodeField", JsNull),
+        ("optionalPostalCodeField", JsNull),
+        ("legacyOptionalStringField", JsNull),
+        ("optionalStringField", JsNull),
+        ("legacyOptionalTextareaField", JsNull),
+        ("optionalTextareaField", JsNull),
+        ("legacyOptionalTimeZoneField", JsNull),
+        ("optionalTimeZoneField", JsNull),
+        ("optionalBinaryField", JsNull),
+        ("legacyOptionalBinaryField", JsNull),
+        ("legacyOptionalJodaTimeField", JsNull),
+        ("optionalJodaTimeField", JsNull)
       )
 
       "convert to JsExp (via asJSON)" in {
@@ -279,57 +281,60 @@ object RecordSpec extends Specification {
 
       "convert to JValue" in {
         fttr.asJValue mustEqual JObject(
-            List(
-                JField("mandatoryBooleanField", JBool(false)),
-                JField("legacyOptionalBooleanField", JNothing),
-                JField("optionalBooleanField", JNothing),
-                JField("mandatoryCountryField", JInt(Countries.USA.id)),
-                JField("legacyOptionalCountryField", JNothing),
-                JField("optionalCountryField", JNothing),
-                JField("mandatoryDateTimeField",
-                       JString(Helpers.toInternetDate(cal.getTime))),
-                JField("legacyOptionalDateTimeField", JNothing),
-                JField("optionalDateTimeField", JNothing),
-                JField("mandatoryDecimalField", JString("3.14")),
-                JField("legacyOptionalDecimalField", JNothing),
-                JField("optionalDecimalField", JNothing),
-                JField("mandatoryDoubleField", JDouble(1999.0)),
-                JField("legacyOptionalDoubleField", JNothing),
-                JField("optionalDoubleField", JNothing),
-                JField("mandatoryEmailField", JString("test@liftweb.net")),
-                JField("legacyOptionalEmailField", JNothing),
-                JField("optionalEmailField", JNothing),
-                JField("mandatoryEnumField", JInt(MyTestEnum.ONE.id)),
-                JField("legacyOptionalEnumField", JNothing),
-                JField("optionalEnumField", JNothing),
-                JField("mandatoryIntField", JInt(99)),
-                JField("legacyOptionalIntField", JNothing),
-                JField("optionalIntField", JNothing),
-                JField("mandatoryLocaleField", JString("en_US")),
-                JField("legacyOptionalLocaleField", JNothing),
-                JField("optionalLocaleField", JNothing),
-                JField("mandatoryLongField", JInt(100)),
-                JField("legacyOptionalLongField", JNothing),
-                JField("optionalLongField", JNothing),
-                JField("mandatoryPostalCodeField", JString("55401")),
-                JField("legacyOptionalPostalCodeField", JNothing),
-                JField("optionalPostalCodeField", JNothing),
-                JField("mandatoryStringField", JString("foobar")),
-                JField("legacyOptionalStringField", JNothing),
-                JField("optionalStringField", JNothing),
-                JField("mandatoryTextareaField", JString("foobar")),
-                JField("legacyOptionalTextareaField", JNothing),
-                JField("optionalTextareaField", JNothing),
-                JField("mandatoryTimeZoneField", JString("America/Chicago")),
-                JField("legacyOptionalTimeZoneField", JNothing),
-                JField("optionalTimeZoneField", JNothing),
-                JField("mandatoryBinaryField", JString("EhMU")),
-                JField("legacyOptionalBinaryField", JNothing),
-                JField("optionalBinaryField", JNothing),
-                JField("mandatoryJodaTimeField", JInt(dt.getMillis)),
-                JField("legacyOptionalJodaTimeField", JNothing),
-                JField("optionalJodaTimeField", JNothing)
-            ))
+          List(
+            JField("mandatoryBooleanField", JBool(false)),
+            JField("legacyOptionalBooleanField", JNothing),
+            JField("optionalBooleanField", JNothing),
+            JField("mandatoryCountryField", JInt(Countries.USA.id)),
+            JField("legacyOptionalCountryField", JNothing),
+            JField("optionalCountryField", JNothing),
+            JField(
+              "mandatoryDateTimeField",
+              JString(Helpers.toInternetDate(cal.getTime))
+            ),
+            JField("legacyOptionalDateTimeField", JNothing),
+            JField("optionalDateTimeField", JNothing),
+            JField("mandatoryDecimalField", JString("3.14")),
+            JField("legacyOptionalDecimalField", JNothing),
+            JField("optionalDecimalField", JNothing),
+            JField("mandatoryDoubleField", JDouble(1999.0)),
+            JField("legacyOptionalDoubleField", JNothing),
+            JField("optionalDoubleField", JNothing),
+            JField("mandatoryEmailField", JString("test@liftweb.net")),
+            JField("legacyOptionalEmailField", JNothing),
+            JField("optionalEmailField", JNothing),
+            JField("mandatoryEnumField", JInt(MyTestEnum.ONE.id)),
+            JField("legacyOptionalEnumField", JNothing),
+            JField("optionalEnumField", JNothing),
+            JField("mandatoryIntField", JInt(99)),
+            JField("legacyOptionalIntField", JNothing),
+            JField("optionalIntField", JNothing),
+            JField("mandatoryLocaleField", JString("en_US")),
+            JField("legacyOptionalLocaleField", JNothing),
+            JField("optionalLocaleField", JNothing),
+            JField("mandatoryLongField", JInt(100)),
+            JField("legacyOptionalLongField", JNothing),
+            JField("optionalLongField", JNothing),
+            JField("mandatoryPostalCodeField", JString("55401")),
+            JField("legacyOptionalPostalCodeField", JNothing),
+            JField("optionalPostalCodeField", JNothing),
+            JField("mandatoryStringField", JString("foobar")),
+            JField("legacyOptionalStringField", JNothing),
+            JField("optionalStringField", JNothing),
+            JField("mandatoryTextareaField", JString("foobar")),
+            JField("legacyOptionalTextareaField", JNothing),
+            JField("optionalTextareaField", JNothing),
+            JField("mandatoryTimeZoneField", JString("America/Chicago")),
+            JField("legacyOptionalTimeZoneField", JNothing),
+            JField("optionalTimeZoneField", JNothing),
+            JField("mandatoryBinaryField", JString("EhMU")),
+            JField("legacyOptionalBinaryField", JNothing),
+            JField("optionalBinaryField", JNothing),
+            JField("mandatoryJodaTimeField", JInt(dt.getMillis)),
+            JField("legacyOptionalJodaTimeField", JNothing),
+            JField("optionalJodaTimeField", JNothing)
+          )
+        )
       }
 
       "get set from json string using lift-json parser" in {
@@ -344,9 +349,11 @@ object RecordSpec extends Specification {
 
   "basic record" should {
     "order fields according to fieldOrder" in {
-      BasicTestRecord.metaFields must_== List(BasicTestRecord.field2,
-                                              BasicTestRecord.field1,
-                                              BasicTestRecord.fieldThree)
+      BasicTestRecord.metaFields must_== List(
+        BasicTestRecord.field2,
+        BasicTestRecord.field1,
+        BasicTestRecord.fieldThree
+      )
     }
   }
 }

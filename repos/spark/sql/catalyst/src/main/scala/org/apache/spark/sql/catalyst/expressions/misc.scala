@@ -38,10 +38,13 @@ import org.apache.spark.unsafe.Platform
   * For input of type [[BinaryType]]
   */
 @ExpressionDescription(
-    usage = "_FUNC_(input) - Returns an MD5 128-bit checksum as a hex string of the input",
-    extended = "> SELECT _FUNC_('Spark');\n '8cde774d6f7333752ed72cacddb05126'")
+  usage =
+    "_FUNC_(input) - Returns an MD5 128-bit checksum as a hex string of the input",
+  extended = "> SELECT _FUNC_('Spark');\n '8cde774d6f7333752ed72cacddb05126'"
+)
 case class Md5(child: Expression)
-    extends UnaryExpression with ImplicitCastInputTypes {
+    extends UnaryExpression
+    with ImplicitCastInputTypes {
 
   override def dataType: DataType = StringType
 
@@ -52,10 +55,11 @@ case class Md5(child: Expression)
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     defineCodeGen(
-        ctx,
-        ev,
-        c =>
-          s"UTF8String.fromString(org.apache.commons.codec.digest.DigestUtils.md5Hex($c))")
+      ctx,
+      ev,
+      c =>
+        s"UTF8String.fromString(org.apache.commons.codec.digest.DigestUtils.md5Hex($c))"
+    )
   }
 }
 
@@ -69,22 +73,27 @@ case class Md5(child: Expression)
   */
 // scalastyle:off line.size.limit
 @ExpressionDescription(
-    usage = """_FUNC_(input, bitLength) - Returns a checksum of SHA-2 family as a hex string of the input.
+  usage =
+    """_FUNC_(input, bitLength) - Returns a checksum of SHA-2 family as a hex string of the input.
             SHA-224, SHA-256, SHA-384, and SHA-512 are supported. Bit length of 0 is equivalent to 256.""",
-    extended = """> SELECT _FUNC_('Spark', 0);
-               '529bc3b07127ecb7e53a4dcf1991d9152c24537d919178022b2c42657f79a26b'""")
+  extended =
+    """> SELECT _FUNC_('Spark', 0);
+               '529bc3b07127ecb7e53a4dcf1991d9152c24537d919178022b2c42657f79a26b'"""
+)
 // scalastyle:on line.size.limit
 case class Sha2(left: Expression, right: Expression)
-    extends BinaryExpression with Serializable with ImplicitCastInputTypes {
+    extends BinaryExpression
+    with Serializable
+    with ImplicitCastInputTypes {
 
   override def dataType: DataType = StringType
-  override def nullable: Boolean = true
+  override def nullable: Boolean  = true
 
   override def inputTypes: Seq[DataType] = Seq(BinaryType, IntegerType)
 
   protected override def nullSafeEval(input1: Any, input2: Any): Any = {
     val bitLength = input2.asInstanceOf[Int]
-    val input = input1.asInstanceOf[Array[Byte]]
+    val input     = input1.asInstanceOf[Array[Byte]]
     bitLength match {
       case 224 =>
         // DigestUtils doesn't support SHA-224 now
@@ -108,11 +117,11 @@ case class Sha2(left: Expression, right: Expression)
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val digestUtils = "org.apache.commons.codec.digest.DigestUtils"
-    nullSafeCodeGen(ctx,
-                    ev,
-                    (eval1, eval2) =>
-                      {
-                        s"""
+    nullSafeCodeGen(
+      ctx,
+      ev,
+      (eval1, eval2) => {
+        s"""
         if ($eval2 == 224) {
           try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-224");
@@ -134,7 +143,8 @@ case class Sha2(left: Expression, right: Expression)
           ${ev.isNull} = true;
         }
       """
-                    })
+      }
+    )
   }
 }
 
@@ -143,10 +153,14 @@ case class Sha2(left: Expression, right: Expression)
   * For input of type [[BinaryType]] or [[StringType]]
   */
 @ExpressionDescription(
-    usage = "_FUNC_(input) - Returns a sha1 hash value as a hex string of the input",
-    extended = "> SELECT _FUNC_('Spark');\n '85f5955f4b27a9a4c2aab6ffe5d7189fc298b92c'")
+  usage =
+    "_FUNC_(input) - Returns a sha1 hash value as a hex string of the input",
+  extended =
+    "> SELECT _FUNC_('Spark');\n '85f5955f4b27a9a4c2aab6ffe5d7189fc298b92c'"
+)
 case class Sha1(child: Expression)
-    extends UnaryExpression with ImplicitCastInputTypes {
+    extends UnaryExpression
+    with ImplicitCastInputTypes {
 
   override def dataType: DataType = StringType
 
@@ -157,10 +171,11 @@ case class Sha1(child: Expression)
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     defineCodeGen(
-        ctx,
-        ev,
-        c =>
-          s"UTF8String.fromString(org.apache.commons.codec.digest.DigestUtils.sha1Hex($c))")
+      ctx,
+      ev,
+      c =>
+        s"UTF8String.fromString(org.apache.commons.codec.digest.DigestUtils.sha1Hex($c))"
+    )
   }
 }
 
@@ -169,10 +184,13 @@ case class Sha1(child: Expression)
   * For input of type [[BinaryType]]
   */
 @ExpressionDescription(
-    usage = "_FUNC_(input) - Returns a cyclic redundancy check value as a bigint of the input",
-    extended = "> SELECT _FUNC_('Spark');\n '1557323817'")
+  usage =
+    "_FUNC_(input) - Returns a cyclic redundancy check value as a bigint of the input",
+  extended = "> SELECT _FUNC_('Spark');\n '1557323817'"
+)
 case class Crc32(child: Expression)
-    extends UnaryExpression with ImplicitCastInputTypes {
+    extends UnaryExpression
+    with ImplicitCastInputTypes {
 
   override def dataType: DataType = LongType
 
@@ -180,24 +198,27 @@ case class Crc32(child: Expression)
 
   protected override def nullSafeEval(input: Any): Any = {
     val checksum = new CRC32
-    checksum.update(input.asInstanceOf[Array[Byte]],
-                    0,
-                    input.asInstanceOf[Array[Byte]].length)
+    checksum.update(
+      input.asInstanceOf[Array[Byte]],
+      0,
+      input.asInstanceOf[Array[Byte]].length
+    )
     checksum.getValue
   }
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     val CRC32 = "java.util.zip.CRC32"
-    nullSafeCodeGen(ctx,
-                    ev,
-                    value =>
-                      {
-                        s"""
+    nullSafeCodeGen(
+      ctx,
+      ev,
+      value => {
+        s"""
         $CRC32 checksum = new $CRC32();
         checksum.update($value, 0, $value.length);
         ${ev.value} = checksum.getValue();
       """
-                    })
+      }
+    )
   }
 }
 
@@ -246,7 +267,8 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
   override def checkInputDataTypes(): TypeCheckResult = {
     if (children.isEmpty) {
       TypeCheckResult.TypeCheckFailure(
-          "function hash requires at least one argument")
+        "function hash requires at least one argument"
+      )
     } else {
       TypeCheckResult.TypeCheckSuccess
     }
@@ -256,8 +278,8 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
 
   override def eval(input: InternalRow): Any = {
     var hash = seed
-    var i = 0
-    val len = children.length
+    var i    = 0
+    val len  = children.length
     while (i < len) {
       hash = computeHash(children(i).eval(input), children(i).dataType, hash)
       i += 1
@@ -266,18 +288,18 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
   }
 
   private def computeHash(value: Any, dataType: DataType, seed: Int): Int = {
-    def hashInt(i: Int): Int = Murmur3_x86_32.hashInt(i, seed)
+    def hashInt(i: Int): Int   = Murmur3_x86_32.hashInt(i, seed)
     def hashLong(l: Long): Int = Murmur3_x86_32.hashLong(l, seed)
 
     value match {
-      case null => seed
+      case null       => seed
       case b: Boolean => hashInt(if (b) 1 else 0)
-      case b: Byte => hashInt(b)
-      case s: Short => hashInt(s)
-      case i: Int => hashInt(i)
-      case l: Long => hashLong(l)
-      case f: Float => hashInt(java.lang.Float.floatToIntBits(f))
-      case d: Double => hashLong(java.lang.Double.doubleToLongBits(d))
+      case b: Byte    => hashInt(b)
+      case s: Short   => hashInt(s)
+      case i: Int     => hashInt(i)
+      case l: Long    => hashLong(l)
+      case f: Float   => hashInt(java.lang.Float.floatToIntBits(f))
+      case d: Double  => hashLong(java.lang.Double.doubleToLongBits(d))
       case d: Decimal =>
         val precision = dataType.asInstanceOf[DecimalType].precision
         if (precision <= Decimal.MAX_LONG_DIGITS) {
@@ -285,16 +307,28 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
         } else {
           val bytes = d.toJavaBigDecimal.unscaledValue().toByteArray
           Murmur3_x86_32.hashUnsafeBytes(
-              bytes, Platform.BYTE_ARRAY_OFFSET, bytes.length, seed)
+            bytes,
+            Platform.BYTE_ARRAY_OFFSET,
+            bytes.length,
+            seed
+          )
         }
       case c: CalendarInterval =>
         Murmur3_x86_32.hashInt(c.months, hashLong(c.microseconds))
       case a: Array[Byte] =>
         Murmur3_x86_32.hashUnsafeBytes(
-            a, Platform.BYTE_ARRAY_OFFSET, a.length, seed)
+          a,
+          Platform.BYTE_ARRAY_OFFSET,
+          a.length,
+          seed
+        )
       case s: UTF8String =>
         Murmur3_x86_32.hashUnsafeBytes(
-            s.getBaseObject, s.getBaseOffset, s.numBytes(), seed)
+          s.getBaseObject,
+          s.getBaseOffset,
+          s.numBytes(),
+          seed
+        )
 
       case array: ArrayData =>
         val elementType = dataType match {
@@ -303,7 +337,7 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
           case ArrayType(et, _) => et
         }
         var result = seed
-        var i = 0
+        var i      = 0
         while (i < array.numElements()) {
           result = computeHash(array.get(i, elementType), elementType, result)
           i += 1
@@ -317,10 +351,10 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
             mapType.keyType -> mapType.valueType
           case MapType(kt, vt, _) => kt -> vt
         }
-        val keys = map.keyArray()
+        val keys   = map.keyArray()
         val values = map.valueArray()
         var result = seed
-        var i = 0
+        var i      = 0
         while (i < map.numElements()) {
           result = computeHash(keys.get(i, kt), kt, result)
           result = computeHash(values.get(i, vt), vt, result)
@@ -335,8 +369,8 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
           case StructType(fields) => fields.map(_.dataType)
         }
         var result = seed
-        var i = 0
-        val len = struct.numFields
+        var i      = 0
+        val len    = struct.numFields
         while (i < len) {
           result = computeHash(struct.get(i, types(i)), types(i), result)
           i += 1
@@ -347,12 +381,14 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
 
   override def genCode(ctx: CodegenContext, ev: ExprCode): String = {
     ev.isNull = "false"
-    val childrenHash = children.map { child =>
-      val childGen = child.gen(ctx)
-      childGen.code + ctx.nullSafeExec(child.nullable, childGen.isNull) {
-        computeHash(childGen.value, child.dataType, ev.value, ctx)
+    val childrenHash = children
+      .map { child =>
+        val childGen = child.gen(ctx)
+        childGen.code + ctx.nullSafeExec(child.nullable, childGen.isNull) {
+          computeHash(childGen.value, child.dataType, ev.value, ctx)
+        }
       }
-    }.mkString("\n")
+      .mkString("\n")
 
     s"""
       int ${ev.value} = $seed;
@@ -360,28 +396,35 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
     """
   }
 
-  private def nullSafeElementHash(input: String,
-                                  index: String,
-                                  nullable: Boolean,
-                                  elementType: DataType,
-                                  result: String,
-                                  ctx: CodegenContext): String = {
+  private def nullSafeElementHash(
+      input: String,
+      index: String,
+      nullable: Boolean,
+      elementType: DataType,
+      result: String,
+      ctx: CodegenContext
+  ): String = {
     val element = ctx.freshName("element")
 
     ctx.nullSafeExec(nullable, s"$input.isNullAt($index)") {
       s"""
         final ${ctx.javaType(elementType)} $element = ${ctx.getValue(
-          input, elementType, index)};
+        input,
+        elementType,
+        index
+      )};
         ${computeHash(element, elementType, result, ctx)}
       """
     }
   }
 
   @tailrec
-  private def computeHash(input: String,
-                          dataType: DataType,
-                          result: String,
-                          ctx: CodegenContext): String = {
+  private def computeHash(
+      input: String,
+      dataType: DataType,
+      result: String,
+      ctx: CodegenContext
+  ): String = {
     val hasher = classOf[Murmur3_x86_32].getName
 
     def hashInt(i: String): String = s"$result = $hasher.hashInt($i, $result);"
@@ -391,12 +434,12 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
       s"$result = $hasher.hashUnsafeBytes($b, Platform.BYTE_ARRAY_OFFSET, $b.length, $result);"
 
     dataType match {
-      case NullType => ""
-      case BooleanType => hashInt(s"$input ? 1 : 0")
+      case NullType                                      => ""
+      case BooleanType                                   => hashInt(s"$input ? 1 : 0")
       case ByteType | ShortType | IntegerType | DateType => hashInt(input)
-      case LongType | TimestampType => hashLong(input)
-      case FloatType => hashInt(s"Float.floatToIntBits($input)")
-      case DoubleType => hashLong(s"Double.doubleToLongBits($input)")
+      case LongType | TimestampType                      => hashLong(input)
+      case FloatType                                     => hashInt(s"Float.floatToIntBits($input)")
+      case DoubleType                                    => hashLong(s"Double.doubleToLongBits($input)")
       case d: DecimalType =>
         if (d.precision <= Decimal.MAX_LONG_DIGITS) {
           hashLong(s"$input.toUnscaledLong()")
@@ -415,7 +458,7 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
       case StringType =>
         val baseObject = s"$input.getBaseObject()"
         val baseOffset = s"$input.getBaseOffset()"
-        val numBytes = s"$input.numBytes()"
+        val numBytes   = s"$input.numBytes()"
         s"$result = $hasher.hashUnsafeBytes($baseObject, $baseOffset, $numBytes, $result);"
 
       case ArrayType(et, containsNull) =>
@@ -427,8 +470,8 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
         """
 
       case MapType(kt, vt, valueContainsNull) =>
-        val index = ctx.freshName("index")
-        val keys = ctx.freshName("keys")
+        val index  = ctx.freshName("index")
+        val keys   = ctx.freshName("keys")
         val values = ctx.freshName("values")
         s"""
           final ArrayData $keys = $input.keyArray();
@@ -436,20 +479,30 @@ case class Murmur3Hash(children: Seq[Expression], seed: Int)
           for (int $index = 0; $index < $input.numElements(); $index++) {
             ${nullSafeElementHash(keys, index, false, kt, result, ctx)}
             ${nullSafeElementHash(
-            values, index, valueContainsNull, vt, result, ctx)}
+          values,
+          index,
+          valueContainsNull,
+          vt,
+          result,
+          ctx
+        )}
           }
         """
 
       case StructType(fields) =>
-        fields.zipWithIndex.map {
-          case (field, index) =>
-            nullSafeElementHash(input,
-                                index.toString,
-                                field.nullable,
-                                field.dataType,
-                                result,
-                                ctx)
-        }.mkString("\n")
+        fields.zipWithIndex
+          .map {
+            case (field, index) =>
+              nullSafeElementHash(
+                input,
+                index.toString,
+                field.nullable,
+                field.dataType,
+                result,
+                ctx
+              )
+          }
+          .mkString("\n")
 
       case udt: UserDefinedType[_] =>
         computeHash(input, udt.sqlType, result, ctx)

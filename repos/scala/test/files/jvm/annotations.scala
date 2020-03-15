@@ -43,7 +43,7 @@ object Test3 {
     def foo: Unit = ()
   }
   def run {
-    val method = classOf[Foo].getMethod("foo")
+    val method     = classOf[Foo].getMethod("foo")
     val annotation = method.getAnnotation(classOf[Deprecated])
     println(annotation)
   }
@@ -70,11 +70,14 @@ public class Main {
 object Test4 {
   import test.SourceAnnotation // defined in SourceAnnotation.java
   @SourceAnnotation(
-      value = "http://scala-lang.org",
-      mails = Array("scala@lists.epfl.ch", "scala-lounge@lists.epfl.ch"))
+    value = "http://scala-lang.org",
+    mails = Array("scala@lists.epfl.ch", "scala-lounge@lists.epfl.ch")
+  )
   class Foo1
-  @SourceAnnotation(value = "http://bloodsuckers.com",
-                    mails = Array("you@bloodsuckers.com"))
+  @SourceAnnotation(
+    value = "http://bloodsuckers.com",
+    mails = Array("you@bloodsuckers.com")
+  )
   class Foo2
   @SourceAnnotation("http://bloodsuckers.com")
   class Foo3
@@ -86,7 +89,7 @@ object Test4 {
     @SourceAnnotation("file:///dev/zero")
     def bar: Int = 0
   }
-  class Foo6 @SourceAnnotation("primary constructor")(s: String) {
+  class Foo6 @SourceAnnotation("primary constructor") (s: String) {
     // to guarantee that primary constructor annotations
     // are not applied to secondary constructors
     def this() = this("")
@@ -122,16 +125,24 @@ object Test4 {
   }
   class Foo10(@SourceAnnotation("on param 1") val name: String)
   class Foo11(
-      @(SourceAnnotation @scala.annotation.meta.field)("on param 2") val name: String)
+      @(SourceAnnotation @scala.annotation.meta.field)(
+        "on param 2"
+      ) val name: String
+  )
   class Foo12(
-      @(SourceAnnotation @scala.annotation.meta.setter)("on param 3") var name: String)
+      @(SourceAnnotation @scala.annotation.meta.setter)(
+        "on param 3"
+      ) var name: String
+  )
   def run {
     import java.lang.annotation.Annotation
     import java.lang.reflect.AnnotatedElement
     def printSourceAnnotation(a: Annotation) {
       val ann = a.asInstanceOf[SourceAnnotation]
-      println("@test.SourceAnnotation(mails=" + ann.mails.deep
-            .mkString("{", ",", "}") + ", value=" + ann.value + ")")
+      println(
+        "@test.SourceAnnotation(mails=" + ann.mails.deep
+          .mkString("{", ",", "}") + ", value=" + ann.value + ")"
+      )
     }
     def printSourceAnnotations(target: AnnotatedElement) {
       //print SourceAnnotation in a predefined way to insure
@@ -143,8 +154,9 @@ object Test4 {
         println
       }
     }
-    def printParamSourceAnnotations(
-        target: { def getParameterAnnotations(): Array[Array[Annotation]] }) {
+    def printParamSourceAnnotations(target: {
+      def getParameterAnnotations(): Array[Array[Annotation]]
+    }) {
       val anns = target.getParameterAnnotations().flatten
       anns foreach printSourceAnnotation
       if (anns.length > 0) {
@@ -163,23 +175,32 @@ object Test4 {
     classOf[Foo8].getDeclaredFields foreach printSourceAnnotations
     classOf[Foo8].getDeclaredMethods foreach printSourceAnnotations
     classOf[Foo8].getDeclaredConstructors foreach printParamSourceAnnotations
-    classOf[Foo9].getDeclaredFields.sortWith((x, y) => x.toString < y.toString) foreach printSourceAnnotations
-    classOf[Foo9].getDeclaredMethods.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
-    classOf[Foo10].getDeclaredFields.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
-    classOf[Foo10].getDeclaredMethods.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
+    classOf[Foo9].getDeclaredFields.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
+    classOf[Foo9].getDeclaredMethods.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
+    classOf[Foo10].getDeclaredFields.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
+    classOf[Foo10].getDeclaredMethods.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
     classOf[Foo10].getDeclaredConstructors foreach printParamSourceAnnotations
-    classOf[Foo11].getDeclaredFields.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
-    classOf[Foo11].getDeclaredMethods.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
+    classOf[Foo11].getDeclaredFields.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
+    classOf[Foo11].getDeclaredMethods.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
     classOf[Foo11].getDeclaredConstructors foreach printParamSourceAnnotations
-    classOf[Foo12].getDeclaredFields.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
-    classOf[Foo12].getDeclaredMethods.sortWith(
-        (x, y) => x.toString < y.toString) foreach printSourceAnnotations
+    classOf[Foo12].getDeclaredFields.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
+    classOf[Foo12].getDeclaredMethods.sortWith((x, y) =>
+      x.toString < y.toString
+    ) foreach printSourceAnnotations
     classOf[Foo12].getDeclaredConstructors foreach printParamSourceAnnotations
   }
 }
@@ -196,7 +217,7 @@ object Test5 {
     private val getter = getClass().getMethod("getCount")
     private val setter = getClass().getMethod("setCount", classOf[Integer])
 
-    def get = getter.invoke(this).asInstanceOf[Integer].intValue
+    def get         = getter.invoke(this).asInstanceOf[Integer].intValue
     def set(n: Int) = setter.invoke(this, new Integer(n))
   }
   def run {

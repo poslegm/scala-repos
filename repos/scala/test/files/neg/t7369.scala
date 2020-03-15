@@ -4,19 +4,19 @@ object Test {
     case Tuple1(X) =>
     case Tuple1(Y) =>
     case Tuple1(X) => // unreachable
-    case _ =>
+    case _         =>
   }
 
   (null: Tuple1[Boolean]) match {
-    case Tuple1(true) =>
+    case Tuple1(true)  =>
     case Tuple1(false) =>
-    case Tuple1(true) => // unreachable
-    case _ =>
+    case Tuple1(true)  => // unreachable
+    case _             =>
   }
 }
 
 sealed abstract class B;
-case object True extends B;
+case object True  extends B;
 case object False extends B;
 
 object Test2 {
@@ -28,7 +28,7 @@ object Test2 {
     case Tuple1(X) =>
     case Tuple1(Y) =>
     case Tuple1(X) => // unreachable
-    case _ =>
+    case _         =>
   }
 }
 
@@ -37,6 +37,6 @@ object Test3 {
     case Tuple1(null) =>
     case Tuple1(True) =>
     case Tuple1(null) => // unreachable
-    case _ =>
+    case _            =>
   }
 }

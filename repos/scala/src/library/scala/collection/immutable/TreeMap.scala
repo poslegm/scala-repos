@@ -23,7 +23,8 @@ object TreeMap extends ImmutableSortedMapFactory[TreeMap] {
 
   /** $sortedMapCanBuildFromInfo */
   implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, (A, B), TreeMap[A, B]] =
+      implicit ord: Ordering[A]
+  ): CanBuildFrom[Coll, (A, B), TreeMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
 }
 
@@ -48,12 +49,15 @@ object TreeMap extends ImmutableSortedMapFactory[TreeMap] {
   *  @define willNotTerminateInf
   */
 @deprecatedInheritance(
-    "The implementation details of immutable tree maps make inheriting from them unwise.",
-    "2.11.0")
-class TreeMap[A, +B] private (
-    tree: RB.Tree[A, B])(implicit val ordering: Ordering[A])
-    extends SortedMap[A, B] with SortedMapLike[A, B, TreeMap[A, B]]
-    with MapLike[A, B, TreeMap[A, B]] with Serializable {
+  "The implementation details of immutable tree maps make inheriting from them unwise.",
+  "2.11.0"
+)
+class TreeMap[A, +B] private (tree: RB.Tree[A, B])(
+    implicit val ordering: Ordering[A]
+) extends SortedMap[A, B]
+    with SortedMapLike[A, B, TreeMap[A, B]]
+    with MapLike[A, B, TreeMap[A, B]]
+    with Serializable {
 
   override protected[this] def newBuilder: Builder[(A, B), TreeMap[A, B]] =
     TreeMap.newBuilder[A, B]
@@ -72,8 +76,8 @@ class TreeMap[A, +B] private (
   override def until(until: A): TreeMap[A, B] =
     new TreeMap[A, B](RB.until(tree, until))
 
-  override def firstKey = RB.smallest(tree).key
-  override def lastKey = RB.greatest(tree).key
+  override def firstKey                   = RB.smallest(tree).key
+  override def lastKey                    = RB.greatest(tree).key
   override def compare(k0: A, k1: A): Int = ordering.compare(k0, k1)
 
   override def head = {
@@ -111,17 +115,17 @@ class TreeMap[A, +B] private (
 
   override def dropRight(n: Int) = take(size - math.max(n, 0))
   override def takeRight(n: Int) = drop(size - math.max(n, 0))
-  override def splitAt(n: Int) = (take(n), drop(n))
+  override def splitAt(n: Int)   = (take(n), drop(n))
 
   private[this] def countWhile(p: ((A, B)) => Boolean): Int = {
     var result = 0
-    val it = iterator
+    val it     = iterator
     while (it.hasNext && p(it.next())) result += 1
     result
   }
   override def dropWhile(p: ((A, B)) => Boolean) = drop(countWhile(p))
   override def takeWhile(p: ((A, B)) => Boolean) = take(countWhile(p))
-  override def span(p: ((A, B)) => Boolean) = splitAt(countWhile(p))
+  override def span(p: ((A, B)) => Boolean)      = splitAt(countWhile(p))
 
   /** A factory to create empty maps of the same type of keys.
     */
@@ -157,7 +161,10 @@ class TreeMap[A, +B] private (
     *  @return      a new $coll with the updated bindings
     */
   override def +[B1 >: B](
-      elem1: (A, B1), elem2: (A, B1), elems: (A, B1)*): TreeMap[A, B1] =
+      elem1: (A, B1),
+      elem2: (A, B1),
+      elems: (A, B1)*
+  ): TreeMap[A, B1] =
     this + elem1 + elem2 ++ elems
 
   /** Adds a number of elements provided by a traversable object
@@ -210,7 +217,7 @@ class TreeMap[A, +B] private (
   override def valuesIteratorFrom(start: A): Iterator[B] =
     RB.valuesIterator(tree, Some(start))
 
-  override def contains(key: A): Boolean = RB.contains(tree, key)
+  override def contains(key: A): Boolean    = RB.contains(tree, key)
   override def isDefinedAt(key: A): Boolean = RB.contains(tree, key)
 
   override def foreach[U](f: ((A, B)) => U) = RB.foreach(tree, f)

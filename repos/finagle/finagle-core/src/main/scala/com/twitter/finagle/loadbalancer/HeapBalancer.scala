@@ -3,14 +3,22 @@ package com.twitter.finagle.loadbalancer
 import com.twitter.finagle.service.FailingFactory
 import com.twitter.finagle.stats.{StatsReceiver, NullStatsReceiver}
 import com.twitter.finagle.util.OnReady
-import com.twitter.finagle.{ClientConnection, Group, NoBrokersAvailableException, Service, ServiceFactory, ServiceProxy, Status}
+import com.twitter.finagle.{
+  ClientConnection,
+  Group,
+  NoBrokersAvailableException,
+  Service,
+  ServiceFactory,
+  ServiceProxy,
+  Status
+}
 import com.twitter.util._
 import scala.annotation.tailrec
 import scala.util.Random
 
 object HeapBalancer {
   val Penalty = Int.MaxValue
-  val Zero = Int.MinValue + 1
+  val Zero    = Int.MinValue + 1
 }
 
 /**
@@ -21,15 +29,15 @@ class HeapBalancer[Req, Rep](
     statsReceiver: StatsReceiver,
     emptyException: Throwable,
     rng: Random
-)
-    extends ServiceFactory[Req, Rep] with OnReady {
+) extends ServiceFactory[Req, Rep]
+    with OnReady {
 
   import HeapBalancer._
 
   private[this] val sizeGauge = statsReceiver.addGauge("size") {
     synchronized { size }
   }
-  private[this] val adds = statsReceiver.counter("adds")
+  private[this] val adds    = statsReceiver.counter("adds")
   private[this] val removes = statsReceiver.counter("removes")
 
   // Every underlying ServiceFactory is represented in the
@@ -48,12 +56,12 @@ class HeapBalancer[Req, Rep](
   private[this] var downq: Node = null
 
   private[this] val HeapOps = Heap[Node](
-      Ordering.by(_.load),
-      new Heap.Indexer[Node] {
-        def apply(node: Node, i: Int) {
-          node.index = i
-        }
+    Ordering.by(_.load),
+    new Heap.Indexer[Node] {
+      def apply(node: Node, i: Int) {
+        node.index = i
       }
+    }
   )
   import HeapOps._
 
@@ -64,14 +72,14 @@ class HeapBalancer[Req, Rep](
   //   2. heap.size == size + 1
   private[this] var size = 0
   private[this] var heap = {
-    val heap = new Array[Node](1)
+    val heap    = new Array[Node](1)
     val failExc = new Exception("Invalid heap operation on index 0")
     heap(0) = Node(new FailingFactory(failExc), Zero, 0)
     heap
   }
   private[this] var snap = Set[ServiceFactory[Req, Rep]]()
 
-  private[this] val ready = new Promise[Unit]
+  private[this] val ready   = new Promise[Unit]
   def onReady: Future[Unit] = ready
 
   private[this] val observation =
@@ -111,7 +119,7 @@ class HeapBalancer[Req, Rep](
   }
 
   private[this] def remNode(serviceFactory: ServiceFactory[Req, Rep]) {
-    val i = heap.indexWhere(n => n.factory eq serviceFactory, 1)
+    val i    = heap.indexWhere(n => n.factory eq serviceFactory, 1)
     val node = heap(i)
     swap(heap, i, size)
     fixDown(heap, i, size - 1)
@@ -122,31 +130,32 @@ class HeapBalancer[Req, Rep](
     removes.incr()
   }
 
-  private[this] def put(n: Node) = synchronized {
-    n.load -= 1
-    if (n.index < 0) {
-      // n has already been removed from the group, therefore do nothing
-    } else if (n.load == Zero && size > 1) {
-      // since we know that n is now <= any element in the heap, we
-      // can do interesting stuff without violating the heap
-      // invariant.
+  private[this] def put(n: Node) =
+    synchronized {
+      n.load -= 1
+      if (n.index < 0) {
+        // n has already been removed from the group, therefore do nothing
+      } else if (n.load == Zero && size > 1) {
+        // since we know that n is now <= any element in the heap, we
+        // can do interesting stuff without violating the heap
+        // invariant.
 
-      // remove n from the heap.
-      val i = n.index
-      swap(heap, i, size)
-      fixDown(heap, i, size - 1)
+        // remove n from the heap.
+        val i = n.index
+        swap(heap, i, size)
+        fixDown(heap, i, size - 1)
 
-      // pick a random node with which we can swap n
-      val j = rng.nextInt(size) + 1
-      swap(heap, j, size)
-      fixUp(heap, j)
+        // pick a random node with which we can swap n
+        val j = rng.nextInt(size) + 1
+        swap(heap, j, size)
+        fixUp(heap, j)
 
-      // expand the heap again
-      fixUp(heap, size)
-    } else {
-      fixUp(heap, n.index)
+        // expand the heap again
+        fixUp(heap, size)
+      } else {
+        fixUp(heap, n.index)
+      }
     }
-  }
 
   @tailrec
   private[this] def get(): Node = {
@@ -210,9 +219,7 @@ class HeapBalancer[Req, Rep](
       n
     }
 
-    node.factory(conn) map { new Wrapped(node, _) } onFailure { _ =>
-      put(node)
-    }
+    node.factory(conn) map { new Wrapped(node, _) } onFailure { _ => put(node) }
   }
 
   private[this] val nodesClosable: Closable = Closable.make { deadline =>

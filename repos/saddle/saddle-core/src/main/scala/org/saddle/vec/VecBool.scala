@@ -40,42 +40,52 @@ class VecBool(values: Array[Boolean]) extends Vec[Boolean] { self =>
 
   def unary_-(): Vec[Boolean] = map(!_)
 
-  def concat[B, C](v: Vec[B])(
-      implicit wd: Promoter[Boolean, B, C], mc: ST[C]): Vec[C] =
+  def concat[B, C](
+      v: Vec[B]
+  )(implicit wd: Promoter[Boolean, B, C], mc: ST[C]): Vec[C] =
     Vec(util.Concat.append[Boolean, B, C](toArray, v.toArray))
 
-  def foldLeft[@spec(Boolean, Int, Long, Double) B : ST](init: B)(
-      f: (B, Boolean) => B): B =
+  def foldLeft[@spec(Boolean, Int, Long, Double) B: ST](
+      init: B
+  )(f: (B, Boolean) => B): B =
     VecImpl.foldLeft(this)(init)(f)
 
-  def foldLeftWhile[@spec(Boolean, Int, Long, Double) B : ST](init: B)(
-      f: (B, Boolean) => B)(cond: (B, Boolean) => Boolean): B =
+  def foldLeftWhile[@spec(Boolean, Int, Long, Double) B: ST](
+      init: B
+  )(f: (B, Boolean) => B)(cond: (B, Boolean) => Boolean): B =
     VecImpl.foldLeftWhile(this)(init)(f)(cond)
 
-  def filterFoldLeft[@spec(Boolean, Int, Long, Double) B : ST](
-      pred: (Boolean) => Boolean)(init: B)(f: (B, Boolean) => B): B =
+  def filterFoldLeft[@spec(Boolean, Int, Long, Double) B: ST](
+      pred: (Boolean) => Boolean
+  )(init: B)(f: (B, Boolean) => B): B =
     VecImpl.filterFoldLeft(this)(pred)(init)(f)
 
-  def filterScanLeft[@spec(Boolean, Int, Long, Double) B : ST](
-      pred: (Boolean) => Boolean)(init: B)(f: (B, Boolean) => B): Vec[B] =
+  def filterScanLeft[@spec(Boolean, Int, Long, Double) B: ST](
+      pred: (Boolean) => Boolean
+  )(init: B)(f: (B, Boolean) => B): Vec[B] =
     VecImpl.filterScanLeft(this)(pred)(init)(f)
 
-  def rolling[@spec(Boolean, Int, Long, Double) B : ST](
-      winSz: Int, f: Vec[Boolean] => B): Vec[B] =
+  def rolling[@spec(Boolean, Int, Long, Double) B: ST](
+      winSz: Int,
+      f: Vec[Boolean] => B
+  ): Vec[B] =
     VecImpl.rolling(this)(winSz, f)
 
-  def map[@spec(Boolean, Int, Long, Double) B : ST](f: Boolean => B): Vec[B] =
+  def map[@spec(Boolean, Int, Long, Double) B: ST](f: Boolean => B): Vec[B] =
     VecImpl.map(this)(f)
 
-  def flatMap[@spec(Boolean, Int, Long, Double) B : ST](
-      f: Boolean => Vec[B]): Vec[B] = VecImpl.flatMap(this)(f)
+  def flatMap[@spec(Boolean, Int, Long, Double) B: ST](
+      f: Boolean => Vec[B]
+  ): Vec[B] = VecImpl.flatMap(this)(f)
 
-  def scanLeft[@spec(Boolean, Int, Long, Double) B : ST](init: B)(
-      f: (B, Boolean) => B): Vec[B] = VecImpl.scanLeft(this)(init)(f)
+  def scanLeft[@spec(Boolean, Int, Long, Double) B: ST](init: B)(
+      f: (B, Boolean) => B
+  ): Vec[B] = VecImpl.scanLeft(this)(init)(f)
 
-  def zipMap[@spec(Int, Long, Double) B : ST,
-             @spec(Boolean, Int, Long, Double) C : ST](other: Vec[B])(
-      f: (Boolean, B) => C): Vec[C] =
+  def zipMap[
+      @spec(Int, Long, Double) B: ST,
+      @spec(Boolean, Int, Long, Double) C: ST
+  ](other: Vec[B])(f: (Boolean, B) => C): Vec[C] =
     VecImpl.zipMap(this, other)(f)
 
   def slice(from: Int, until: Int, stride: Int = 1) = {
@@ -93,7 +103,8 @@ class VecBool(values: Array[Boolean]) extends Vec[Boolean] { self =>
           val loc = b + i * stride
           if (loc >= ub)
             throw new ArrayIndexOutOfBoundsException(
-                "Cannot access location %d >= length %d".format(loc, ub))
+              "Cannot access location %d >= length %d".format(loc, ub)
+            )
           self.apply(loc)
         }
 
@@ -115,8 +126,8 @@ class VecBool(values: Array[Boolean]) extends Vec[Boolean] { self =>
         val loc = b + i
         if (loc >= e || loc < b)
           throw new ArrayIndexOutOfBoundsException(
-              "Cannot access location %d (vec length %d)".format(
-                  i, self.length))
+            "Cannot access location %d (vec length %d)".format(i, self.length)
+          )
         else if (loc >= self.length || loc < 0) scalarTag.missing
         else self.apply(loc)
       }
@@ -130,7 +141,7 @@ class VecBool(values: Array[Boolean]) extends Vec[Boolean] { self =>
     if (!needsCopy) values
     else {
       val buf = Array.ofDim[Boolean](length)
-      var i = 0
+      var i   = 0
       while (i < length) {
         buf(i) = apply(i)
         i += 1
@@ -140,26 +151,27 @@ class VecBool(values: Array[Boolean]) extends Vec[Boolean] { self =>
   }
 
   /** Default equality does an iterative, element-wise equality check of all values. */
-  override def equals(o: Any): Boolean = o match {
-    case rv: VecBool =>
-      (this eq rv) || (this.length == rv.length) && {
-        var i = 0
-        var eq = true
-        while (eq && i < this.length) {
-          eq &&= apply(i) == rv(i)
-          i += 1
+  override def equals(o: Any): Boolean =
+    o match {
+      case rv: VecBool =>
+        (this eq rv) || (this.length == rv.length) && {
+          var i  = 0
+          var eq = true
+          while (eq && i < this.length) {
+            eq &&= apply(i) == rv(i)
+            i += 1
+          }
+          eq
         }
-        eq
-      }
-    case _ => super.equals(o)
-  }
+      case _ => super.equals(o)
+    }
 }
 
 private[saddle] object VecBool {
   // indirect counting sort of boolean vector
   def argSort(arr: Array[Boolean]): Array[Int] = {
     val newArr = array.range(0, arr.length)
-    var c = 0
+    var c      = 0
 
     // first pass for false
     var i = 0
@@ -187,8 +199,8 @@ private[saddle] object VecBool {
   // direct sort of boolean vector
   def sort(arr: Array[Boolean]): Array[Boolean] = {
     val newArr = array.empty[Boolean](arr.length)
-    var c = 0
-    var i = 0
+    var c      = 0
+    var i      = 0
 
     // count # false
     while (i < arr.length) {

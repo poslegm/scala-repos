@@ -1,5 +1,5 @@
 final class Foo(val i: Int) extends AnyVal {
-  def foo() = go(i)
+  def foo()                    = go(i)
   private[this] def go(i: Int) = i * 2
 }
 

@@ -19,16 +19,18 @@ trait TypesAPI {
 trait TypesUser extends TypesAPI {
   def shouldNotCrash(tp: Type): Unit = {
     tp match {
-      case TypeRef(x) => println("TypeRef")
+      case TypeRef(x)    => println("TypeRef")
       case MethodType(x) => println("MethodType")
-      case _ => println("none of the above")
+      case _             => println("none of the above")
     }
   }
 }
 
 trait TypesImpl extends TypesAPI {
-  object TypeRef extends TypeRefExtractor // this will have a bridged unapply(x: Type) = unapply(x.asInstanceOf[TypeRef])
-  case class TypeRef(n: Int) extends Type // this has a bridge from TypesAPI#Type to TypesImpl#TypeRef
+  object TypeRef
+      extends TypeRefExtractor // this will have a bridged unapply(x: Type) = unapply(x.asInstanceOf[TypeRef])
+  case class TypeRef(n: Int)
+      extends Type // this has a bridge from TypesAPI#Type to TypesImpl#TypeRef
   // --> the cast in the bridge will fail because the pattern matcher can't type test against the abstract types in TypesUser
 }
 
@@ -52,13 +54,13 @@ trait Intermed extends Foos {
   def crash(bar: Bar): Unit =
     bar match {
       case Foo(x) => println("Foo")
-      case _ => println("Bar")
+      case _      => println("Bar")
     }
 }
 
 object TestUnappStaticallyKnownSynthetic extends TypesImpl with TypesUser {
   def test() = {
-    shouldNotCrash(TypeRef(10)) // prints "TypeRef"
+    shouldNotCrash(TypeRef(10))    // prints "TypeRef"
     shouldNotCrash(MethodType(10)) // prints "MethodType"
   }
 }

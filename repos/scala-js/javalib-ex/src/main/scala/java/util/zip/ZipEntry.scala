@@ -5,13 +5,13 @@ package java.util.zip
 /** Pure Scala implementation of ZipEntry */
 class ZipEntry(private[this] val _name: String) extends Cloneable {
 
-  private[this] var _comment: String = null
-  private[this] var _csize: Long = -1
-  private[this] var _crc: Long = -1
+  private[this] var _comment: String    = null
+  private[this] var _csize: Long        = -1
+  private[this] var _crc: Long          = -1
   private[this] var _extra: Array[Byte] = null
-  private[this] var _method: Int = -1
-  private[this] var _size: Long = -1
-  private[this] var _time: Long = -1
+  private[this] var _method: Int        = -1
+  private[this] var _size: Long         = -1
+  private[this] var _time: Long         = -1
 
   def this(e: ZipEntry) = {
     this(e.getName())
@@ -31,14 +31,14 @@ class ZipEntry(private[this] val _name: String) extends Cloneable {
     result
   }
 
-  def getComment(): String = _comment
+  def getComment(): String      = _comment
   def getCompressedSize(): Long = _csize
-  def getCrc(): Long = _crc
-  def getExtra(): Array[Byte] = _extra
-  def getMethod(): Int = _method
-  def getName(): String = _name
-  def getSize(): Long = _size
-  def getTime(): Long = _time
+  def getCrc(): Long            = _crc
+  def getExtra(): Array[Byte]   = _extra
+  def getMethod(): Int          = _method
+  def getName(): String         = _name
+  def getSize(): Long           = _size
+  def getTime(): Long           = _time
 
   // Strangely, the Javalib defines hashCode, but not equals.
   override def hashCode(): Int = {
@@ -58,12 +58,12 @@ class ZipEntry(private[this] val _name: String) extends Cloneable {
 
   def isDirectory(): Boolean = _name.endsWith("/")
 
-  def setComment(comment: String): Unit = { _comment = comment }
+  def setComment(comment: String): Unit    = { _comment = comment }
   def setCompressedSize(csize: Long): Unit = { _csize = csize }
-  def setCrc(crc: Long): Unit = { _crc = crc }
-  def setExtra(extra: Array[Byte]): Unit = { _extra = extra }
-  def setMethod(method: Int): Unit = { _method = method }
-  def setSize(size: Long): Unit = { _size = size }
-  def setTime(time: Long): Unit = { _time = time }
-  override def toString(): String = _name
+  def setCrc(crc: Long): Unit              = { _crc = crc }
+  def setExtra(extra: Array[Byte]): Unit   = { _extra = extra }
+  def setMethod(method: Int): Unit         = { _method = method }
+  def setSize(size: Long): Unit            = { _size = size }
+  def setTime(time: Long): Unit            = { _time = time }
+  override def toString(): String          = _name
 }

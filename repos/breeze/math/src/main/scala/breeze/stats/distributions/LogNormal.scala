@@ -15,9 +15,10 @@ import scala.math.sqrt
   *
   * @author dlwh
   **/
-case class LogNormal(
-    mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+case class LogNormal(mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   private val myGaussian = Gaussian(mu, sigma)
   require(sigma > 0, "Sigma must be positive, but got " + sigma)
@@ -32,7 +33,7 @@ case class LogNormal(
   def unnormalizedLogPdf(x: Double): Double = {
     if (x <= 0.0) return Double.NegativeInfinity
     val logx = log(x)
-    val rad = (logx - mu) / sigma
+    val rad  = (logx - mu) / sigma
     -(rad * rad / 2) - logx
   }
 
@@ -85,6 +86,7 @@ object LogNormal
   def distribution(p: (Double, Double)) = new LogNormal(p._1, math.sqrt(p._2))
 
   def likelihoodFunction(
-      stats: SufficientStatistic): DiffFunction[(Double, Double)] =
+      stats: SufficientStatistic
+  ): DiffFunction[(Double, Double)] =
     Gaussian.likelihoodFunction(stats)
 }

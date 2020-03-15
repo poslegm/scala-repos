@@ -10,18 +10,18 @@ object Test {
   // Types
 
   type Strings = List[String]
-  type Map = scala.collection.Map[Int, Any]
+  type Map     = scala.collection.Map[Int, Any]
   type HashMap = scala.collection.mutable.HashMap[Int, Any]
   type TreeMap = scala.collection.immutable.TreeMap[Int, Any]
 
   //##########################################################################
   // Identity Functions
 
-  def id_Ta_T[T <: Any](x: T): T = x;
+  def id_Ta_T[T <: Any](x: T): T    = x;
   def id_Tr_T[T <: AnyRef](x: T): T = x;
   def id_To_T[T <: Object](x: T): T = x;
 
-  def id_Ta_a[T <: Any](x: T): Any = x;
+  def id_Ta_a[T <: Any](x: T): Any    = x;
   def id_Tr_a[T <: AnyRef](x: T): Any = x;
   def id_To_a[T <: Object](x: T): Any = x;
 
@@ -30,67 +30,67 @@ object Test {
 
   def id_To_o[T <: Object](x: T): Object = x;
 
-  def id_TSa_T[S <: Any, T <: Array[S]](x: T): T = x;
-  def id_TSv_T[S <: AnyVal, T <: Array[S]](x: T): T = x;
-  def id_TSr_T[S <: AnyRef, T <: Array[S]](x: T): T = x;
-  def id_TSo_T[S <: Object, T <: Array[S]](x: T): T = x;
-  def id_TSm_T[S <: Map, T <: Array[S]](x: T): T = x;
+  def id_TSa_T[S <: Any, T <: Array[S]](x: T): T     = x;
+  def id_TSv_T[S <: AnyVal, T <: Array[S]](x: T): T  = x;
+  def id_TSr_T[S <: AnyRef, T <: Array[S]](x: T): T  = x;
+  def id_TSo_T[S <: Object, T <: Array[S]](x: T): T  = x;
+  def id_TSm_T[S <: Map, T <: Array[S]](x: T): T     = x;
   def id_TSn_T[S <: Strings, T <: Array[S]](x: T): T = x;
 
-  def id_TSa_Ss[S <: Any, T <: Array[S]](x: T): Array[S] = x;
-  def id_TSv_Ss[S <: AnyVal, T <: Array[S]](x: T): Array[S] = x;
-  def id_TSr_Ss[S <: AnyRef, T <: Array[S]](x: T): Array[S] = x;
-  def id_TSo_Ss[S <: Object, T <: Array[S]](x: T): Array[S] = x;
-  def id_TSm_Ss[S <: Map, T <: Array[S]](x: T): Array[S] = x;
+  def id_TSa_Ss[S <: Any, T <: Array[S]](x: T): Array[S]     = x;
+  def id_TSv_Ss[S <: AnyVal, T <: Array[S]](x: T): Array[S]  = x;
+  def id_TSr_Ss[S <: AnyRef, T <: Array[S]](x: T): Array[S]  = x;
+  def id_TSo_Ss[S <: Object, T <: Array[S]](x: T): Array[S]  = x;
+  def id_TSm_Ss[S <: Map, T <: Array[S]](x: T): Array[S]     = x;
   def id_TSn_Ss[S <: Strings, T <: Array[S]](x: T): Array[S] = x;
 
-  def id_TSa_a[S <: Any, T <: Array[S]](x: T): Any = x;
-  def id_TSv_a[S <: AnyVal, T <: Array[S]](x: T): Any = x;
-  def id_TSr_a[S <: AnyRef, T <: Array[S]](x: T): Any = x;
-  def id_TSo_a[S <: Object, T <: Array[S]](x: T): Any = x;
-  def id_TSm_a[S <: Map, T <: Array[S]](x: T): Any = x;
+  def id_TSa_a[S <: Any, T <: Array[S]](x: T): Any     = x;
+  def id_TSv_a[S <: AnyVal, T <: Array[S]](x: T): Any  = x;
+  def id_TSr_a[S <: AnyRef, T <: Array[S]](x: T): Any  = x;
+  def id_TSo_a[S <: Object, T <: Array[S]](x: T): Any  = x;
+  def id_TSm_a[S <: Map, T <: Array[S]](x: T): Any     = x;
   def id_TSn_a[S <: Strings, T <: Array[S]](x: T): Any = x;
 
-  def id_TSa_r[S <: Any, T <: Array[S]](x: T): AnyRef = x;
-  def id_TSv_r[S <: AnyVal, T <: Array[S]](x: T): AnyRef = x;
-  def id_TSr_r[S <: AnyRef, T <: Array[S]](x: T): AnyRef = x;
-  def id_TSo_r[S <: Object, T <: Array[S]](x: T): AnyRef = x;
-  def id_TSm_r[S <: Map, T <: Array[S]](x: T): AnyRef = x;
+  def id_TSa_r[S <: Any, T <: Array[S]](x: T): AnyRef     = x;
+  def id_TSv_r[S <: AnyVal, T <: Array[S]](x: T): AnyRef  = x;
+  def id_TSr_r[S <: AnyRef, T <: Array[S]](x: T): AnyRef  = x;
+  def id_TSo_r[S <: Object, T <: Array[S]](x: T): AnyRef  = x;
+  def id_TSm_r[S <: Map, T <: Array[S]](x: T): AnyRef     = x;
   def id_TSn_r[S <: Strings, T <: Array[S]](x: T): AnyRef = x;
 
-  def id_TSa_o[S <: Any, T <: Array[S]](x: T): Object = x;
-  def id_TSv_o[S <: AnyVal, T <: Array[S]](x: T): Object = x;
-  def id_TSr_o[S <: AnyRef, T <: Array[S]](x: T): Object = x;
-  def id_TSo_o[S <: Object, T <: Array[S]](x: T): Object = x;
-  def id_TSm_o[S <: Map, T <: Array[S]](x: T): Object = x;
+  def id_TSa_o[S <: Any, T <: Array[S]](x: T): Object     = x;
+  def id_TSv_o[S <: AnyVal, T <: Array[S]](x: T): Object  = x;
+  def id_TSr_o[S <: AnyRef, T <: Array[S]](x: T): Object  = x;
+  def id_TSo_o[S <: Object, T <: Array[S]](x: T): Object  = x;
+  def id_TSm_o[S <: Map, T <: Array[S]](x: T): Object     = x;
   def id_TSn_o[S <: Strings, T <: Array[S]](x: T): Object = x;
 
-  def id_Sas_Ss[S <: Any](xs: Array[S]): Array[S] = xs;
-  def id_Svs_Ss[S <: AnyVal](xs: Array[S]): Array[S] = xs;
-  def id_Srs_Ss[S <: AnyRef](xs: Array[S]): Array[S] = xs;
-  def id_Sos_Ss[S <: Object](xs: Array[S]): Array[S] = xs;
-  def id_Sms_Ss[S <: Map](xs: Array[S]): Array[S] = xs;
+  def id_Sas_Ss[S <: Any](xs: Array[S]): Array[S]     = xs;
+  def id_Svs_Ss[S <: AnyVal](xs: Array[S]): Array[S]  = xs;
+  def id_Srs_Ss[S <: AnyRef](xs: Array[S]): Array[S]  = xs;
+  def id_Sos_Ss[S <: Object](xs: Array[S]): Array[S]  = xs;
+  def id_Sms_Ss[S <: Map](xs: Array[S]): Array[S]     = xs;
   def id_Sns_Ss[S <: Strings](xs: Array[S]): Array[S] = xs;
 
-  def id_Sas_a[S <: Any](xs: Array[S]): Any = xs;
-  def id_Svs_a[S <: AnyVal](xs: Array[S]): Any = xs;
-  def id_Srs_a[S <: AnyRef](xs: Array[S]): Any = xs;
-  def id_Sos_a[S <: Object](xs: Array[S]): Any = xs;
-  def id_Sms_a[S <: Map](xs: Array[S]): Any = xs;
+  def id_Sas_a[S <: Any](xs: Array[S]): Any     = xs;
+  def id_Svs_a[S <: AnyVal](xs: Array[S]): Any  = xs;
+  def id_Srs_a[S <: AnyRef](xs: Array[S]): Any  = xs;
+  def id_Sos_a[S <: Object](xs: Array[S]): Any  = xs;
+  def id_Sms_a[S <: Map](xs: Array[S]): Any     = xs;
   def id_Sns_a[S <: Strings](xs: Array[S]): Any = xs;
 
-  def id_Sas_r[S <: Any](xs: Array[S]): AnyRef = xs;
-  def id_Svs_r[S <: AnyVal](xs: Array[S]): AnyRef = xs;
-  def id_Srs_r[S <: AnyRef](xs: Array[S]): AnyRef = xs;
-  def id_Sos_r[S <: Object](xs: Array[S]): AnyRef = xs;
-  def id_Sms_r[S <: Map](xs: Array[S]): AnyRef = xs;
+  def id_Sas_r[S <: Any](xs: Array[S]): AnyRef     = xs;
+  def id_Svs_r[S <: AnyVal](xs: Array[S]): AnyRef  = xs;
+  def id_Srs_r[S <: AnyRef](xs: Array[S]): AnyRef  = xs;
+  def id_Sos_r[S <: Object](xs: Array[S]): AnyRef  = xs;
+  def id_Sms_r[S <: Map](xs: Array[S]): AnyRef     = xs;
   def id_Sns_r[S <: Strings](xs: Array[S]): AnyRef = xs;
 
-  def id_Sas_o[S <: Any](xs: Array[S]): Object = xs;
-  def id_Svs_o[S <: AnyVal](xs: Array[S]): Object = xs;
-  def id_Srs_o[S <: AnyRef](xs: Array[S]): Object = xs;
-  def id_Sos_o[S <: Object](xs: Array[S]): Object = xs;
-  def id_Sms_o[S <: Map](xs: Array[S]): Object = xs;
+  def id_Sas_o[S <: Any](xs: Array[S]): Object     = xs;
+  def id_Svs_o[S <: AnyVal](xs: Array[S]): Object  = xs;
+  def id_Srs_o[S <: AnyRef](xs: Array[S]): Object  = xs;
+  def id_Sos_o[S <: Object](xs: Array[S]): Object  = xs;
+  def id_Sms_o[S <: Map](xs: Array[S]): Object     = xs;
   def id_Sns_o[S <: Strings](xs: Array[S]): Object = xs;
 
   //##########################################################################
@@ -190,54 +190,54 @@ object Test {
   val i2: Int = Int.MinValue;
 
   val l0: Long = Long.MinValue;
-  val l1: Int = 5;
+  val l1: Int  = 5;
   val l2: Long = Long.MaxValue;
 
   val f0: Float = Float.MinValue;
-  val f1: Int = 6;
+  val f1: Int   = 6;
   val f2: Float = Float.MaxValue;
 
   val d0: Double = Double.MinValue;
-  val d1: Int = 7;
+  val d1: Int    = 7;
   val d2: Double = Double.MaxValue;
 
-  val a0: Unit = ();
+  val a0: Unit    = ();
   val a1: Boolean = false;
-  val a2: Int = 0;
-  val a3: Null = null;
-  val a4: String = "a-z";
-  val a5: Symbol = 'token;
+  val a2: Int     = 0;
+  val a3: Null    = null;
+  val a4: String  = "a-z";
+  val a5: Symbol  = 'token;
   val a6: HashMap = new HashMap();
   val a7: TreeMap = scala.collection.immutable.TreeMap.empty[Int, Any];
   val a8: Strings = List("a", "z");
 
-  val v0: Unit = ();
+  val v0: Unit    = ();
   val v1: Boolean = false;
-  val v2: Int = 0;
-  val v3: Long = l2;
-  val v4: Float = f2;
-  val v5: Double = d2;
+  val v2: Int     = 0;
+  val v3: Long    = l2;
+  val v4: Float   = f2;
+  val v5: Double  = d2;
 
-  val r0: Null = a3;
-  val r1: String = a4;
-  val r2: Symbol = a5;
+  val r0: Null    = a3;
+  val r1: String  = a4;
+  val r2: Symbol  = a5;
   val r3: HashMap = a6;
   val r4: TreeMap = a7;
   val r5: Strings = a8;
 
-  val o0: Null = r0;
-  val o1: String = r1;
-  val o2: Symbol = r2;
+  val o0: Null    = r0;
+  val o1: String  = r1;
+  val o2: Symbol  = r2;
   val o3: HashMap = r3;
   val o4: TreeMap = r4;
   val o5: Strings = r5;
 
-  val m0: Null = r0;
+  val m0: Null    = r0;
   val m1: HashMap = r3;
   val m2: TreeMap = r4;
 
-  val n0: Null = r0;
-  val n1: Strings = r5;
+  val n0: Null     = r0;
+  val n1: Strings  = r5;
   val n2: Nil.type = Nil;
 
   //##########################################################################
@@ -342,7 +342,7 @@ object Test {
   // Miscellaneous checks
 
   def checkZip {
-    val zipped = Array("a", "b", "c").zip(Array(1, 2))
+    val zipped   = Array("a", "b", "c").zip(Array(1, 2))
     val expected = Array(("a", 1), ("b", 2))
     check(zipped sameElements expected, zipped.toList, expected.toList)
   }
@@ -357,18 +357,18 @@ object Test {
   //##########################################################################
   // Arrays
 
-  val uarray: Array[Unit] = Array(u0, u1);
+  val uarray: Array[Unit]    = Array(u0, u1);
   val zarray: Array[Boolean] = Array(z0, z1);
-  val barray: Array[Byte] = Array(b0, b1, b2);
-  val sarray: Array[Short] = Array(s0, s1, s2);
-  val carray: Array[Char] = Array(c0, c1, c2);
-  val iarray: Array[Int] = Array(i0, i1, i2);
-  val larray: Array[Long] = Array(l0, l1, l2);
-  val farray: Array[Float] = Array(f0, f1, f2);
-  val darray: Array[Double] = Array(d0, d1, d2);
-  val rarray: Array[AnyRef] = Array(r0, r1, r2, r4, r4, r5);
-  val oarray: Array[Object] = Array(o0, o1, o2, o4, o4, o5);
-  val marray: Array[Map] = Array(m0, m1, m2);
+  val barray: Array[Byte]    = Array(b0, b1, b2);
+  val sarray: Array[Short]   = Array(s0, s1, s2);
+  val carray: Array[Char]    = Array(c0, c1, c2);
+  val iarray: Array[Int]     = Array(i0, i1, i2);
+  val larray: Array[Long]    = Array(l0, l1, l2);
+  val farray: Array[Float]   = Array(f0, f1, f2);
+  val darray: Array[Double]  = Array(d0, d1, d2);
+  val rarray: Array[AnyRef]  = Array(r0, r1, r2, r4, r4, r5);
+  val oarray: Array[Object]  = Array(o0, o1, o2, o4, o4, o5);
+  val marray: Array[Map]     = Array(m0, m1, m2);
   val narray: Array[Strings] = Array(n0, n1, n2);
 
   //##########################################################################
@@ -603,164 +603,176 @@ object Test {
     //######################################################################
 
     ucheck(id_TSa_a[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSa_a[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSa_a[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSa_a[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSa_a[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSa_a[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSa_a[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSa_a[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSa_a[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSa_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
-    rcheck(
-        id_TSa_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSa_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    dcheck(id_TSa_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    rcheck(id_TSa_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSa_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSa_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSa_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSa_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     ucheck(id_TSv_a[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSv_a[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSv_a[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSv_a[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSv_a[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSv_a[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSv_a[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSv_a[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSv_a[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSv_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    dcheck(id_TSv_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
 
-    rcheck(
-        id_TSr_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSr_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSr_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSr_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSr_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSr_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSr_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
-    rcheck(
-        id_TSo_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSo_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSo_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSo_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSo_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSo_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSo_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     mcheck(id_TSm_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
 
-    ncheck(id_TSn_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSn_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     //######################################################################
 
     ucheck(id_TSa_r[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSa_r[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSa_r[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSa_r[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSa_r[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSa_r[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSa_r[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSa_r[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSa_r[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSa_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
-    rcheck(
-        id_TSa_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSa_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    dcheck(id_TSa_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    rcheck(id_TSa_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSa_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSa_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSa_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSa_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     ucheck(id_TSv_r[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSv_r[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSv_r[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSv_r[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSv_r[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSv_r[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSv_r[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSv_r[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSv_r[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSv_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    dcheck(id_TSv_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
 
-    rcheck(
-        id_TSr_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSr_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSr_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSr_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSr_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSr_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSr_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
-    rcheck(
-        id_TSo_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSo_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSo_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSo_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSo_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSo_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSo_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     mcheck(id_TSm_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
 
-    ncheck(id_TSn_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSn_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     //######################################################################
 
     ucheck(id_TSa_o[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSa_o[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSa_o[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSa_o[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSa_o[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSa_o[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSa_o[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSa_o[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSa_o[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSa_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
-    rcheck(
-        id_TSa_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSa_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    dcheck(id_TSa_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    rcheck(id_TSa_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSa_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSa_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSa_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSa_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     ucheck(id_TSv_o[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSv_o[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSv_o[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSv_o[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSv_o[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSv_o[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSv_o[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSv_o[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSv_o[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSv_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    dcheck(id_TSv_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
 
-    rcheck(
-        id_TSr_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSr_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSr_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSr_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSr_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSr_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSr_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
-    rcheck(
-        id_TSo_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSo_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSo_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSo_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSo_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSo_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSo_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     mcheck(id_TSm_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
 
-    ncheck(id_TSn_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSn_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     //######################################################################
 
@@ -805,164 +817,176 @@ object Test {
     //######################################################################
 
     ucheck(id_TSa_a[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSa_a[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSa_a[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSa_a[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSa_a[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSa_a[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSa_a[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSa_a[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSa_a[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSa_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
-    rcheck(
-        id_TSa_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSa_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    dcheck(id_TSa_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    rcheck(id_TSa_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSa_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSa_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSa_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSa_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     ucheck(id_TSv_a[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSv_a[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSv_a[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSv_a[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSv_a[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSv_a[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSv_a[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSv_a[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSv_a[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSv_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    dcheck(id_TSv_a[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
 
-    rcheck(
-        id_TSr_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSr_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSr_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSr_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSr_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSr_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSr_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
-    rcheck(
-        id_TSo_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSo_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSo_a[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSo_a[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSo_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSo_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSo_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     mcheck(id_TSm_a[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
 
-    ncheck(id_TSn_a[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSn_a[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     //######################################################################
 
     ucheck(id_TSa_r[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSa_r[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSa_r[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSa_r[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSa_r[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSa_r[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSa_r[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSa_r[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSa_r[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSa_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
-    rcheck(
-        id_TSa_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSa_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    dcheck(id_TSa_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    rcheck(id_TSa_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSa_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSa_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSa_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSa_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     ucheck(id_TSv_r[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSv_r[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSv_r[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSv_r[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSv_r[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSv_r[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSv_r[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSv_r[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSv_r[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSv_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    dcheck(id_TSv_r[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
 
-    rcheck(
-        id_TSr_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSr_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSr_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSr_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSr_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSr_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSr_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
-    rcheck(
-        id_TSo_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSo_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSo_r[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSo_r[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSo_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSo_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSo_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     mcheck(id_TSm_r[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
 
-    ncheck(id_TSn_r[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSn_r[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     //######################################################################
 
     ucheck(id_TSa_o[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSa_o[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSa_o[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSa_o[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSa_o[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSa_o[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSa_o[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSa_o[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSa_o[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSa_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
-    rcheck(
-        id_TSa_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSa_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    dcheck(id_TSa_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    rcheck(id_TSa_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSa_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSa_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSa_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSa_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     ucheck(id_TSv_o[Unit, Array[Unit]](uarray).asInstanceOf[Array[Unit]]);
-    zcheck(id_TSv_o[Boolean, Array[Boolean]](zarray)
-          .asInstanceOf[Array[Boolean]]);
+    zcheck(
+      id_TSv_o[Boolean, Array[Boolean]](zarray)
+        .asInstanceOf[Array[Boolean]]
+    );
     bcheck(id_TSv_o[Byte, Array[Byte]](barray).asInstanceOf[Array[Byte]]);
     scheck(id_TSv_o[Short, Array[Short]](sarray).asInstanceOf[Array[Short]]);
     ccheck(id_TSv_o[Char, Array[Char]](carray).asInstanceOf[Array[Char]]);
     icheck(id_TSv_o[Int, Array[Int]](iarray).asInstanceOf[Array[Int]]);
     lcheck(id_TSv_o[Long, Array[Long]](larray).asInstanceOf[Array[Long]]);
     fcheck(id_TSv_o[Float, Array[Float]](farray).asInstanceOf[Array[Float]]);
-    dcheck(
-        id_TSv_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
+    dcheck(id_TSv_o[Double, Array[Double]](darray).asInstanceOf[Array[Double]]);
 
-    rcheck(
-        id_TSr_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSr_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSr_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSr_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSr_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSr_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSr_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
-    rcheck(
-        id_TSo_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
-    ocheck(
-        id_TSo_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
+    rcheck(id_TSo_o[AnyRef, Array[AnyRef]](rarray).asInstanceOf[Array[AnyRef]]);
+    ocheck(id_TSo_o[Object, Array[Object]](oarray).asInstanceOf[Array[Object]]);
     mcheck(id_TSo_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
-    ncheck(id_TSo_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSo_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     mcheck(id_TSm_o[Map, Array[Map]](marray).asInstanceOf[Array[Map]]);
 
-    ncheck(id_TSn_o[Strings, Array[Strings]](narray)
-          .asInstanceOf[Array[Strings]]);
+    ncheck(
+      id_TSn_o[Strings, Array[Strings]](narray)
+        .asInstanceOf[Array[Strings]]
+    );
 
     //######################################################################
 

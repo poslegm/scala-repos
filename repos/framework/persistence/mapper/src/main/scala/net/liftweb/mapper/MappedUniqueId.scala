@@ -25,8 +25,9 @@ import scala.xml.NodeSeq
 import net.liftweb.http.js._
 
 abstract class MappedUniqueId[T <: Mapper[T]](
-    override val fieldOwner: T, override val maxLen: Int)
-    extends MappedString[T](fieldOwner, maxLen) {
+    override val fieldOwner: T,
+    override val maxLen: Int
+) extends MappedString[T](fieldOwner, maxLen) {
   override def writePermission_? = false
   override lazy val defaultValue = randomString(maxLen)
 
@@ -41,13 +42,15 @@ abstract class MappedBirthYear[T <: Mapper[T]](owner: T, minAge: Int)
   override def defaultValue = year(now) - minAge
 
   override def _toForm: Box[NodeSeq] = {
-    val end = (year(now) - minAge)
+    val end   = (year(now) - minAge)
     val start = end - 100
     Full(
-        SHtml.selectObj(
-            (start to end).toList.reverse.map(y => (y, y.toString)),
-            Full(get),
-            this.set) % ("id" -> fieldId))
+      SHtml.selectObj(
+        (start to end).toList.reverse.map(y => (y, y.toString)),
+        Full(get),
+        this.set
+      ) % ("id" -> fieldId)
+    )
   }
 }
 
@@ -58,7 +61,7 @@ abstract class MappedGender[T <: Mapper[T]](owner: T)
 
 object Genders extends Enumeration {
 
-  val Male = new I18NGender(1, "male")
+  val Male   = new I18NGender(1, "male")
   val Female = new I18NGender(2, "female")
 
   class I18NGender(id: Int, name: String) extends Val(id, name) {
@@ -69,8 +72,10 @@ object Genders extends Enumeration {
 }
 
 abstract class MappedStringIndex[T <: Mapper[T]](
-    override val fieldOwner: T, override val maxLen: Int)
-    extends MappedUniqueId[T](fieldOwner, maxLen) with IndexedField[String] {
+    override val fieldOwner: T,
+    override val maxLen: Int
+) extends MappedUniqueId[T](fieldOwner, maxLen)
+    with IndexedField[String] {
 
   override def writePermission_? = false // not writable
 
@@ -85,8 +90,8 @@ abstract class MappedStringIndex[T <: Mapper[T]](
   def makeKeyJDBCFriendly(in: String) = in
 
   def convertKey(in: String): Box[String] = Box.legacyNullTest(in)
-  def convertKey(in: Int): Box[String] = Full(in.toString)
-  def convertKey(in: Long): Box[String] = Full(in.toString)
+  def convertKey(in: Int): Box[String]    = Full(in.toString)
+  def convertKey(in: Long): Box[String]   = Full(in.toString)
   def convertKey(in: AnyRef): Box[String] =
     Box.legacyNullTest(in).map(_.toString)
 }

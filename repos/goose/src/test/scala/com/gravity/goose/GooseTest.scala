@@ -33,9 +33,9 @@ class GooseTest {
   @Test
   def badlink() {
     implicit val config = new Configuration
-    val url = "http://nolove888.com/2011/08/13/LINKNOTEXISTS"
-    val goose = new Goose(config)
-    val article = goose.extractContent(url)
+    val url             = "http://nolove888.com/2011/08/13/LINKNOTEXISTS"
+    val goose           = new Goose(config)
+    val article         = goose.extractContent(url)
     assertNull(article.topNode)
   }
 }

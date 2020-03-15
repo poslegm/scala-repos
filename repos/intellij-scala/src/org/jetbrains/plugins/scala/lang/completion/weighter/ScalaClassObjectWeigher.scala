@@ -14,7 +14,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScObject
 class ScalaClassObjectWeigher extends ProximityWeigher {
   def weigh(element: PsiElement, location: ProximityLocation): Comparable[_] = {
     val elem = location.getPosition
-    val ref = PsiTreeUtil.getParentOfType(elem, classOf[ScReferenceElement])
+    val ref  = PsiTreeUtil.getParentOfType(elem, classOf[ScReferenceElement])
     if (ref == null) return null
     element match {
       case o: ScObject =>

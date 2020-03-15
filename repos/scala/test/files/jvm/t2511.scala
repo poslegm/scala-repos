@@ -4,7 +4,7 @@ object Test {
 
   trait IMyMessage extends Serializable {
     @transient var message: String = null
-    var message2: String = null
+    var message2: String           = null
   }
 
   class MyMessage extends IMyMessage
@@ -12,7 +12,7 @@ object Test {
   def serialize = {
     val buf = new ByteArrayOutputStream(10000)
     val out = new ObjectOutputStream(buf)
-    val m = new MyMessage
+    val m   = new MyMessage
     m.message = "foo"
     m.message2 = "bippy"
     out.writeObject(m)
@@ -28,7 +28,8 @@ object Test {
   def main(args: Array[String]) {
     val m = unserialize(serialize)
     // Xcheckinit freaks out here but its nullness is what we're testing
-    try println(m.message) catch {
+    try println(m.message)
+    catch {
       case _: UninitializedFieldError => println("null")
     }
     println(m.message2)

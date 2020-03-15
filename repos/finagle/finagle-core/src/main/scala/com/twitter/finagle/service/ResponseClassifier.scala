@@ -12,7 +12,7 @@ object ResponseClassifier {
     new ResponseClassifier {
       def isDefinedAt(reqRep: ReqRep): Boolean = underlying.isDefinedAt(reqRep)
       def apply(reqRep: ReqRep): ResponseClass = underlying(reqRep)
-      override def toString: String = name
+      override def toString: String            = name
     }
 
   /**

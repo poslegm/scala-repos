@@ -33,7 +33,7 @@ object MultilayerPerceptronClassifierExample {
   def main(args: Array[String]): Unit = {
     val conf =
       new SparkConf().setAppName("MultilayerPerceptronClassifierExample")
-    val sc = new SparkContext(conf)
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
@@ -43,8 +43,8 @@ object MultilayerPerceptronClassifierExample {
       .load("data/mllib/sample_multiclass_classification_data.txt")
     // Split the data into train and test
     val splits = data.randomSplit(Array(0.6, 0.4), seed = 1234L)
-    val train = splits(0)
-    val test = splits(1)
+    val train  = splits(0)
+    val test   = splits(1)
     // specify layers for the neural network:
     // input layer of size 4 (features), two intermediate of size 5 and 4
     // and output of size 3 (classes)
@@ -58,7 +58,7 @@ object MultilayerPerceptronClassifierExample {
     // train the model
     val model = trainer.fit(train)
     // compute precision on the test set
-    val result = model.transform(test)
+    val result              = model.transform(test)
     val predictionAndLabels = result.select("prediction", "label")
     val evaluator =
       new MulticlassClassificationEvaluator().setMetricName("precision")

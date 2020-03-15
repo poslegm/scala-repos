@@ -2,15 +2,14 @@ package com.twitter.util
 
 import scala.reflect.ClassTag
 
-@deprecated(
-    "Use com.google.common.collect.EvictingQueue instead", "2014-10-11")
-class RingBuffer[A : ClassTag](val maxSize: Int) extends Seq[A] {
-  private val array = new Array[A](maxSize)
-  private var read = 0
-  private var write = 0
+@deprecated("Use com.google.common.collect.EvictingQueue instead", "2014-10-11")
+class RingBuffer[A: ClassTag](val maxSize: Int) extends Seq[A] {
+  private val array  = new Array[A](maxSize)
+  private var read   = 0
+  private var write  = 0
   private var count_ = 0
 
-  def length = count_
+  def length        = count_
   override def size = count_
 
   def clear() {
@@ -69,15 +68,16 @@ class RingBuffer[A : ClassTag](val maxSize: Int) extends Seq[A] {
     }
   }
 
-  override def iterator = new Iterator[A] {
-    var idx = 0
-    def hasNext = idx != count_
-    def next = {
-      val res = apply(idx)
-      idx += 1
-      res
+  override def iterator =
+    new Iterator[A] {
+      var idx     = 0
+      def hasNext = idx != count_
+      def next = {
+        val res = apply(idx)
+        idx += 1
+        res
+      }
     }
-  }
 
   override def drop(n: Int): RingBuffer[A] = {
     if (n >= maxSize) clear()
@@ -90,7 +90,7 @@ class RingBuffer[A : ClassTag](val maxSize: Int) extends Seq[A] {
 
   def removeWhere(fn: A => Boolean): Int = {
     var rmCount_ = 0
-    var j = 0
+    var j        = 0
     for (i <- 0 until count_) {
       val elem = apply(i)
       if (fn(elem)) rmCount_ += 1

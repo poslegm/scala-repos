@@ -40,11 +40,11 @@ import SieveUtil._
 case class Siever(chunkSize: Int, cutoff: SafeLong) {
   require(chunkSize % 480 == 0, "chunkSize must be a multiple of 480")
 
-  val arr = BitSet.alloc(chunkSize)
-  var start: SafeLong = SafeLong(0)
-  var limit: SafeLong = start + chunkSize
-  val fastq: FastFactors = FastFactors.empty
-  val slowq: FactorHeap = new FactorHeap
+  val arr                 = BitSet.alloc(chunkSize)
+  var start: SafeLong     = SafeLong(0)
+  var limit: SafeLong     = start + chunkSize
+  val fastq: FastFactors  = FastFactors.empty
+  val slowq: FactorHeap   = new FactorHeap
   var sieve: SieveSegment = SieveSegment(start, arr, cutoff)
   sieve.init(fastq, slowq)
 
@@ -53,14 +53,14 @@ case class Siever(chunkSize: Int, cutoff: SafeLong) {
       throw new IllegalArgumentException("invalid argument: %s" format n)
     if (n == 3) return SafeLong(2)
 
-    var i = 3
-    var k = n - 1
+    var i    = 3
+    var k    = n - 1
     var last = SafeLong(2)
     while (true) {
       val primes = sieve.primes
-      val len = primes.length
+      val len    = primes.length
       if (n - start < len) {
-        var i = 1
+        var i    = 1
         val goal = (n - start).toInt
         while (i < goal) {
           if (primes(i)) last = start + i
@@ -84,7 +84,7 @@ case class Siever(chunkSize: Int, cutoff: SafeLong) {
     var k = n - 1
     while (true) {
       val primes = sieve.primes
-      val len = primes.length
+      val len    = primes.length
       while (i < len) {
         if (primes(i)) {
           k -= 1

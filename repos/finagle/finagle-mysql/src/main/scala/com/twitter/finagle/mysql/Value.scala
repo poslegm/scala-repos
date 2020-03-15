@@ -12,15 +12,15 @@ import java.util.{Calendar, TimeZone}
   * received from a mysql server.
   */
 sealed trait Value
-case class ByteValue(b: Byte) extends Value
-case class ShortValue(s: Short) extends Value
-case class IntValue(i: Int) extends Value
-case class LongValue(l: Long) extends Value
-case class FloatValue(f: Float) extends Value
+case class ByteValue(b: Byte)     extends Value
+case class ShortValue(s: Short)   extends Value
+case class IntValue(i: Int)       extends Value
+case class LongValue(l: Long)     extends Value
+case class FloatValue(f: Float)   extends Value
 case class DoubleValue(d: Double) extends Value
 case class StringValue(s: String) extends Value
-case object EmptyValue extends Value
-case object NullValue extends Value
+case object EmptyValue            extends Value
+case object NullValue             extends Value
 
 /**
   * A RawValue contains the raw bytes that represent
@@ -37,8 +37,7 @@ case class RawValue(
     charset: Short,
     isBinary: Boolean,
     bytes: Array[Byte]
-)
-    extends Value
+) extends Value
 
 /**
   * A type class used for injecting values of a domain type `A` into
@@ -66,8 +65,10 @@ private[mysql] trait Extractable[A] {
   * rows are extracted from database rows into [[java.sql.Timestamp Timestamps]].
   */
 class TimestampValue(
-    val injectionTimeZone: TimeZone, val extractionTimeZone: TimeZone)
-    extends Injectable[Timestamp] with Extractable[Timestamp] {
+    val injectionTimeZone: TimeZone,
+    val extractionTimeZone: TimeZone
+) extends Injectable[Timestamp]
+    with Extractable[Timestamp] {
 
   /**
     * Injects a [[java.sql.Timestamp]] into a
@@ -75,8 +76,8 @@ class TimestampValue(
     */
   def apply(ts: Timestamp): Value = {
     val bytes = new Array[Byte](11)
-    val bw = BufferWriter(bytes)
-    val cal = Calendar.getInstance(injectionTimeZone)
+    val bw    = BufferWriter(bytes)
+    val cal   = Calendar.getInstance(injectionTimeZone)
     cal.setTimeInMillis(ts.getTime)
     bw.writeShort(cal.get(Calendar.YEAR))
     bw.writeByte(cal.get(Calendar.MONTH) + 1) // increment 0 indexed month
@@ -84,7 +85,9 @@ class TimestampValue(
     bw.writeByte(cal.get(Calendar.HOUR_OF_DAY))
     bw.writeByte(cal.get(Calendar.MINUTE))
     bw.writeByte(cal.get(Calendar.SECOND))
-    bw.writeInt(ts.getNanos / 1000) // sub-second part is written as microseconds
+    bw.writeInt(
+      ts.getNanos / 1000
+    ) // sub-second part is written as microseconds
     RawValue(Type.Timestamp, Charset.Binary, true, bytes)
   }
 
@@ -94,27 +97,28 @@ class TimestampValue(
     * Extracts timestamps in `extractionTimeZone` for values encoded in either
     * the binary or text MySQL protocols.
     */
-  def unapply(v: Value): Option[Timestamp] = v match {
-    case RawValue(t, Charset.Binary, false, bytes)
-        if (t == Type.Timestamp || t == Type.DateTime) =>
-      val str = new String(bytes, Charset(Charset.Binary))
-      val ts = fromString(str, extractionTimeZone)
-      Some(ts)
+  def unapply(v: Value): Option[Timestamp] =
+    v match {
+      case RawValue(t, Charset.Binary, false, bytes)
+          if (t == Type.Timestamp || t == Type.DateTime) =>
+        val str = new String(bytes, Charset(Charset.Binary))
+        val ts  = fromString(str, extractionTimeZone)
+        Some(ts)
 
-    case RawValue(t, Charset.Binary, true, bytes)
-        if (t == Type.Timestamp || t == Type.DateTime) =>
-      val ts = fromBytes(bytes, extractionTimeZone)
-      Some(ts)
+      case RawValue(t, Charset.Binary, true, bytes)
+          if (t == Type.Timestamp || t == Type.DateTime) =>
+        val ts = fromBytes(bytes, extractionTimeZone)
+        Some(ts)
 
-    case _ => None
-  }
+      case _ => None
+    }
 
   /**
     * Timestamp object that can appropriately
     * represent MySQL zero Timestamp.
     */
   private[this] object Zero extends Timestamp(0) {
-    override val getTime = 0L
+    override val getTime  = 0L
     override val toString = "0000-00-00 00:00:00"
   }
 
@@ -135,7 +139,7 @@ class TimestampValue(
     }
 
     val parsePosition = new ParsePosition(0)
-    val format = TwitterDateFormat("yyyy-MM-dd HH:mm:ss")
+    val format        = TwitterDateFormat("yyyy-MM-dd HH:mm:ss")
     format.setTimeZone(extractionTimeZone)
     val timeInMillis = format.parse(str, parsePosition).getTime
 
@@ -148,11 +152,11 @@ class TimestampValue(
     object Nanos {
       def unapply(str: String): Option[Int] = {
         str match {
-          case "" => Some(0)
+          case ""                              => Some(0)
           case s: String if !s.startsWith(".") => None
-          case s: String if s.length() > 10 => None
-          case s: String => Some(s.stripPrefix(".").padTo(9, '0').toInt)
-          case _ => None
+          case s: String if s.length() > 10    => None
+          case s: String                       => Some(s.stripPrefix(".").padTo(9, '0').toInt)
+          case _                               => None
         }
       }
     }
@@ -179,13 +183,15 @@ class TimestampValue(
     * @param timeZone The timezone in which to interpret the timestamp.
     */
   private[this] def fromBytes(
-      bytes: Array[Byte], timeZone: TimeZone): Timestamp = {
+      bytes: Array[Byte],
+      timeZone: TimeZone
+  ): Timestamp = {
     if (bytes.isEmpty) {
       return Zero
     }
 
     var year, month, day, hour, min, sec, micro = 0
-    val br = BufferReader(bytes)
+    val br                                      = BufferReader(bytes)
 
     // If the len was not zero, we can strictly
     // expect year, month, and day to be included.
@@ -224,29 +230,30 @@ class TimestampValue(
   * [[com.twitter.finagle.exp.mysql.TimestampValue]].
   */
 @deprecated(
-    "Injects `java.sql.Timestamp`s in local time and extracts them in UTC." +
+  "Injects `java.sql.Timestamp`s in local time and extracts them in UTC." +
     "To use a different time zone, create an instance of " +
     "TimestampValue(InjectionTimeZone, ExtractionTimeZone)",
-    "6.20.2")
+  "6.20.2"
+)
 object TimestampValue
     extends TimestampValue(
-        TimeZone.getDefault(),
-        TimeZone.getTimeZone("UTC")
+      TimeZone.getDefault(),
+      TimeZone.getTimeZone("UTC")
     ) {
   private[this] val log = Logger.getLogger("finagle-mysql")
 
   override def apply(ts: Timestamp): Value = {
     log.warning(
-        "Injecting timezone-less `java.sql.Timestamp` with a hardcoded local timezone (%s)"
-          .format(injectionTimeZone.getID)
+      "Injecting timezone-less `java.sql.Timestamp` with a hardcoded local timezone (%s)"
+        .format(injectionTimeZone.getID)
     )
     super.apply(ts)
   }
 
   override def unapply(v: Value): Option[Timestamp] = {
     log.warning(
-        "Extracting TIMESTAMP or DATETIME row as a `java.sql.Timestamp` with a hardcoded timezone (%s)"
-          .format(extractionTimeZone.getID)
+      "Extracting TIMESTAMP or DATETIME row as a `java.sql.Timestamp` with a hardcoded timezone (%s)"
+        .format(extractionTimeZone.getID)
     )
     super.unapply(v)
   }
@@ -259,8 +266,8 @@ object DateValue extends Injectable[Date] with Extractable[Date] {
     */
   def apply(date: Date): Value = {
     val bytes = new Array[Byte](4)
-    val bw = BufferWriter(bytes)
-    val cal = Calendar.getInstance
+    val bw    = BufferWriter(bytes)
+    val cal   = Calendar.getInstance
     cal.setTimeInMillis(date.getTime)
     bw.writeShort(cal.get(Calendar.YEAR))
     bw.writeByte(cal.get(Calendar.MONTH) + 1) // increment 0 indexed month
@@ -271,23 +278,24 @@ object DateValue extends Injectable[Date] with Extractable[Date] {
   /**
     * Value extractor for java.sql.Date
     */
-  def unapply(v: Value): Option[Date] = v match {
-    case RawValue(Type.Date, Charset.Binary, false, bytes) =>
-      val str = new String(bytes, Charset(Charset.Binary))
-      if (str == Zero.toString) Some(Zero)
-      else Some(Date.valueOf(str))
+  def unapply(v: Value): Option[Date] =
+    v match {
+      case RawValue(Type.Date, Charset.Binary, false, bytes) =>
+        val str = new String(bytes, Charset(Charset.Binary))
+        if (str == Zero.toString) Some(Zero)
+        else Some(Date.valueOf(str))
 
-    case RawValue(Type.Date, Charset.Binary, true, bytes) =>
-      Some(fromBytes(bytes))
-    case _ => None
-  }
+      case RawValue(Type.Date, Charset.Binary, true, bytes) =>
+        Some(fromBytes(bytes))
+      case _ => None
+    }
 
   /**
     * Date object that can appropriately
     * represent MySQL zero Date.
     */
   private[this] object Zero extends Date(0) {
-    override val getTime = 0L
+    override val getTime  = 0L
     override val toString = "0000-00-00"
   }
 
@@ -305,7 +313,7 @@ object DateValue extends Injectable[Date] with Extractable[Date] {
     }
 
     var year, month, day = 0
-    val br = BufferReader(bytes)
+    val br               = BufferReader(bytes)
 
     if (br.readable(4)) {
       year = br.readUnsignedShort()
@@ -323,15 +331,17 @@ object DateValue extends Injectable[Date] with Extractable[Date] {
 }
 
 object BigDecimalValue
-    extends Injectable[BigDecimal] with Extractable[BigDecimal] {
+    extends Injectable[BigDecimal]
+    with Extractable[BigDecimal] {
   def apply(b: BigDecimal): Value = {
     val str = b.toString.getBytes(Charset(Charset.Binary))
     RawValue(Type.NewDecimal, Charset.Binary, true, str)
   }
 
-  def unapply(v: Value): Option[BigDecimal] = v match {
-    case RawValue(Type.NewDecimal, Charset.Binary, _, bytes) =>
-      Some(BigDecimal(new String(bytes, Charset(Charset.Binary))))
-    case _ => None
-  }
+  def unapply(v: Value): Option[BigDecimal] =
+    v match {
+      case RawValue(Type.NewDecimal, Charset.Binary, _, bytes) =>
+        Some(BigDecimal(new String(bytes, Charset(Charset.Binary))))
+      case _ => None
+    }
 }

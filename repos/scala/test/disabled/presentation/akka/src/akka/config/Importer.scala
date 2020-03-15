@@ -7,7 +7,13 @@
   */
 package akka.config
 
-import java.io.{BufferedReader, File, FileInputStream, InputStream, InputStreamReader}
+import java.io.{
+  BufferedReader,
+  File,
+  FileInputStream,
+  InputStream,
+  InputStreamReader
+}
 
 /**
   * An interface for finding config files and reading them into strings for
@@ -23,8 +29,8 @@ trait Importer {
     try {
       val reader = new BufferedReader(new InputStreamReader(in, "UTF-8"))
       val buffer = new Array[Char](BUFFER_SIZE)
-      val sb = new StringBuilder
-      var n = 0
+      val sb     = new StringBuilder
+      var n      = 0
       while (n >= 0) {
         n = reader.read(buffer, 0, buffer.length)
         if (n >= 0) {
@@ -45,7 +51,7 @@ trait Importer {
   */
 class FilesystemImporter(val baseDir: String) extends Importer {
   def importFile(filename: String): String = {
-    val f = new File(filename)
+    val f    = new File(filename)
     val file = if (f.isAbsolute) f else new File(baseDir, filename)
     streamToString(new FileInputStream(file))
   }

@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -19,8 +19,8 @@ package kafka.network
 trait ConnectionConfig {
   val host: String
   val port: Int
-  val sendBufferSize: Int = -1
+  val sendBufferSize: Int    = -1
   val receiveBufferSize: Int = -1
-  val tcpNoDelay = true
-  val keepAlive = false
+  val tcpNoDelay             = true
+  val keepAlive              = false
 }

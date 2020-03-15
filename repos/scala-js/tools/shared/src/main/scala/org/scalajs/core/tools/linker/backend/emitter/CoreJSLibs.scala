@@ -29,41 +29,49 @@ private[scalajs] object CoreJSLibs {
   private val ScalaJSEnvLines = ScalaJSEnvHolder.scalajsenv.split("\n|\r\n?")
 
   private val gitHubBaseURI = new URI(
-      "https://raw.githubusercontent.com/scala-js/scala-js/")
+    "https://raw.githubusercontent.com/scala-js/scala-js/"
+  )
 
   def lib(semantics: Semantics, outputMode: OutputMode): VirtualJSFile = {
     synchronized {
       cachedLibByConfig.getOrElseUpdate(
-          (semantics, outputMode), makeLib(semantics, outputMode))
+        (semantics, outputMode),
+        makeLib(semantics, outputMode)
+      )
     }
   }
 
   private def makeLib(
-      semantics: Semantics, outputMode: OutputMode): VirtualJSFile = {
+      semantics: Semantics,
+      outputMode: OutputMode
+  ): VirtualJSFile = {
     new ScalaJSEnvVirtualJSFile(makeContent(semantics, outputMode))
   }
 
   private def makeContent(
-      semantics: Semantics, outputMode: OutputMode): String = {
+      semantics: Semantics,
+      outputMode: OutputMode
+  ): String = {
     // This is a basic sort-of-C-style preprocessor
 
-    def getOption(name: String): String = name match {
-      case "asInstanceOfs" =>
-        semantics.asInstanceOfs.toString()
-      case "moduleInit" =>
-        semantics.moduleInit.toString()
-      case "floats" =>
-        if (semantics.strictFloats) "Strict"
-        else "Loose"
-      case "productionMode" =>
-        semantics.productionMode.toString()
-      case "outputMode" =>
-        outputMode.toString()
-    }
+    def getOption(name: String): String =
+      name match {
+        case "asInstanceOfs" =>
+          semantics.asInstanceOfs.toString()
+        case "moduleInit" =>
+          semantics.moduleInit.toString()
+        case "floats" =>
+          if (semantics.strictFloats) "Strict"
+          else "Loose"
+        case "productionMode" =>
+          semantics.productionMode.toString()
+        case "outputMode" =>
+          outputMode.toString()
+      }
 
     val originalLines = ScalaJSEnvLines
 
-    var skipping = false
+    var skipping  = false
     var skipDepth = 0
     val lines = for (line <- originalLines) yield {
       val includeThisLine =
@@ -82,7 +90,7 @@ private[scalajs] object CoreJSLibs {
           if (line.startsWith("//!")) {
             if (line.startsWith("//!if ")) {
               val Array(_, option, op, value) = line.split(" ")
-              val optionValue = getOption(option)
+              val optionValue                 = getOption(option)
               val success = op match {
                 case "==" => optionValue == value
                 case "!=" => optionValue != value
@@ -143,9 +151,9 @@ private[scalajs] object CoreJSLibs {
 
   private class ScalaJSEnvVirtualJSFile(override val content: String)
       extends VirtualJSFile {
-    override def path: String = "scalajsenv.js"
+    override def path: String            = "scalajsenv.js"
     override def version: Option[String] = Some("")
-    override def exists: Boolean = true
+    override def exists: Boolean         = true
 
     override def toURI: URI = {
       if (!ScalaJSVersions.currentIsSnapshot)

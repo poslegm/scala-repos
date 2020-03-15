@@ -2,7 +2,10 @@ package org.jetbrains.plugins.scala.codeInspection.types
 
 import com.intellij.codeInspection.LocalInspectionTool
 import org.jetbrains.plugins.scala.codeInspection.typeLambdaSimplify.KindProjectorSimplifyTypeProjectionInspection
-import org.jetbrains.plugins.scala.codeInspection.{InspectionBundle, ScalaLightInspectionFixtureTestAdapter}
+import org.jetbrains.plugins.scala.codeInspection.{
+  InspectionBundle,
+  ScalaLightInspectionFixtureTestAdapter
+}
 import org.jetbrains.plugins.scala.project.settings.ScalaCompilerConfiguration
 
 /**
@@ -31,7 +34,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type A[Beta] = Either[Int, Beta]})#A$END"
     check(code)
     val text = "def a: ({type A[Beta] = Either[Int, Beta]})#A"
-    val res = "def a: Either[Int, ?]"
+    val res  = "def a: Either[Int, ?]"
     testFix(text, res)
   }
 
@@ -39,7 +42,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type L[A, B] = Either[B, A]})#L$END"
     check(code)
     val text = "def a: ({type L[A, B] = Either[B, A]})#L"
-    val res = "def a: Lambda[(A, B) => Either[B, A]] "
+    val res  = "def a: Lambda[(A, B) => Either[B, A]] "
     testFix(text, res)
   }
 
@@ -57,7 +60,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type A[A] = (A, A)})#A$END"
     check(code)
     val text = "def a: ({type A[A] = (A, A)})#A"
-    val res = "def a: Lambda[A => (A, A)]"
+    val res  = "def a: Lambda[A => (A, A)]"
     testFix(text, res)
   }
 
@@ -65,7 +68,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type A[+A, B] = Either[A, Option[B]]})#A$END"
     check(code)
     val text = "def a: ({type A[+A, B] = Either[A, Option[B]]})#A"
-    val res = "def a: Lambda[(`+A`, B) => Either[A, Option[B]]]"
+    val res  = "def a: Lambda[(`+A`, B) => Either[A, Option[B]]]"
     testFix(text, res)
   }
 
@@ -73,7 +76,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type A[A, B[_]] = B[A]})#A$END"
     check(code)
     val text = "def a: ({type A[A, B[_]] = B[A]})#A"
-    val res = "def a: Lambda[(A, B[_]) => B[A]]"
+    val res  = "def a: Lambda[(A, B[_]) => B[A]]"
     testFix(text, res)
   }
 
@@ -81,7 +84,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type B[A <: Any] = (A, A)})#B$END"
     check(code)
     val text = "def a: ({type B[A <: Any] = (A, A)})#B"
-    val res = "def a: Lambda[`A <: Any` => (A, A)]"
+    val res  = "def a: Lambda[`A <: Any` => (A, A)]"
     testFix(text, res)
   }
 
@@ -89,7 +92,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type B[A >: Int <: Any] = (A, A)})#B$END"
     check(code)
     val text = "def a: ({type B[A >: Int <: Any] = (A, A)})#B"
-    val res = "def a: Lambda[`A >: Int <: Any` => (A, A)]"
+    val res  = "def a: Lambda[`A >: Int <: Any` => (A, A)]"
     testFix(text, res)
   }
 
@@ -98,7 +101,7 @@ class KindProjectorSimplifyTypeProjectionTest
       s"def a: $START({type B[-C >: Int, +A <: Any] = (A, A, C)})#B$END"
     check(code)
     val text = "def a: ({type B[-C >: Int, +A <: Any] = (A, A, C)})#B"
-    val res = "def a: Lambda[(`-C >: Int`, `+A <: Any`) => (A, A, C)]"
+    val res  = "def a: Lambda[(`-C >: Int`, `+A <: Any`) => (A, A, C)]"
     testFix(text, res)
   }
 
@@ -127,7 +130,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def a: $START({type R[A] = Tuple2[A, Double]})#R$END"
     check(code)
     val text = "def a: ({type R[A] = Tuple2[A, Double]})#R"
-    val res = "def a: Tuple2[?, Double]"
+    val res  = "def a: Tuple2[?, Double]"
     testFix(text, res)
   }
 
@@ -135,7 +138,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def d: $START({type R[F[_], +B] = Either[F, B]})#R$END"
     check(code)
     val text = "def d: ({type R[F[_], +B] = Either[F, B]})#R"
-    val res = "def d: Either[?[_], +?]"
+    val res  = "def d: Either[?[_], +?]"
     testFix(text, res)
   }
 
@@ -143,7 +146,7 @@ class KindProjectorSimplifyTypeProjectionTest
     val code = s"def w: $START({type R[A <: String] = List[A]})#R$END"
     check(code)
     val text = "def w: ({type R[A <: String] = List[A]})#R"
-    val res = "def w: Lambda[`A <: String` => List[A]]"
+    val res  = "def w: Lambda[`A <: String` => List[A]]"
     testFix(text, res)
   }
 

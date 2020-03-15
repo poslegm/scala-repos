@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -47,7 +47,7 @@ object IndicesHelper {
     val len = buf.size
     if (len == 0) return ()
     var last = buf.get(0)
-    var i = 1
+    var i    = 1
     while (i < len) {
       val z = buf.get(i)
       if (last > z) sys.error("buffer is out-of-order: %s" format buf)
@@ -60,9 +60,11 @@ object IndicesHelper {
 
 import IndicesHelper._
 
-trait IndicesModule[M[+ _]]
-    extends Logging with TransSpecModule
-    with ColumnarTableTypes[M] with SliceTransforms[M] {
+trait IndicesModule[M[+_]]
+    extends Logging
+    with TransSpecModule
+    with ColumnarTableTypes[M]
+    with SliceTransforms[M] {
   self: ColumnarTableModule[M] =>
 
   // we will warn for tables with >1M rows.
@@ -111,7 +113,7 @@ trait IndicesModule[M[+ _]]
       // traditional (lazy) manner.
       var size = 0L
       val slices: List[Slice] = indices.map { sliceIndex =>
-        val rows = sliceIndex.getRowsForKeys(keyIds, keyValues)
+        val rows  = sliceIndex.getRowsForKeys(keyIds, keyValues)
         val slice = sliceIndex.buildSubSlice(rows)
         size += slice.size
         slice
@@ -140,21 +142,25 @@ trait IndicesModule[M[+ _]]
       * Despite being in M, the TableIndex will be eagerly constructed
       * as soon as the underlying slices are available.
       */
-    def createFromTable(table: Table,
-                        groupKeys: Seq[TransSpec1],
-                        valueSpec: TransSpec1): M[TableIndex] = {
+    def createFromTable(
+        table: Table,
+        groupKeys: Seq[TransSpec1],
+        valueSpec: TransSpec1
+    ): M[TableIndex] = {
 
-      def accumulate(buf: mutable.ListBuffer[SliceIndex],
-                     stream: StreamT[M, SliceIndex]): M[TableIndex] =
+      def accumulate(
+          buf: mutable.ListBuffer[SliceIndex],
+          stream: StreamT[M, SliceIndex]
+      ): M[TableIndex] =
         stream.uncons flatMap {
-          case None => M.point(new TableIndex(buf.toList))
+          case None             => M.point(new TableIndex(buf.toList))
           case Some((si, tail)) => { buf += si; accumulate(buf, tail) }
         }
 
       // We are given TransSpec1s; to apply these to slices we need to
       // create SliceTransforms from them.
       val sts = groupKeys.map(composeSliceTransform).toArray
-      val vt = composeSliceTransform(valueSpec)
+      val vt  = composeSliceTransform(valueSpec)
 
       val indices =
         table.slices flatMap { slice =>
@@ -178,7 +184,9 @@ trait IndicesModule[M[+ _]]
       * the table, since it's assumed that all indices have the same
       * value spec.
       */
-    def joinSubTables(tpls: List[(TableIndex, Seq[Int], Seq[RValue])]): Table = {
+    def joinSubTables(
+        tpls: List[(TableIndex, Seq[Int], Seq[RValue])]
+    ): Table = {
 
       // Filter out negative integers. This allows the caller to do
       // arbitrary remapping of their own Seq[RValue] by filtering
@@ -189,10 +197,10 @@ trait IndicesModule[M[+ _]]
             .zip(jvs)
             .filter(_._1 >= 0)
             .unzip
-            (ns2, jvs2)
+          (ns2, jvs2)
       }
 
-      val sll: List[List[SliceIndex]] = tpls.map(_._1.indices)
+      val sll: List[List[SliceIndex]]            = tpls.map(_._1.indices)
       val orderedIndices: List[List[SliceIndex]] = sll.transpose
 
       var size = 0L
@@ -213,13 +221,13 @@ trait IndicesModule[M[+ _]]
   /**
     * Provide fast access to a subslice based on one or more group key
     * values.
-    * 
+    *
     * The SliceIndex currently uses in-memory data structures, although
     * this will have to change eventually. A "group key value" is
     * defined as an (Int, RValue). The Int part corresponds to the key
     * in the sequence of transforms used to build the index, and the
     * RValue part corresponds to the value we want the key to have.
-    * 
+    *
     * SliceIndex is able to create subslices without rescanning the
     * underlying slice due to the fact that it already knows which rows
     * are valid for particular key combinations. For best results
@@ -254,14 +262,16 @@ trait IndicesModule[M[+ _]]
       buildSubTable(getRowsForKeys(keyIds, keyValues))
 
     private def intersectBuffers(
-        as: ArrayIntList, bs: ArrayIntList): ArrayIntList = {
+        as: ArrayIntList,
+        bs: ArrayIntList
+    ): ArrayIntList = {
       //assertSorted(as)
       //assertSorted(bs)
-      var i = 0
-      var j = 0
+      var i    = 0
+      var j    = 0
       val alen = as.size
       val blen = bs.size
-      val out = new ArrayIntList(alen min blen)
+      val out  = new ArrayIntList(alen min blen)
       while (i < alen && j < blen) {
         val a = as.get(i)
         val b = bs.get(j)
@@ -284,13 +294,17 @@ trait IndicesModule[M[+ _]]
       * Returns the rows specified by the given group key values.
       */
     private[table] def getRowsForKeys(
-        keyIds: Seq[Int], keyValues: Seq[RValue]): ArrayIntList = {
+        keyIds: Seq[Int],
+        keyValues: Seq[RValue]
+    ): ArrayIntList = {
       var rows: ArrayIntList =
         dict.getOrElse((keyIds(0), keyValues(0)), emptyBuffer)
       var i: Int = 1
       while (i < keyIds.length && !rows.isEmpty) {
         rows = intersectBuffers(
-            rows, dict.getOrElse((keyIds(i), keyValues(i)), emptyBuffer))
+          rows,
+          dict.getOrElse((keyIds(i), keyValues(i)), emptyBuffer)
+        )
         i += 1
       }
       rows
@@ -306,7 +320,7 @@ trait IndicesModule[M[+ _]]
 
     // we can use this to avoid allocating/remapping empty slices
     private val emptySlice = new Slice {
-      val size = 0
+      val size    = 0
       val columns = Map.empty[ColumnRef, Column]
     }
 
@@ -323,15 +337,16 @@ trait IndicesModule[M[+ _]]
     /**
       * Constructs an empty SliceIndex instance.
       */
-    def empty = new SliceIndex(
+    def empty =
+      new SliceIndex(
         mutable.Map.empty[Int, mutable.Set[RValue]],
         mutable.Map.empty[(Int, RValue), ArrayIntList],
         mutable.Set.empty[Seq[RValue]],
         new Slice {
-          def size = 0
+          def size    = 0
           def columns = Map.empty[ColumnRef, Column]
         }
-    )
+      )
 
     /**
       * Creates a SliceIndex instance given an underlying table, a
@@ -341,23 +356,25 @@ trait IndicesModule[M[+ _]]
       * Despite being in M, the SliceIndex will be eagerly constructed
       * as soon as the underlying Slice is available.
       */
-    def createFromTable(table: Table,
-                        groupKeys: Seq[TransSpec1],
-                        valueSpec: TransSpec1): M[SliceIndex] = {
+    def createFromTable(
+        table: Table,
+        groupKeys: Seq[TransSpec1],
+        valueSpec: TransSpec1
+    ): M[SliceIndex] = {
 
       val sts = groupKeys.map(composeSliceTransform).toArray
-      val vt = composeSliceTransform(valueSpec)
+      val vt  = composeSliceTransform(valueSpec)
 
       table.slices.uncons flatMap {
         case Some((slice, _)) => createFromSlice(slice, sts, vt)
-        case None => M.point(SliceIndex.empty)
+        case None             => M.point(SliceIndex.empty)
       }
     }
 
     /**
       * Given a slice, group key transforms, and a value transform,
       * builds a SliceIndex.
-      * 
+      *
       * This is the heart of the indexing algorithm. We'll assemble a
       * 2D array of RValue (by row/group key) and then do all the work
       * necessary to associate them into the maps and sets we
@@ -366,12 +383,13 @@ trait IndicesModule[M[+ _]]
     private[table] def createFromSlice(
         slice: Slice,
         sts: Array[SliceTransform1[_]],
-        vt: SliceTransform1[_]): M[SliceIndex] = {
+        vt: SliceTransform1[_]
+    ): M[SliceIndex] = {
       val numKeys = sts.length
-      val n = slice.size
-      val vals = mutable.Map.empty[Int, mutable.Set[RValue]]
-      val dict = mutable.Map.empty[(Int, RValue), ArrayIntList]
-      val keyset = mutable.Set.empty[Seq[RValue]]
+      val n       = slice.size
+      val vals    = mutable.Map.empty[Int, mutable.Set[RValue]]
+      val dict    = mutable.Map.empty[(Int, RValue), ArrayIntList]
+      val keyset  = mutable.Set.empty[Seq[RValue]]
 
       readKeys(slice, sts) flatMap { keys =>
         // build empty initial jvalue sets for our group keys
@@ -380,8 +398,8 @@ trait IndicesModule[M[+ _]]
         var i = 0
         while (i < n) {
           var dead = false
-          val row = new Array[RValue](numKeys)
-          var k = 0
+          val row  = new Array[RValue](numKeys)
+          var k    = 0
           while (!dead && k < numKeys) {
             val jv = keys(k)(i)
             if (jv != null) {
@@ -430,8 +448,9 @@ trait IndicesModule[M[+ _]]
       */
     private[table] def readKeys(
         slice: Slice,
-        sts: Array[SliceTransform1[_]]): M[Array[Array[RValue]]] = {
-      val n = slice.size
+        sts: Array[SliceTransform1[_]]
+    ): M[Array[Array[RValue]]] = {
+      val n       = slice.size
       val numKeys = sts.length
 
       val keys: mutable.ArrayBuffer[M[Array[RValue]]] =
@@ -447,20 +466,20 @@ trait IndicesModule[M[+ _]]
 
         keys(k) = st(slice) map {
           case (_, keySlice) => {
-              val arr = new Array[RValue](n)
+            val arr = new Array[RValue](n)
 
-              var i = 0
-              while (i < n) {
-                val rv = keySlice.toRValue(i)
-                rv match {
-                  case CUndefined =>
-                  case rv => arr(i) = rv
-                }
-                i += 1
+            var i = 0
+            while (i < n) {
+              val rv = keySlice.toRValue(i)
+              rv match {
+                case CUndefined =>
+                case rv         => arr(i) = rv
               }
-
-              arr
+              i += 1
             }
+
+            arr
+          }
         }
 
         k += 1
@@ -468,27 +487,27 @@ trait IndicesModule[M[+ _]]
 
       val back = (0 until keys.length)
         .foldLeft(M.point(Vector.fill[Array[RValue]](numKeys)(null))) {
-        case (accM, i) => {
+          case (accM, i) => {
             val arrM = keys(i)
 
-            M.apply2(accM, arrM) { (acc, arr) =>
-              acc.updated(i, arr)
-            }
+            M.apply2(accM, arrM) { (acc, arr) => acc.updated(i, arr) }
           }
-      }
+        }
 
       back map { _.toArray }
     }
 
     private def unionBuffers(
-        as: ArrayIntList, bs: ArrayIntList): ArrayIntList = {
+        as: ArrayIntList,
+        bs: ArrayIntList
+    ): ArrayIntList = {
       //assertSorted(as)
       //assertSorted(bs)
-      var i = 0
-      var j = 0
+      var i    = 0
+      var j    = 0
       val alen = as.size
       val blen = bs.size
-      val out = new ArrayIntList(alen max blen)
+      val out  = new ArrayIntList(alen max blen)
       while (i < alen && j < blen) {
         val a = as.get(i)
         val b = bs.get(j)
@@ -524,7 +543,8 @@ trait IndicesModule[M[+ _]]
       * value spec.
       */
     def joinSubSlices(
-        tpls: List[(SliceIndex, (Seq[Int], Seq[RValue]))]): Slice =
+        tpls: List[(SliceIndex, (Seq[Int], Seq[RValue]))]
+    ): Slice =
       tpls match {
         case Nil =>
           sys.error("empty slice") // FIXME

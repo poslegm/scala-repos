@@ -5,7 +5,7 @@ object Test extends App {
 
   def serialize(obj: AnyRef): Array[Byte] = {
     val buffer = new ByteArrayOutputStream
-    val out = new ObjectOutputStream(buffer)
+    val out    = new ObjectOutputStream(buffer)
     out.writeObject(obj)
     buffer.toByteArray
   }

@@ -19,8 +19,10 @@ import akka.cluster.ddata.LWWMapKey
 object ReplicatedMetrics {
   import akka.cluster.ddata.Replicator._
 
-  def props(measureInterval: FiniteDuration,
-            cleanupInterval: FiniteDuration): Props =
+  def props(
+      measureInterval: FiniteDuration,
+      cleanupInterval: FiniteDuration
+  ): Props =
     Props(new ReplicatedMetrics(measureInterval, cleanupInterval))
 
   def props: Props = props(1.second, 1.minute)
@@ -43,29 +45,39 @@ object ReplicatedMetrics {
 }
 
 class ReplicatedMetrics(
-    measureInterval: FiniteDuration, cleanupInterval: FiniteDuration)
-    extends Actor with ActorLogging {
+    measureInterval: FiniteDuration,
+    cleanupInterval: FiniteDuration
+) extends Actor
+    with ActorLogging {
   import akka.cluster.ddata.Replicator._
   import ReplicatedMetrics._
 
-  val replicator = DistributedData(context.system).replicator
+  val replicator       = DistributedData(context.system).replicator
   implicit val cluster = Cluster(context.system)
-  val node = nodeKey(cluster.selfAddress)
+  val node             = nodeKey(cluster.selfAddress)
 
   val tickTask = context.system.scheduler
     .schedule(measureInterval, measureInterval, self, Tick)(context.dispatcher)
   val cleanupTask = context.system.scheduler.schedule(
-      cleanupInterval, cleanupInterval, self, Cleanup)(context.dispatcher)
+    cleanupInterval,
+    cleanupInterval,
+    self,
+    Cleanup
+  )(context.dispatcher)
   val memoryMBean: MemoryMXBean = ManagementFactory.getMemoryMXBean
 
   val UsedHeapKey = LWWMapKey[Long]("usedHeap")
-  val MaxHeapKey = LWWMapKey[Long]("maxHeap")
+  val MaxHeapKey  = LWWMapKey[Long]("maxHeap")
 
   replicator ! Subscribe(UsedHeapKey, self)
   replicator ! Subscribe(MaxHeapKey, self)
 
   cluster.subscribe(
-      self, InitialStateAsEvents, classOf[MemberUp], classOf[MemberRemoved])
+    self,
+    InitialStateAsEvents,
+    classOf[MemberUp],
+    classOf[MemberRemoved]
+  )
 
   override def postStop(): Unit = {
     tickTask.cancel()
@@ -73,20 +85,21 @@ class ReplicatedMetrics(
     super.postStop()
   }
 
-  var maxHeap = Map.empty[String, Long]
+  var maxHeap        = Map.empty[String, Long]
   var nodesInCluster = Set.empty[String]
 
   def receive = {
     case Tick ⇒
       val heap = memoryMBean.getHeapMemoryUsage
       val used = heap.getUsed
-      val max = heap.getMax
+      val max  = heap.getMax
       replicator ! Update(UsedHeapKey, LWWMap.empty[Long], WriteLocal)(
-          _ + (node -> used))
+        _ + (node -> used)
+      )
       replicator ! Update(MaxHeapKey, LWWMap.empty[Long], WriteLocal) { data ⇒
         data.get(node) match {
           case Some(`max`) ⇒ data // unchanged
-          case _ ⇒ data + (node -> max)
+          case _           ⇒ data + (node -> max)
         }
       }
 
@@ -95,12 +108,13 @@ class ReplicatedMetrics(
 
     case c @ Changed(UsedHeapKey) ⇒
       val usedHeapPercent = UsedHeap(
-          c.get(UsedHeapKey)
-            .entries
-            .collect {
-          case (key, value) if maxHeap.contains(key) ⇒
-            (key -> (value.toDouble / maxHeap(key)) * 100.0)
-        })
+        c.get(UsedHeapKey)
+          .entries
+          .collect {
+            case (key, value) if maxHeap.contains(key) ⇒
+              (key -> (value.toDouble / maxHeap(key)) * 100.0)
+          }
+      )
       log.debug("Node {} observed:\n{}", node, usedHeapPercent)
       context.system.eventStream.publish(usedHeapPercent)
 
@@ -120,8 +134,10 @@ class ReplicatedMetrics(
         }
 
       replicator ! Update(UsedHeapKey, LWWMap.empty[Long], WriteLocal)(
-          cleanupRemoved)
+        cleanupRemoved
+      )
       replicator ! Update(MaxHeapKey, LWWMap.empty[Long], WriteLocal)(
-          cleanupRemoved)
+        cleanupRemoved
+      )
   }
 }

@@ -16,12 +16,12 @@ object IListUsage extends App {
   val ns4 = IList.fromList(List(1, 3, 4))
   val ns5 = IList.fromOption(Some(2))
 
-  // Empty IList 
+  // Empty IList
   val e1 = INil[String]()
   val e2 = IList.empty[String]
 
   // IList is invariant; these won't compile
-  // "abc" :: ns 
+  // "abc" :: ns
   // e1 ++ ns
 
   // You can widen explicitly if you want to accomplish the above
@@ -41,15 +41,15 @@ object IListUsage extends App {
 
   // Destructure with matching
   val s2 = ns match {
-    case INil() => "empty"
+    case INil()      => "empty"
     case ICons(h, t) => "head is %s and tail is %s".format(h, t)
   }
 
   // Same typeclass instances as List
   val xprod = (IList(1, 2) |@| IList(true, false)).tupled
-  val unit = 33.point[IList]
-  val less = IList(1, 2, 3) < IList(1, 2, 4)
-  val trav = IList(1, 2, 3).traverse(_.some)
+  val unit  = 33.point[IList]
+  val less  = IList(1, 2, 3) < IList(1, 2, 4)
+  val trav  = IList(1, 2, 3).traverse(_.some)
 
   // Turn into something more familiar
   val lst = ns.toList

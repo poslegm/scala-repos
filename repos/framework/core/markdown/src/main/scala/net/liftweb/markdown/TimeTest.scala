@@ -64,7 +64,7 @@ object TimeTest {
     val reader = new InputStreamReader(new FileInputStream(path))
     val writer = new StringWriter()
     val buffer = new Array[Char](1024)
-    var read = reader.read(buffer)
+    var read   = reader.read(buffer)
     while (read != -1) {
       writer.write(buffer, 0, read)
       read = reader.read(buffer)
@@ -75,8 +75,8 @@ object TimeTest {
 
   def executionTime[T](f: (() => T)): (Long, T) = {
     val start = System.currentTimeMillis
-    val t = f()
-    val end = System.currentTimeMillis
+    val t     = f()
+    val end   = System.currentTimeMillis
     (end - start, t)
   }
 
@@ -86,8 +86,11 @@ object TimeTest {
 
   def testRun(markdown: String, iterations: Int) {
     println("Running Actuarius " + iterations + " times...")
-    println("... took " +(executionTime(
-            () => runActuarius(markdown, iterations)))._1 + "ms")
+    println(
+      "... took " + (
+        executionTime(() => runActuarius(markdown, iterations))
+      )._1 + "ms"
+    )
   }
 
   object testParser extends BaseParsers {
@@ -113,20 +116,24 @@ object TimeTest {
   }
 
   def runWs = {
-    val wsString = " " * 1000
+    val wsString   = " " * 1000
     val iterations = 100000
     println("Running ws...")
     println(
-        "...took " + executionTime(() =>
-              testParser.runParser(wsString, testParser.ws, iterations))._1 +
-        "ms")
+      "...took " + executionTime(() =>
+        testParser.runParser(wsString, testParser.ws, iterations)
+      )._1 +
+        "ms"
+    )
     //println("Running ws1...")
     //println("...took " + executionTime (() => testParser.runParser(wsString, testParser.ws, iterations)))
     println("Running ws2...")
     println(
-        "...took " + executionTime(() =>
-              testParser.runParser(wsString, testParser.ws2, iterations))._1 +
-        "ms")
+      "...took " + executionTime(() =>
+        testParser.runParser(wsString, testParser.ws2, iterations)
+      )._1 +
+        "ms"
+    )
   }
 
   def main(args: Array[String]) {

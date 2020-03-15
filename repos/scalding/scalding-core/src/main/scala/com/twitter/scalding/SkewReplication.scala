@@ -30,7 +30,10 @@ sealed abstract class SkewReplication {
     * zero.
     */
   def getReplications(
-      leftCount: Int, rightCount: Int, reducers: Int): (Int, Int)
+      leftCount: Int,
+      rightCount: Int,
+      reducers: Int
+  ): (Int, Int)
 }
 
 /**
@@ -40,10 +43,13 @@ case class SkewReplicationA(replicationFactor: Int = 1)
     extends SkewReplication {
 
   override def getReplications(
-      leftCount: Int, rightCount: Int, reducers: Int) = {
+      leftCount: Int,
+      rightCount: Int,
+      reducers: Int
+  ) = {
     val numReducers = if (reducers <= 0) DEFAULT_NUM_REDUCERS else reducers
 
-    val left = scala.math.min(rightCount * replicationFactor, numReducers)
+    val left  = scala.math.min(rightCount * replicationFactor, numReducers)
     val right = scala.math.min(leftCount * replicationFactor, numReducers)
 
     // Keys with sampled counts of zero still need to be kept, so we set their replication to 1.
@@ -55,16 +61,20 @@ case class SkewReplicationA(replicationFactor: Int = 1)
   * See https://github.com/twitter/scalding/pull/229#issuecomment-10792296
   */
 case class SkewReplicationB(
-    maxKeysInMemory: Int = 1E6.toInt, maxReducerOutput: Int = 1E7.toInt)
-    extends SkewReplication {
+    maxKeysInMemory: Int = 1e6.toInt,
+    maxReducerOutput: Int = 1e7.toInt
+) extends SkewReplication {
 
   override def getReplications(
-      leftCount: Int, rightCount: Int, reducers: Int) = {
+      leftCount: Int,
+      rightCount: Int,
+      reducers: Int
+  ) = {
     val numReducers = if (reducers <= 0) DEFAULT_NUM_REDUCERS else reducers
 
     val left = scala.math.max(1, rightCount / maxKeysInMemory)
-    val right = scala.math.min(
-        numReducers, (leftCount * rightCount) / (maxReducerOutput * left))
+    val right = scala.math
+      .min(numReducers, (leftCount * rightCount) / (maxReducerOutput * left))
 
     (left, if (right == 0) 1 else right)
   }

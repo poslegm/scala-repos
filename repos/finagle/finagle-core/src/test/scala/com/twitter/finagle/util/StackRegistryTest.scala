@@ -31,17 +31,21 @@ class StackRegistryTest extends FunSuite {
 
   def newStack() = {
     val stack = new StackBuilder(
-        Stack.Leaf(new Stack.Head {
-      def role: Stack.Role = headRole
-      def description: String = "the head!!"
-      def parameters: Seq[Stack.Param[_]] = Seq(TestParam2.param)
-    }, List(1, 2, 3, 4)))
+      Stack.Leaf(
+        new Stack.Head {
+          def role: Stack.Role                = headRole
+          def description: String             = "the head!!"
+          def parameters: Seq[Stack.Param[_]] = Seq(TestParam2.param)
+        },
+        List(1, 2, 3, 4)
+      )
+    )
     val stackable: Stackable[List[Int]] =
       new Stack.Module1[TestParam, List[Int]] {
         def make(p: TestParam, l: List[Int]): List[Int] = p.p1 :: l
 
         val description: String = "description"
-        val role: Stack.Role = nameRole
+        val role: Stack.Role    = nameRole
       }
     stack.push(stackable)
 
@@ -53,14 +57,14 @@ class StackRegistryTest extends FunSuite {
     val stk = newStack()
     val params =
       Stack.Params.empty + param1 + param.Label("foo") +
-      param.ProtocolLibrary("qux")
+        param.ProtocolLibrary("qux")
     val simple = new SimpleRegistry()
     GlobalRegistry.withRegistry(simple) {
       reg.register("bar", stk, params)
       val expected = {
         Set(
-            Entry(Seq("test", "qux", "foo", "bar", "name", "p1"), "999"),
-            Entry(Seq("test", "qux", "foo", "bar", "head", "p2"), "1")
+          Entry(Seq("test", "qux", "foo", "bar", "name", "p1"), "999"),
+          Entry(Seq("test", "qux", "foo", "bar", "head", "p2"), "1")
         )
       }
       assert(GlobalRegistry.get.toSet == expected)
@@ -72,14 +76,14 @@ class StackRegistryTest extends FunSuite {
     val stk = newStack()
     val params =
       Stack.Params.empty + param1 + param.Label("foo") +
-      param.ProtocolLibrary("qux")
+        param.ProtocolLibrary("qux")
     val simple = new SimpleRegistry()
     GlobalRegistry.withRegistry(simple) {
       reg.register("bar", stk, params)
       val expected = {
         Set(
-            Entry(Seq("test", "qux", "foo", "bar", "name", "p1"), "999"),
-            Entry(Seq("test", "qux", "foo", "bar", "head", "p2"), "1")
+          Entry(Seq("test", "qux", "foo", "bar", "name", "p1"), "999"),
+          Entry(Seq("test", "qux", "foo", "bar", "head", "p2"), "1")
         )
       }
       assert(GlobalRegistry.get.toSet == expected)
@@ -90,19 +94,20 @@ class StackRegistryTest extends FunSuite {
   }
 
   test(
-      "StackRegistry keeps track of the number of GlobalRegistry entries it enters") {
+    "StackRegistry keeps track of the number of GlobalRegistry entries it enters"
+  ) {
     val reg = new StackRegistry { def registryName: String = "test" }
     val stk = newStack()
     val params =
       Stack.Params.empty + param1 + param.Label("foo") +
-      param.ProtocolLibrary("qux")
+        param.ProtocolLibrary("qux")
     val simple = new SimpleRegistry()
     GlobalRegistry.withRegistry(simple) {
       reg.register("bar", stk, params)
       val expected = {
         Set(
-            Entry(Seq("test", "foo", "bar", "name", "p1"), "999"),
-            Entry(Seq("test", "foo", "bar", "head", "p2"), "1")
+          Entry(Seq("test", "foo", "bar", "name", "p1"), "999"),
+          Entry(Seq("test", "foo", "bar", "head", "p2"), "1")
         )
       }
       assert(GlobalRegistry.get.size == reg.size)
@@ -124,7 +129,10 @@ class StackRegistryTest extends FunSuite {
     assert(reg.registeredDuplicates.size == 1)
 
     reg.register(
-        "addr3", stk, Stack.Params.empty + param.Label("somethingelse"))
+      "addr3",
+      stk,
+      Stack.Params.empty + param.Label("somethingelse")
+    )
     assert(reg.registeredDuplicates.size == 1)
   }
 }

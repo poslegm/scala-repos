@@ -27,8 +27,10 @@ private[finagle] object Handshake {
     * than mux `Message` types to more easily allow for features that need to
     * operate on the raw byte frame (e.g. compression, checksums, etc).
     */
-  type Negotiator = (Headers,
-  Transport[ChannelBuffer, ChannelBuffer]) => Transport[Message, Message]
+  type Negotiator = (
+      Headers,
+      Transport[ChannelBuffer, ChannelBuffer]
+  ) => Transport[Message, Message]
 
   /**
     * Returns Some(value) if `key` exists in `headers`, otherwise None.
@@ -61,9 +63,8 @@ private[finagle] object Handshake {
     * A noop negotiator returns a transport that ignores the headers and
     * encodes / decodes mux messages.
     */
-  val NoopNegotiator: Negotiator = (_, trans) =>
-    {
-      trans.map(Message.encode, Message.decode)
+  val NoopNegotiator: Negotiator = (_, trans) => {
+    trans.map(Message.encode, Message.decode)
   }
 
   /**
@@ -119,8 +120,7 @@ private[finagle] object Handshake {
         case Return(true) =>
           msgTrans.write(Message.Tinit(TinitTag, version, headers)).before {
             msgTrans.read().transform {
-              case Return(Message.Rinit(_, v, serverHeaders))
-                  if v == version =>
+              case Return(Message.Rinit(_, v, serverHeaders)) if v == version =>
                 Future(negotiate(serverHeaders, trans))
 
               case Return(Message.Rerr(_, msg)) =>
@@ -142,9 +142,7 @@ private[finagle] object Handshake {
           Future.const(t.cast[Transport[Message, Message]])
       }
 
-    handshake.onFailure { _ =>
-      msgTrans.close()
-    }
+    handshake.onFailure { _ => msgTrans.close() }
     new DeferredTransport(msgTrans, handshake)
   }
 
@@ -179,8 +177,7 @@ private[finagle] object Handshake {
     val handshake: Future[Transport[Message, Message]] =
       msgTrans.read().transform {
         // A Tinit with a matching version
-        case Return(Message.Tinit(tag, ver, clientHeaders))
-            if ver == version =>
+        case Return(Message.Tinit(tag, ver, clientHeaders)) if ver == version =>
           val hdrs = headers(clientHeaders)
           msgTrans.write(Message.Rinit(tag, version, hdrs)).before {
             Future(negotiate(hdrs, trans))
@@ -217,9 +214,7 @@ private[finagle] object Handshake {
         case Throw(_) => Future.value(msgTrans)
       }
 
-    handshake.onFailure { _ =>
-      msgTrans.close()
-    }
+    handshake.onFailure { _ => msgTrans.close() }
     new DeferredTransport(msgTrans, handshake)
   }
 }
@@ -236,8 +231,8 @@ private[finagle] object Handshake {
   */
 private class DeferredTransport(
     init: Transport[Message, Message],
-    underlying: Future[Transport[Message, Message]])
-    extends Transport[Message, Message] {
+    underlying: Future[Transport[Message, Message]]
+) extends Transport[Message, Message] {
 
   // we create a derivative promise while `underlying` is not defined
   // because the transport is multiplexed and interrupting on one
@@ -250,16 +245,17 @@ private class DeferredTransport(
     _.read()
   def read(): Future[Message] = gate().flatMap(read0)
 
-  def status: Status = underlying.poll match {
-    case Some(Return(t)) => t.status
-    case None => Status.Busy
-    case _ => Status.Closed
-  }
+  def status: Status =
+    underlying.poll match {
+      case Some(Return(t)) => t.status
+      case None            => Status.Busy
+      case _               => Status.Closed
+    }
 
   val onClose: Future[Throwable] = gate().flatMap(_.onClose)
 
-  def localAddress: SocketAddress = init.localAddress
-  def remoteAddress: SocketAddress = init.remoteAddress
+  def localAddress: SocketAddress          = init.localAddress
+  def remoteAddress: SocketAddress         = init.remoteAddress
   def peerCertificate: Option[Certificate] = init.peerCertificate
 
   def close(deadline: Time): Future[Unit] = gate().flatMap(_.close(deadline))

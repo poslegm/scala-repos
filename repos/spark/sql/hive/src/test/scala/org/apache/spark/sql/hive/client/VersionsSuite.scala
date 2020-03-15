@@ -26,7 +26,12 @@ import org.apache.spark.{SparkConf, SparkFunSuite}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.catalog._
-import org.apache.spark.sql.catalyst.expressions.{AttributeReference, EqualTo, Literal, NamedExpression}
+import org.apache.spark.sql.catalyst.expressions.{
+  AttributeReference,
+  EqualTo,
+  Literal,
+  NamedExpression
+}
 import org.apache.spark.sql.catalyst.util.quietly
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.IntegerType
@@ -50,25 +55,35 @@ class VersionsSuite extends SparkFunSuite with Logging {
     sys.env
       .get("SPARK_VERSIONS_SUITE_IVY_PATH")
       .orElse(
-          Some(new File(sys.props("java.io.tmpdir"), "hive-ivy-cache").getAbsolutePath))
+        Some(
+          new File(
+            sys.props("java.io.tmpdir"),
+            "hive-ivy-cache"
+          ).getAbsolutePath
+        )
+      )
   }
 
   private def buildConf() = {
     lazy val warehousePath = Utils.createTempDir()
     lazy val metastorePath = Utils.createTempDir()
     metastorePath.delete()
-    Map("javax.jdo.option.ConnectionURL" -> s"jdbc:derby:;databaseName=$metastorePath;create=true",
-        "hive.metastore.warehouse.dir" -> warehousePath.toString)
+    Map(
+      "javax.jdo.option.ConnectionURL" -> s"jdbc:derby:;databaseName=$metastorePath;create=true",
+      "hive.metastore.warehouse.dir"   -> warehousePath.toString
+    )
   }
 
   test("success sanity check") {
     val badClient = IsolatedClientLoader
-      .forVersion(hiveMetastoreVersion = HiveContext.hiveExecutionVersion,
-                  hadoopVersion = VersionInfo.getVersion,
-                  sparkConf = sparkConf,
-                  hadoopConf = new Configuration(),
-                  config = buildConf(),
-                  ivyPath = ivyPath)
+      .forVersion(
+        hiveMetastoreVersion = HiveContext.hiveExecutionVersion,
+        hadoopVersion = VersionInfo.getVersion,
+        sparkConf = sparkConf,
+        hadoopConf = new Configuration(),
+        config = buildConf(),
+        ivyPath = ivyPath
+      )
       .createClient()
     val db = new CatalogDatabase("default", "desc", "loc", Map())
     badClient.createDatabase(db, ignoreIfExists = true)
@@ -78,18 +93,20 @@ class VersionsSuite extends SparkFunSuite with Logging {
     val hadoopConf = new Configuration();
     hadoopConf.set("test", "success")
     val client = IsolatedClientLoader
-      .forVersion(hiveMetastoreVersion = HiveContext.hiveExecutionVersion,
-                  hadoopVersion = VersionInfo.getVersion,
-                  sparkConf = sparkConf,
-                  hadoopConf = hadoopConf,
-                  config = buildConf(),
-                  ivyPath = ivyPath)
+      .forVersion(
+        hiveMetastoreVersion = HiveContext.hiveExecutionVersion,
+        hadoopVersion = VersionInfo.getVersion,
+        sparkConf = sparkConf,
+        hadoopConf = hadoopConf,
+        config = buildConf(),
+        ivyPath = ivyPath
+      )
       .createClient()
     assert("success" === client.getConf("test", null))
   }
 
   private def getNestedMessages(e: Throwable): String = {
-    var causes = ""
+    var causes        = ""
     var lastException = e
     while (lastException != null) {
       causes += lastException.toString + "\n"
@@ -114,17 +131,22 @@ class VersionsSuite extends SparkFunSuite with Logging {
     val e = intercept[Throwable] {
       val badClient = quietly {
         IsolatedClientLoader
-          .forVersion(hiveMetastoreVersion = "13",
-                      hadoopVersion = VersionInfo.getVersion,
-                      sparkConf = sparkConf,
-                      hadoopConf = new Configuration(),
-                      config = buildConf(),
-                      ivyPath = ivyPath)
+          .forVersion(
+            hiveMetastoreVersion = "13",
+            hadoopVersion = VersionInfo.getVersion,
+            sparkConf = sparkConf,
+            hadoopConf = new Configuration(),
+            config = buildConf(),
+            ivyPath = ivyPath
+          )
           .createClient()
       }
     }
     assert(
-        getNestedMessages(e) contains "Unknown column 'A0.OWNER_NAME' in 'field list'")
+      getNestedMessages(
+        e
+      ) contains "Unknown column 'A0.OWNER_NAME' in 'field list'"
+    )
   }
 
   private val versions = Seq("12", "13", "14", "1.0.0", "1.1.0", "1.2.0")
@@ -136,12 +158,14 @@ class VersionsSuite extends SparkFunSuite with Logging {
       client = null
       System.gc() // Hack to avoid SEGV on some JVM versions.
       client = IsolatedClientLoader
-        .forVersion(hiveMetastoreVersion = version,
-                    hadoopVersion = VersionInfo.getVersion,
-                    sparkConf = sparkConf,
-                    hadoopConf = new Configuration(),
-                    config = buildConf(),
-                    ivyPath = ivyPath)
+        .forVersion(
+          hiveMetastoreVersion = version,
+          hadoopVersion = VersionInfo.getVersion,
+          sparkConf = sparkConf,
+          hadoopConf = new Configuration(),
+          config = buildConf(),
+          ivyPath = ivyPath
+        )
         .createClient()
     }
 
@@ -152,21 +176,25 @@ class VersionsSuite extends SparkFunSuite with Logging {
 
     test(s"$version: createTable") {
       val table = CatalogTable(
-          name = TableIdentifier("src", Some("default")),
-          tableType = CatalogTableType.MANAGED_TABLE,
-          schema = Seq(CatalogColumn("key", "int")),
-          storage = CatalogStorageFormat(
-                locationUri = None,
-                inputFormat = Some(classOf[
-                          org.apache.hadoop.mapred.TextInputFormat].getName),
-                outputFormat = Some(
-                      classOf[org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat[
-                              _, _]].getName),
-                serde = Some(classOf[
-                          org.apache.hadoop.hive.serde2.`lazy`.LazySimpleSerDe]
-                        .getName()),
-                serdeProperties = Map.empty
-            ))
+        name = TableIdentifier("src", Some("default")),
+        tableType = CatalogTableType.MANAGED_TABLE,
+        schema = Seq(CatalogColumn("key", "int")),
+        storage = CatalogStorageFormat(
+          locationUri = None,
+          inputFormat =
+            Some(classOf[org.apache.hadoop.mapred.TextInputFormat].getName),
+          outputFormat = Some(
+            classOf[
+              org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat[_, _]
+            ].getName
+          ),
+          serde = Some(
+            classOf[org.apache.hadoop.hive.serde2.`lazy`.LazySimpleSerDe]
+              .getName()
+          ),
+          serdeProperties = Map.empty
+        )
+      )
 
       client.createTable(table, ignoreIfExists = false)
     }
@@ -197,7 +225,8 @@ class VersionsSuite extends SparkFunSuite with Logging {
 
     test(s"$version: create partitioned table DDL") {
       client.runSqlHive(
-          "CREATE TABLE src_part (value INT) PARTITIONED BY (key INT)")
+        "CREATE TABLE src_part (value INT) PARTITIONED BY (key INT)"
+      )
       client.runSqlHive("ALTER TABLE src_part ADD PARTITION (key = '1')")
     }
 
@@ -207,20 +236,28 @@ class VersionsSuite extends SparkFunSuite with Logging {
 
     test(s"$version: getPartitionsByFilter") {
       client.getPartitionsByFilter(
-          client.getTable("default", "src_part"),
-          Seq(EqualTo(AttributeReference("key", IntegerType, false)(
-                          NamedExpression.newExprId),
-                      Literal(1))))
+        client.getTable("default", "src_part"),
+        Seq(
+          EqualTo(
+            AttributeReference("key", IntegerType, false)(
+              NamedExpression.newExprId
+            ),
+            Literal(1)
+          )
+        )
+      )
     }
 
     test(s"$version: loadPartition") {
-      client.loadPartition(emptyDir,
-                           "default.src_part",
-                           partSpec,
-                           false,
-                           false,
-                           false,
-                           false)
+      client.loadPartition(
+        emptyDir,
+        "default.src_part",
+        partSpec,
+        false,
+        false,
+        false,
+        false
+      )
     }
 
     test(s"$version: loadTable") {
@@ -228,19 +265,23 @@ class VersionsSuite extends SparkFunSuite with Logging {
     }
 
     test(s"$version: loadDynamicPartitions") {
-      client.loadDynamicPartitions(emptyDir,
-                                   "default.src_part",
-                                   partSpec,
-                                   false,
-                                   1,
-                                   false,
-                                   false)
+      client.loadDynamicPartitions(
+        emptyDir,
+        "default.src_part",
+        partSpec,
+        false,
+        1,
+        false,
+        false
+      )
     }
 
     test(s"$version: create index and reset") {
       client.runSqlHive("CREATE TABLE indexed_table (key INT)")
-      client.runSqlHive("CREATE INDEX index_1 ON TABLE indexed_table(key) " +
-          "as 'COMPACT' WITH DEFERRED REBUILD")
+      client.runSqlHive(
+        "CREATE INDEX index_1 ON TABLE indexed_table(key) " +
+          "as 'COMPACT' WITH DEFERRED REBUILD"
+      )
       client.reset()
     }
   }

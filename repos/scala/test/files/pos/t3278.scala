@@ -8,8 +8,8 @@ object Test {
   def main(a: Array[String]) {
     val a = new Test
     val f = new Foo
-    a(f) = 1 //works
+    a(f) = 1        //works
     a(f) = a(f) + 1 //works
-    a(f) += 1 //error: reassignment to val
+    a(f) += 1       //error: reassignment to val
   }
 }

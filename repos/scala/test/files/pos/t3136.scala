@@ -1,12 +1,12 @@
 class Type
 class Symbol
 case class PolyType(tps: List[Symbol], res: Type) extends Type
-class OtherType extends Type
+class OtherType                                   extends Type
 
 // case class NullaryMethodType(tp: Type) extends Type
 
 object NullaryMethodType {
-  def apply(resTpe: Type): Type = PolyType(List(), resTpe)
+  def apply(resTpe: Type): Type         = PolyType(List(), resTpe)
   def unapply(tp: Type): Option[(Type)] = None
 }
 

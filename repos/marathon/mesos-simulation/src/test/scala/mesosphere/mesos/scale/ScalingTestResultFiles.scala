@@ -16,7 +16,7 @@ object ScalingTestResultFiles {
 
   def readJson[T](name: String)(implicit reads: Reads[T]): T = {
     val fileString = FileUtils.readFileToString(jsonFile(name))
-    val fileJson = Json.parse(fileString)
+    val fileJson   = Json.parse(fileString)
     Json.fromJson(fileJson).get
   }
 
@@ -24,8 +24,12 @@ object ScalingTestResultFiles {
 
   def addTimestamp(startTime: Long)(value: JsValue): JsObject = {
     value
-      .transform(__.json.update((__ \ relativeTimestampMs).json.put(
-                  JsNumber(System.currentTimeMillis() - startTime))))
+      .transform(
+        __.json.update(
+          (__ \ relativeTimestampMs).json
+            .put(JsNumber(System.currentTimeMillis() - startTime))
+        )
+      )
       .get
   }
 }

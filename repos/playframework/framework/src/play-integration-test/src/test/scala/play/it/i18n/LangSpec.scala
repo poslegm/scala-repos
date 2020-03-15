@@ -11,9 +11,9 @@ class LangSpec extends PlaySpecification {
   "lang spec" should {
     "allow selecting preferred language" in {
       val esEs = Lang("es-ES")
-      val es = Lang("es")
+      val es   = Lang("es")
       val deDe = Lang("de-DE")
-      val de = Lang("de")
+      val de   = Lang("de")
       val enUs = Lang("en-US")
 
       implicit val app = GuiceApplicationBuilder()
@@ -82,11 +82,11 @@ class LangSpec extends PlaySpecification {
 
       "preferred language" in {
         val crhUA = Lang("crh-UA")
-        val crh = Lang("crh")
-        val ber = Lang("ber")
+        val crh   = Lang("crh")
+        val ber   = Lang("ber")
         val berDZ = Lang("ber-DZ")
         val astES = Lang("ast-ES")
-        val ast = Lang("ast")
+        val ast   = Lang("ast")
 
         implicit val app = GuiceApplicationBuilder()
           .configure("play.i18n.langs" -> Seq(crhUA, ber, astES).map(_.code))
@@ -126,17 +126,18 @@ class LangSpec extends PlaySpecification {
       }
 
       "preferred language" in {
-        val enUS = Lang("en-US")
-        val az = Lang("az")
+        val enUS   = Lang("en-US")
+        val az     = Lang("az")
         val azCyrl = Lang("az-Cyrl")
         val azLatn = Lang("az-Latn")
-        val zh = Lang("zh")
+        val zh     = Lang("zh")
         val zhHans = Lang("zh-Hans")
         val zhHant = Lang("zh-Hant")
 
         implicit val app = GuiceApplicationBuilder()
           .configure(
-              "play.i18n.langs" -> Seq(zhHans, zh, azCyrl, enUS).map(_.code))
+            "play.i18n.langs" -> Seq(zhHans, zh, azCyrl, enUS).map(_.code)
+          )
           .build()
         val langs = app.injector.instanceOf[Langs]
 
@@ -161,7 +162,7 @@ class LangSpec extends PlaySpecification {
 }
 
 object trLocaleContext extends org.specs2.mutable.Around {
-  def around[T : org.specs2.execute.AsResult](t: => T) = {
+  def around[T: org.specs2.execute.AsResult](t: => T) = {
     val defaultLocale = java.util.Locale.getDefault
     java.util.Locale.setDefault(new java.util.Locale("tr"))
     val result = org.specs2.execute.AsResult(t)

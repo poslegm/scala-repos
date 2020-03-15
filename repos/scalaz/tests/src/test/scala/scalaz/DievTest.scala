@@ -11,8 +11,8 @@ object DievTest extends SpecLite {
 
   "insert order makes no difference" ! forAll { (list: List[Int]) =>
     {
-      val shuffledList = random.shuffle(list)
-      val dievFromList = list.foldLeft(Diev.empty[Int])(_ + _)
+      val shuffledList         = random.shuffle(list)
+      val dievFromList         = list.foldLeft(Diev.empty[Int])(_ + _)
       val dievFromShuffledList = shuffledList.foldLeft(Diev.empty[Int])(_ + _)
       dievFromList must_=== (dievFromShuffledList)
     }

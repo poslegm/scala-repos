@@ -39,6 +39,7 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class HPosSpec
     extends SFXEnumDelegateSpec[jfxg.HPos, HPos](
-        javaClass = classOf[jfxg.HPos],
-        scalaClass = classOf[HPos],
-        companion = HPos)
+      javaClass = classOf[jfxg.HPos],
+      scalaClass = classOf[HPos],
+      companion = HPos
+    )

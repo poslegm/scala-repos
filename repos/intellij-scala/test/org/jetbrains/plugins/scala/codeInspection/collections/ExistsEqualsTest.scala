@@ -8,12 +8,12 @@ import org.jetbrains.plugins.scala.codeInspection.InspectionBundle
   * 2014-05-06
   */
 class ExistsEqualsTest extends OperationsOnCollectionInspectionTest {
-  val hint = InspectionBundle.message("exists.equals.hint")
+  val hint                = InspectionBundle.message("exists.equals.hint")
   val forallNotEqualsHint = InspectionBundle.message("forall.notEquals.hint")
   def test_1() {
     val selected = s"List(0).${START}exists(x => x == 1)$END"
     check(selected)
-    val text = "List(0).exists(x => x == 1)"
+    val text   = "List(0).exists(x => x == 1)"
     val result = "List(0).contains(1)"
     testFix(text, result, hint)
   }
@@ -21,7 +21,7 @@ class ExistsEqualsTest extends OperationsOnCollectionInspectionTest {
   def test_2() {
     val selected = s"List(0).${START}exists(_ == 1)$END"
     check(selected)
-    val text = "List(0).exists(_ == 1)"
+    val text   = "List(0).exists(_ == 1)"
     val result = "List(0).contains(1)"
     testFix(text, result, hint)
   }
@@ -29,7 +29,7 @@ class ExistsEqualsTest extends OperationsOnCollectionInspectionTest {
   def test_3() {
     val selected = s"List(0) ${START}exists (x => x == 1)$END"
     check(selected)
-    val text = "List(0) exists (x => x == 1)"
+    val text   = "List(0) exists (x => x == 1)"
     val result = "List(0) contains 1"
     testFix(text, result, hint)
   }
@@ -37,7 +37,7 @@ class ExistsEqualsTest extends OperationsOnCollectionInspectionTest {
   def test_4() {
     val selected = s"List(0).${START}exists(1 == _)$END"
     check(selected)
-    val text = "List(0).exists(1 == _)"
+    val text   = "List(0).exists(1 == _)"
     val result = "List(0).contains(1)"
     testFix(text, result, hint)
   }
@@ -60,7 +60,7 @@ class ExistsEqualsTest extends OperationsOnCollectionInspectionTest {
   def testForallNotEquals(): Unit = {
     val selected = s"Seq(1, 2).${START}forall(_ != 2)$END"
     checkTextHasError(selected, forallNotEqualsHint, inspectionClass)
-    val text = "Seq(1, 2).forall(_ != 2)"
+    val text   = "Seq(1, 2).forall(_ != 2)"
     val result = "!Seq(1, 2).contains(2)"
     testFix(text, result, forallNotEqualsHint)
   }

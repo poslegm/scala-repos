@@ -37,10 +37,11 @@ import org.apache.spark.sql.types.{ByteType, DataType, IntegerType, NullType}
   * A place holder for generated SQL for subquery expression.
   */
 case class SubqueryHolder(query: String)
-    extends LeafExpression with Unevaluable {
+    extends LeafExpression
+    with Unevaluable {
   override def dataType: DataType = NullType
-  override def nullable: Boolean = true
-  override def sql: String = s"($query)"
+  override def nullable: Boolean  = true
+  override def sql: String        = s"($query)"
 }
 
 /**
@@ -51,8 +52,10 @@ case class SubqueryHolder(query: String)
   */
 class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     extends Logging {
-  require(logicalPlan.resolved,
-          "SQLBuilder only supports resolved logical query plans")
+  require(
+    logicalPlan.resolved,
+    "SQLBuilder only supports resolved logical query plans"
+  )
 
   def this(df: DataFrame) = this(df.queryExecution.analyzed, df.sqlContext)
 
@@ -62,8 +65,8 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
 
   def toSQL: String = {
     val canonicalizedPlan = Canonicalizer.execute(logicalPlan)
-    val outputNames = logicalPlan.output.map(_.name)
-    val qualifiers = logicalPlan.output.flatMap(_.qualifiers).distinct
+    val outputNames       = logicalPlan.output.map(_.name)
+    val qualifiers        = logicalPlan.output.flatMap(_.qualifiers).distinct
 
     // Keep the qualifier information by using it as sub-query name, if there is only one qualifier
     // present.
@@ -79,8 +82,8 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     val aliasedOutput = canonicalizedPlan.output.zip(outputNames).map {
       case (attr, name) => Alias(attr.withQualifiers(Nil), name)()
     }
-    val finalPlan = Project(
-        aliasedOutput, SubqueryAlias(finalName, canonicalizedPlan))
+    val finalPlan =
+      Project(aliasedOutput, SubqueryAlias(finalName, canonicalizedPlan))
 
     try {
       val replaced = finalPlan.transformAllExpressions {
@@ -88,7 +91,7 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
           SubqueryHolder(new SQLBuilder(e.query, sqlContext).toSQL)
         case e: NonSQLExpression =>
           throw new UnsupportedOperationException(
-              s"Expression $e doesn't have a SQL representation"
+            s"Expression $e doesn't have a SQL representation"
           )
         case e => e
       }
@@ -117,97 +120,105 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     }
   }
 
-  private def toSQL(node: LogicalPlan): String = node match {
-    case Distinct(p: Project) =>
-      projectToSQL(p, isDistinct = true)
+  private def toSQL(node: LogicalPlan): String =
+    node match {
+      case Distinct(p: Project) =>
+        projectToSQL(p, isDistinct = true)
 
-    case p: Project =>
-      projectToSQL(p, isDistinct = false)
+      case p: Project =>
+        projectToSQL(p, isDistinct = false)
 
-    case a @ Aggregate(_, _, e @ Expand(_, _, p: Project))
-        if isGroupingSet(a, e, p) =>
-      groupingSetToSQL(a, e, p)
+      case a @ Aggregate(_, _, e @ Expand(_, _, p: Project))
+          if isGroupingSet(a, e, p) =>
+        groupingSetToSQL(a, e, p)
 
-    case p: Aggregate =>
-      aggregateToSQL(p)
+      case p: Aggregate =>
+        aggregateToSQL(p)
 
-    case w: Window =>
-      windowToSQL(w)
+      case w: Window =>
+        windowToSQL(w)
 
-    case g: Generate =>
-      generateToSQL(g)
+      case g: Generate =>
+        generateToSQL(g)
 
-    case Limit(limitExpr, child) =>
-      s"${toSQL(child)} LIMIT ${limitExpr.sql}"
+      case Limit(limitExpr, child) =>
+        s"${toSQL(child)} LIMIT ${limitExpr.sql}"
 
-    case Filter(condition, child) =>
-      val whereOrHaving = child match {
-        case _: Aggregate => "HAVING"
-        case _ => "WHERE"
-      }
-      build(toSQL(child), whereOrHaving, condition.sql)
+      case Filter(condition, child) =>
+        val whereOrHaving = child match {
+          case _: Aggregate => "HAVING"
+          case _            => "WHERE"
+        }
+        build(toSQL(child), whereOrHaving, condition.sql)
 
-    case p @ Distinct(u: Union) if u.children.length > 1 =>
-      val childrenSql = u.children.map(c => s"(${toSQL(c)})")
-      childrenSql.mkString(" UNION DISTINCT ")
+      case p @ Distinct(u: Union) if u.children.length > 1 =>
+        val childrenSql = u.children.map(c => s"(${toSQL(c)})")
+        childrenSql.mkString(" UNION DISTINCT ")
 
-    case p: Union if p.children.length > 1 =>
-      val childrenSql = p.children.map(c => s"(${toSQL(c)})")
-      childrenSql.mkString(" UNION ALL ")
+      case p: Union if p.children.length > 1 =>
+        val childrenSql = p.children.map(c => s"(${toSQL(c)})")
+        childrenSql.mkString(" UNION ALL ")
 
-    case p: Intersect =>
-      build("(" + toSQL(p.left), ") INTERSECT (", toSQL(p.right) + ")")
+      case p: Intersect =>
+        build("(" + toSQL(p.left), ") INTERSECT (", toSQL(p.right) + ")")
 
-    case p: Except =>
-      build("(" + toSQL(p.left), ") EXCEPT (", toSQL(p.right) + ")")
+      case p: Except =>
+        build("(" + toSQL(p.left), ") EXCEPT (", toSQL(p.right) + ")")
 
-    case p: SubqueryAlias => build("(" + toSQL(p.child) + ")", "AS", p.alias)
+      case p: SubqueryAlias => build("(" + toSQL(p.child) + ")", "AS", p.alias)
 
-    case p: Join =>
-      build(toSQL(p.left),
-            p.joinType.sql,
-            "JOIN",
-            toSQL(p.right),
-            p.condition.map(" ON " + _.sql).getOrElse(""))
+      case p: Join =>
+        build(
+          toSQL(p.left),
+          p.joinType.sql,
+          "JOIN",
+          toSQL(p.right),
+          p.condition.map(" ON " + _.sql).getOrElse("")
+        )
 
-    case SQLTable(database, table, _, sample) =>
-      val qualifiedName =
-        s"${quoteIdentifier(database)}.${quoteIdentifier(table)}"
-      sample.map {
-        case (lowerBound, upperBound) =>
-          val fraction =
-            math.min(100, math.max(0, (upperBound - lowerBound) * 100))
-          qualifiedName + " TABLESAMPLE(" + fraction + " PERCENT)"
-      }.getOrElse(qualifiedName)
+      case SQLTable(database, table, _, sample) =>
+        val qualifiedName =
+          s"${quoteIdentifier(database)}.${quoteIdentifier(table)}"
+        sample
+          .map {
+            case (lowerBound, upperBound) =>
+              val fraction =
+                math.min(100, math.max(0, (upperBound - lowerBound) * 100))
+              qualifiedName + " TABLESAMPLE(" + fraction + " PERCENT)"
+          }
+          .getOrElse(qualifiedName)
 
-    case Sort(orders, _, RepartitionByExpression(partitionExprs, child, _))
-        if orders.map(_.child) == partitionExprs =>
-      build(
-          toSQL(child), "CLUSTER BY", partitionExprs.map(_.sql).mkString(", "))
+      case Sort(orders, _, RepartitionByExpression(partitionExprs, child, _))
+          if orders.map(_.child) == partitionExprs =>
+        build(
+          toSQL(child),
+          "CLUSTER BY",
+          partitionExprs.map(_.sql).mkString(", ")
+        )
 
-    case p: Sort =>
-      build(
+      case p: Sort =>
+        build(
           toSQL(p.child),
           if (p.global) "ORDER BY" else "SORT BY",
           p.order.map(_.sql).mkString(", ")
-      )
+        )
 
-    case p: RepartitionByExpression =>
-      build(
+      case p: RepartitionByExpression =>
+        build(
           toSQL(p.child),
           "DISTRIBUTE BY",
           p.partitionExpressions.map(_.sql).mkString(", ")
-      )
+        )
 
-    case p: ScriptTransformation =>
-      scriptTransformationToSQL(p)
+      case p: ScriptTransformation =>
+        scriptTransformationToSQL(p)
 
-    case OneRowRelation =>
-      ""
+      case OneRowRelation =>
+        ""
 
-    case _ =>
-      throw new UnsupportedOperationException(s"unsupported plan $node")
-  }
+      case _ =>
+        throw new UnsupportedOperationException(s"unsupported plan $node")
+    }
 
   /**
     * Turns a bunch of string segments into a single string and separate each segment by a space.
@@ -219,48 +230,52 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
 
   private def projectToSQL(plan: Project, isDistinct: Boolean): String = {
     build(
-        "SELECT",
-        if (isDistinct) "DISTINCT" else "",
-        plan.projectList.map(_.sql).mkString(", "),
-        if (plan.child == OneRowRelation) "" else "FROM",
-        toSQL(plan.child)
+      "SELECT",
+      if (isDistinct) "DISTINCT" else "",
+      plan.projectList.map(_.sql).mkString(", "),
+      if (plan.child == OneRowRelation) "" else "FROM",
+      toSQL(plan.child)
     )
   }
 
   private def scriptTransformationToSQL(plan: ScriptTransformation): String = {
     val ioSchema = plan.ioschema.asInstanceOf[HiveScriptIOSchema]
     val inputRowFormatSQL = ioSchema.inputRowFormatSQL.getOrElse(
-        throw new UnsupportedOperationException(
-            s"unsupported row format ${ioSchema.inputRowFormat}"))
+      throw new UnsupportedOperationException(
+        s"unsupported row format ${ioSchema.inputRowFormat}"
+      )
+    )
     val outputRowFormatSQL = ioSchema.outputRowFormatSQL.getOrElse(
-        throw new UnsupportedOperationException(
-            s"unsupported row format ${ioSchema.outputRowFormat}"))
+      throw new UnsupportedOperationException(
+        s"unsupported row format ${ioSchema.outputRowFormat}"
+      )
+    )
 
-    val outputSchema = plan.output.map { attr =>
-      s"${attr.sql} ${attr.dataType.simpleString}"
-    }.mkString(", ")
+    val outputSchema = plan.output
+      .map { attr => s"${attr.sql} ${attr.dataType.simpleString}" }
+      .mkString(", ")
 
     build(
-        "SELECT TRANSFORM",
-        "(" + plan.input.map(_.sql).mkString(", ") + ")",
-        inputRowFormatSQL,
-        s"USING \'${plan.script}\'",
-        "AS (" + outputSchema + ")",
-        outputRowFormatSQL,
-        if (plan.child == OneRowRelation) "" else "FROM",
-        toSQL(plan.child)
+      "SELECT TRANSFORM",
+      "(" + plan.input.map(_.sql).mkString(", ") + ")",
+      inputRowFormatSQL,
+      s"USING \'${plan.script}\'",
+      "AS (" + outputSchema + ")",
+      outputRowFormatSQL,
+      if (plan.child == OneRowRelation) "" else "FROM",
+      toSQL(plan.child)
     )
   }
 
   private def aggregateToSQL(plan: Aggregate): String = {
     val groupingSQL = plan.groupingExpressions.map(_.sql).mkString(", ")
     build(
-        "SELECT",
-        plan.aggregateExpressions.map(_.sql).mkString(", "),
-        if (plan.child == OneRowRelation) "" else "FROM",
-        toSQL(plan.child),
-        if (groupingSQL.isEmpty) "" else "GROUP BY",
-        groupingSQL
+      "SELECT",
+      plan.aggregateExpressions.map(_.sql).mkString(", "),
+      if (plan.child == OneRowRelation) "" else "FROM",
+      toSQL(plan.child),
+      if (groupingSQL.isEmpty) "" else "GROUP BY",
+      groupingSQL
     )
   }
 
@@ -291,30 +306,36 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     // An concrete example: "tbl LATERAL VIEW EXPLODE(map_col) sub_q AS key, value", and the builder
     // will put it in FROM clause later.
     build(
-        childSQL,
-        "LATERAL VIEW",
-        if (g.outer) "OUTER" else "",
-        g.generator.sql,
-        newSubqueryName(),
-        "AS",
-        columnAliases
+      childSQL,
+      "LATERAL VIEW",
+      if (g.outer) "OUTER" else "",
+      g.generator.sql,
+      newSubqueryName(),
+      "AS",
+      columnAliases
     )
   }
 
   private def sameOutput(
-      output1: Seq[Attribute], output2: Seq[Attribute]): Boolean =
+      output1: Seq[Attribute],
+      output2: Seq[Attribute]
+  ): Boolean =
     output1.size == output2.size &&
-    output1.zip(output2).forall(pair => pair._1.semanticEquals(pair._2))
+      output1.zip(output2).forall(pair => pair._1.semanticEquals(pair._2))
 
   private def isGroupingSet(a: Aggregate, e: Expand, p: Project): Boolean = {
     assert(a.child == e && e.child == p)
     a.groupingExpressions.forall(_.isInstanceOf[Attribute]) && sameOutput(
-        e.output,
-        p.child.output ++ a.groupingExpressions.map(_.asInstanceOf[Attribute]))
+      e.output,
+      p.child.output ++ a.groupingExpressions.map(_.asInstanceOf[Attribute])
+    )
   }
 
   private def groupingSetToSQL(
-      agg: Aggregate, expand: Expand, project: Project): String = {
+      agg: Aggregate,
+      expand: Expand,
+      project: Project
+  ): String = {
     assert(agg.groupingExpressions.length > 1)
 
     // The last column of Expand is always grouping ID
@@ -360,10 +381,15 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
           case ar: AttributeReference if groupByAttrMap.contains(ar) =>
             groupByAttrMap(ar)
           case a @ Cast(
-              BitwiseAnd(ShiftRight(ar: AttributeReference,
-                                    Literal(value: Any, IntegerType)),
-                         Literal(1, IntegerType)),
-              ByteType) if ar == gid =>
+                BitwiseAnd(
+                  ShiftRight(
+                    ar: AttributeReference,
+                    Literal(value: Any, IntegerType)
+                  ),
+                  Literal(1, IntegerType)
+                ),
+                ByteType
+              ) if ar == gid =>
             // for converting an expression to its original SQL format grouping(col)
             val idx = groupByExprs.length - 1 - value.asInstanceOf[Int]
             groupByExprs.lift(idx).map(Grouping).getOrElse(a)
@@ -375,27 +401,27 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
           // aggregate expression won't change the output, i.e. exprId and alias name should remain
           // the same.
           case ne: NamedExpression if ne.exprId == aggExpr.exprId => ne
-          case e => Alias(e, normalizedName(aggExpr))(exprId = aggExpr.exprId)
+          case e                                                  => Alias(e, normalizedName(aggExpr))(exprId = aggExpr.exprId)
         }
     }
 
     build(
-        "SELECT",
-        aggExprs.map(_.sql).mkString(", "),
-        if (agg.child == OneRowRelation) "" else "FROM",
-        toSQL(project.child),
-        "GROUP BY",
-        groupingSQL,
-        groupingSetSQL
+      "SELECT",
+      aggExprs.map(_.sql).mkString(", "),
+      if (agg.child == OneRowRelation) "" else "FROM",
+      toSQL(project.child),
+      "GROUP BY",
+      groupingSQL,
+      groupingSetSQL
     )
   }
 
   private def windowToSQL(w: Window): String = {
     build(
-        "SELECT",
-        (w.child.output ++ w.windowExpressions).map(_.sql).mkString(", "),
-        if (w.child == OneRowRelation) "" else "FROM",
-        toSQL(w.child)
+      "SELECT",
+      (w.child.output ++ w.windowExpressions).map(_.sql).mkString(", "),
+      if (w.child == OneRowRelation) "" else "FROM",
+      toSQL(w.child)
     )
   }
 
@@ -403,67 +429,78 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     "gen_attr_" + n.exprId.id
 
   object Canonicalizer extends RuleExecutor[LogicalPlan] {
-    override protected def batches: Seq[Batch] = Seq(
-        Batch("Prepare",
-              FixedPoint(100),
-              // The `WidenSetOperationTypes` analysis rule may introduce extra `Project`s over
-              // `Aggregate`s to perform type casting.  This rule merges these `Project`s into
-              // `Aggregate`s.
-              CollapseProject,
-              // Parser is unable to parse the following query:
-              // SELECT  `u_1`.`id`
-              // FROM (((SELECT  `t0`.`id` FROM `default`.`t0`)
-              // UNION ALL (SELECT  `t0`.`id` FROM `default`.`t0`))
-              // UNION ALL (SELECT  `t0`.`id` FROM `default`.`t0`)) AS u_1
-              // This rule combine adjacent Unions together so we can generate flat UNION ALL SQL string.
-              CombineUnions),
-        Batch("Recover Scoping Info",
-              Once,
-              // A logical plan is allowed to have same-name outputs with different qualifiers(e.g. the
-              // `Join` operator). However, this kind of plan can't be put under a sub query as we will
-              // erase and assign a new qualifier to all outputs and make it impossible to distinguish
-              // same-name outputs. This rule renames all attributes, to guarantee different
-              // attributes(with different exprId) always have different names. It also removes all
-              // qualifiers, as attributes have unique names now and we don't need qualifiers to resolve
-              // ambiguity.
-              NormalizedAttribute,
-              // Our analyzer will add one or more sub-queries above table relation, this rule removes
-              // these sub-queries so that next rule can combine adjacent table relation and sample to
-              // SQLTable.
-              RemoveSubqueriesAboveSQLTable,
-              // Finds the table relations and wrap them with `SQLTable`s.  If there are any `Sample`
-              // operators on top of a table relation, merge the sample information into `SQLTable` of
-              // that table relation, as we can only convert table sample to standard SQL string.
-              ResolveSQLTable,
-              // Insert sub queries on top of operators that need to appear after FROM clause.
-              AddSubquery)
-    )
+    override protected def batches: Seq[Batch] =
+      Seq(
+        Batch(
+          "Prepare",
+          FixedPoint(100),
+          // The `WidenSetOperationTypes` analysis rule may introduce extra `Project`s over
+          // `Aggregate`s to perform type casting.  This rule merges these `Project`s into
+          // `Aggregate`s.
+          CollapseProject,
+          // Parser is unable to parse the following query:
+          // SELECT  `u_1`.`id`
+          // FROM (((SELECT  `t0`.`id` FROM `default`.`t0`)
+          // UNION ALL (SELECT  `t0`.`id` FROM `default`.`t0`))
+          // UNION ALL (SELECT  `t0`.`id` FROM `default`.`t0`)) AS u_1
+          // This rule combine adjacent Unions together so we can generate flat UNION ALL SQL string.
+          CombineUnions
+        ),
+        Batch(
+          "Recover Scoping Info",
+          Once,
+          // A logical plan is allowed to have same-name outputs with different qualifiers(e.g. the
+          // `Join` operator). However, this kind of plan can't be put under a sub query as we will
+          // erase and assign a new qualifier to all outputs and make it impossible to distinguish
+          // same-name outputs. This rule renames all attributes, to guarantee different
+          // attributes(with different exprId) always have different names. It also removes all
+          // qualifiers, as attributes have unique names now and we don't need qualifiers to resolve
+          // ambiguity.
+          NormalizedAttribute,
+          // Our analyzer will add one or more sub-queries above table relation, this rule removes
+          // these sub-queries so that next rule can combine adjacent table relation and sample to
+          // SQLTable.
+          RemoveSubqueriesAboveSQLTable,
+          // Finds the table relations and wrap them with `SQLTable`s.  If there are any `Sample`
+          // operators on top of a table relation, merge the sample information into `SQLTable` of
+          // that table relation, as we can only convert table sample to standard SQL string.
+          ResolveSQLTable,
+          // Insert sub queries on top of operators that need to appear after FROM clause.
+          AddSubquery
+        )
+      )
 
     object NormalizedAttribute extends Rule[LogicalPlan] {
       override def apply(plan: LogicalPlan): LogicalPlan =
         plan.transformAllExpressions {
           case a: AttributeReference =>
             AttributeReference(normalizedName(a), a.dataType)(
-                exprId = a.exprId, qualifiers = Nil)
+              exprId = a.exprId,
+              qualifiers = Nil
+            )
           case a: Alias =>
             Alias(a.child, normalizedName(a))(
-                exprId = a.exprId, qualifiers = Nil)
+              exprId = a.exprId,
+              qualifiers = Nil
+            )
         }
     }
 
     object RemoveSubqueriesAboveSQLTable extends Rule[LogicalPlan] {
-      override def apply(plan: LogicalPlan): LogicalPlan = plan transformUp {
-        case SubqueryAlias(_, t @ ExtractSQLTable(_)) => t
-      }
+      override def apply(plan: LogicalPlan): LogicalPlan =
+        plan transformUp {
+          case SubqueryAlias(_, t @ ExtractSQLTable(_)) => t
+        }
     }
 
     object ResolveSQLTable extends Rule[LogicalPlan] {
-      override def apply(plan: LogicalPlan): LogicalPlan = plan.transformDown {
-        case Sample(lowerBound, upperBound, _, _, ExtractSQLTable(table)) =>
-          aliasColumns(table.withSample(lowerBound, upperBound))
-        case ExtractSQLTable(table) =>
-          aliasColumns(table)
-      }
+      override def apply(plan: LogicalPlan): LogicalPlan =
+        plan.transformDown {
+          case Sample(lowerBound, upperBound, _, _, ExtractSQLTable(table)) =>
+            aliasColumns(table.withSample(lowerBound, upperBound))
+          case ExtractSQLTable(table) =>
+            aliasColumns(table)
+        }
 
       /**
         * Aliases the table columns to the generated attribute names, as we use exprId to generate
@@ -479,45 +516,48 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     }
 
     object AddSubquery extends Rule[LogicalPlan] {
-      override def apply(tree: LogicalPlan): LogicalPlan = tree transformUp {
-        // This branch handles aggregate functions within HAVING clauses.  For example:
-        //
-        //   SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
-        //
-        // This kind of query results in query plans of the following form because of analysis rule
-        // `ResolveAggregateFunctions`:
-        //
-        //   Project ...
-        //    +- Filter ...
-        //        +- Aggregate ...
-        //            +- MetastoreRelation default, src, None
-        case p @ Project(_, f @ Filter(_, _: Aggregate)) =>
-          p.copy(child = addSubquery(f))
+      override def apply(tree: LogicalPlan): LogicalPlan =
+        tree transformUp {
+          // This branch handles aggregate functions within HAVING clauses.  For example:
+          //
+          //   SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
+          //
+          // This kind of query results in query plans of the following form because of analysis rule
+          // `ResolveAggregateFunctions`:
+          //
+          //   Project ...
+          //    +- Filter ...
+          //        +- Aggregate ...
+          //            +- MetastoreRelation default, src, None
+          case p @ Project(_, f @ Filter(_, _: Aggregate)) =>
+            p.copy(child = addSubquery(f))
 
-        case w @ Window(_, _, _, f @ Filter(_, _: Aggregate)) =>
-          w.copy(child = addSubquery(f))
+          case w @ Window(_, _, _, f @ Filter(_, _: Aggregate)) =>
+            w.copy(child = addSubquery(f))
 
-        case p: Project => p.copy(child = addSubqueryIfNeeded(p.child))
+          case p: Project => p.copy(child = addSubqueryIfNeeded(p.child))
 
-        // We will generate "SELECT ... FROM ..." for Window operator, so its child operator should
-        // be able to put in the FROM clause, or we wrap it with a subquery.
-        case w: Window => w.copy(child = addSubqueryIfNeeded(w.child))
+          // We will generate "SELECT ... FROM ..." for Window operator, so its child operator should
+          // be able to put in the FROM clause, or we wrap it with a subquery.
+          case w: Window => w.copy(child = addSubqueryIfNeeded(w.child))
 
-        case j: Join =>
-          j.copy(left = addSubqueryIfNeeded(j.left),
-                 right = addSubqueryIfNeeded(j.right))
+          case j: Join =>
+            j.copy(
+              left = addSubqueryIfNeeded(j.left),
+              right = addSubqueryIfNeeded(j.right)
+            )
 
-        // A special case for Generate. When we put UDTF in project list, followed by WHERE, e.g.
-        // SELECT EXPLODE(arr) FROM tbl WHERE id > 1, the Filter operator will be under Generate
-        // operator and we need to add a sub-query between them, as it's not allowed to have a WHERE
-        // before LATERAL VIEW, e.g. "... FROM tbl WHERE id > 2 EXPLODE(arr) ..." is illegal.
-        case g @ Generate(_, _, _, _, _, f: Filter) =>
-          // Add an extra `Project` to make sure we can generate legal SQL string for sub-query,
-          // for example, Subquery -> Filter -> Table will generate "(tbl WHERE ...) AS name", which
-          // misses the SELECT part.
-          val proj = Project(f.output, f)
-          g.copy(child = addSubquery(proj))
-      }
+          // A special case for Generate. When we put UDTF in project list, followed by WHERE, e.g.
+          // SELECT EXPLODE(arr) FROM tbl WHERE id > 1, the Filter operator will be under Generate
+          // operator and we need to add a sub-query between them, as it's not allowed to have a WHERE
+          // before LATERAL VIEW, e.g. "... FROM tbl WHERE id > 2 EXPLODE(arr) ..." is illegal.
+          case g @ Generate(_, _, _, _, _, f: Filter) =>
+            // Add an extra `Project` to make sure we can generate legal SQL string for sub-query,
+            // for example, Subquery -> Filter -> Table will generate "(tbl WHERE ...) AS name", which
+            // misses the SELECT part.
+            val proj = Project(f.output, f)
+            g.copy(child = addSubquery(proj))
+        }
     }
 
     private def addSubquery(plan: LogicalPlan): SubqueryAlias = {
@@ -527,39 +567,47 @@ class SQLBuilder(logicalPlan: LogicalPlan, sqlContext: SQLContext)
     private def addSubqueryIfNeeded(plan: LogicalPlan): LogicalPlan =
       plan match {
         case _: SubqueryAlias => plan
-        case _: Filter => plan
-        case _: Join => plan
-        case _: LocalLimit => plan
-        case _: GlobalLimit => plan
-        case _: SQLTable => plan
-        case _: Generate => plan
-        case OneRowRelation => plan
-        case _ => addSubquery(plan)
+        case _: Filter        => plan
+        case _: Join          => plan
+        case _: LocalLimit    => plan
+        case _: GlobalLimit   => plan
+        case _: SQLTable      => plan
+        case _: Generate      => plan
+        case OneRowRelation   => plan
+        case _                => addSubquery(plan)
       }
   }
 
-  case class SQLTable(database: String,
-                      table: String,
-                      output: Seq[Attribute],
-                      sample: Option[(Double, Double)] = None)
-      extends LeafNode {
+  case class SQLTable(
+      database: String,
+      table: String,
+      output: Seq[Attribute],
+      sample: Option[(Double, Double)] = None
+  ) extends LeafNode {
     def withSample(lowerBound: Double, upperBound: Double): SQLTable =
       this.copy(sample = Some(lowerBound -> upperBound))
   }
 
   object ExtractSQLTable {
-    def unapply(plan: LogicalPlan): Option[SQLTable] = plan match {
-      case l @ LogicalRelation(
-          _, _, Some(TableIdentifier(table, Some(database)))) =>
-        Some(SQLTable(database, table, l.output.map(_.withQualifiers(Nil))))
+    def unapply(plan: LogicalPlan): Option[SQLTable] =
+      plan match {
+        case l @ LogicalRelation(
+              _,
+              _,
+              Some(TableIdentifier(table, Some(database)))
+            ) =>
+          Some(SQLTable(database, table, l.output.map(_.withQualifiers(Nil))))
 
-      case m: MetastoreRelation =>
-        Some(
-            SQLTable(m.databaseName,
-                     m.tableName,
-                     m.output.map(_.withQualifiers(Nil))))
+        case m: MetastoreRelation =>
+          Some(
+            SQLTable(
+              m.databaseName,
+              m.tableName,
+              m.output.map(_.withQualifiers(Nil))
+            )
+          )
 
-      case _ => None
-    }
+        case _ => None
+      }
   }
 }

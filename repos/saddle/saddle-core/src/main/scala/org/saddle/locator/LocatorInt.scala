@@ -46,8 +46,8 @@ class LocatorInt(sz: Int = Locator.INIT_CAPACITY) extends Locator[Int] {
 
   def counts() = {
     val iter = map.keySet().iterator()
-    val res = Array.ofDim[Int](size)
-    var i = 0
+    val res  = Array.ofDim[Int](size)
+    var i    = 0
     while (iter.hasNext) {
       res(i) = cts.get(iter.nextInt())
       i += 1

@@ -17,22 +17,32 @@ import akka.stream.stage.{SyncDirective, Context, StatefulStage}
   */
 private[http] object Masking {
   def apply(serverSide: Boolean, maskRandom: () ⇒ Random): BidiFlow[
-      /* net in */ FrameEvent, /* app out */ FrameEventOrError, /* app in */ FrameEvent, /* net out */ FrameEvent,
-      NotUsed] =
+    /* net in */ FrameEvent, /* app out */ FrameEventOrError,
+    /* app in */ FrameEvent, /* net out */ FrameEvent,
+    NotUsed
+  ] =
     BidiFlow.fromFlowsMat(
-        unmaskIf(serverSide), maskIf(!serverSide, maskRandom))(Keep.none)
+      unmaskIf(serverSide),
+      maskIf(!serverSide, maskRandom)
+    )(Keep.none)
 
-  def maskIf(condition: Boolean,
-             maskRandom: () ⇒ Random): Flow[FrameEvent, FrameEvent, NotUsed] =
+  def maskIf(
+      condition: Boolean,
+      maskRandom: () ⇒ Random
+  ): Flow[FrameEvent, FrameEvent, NotUsed] =
     if (condition)
       Flow[FrameEvent]
-        .transform(() ⇒ new Masking(maskRandom())) // new random per materialization
+        .transform(() ⇒
+          new Masking(maskRandom())
+        ) // new random per materialization
         .map {
-          case f: FrameEvent ⇒ f
+          case f: FrameEvent  ⇒ f
           case FrameError(ex) ⇒ throw ex
-        } else Flow[FrameEvent]
+        }
+    else Flow[FrameEvent]
   def unmaskIf(
-      condition: Boolean): Flow[FrameEvent, FrameEventOrError, NotUsed] =
+      condition: Boolean
+  ): Flow[FrameEvent, FrameEventOrError, NotUsed] =
     if (condition) Flow[FrameEvent].transform(() ⇒ new Unmasking())
     else Flow[FrameEvent]
 
@@ -46,10 +56,11 @@ private[http] object Masking {
     override def toString: String = s"Masking($random)"
   }
   private class Unmasking extends Masker {
-    def extractMask(header: FrameHeader): Int = header.mask match {
-      case Some(mask) ⇒ mask
-      case None ⇒ throw new ProtocolException("Frame wasn't masked")
-    }
+    def extractMask(header: FrameHeader): Int =
+      header.mask match {
+        case Some(mask) ⇒ mask
+        case None       ⇒ throw new ProtocolException("Frame wasn't masked")
+      }
     def setNewMask(header: FrameHeader, mask: Int): FrameHeader =
       header.copy(mask = None)
     override def toString: String = "Unmasking"
@@ -65,29 +76,35 @@ private[http] object Masking {
 
     private object Idle extends State {
       def onPush(
-          part: FrameEvent, ctx: Context[FrameEventOrError]): SyncDirective =
+          part: FrameEvent,
+          ctx: Context[FrameEventOrError]
+      ): SyncDirective =
         part match {
           case start @ FrameStart(header, data) ⇒
             try {
               val mask = extractMask(header)
               become(new Running(mask))
-              current.onPush(
-                  start.copy(header = setNewMask(header, mask)), ctx)
+              current.onPush(start.copy(header = setNewMask(header, mask)), ctx)
             } catch {
               case p: ProtocolException ⇒
                 become(Done)
                 ctx.push(FrameError(p))
             }
           case _: FrameData ⇒
-            ctx.fail(new IllegalStateException(
-                    "unexpected FrameData (need FrameStart first)"))
+            ctx.fail(
+              new IllegalStateException(
+                "unexpected FrameData (need FrameStart first)"
+              )
+            )
         }
     }
     private class Running(initialMask: Int) extends State {
       var mask = initialMask
 
       def onPush(
-          part: FrameEvent, ctx: Context[FrameEventOrError]): SyncDirective = {
+          part: FrameEvent,
+          ctx: Context[FrameEventOrError]
+      ): SyncDirective = {
         if (part.lastPart) become(Idle)
 
         val (masked, newMask) = FrameEventParser.mask(part.data, mask)
@@ -97,7 +114,9 @@ private[http] object Masking {
     }
     private object Done extends State {
       def onPush(
-          part: FrameEvent, ctx: Context[FrameEventOrError]): SyncDirective =
+          part: FrameEvent,
+          ctx: Context[FrameEventOrError]
+      ): SyncDirective =
         ctx.pull()
     }
   }

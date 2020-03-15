@@ -30,15 +30,18 @@ import org.apache.spark.deploy.Command
   * public, needs to live in the same package as the rest of the library.
   */
 private[spark] class WorkerCommandBuilder(
-    sparkHome: String, memoryMb: Int, command: Command)
-    extends AbstractCommandBuilder {
+    sparkHome: String,
+    memoryMb: Int,
+    command: Command
+) extends AbstractCommandBuilder {
 
   childEnv.putAll(command.environment.asJava)
   childEnv.put(CommandBuilderUtils.ENV_SPARK_HOME, sparkHome)
 
   override def buildCommand(env: JMap[String, String]): JList[String] = {
     val cmd = buildJavaCommand(
-        command.classPathEntries.mkString(File.pathSeparator))
+      command.classPathEntries.mkString(File.pathSeparator)
+    )
     cmd.add(s"-Xms${memoryMb}M")
     cmd.add(s"-Xmx${memoryMb}M")
     command.javaOpts.foreach(cmd.add)

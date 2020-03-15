@@ -49,7 +49,7 @@ class Foo {
   def foo = 1
 }
 """.replace("\r", "")
-    val after = """
+    val after  = """
 class Foo {
   //some comment
   private val i = 0;
@@ -74,7 +74,7 @@ class Foo {
  */
 class A
 """.replace("\r", "")
-    val after = """
+    val after  = """
 /**
   * something{@link Foo}
   * something
@@ -97,7 +97,7 @@ n.foreach
   }
 }
 """.replace("\r", "")
-    val after = """
+    val after  = """
 val n = Seq(1, 2, 3)
 n.foreach
 {
@@ -998,7 +998,8 @@ bars foreach {case (x, y) => list.add(x + y)}
   }
 
   def testSCL2469(): Unit = {
-    getCommonSettings.VARIABLE_ANNOTATION_WRAP = CommonCodeStyleSettings.WRAP_ALWAYS
+    getCommonSettings.VARIABLE_ANNOTATION_WRAP =
+      CommonCodeStyleSettings.WRAP_ALWAYS
 
     val before = """
         |class Test {
@@ -1096,7 +1097,8 @@ bars foreach {case (x, y) => list.add(x + y)}
   }
 
   def testSCL2999(): Unit = {
-    getCommonSettings.EXTENDS_LIST_WRAP = CommonCodeStyleSettings.WRAP_ON_EVERY_ITEM
+    getCommonSettings.EXTENDS_LIST_WRAP =
+      CommonCodeStyleSettings.WRAP_ON_EVERY_ITEM
     getScalaSettings.WRAP_BEFORE_WITH_KEYWORD = true
     getCommonSettings.getIndentOptions.CONTINUATION_INDENT_SIZE = 4
 
@@ -1478,7 +1480,7 @@ bars foreach {case (x, y) => list.add(x + y)}
     getScalaSettings.SPACE_INSIDE_CLOSURE_BRACES = false
 
     val before = "def f: Int => String = { x => x.toString }"
-    val after = "def f: Int => String = {x => x.toString}"
+    val after  = "def f: Int => String = {x => x.toString}"
     doTextTest(before, after)
   }
 

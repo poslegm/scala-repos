@@ -29,7 +29,8 @@ object Framing {
     */
   def delimiter(
       delimiter: ByteString,
-      maximumFrameLength: Int): Flow[ByteString, ByteString, NotUsed] = {
+      maximumFrameLength: Int
+  ): Flow[ByteString, ByteString, NotUsed] = {
     scaladsl.Framing.delimiter(delimiter, maximumFrameLength).asJava
   }
 
@@ -48,10 +49,11 @@ object Framing {
     * @param maximumFrameLength The maximum length of allowed frames while decoding. If the maximum length is
     *                           exceeded this Flow will fail the stream.
     */
-  def delimiter(delimiter: ByteString,
-                maximumFrameLength: Int,
-                allowTruncation: FramingTruncation)
-    : Flow[ByteString, ByteString, NotUsed] = {
+  def delimiter(
+      delimiter: ByteString,
+      maximumFrameLength: Int,
+      allowTruncation: FramingTruncation
+  ): Flow[ByteString, ByteString, NotUsed] = {
     val truncationAllowed = allowTruncation == FramingTruncation.ALLOW
     scaladsl.Framing
       .delimiter(delimiter, maximumFrameLength, truncationAllowed)
@@ -76,7 +78,8 @@ object Framing {
   def lengthField(
       fieldLength: Int,
       fieldOffset: Int,
-      maximumFrameLength: Int): Flow[ByteString, ByteString, NotUsed] =
+      maximumFrameLength: Int
+  ): Flow[ByteString, ByteString, NotUsed] =
     scaladsl.Framing
       .lengthField(fieldLength, fieldOffset, maximumFrameLength)
       .asJava
@@ -99,7 +102,8 @@ object Framing {
       fieldLength: Int,
       fieldOffset: Int,
       maximumFrameLength: Int,
-      byteOrder: ByteOrder): Flow[ByteString, ByteString, NotUsed] =
+      byteOrder: ByteOrder
+  ): Flow[ByteString, ByteString, NotUsed] =
     scaladsl.Framing
       .lengthField(fieldLength, fieldOffset, maximumFrameLength, byteOrder)
       .asJava
@@ -122,7 +126,8 @@ object Framing {
     *                             limit this BidiFlow will fail the stream. The header attached by this BidiFlow are not
     *                             included in this limit.
     */
-  def simpleFramingProtocol(maximumMessageLength: Int)
-    : BidiFlow[ByteString, ByteString, ByteString, ByteString, NotUsed] =
+  def simpleFramingProtocol(
+      maximumMessageLength: Int
+  ): BidiFlow[ByteString, ByteString, ByteString, ByteString, NotUsed] =
     scaladsl.Framing.simpleFramingProtocol(maximumMessageLength).asJava
 }

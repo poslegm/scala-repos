@@ -3,7 +3,7 @@ import scala.reflect.macros.blackbox.Context
 
 object Bundle {
   val c: Context = ???
-  def impl = ???
+  def impl       = ???
 }
 
 object Macros {

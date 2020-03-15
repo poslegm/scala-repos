@@ -1,14 +1,14 @@
 import scala.reflect.runtime.universe._
 
 class C {
-  def x1: Int = ???
-  def x2(): Int = ???
-  def x3(x: Int): Int = ???
+  def x1: Int                 = ???
+  def x2(): Int               = ???
+  def x3(x: Int): Int         = ???
   def x4(x: Int)(y: Int): Int = ???
 
-  def y1[T]: Int = ???
-  def y2[T](): Int = ???
-  def y3[T](x: Int): Int = ???
+  def y1[T]: Int                 = ???
+  def y2[T](): Int               = ???
+  def y3[T](x: Int): Int         = ???
   def y4[T](x: Int)(y: Int): Int = ???
 }
 

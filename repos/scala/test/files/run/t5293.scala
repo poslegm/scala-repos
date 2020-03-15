@@ -41,16 +41,14 @@ object Test extends App {
   def benchScalaPar(values: Iterable[Int]) = {
     bench("Scala ParSet") {
       val set =
-        new scala.collection.parallel.mutable.ParHashSet[Int] map { x =>
-          x
-        }
+        new scala.collection.parallel.mutable.ParHashSet[Int] map { x => x }
 
       set ++= values
     }
   }
 
   val values = 0 until 50000
-  val set = scala.collection.mutable.HashSet.empty[Int]
+  val set    = scala.collection.mutable.HashSet.empty[Int]
 
   set ++= values
 
@@ -64,12 +62,16 @@ object Test extends App {
     benchScalaPar(set)
   }
 
-  val javaset = benchJava(set.asJava)
-  val scalaset = benchScala(set)
+  val javaset     = benchJava(set.asJava)
+  val scalaset    = benchScala(set)
   val scalaparset = benchScalaPar(set)
 
-  assert(scalaset < (javaset * 8),
-         "scalaset: " + scalaset + " vs. javaset: " + javaset)
-  assert(scalaparset < (javaset * 8),
-         "scalaparset: " + scalaparset + " vs. javaset: " + javaset)
+  assert(
+    scalaset < (javaset * 8),
+    "scalaset: " + scalaset + " vs. javaset: " + javaset
+  )
+  assert(
+    scalaparset < (javaset * 8),
+    "scalaparset: " + scalaparset + " vs. javaset: " + javaset
+  )
 }

@@ -2,7 +2,7 @@ class Wrapper[X](x: X)
 
 class C {
   def a(w: Wrapper[Array[Int]]) = 0
-  def b(w: Wrapper[Int]) = 0
+  def b(w: Wrapper[Int])        = 0
 }
 
 object Test {

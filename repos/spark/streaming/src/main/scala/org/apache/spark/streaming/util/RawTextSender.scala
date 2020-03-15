@@ -37,20 +37,26 @@ private[streaming] object RawTextSender extends Logging {
     if (args.length != 4) {
       // scalastyle:off println
       System.err.println(
-          "Usage: RawTextSender <port> <file> <blockSize> <bytesPerSec>")
+        "Usage: RawTextSender <port> <file> <blockSize> <bytesPerSec>"
+      )
       // scalastyle:on println
       System.exit(1)
     }
     // Parse the arguments using a pattern match
-    val Array(IntParam(port), file, IntParam(blockSize), IntParam(bytesPerSec)) =
+    val Array(
+      IntParam(port),
+      file,
+      IntParam(blockSize),
+      IntParam(bytesPerSec)
+    ) =
       args
 
     // Repeat the input data multiple times to fill in a buffer
-    val lines = Source.fromFile(file).getLines().toArray
+    val lines        = Source.fromFile(file).getLines().toArray
     val bufferStream = new ByteArrayOutputStream(blockSize + 1000)
-    val ser = new KryoSerializer(new SparkConf()).newInstance()
-    val serStream = ser.serializeStream(bufferStream)
-    var i = 0
+    val ser          = new KryoSerializer(new SparkConf()).newInstance()
+    val serStream    = ser.serializeStream(bufferStream)
+    var i            = 0
     while (bufferStream.size < blockSize) {
       serStream.writeObject(lines(i))
       i = (i + 1) % lines.length
@@ -67,8 +73,7 @@ private[streaming] object RawTextSender extends Logging {
     while (true) {
       val socket = serverSocket.accept()
       logInfo("Got a new connection")
-      val out = new RateLimitedOutputStream(
-          socket.getOutputStream, bytesPerSec)
+      val out = new RateLimitedOutputStream(socket.getOutputStream, bytesPerSec)
       try {
         while (true) {
           out.write(countBuf.array)

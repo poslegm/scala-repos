@@ -32,7 +32,8 @@ object Reader {
   import JavaStreamEnrichments._
 
   def read[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
-      is: InputStream)(implicit r: Reader[T]): T = r.read(is)
+      is: InputStream
+  )(implicit r: Reader[T]): T = r.read(is)
   /*
    * Instances below
    */
@@ -62,21 +63,22 @@ object Reader {
   }
   implicit val string: Reader[String] = new Reader[String] {
     def read(is: InputStream) = {
-      val size = is.readPosVarInt
+      val size  = is.readPosVarInt
       val bytes = new Array[Byte](size)
       is.readFully(bytes)
       new String(bytes, "UTF-8")
     }
   }
 
-  implicit def option[T : Reader]: Reader[Option[T]] = new Reader[Option[T]] {
-    val r = implicitly[Reader[T]]
-    def read(is: InputStream) =
-      if (is.readByte == (0: Byte)) None
-      else Some(r.read(is))
-  }
+  implicit def option[T: Reader]: Reader[Option[T]] =
+    new Reader[Option[T]] {
+      val r = implicitly[Reader[T]]
+      def read(is: InputStream) =
+        if (is.readByte == (0: Byte)) None
+        else Some(r.read(is))
+    }
 
-  implicit def either[L : Reader, R : Reader]: Reader[Either[L, R]] =
+  implicit def either[L: Reader, R: Reader]: Reader[Either[L, R]] =
     new Reader[Either[L, R]] {
       val lRead = implicitly[Reader[L]]
       val rRead = implicitly[Reader[R]]
@@ -85,26 +87,29 @@ object Reader {
         else Right(rRead.read(is))
     }
 
-  implicit def tuple2[T1 : Reader, T2 : Reader]: Reader[(T1, T2)] =
+  implicit def tuple2[T1: Reader, T2: Reader]: Reader[(T1, T2)] =
     new Reader[(T1, T2)] {
-      val r1 = implicitly[Reader[T1]]
-      val r2 = implicitly[Reader[T2]]
+      val r1                    = implicitly[Reader[T1]]
+      val r2                    = implicitly[Reader[T2]]
       def read(is: InputStream) = (r1.read(is), r2.read(is))
     }
 
-  implicit def array[@specialized(
-                         Boolean,
-                         Byte,
-                         Short,
-                         Int,
-                         Long,
-                         Float,
-                         Double) T : Reader : ClassTag]: Reader[Array[T]] =
+  implicit def array[
+      @specialized(
+        Boolean,
+        Byte,
+        Short,
+        Int,
+        Long,
+        Float,
+        Double
+      ) T: Reader: ClassTag
+  ]: Reader[Array[T]] =
     new Reader[Array[T]] {
       val readerT = implicitly[Reader[T]]
       def read(is: InputStream) = {
         val size = is.readPosVarInt
-        val res = new Array[T](size)
+        val res  = new Array[T](size)
         @annotation.tailrec
         def go(p: Int): Unit =
           if (p == size) ()
@@ -118,23 +123,25 @@ object Reader {
     }
 
   // Scala seems to have issues with this being implicit
-  def collection[T : Reader, C](
-      implicit cbf: CanBuildFrom[Nothing, T, C]): Reader[C] = new Reader[C] {
-    val readerT = implicitly[Reader[T]]
-    def read(is: InputStream): C = {
-      val builder = cbf()
-      val size = is.readPosVarInt
-      builder.sizeHint(size)
-      @annotation.tailrec
-      def go(idx: Int): Unit =
-        if (idx == size) ()
-        else {
-          builder += readerT.read(is)
-          go(idx + 1)
-        }
+  def collection[T: Reader, C](
+      implicit cbf: CanBuildFrom[Nothing, T, C]
+  ): Reader[C] =
+    new Reader[C] {
+      val readerT = implicitly[Reader[T]]
+      def read(is: InputStream): C = {
+        val builder = cbf()
+        val size    = is.readPosVarInt
+        builder.sizeHint(size)
+        @annotation.tailrec
+        def go(idx: Int): Unit =
+          if (idx == size) ()
+          else {
+            builder += readerT.read(is)
+            go(idx + 1)
+          }
 
-      go(0)
-      builder.result
+        go(0)
+        builder.result
+      }
     }
-  }
 }

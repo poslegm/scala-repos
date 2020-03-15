@@ -95,7 +95,7 @@ class LazyStrictTests {
   def testLazyConversion {
     val effects = ListBuffer[Int]()
 
-    lazy val effectfulLazyInt: Int = { effects += 3; 23 }
+    lazy val effectfulLazyInt: Int   = { effects += 3; 23 }
     lazy val effectfulStrictInt: Int = { effects += 6; 23 }
 
     def useEffectfulLazyInt(li: Lazy[Int]): Int = {
@@ -154,8 +154,8 @@ class LazyStrictTests {
 
   sealed trait List[+T]
   case class Cons[T](hd: T, tl: List[T]) extends List[T]
-  sealed trait Nil extends List[Nothing]
-  case object Nil extends Nil
+  sealed trait Nil                       extends List[Nothing]
+  case object Nil                        extends Nil
 
   trait Show[T] {
     def apply(t: T): String
@@ -164,18 +164,22 @@ class LazyStrictTests {
   def show[T](t: T)(implicit s: Show[T]) = s(t)
 
   trait CommonShows {
-    implicit def showInt: Show[Int] = new Show[Int] {
-      def apply(t: Int) = t.toString
-    }
+    implicit def showInt: Show[Int] =
+      new Show[Int] {
+        def apply(t: Int) = t.toString
+      }
 
-    implicit def showNil: Show[Nil] = new Show[Nil] {
-      def apply(t: Nil) = "Nil"
-    }
+    implicit def showNil: Show[Nil] =
+      new Show[Nil] {
+        def apply(t: Nil) = "Nil"
+      }
   }
 
   object LazyShows extends CommonShows {
-    implicit def showCons[T](
-        implicit st: Lazy[Show[T]], sl: Lazy[Show[List[T]]]): Show[Cons[T]] =
+    implicit def showCons[T](implicit
+        st: Lazy[Show[T]],
+        sl: Lazy[Show[List[T]]]
+    ): Show[Cons[T]] =
       new Show[Cons[T]] {
         def apply(t: Cons[T]) =
           s"Cons(${show(t.hd)(st.value)}, ${show(t.tl)(sl.value)})"
@@ -183,27 +187,31 @@ class LazyStrictTests {
 
     implicit def showList[T](implicit sc: Lazy[Show[Cons[T]]]): Show[List[T]] =
       new Show[List[T]] {
-        def apply(t: List[T]) = t match {
-          case n: Nil => show(n)
-          case c: Cons[T] => show(c)(sc.value)
-        }
+        def apply(t: List[T]) =
+          t match {
+            case n: Nil     => show(n)
+            case c: Cons[T] => show(c)(sc.value)
+          }
       }
   }
 
   object LazyStrictMixShows extends CommonShows {
-    implicit def showCons[T](
-        implicit st: Strict[Show[T]],
-        sl: Strict[Show[List[T]]]): Show[Cons[T]] = new Show[Cons[T]] {
-      def apply(t: Cons[T]) =
-        s"Cons(${show(t.hd)(st.value)}, ${show(t.tl)(sl.value)})"
-    }
+    implicit def showCons[T](implicit
+        st: Strict[Show[T]],
+        sl: Strict[Show[List[T]]]
+    ): Show[Cons[T]] =
+      new Show[Cons[T]] {
+        def apply(t: Cons[T]) =
+          s"Cons(${show(t.hd)(st.value)}, ${show(t.tl)(sl.value)})"
+      }
 
     implicit def showList[T](implicit sc: Lazy[Show[Cons[T]]]): Show[List[T]] =
       new Show[List[T]] {
-        def apply(t: List[T]) = t match {
-          case n: Nil => show(n)
-          case c: Cons[T] => show(c)(sc.value)
-        }
+        def apply(t: List[T]) =
+          t match {
+            case n: Nil     => show(n)
+            case c: Cons[T] => show(c)(sc.value)
+          }
       }
   }
 
@@ -234,7 +242,7 @@ class LazyStrictTests {
 
   @Test
   def testMultiple {
-    val foos = Lazy.values[Foo[Int] :: Foo[String] :: Foo[Boolean] :: HNil]
+    val foos                         = Lazy.values[Foo[Int] :: Foo[String] :: Foo[Boolean] :: HNil]
     implicit val x :: y :: z :: HNil = foos
 
     typed[Foo[Int]](x)
@@ -315,18 +323,18 @@ class LazyStrictTests {
     trait W[X, Y]
 
     illTyped(
-        "lazily[U[String]]",
-        "No U\\[String]"
+      "lazily[U[String]]",
+      "No U\\[String]"
     )
 
     illTyped(
-        "lazily[V]",
-        "could not find Lazy implicit value of type V"
+      "lazily[V]",
+      "could not find Lazy implicit value of type V"
     )
 
     illTyped(
-        "lazily[W[String, Int]]",
-        "No W\\[String, Int]"
+      "lazily[W[String, Int]]",
+      "No W\\[String, Int]"
     )
   }
 }

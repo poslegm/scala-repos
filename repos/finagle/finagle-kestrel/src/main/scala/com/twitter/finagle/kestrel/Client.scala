@@ -78,8 +78,8 @@ abstract class ReadHandle {
     * parallel from one handle.
     */
   def buffered(howmany: Int): ReadHandle = {
-    val out = new Broker[ReadMessage]
-    val ack = new Broker[Unit]
+    val out      = new Broker[ReadMessage]
+    val ack      = new Broker[Unit]
     val closeReq = new Broker[Unit]
     def loop(nwait: Int, closed: Boolean) {
       // we're done if we're closed, and
@@ -90,21 +90,17 @@ abstract class ReadHandle {
       }
 
       Offer.select(
-          if (nwait < howmany && !closed) {
-            messages { m =>
-              m.ack.sync()
-              out ! m.copy(ack = ack.send(()))
-              loop(nwait + 1, closed)
-            }
-          } else {
-            Offer.never
-          },
-          ack.recv { _ =>
-            loop(nwait - 1, closed)
-          },
-          closeReq.recv { _ =>
-            loop(nwait, true)
+        if (nwait < howmany && !closed) {
+          messages { m =>
+            m.ack.sync()
+            out ! m.copy(ack = ack.send(()))
+            loop(nwait + 1, closed)
           }
+        } else {
+          Offer.never
+        },
+        ack.recv { _ => loop(nwait - 1, closed) },
+        closeReq.recv { _ => loop(nwait, true) }
       )
     }
 
@@ -117,7 +113,7 @@ abstract class ReadHandle {
       // with respect to messages here, or
       // just (as is now) be propagated
       // immediately.
-      val error = underlying.error
+      val error   = underlying.error
       def close() = closeReq ! ((): Unit)
     }
   }
@@ -129,11 +125,12 @@ object ReadHandle {
       _messages: Offer[ReadMessage],
       _error: Offer[Throwable],
       closeOf: Offer[Unit]
-  ): ReadHandle = new ReadHandle {
-    val messages = _messages
-    val error = _error
-    def close() = closeOf.sync()
-  }
+  ): ReadHandle =
+    new ReadHandle {
+      val messages = _messages
+      val error    = _error
+      def close()  = closeOf.sync()
+    }
 
   /**
     * A Java-friendly API for the `ReadHandle() constructor`.
@@ -149,11 +146,12 @@ object ReadHandle {
     * the given underlying handles.  Closing this handle will close all
     * of the underlying ones.
     */
-  def merged(handles: Seq[ReadHandle]): ReadHandle = new ReadHandle {
-    val messages = Offer.choose(handles.map { _.messages }.toSeq: _*)
-    val error = Offer.choose(handles.map { _.error }.toSeq: _*)
-    def close() = handles.foreach { _.close() }
-  }
+  def merged(handles: Seq[ReadHandle]): ReadHandle =
+    new ReadHandle {
+      val messages = Offer.choose(handles.map { _.messages }.toSeq: _*)
+      val error    = Offer.choose(handles.map { _.error }.toSeq: _*)
+      def close()  = handles.foreach { _.close() }
+    }
 
   /**
     * A java-friendly interface to {{merged}}
@@ -184,13 +182,16 @@ object Client {
     * @return A thrift kestrel client
     */
   // Due to type erasure this cannot be apply(raw: ServiceFactory[ThriftClientRequest, Array[Byte]])
-  def makeThrift(raw: ServiceFactory[ThriftClientRequest, Array[Byte]],
-                 txnAbortTimeout: Duration): Client = {
+  def makeThrift(
+      raw: ServiceFactory[ThriftClientRequest, Array[Byte]],
+      txnAbortTimeout: Duration
+  ): Client = {
     new ThriftConnectedClient(new FinagledClientFactory(raw), txnAbortTimeout)
   }
 
   def makeThrift(
-      raw: ServiceFactory[ThriftClientRequest, Array[Byte]]): Client = {
+      raw: ServiceFactory[ThriftClientRequest, Array[Byte]]
+  ): Client = {
     makeThrift(raw, Duration.Top)
   }
 
@@ -209,9 +210,11 @@ trait Client {
     * if it isn't dequeued in time).  Time.epoch (0) means the item will never
     * expire.
     */
-  def set(queueName: String,
-          value: Buf,
-          expiry: Time = Time.epoch): Future[Response]
+  def set(
+      queueName: String,
+      value: Buf,
+      expiry: Time = Time.epoch
+  ): Future[Response]
 
   /**
     * Dequeue an item.
@@ -222,7 +225,9 @@ trait Client {
     * 0.seconds (the default) means no waiting, as opposed to infinite wait.
     */
   def get(
-      queueName: String, waitUpTo: Duration = 0.seconds): Future[Option[Buf]]
+      queueName: String,
+      waitUpTo: Duration = 0.seconds
+  ): Future[Option[Buf]]
 
   /**
     * Delete a queue. Removes the journal file on the remote server.
@@ -264,32 +269,32 @@ trait Client {
       timer: Timer,
       retryBackoffs: => Stream[Duration]
   ): ReadHandle = {
-    val error = new Broker[Throwable]
+    val error    = new Broker[Throwable]
     val messages = new Broker[ReadMessage]
-    val close = new Broker[Unit]
+    val close    = new Broker[Unit]
 
     def loop(handle: ReadHandle, backoffs: Stream[Duration]) {
       Offer
         .prioritize(
-            close.recv { _ =>
-              handle.close()
-              error ! ReadClosedException
-            },
-            // proxy messages
-            handle.messages { m =>
-              messages ! m
-              // a succesful read always resets the backoffs
-              loop(handle, retryBackoffs)
-            },
-            // retry on error
-            handle.error { t =>
-              backoffs match {
-                case delay #:: rest =>
-                  timer.schedule(delay.fromNow) { loop(read(queueName), rest) }
-                case _ =>
-                  error ! OutOfRetriesException
-              }
+          close.recv { _ =>
+            handle.close()
+            error ! ReadClosedException
+          },
+          // proxy messages
+          handle.messages { m =>
+            messages ! m
+            // a succesful read always resets the backoffs
+            loop(handle, retryBackoffs)
+          },
+          // retry on error
+          handle.error { t =>
+            backoffs match {
+              case delay #:: rest =>
+                timer.schedule(delay.fromNow) { loop(read(queueName), rest) }
+              case _ =>
+                error ! OutOfRetriesException
             }
+          }
         )
         .sync()
     }
@@ -341,8 +346,8 @@ abstract protected[kestrel] class CommandExecutorFactory[U] extends Closable {
   *                items
   */
 abstract protected[kestrel] class ClientBase[
-    CommandExecutor <: Closable, Reply, ItemId](
-    underlying: CommandExecutorFactory[CommandExecutor])
+    CommandExecutor <: Closable, Reply, ItemId
+](underlying: CommandExecutorFactory[CommandExecutor])
     extends Client {
 
   /**
@@ -362,67 +367,64 @@ abstract protected[kestrel] class ClientBase[
       processResponse: Reply => Try[Option[(Buf, ItemId)]],
       openCommand: CommandExecutor => Future[Reply],
       closeAndOpenCommand: ItemId => (CommandExecutor => Future[Reply]),
-      abortCommand: ItemId => (CommandExecutor => Future[Reply]))
-    : ReadHandle = {
+      abortCommand: ItemId => (CommandExecutor => Future[Reply])
+  ): ReadHandle = {
 
-    val error = new Broker[Throwable] // this is sort of like a latch...
+    val error    = new Broker[Throwable] // this is sort of like a latch...
     val messages = new Broker[ReadMessage] // todo: buffer?
-    val close = new Broker[Unit]
-    val abort = new Broker[ItemId]
+    val close    = new Broker[Unit]
+    val abort    = new Broker[ItemId]
 
     def recv(
-        service: CommandExecutor, command: CommandExecutor => Future[Reply]) {
+        service: CommandExecutor,
+        command: CommandExecutor => Future[Reply]
+    ) {
       val reply = command(service)
       Offer
         .prioritize(
-            close.recv { _ =>
+          close.recv { _ =>
+            service.close()
+            reply.raise(ReadClosedException)
+            error ! ReadClosedException
+          },
+          reply.toOffer {
+            case Return(r: Reply) =>
+              processResponse(r) match {
+                case Return(Some((data, id))) =>
+                  val ack = new Broker[ItemId]
+                  messages ! ReadMessage(data, ack.send(id), abort.send(id))
+                  Offer
+                    .prioritize(
+                      close.recv { t =>
+                        service.close(); error ! ReadClosedException
+                      },
+                      ack.recv { id => recv(service, closeAndOpenCommand(id)) },
+                      abort.recv { id => recv(service, abortCommand(id)) }
+                    )
+                    .sync()
+                case Return(None) =>
+                  recv(service, openCommand)
+
+                case Throw(t) =>
+                  service.close()
+                  error ! t
+              }
+
+            case Return(_) =>
               service.close()
-              reply.raise(ReadClosedException)
-              error ! ReadClosedException
-            },
-            reply.toOffer {
-              case Return(r: Reply) =>
-                processResponse(r) match {
-                  case Return(Some((data, id))) =>
-                    val ack = new Broker[ItemId]
-                    messages ! ReadMessage(data, ack.send(id), abort.send(id))
-                    Offer
-                      .prioritize(
-                          close.recv { t =>
-                            service.close(); error ! ReadClosedException
-                          },
-                          ack.recv { id =>
-                            recv(service, closeAndOpenCommand(id))
-                          },
-                          abort.recv { id =>
-                            recv(service, abortCommand(id))
-                          }
-                      )
-                      .sync()
-                  case Return(None) =>
-                    recv(service, openCommand)
+              error ! new IllegalArgumentException("invalid reply from kestrel")
 
-                  case Throw(t) =>
-                    service.close()
-                    error ! t
-                }
-
-              case Return(_) =>
-                service.close()
-                error ! new IllegalArgumentException(
-                    "invalid reply from kestrel")
-
-              case Throw(t) =>
-                service.close()
-                error ! t
-            }
+            case Throw(t) =>
+              service.close()
+              error ! t
+          }
         )
         .sync()
     }
 
     underlying() respond {
       case Return(r) => recv(r, openCommand)
-      case Throw(t) => error ! t
+      case Throw(t)  => error ! t
     }
 
     ReadHandle(messages.recv, error.recv, close.send(()))
@@ -442,7 +444,7 @@ abstract protected[kestrel] class ClientBase[
     offer.sync().foreach { item =>
       set(queueName, item).unit respond {
         case Return(_) => write(queueName, offer)
-        case Throw(t) => closed() = Return(t)
+        case Throw(t)  => closed() = Return(t)
       }
     }
   }
@@ -458,9 +460,9 @@ abstract protected[kestrel] class ClientBase[
   * @param underlying  the kestrel memcache service being wrapped
   */
 private class MemcacheClientFactory(
-    underlying: ServiceFactory[Command, Response])
-    extends CommandExecutorFactory[Service[Command, Response]] {
-  def apply() = underlying()
+    underlying: ServiceFactory[Command, Response]
+) extends CommandExecutorFactory[Service[Command, Response]] {
+  def apply()               = underlying()
   def close(deadline: Time) = underlying.close(deadline)
 }
 
@@ -476,9 +478,10 @@ object ConnectedClient {
   *   ServiceFactory[Command, Response].
   */
 protected[kestrel] class ConnectedClient(
-    underlying: ServiceFactory[Command, Response])
-    extends ClientBase[Service[Command, Response], Response, Unit](
-        new MemcacheClientFactory(underlying)) {
+    underlying: ServiceFactory[Command, Response]
+) extends ClientBase[Service[Command, Response], Response, Unit](
+      new MemcacheClientFactory(underlying)
+    ) {
   import ConnectedClient._
 
   def flush(queueName: String): Future[Response] =
@@ -487,40 +490,46 @@ protected[kestrel] class ConnectedClient(
   def delete(queueName: String): Future[Response] =
     underlying.toService(Delete(Buf.Utf8(queueName)))
 
-  def set(queueName: String,
-          value: Buf,
-          expiry: Time = Time.epoch): Future[Response] =
+  def set(
+      queueName: String,
+      value: Buf,
+      expiry: Time = Time.epoch
+  ): Future[Response] =
     underlying.toService(Set(Buf.Utf8(queueName), expiry, value))
 
   def get(
-      queueName: String, waitUpTo: Duration = 0.seconds): Future[Option[Buf]] =
+      queueName: String,
+      waitUpTo: Duration = 0.seconds
+  ): Future[Option[Buf]] =
     underlying.toService(Get(Buf.Utf8(queueName), Some(waitUpTo))).map {
-      case Values(Seq()) => None
+      case Values(Seq())                       => None
       case Values(Seq(Value(key, value: Buf))) => Some(value)
-      case _ => throw new IllegalArgumentException
+      case _                                   => throw new IllegalArgumentException
     }
 
-  private def MemCommand(command: Command)(
-      service: Service[Command, Response]) =
+  private def MemCommand(
+      command: Command
+  )(service: Service[Command, Response]) =
     service(command)
 
   def read(queueName: String): ReadHandle = {
     val queueBuffer: Buf = Buf.Utf8(queueName)
-    val open = MemCommand(Open(queueBuffer, SomeTop)) _
-    val closeAndOpen = MemCommand(CloseAndOpen(queueBuffer, SomeTop)) _
-    val abort = MemCommand(Abort(Buf.Utf8(queueName))) _
+    val open             = MemCommand(Open(queueBuffer, SomeTop)) _
+    val closeAndOpen     = MemCommand(CloseAndOpen(queueBuffer, SomeTop)) _
+    val abort            = MemCommand(Abort(Buf.Utf8(queueName))) _
 
     read(
-        (response: Response) =>
-          response match {
-            case Values(Seq(Value(_, item))) => Return(Some((item, ())))
-            case Values(Seq()) => Return(None)
-            case _ =>
-              Throw(new IllegalArgumentException("invalid reply from kestrel"))
+      (response: Response) =>
+        response match {
+          case Values(Seq(Value(_, item))) => Return(Some((item, ())))
+          case Values(Seq())               => Return(None)
+          case _ =>
+            Throw(new IllegalArgumentException("invalid reply from kestrel"))
         },
-        open,
-        (Unit) => closeAndOpen,
-        (Unit) => abort)
+      open,
+      (Unit) => closeAndOpen,
+      (Unit) => abort
+    )
   }
 }
 
@@ -529,8 +538,9 @@ protected[kestrel] class ConnectedClient(
   * @param service the underlying thrift service for FinagledClient
   */
 protected[kestrel] class FinagledClosableClient(
-    service: Service[ThriftClientRequest, Array[Byte]])
-    extends FinagledClient(service) with Closable {
+    service: Service[ThriftClientRequest, Array[Byte]]
+) extends FinagledClient(service)
+    with Closable {
   def close(time: Time): Future[Unit] = service.close(time)
 }
 
@@ -539,12 +549,10 @@ protected[kestrel] class FinagledClosableClient(
   * @param underlying the underlying thrift service factory to wrap
   */
 protected[kestrel] class FinagledClientFactory(
-    underlying: ServiceFactory[ThriftClientRequest, Array[Byte]])
-    extends CommandExecutorFactory[FinagledClosableClient] {
+    underlying: ServiceFactory[ThriftClientRequest, Array[Byte]]
+) extends CommandExecutorFactory[FinagledClosableClient] {
   def apply(): Future[FinagledClosableClient] =
-    underlying().map { s =>
-      new FinagledClosableClient(s)
-    }
+    underlying().map { s => new FinagledClosableClient(s) }
 
   def close(deadline: Time): Future[Unit] = underlying.close(deadline)
 }
@@ -556,8 +564,9 @@ protected[kestrel] class FinagledClientFactory(
   *   ServiceFactory[ThriftClientRequest, Array[Byte] ].
   */
 protected[kestrel] class ThriftConnectedClient(
-    underlying: FinagledClientFactory, txnAbortTimeout: Duration)
-    extends ClientBase[FinagledClosableClient, Seq[Item], Long](underlying) {
+    underlying: FinagledClientFactory,
+    txnAbortTimeout: Duration
+) extends ClientBase[FinagledClosableClient, Seq[Item], Long](underlying) {
   private def safeLongToInt(l: Long): Int = {
     if (l > Int.MaxValue) Int.MaxValue
     else if (l < Int.MinValue) Int.MinValue
@@ -572,80 +581,84 @@ protected[kestrel] class ThriftConnectedClient(
     }
 
   def flush(queueName: String): Future[Response] =
-    withClient[Values](
-        client =>
-          client
-            .flushQueue(queueName)
-            .map { _ =>
-          Values(Nil)
-      })
+    withClient[Values](client =>
+      client
+        .flushQueue(queueName)
+        .map { _ => Values(Nil) }
+    )
 
   def delete(queueName: String): Future[Response] =
-    withClient[Response](
-        client =>
-          client
-            .deleteQueue(queueName)
-            .map { _ =>
-          Deleted()
-      })
+    withClient[Response](client =>
+      client
+        .deleteQueue(queueName)
+        .map { _ => Deleted() }
+    )
 
-  def set(queueName: String,
-          value: Buf,
-          expiry: Time = Time.epoch): Future[Response] = {
+  def set(
+      queueName: String,
+      value: Buf,
+      expiry: Time = Time.epoch
+  ): Future[Response] = {
     val timeout = safeLongToInt(expiry.inMilliseconds)
-    withClient[Response](
-        client =>
-          client
-            .put(queueName, List(Buf.ByteBuffer.Owned.extract(value)), timeout)
-            .map { _ =>
-          Stored()
-      })
+    withClient[Response](client =>
+      client
+        .put(queueName, List(Buf.ByteBuffer.Owned.extract(value)), timeout)
+        .map { _ => Stored() }
+    )
   }
 
-  def get(queueName: String,
-          waitUpTo: Duration = 0.seconds): Future[Option[Buf]] = {
+  def get(
+      queueName: String,
+      waitUpTo: Duration = 0.seconds
+  ): Future[Option[Buf]] = {
     val waitUpToMsec = safeLongToInt(waitUpTo.inMilliseconds)
-    withClient[Option[Buf]](
-        client =>
-          client
-            .get(queueName, 1, waitUpToMsec)
-            .map {
-          case Seq() => None
+    withClient[Option[Buf]](client =>
+      client
+        .get(queueName, 1, waitUpToMsec)
+        .map {
+          case Seq()           => None
           case Seq(item: Item) => Some(Buf.ByteBuffer.Owned(item.data))
-          case _ => throw new IllegalArgumentException
-      })
+          case _               => throw new IllegalArgumentException
+        }
+    )
   }
 
-  private def openRead(queueName: String)(
-      client: FinagledClosableClient): Future[Seq[Item]] =
-    client.get(queueName,
-               1,
-               Int.MaxValue,
-               safeLongToInt(txnAbortTimeout.inMilliseconds.toLong))
+  private def openRead(
+      queueName: String
+  )(client: FinagledClosableClient): Future[Seq[Item]] =
+    client.get(
+      queueName,
+      1,
+      Int.MaxValue,
+      safeLongToInt(txnAbortTimeout.inMilliseconds.toLong)
+    )
 
-  private def confirmAndOpenRead(queueName: String)(id: Long)(
-      client: FinagledClosableClient): Future[Seq[Item]] =
+  private def confirmAndOpenRead(
+      queueName: String
+  )(id: Long)(client: FinagledClosableClient): Future[Seq[Item]] =
     client.confirm(queueName, collection.Set(id)) flatMap { _ =>
       openRead(queueName)(client)
     }
 
-  private def abortReadCommand(queueName: String)(
-      id: Long)(client: FinagledClosableClient): Future[Seq[Item]] =
+  private def abortReadCommand(
+      queueName: String
+  )(id: Long)(client: FinagledClosableClient): Future[Seq[Item]] =
     client.abort(queueName, collection.Set(id)).map { _ =>
       collection.Seq[Item]()
     }
 
   def read(queueName: String): ReadHandle =
     read(
-        (response: Seq[Item]) =>
-          response match {
-            case Seq(Item(data, id)) =>
-              Return(Some((Buf.ByteBuffer.Owned(data), id)))
-            case Seq() => Return(None)
-            case _ =>
-              Throw(new IllegalArgumentException("invalid reply from kestrel"))
+      (response: Seq[Item]) =>
+        response match {
+          case Seq(Item(data, id)) =>
+            Return(Some((Buf.ByteBuffer.Owned(data), id)))
+          case Seq() => Return(None)
+          case _ =>
+            Throw(new IllegalArgumentException("invalid reply from kestrel"))
         },
-        openRead(queueName),
-        confirmAndOpenRead(queueName),
-        abortReadCommand(queueName))
+      openRead(queueName),
+      confirmAndOpenRead(queueName),
+      abortReadCommand(queueName)
+    )
 }

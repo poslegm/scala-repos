@@ -21,8 +21,8 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
   import WSTestUtils._
 
   val InvalidUtf8TwoByteSequence: ByteString = ByteString(
-      (128 + 64).toByte, // start two byte sequence
-      0 // but don't finish it
+    (128 + 64).toByte, // start two byte sequence
+    0                  // but don't finish it
   )
 
   "The WebSocket implementation should" - {
@@ -35,31 +35,31 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           expectMessage(BinaryMessage.Strict(ByteString.empty))
         }
         "for one complete, strict, single frame message" in new ClientTestSetup {
-          val data = ByteString("abcdef", "ASCII")
+          val data  = ByteString("abcdef", "ASCII")
           val input = frameHeader(Opcode.Binary, 6, fin = true) ++ data
 
           pushInput(input)
           expectMessage(BinaryMessage.Strict(data))
         }
         "for a partial frame" in new ClientTestSetup {
-          val data1 = ByteString("abc", "ASCII")
+          val data1  = ByteString("abc", "ASCII")
           val header = frameHeader(Opcode.Binary, 6, fin = true)
 
           pushInput(header ++ data1)
           val dataSource = expectBinaryMessage().dataStream
-          val sub = TestSubscriber.manualProbe[ByteString]()
+          val sub        = TestSubscriber.manualProbe[ByteString]()
           dataSource.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(2)
           sub.expectNext(data1)
         }
         "for a frame split up into parts" in new ClientTestSetup {
-          val data1 = ByteString("abc", "ASCII")
+          val data1  = ByteString("abc", "ASCII")
           val header = frameHeader(Opcode.Binary, 6, fin = true)
 
           pushInput(header)
           val dataSource = expectBinaryMessage().dataStream
-          val sub = TestSubscriber.manualProbe[ByteString]()
+          val sub        = TestSubscriber.manualProbe[ByteString]()
           dataSource.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(2)
@@ -74,31 +74,31 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         }
 
         "for a message split into several frames" in new ClientTestSetup {
-          val data1 = ByteString("abc", "ASCII")
+          val data1   = ByteString("abc", "ASCII")
           val header1 = frameHeader(Opcode.Binary, 3, fin = false)
 
           pushInput(header1 ++ data1)
           val dataSource = expectBinaryMessage().dataStream
-          val sub = TestSubscriber.manualProbe[ByteString]()
+          val sub        = TestSubscriber.manualProbe[ByteString]()
           dataSource.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(2)
           sub.expectNext(data1)
 
           val header2 = frameHeader(Opcode.Continuation, 4, fin = true)
-          val data2 = ByteString("defg", "ASCII")
+          val data2   = ByteString("defg", "ASCII")
           pushInput(header2 ++ data2)
           sub.expectNext(data2)
           s.request(1)
           sub.expectComplete()
         }
         "for several messages" in new ClientTestSetup {
-          val data1 = ByteString("abc", "ASCII")
+          val data1   = ByteString("abc", "ASCII")
           val header1 = frameHeader(Opcode.Binary, 3, fin = false)
 
           pushInput(header1 ++ data1)
           val dataSource = expectBinaryMessage().dataStream
-          val sub = TestSubscriber.manualProbe[ByteString]()
+          val sub        = TestSubscriber.manualProbe[ByteString]()
           dataSource.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(2)
@@ -106,15 +106,15 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
 
           val header2 = frameHeader(Opcode.Continuation, 4, fin = true)
           val header3 = frameHeader(Opcode.Binary, 2, fin = true)
-          val data2 = ByteString("defg", "ASCII")
-          val data3 = ByteString("h")
+          val data2   = ByteString("defg", "ASCII")
+          val data3   = ByteString("h")
           pushInput(header2 ++ data2 ++ header3 ++ data3)
           sub.expectNext(data2)
           s.request(1)
           sub.expectComplete()
 
           val dataSource2 = expectBinaryMessage().dataStream
-          val sub2 = TestSubscriber.manualProbe[ByteString]()
+          val sub2        = TestSubscriber.manualProbe[ByteString]()
           dataSource2.runWith(Sink.fromSubscriber(sub2))
           val s2 = sub2.expectSubscription()
           s2.request(2)
@@ -127,16 +127,16 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           sub2.expectComplete()
         }
         "unmask masked input on the server side" in new ServerTestSetup {
-          val mask = Random.nextInt()
+          val mask      = Random.nextInt()
           val (data, _) = maskedASCII("abcdef", mask)
-          val data1 = data.take(3)
-          val data2 = data.drop(3)
+          val data1     = data.take(3)
+          val data2     = data.drop(3)
           val header =
             frameHeader(Opcode.Binary, 6, fin = true, mask = Some(mask))
 
           pushInput(header ++ data1)
           val dataSource = expectBinaryMessage().dataStream
-          val sub = TestSubscriber.manualProbe[ByteString]()
+          val sub        = TestSubscriber.manualProbe[ByteString]()
           dataSource.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(2)
@@ -164,16 +164,16 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           expectMessage(TextMessage.Strict(""))
         }
         "decode complete, strict frame from utf8" in new ClientTestSetup {
-          val msg = "äbcdef€\uffff"
-          val data = ByteString(msg, "UTF-8")
+          val msg   = "äbcdef€\uffff"
+          val data  = ByteString(msg, "UTF-8")
           val input = frameHeader(Opcode.Text, data.size, fin = true) ++ data
 
           pushInput(input)
           expectMessage(TextMessage.Strict(msg))
         }
         "decode utf8 as far as possible for partial frame" in new ClientTestSetup {
-          val msg = "bäcdef€"
-          val data = ByteString(msg, "UTF-8")
+          val msg   = "bäcdef€"
+          val data  = ByteString(msg, "UTF-8")
           val data0 = data.slice(0, 2)
           val data1 = data.slice(2, 5)
           val data2 = data.slice(5, data.size)
@@ -181,7 +181,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
 
           pushInput(input)
           val parts = expectTextMessage().textStream
-          val sub = TestSubscriber.manualProbe[String]()
+          val sub   = TestSubscriber.manualProbe[String]()
           parts.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(4)
@@ -191,15 +191,15 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           sub.expectNext("äcd")
         }
         "decode utf8 with code point split across frames" in new ClientTestSetup {
-          val msg = "äbcdef€"
-          val data = ByteString(msg, "UTF-8")
-          val data0 = data.slice(0, 1)
-          val data1 = data.slice(1, data.size)
+          val msg     = "äbcdef€"
+          val data    = ByteString(msg, "UTF-8")
+          val data0   = data.slice(0, 1)
+          val data1   = data.slice(1, data.size)
           val header0 = frameHeader(Opcode.Text, data0.size, fin = false)
 
           pushInput(header0 ++ data0)
           val parts = expectTextMessage().textStream
-          val sub = TestSubscriber.manualProbe[String]()
+          val sub   = TestSubscriber.manualProbe[String]()
           parts.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(4)
@@ -211,18 +211,16 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           sub.expectNext("äbcdef€")
         }
         "unmask masked input on the server side" in new ServerTestSetup {
-          val mask = Random.nextInt()
+          val mask      = Random.nextInt()
           val (data, _) = maskedUTF8("äbcdef€", mask)
-          val data1 = data.take(3)
-          val data2 = data.drop(3)
-          val header = frameHeader(Opcode.Binary,
-                                   data.size,
-                                   fin = true,
-                                   mask = Some(mask))
+          val data1     = data.take(3)
+          val data2     = data.drop(3)
+          val header =
+            frameHeader(Opcode.Binary, data.size, fin = true, mask = Some(mask))
 
           pushInput(header ++ data1)
           val dataSource = expectBinaryMessage().dataStream
-          val sub = TestSubscriber.manualProbe[ByteString]()
+          val sub        = TestSubscriber.manualProbe[ByteString]()
           dataSource.runWith(Sink.fromSubscriber(sub))
           val s = sub.expectSubscription()
           s.request(2)
@@ -247,7 +245,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       "for binary messages" - {
         "for a short strict message" in new ServerTestSetup {
           val data = ByteString("abcdef", "ASCII")
-          val msg = BinaryMessage.Strict(data)
+          val msg  = BinaryMessage.Strict(data)
           pushMessage(msg)
 
           expectFrameOnNetwork(Opcode.Binary, data, fin = true)
@@ -255,8 +253,8 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         "for a strict message larger than configured maximum frame size" in pending
         "for a streamed message" in new ServerTestSetup {
           val data = ByteString("abcdefg", "ASCII")
-          val pub = TestPublisher.manualProbe[ByteString]()
-          val msg = BinaryMessage(Source.fromPublisher(pub))
+          val pub  = TestPublisher.manualProbe[ByteString]()
+          val msg  = BinaryMessage(Source.fromPublisher(pub))
           pushMessage(msg)
           val sub = pub.expectSubscription()
 
@@ -272,15 +270,17 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           expectFrameOnNetwork(Opcode.Continuation, data2, fin = false)
 
           sub.sendComplete()
-          expectFrameOnNetwork(Opcode.Continuation,
-                               ByteString.empty,
-                               fin = true)
+          expectFrameOnNetwork(
+            Opcode.Continuation,
+            ByteString.empty,
+            fin = true
+          )
         }
         "for a streamed message with a chunk being larger than configured maximum frame size" in pending
         "and mask input on the client side" in new ClientTestSetup {
           val data = ByteString("abcdefg", "ASCII")
-          val pub = TestPublisher.manualProbe[ByteString]()
-          val msg = BinaryMessage(Source.fromPublisher(pub))
+          val pub  = TestPublisher.manualProbe[ByteString]()
+          val msg  = BinaryMessage(Source.fromPublisher(pub))
           pushMessage(msg)
           val sub = pub.expectSubscription()
 
@@ -296,40 +296,46 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           expectMaskedFrameOnNetwork(Opcode.Continuation, data2, fin = false)
 
           sub.sendComplete()
-          expectFrameOnNetwork(Opcode.Continuation,
-                               ByteString.empty,
-                               fin = true)
+          expectFrameOnNetwork(
+            Opcode.Continuation,
+            ByteString.empty,
+            fin = true
+          )
         }
         "and mask input on the client side for empty frame" in new ClientTestSetup {
           pushMessage(BinaryMessage(ByteString.empty))
-          expectMaskedFrameOnNetwork(Opcode.Binary,
-                                     ByteString.empty,
-                                     fin = true)
+          expectMaskedFrameOnNetwork(
+            Opcode.Binary,
+            ByteString.empty,
+            fin = true
+          )
         }
       }
       "for text messages" - {
         "for a short strict message" in new ServerTestSetup {
           val text = "äbcdef"
-          val msg = TextMessage.Strict(text)
+          val msg  = TextMessage.Strict(text)
           pushMessage(msg)
 
-          expectFrameOnNetwork(Opcode.Text,
-                               ByteString(text, "UTF-8"),
-                               fin = true)
+          expectFrameOnNetwork(
+            Opcode.Text,
+            ByteString(text, "UTF-8"),
+            fin = true
+          )
         }
         "for a strict message larger than configured maximum frame size" in pending
         "for a streamed message" in new ServerTestSetup {
           val text = "äbcd€fg"
-          val pub = TestPublisher.manualProbe[String]()
-          val msg = TextMessage(Source.fromPublisher(pub))
+          val pub  = TestPublisher.manualProbe[String]()
+          val msg  = TextMessage(Source.fromPublisher(pub))
           pushMessage(msg)
           val sub = pub.expectSubscription()
 
           expectFrameHeaderOnNetwork(Opcode.Text, 0, fin = false)
 
-          val text1 = text.take(3)
+          val text1      = text.take(3)
           val text1Bytes = ByteString(text1, "UTF-8")
-          val text2 = text.drop(3)
+          val text2      = text.drop(3)
           val text2Bytes = ByteString(text2, "UTF-8")
 
           sub.sendNext(text1)
@@ -339,9 +345,11 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           expectFrameOnNetwork(Opcode.Continuation, text2Bytes, fin = false)
 
           sub.sendComplete()
-          expectFrameOnNetwork(Opcode.Continuation,
-                               ByteString.empty,
-                               fin = true)
+          expectFrameOnNetwork(
+            Opcode.Continuation,
+            ByteString.empty,
+            fin = true
+          )
         }
         "for a streamed message don't convert half surrogate pairs naively" in new ServerTestSetup {
           val gclef = "𝄞"
@@ -362,39 +370,47 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
 
           expectNoNetworkData()
           sub.sendNext(half2)
-          expectFrameOnNetwork(Opcode.Continuation,
-                               ByteString(gclef, "utf8"),
-                               fin = false)
+          expectFrameOnNetwork(
+            Opcode.Continuation,
+            ByteString(gclef, "utf8"),
+            fin = false
+          )
         }
         "for a streamed message with a chunk being larger than configured maximum frame size" in pending
         "and mask input on the client side" in new ClientTestSetup {
           val text = "abcdefg"
-          val pub = TestPublisher.manualProbe[String]()
-          val msg = TextMessage(Source.fromPublisher(pub))
+          val pub  = TestPublisher.manualProbe[String]()
+          val msg  = TextMessage(Source.fromPublisher(pub))
           pushMessage(msg)
           val sub = pub.expectSubscription()
 
           expectFrameOnNetwork(Opcode.Text, ByteString.empty, fin = false)
 
-          val text1 = text.take(3)
+          val text1      = text.take(3)
           val text1Bytes = ByteString(text1, "UTF-8")
-          val text2 = text.drop(3)
+          val text2      = text.drop(3)
           val text2Bytes = ByteString(text2, "UTF-8")
 
           sub.sendNext(text1)
-          expectMaskedFrameOnNetwork(Opcode.Continuation,
-                                     text1Bytes,
-                                     fin = false)
+          expectMaskedFrameOnNetwork(
+            Opcode.Continuation,
+            text1Bytes,
+            fin = false
+          )
 
           sub.sendNext(text2)
-          expectMaskedFrameOnNetwork(Opcode.Continuation,
-                                     text2Bytes,
-                                     fin = false)
+          expectMaskedFrameOnNetwork(
+            Opcode.Continuation,
+            text2Bytes,
+            fin = false
+          )
 
           sub.sendComplete()
-          expectFrameOnNetwork(Opcode.Continuation,
-                               ByteString.empty,
-                               fin = true)
+          expectFrameOnNetwork(
+            Opcode.Continuation,
+            ByteString.empty,
+            fin = true
+          )
         }
         "and mask input on the client side for empty frame" in new ClientTestSetup {
           pushMessage(TextMessage(""))
@@ -406,8 +422,12 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       "respond to ping frames unmasking them on the server side" in new ServerTestSetup {
         val mask = Random.nextInt()
         val input =
-          frameHeader(Opcode.Ping, 6, fin = true, mask = Some(mask)) ++ maskedASCII(
-              "abcdef", mask)._1
+          frameHeader(
+            Opcode.Ping,
+            6,
+            fin = true,
+            mask = Some(mask)
+          ) ++ maskedASCII("abcdef", mask)._1
 
         pushInput(input)
         expectFrameOnNetwork(Opcode.Pong, ByteString("abcdef"), fin = true)
@@ -418,7 +438,10 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
 
         pushInput(input)
         expectMaskedFrameOnNetwork(
-            Opcode.Pong, ByteString("abcdef"), fin = true)
+          Opcode.Pong,
+          ByteString("abcdef"),
+          fin = true
+        )
       }
       "respond to ping frames interleaved with data frames (without mixing frame data)" in new ServerTestSetup {
         // receive multi-frame message
@@ -426,41 +449,51 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         // concurrently send out messages from handler
         val mask1 = Random.nextInt()
         val input1 =
-          frameHeader(Opcode.Binary, 3, fin = false, mask = Some(mask1)) ++ maskedASCII(
-              "123", mask1)._1
+          frameHeader(
+            Opcode.Binary,
+            3,
+            fin = false,
+            mask = Some(mask1)
+          ) ++ maskedASCII("123", mask1)._1
         pushInput(input1)
 
         val dataSource = expectBinaryMessage().dataStream
-        val sub = TestSubscriber.manualProbe[ByteString]()
+        val sub        = TestSubscriber.manualProbe[ByteString]()
         dataSource.runWith(Sink.fromSubscriber(sub))
         val s = sub.expectSubscription()
         s.request(2)
         sub.expectNext(ByteString("123", "ASCII"))
 
         val outPub = TestPublisher.manualProbe[ByteString]()
-        val msg = BinaryMessage(Source.fromPublisher(outPub))
+        val msg    = BinaryMessage(Source.fromPublisher(outPub))
         pushMessage(msg)
 
         expectFrameHeaderOnNetwork(Opcode.Binary, 0, fin = false)
 
-        val outSub = outPub.expectSubscription()
+        val outSub   = outPub.expectSubscription()
         val outData1 = ByteString("abc", "ASCII")
         outSub.sendNext(outData1)
         expectFrameOnNetwork(Opcode.Continuation, outData1, fin = false)
 
-        val pingMask = Random.nextInt()
-        val pingData = maskedASCII("pling", pingMask)._1
+        val pingMask  = Random.nextInt()
+        val pingData  = maskedASCII("pling", pingMask)._1
         val pingData0 = pingData.take(3)
         val pingData1 = pingData.drop(3)
-        pushInput(frameHeader(Opcode.Ping,
-                              5,
-                              fin = true,
-                              mask = Some(pingMask)) ++ pingData0)
+        pushInput(
+          frameHeader(
+            Opcode.Ping,
+            5,
+            fin = true,
+            mask = Some(pingMask)
+          ) ++ pingData0
+        )
         expectNoNetworkData()
         pushInput(pingData1)
-        expectFrameOnNetwork(Opcode.Pong,
-                             ByteString("pling", "ASCII"),
-                             fin = true)
+        expectFrameOnNetwork(
+          Opcode.Pong,
+          ByteString("pling", "ASCII"),
+          fin = true
+        )
 
         val outData2 = ByteString("def", "ASCII")
         outSub.sendNext(outData2)
@@ -471,8 +504,12 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
 
         val mask2 = Random.nextInt()
         val input2 =
-          frameHeader(Opcode.Continuation, 3, fin = true, mask = Some(mask2)) ++ maskedASCII(
-              "456", mask2)._1
+          frameHeader(
+            Opcode.Continuation,
+            3,
+            fin = true,
+            mask = Some(mask2)
+          ) ++ maskedASCII("456", mask2)._1
         pushInput(input2)
         sub.expectNext(ByteString("456", "ASCII"))
         s.request(1)
@@ -499,8 +536,14 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         netIn.expectCancellation()
       }
       "after receiving close frame without close code" in new ServerTestSetup {
-        pushInput(frameHeader(
-                Opcode.Close, 0, fin = true, mask = Some(Random.nextInt())))
+        pushInput(
+          frameHeader(
+            Opcode.Close,
+            0,
+            fin = true,
+            mask = Some(Random.nextInt())
+          )
+        )
         expectComplete(messageIn)
 
         messageOut.sendComplete()
@@ -539,7 +582,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         pushMessage(msg)
         expectFrameOnNetwork(Opcode.Binary, ByteString.empty, fin = false)
 
-        val data = ByteString("abc", "ASCII")
+        val data    = ByteString("abc", "ASCII")
         val dataSub = pub.expectSubscription()
         dataSub.sendNext(data)
         expectFrameOnNetwork(Opcode.Continuation, data, fin = false)
@@ -552,22 +595,29 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         netOut.expectComplete()
       }
       "after receiving regular close frame when fragmented message is still open" in new ServerTestSetup {
-        pushInput(frameHeader(Protocol.Opcode.Binary,
-                              0,
-                              fin = false,
-                              mask = Some(Random.nextInt())))
-        val dataSource = expectBinaryMessage().dataStream
+        pushInput(
+          frameHeader(
+            Protocol.Opcode.Binary,
+            0,
+            fin = false,
+            mask = Some(Random.nextInt())
+          )
+        )
+        val dataSource   = expectBinaryMessage().dataStream
         val inSubscriber = TestSubscriber.manualProbe[ByteString]()
         dataSource.runWith(Sink.fromSubscriber(inSubscriber))
         val inSub = inSubscriber.expectSubscription()
 
         val outData = ByteString("def", "ASCII")
-        val mask = Random.nextInt()
+        val mask    = Random.nextInt()
         pushInput(
-            frameHeader(Protocol.Opcode.Continuation,
-                        3,
-                        fin = false,
-                        mask = Some(mask)) ++ maskedBytes(outData, mask)._1)
+          frameHeader(
+            Protocol.Opcode.Continuation,
+            3,
+            fin = false,
+            mask = Some(mask)
+          ) ++ maskedBytes(outData, mask)._1
+        )
         inSub.request(5)
         inSubscriber.expectNext(outData)
 
@@ -587,7 +637,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         pushMessage(msg)
         expectFrameOnNetwork(Opcode.Binary, ByteString.empty, fin = false)
 
-        val data = ByteString("abc", "ASCII")
+        val data    = ByteString("abc", "ASCII")
         val dataSub = pub.expectSubscription()
         dataSub.sendNext(data)
         expectFrameOnNetwork(Opcode.Continuation, data, fin = false)
@@ -601,7 +651,8 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       }
       "after receiving error close frame with close code and without reason" in new ServerTestSetup {
         pushInput(
-            closeFrame(Protocol.CloseCodes.UnexpectedCondition, mask = true))
+          closeFrame(Protocol.CloseCodes.UnexpectedCondition, mask = true)
+        )
         val error =
           expectError(messageIn).asInstanceOf[PeerClosedConnectionException]
         error.closeCode shouldEqual Protocol.CloseCodes.UnexpectedCondition
@@ -613,10 +664,13 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         netIn.expectCancellation()
       }
       "after receiving error close frame with close code and with reason" in new ServerTestSetup {
-        pushInput(closeFrame(
-                Protocol.CloseCodes.UnexpectedCondition,
-                mask = true,
-                msg = "This alien landing came quite unexpected. Communication has been garbled."))
+        pushInput(
+          closeFrame(
+            Protocol.CloseCodes.UnexpectedCondition,
+            mask = true,
+            msg = "This alien landing came quite unexpected. Communication has been garbled."
+          )
+        )
         val error =
           expectError(messageIn).asInstanceOf[PeerClosedConnectionException]
         error.closeCode shouldEqual Protocol.CloseCodes.UnexpectedCondition
@@ -655,7 +709,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         pushMessage(msg)
         expectFrameOnNetwork(Opcode.Binary, ByteString.empty, fin = false)
 
-        val data = ByteString("abc", "ASCII")
+        val data    = ByteString("abc", "ASCII")
         val dataSub = pub.expectSubscription()
         dataSub.sendNext(data)
         expectFrameOnNetwork(Opcode.Continuation, data, fin = false)
@@ -676,10 +730,13 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         netIn.expectCancellation()
       }
       "if user handler fails" in new ServerTestSetup {
-        EventFilter[RuntimeException](message = "Oops, user handler failed!",
-                                      occurrences = 1).intercept {
+        EventFilter[RuntimeException](
+          message = "Oops, user handler failed!",
+          occurrences = 1
+        ).intercept {
           messageOut.sendError(
-              new RuntimeException("Oops, user handler failed!"))
+            new RuntimeException("Oops, user handler failed!")
+          )
           expectCloseCodeOnNetwork(Protocol.CloseCodes.UnexpectedCondition)
 
           expectNoNetworkData() // wait for peer to close regularly
@@ -704,10 +761,14 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           netIn.expectCancellation()
         }
         "close data of size 1" in new ServerTestSetup {
-          pushInput(frameHeader(Opcode.Close,
-                                1,
-                                mask = Some(Random.nextInt()),
-                                fin = true) ++ ByteString("x"))
+          pushInput(
+            frameHeader(
+              Opcode.Close,
+              1,
+              mask = Some(Random.nextInt()),
+              fin = true
+            ) ++ ByteString("x")
+          )
 
           val error =
             expectError(messageIn).asInstanceOf[PeerClosedConnectionException]
@@ -719,9 +780,13 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           netIn.expectCancellation()
         }
         "close message is invalid UTF8" in new ServerTestSetup {
-          pushInput(closeFrame(Protocol.CloseCodes.UnexpectedCondition,
-                               mask = true,
-                               msgBytes = InvalidUtf8TwoByteSequence))
+          pushInput(
+            closeFrame(
+              Protocol.CloseCodes.UnexpectedCondition,
+              mask = true,
+              msgBytes = InvalidUtf8TwoByteSequence
+            )
+          )
 
           val error =
             expectError(messageIn).asInstanceOf[PeerClosedConnectionException]
@@ -816,12 +881,18 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       }
       "unexpected continuation frame" in new ServerTestSetup {
         pushInput(
-            frameHeader(Opcode.Continuation, 0, fin = false, mask = Some(0)))
+          frameHeader(Opcode.Continuation, 0, fin = false, mask = Some(0))
+        )
         expectProtocolErrorOnNetwork()
       }
       "unexpected data frame when waiting for continuation" in new ServerTestSetup {
-        pushInput(frameHeader(Opcode.Binary, 0, fin = false) ++ frameHeader(
-                Opcode.Binary, 0, fin = false))
+        pushInput(
+          frameHeader(Opcode.Binary, 0, fin = false) ++ frameHeader(
+            Opcode.Binary,
+            0,
+            fin = false
+          )
+        )
         expectProtocolErrorOnNetwork()
       }
       "invalid utf8 encoding for single frame message" in new ClientTestSetup {
@@ -833,8 +904,13 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       "invalid utf8 encoding for streamed frame" in new ClientTestSetup {
         val data = InvalidUtf8TwoByteSequence
 
-        pushInput(frameHeader(Opcode.Text, 0, fin = false) ++ frameHeader(
-                Opcode.Continuation, 2, fin = true) ++ data)
+        pushInput(
+          frameHeader(Opcode.Text, 0, fin = false) ++ frameHeader(
+            Opcode.Continuation,
+            2,
+            fin = true
+          ) ++ data
+        )
         expectCloseCodeOnNetwork(Protocol.CloseCodes.InconsistentData)
       }
       "truncated utf8 encoding for single frame message" in new ClientTestSetup {
@@ -844,8 +920,13 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       }
       "truncated utf8 encoding for streamed frame" in new ClientTestSetup {
         val data = ByteString("€", "UTF-8").take(1) // half a euro
-        pushInput(frameHeader(Opcode.Text, 0, fin = false) ++ frameHeader(
-                Opcode.Continuation, 1, fin = true) ++ data)
+        pushInput(
+          frameHeader(Opcode.Text, 0, fin = false) ++ frameHeader(
+            Opcode.Continuation,
+            1,
+            fin = true
+          ) ++ data
+        )
         expectCloseCodeOnNetwork(Protocol.CloseCodes.InconsistentData)
       }
       "half a surrogate pair in utf8 encoding for a strict frame" in new ClientTestSetup {
@@ -872,7 +953,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
         expectCloseCodeOnNetwork(Protocol.CloseCodes.InconsistentData)
       }
       "unmasked input on the server side" in new ServerTestSetup {
-        val data = ByteString("abcdef", "ASCII")
+        val data  = ByteString("abcdef", "ASCII")
         val input = frameHeader(Opcode.Binary, 6, fin = true) ++ data
 
         pushInput(input)
@@ -887,8 +968,12 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       "masked input on the client side" in new ClientTestSetup {
         val mask = Random.nextInt()
         val input =
-          frameHeader(Opcode.Binary, 6, fin = true, mask = Some(mask)) ++ maskedASCII(
-              "abcdef", mask)._1
+          frameHeader(
+            Opcode.Binary,
+            6,
+            fin = true,
+            mask = Some(mask)
+          ) ++ maskedASCII("abcdef", mask)._1
 
         pushInput(input)
         expectProtocolErrorOnNetwork()
@@ -915,40 +1000,50 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
     protected def serverSide: Boolean
     protected def closeTimeout: FiniteDuration = 1.second
 
-    val netIn = TestPublisher.probe[ByteString]()
+    val netIn  = TestPublisher.probe[ByteString]()
     val netOut = ByteStringSinkProbe()
 
-    val messageIn = TestSubscriber.probe[Message]
+    val messageIn  = TestSubscriber.probe[Message]
     val messageOut = TestPublisher.probe[Message]()
 
     val messageHandler: Flow[Message, Message, NotUsed] = Flow
       .fromSinkAndSource(
         Flow[Message]
           .buffer(1, OverflowStrategy.backpressure)
-          .to(Sink.fromSubscriber(messageIn)), // alternatively need to request(1) before expectComplete
-        Source.fromPublisher(messageOut))
+          .to(
+            Sink.fromSubscriber(messageIn)
+          ), // alternatively need to request(1) before expectComplete
+        Source.fromPublisher(messageOut)
+      )
 
     Source
       .fromPublisher(netIn)
       .via(printEvent("netIn"))
       .via(FrameEventParser)
-      .via(WebSocket
-            .stack(serverSide,
-                   maskingRandomFactory = Randoms.SecureRandomInstances,
-                   closeTimeout = closeTimeout,
-                   log = system.log)
-            .join(messageHandler))
+      .via(
+        WebSocket
+          .stack(
+            serverSide,
+            maskingRandomFactory = Randoms.SecureRandomInstances,
+            closeTimeout = closeTimeout,
+            log = system.log
+          )
+          .join(messageHandler)
+      )
       .via(printEvent("frameRendererIn"))
       .transform(() ⇒ new FrameEventRenderer)
       .via(printEvent("frameRendererOut"))
-      .buffer(1, OverflowStrategy.backpressure) // alternatively need to request(1) before expectComplete
+      .buffer(
+        1,
+        OverflowStrategy.backpressure
+      ) // alternatively need to request(1) before expectComplete
       .to(netOut.sink)
       .run()
 
-    def pushInput(data: ByteString): Unit = netIn.sendNext(data)
-    def pushMessage(msg: Message): Unit = messageOut.sendNext(msg)
+    def pushInput(data: ByteString): Unit     = netIn.sendNext(data)
+    def pushMessage(msg: Message): Unit       = messageOut.sendNext(msg)
     def expectMessage(message: Message): Unit = messageIn.requestNext(message)
-    def expectMessage(): Message = messageIn.requestNext()
+    def expectMessage(): Message              = messageIn.requestNext()
     def expectBinaryMessage(): BinaryMessage =
       expectMessage().asInstanceOf[BinaryMessage]
     def expectBinaryMessage(message: BinaryMessage): Unit =
@@ -964,20 +1059,29 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       expectNetworkData(data.size) shouldEqual data
 
     def expectFrameOnNetwork(
-        opcode: Opcode, data: ByteString, fin: Boolean): Unit = {
+        opcode: Opcode,
+        data: ByteString,
+        fin: Boolean
+    ): Unit = {
       expectFrameHeaderOnNetwork(opcode, data.size, fin)
       expectNetworkData(data)
     }
     def expectMaskedFrameOnNetwork(
-        opcode: Opcode, data: ByteString, fin: Boolean): Unit = {
+        opcode: Opcode,
+        data: ByteString,
+        fin: Boolean
+    ): Unit = {
       val Some(mask) = expectFrameHeaderOnNetwork(opcode, data.size, fin)
-      val masked = maskedBytes(data, mask)._1
+      val masked     = maskedBytes(data, mask)._1
       expectNetworkData(masked)
     }
 
     /** Returns the mask if any is available */
     def expectFrameHeaderOnNetwork(
-        opcode: Opcode, length: Long, fin: Boolean): Option[Int] = {
+        opcode: Opcode,
+        length: Long,
+        fin: Boolean
+    ): Option[Int] = {
       val (op, l, f, m) = expectFrameHeaderOnNetwork()
       op shouldEqual opcode
       l shouldEqual length
@@ -988,7 +1092,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       val header = expectNetworkData(2)
 
       val fin = (header(0) & Protocol.FIN_MASK) != 0
-      val op = header(0) & Protocol.OP_MASK
+      val op  = header(0) & Protocol.OP_MASK
 
       val hasMask = (header(1) & Protocol.MASK_MASK) != 0
       val length7 = header(1) & Protocol.LENGTH_MASK
@@ -998,10 +1102,18 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           (length16Bytes(0) & 0xff) << 8 | (length16Bytes(1) & 0xff) << 0
         case 127 ⇒
           val length64Bytes = expectNetworkData(8)
-          (length64Bytes(0) & 0xff).toLong << 56 | (length64Bytes(1) & 0xff).toLong << 48 |
-          (length64Bytes(2) & 0xff).toLong << 40 | (length64Bytes(3) & 0xff).toLong << 32 |
-          (length64Bytes(4) & 0xff).toLong << 24 | (length64Bytes(5) & 0xff).toLong << 16 |
-          (length64Bytes(6) & 0xff).toLong << 8 | (length64Bytes(7) & 0xff).toLong << 0
+          (length64Bytes(0) & 0xff).toLong << 56 | (length64Bytes(
+            1
+          ) & 0xff).toLong << 48 |
+            (length64Bytes(2) & 0xff).toLong << 40 | (length64Bytes(
+            3
+          ) & 0xff).toLong << 32 |
+            (length64Bytes(4) & 0xff).toLong << 24 | (length64Bytes(
+            5
+          ) & 0xff).toLong << 16 |
+            (length64Bytes(6) & 0xff).toLong << 8 | (length64Bytes(
+            7
+          ) & 0xff).toLong << 0
         case x ⇒ x
       }
       val mask =
@@ -1009,7 +1121,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
           val maskBytes = expectNetworkData(4)
           val mask =
             (maskBytes(0) & 0xff) << 24 | (maskBytes(1) & 0xff) << 16 |
-            (maskBytes(2) & 0xff) << 8 | (maskBytes(3) & 0xff) << 0
+              (maskBytes(2) & 0xff) << 8 | (maskBytes(3) & 0xff) << 0
           Some(mask)
         } else None
 
@@ -1026,7 +1138,7 @@ class MessageSpec extends FreeSpec with Matchers with WithMaterializerSpec {
       val rawData = expectNetworkData(length.toInt)
       val data = mask match {
         case Some(m) ⇒ FrameEventParser.mask(rawData, m)._1
-        case None ⇒ rawData
+        case None    ⇒ rawData
       }
 
       val code = ((data(0) & 0xff) << 8) | ((data(1) & 0xff) << 0)

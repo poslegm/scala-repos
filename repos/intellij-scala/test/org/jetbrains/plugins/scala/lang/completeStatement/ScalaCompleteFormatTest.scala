@@ -7,7 +7,7 @@ package lang.completeStatement
   */
 class ScalaCompleteFormatTest extends ScalaCompleteStatementTestBase {
   def testFormat() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  val d=7+7+7+77<caret>
         |}
@@ -22,7 +22,7 @@ class ScalaCompleteFormatTest extends ScalaCompleteStatementTestBase {
   }
 
   def testFormat2() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  if (true) {
         |    val d=7+7+7+7+7
@@ -43,7 +43,7 @@ class ScalaCompleteFormatTest extends ScalaCompleteStatementTestBase {
   }
 
   def testFormat3() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  if (true) {
         |    val d=7+7+7+7+7
@@ -66,7 +66,7 @@ class ScalaCompleteFormatTest extends ScalaCompleteStatementTestBase {
   }
 
   def testFormatJava() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |    int d=7+7+7+77;<caret>
         |}

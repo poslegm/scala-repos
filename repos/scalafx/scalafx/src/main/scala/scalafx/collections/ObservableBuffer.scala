@@ -32,7 +32,12 @@ import javafx.collections.ObservableList
 import javafx.{collections => jfxc}
 
 import scala.collection.JavaConversions._
-import scala.collection.generic.{CanBuildFrom, GenericCompanion, GenericTraversableTemplate, SeqFactory}
+import scala.collection.generic.{
+  CanBuildFrom,
+  GenericCompanion,
+  GenericTraversableTemplate,
+  SeqFactory
+}
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{GenTraversableOnce, TraversableOnce, mutable}
 import scala.language.implicitConversions
@@ -56,7 +61,8 @@ object ObservableBuffer extends SeqFactory[ObservableBuffer] {
     * @param ob ObservableBuffer
     */
   implicit def observableBuffer2ObservableList[T](
-      ob: ObservableBuffer[T]): ObservableList[T] =
+      ob: ObservableBuffer[T]
+  ): ObservableList[T] =
     if (ob != null) ob.delegate else null
 
   /**
@@ -118,8 +124,7 @@ object ObservableBuffer extends SeqFactory[ObservableBuffer] {
     * @see [[http://docs.oracle.com/javase/8/javafx/api/javafx/collections/ListChangeListener.Change.html#getFrom() `ListChangeListener.Change.getFrom()`]]
     * @see [[http://docs.oracle.com/javase/8/javafx/api/javafx/collections/ListChangeListener.Change.html#getRemoved() `ListChangeListener.Change.getRemoved()`]]
     */
-  case class Remove[T](position: Int, removed: Traversable[T])
-      extends Change[T]
+  case class Remove[T](position: Int, removed: Traversable[T]) extends Change[T]
 
   /**
     * Indicates a Reordering in an $OB.
@@ -251,10 +256,12 @@ object ObservableBuffer extends SeqFactory[ObservableBuffer] {
   */
 class ObservableBuffer[T](
     override val delegate: jfxc.ObservableList[T] = jfxc.FXCollections
-        .observableArrayList[T])
-    extends mutable.Buffer[T] with mutable.BufferLike[T, ObservableBuffer[T]]
+      .observableArrayList[T]
+) extends mutable.Buffer[T]
+    with mutable.BufferLike[T, ObservableBuffer[T]]
     with GenericTraversableTemplate[T, ObservableBuffer]
-    with mutable.Builder[T, ObservableBuffer[T]] with Observable
+    with mutable.Builder[T, ObservableBuffer[T]]
+    with Observable
     with SFXDelegate[jfxc.ObservableList[T]] {
 
   /**
@@ -373,7 +380,7 @@ class ObservableBuffer[T](
     * @return A new $OB with all the elements of this $buf except those in `xs`. $noCL
     */
   override def --(xs: GenTraversableOnce[T]) = {
-    val ob = new ObservableBuffer[T]
+    val ob   = new ObservableBuffer[T]
     val list = xs.toList
     this.filterNot(list.contains(_)).foreach(ob += _)
     ob
@@ -431,13 +438,14 @@ class ObservableBuffer[T](
   /**
     * Creates a new [[http://www.scala-lang.org/api/current/scala/collection/Iterator.html `Iterator`]].
     */
-  def iterator = new Iterator[T] {
-    val it = delegate.iterator
+  def iterator =
+    new Iterator[T] {
+      val it = delegate.iterator
 
-    def hasNext = it.hasNext
+      def hasNext = it.hasNext
 
-    def next() = it.next()
-  }
+      def next() = it.next()
+    }
 
   /**
     * Length of this $OB.
@@ -532,14 +540,18 @@ class ObservableBuffer[T](
     */
   def sort()(implicit typeTag: WeakTypeTag[T]) {
     if (typeTag.tpe <:< typeOf[Comparable[_]]) {
-      jfxc.FXCollections.sort(delegate, new ju.Comparator[T] {
-        def compare(p1: T, p2: T) =
-          p1.asInstanceOf[Comparable[T]].compareTo(p2)
-      })
+      jfxc.FXCollections.sort(
+        delegate,
+        new ju.Comparator[T] {
+          def compare(p1: T, p2: T) =
+            p1.asInstanceOf[Comparable[T]].compareTo(p2)
+        }
+      )
     } else {
       throw new IllegalStateException(
-          "Type of this Observable List does not implement " +
-          "java.util.Comparable. Please use a Comparator function.")
+        "Type of this Observable List does not implement " +
+          "java.util.Comparable. Please use a Comparator function."
+      )
     }
   }
 
@@ -550,10 +562,13 @@ class ObservableBuffer[T](
     *           or `false` otherwise.
     */
   def sort(lt: (T, T) => Boolean) {
-    jfxc.FXCollections.sort(delegate, new ju.Comparator[T] {
-      def compare(p1: T, p2: T) =
-        if (lt(p1, p2)) -1 else if (lt(p2, p1)) 1 else 0
-    })
+    jfxc.FXCollections.sort(
+      delegate,
+      new ju.Comparator[T] {
+        def compare(p1: T, p2: T) =
+          if (lt(p1, p2)) -1 else if (lt(p2, p1)) 1 else 0
+      }
+    )
   }
 
   import scalafx.collections.ObservableBuffer._
@@ -567,15 +582,14 @@ class ObservableBuffer[T](
     * @return A subscription object
     */
   def onChange[T1 >: T](
-      op: (ObservableBuffer[T], Seq[Change[T1]]) => Unit): Subscription = {
+      op: (ObservableBuffer[T], Seq[Change[T1]]) => Unit
+  ): Subscription = {
     val listener = new jfxc.ListChangeListener[T1] {
       def onChanged(c: jfxc.ListChangeListener.Change[_ <: T1]) {
         var changes = ArrayBuffer.empty[Change[T1]]
         while (c.next()) {
           if (c.wasPermutated()) {
-            changes += Reorder(c.getFrom, c.getTo, { x =>
-              c.getPermutation(x)
-            })
+            changes += Reorder(c.getFrom, c.getTo, { x => c.getPermutation(x) })
           } else if (c.wasUpdated()) {
             changes += Update(c.getFrom, c.getTo)
           } else {

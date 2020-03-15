@@ -16,11 +16,11 @@ import scala.util.control.NonFatal
   */
 private[io] trait WithUdpSend { me: Actor with ActorLogging ⇒
 
-  private var pendingSend: Send = null
+  private var pendingSend: Send          = null
   private var pendingCommander: ActorRef = null
   // If send fails first, we allow a second go after selected writable, but no more. This flag signals that
   // pending send was already tried once.
-  private var retriedSend = false
+  private var retriedSend     = false
   private def hasWritePending = pendingSend ne null
 
   def channel: DatagramChannel
@@ -44,16 +44,18 @@ private[io] trait WithUdpSend { me: Actor with ActorLogging ⇒
         Dns.resolve(send.target.getHostName)(context.system, self) match {
           case Some(r) ⇒
             try {
-              pendingSend = pendingSend.copy(target = new InetSocketAddress(
-                        r.addr, pendingSend.target.getPort))
+              pendingSend = pendingSend.copy(target =
+                new InetSocketAddress(r.addr, pendingSend.target.getPort)
+              )
               doSend(registration)
             } catch {
               case NonFatal(e) ⇒
                 sender() ! CommandFailed(send)
                 log.debug(
-                    "Failure while sending UDP datagram to remote address [{}]: {}",
-                    send.target,
-                    e)
+                  "Failure while sending UDP datagram to remote address [{}]: {}",
+                  send.target,
+                  e
+                )
                 retriedSend = false
                 pendingSend = null
                 pendingCommander = null

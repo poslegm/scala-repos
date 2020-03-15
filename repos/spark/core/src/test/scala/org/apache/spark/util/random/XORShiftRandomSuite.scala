@@ -27,11 +27,12 @@ import org.apache.spark.util.Utils.times
 
 class XORShiftRandomSuite extends SparkFunSuite with Matchers {
 
-  private def fixture = new {
-    val seed = 1L
-    val xorRand = new XORShiftRandom(seed)
-    val hundMil = 1e8.toInt
-  }
+  private def fixture =
+    new {
+      val seed    = 1L
+      val xorRand = new XORShiftRandom(seed)
+      val hundMil = 1e8.toInt
+    }
 
   /*
    * This test is based on a chi-squared test for randomness.
@@ -42,7 +43,7 @@ class XORShiftRandomSuite extends SparkFunSuite with Matchers {
 
     val numBins = 10 // create 10 bins
     val numRows = 5 // create 5 rows
-    val bins = Array.ofDim[Long](numRows, numBins)
+    val bins    = Array.ofDim[Long](numRows, numBins)
 
     // populate bins based on modulus of the random number for each row
     for (r <- 0 to numRows - 1) {
@@ -67,7 +68,7 @@ class XORShiftRandomSuite extends SparkFunSuite with Matchers {
 
   test("hashSeed has random bits throughout") {
     val totalBitCount = (0 until 10).map { seed =>
-      val hashed = XORShiftRandom.hashSeed(seed)
+      val hashed   = XORShiftRandom.hashSeed(seed)
       val bitCount = java.lang.Long.bitCount(hashed)
       // make sure we have roughly equal numbers of 0s and 1s.  Mostly just check that we
       // don't have all 0s or 1s in the high bits

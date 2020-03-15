@@ -98,7 +98,7 @@ class StandardNormalGenerator extends RandomDataGenerator[Double] {
   */
 @DeveloperApi
 @Since("1.1.0")
-class PoissonGenerator @Since("1.1.0")(@Since("1.1.0") val mean: Double)
+class PoissonGenerator @Since("1.1.0") (@Since("1.1.0") val mean: Double)
     extends RandomDataGenerator[Double] {
 
   private val rng = new PoissonDistribution(mean)
@@ -123,7 +123,7 @@ class PoissonGenerator @Since("1.1.0")(@Since("1.1.0") val mean: Double)
   */
 @DeveloperApi
 @Since("1.3.0")
-class ExponentialGenerator @Since("1.3.0")(@Since("1.3.0") val mean: Double)
+class ExponentialGenerator @Since("1.3.0") (@Since("1.3.0") val mean: Double)
     extends RandomDataGenerator[Double] {
 
   private val rng = new ExponentialDistribution(mean)
@@ -149,9 +149,10 @@ class ExponentialGenerator @Since("1.3.0")(@Since("1.3.0") val mean: Double)
   */
 @DeveloperApi
 @Since("1.3.0")
-class GammaGenerator @Since("1.3.0")(
-    @Since("1.3.0") val shape: Double, @Since("1.3.0") val scale: Double)
-    extends RandomDataGenerator[Double] {
+class GammaGenerator @Since("1.3.0") (
+    @Since("1.3.0") val shape: Double,
+    @Since("1.3.0") val scale: Double
+) extends RandomDataGenerator[Double] {
 
   private val rng = new GammaDistribution(shape, scale)
 
@@ -177,9 +178,10 @@ class GammaGenerator @Since("1.3.0")(
   */
 @DeveloperApi
 @Since("1.3.0")
-class LogNormalGenerator @Since("1.3.0")(
-    @Since("1.3.0") val mean: Double, @Since("1.3.0") val std: Double)
-    extends RandomDataGenerator[Double] {
+class LogNormalGenerator @Since("1.3.0") (
+    @Since("1.3.0") val mean: Double,
+    @Since("1.3.0") val std: Double
+) extends RandomDataGenerator[Double] {
 
   private val rng = new LogNormalDistribution(mean, std)
 

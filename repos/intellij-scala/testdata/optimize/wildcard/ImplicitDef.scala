@@ -9,8 +9,8 @@ class ImplicitDef {
 }
 
 object Mess {
-  val a = 1
-  val s = "a"
+  val a   = 1
+  val s   = "a"
   def foo = 1
 
   class AAAA

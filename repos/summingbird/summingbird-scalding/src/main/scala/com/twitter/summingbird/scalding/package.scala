@@ -30,7 +30,7 @@ import org.apache.hadoop.io.Writable
 package object scalding {
 
   /** How we represent the streams in scalding */
-  type TimedPipe[+T] = TypedPipe[(Timestamp, T)]
+  type TimedPipe[+T]        = TypedPipe[(Timestamp, T)]
   type KeyValuePipe[+K, +V] = TimedPipe[(K, V)]
 
   /**
@@ -68,13 +68,13 @@ package object scalding {
   type PipeFactory[+T] = PlannerOutput[FlowToPipe[T]]
 
   // Helps interop with scalding:
-  implicit def modeFromTuple(implicit fm: (FlowDef, Mode)): Mode = fm._2
+  implicit def modeFromTuple(implicit fm: (FlowDef, Mode)): Mode       = fm._2
   implicit def flowDefFromTuple(implicit fm: (FlowDef, Mode)): FlowDef = fm._1
   implicit def toPipeFactoryOps[T](pipeF: PipeFactory[T]) =
     new PipeFactoryOps(pipeF)
 
   def toTry(e: Throwable, msg: String = ""): Try[Nothing] = {
-    val writer = new java.io.StringWriter
+    val writer      = new java.io.StringWriter
     val printWriter = new java.io.PrintWriter(writer)
     e.printStackTrace(printWriter)
     printWriter.flush

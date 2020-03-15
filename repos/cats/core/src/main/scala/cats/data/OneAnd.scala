@@ -63,8 +63,9 @@ final case class OneAnd[F[_], A](head: A, tail: F[A]) {
   /**
     * Right-associative fold on the structure using f.
     */
-  def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B])(
-      implicit F: Foldable[F]): Eval[B] =
+  def foldRight[B](
+      lb: Eval[B]
+  )(f: (A, Eval[B]) => Eval[B])(implicit F: Foldable[F]): Eval[B] =
     Eval.defer(f(head, F.foldRight(tail, lb)(f)))
 
   /**
@@ -97,14 +98,18 @@ final case class OneAnd[F[_], A](head: A, tail: F[A]) {
 
 private[data] sealed trait OneAndInstances extends OneAndLowPriority2 {
 
-  implicit def oneAndEq[A, F[_]](
-      implicit A: Eq[A], FA: Eq[F[A]]): Eq[OneAnd[F, A]] =
+  implicit def oneAndEq[A, F[_]](implicit
+      A: Eq[A],
+      FA: Eq[F[A]]
+  ): Eq[OneAnd[F, A]] =
     new Eq[OneAnd[F, A]] {
       def eqv(x: OneAnd[F, A], y: OneAnd[F, A]): Boolean = x === y
     }
 
-  implicit def oneAndShow[A, F[_]](
-      implicit A: Show[A], FA: Show[F[A]]): Show[OneAnd[F, A]] =
+  implicit def oneAndShow[A, F[_]](implicit
+      A: Show[A],
+      FA: Show[F[A]]
+  ): Show[OneAnd[F, A]] =
     Show.show[OneAnd[F, A]](_.show)
 
   implicit def oneAndSemigroupK[F[_]: MonadCombine]: SemigroupK[OneAnd[F, ?]] =
@@ -113,18 +118,19 @@ private[data] sealed trait OneAndInstances extends OneAndLowPriority2 {
         a combine b
     }
 
-  implicit def oneAndSemigroup[
-      F[_]: MonadCombine, A]: Semigroup[OneAnd[F, A]] =
+  implicit def oneAndSemigroup[F[_]: MonadCombine, A]: Semigroup[OneAnd[F, A]] =
     oneAndSemigroupK[F].algebra
 
   implicit def oneAndReducible[F[_]](
-      implicit F: Foldable[F]): Reducible[OneAnd[F, ?]] =
+      implicit F: Foldable[F]
+  ): Reducible[OneAnd[F, ?]] =
     new NonEmptyReducible[OneAnd[F, ?], F] {
       override def split[A](fa: OneAnd[F, A]): (A, F[A]) = (fa.head, fa.tail)
     }
 
   implicit def oneAndMonad[F[_]](
-      implicit monad: MonadCombine[F]): Monad[OneAnd[F, ?]] =
+      implicit monad: MonadCombine[F]
+  ): Monad[OneAnd[F, ?]] =
     new Monad[OneAnd[F, ?]] {
       override def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
         fa map f
@@ -132,7 +138,9 @@ private[data] sealed trait OneAndInstances extends OneAndLowPriority2 {
       def pure[A](x: A): OneAnd[F, A] =
         OneAnd(x, monad.empty)
 
-      def flatMap[A, B](fa: OneAnd[F, A])(f: A => OneAnd[F, B]): OneAnd[F, B] = {
+      def flatMap[A, B](
+          fa: OneAnd[F, A]
+      )(f: A => OneAnd[F, B]): OneAnd[F, B] = {
         val end = monad.flatMap(fa.tail) { a =>
           val fa = f(a)
           monad.combineK(monad.pure(fa.head), fa.tail)
@@ -146,11 +154,12 @@ private[data] sealed trait OneAndInstances extends OneAndLowPriority2 {
 trait OneAndLowPriority0 {
   implicit val nelComonad: Comonad[OneAnd[List, ?]] =
     new Comonad[OneAnd[List, ?]] {
-      def coflatMap[A, B](fa: OneAnd[List, A])(
-          f: OneAnd[List, A] => B): OneAnd[List, B] = {
+      def coflatMap[A, B](
+          fa: OneAnd[List, A]
+      )(f: OneAnd[List, A] => B): OneAnd[List, B] = {
         @tailrec def consume(as: List[A], buf: ListBuffer[B]): List[B] =
           as match {
-            case Nil => buf.toList
+            case Nil     => buf.toList
             case a :: as => consume(as, buf += f(OneAnd(a, as)))
           }
         OneAnd(f(fa), consume(fa.tail, ListBuffer.empty))
@@ -166,7 +175,8 @@ trait OneAndLowPriority0 {
 
 trait OneAndLowPriority1 extends OneAndLowPriority0 {
   implicit def oneAndFunctor[F[_]](
-      implicit F: Functor[F]): Functor[OneAnd[F, ?]] =
+      implicit F: Functor[F]
+  ): Functor[OneAnd[F, ?]] =
     new Functor[OneAnd[F, ?]] {
       def map[A, B](fa: OneAnd[F, A])(f: A => B): OneAnd[F, B] =
         fa map f
@@ -175,10 +185,12 @@ trait OneAndLowPriority1 extends OneAndLowPriority0 {
 
 trait OneAndLowPriority2 extends OneAndLowPriority1 {
   implicit def oneAndTraverse[F[_]](
-      implicit F: Traverse[F]): Traverse[OneAnd[F, ?]] =
+      implicit F: Traverse[F]
+  ): Traverse[OneAnd[F, ?]] =
     new Traverse[OneAnd[F, ?]] {
-      def traverse[G[_], A, B](fa: OneAnd[F, A])(f: (A) => G[B])(
-          implicit G: Applicative[G]): G[OneAnd[F, B]] = {
+      def traverse[G[_], A, B](
+          fa: OneAnd[F, A]
+      )(f: (A) => G[B])(implicit G: Applicative[G]): G[OneAnd[F, B]] = {
         val tail = F.traverse(fa.tail)(f)
         val head = f(fa.head)
         G.ap2[B, F[B], OneAnd[F, B]](G.pure(OneAnd(_, _)))(head, tail)
@@ -189,7 +201,8 @@ trait OneAndLowPriority2 extends OneAndLowPriority1 {
       }
 
       def foldRight[A, B](fa: OneAnd[F, A], lb: Eval[B])(
-          f: (A, Eval[B]) => Eval[B]): Eval[B] = {
+          f: (A, Eval[B]) => Eval[B]
+      ): Eval[B] = {
         fa.foldRight(lb)(f)
       }
     }

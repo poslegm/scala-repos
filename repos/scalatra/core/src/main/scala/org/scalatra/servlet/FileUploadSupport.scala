@@ -71,26 +71,30 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
    * doesn't throw `IllegalStateException` or if it throws
    * `IllegalStateException` for some other reason.
    */
-  protected def isSizeConstraintException(e: Exception): Boolean = e match {
-    case _: IllegalStateException => true
-    case _ => false
-  }
+  protected def isSizeConstraintException(e: Exception): Boolean =
+    e match {
+      case _: IllegalStateException => true
+      case _                        => false
+    }
 
   override def handle(
-      req: HttpServletRequest, res: HttpServletResponse): Unit = {
-    val req2 = try {
-      if (isMultipartRequest(req)) {
-        val bodyParams = extractMultipartParams(req)
-        val mergedFormParams = mergeFormParamsWithQueryString(req, bodyParams)
+      req: HttpServletRequest,
+      res: HttpServletResponse
+  ): Unit = {
+    val req2 =
+      try {
+        if (isMultipartRequest(req)) {
+          val bodyParams       = extractMultipartParams(req)
+          val mergedFormParams = mergeFormParamsWithQueryString(req, bodyParams)
 
-        wrapRequest(req, mergedFormParams)
-      } else req
-    } catch {
-      case e: Exception => {
+          wrapRequest(req, mergedFormParams)
+        } else req
+      } catch {
+        case e: Exception => {
           req.setAttribute(ScalatraBase.PrehandleExceptionKey, e)
           req
         }
-    }
+      }
 
     super.handle(req2, res)
   }
@@ -99,9 +103,9 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
     val isPostOrPut = Set("POST", "PUT", "PATCH").contains(req.getMethod)
     isPostOrPut &&
     (req.contentType match {
-          case Some(contentType) => contentType.startsWith("multipart/")
-          case _ => false
-        })
+      case Some(contentType) => contentType.startsWith("multipart/")
+      case _                 => false
+    })
   }
 
   private def extractMultipartParams(req: HttpServletRequest): BodyParams = {
@@ -110,27 +114,31 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
         bodyParams
 
       case None => {
-          val bodyParams =
-            getParts(req).foldRight(BodyParams(FileMultiParams(), Map.empty)) {
-              (part, params) =>
-                val item = FileItem(part)
+        val bodyParams =
+          getParts(req).foldRight(BodyParams(FileMultiParams(), Map.empty)) {
+            (part, params) =>
+              val item = FileItem(part)
 
-                if (!(item.isFormField)) {
-                  BodyParams(params.fileParams +
-                             ((
-                                     item.getFieldName,
-                                     item +: params.fileParams.getOrElse(
-                                         item.getFieldName, List[FileItem]())
-                                 )),
-                             params.formParams)
-                } else {
-                  BodyParams(params.fileParams, params.formParams)
-                }
-            }
+              if (!(item.isFormField)) {
+                BodyParams(
+                  params.fileParams +
+                    (
+                      (
+                        item.getFieldName,
+                        item +: params.fileParams
+                          .getOrElse(item.getFieldName, List[FileItem]())
+                      )
+                    ),
+                  params.formParams
+                )
+              } else {
+                BodyParams(params.fileParams, params.formParams)
+              }
+          }
 
-          req.setAttribute(BodyParamsKey, bodyParams)
-          bodyParams
-        }
+        req.setAttribute(BodyParamsKey, bodyParams)
+        bodyParams
+      }
     }
   }
 
@@ -140,7 +148,9 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
     } catch {
       case e: Exception if isSizeConstraintException(e) =>
         throw new SizeConstraintExceededException(
-            "Too large request or file", e)
+          "Too large request or file",
+          e
+        )
     }
   }
 
@@ -151,7 +161,8 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
 
   private def mergeFormParamsWithQueryString(
       req: HttpServletRequest,
-      bodyParams: BodyParams): Map[String, List[String]] = {
+      bodyParams: BodyParams
+  ): Map[String, List[String]] = {
     var mergedParams = bodyParams.formParams
     req.getParameterMap.asScala foreach {
       case (name, values) =>
@@ -164,7 +175,8 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
 
   private def wrapRequest(
       req: HttpServletRequest,
-      formMap: Map[String, Seq[String]]): HttpServletRequestWrapper = {
+      formMap: Map[String, Seq[String]]
+  ): HttpServletRequestWrapper = {
     val wrapped = new HttpServletRequestWrapper(req) {
       override def getParameter(name: String): String =
         formMap.get(name) map {
@@ -181,9 +193,7 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
 
       override def getParameterMap: JMap[String, Array[String]] = {
         (new JHashMap[String, Array[String]].asScala ++
-            (formMap transform { (k, v) =>
-                  v.toArray
-                })).asJava
+          (formMap transform { (k, v) => v.toArray })).asJava
       }
     }
     wrapped
@@ -193,8 +203,9 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
     extractMultipartParams(request).fileParams
   }
 
-  def fileMultiParams(key: String)(
-      implicit request: HttpServletRequest): Seq[FileItem] = {
+  def fileMultiParams(
+      key: String
+  )(implicit request: HttpServletRequest): Seq[FileItem] = {
     fileMultiParams(request)(key)
   }
 
@@ -202,14 +213,17 @@ trait FileUploadSupport extends ServletBase with HasMultipartConfig {
     * @return a Map, keyed on the names of multipart file upload parameters,
     *         of all multipart files submitted with the request
     */
-  def fileParams(implicit request: HttpServletRequest)
-    : MultiMapHeadView[String, FileItem] = {
+  def fileParams(
+      implicit request: HttpServletRequest
+  ): MultiMapHeadView[String, FileItem] = {
     new MultiMapHeadView[String, FileItem] {
       protected def multiMap = fileMultiParams
     }
   }
 
-  def fileParams(key: String)(implicit request: HttpServletRequest): FileItem = {
+  def fileParams(
+      key: String
+  )(implicit request: HttpServletRequest): FileItem = {
     fileParams(request)(key)
   }
 }
@@ -219,7 +233,9 @@ object FileUploadSupport {
   private val BodyParamsKey = "org.scalatra.fileupload.bodyParams"
 
   case class BodyParams(
-      fileParams: FileMultiParams, formParams: Map[String, List[String]])
+      fileParams: FileMultiParams,
+      formParams: Map[String, List[String]]
+  )
 }
 
 class FileMultiParams(wrapped: Map[String, Seq[FileItem]] = Map.empty)
@@ -246,14 +262,15 @@ object FileMultiParams {
   def apply(): FileMultiParams = new FileMultiParams
 
   def apply[SeqType <: Seq[FileItem]](
-      wrapped: Map[String, Seq[FileItem]]): FileMultiParams = {
+      wrapped: Map[String, Seq[FileItem]]
+  ): FileMultiParams = {
     new FileMultiParams(wrapped)
   }
 }
 
 case class FileItem(part: Part) {
 
-  val size: Long = part.getSize
+  val size: Long        = part.getSize
   val fieldName: String = part.getName
   val name: String =
     Util.partAttribute(part, "content-disposition", "filename")
@@ -272,9 +289,7 @@ case class FileItem(part: Part) {
   def getCharset: Option[String] = charset.orElse(null)
 
   def write(file: File): Unit = {
-    using(new FileOutputStream(file)) { out =>
-      io.copy(getInputStream, out)
-    }
+    using(new FileOutputStream(file)) { out => io.copy(getInputStream, out) }
   }
 
   def write(fileName: String): Unit = {
@@ -290,21 +305,23 @@ case class FileItem(part: Part) {
 
 object Util {
 
-  def partAttribute(part: Part,
-                    headerName: String,
-                    attributeName: String,
-                    defaultValue: String = null): String = {
+  def partAttribute(
+      part: Part,
+      headerName: String,
+      attributeName: String,
+      defaultValue: String = null
+  ): String = {
     Option(part.getHeader(headerName)) match {
       case Some(value) => {
-          value.split(";").find(_.trim().startsWith(attributeName)) match {
-            case Some(attributeValue) =>
-              attributeValue
-                .substring(attributeValue.indexOf('=') + 1)
-                .trim()
-                .replace("\"", "")
-            case _ => defaultValue
-          }
+        value.split(";").find(_.trim().startsWith(attributeName)) match {
+          case Some(attributeValue) =>
+            attributeValue
+              .substring(attributeValue.indexOf('=') + 1)
+              .trim()
+              .replace("\"", "")
+          case _ => defaultValue
         }
+      }
       case _ => defaultValue
     }
   }

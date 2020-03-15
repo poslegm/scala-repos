@@ -24,7 +24,7 @@ object HelloWorld extends js.JSApp {
   }
 
   def sayHelloFromDOM() {
-    val document = js.Dynamic.global.document
+    val document   = js.Dynamic.global.document
     val playground = document.getElementById("playground")
 
     val newP = document.createElement("p")
@@ -33,7 +33,7 @@ object HelloWorld extends js.JSApp {
   }
 
   def sayHelloFromTypedDOM() {
-    val document = window.document
+    val document   = window.document
     val playground = document.getElementById("playground")
 
     val newP = document.createElement("p")
@@ -44,13 +44,13 @@ object HelloWorld extends js.JSApp {
   def sayHelloFromJQuery() {
     // val $ is fine too, but not very recommended in Scala code
     val jQuery = js.Dynamic.global.jQuery
-    val newP = jQuery("<p>").html("Hello world! <i>-- jQuery</i>")
+    val newP   = jQuery("<p>").html("Hello world! <i>-- jQuery</i>")
     newP.appendTo(jQuery("#playground"))
   }
 
   def sayHelloFromTypedJQuery() {
     val jQuery = helloworld.JQuery
-    val newP = jQuery("<p>").html("Hello world! <i>-- typed jQuery</i>")
+    val newP   = jQuery("<p>").html("Hello world! <i>-- typed jQuery</i>")
     newP.appendTo(jQuery("#playground"))
   }
 }
@@ -84,10 +84,10 @@ object JQuery extends js.Object {
 @js.native
 trait JQuery extends js.Object {
   def text(value: String): JQuery = js.native
-  def text(): String = js.native
+  def text(): String              = js.native
 
   def html(value: String): JQuery = js.native
-  def html(): String = js.native
+  def html(): String              = js.native
 
   def appendTo(parent: JQuery): JQuery = js.native
 }

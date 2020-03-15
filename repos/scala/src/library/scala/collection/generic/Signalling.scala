@@ -115,8 +115,8 @@ object IdleSignalling extends DefaultSignalling
   */
 trait VolatileAbort extends Signalling {
   @volatile private var abortflag = false
-  override def isAborted = abortflag
-  override def abort() = abortflag = true
+  override def isAborted          = abortflag
+  override def abort()            = abortflag = true
 }
 
 /**
@@ -125,8 +125,8 @@ trait VolatileAbort extends Signalling {
   * and `setIndexIfLesser` are lock-free and support only monotonic changes.
   */
 trait AtomicIndexFlag extends Signalling {
-  private val intflag: AtomicInteger = new AtomicInteger(-1)
-  abstract override def indexFlag = intflag.get
+  private val intflag: AtomicInteger         = new AtomicInteger(-1)
+  abstract override def indexFlag            = intflag.get
   abstract override def setIndexFlag(f: Int) = intflag.set(f)
   abstract override def setIndexFlagIfGreater(f: Int) = {
     var loop = true
@@ -157,12 +157,12 @@ trait DelegatedSignalling extends Signalling {
   var signalDelegate: Signalling
 
   def isAborted = signalDelegate.isAborted
-  def abort() = signalDelegate.abort()
+  def abort()   = signalDelegate.abort()
 
-  def indexFlag = signalDelegate.indexFlag
-  def setIndexFlag(f: Int) = signalDelegate.setIndexFlag(f)
+  def indexFlag                     = signalDelegate.indexFlag
+  def setIndexFlag(f: Int)          = signalDelegate.setIndexFlag(f)
   def setIndexFlagIfGreater(f: Int) = signalDelegate.setIndexFlagIfGreater(f)
-  def setIndexFlagIfLesser(f: Int) = signalDelegate.setIndexFlagIfLesser(f)
+  def setIndexFlagIfLesser(f: Int)  = signalDelegate.setIndexFlagIfLesser(f)
 
   def tag = signalDelegate.tag
 }

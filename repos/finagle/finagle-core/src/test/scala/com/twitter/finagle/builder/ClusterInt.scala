@@ -7,7 +7,7 @@ import collection.mutable
 case class WrappedInt(val value: Int)
 
 class ClusterInt extends Cluster[Int] {
-  var set = mutable.HashSet.empty[Int]
+  var set     = mutable.HashSet.empty[Int]
   var changes = new Promise[Spool[Cluster.Change[Int]]]
 
   def add(value: Int) = {

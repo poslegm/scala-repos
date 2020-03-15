@@ -53,31 +53,32 @@ object CosineSimilarity {
       opt[Double]("threshold")
         .required()
         .text(
-            s"threshold similarity: to tradeoff computation vs quality estimate")
+          s"threshold similarity: to tradeoff computation vs quality estimate"
+        )
         .action((x, c) => c.copy(threshold = x))
       arg[String]("<inputFile>")
         .required()
         .text(s"input file, one row per line, space-separated")
         .action((x, c) => c.copy(inputFile = x))
-      note("""
+      note(
+        """
           |For example, the following command runs this app on a dataset:
           |
           | ./bin/spark-submit  --class org.apache.spark.examples.mllib.CosineSimilarity \
           | examplesjar.jar \
           | --threshold 0.1 data/mllib/sample_svm_data.txt
-        """.stripMargin)
+        """.stripMargin
+      )
     }
 
-    parser.parse(args, defaultParams).map { params =>
-      run(params)
-    } getOrElse {
+    parser.parse(args, defaultParams).map { params => run(params) } getOrElse {
       System.exit(1)
     }
   }
 
   def run(params: Params) {
     val conf = new SparkConf().setAppName("CosineSimilarity")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     // Load and parse the data file.
     val rows = sc

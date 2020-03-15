@@ -17,7 +17,7 @@ class AddResponseHeadersFilterTest extends FunSuite {
     }
 
     val request = Request("/object")
-    val filter = new AddResponseHeadersFilter(Map("X-Money" -> "cash"))
+    val filter  = new AddResponseHeadersFilter(Map("X-Money" -> "cash"))
 
     val result = Await.result(filter(request, service)).headerMap.toMap
     assert(result == Map("X-Money" -> "cash"))

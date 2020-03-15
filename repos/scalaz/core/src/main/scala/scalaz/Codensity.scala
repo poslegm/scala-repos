@@ -14,9 +14,10 @@ abstract class Codensity[F[_], A] { self =>
     flatMap(x => Codensity.pureCodensity(k(x)))
 
   /** `Codensity[F,_]` is a right Kan extension of `F` along itself. */
-  def toRan: Ran[F, F, A] = new Ran[F, F, A] {
-    def apply[B](f: A => F[B]) = self(f)
-  }
+  def toRan: Ran[F, F, A] =
+    new Ran[F, F, A] {
+      def apply[B](f: A => F[B]) = self(f)
+    }
 }
 
 object Codensity extends CodensityInstances {
@@ -35,7 +36,8 @@ object Codensity extends CodensityInstances {
     * [[scalaz.MonadPlus]] laws should hold.
     */
   implicit def codensityMonadPlus[F[_]](
-      implicit F: ApplicativePlus[F]): MonadPlus[Codensity[F, ?]] =
+      implicit F: ApplicativePlus[F]
+  ): MonadPlus[Codensity[F, ?]] =
     new CodensityMonad[F] with MonadPlus[Codensity[F, ?]] {
       def empty[A] =
         new Codensity[F, A] {
@@ -51,7 +53,7 @@ object Codensity extends CodensityInstances {
   implicit val codensityTrans: MonadTrans[Codensity] =
     new MonadTrans[Codensity] {
       def liftM[G[_]: Monad, A](a: G[A]) = Codensity.rep(a)
-      def apply[G[_]: Monad] = codensityMonad[G]
+      def apply[G[_]: Monad]             = codensityMonad[G]
     }
 }
 

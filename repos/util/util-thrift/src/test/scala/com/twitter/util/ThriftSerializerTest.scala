@@ -22,19 +22,23 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ThriftSerializerTest extends WordSpec {
-  val aString = "me gustan los tacos y los burritos"
-  val aNumber = 42
+  val aString  = "me gustan los tacos y los burritos"
+  val aNumber  = 42
   val original = new TestThriftStructure(aString, aNumber)
-  val json = """{"aString":"%s","aNumber":%d}""".format(aString, aNumber)
+  val json     = """{"aString":"%s","aNumber":%d}""".format(aString, aNumber)
   val encodedBinary = Some(
-      "CwABAAAAIm1lIGd1c3RhbiBsb3MgdGFjb3MgeSBsb3MgYnVycml0b3MIAAIAAAAqAA==")
+    "CwABAAAAIm1lIGd1c3RhbiBsb3MgdGFjb3MgeSBsb3MgYnVycml0b3MIAAIAAAAqAA=="
+  )
   val encodedCompact = Some(
-      "GCJtZSBndXN0YW4gbG9zIHRhY29zIHkgbG9zIGJ1cnJpdG9zFVQA")
+    "GCJtZSBndXN0YW4gbG9zIHRhY29zIHkgbG9zIGJ1cnJpdG9zFVQA"
+  )
 
   def testSerializer(
-      serializer: ThriftSerializer, stringVersion: Option[String] = None) = {
+      serializer: ThriftSerializer,
+      stringVersion: Option[String] = None
+  ) = {
     val bytes = serializer.toBytes(original)
-    var obj = new TestThriftStructure()
+    var obj   = new TestThriftStructure()
     serializer.fromBytes(obj, bytes)
     assert(obj.aString == original.aString)
     assert(obj.aNumber == original.aNumber)

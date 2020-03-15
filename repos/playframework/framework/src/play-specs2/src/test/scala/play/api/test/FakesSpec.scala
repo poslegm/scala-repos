@@ -25,8 +25,7 @@ object FakesSpec extends PlaySpecification {
   "FakeApplication" should {
 
     "allow adding routes inline" in {
-      running(
-          _.routes {
+      running(_.routes {
         case ("GET", "/inline") =>
           Action {
             Results.Ok("inline route")
@@ -45,28 +44,30 @@ object FakesSpec extends PlaySpecification {
 
   "FakeRequest" should {
     def app =
-      GuiceApplicationBuilder().routes {
-        case (PUT, "/process") =>
-          Action { req =>
-            Results.Ok(req.headers.get(CONTENT_TYPE) getOrElse "")
-          }
-      }.build()
+      GuiceApplicationBuilder()
+        .routes {
+          case (PUT, "/process") =>
+            Action { req =>
+              Results.Ok(req.headers.get(CONTENT_TYPE) getOrElse "")
+            }
+        }
+        .build()
 
     "Define Content-Type header based on body" in new WithApplication(app) {
-      val xml = <foo>
+      val xml   = <foo>
           <bar>
             baz
           </bar>
         </foo>
       val bytes = ByteString(xml.toString, "utf-16le")
-      val req = FakeRequest(PUT, "/process").withRawBody(bytes)
+      val req   = FakeRequest(PUT, "/process").withRawBody(bytes)
       route(req) aka "response" must beSome.which { resp =>
         contentAsString(resp) aka "content" must_== "application/octet-stream"
       }
     }
 
     "Not override explicit Content-Type header" in new WithApplication(app) {
-      val xml = <foo>
+      val xml   = <foo>
           <bar>
             baz
           </bar>
@@ -75,7 +76,7 @@ object FakesSpec extends PlaySpecification {
       val req = FakeRequest(PUT, "/process")
         .withRawBody(bytes)
         .withHeaders(
-            CONTENT_TYPE -> "text/xml;charset=utf-16le"
+          CONTENT_TYPE -> "text/xml;charset=utf-16le"
         )
       route(req) aka "response" must beSome.which { resp =>
         contentAsString(resp) aka "content" must_== "text/xml;charset=utf-16le"
@@ -97,13 +98,14 @@ object FakesSpec extends PlaySpecification {
     }
   }
 
-  def contentTypeForFakeRequest[T](request: FakeRequest[AnyContentAsJson])(
-      implicit mat: Materializer): String = {
+  def contentTypeForFakeRequest[T](
+      request: FakeRequest[AnyContentAsJson]
+  )(implicit mat: Materializer): String = {
     var testContentType: Option[String] = None
     val action = Action { request =>
       testContentType = request.headers.get(CONTENT_TYPE); Ok
     }
-    val headers = new WrappedRequest(request)
+    val headers   = new WrappedRequest(request)
     val execution = (new TestActionCaller).call(action, headers, request.body)
     Await.result(execution, Duration(3, TimeUnit.SECONDS))
     testContentType.getOrElse("No Content-Type found")

@@ -225,21 +225,22 @@ object TermDeconstructionProps
   }
 
   property("deconstruct partial function") = test {
-    val q"{ case ..$cases }" = q"{ case a => b case c => d }"
+    val q"{ case ..$cases }"         = q"{ case a => b case c => d }"
     val List(cq"a => b", cq"c => d") = cases
   }
 
   property("SI-8350 `new C` and `new C()` are equivalent") = test {
-    val q"new C" = q"new C()"
+    val q"new C"   = q"new C()"
     val q"new C()" = q"new C"
   }
 
-  property("SI-8350 new applications extracted only for non-empty ctor calls") = test {
-    val q"new $c1" = q"new C()"
-    assert(c1 ≈ tq"C")
-    val q"new $c2" = q"new C(x)"
-    assert(c2 ≈ q"${tq"C"}(x)")
-  }
+  property("SI-8350 new applications extracted only for non-empty ctor calls") =
+    test {
+      val q"new $c1" = q"new C()"
+      assert(c1 ≈ tq"C")
+      val q"new $c2" = q"new C(x)"
+      assert(c2 ≈ q"${tq"C"}(x)")
+    }
 
   property("SI-8350 original test case") = test {
     val q"new ..$parents" = q"new Foo with Bar"
@@ -247,16 +248,16 @@ object TermDeconstructionProps
   }
 
   property("SI-8387 new is not an application") = test {
-    val `new` = q"new F(x)"
+    val `new`            = q"new F(x)"
     val q"$f(...$argss)" = `new`
     assert(f ≈ `new`)
     assert(argss.isEmpty)
   }
 
   property("SI-8703 extract block with single expression") = test {
-    val q"{ $a }" = Block(Nil, q"1")
+    val q"{ $a }"            = Block(Nil, q"1")
     val Literal(Constant(1)) = a
-    val q"{ $b }" = q"2"
+    val q"{ $b }"            = q"2"
     val Literal(Constant(2)) = b
   }
 }

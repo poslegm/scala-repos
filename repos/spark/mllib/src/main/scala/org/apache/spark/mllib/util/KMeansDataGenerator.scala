@@ -44,19 +44,21 @@ object KMeansDataGenerator {
     * @param numPartitions Number of partitions of the generated RDD; default 2
     */
   @Since("0.8.0")
-  def generateKMeansRDD(sc: SparkContext,
-                        numPoints: Int,
-                        k: Int,
-                        d: Int,
-                        r: Double,
-                        numPartitions: Int = 2): RDD[Array[Double]] = {
+  def generateKMeansRDD(
+      sc: SparkContext,
+      numPoints: Int,
+      k: Int,
+      d: Int,
+      r: Double,
+      numPartitions: Int = 2
+  ): RDD[Array[Double]] = {
     // First, generate some centers
-    val rand = new Random(42)
+    val rand    = new Random(42)
     val centers = Array.fill(k)(Array.fill(d)(rand.nextGaussian() * r))
     // Then generate points around each center
     sc.parallelize(0 until numPoints, numPartitions).map { idx =>
       val center = centers(idx % k)
-      val rand2 = new Random(42 + idx)
+      val rand2  = new Random(42 + idx)
       Array.tabulate(d)(i => center(i) + rand2.nextGaussian())
     }
   }
@@ -65,21 +67,23 @@ object KMeansDataGenerator {
   def main(args: Array[String]) {
     if (args.length < 6) {
       // scalastyle:off println
-      println("Usage: KMeansGenerator " +
-          "<master> <output_dir> <num_points> <k> <d> <r> [<num_partitions>]")
+      println(
+        "Usage: KMeansGenerator " +
+          "<master> <output_dir> <num_points> <k> <d> <r> [<num_partitions>]"
+      )
       // scalastyle:on println
       System.exit(1)
     }
 
     val sparkMaster = args(0)
-    val outputPath = args(1)
-    val numPoints = args(2).toInt
-    val k = args(3).toInt
-    val d = args(4).toInt
-    val r = args(5).toDouble
-    val parts = if (args.length >= 7) args(6).toInt else 2
+    val outputPath  = args(1)
+    val numPoints   = args(2).toInt
+    val k           = args(3).toInt
+    val d           = args(4).toInt
+    val r           = args(5).toDouble
+    val parts       = if (args.length >= 7) args(6).toInt else 2
 
-    val sc = new SparkContext(sparkMaster, "KMeansDataGenerator")
+    val sc   = new SparkContext(sparkMaster, "KMeansDataGenerator")
     val data = generateKMeansRDD(sc, numPoints, k, d, r, parts)
     data.map(_.mkString(" ")).saveAsTextFile(outputPath)
 

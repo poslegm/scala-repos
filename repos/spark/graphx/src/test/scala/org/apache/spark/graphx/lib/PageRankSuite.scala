@@ -22,10 +22,12 @@ import org.apache.spark.graphx._
 import org.apache.spark.graphx.util.GraphGenerators
 
 object GridPageRank {
-  def apply(nRows: Int,
-            nCols: Int,
-            nIter: Int,
-            resetProb: Double): Seq[(VertexId, Double)] = {
+  def apply(
+      nRows: Int,
+      nCols: Int,
+      nIter: Int,
+      resetProb: Double
+  ): Seq[(VertexId, Double)] = {
     val inNbrs =
       Array.fill(nRows * nCols)(collection.mutable.MutableList.empty[Int])
     val outDegree = Array.fill(nRows * nCols)(0)
@@ -74,7 +76,7 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
       val nVertices = 100
       val starGraph = GraphGenerators.starGraph(sc, nVertices).cache()
       val resetProb = 0.15
-      val errorTol = 1.0e-5
+      val errorTol  = 1.0e-5
 
       val staticRanks1 =
         starGraph.staticPageRank(numIter = 1, resetProb).vertices
@@ -92,10 +94,12 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
 
       val staticErrors = staticRanks2.map {
         case (vid, pr) =>
-          val p = math.abs(pr -
-              (resetProb + (1.0 - resetProb) * (resetProb * (nVertices - 1))))
+          val p = math.abs(
+            pr -
+              (resetProb + (1.0 - resetProb) * (resetProb * (nVertices - 1)))
+          )
           val correct =
-            (vid > 0 && pr == resetProb) || (vid == 0L && p < 1.0E-5)
+            (vid > 0 && pr == resetProb) || (vid == 0L && p < 1.0e-5)
           if (!correct) 1 else 0
       }
       assert(staticErrors.sum === 0)
@@ -110,7 +114,7 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
       val nVertices = 100
       val starGraph = GraphGenerators.starGraph(sc, nVertices).cache()
       val resetProb = 0.15
-      val errorTol = 1.0e-5
+      val errorTol  = 1.0e-5
 
       val staticRanks1 = starGraph
         .staticPersonalizedPageRank(0, numIter = 1, resetProb)
@@ -153,19 +157,20 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
 
   test("Grid PageRank") {
     withSpark { sc =>
-      val rows = 10
-      val cols = 10
+      val rows      = 10
+      val cols      = 10
       val resetProb = 0.15
-      val tol = 0.0001
-      val numIter = 50
-      val errorTol = 1.0e-5
+      val tol       = 0.0001
+      val numIter   = 50
+      val errorTol  = 1.0e-5
       val gridGraph = GraphGenerators.gridGraph(sc, rows, cols).cache()
 
       val staticRanks =
         gridGraph.staticPageRank(numIter, resetProb).vertices.cache()
       val dynamicRanks = gridGraph.pageRank(tol, resetProb).vertices.cache()
       val referenceRanks = VertexRDD(
-          sc.parallelize(GridPageRank(rows, cols, numIter, resetProb))).cache()
+        sc.parallelize(GridPageRank(rows, cols, numIter, resetProb))
+      ).cache()
 
       assert(compareRanks(staticRanks, referenceRanks) < errorTol)
       assert(compareRanks(dynamicRanks, referenceRanks) < errorTol)
@@ -177,13 +182,13 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
       val chain1 = (0 until 9).map(x => (x, x + 1))
       val rawEdges =
         sc.parallelize(chain1, 1).map { case (s, d) => (s.toLong, d.toLong) }
-      val chain = Graph.fromEdgeTuples(rawEdges, 1.0).cache()
+      val chain     = Graph.fromEdgeTuples(rawEdges, 1.0).cache()
       val resetProb = 0.15
-      val tol = 0.0001
-      val numIter = 10
-      val errorTol = 1.0e-5
+      val tol       = 0.0001
+      val numIter   = 10
+      val errorTol  = 1.0e-5
 
-      val staticRanks = chain.staticPageRank(numIter, resetProb).vertices
+      val staticRanks  = chain.staticPageRank(numIter, resetProb).vertices
       val dynamicRanks = chain.pageRank(tol, resetProb).vertices
 
       assert(compareRanks(staticRanks, dynamicRanks) < errorTol)
@@ -195,11 +200,11 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
       val chain1 = (0 until 9).map(x => (x, x + 1))
       val rawEdges =
         sc.parallelize(chain1, 1).map { case (s, d) => (s.toLong, d.toLong) }
-      val chain = Graph.fromEdgeTuples(rawEdges, 1.0).cache()
+      val chain     = Graph.fromEdgeTuples(rawEdges, 1.0).cache()
       val resetProb = 0.15
-      val tol = 0.0001
-      val numIter = 10
-      val errorTol = 1.0e-1
+      val tol       = 0.0001
+      val numIter   = 10
+      val errorTol  = 1.0e-1
 
       val staticRanks =
         chain.staticPersonalizedPageRank(4, numIter, resetProb).vertices

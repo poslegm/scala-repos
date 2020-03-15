@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -30,15 +30,17 @@ import org.apache.kafka.common.utils.Utils
   */
 object UpdateOffsetsInZK {
   val Earliest = "earliest"
-  val Latest = "latest"
+  val Latest   = "latest"
 
   def main(args: Array[String]) {
     if (args.length < 3) usage
     val config = new ConsumerConfig(Utils.loadProps(args(1)))
-    val zkUtils = ZkUtils(config.zkConnect,
-                          config.zkSessionTimeoutMs,
-                          config.zkConnectionTimeoutMs,
-                          JaasUtils.isZkSecurityEnabled())
+    val zkUtils = ZkUtils(
+      config.zkConnect,
+      config.zkSessionTimeoutMs,
+      config.zkConnectionTimeoutMs,
+      JaasUtils.isZkSecurityEnabled()
+    )
     args(0) match {
       case Earliest =>
         getAndSetOffsets(zkUtils, OffsetRequest.EarliestTime, config, args(2))
@@ -48,16 +50,18 @@ object UpdateOffsetsInZK {
     }
   }
 
-  private def getAndSetOffsets(zkUtils: ZkUtils,
-                               offsetOption: Long,
-                               config: ConsumerConfig,
-                               topic: String): Unit = {
+  private def getAndSetOffsets(
+      zkUtils: ZkUtils,
+      offsetOption: Long,
+      config: ConsumerConfig,
+      topic: String
+  ): Unit = {
     val partitionsPerTopicMap = zkUtils.getPartitionsForTopics(List(topic))
-    var partitions: Seq[Int] = Nil
+    var partitions: Seq[Int]  = Nil
 
     partitionsPerTopicMap.get(topic) match {
       case Some(l) => partitions = l.sortWith((s, t) => s < t)
-      case _ => throw new RuntimeException("Can't find topic " + topic)
+      case _       => throw new RuntimeException("Can't find topic " + topic)
     }
 
     var numParts = 0
@@ -68,22 +72,27 @@ object UpdateOffsetsInZK {
       val broker = brokerHostingPartition match {
         case Some(b) => b
         case None =>
-          throw new KafkaException("Broker " + brokerHostingPartition +
-              " is unavailable. Cannot issue " + "getOffsetsBefore request")
+          throw new KafkaException(
+            "Broker " + brokerHostingPartition +
+              " is unavailable. Cannot issue " + "getOffsetsBefore request"
+          )
       }
 
       zkUtils.getBrokerInfo(broker) match {
         case Some(brokerInfo) =>
           val consumer = new SimpleConsumer(
-              brokerInfo.getBrokerEndPoint(SecurityProtocol.PLAINTEXT).host,
-              brokerInfo.getBrokerEndPoint(SecurityProtocol.PLAINTEXT).port,
-              10000,
-              100 * 1024,
-              "UpdateOffsetsInZk")
+            brokerInfo.getBrokerEndPoint(SecurityProtocol.PLAINTEXT).host,
+            brokerInfo.getBrokerEndPoint(SecurityProtocol.PLAINTEXT).port,
+            10000,
+            100 * 1024,
+            "UpdateOffsetsInZk"
+          )
           val topicAndPartition = TopicAndPartition(topic, partition)
           val request = OffsetRequest(
-              Map(topicAndPartition -> PartitionOffsetRequestInfo(offsetOption,
-                                                                  1)))
+            Map(
+              topicAndPartition -> PartitionOffsetRequestInfo(offsetOption, 1)
+            )
+          )
           val offset = consumer
             .getOffsetsBefore(request)
             .partitionErrorAndOffsets(topicAndPartition)
@@ -92,23 +101,29 @@ object UpdateOffsetsInZK {
           val topicDirs = new ZKGroupTopicDirs(config.groupId, topic)
 
           println(
-              "updating partition " + partition + " with new offset: " +
-              offset)
+            "updating partition " + partition + " with new offset: " +
+              offset
+          )
           zkUtils.updatePersistentPath(
-              topicDirs.consumerOffsetDir + "/" + partition, offset.toString)
+            topicDirs.consumerOffsetDir + "/" + partition,
+            offset.toString
+          )
           numParts += 1
         case None =>
           throw new KafkaException(
-              "Broker information for broker id %d does not exist in ZK"
-                .format(broker))
+            "Broker information for broker id %d does not exist in ZK"
+              .format(broker)
+          )
       }
     }
     println("updated the offset for " + numParts + " partitions")
   }
 
   private def usage() = {
-    println("USAGE: " + UpdateOffsetsInZK.getClass.getName +
-        " [earliest | latest] consumer.properties topic")
+    println(
+      "USAGE: " + UpdateOffsetsInZK.getClass.getName +
+        " [earliest | latest] consumer.properties topic"
+    )
     System.exit(1)
   }
 }

@@ -29,20 +29,22 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     * be used by the application to determine how to treat any HTTP request
     * headers.
     */
-  def serverProtocol: HttpVersion = r.getProtocol match {
-    case "HTTP/1.1" => Http11
-    case "HTTP/1.0" => Http10
-  }
+  def serverProtocol: HttpVersion =
+    r.getProtocol match {
+      case "HTTP/1.1" => Http11
+      case "HTTP/1.0" => Http10
+    }
 
   def uri: URI = new URI(r.getRequestURL.toString)
 
   /**
     * Http or Https, depending on the request URL.
     */
-  def urlScheme: Scheme = r.getScheme match {
-    case "http" => Http
-    case "https" => Https
-  }
+  def urlScheme: Scheme =
+    r.getScheme match {
+      case "http"  => Http
+      case "https" => Https
+    }
 
   /**
     * The HTTP request method, such as GET or POST
@@ -123,9 +125,7 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     }
 
     def iterator: Iterator[(String, String)] = {
-      r.getHeaderNames.asScala map { name =>
-        (name, r.getHeader(name))
-      }
+      r.getHeaderNames.asScala map { name => (name, r.getHeader(name)) }
     }
   }
 
@@ -149,10 +149,11 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   /**
     * Returns the length, in bytes, of the body, or None if not known.
     */
-  def contentLength: Option[Long] = r.getContentLength match {
-    case -1 => None
-    case length => Some(length)
-  }
+  def contentLength: Option[Long] =
+    r.getContentLength match {
+      case -1     => None
+      case length => Some(length)
+    }
 
   /**
     * When combined with scriptName, pathInfo, and serverPort, can be used to
@@ -163,7 +164,9 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   def serverName: String = r.getServerName
 
   @deprecated(
-      message = "Use HttpServletRequest.serverName instead", since = "2.0.0")
+    message = "Use HttpServletRequest.serverName instead",
+    since = "2.0.0"
+  )
   def host: String = serverName
 
   /**
@@ -173,7 +176,9 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   def serverPort: Int = r.getServerPort
 
   @deprecated(
-      message = "Use HttpServletRequest.serverPort instead", since = "2.0.0")
+    message = "Use HttpServletRequest.serverPort instead",
+    since = "2.0.0"
+  )
   def port: String = Integer.toString(r.getServerPort)
 
   /**
@@ -181,10 +186,11 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
     *
     * @return the `Referer` header, or None if not set
     */
-  def referrer: Option[String] = r.getHeader("Referer") match {
-    case s: String => Some(s)
-    case null => None
-  }
+  def referrer: Option[String] =
+    r.getHeader("Referer") match {
+      case s: String => Some(s)
+      case null      => None
+    }
 
   @deprecated("Use referrer", "2.0.0")
   def referer: Option[String] = referrer
@@ -203,11 +209,13 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
       val enc =
         if (encoding == null || encoding.trim.length == 0) {
           if (contentType.exists(_ equalsIgnoreCase "application/json"))
-            "UTF-8" else "ISO-8859-1"
+            "UTF-8"
+          else "ISO-8859-1"
         } else encoding
-      val body: String = try {
-        Source.fromInputStream(r.getInputStream, enc).mkString
-      } catch { case e: java.io.IOException => "" }
+      val body: String =
+        try {
+          Source.fromInputStream(r.getInputStream, enc).mkString
+        } catch { case e: java.io.IOException => "" }
       update(cachedBodyKey, body)
       body
     }

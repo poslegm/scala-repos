@@ -33,18 +33,18 @@ import com.twitter.summingbird.builder.CompletedBuilder
 
 object Env {
   def apply(inargs: Array[String]): Env = {
-    val mode = inargs(0)
-    val job = inargs(1)
+    val mode     = inargs(0)
+    val job      = inargs(1)
     val restArgs = inargs.tail.tail
     mode match {
       case "scalding" => {
-          // Hadoop args must be processed specially:
-          ScaldingEnv(job, restArgs)
-        }
+        // Hadoop args must be processed specially:
+        ScaldingEnv(job, restArgs)
+      }
       case "storm" => {
-          // Skip "storm" and the jobname:
-          StormEnv(job, Args(restArgs))
-        }
+        // Skip "storm" and the jobname:
+        StormEnv(job, Args(restArgs))
+      }
       case _ =>
         sys.error("Unrecognized mode: " + mode + ", try: storm or scalding")
     }

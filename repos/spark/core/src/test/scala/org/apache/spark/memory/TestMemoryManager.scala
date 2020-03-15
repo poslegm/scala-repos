@@ -24,7 +24,10 @@ class TestMemoryManager(conf: SparkConf)
     extends MemoryManager(conf, numCores = 1, Long.MaxValue, Long.MaxValue) {
 
   override private[memory] def acquireExecutionMemory(
-      numBytes: Long, taskAttemptId: Long, memoryMode: MemoryMode): Long = {
+      numBytes: Long,
+      taskAttemptId: Long,
+      memoryMode: MemoryMode
+  ): Long = {
     if (oomOnce) {
       oomOnce = false
       0
@@ -37,18 +40,21 @@ class TestMemoryManager(conf: SparkConf)
       grant
     }
   }
-  override def acquireStorageMemory(
-      blockId: BlockId, numBytes: Long): Boolean = true
+  override def acquireStorageMemory(blockId: BlockId, numBytes: Long): Boolean =
+    true
   override def acquireUnrollMemory(blockId: BlockId, numBytes: Long): Boolean =
     true
   override def releaseStorageMemory(numBytes: Long): Unit = {}
   override private[memory] def releaseExecutionMemory(
-      numBytes: Long, taskAttemptId: Long, memoryMode: MemoryMode): Unit = {
+      numBytes: Long,
+      taskAttemptId: Long,
+      memoryMode: MemoryMode
+  ): Unit = {
     available += numBytes
   }
   override def maxStorageMemory: Long = Long.MaxValue
 
-  private var oomOnce = false
+  private var oomOnce   = false
   private var available = Long.MaxValue
 
   def markExecutionAsOutOfMemoryOnce(): Unit = {

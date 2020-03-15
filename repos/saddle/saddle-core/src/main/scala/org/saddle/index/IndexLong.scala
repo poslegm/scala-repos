@@ -47,8 +47,9 @@ class IndexLong(keys: Vec[Long]) extends Index[Long] {
 
   def without(locs: Array[Int]): Index[Long] = Index(array.remove(keys, locs))
 
-  def concat[B, C](x: Index[B])(
-      implicit wd: Promoter[Long, B, C], mc: ST[C], oc: ORD[C]): Index[C] =
+  def concat[B, C](
+      x: Index[B]
+  )(implicit wd: Promoter[Long, B, C], mc: ST[C], oc: ORD[C]): Index[C] =
     Index(util.Concat.append[Long, B, C](toArray, x.toArray))
 
   def isMonotonic: Boolean = monotonic
@@ -101,8 +102,9 @@ class IndexLong(keys: Vec[Long]) extends Index[Long] {
     else -(binarySearch(keys, t) + 1)
   }
 
-  def map[@spec(Boolean, Int, Long, Double) B : ST : ORD](
-      f: Long => B): Index[B] =
+  def map[@spec(Boolean, Int, Long, Double) B: ST: ORD](
+      f: Long => B
+  ): Index[B] =
     Index(VecImpl.map(keys)(f).toArray)
 
   def toArray: Array[Long] = keys.toArray
@@ -112,7 +114,7 @@ class IndexLong(keys: Vec[Long]) extends Index[Long] {
     o match {
       case rv: IndexInt =>
         (this eq rv) || (this.length == rv.length) && {
-          var i = 0
+          var i  = 0
           var eq = true
           while (eq && i < this.length) {
             eq &&= raw(i) == rv.raw(i)

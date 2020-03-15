@@ -17,12 +17,12 @@ import akka.actor.ActorRefFactory
   */
 //#test-example
 class Parent extends Actor {
-  val child = context.actorOf(Props[Child], "child")
+  val child  = context.actorOf(Props[Child], "child")
   var ponged = false
 
   def receive = {
     case "pingit" => child ! "ping"
-    case "pong" => ponged = true
+    case "pong"   => ponged = true
   }
 }
 
@@ -43,23 +43,23 @@ class DependentChild(parent: ActorRef) extends Actor {
 
 //#test-dependentparent
 class DependentParent(childProps: Props) extends Actor {
-  val child = context.actorOf(childProps, "child")
+  val child  = context.actorOf(childProps, "child")
   var ponged = false
 
   def receive = {
     case "pingit" => child ! "ping"
-    case "pong" => ponged = true
+    case "pong"   => ponged = true
   }
 }
 
 class GenericDependentParent(childMaker: ActorRefFactory => ActorRef)
     extends Actor {
-  val child = childMaker(context)
+  val child  = childMaker(context)
   var ponged = false
 
   def receive = {
     case "pingit" => child ! "ping"
-    case "pong" => ponged = true
+    case "pong"   => ponged = true
   }
 }
 //#test-dependentparent
@@ -87,7 +87,7 @@ class ParentChildSpec extends WordSpec with Matchers with TestKitBase {
 
   "A DependentParent" should {
     "be tested with custom props" in {
-      val probe = TestProbe()
+      val probe  = TestProbe()
       val parent = TestActorRef(new DependentParent(Props[MockedChild]))
       probe.send(parent, "pingit")
       // test some parent state change
@@ -120,12 +120,11 @@ class ParentChildSpec extends WordSpec with Matchers with TestKitBase {
   "A fabricated parent" should {
     "test its child responses" in {
       val proxy = TestProbe()
-      val parent = system.actorOf(
-          Props(new Actor {
+      val parent = system.actorOf(Props(new Actor {
         val child = context.actorOf(Props[Child], "child")
         def receive = {
           case x if sender == child => proxy.ref forward x
-          case x => child forward x
+          case x                    => child forward x
         }
       }))
 

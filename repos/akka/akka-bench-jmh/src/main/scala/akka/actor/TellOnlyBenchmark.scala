@@ -25,8 +25,9 @@ class TellOnlyBenchmark {
 
   @Setup(Level.Trial)
   def setup(): Unit = {
-    system = ActorSystem("TellOnlyBenchmark",
-                         ConfigFactory.parseString(s"""| akka {
+    system = ActorSystem(
+      "TellOnlyBenchmark",
+      ConfigFactory.parseString(s"""| akka {
           |   log-dead-letters = off
           |   actor {
           |     default-dispatcher {
@@ -45,7 +46,8 @@ class TellOnlyBenchmark {
           |   type = "akka.actor.TellOnlyBenchmark$$DroppingDispatcherConfigurator"
           |   mailbox-type = "akka.actor.TellOnlyBenchmark$$UnboundedDroppingMailbox"
           | }
-          | """.stripMargin))
+          | """.stripMargin)
+    )
   }
 
   @TearDown(Level.Trial)
@@ -54,13 +56,14 @@ class TellOnlyBenchmark {
     Await.ready(system.whenTerminated, 15.seconds)
   }
 
-  var actor: ActorRef = _
+  var actor: ActorRef  = _
   var probe: TestProbe = _
 
   @Setup(Level.Iteration)
   def setupIteration(): Unit = {
     actor = system.actorOf(
-        Props[TellOnlyBenchmark.Echo].withDispatcher("dropping-dispatcher"))
+      Props[TellOnlyBenchmark.Echo].withDispatcher("dropping-dispatcher")
+    )
     probe = TestProbe()
     probe.watch(actor)
     probe.send(actor, message)
@@ -88,10 +91,10 @@ class TellOnlyBenchmark {
 }
 
 object TellOnlyBenchmark {
-  final val stop = "stop"
-  final val message = "message"
-  final val flipDrop = "flipDrop"
-  final val timeout = 5.seconds
+  final val stop        = "stop"
+  final val message     = "message"
+  final val flipDrop    = "flipDrop"
+  final val timeout     = 5.seconds
   final val numMessages = 1000000
 
   class Echo extends Actor {
@@ -112,12 +115,15 @@ object TellOnlyBenchmark {
   }
 
   case class UnboundedDroppingMailbox()
-      extends MailboxType with ProducesMessageQueue[DroppingMessageQueue] {
+      extends MailboxType
+      with ProducesMessageQueue[DroppingMessageQueue] {
 
     def this(settings: ActorSystem.Settings, config: Config) = this()
 
     final override def create(
-        owner: Option[ActorRef], system: Option[ActorSystem]): MessageQueue =
+        owner: Option[ActorRef],
+        system: Option[ActorSystem]
+    ): MessageQueue =
       new DroppingMessageQueue
   }
 
@@ -127,36 +133,42 @@ object TellOnlyBenchmark {
       _throughput: Int,
       _throughputDeadlineTime: Duration,
       _executorServiceFactoryProvider: ExecutorServiceFactoryProvider,
-      _shutdownTimeout: FiniteDuration)
-      extends Dispatcher(_configurator,
-                         _id,
-                         _throughput,
-                         _throughputDeadlineTime,
-                         _executorServiceFactoryProvider,
-                         _shutdownTimeout) {
+      _shutdownTimeout: FiniteDuration
+  ) extends Dispatcher(
+        _configurator,
+        _id,
+        _throughput,
+        _throughputDeadlineTime,
+        _executorServiceFactoryProvider,
+        _shutdownTimeout
+      ) {
 
     override protected[akka] def dispatch(
-        receiver: ActorCell, invocation: Envelope): Unit = {
+        receiver: ActorCell,
+        invocation: Envelope
+    ): Unit = {
       val mbox = receiver.mailbox
       mbox.enqueue(receiver.self, invocation)
       mbox.messageQueue match {
         case mb: DroppingMessageQueue if mb.dropping ⇒ // do nothing
-        case _ ⇒ registerForExecution(mbox, true, false)
+        case _                                       ⇒ registerForExecution(mbox, true, false)
       }
     }
   }
 
   class DroppingDispatcherConfigurator(
-      config: Config, prerequisites: DispatcherPrerequisites)
-      extends MessageDispatcherConfigurator(config, prerequisites) {
+      config: Config,
+      prerequisites: DispatcherPrerequisites
+  ) extends MessageDispatcherConfigurator(config, prerequisites) {
 
     override def dispatcher(): MessageDispatcher =
       new DroppingDispatcher(
-          this,
-          config.getString("id"),
-          config.getInt("throughput"),
-          config.getNanosDuration("throughput-deadline-time"),
-          configureExecutor(),
-          config.getMillisDuration("shutdown-timeout"))
+        this,
+        config.getString("id"),
+        config.getInt("throughput"),
+        config.getNanosDuration("throughput-deadline-time"),
+        configureExecutor(),
+        config.getMillisDuration("shutdown-timeout")
+      )
   }
 }

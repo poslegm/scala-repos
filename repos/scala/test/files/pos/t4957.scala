@@ -17,7 +17,7 @@ trait Vector {
 object Vector {
 
   def apply(x: double, y: double) = Double(x, y)
-  def apply(x: int, y: int) = Int(x, y)
+  def apply(x: int, y: int)       = Int(x, y)
 
   trait Companion[@specialized(double, int) T] {
 

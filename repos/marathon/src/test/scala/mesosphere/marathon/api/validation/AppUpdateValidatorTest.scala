@@ -11,16 +11,19 @@ class AppUpdateValidatorTest extends MarathonSpec with Matchers {
 
   test("test that container is validated") {
     val f = new Fixture
-    val update = AppUpdate(id = Some(PathId("/test")),
-                           container = Some(f.invalidDockerContainer))
+    val update = AppUpdate(
+      id = Some(PathId("/test")),
+      container = Some(f.invalidDockerContainer)
+    )
     assert(validate(update).isFailure)
   }
 
   class Fixture {
-    def invalidDockerContainer: Container = Container(
+    def invalidDockerContainer: Container =
+      Container(
         `type` = mesos.ContainerInfo.Type.DOCKER,
         volumes = Nil,
         docker = None
-    )
+      )
   }
 }

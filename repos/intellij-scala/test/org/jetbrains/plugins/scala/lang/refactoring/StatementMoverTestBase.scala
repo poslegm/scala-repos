@@ -23,34 +23,38 @@ abstract class StatementMoverTestBase extends SimpleTestCase {
 
     val cleanCode =
       preparedCode.replaceAll("\\|", "").replaceFirst("(?-m)\n?$", "\n")
-    val file = cleanCode.parse
+    val file   = cleanCode.parse
     val editor = new EditorMock(cleanCode, offset)
 
     val mover = new ScalaStatementMover()
-    val info = new StatementUpDownMover.MoveInfo()
+    val info  = new StatementUpDownMover.MoveInfo()
 
     val available = mover.checkAvailable(editor, file, info, direction == Down)
 
     available.ifTrue {
       val it =
-        cleanCode.split('\n').toList.iterator // Workaround for SI-5972 (should be without "toList")
+        cleanCode
+          .split('\n')
+          .toList
+          .iterator // Workaround for SI-5972 (should be without "toList")
 
       val (i1, i2) =
         if (info.toMove.startLine < info.toMove2.startLine)
-          (info.toMove, info.toMove2) else (info.toMove2, info.toMove)
+          (info.toMove, info.toMove2)
+        else (info.toMove2, info.toMove)
 
-      val a = it.take(i1.startLine).toList
+      val a      = it.take(i1.startLine).toList
       val source = it.take(i1.endLine - i1.startLine).toList
-      val b = it.take(i2.startLine - i1.endLine).toList
-      val dest = it.take(i2.endLine - i2.startLine).toList
-      val c = it.toList
+      val b      = it.take(i2.startLine - i1.endLine).toList
+      val dest   = it.take(i2.endLine - i2.startLine).toList
+      val c      = it.toList
 
       (a ++ dest ++ b ++ source ++ c).mkString("\n")
     }
   }
 
   private class Direction
-  private case object Up extends Direction
+  private case object Up   extends Direction
   private case object Down extends Direction
 
   protected implicit class Movable(val code: String) {

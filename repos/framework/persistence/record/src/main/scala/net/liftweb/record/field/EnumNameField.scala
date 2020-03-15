@@ -39,11 +39,12 @@ trait EnumNameTypedField[EnumType <: Enumeration]
   def setFromAny(in: Any): Box[EnumType#Value] =
     genericSetFromAny(in)(valueManifest)
 
-  def setFromString(s: String): Box[EnumType#Value] = s match {
-    case null | "" if optional_? => setBox(Empty)
-    case null | "" => setBox(Failure(notOptionalErrorMessage))
-    case _ => setBox(enum.values.find(_.toString == s))
-  }
+  def setFromString(s: String): Box[EnumType#Value] =
+    s match {
+      case null | "" if optional_? => setBox(Empty)
+      case null | ""               => setBox(Failure(notOptionalErrorMessage))
+      case _                       => setBox(enum.values.find(_.toString == s))
+    }
 
   /** Label for the selection item representing Empty, show when this field is optional. Defaults to the empty string. */
   def emptyOptionLabel: String = ""
@@ -59,13 +60,16 @@ trait EnumNameTypedField[EnumType <: Enumeration]
 
   private def elem =
     SHtml.selectObj[Box[EnumType#Value]](
-        buildDisplayList, Full(valueBox), setBox(_)) %
-    ("tabindex" -> tabIndex.toString)
+      buildDisplayList,
+      Full(valueBox),
+      setBox(_)
+    )              %
+      ("tabindex" -> tabIndex.toString)
 
   def toForm: Box[NodeSeq] =
     uniqueFieldId match {
       case Full(id) => Full(elem % ("id" -> id))
-      case _ => Full(elem)
+      case _        => Full(elem)
     }
 
   def defaultValue: EnumType#Value = enum.values.iterator.next
@@ -74,13 +78,15 @@ trait EnumNameTypedField[EnumType <: Enumeration]
 
   def asJStringName: JValue =
     valueBox.map(v => JString(v.toString)) openOr (JNothing: JValue)
-  def setFromJStringName(jvalue: JValue): Box[EnumType#Value] = jvalue match {
-    case JNothing | JNull if optional_? => setBox(Empty)
-    case JString(s) =>
-      setBox(
-          enum.values.find(_.toString == s) ?~ ("Unknown value \"" + s + "\""))
-    case other => setBox(FieldHelpers.expectedA("JString", other))
-  }
+  def setFromJStringName(jvalue: JValue): Box[EnumType#Value] =
+    jvalue match {
+      case JNothing | JNull if optional_? => setBox(Empty)
+      case JString(s) =>
+        setBox(
+          enum.values.find(_.toString == s) ?~ ("Unknown value \"" + s + "\"")
+        )
+      case other => setBox(FieldHelpers.expectedA("JString", other))
+    }
 
   def asJValue: JValue = asJStringName
   def setFromJValue(jvalue: JValue): Box[EnumType#Value] =
@@ -88,33 +94,37 @@ trait EnumNameTypedField[EnumType <: Enumeration]
 }
 
 class EnumNameField[OwnerType <: Record[OwnerType], EnumType <: Enumeration](
-    rec: OwnerType, protected val enum: EnumType)(
-    implicit m: Manifest[EnumType#Value])
+    rec: OwnerType,
+    protected val enum: EnumType
+)(implicit m: Manifest[EnumType#Value])
     extends Field[EnumType#Value, OwnerType]
     with MandatoryTypedField[EnumType#Value]
     with EnumNameTypedField[EnumType] {
   def this(rec: OwnerType, enum: EnumType, value: EnumType#Value)(
-      implicit m: Manifest[EnumType#Value]) = {
+      implicit m: Manifest[EnumType#Value]
+  ) = {
     this(rec, enum)
     set(value)
   }
 
-  def owner = rec
+  def owner                   = rec
   protected val valueManifest = m
 }
 
-class OptionalEnumNameField[
-    OwnerType <: Record[OwnerType], EnumType <: Enumeration](
-    rec: OwnerType, protected val enum: EnumType)(
-    implicit m: Manifest[EnumType#Value])
-    extends Field[EnumType#Value, OwnerType]
-    with OptionalTypedField[EnumType#Value] with EnumNameTypedField[EnumType] {
+class OptionalEnumNameField[OwnerType <: Record[
+  OwnerType
+], EnumType <: Enumeration](rec: OwnerType, protected val enum: EnumType)(
+    implicit m: Manifest[EnumType#Value]
+) extends Field[EnumType#Value, OwnerType]
+    with OptionalTypedField[EnumType#Value]
+    with EnumNameTypedField[EnumType] {
   def this(rec: OwnerType, enum: EnumType, value: Box[EnumType#Value])(
-      implicit m: Manifest[EnumType#Value]) = {
+      implicit m: Manifest[EnumType#Value]
+  ) = {
     this(rec, enum)
     setBox(value)
   }
 
-  def owner = rec
+  def owner                   = rec
   protected val valueManifest = m
 }

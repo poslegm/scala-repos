@@ -5,7 +5,8 @@ import scala.scalajs.js
 object TestUtils {
 
   def newInstance(name: String, loader: ClassLoader)(
-      args: Seq[AnyRef]): AnyRef = {
+      args: Seq[AnyRef]
+  ): AnyRef = {
     val ctor = deepSelect(namespace(loader), name)
     js.Dynamic.newInstance(ctor)(args.asInstanceOf[Seq[js.Any]]: _*)
   }

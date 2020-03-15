@@ -20,8 +20,8 @@ object nsieve {
   }
 
   def main(args: Array[String]) = {
-    val n = Integer.parseInt(args(0))
-    val m = (1 << n) * 10000
+    val n     = Integer.parseInt(args(0))
+    val m     = (1 << n) * 10000
     val flags = new Array[Boolean](m + 1)
 
     def printPrimes(m: Int) = {

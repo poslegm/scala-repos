@@ -18,7 +18,7 @@ private[twitter] class NotFound(val cutoff: Double) {
 
   private[this] def buildSet[E](from: Iterable[E], toRemove: Set[E]): Set[E] = {
     val remaining = Set.newBuilder[E]
-    val iter = from.iterator
+    val iter      = from.iterator
     while (iter.hasNext) {
       val k = iter.next()
       if (!toRemove.contains(k)) remaining += k
@@ -62,7 +62,7 @@ private[twitter] class NotFound(val cutoff: Double) {
       from
     } else if (toRemove.size >= (from.size * cutoff)) {
       val remaining = Map.newBuilder[K, V]
-      val iter = from.iterator
+      val iter      = from.iterator
       while (iter.hasNext) {
         val kv = iter.next()
         if (!toRemove.contains(kv._1)) remaining += kv

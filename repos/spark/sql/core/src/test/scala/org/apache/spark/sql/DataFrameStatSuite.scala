@@ -33,35 +33,40 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
   private def toLetter(i: Int): String = (i + 97).toChar.toString
 
   test("sample with replacement") {
-    val n = 100
+    val n    = 100
     val data = sparkContext.parallelize(1 to n, 2).toDF("id")
     checkAnswer(
-        data.sample(withReplacement = true, 0.05, seed = 13),
-        Seq(5, 10, 52, 73).map(Row(_))
+      data.sample(withReplacement = true, 0.05, seed = 13),
+      Seq(5, 10, 52, 73).map(Row(_))
     )
   }
 
   test("sample without replacement") {
-    val n = 100
+    val n    = 100
     val data = sparkContext.parallelize(1 to n, 2).toDF("id")
     checkAnswer(
-        data.sample(withReplacement = false, 0.05, seed = 13),
-        Seq(3, 17, 27, 58, 62).map(Row(_))
+      data.sample(withReplacement = false, 0.05, seed = 13),
+      Seq(3, 17, 27, 58, 62).map(Row(_))
     )
   }
 
   test("randomSplit") {
-    val n = 600
+    val n    = 600
     val data = sparkContext.parallelize(1 to n, 2).toDF("id")
     for (seed <- 1 to 5) {
       val splits = data.randomSplit(Array[Double](1, 2, 3), seed)
       assert(splits.length == 3, "wrong number of splits")
 
       assert(
-          splits.reduce((a, b) => a.unionAll(b)).sort("id").collect().toList == data
-            .collect()
-            .toList,
-          "incomplete or wrong split")
+        splits
+          .reduce((a, b) => a.unionAll(b))
+          .sort("id")
+          .collect()
+          .toList == data
+          .collect()
+          .toList,
+        "incomplete or wrong split"
+      )
 
       val s = splits.map(_.count())
       assert(math.abs(s(0) - 100) < 50) // std =  9.13
@@ -98,7 +103,7 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
   }
 
   test("pearson correlation") {
-    val df = Seq.tabulate(10)(i => (i, 2 * i, i * -1.0)).toDF("a", "b", "c")
+    val df    = Seq.tabulate(10)(i => (i, 2 * i, i * -1.0)).toDF("a", "b", "c")
     val corr1 = df.stat.corr("a", "b", "pearson")
     assert(math.abs(corr1 - 1.0) < 1e-12)
     val corr2 = df.stat.corr("a", "c", "pearson")
@@ -115,7 +120,7 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
     // > b <- mapply(function(x) x * x - 2 * x + 3.5, a)
     // > cor(a, b)
     // [1] 0.957233913947585835
-    val df2 = Seq.tabulate(20)(x => (x, x * x - 2 * x + 3.5)).toDF("a", "b")
+    val df2   = Seq.tabulate(20)(x => (x, x * x - 2 * x + 3.5)).toDF("a", "b")
     val corr3 = df2.stat.corr("a", "b", "pearson")
     assert(math.abs(corr3 - 0.95723391394758572) < 1e-12)
   }
@@ -128,7 +133,8 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
     val results = df.stat.cov("singles", "doubles")
     assert(math.abs(results - 55.0 / 3) < 1e-12)
     intercept[IllegalArgumentException] {
-      df.stat.cov("singles", "letters") // doesn't accept non-numerical dataTypes
+      df.stat
+        .cov("singles", "letters") // doesn't accept non-numerical dataTypes
     }
     val decimalData = Seq
       .tabulate(6)(i => (BigDecimal(i % 3), BigDecimal(i % 2)))
@@ -138,11 +144,11 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
   }
 
   test("approximate quantile") {
-    val n = 1000
+    val n  = 1000
     val df = Seq.tabulate(n)(i => (i, 2.0 * i)).toDF("singles", "doubles")
 
-    val q1 = 0.5
-    val q2 = 0.8
+    val q1       = 0.5
+    val q2       = 0.8
     val epsilons = List(0.1, 0.05, 0.001)
 
     for (epsilon <- epsilons) {
@@ -169,15 +175,15 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
   }
 
   test("crosstab") {
-    val rng = new Random()
-    val data = Seq.tabulate(25)(i => (rng.nextInt(5), rng.nextInt(10)))
-    val df = data.toDF("a", "b")
-    val crosstab = df.stat.crosstab("a", "b")
+    val rng         = new Random()
+    val data        = Seq.tabulate(25)(i => (rng.nextInt(5), rng.nextInt(10)))
+    val df          = data.toDF("a", "b")
+    val crosstab    = df.stat.crosstab("a", "b")
     val columnNames = crosstab.schema.fieldNames
     assert(columnNames(0) === "a_b")
     // reduce by key
     val expected = data.map(t => (t, 1)).groupBy(_._1).mapValues(_.length)
-    val rows = crosstab.collect()
+    val rows     = crosstab.collect()
     rows.foreach { row =>
       val i = row.getString(0).toInt
       for (col <- 1 until columnNames.length) {
@@ -189,13 +195,13 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
 
   test("special crosstab elements (., '', null, ``)") {
     val data = Seq(
-        ("a", Double.NaN, "ho"),
-        (null, 2.0, "ho"),
-        ("a.b", Double.NegativeInfinity, ""),
-        ("b", Double.PositiveInfinity, "`ha`"),
-        ("a", 1.0, null)
+      ("a", Double.NaN, "ho"),
+      (null, 2.0, "ho"),
+      ("a.b", Double.NegativeInfinity, ""),
+      ("b", Double.PositiveInfinity, "`ha`"),
+      ("a", 1.0, null)
     )
-    val df = data.toDF("1", "2", "3")
+    val df  = data.toDF("1", "2", "3")
     val ct1 = df.stat.crosstab("1", "2")
     // column fields should be 1 + distinct elements of second column
     assert(ct1.schema.fields.length === 6)
@@ -224,12 +230,12 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
     val df = rows.toDF("numbers", "letters", "negDoubles")
 
     val results = df.stat.freqItems(Array("numbers", "letters"), 0.1)
-    val items = results.collect().head
+    val items   = results.collect().head
     assert(items.getSeq[Int](0).contains(1))
     assert(items.getSeq[String](1).contains(toLetter(1)))
 
     val singleColResults = df.stat.freqItems(Array("negDoubles"), 0.1)
-    val items2 = singleColResults.collect().head
+    val items2           = singleColResults.collect().head
     assert(items2.getSeq[Double](0).contains(-1.0))
   }
 
@@ -238,25 +244,29 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
     // this is a regression test, where when merging partitions, we omitted values with higher
     // counts than those that existed in the map when the map was full. This test should also fail
     // if anything like SPARK-9614 is observed once again
-    val df = rows.mapPartitionsWithIndex { (idx, iter) =>
-      if (idx == 3) {
-        // must come from one of the later merges, therefore higher partition index
-        Iterator("3", "3", "3", "3", "3")
-      } else {
-        Iterator("0", "1", "2", "3", "4")
+    val df = rows
+      .mapPartitionsWithIndex { (idx, iter) =>
+        if (idx == 3) {
+          // must come from one of the later merges, therefore higher partition index
+          Iterator("3", "3", "3", "3", "3")
+        } else {
+          Iterator("0", "1", "2", "3", "4")
+        }
       }
-    }.toDF("a")
+      .toDF("a")
     val results = df.stat.freqItems(Array("a"), 0.25)
-    val items = results.collect().head.getSeq[String](0)
+    val items   = results.collect().head.getSeq[String](0)
     assert(items.contains("3"))
     assert(items.length === 1)
   }
 
   test("sampleBy") {
-    val df = sqlContext.range(0, 100).select((col("id") % 3).as("key"))
+    val df      = sqlContext.range(0, 100).select((col("id") % 3).as("key"))
     val sampled = df.stat.sampleBy("key", Map(0 -> 0.1, 1 -> 0.2), 0L)
-    checkAnswer(sampled.groupBy("key").count().orderBy("key"),
-                Seq(Row(0, 6), Row(1, 11)))
+    checkAnswer(
+      sampled.groupBy("key").count().orderBy("key"),
+      Seq(Row(0, 6), Row(1, 11))
+    )
   }
 
   // This test case only verifies that `DataFrame.countMinSketch()` methods do return
@@ -320,7 +330,9 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
 }
 
 class DataFrameStatPerfSuite
-    extends QueryTest with SharedSQLContext with Logging {
+    extends QueryTest
+    with SharedSQLContext
+    with Logging {
 
   // Turn on this test if you want to test the performance of approximate quantiles.
   ignore("computing quantiles should not take much longer than describe()") {
@@ -350,7 +362,11 @@ class DataFrameStatPerfSuite
     logDebug("*** Just quantiles ***")
     val t2 = seconds {
       StatFunctions.multipleApproxQuantiles(
-          df, Seq("col1"), Seq(0.1, 0.25, 0.5, 0.75, 0.9), 0.01)
+        df,
+        Seq("col1"),
+        Seq(0.1, 0.25, 0.5, 0.75, 0.9),
+        0.01
+      )
     }
     logDebug(s"T1 = $t1, T2 = $t2")
   }

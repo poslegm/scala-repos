@@ -30,7 +30,7 @@ object ADTPartitionExampleTypes {
   sealed trait Fruit
 
   case class Apple(id: Int, sweetness: Int) extends Fruit
-  case class Pear(id: Int, color: String) extends Fruit
+  case class Pear(id: Int, color: String)   extends Fruit
 }
 
 /**
@@ -61,55 +61,59 @@ object ADTPartitionExample extends App {
       type Out = Out0
     }
 
-    implicit def cnilPartitioner: Aux[CNil, HNil] = new Partitioner[CNil] {
-      type Out = HNil
+    implicit def cnilPartitioner: Aux[CNil, HNil] =
+      new Partitioner[CNil] {
+        type Out = HNil
 
-      def apply(c: List[CNil]): Out = HNil
-    }
+        def apply(c: List[CNil]): Out = HNil
+      }
 
     implicit def cpPartitioner[K, H, T <: Coproduct, OutT <: HList](
-        implicit cp: Aux[T, OutT])
-      : Aux[FieldType[K, H] :+: T, FieldType[K, List[H]] :: OutT] =
+        implicit cp: Aux[T, OutT]
+    ): Aux[FieldType[K, H] :+: T, FieldType[K, List[H]] :: OutT] =
       new Partitioner[FieldType[K, H] :+: T] {
         type Out = FieldType[K, List[H]] :: OutT
 
         def apply(c: List[FieldType[K, H] :+: T]): Out =
-          field[K](c.collect { case Inl(h) => h: H }) :: cp(
-              c.collect { case Inr(t) => t })
+          field[K](c.collect { case Inl(h) => h: H }) :: cp(c.collect {
+            case Inr(t)                    => t
+          })
       }
   }
 
   /**
     * Partition a list into a tuple of lists for each constructor.
     */
-  def partitionTuple[A, C <: Coproduct, Out <: HList](as: List[A])(
-      implicit gen: LabelledGeneric.Aux[A, C],
+  def partitionTuple[A, C <: Coproduct, Out <: HList](as: List[A])(implicit
+      gen: LabelledGeneric.Aux[A, C],
       partitioner: Partitioner.Aux[C, Out],
-      tupler: Tupler[Out]) = tupler(partitioner(as.map(gen.to)))
+      tupler: Tupler[Out]
+  ) = tupler(partitioner(as.map(gen.to)))
 
   /**
     * Partition a list into a record of lists for each constructor.
     */
-  def partitionRecord[A, C <: Coproduct, Out <: HList](as: List[A])(
-      implicit gen: LabelledGeneric.Aux[A, C],
-      partitioner: Partitioner.Aux[C, Out]): Out =
+  def partitionRecord[A, C <: Coproduct, Out <: HList](as: List[A])(implicit
+      gen: LabelledGeneric.Aux[A, C],
+      partitioner: Partitioner.Aux[C, Out]
+  ): Out =
     partitioner(as.map(gen.to))
 
   import ADTPartitionExampleTypes._
 
   // Some example data.
   val fruits: List[Fruit] = List(
-      Apple(1, 10),
-      Pear(2, "red"),
-      Pear(3, "green"),
-      Apple(4, 6),
-      Pear(5, "purple")
+    Apple(1, 10),
+    Pear(2, "red"),
+    Pear(3, "green"),
+    Apple(4, 6),
+    Pear(5, "purple")
   )
 
   // The expected partition.
   val expectedApples: List[Apple] = List(Apple(1, 10), Apple(4, 6))
-  val expectedPears: List[Pear] = List(
-      Pear(2, "red"), Pear(3, "green"), Pear(5, "purple"))
+  val expectedPears: List[Pear] =
+    List(Pear(2, "red"), Pear(3, "green"), Pear(5, "purple"))
 
   // Partition the list into a tuple of lists.
   val (apples, pears) = partitionTuple(fruits)

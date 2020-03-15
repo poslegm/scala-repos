@@ -25,10 +25,11 @@ package object reflect {
 
   /** Creates a UI-less reporter that simply accumulates all the messages
     */
-  def mkSilentFrontEnd(): FrontEnd = new FrontEnd {
-    def display(info: Info) {}
-    def interactive() {}
-  }
+  def mkSilentFrontEnd(): FrontEnd =
+    new FrontEnd {
+      def display(info: Info) {}
+      def interactive() {}
+    }
 
   /** Creates a reporter that prints messages to the console according to the settings.
     *
@@ -45,23 +46,25 @@ package object reflect {
 
   private[reflect] def reporterToFrontEnd(reporter: Reporter): FrontEnd =
     new FrontEnd {
-      val API_INFO = INFO
+      val API_INFO    = INFO
       val API_WARNING = WARNING
-      val API_ERROR = ERROR
+      val API_ERROR   = ERROR
 
-      override def hasErrors = reporter.hasErrors
+      override def hasErrors   = reporter.hasErrors
       override def hasWarnings = reporter.hasWarnings
 
-      def display(info: Info): Unit = info.severity match {
-        case API_INFO => reporter.info(info.pos, info.msg, force = false)
-        case API_WARNING => reporter.warning(info.pos, info.msg)
-        case API_ERROR => reporter.error(info.pos, info.msg)
-      }
+      def display(info: Info): Unit =
+        info.severity match {
+          case API_INFO    => reporter.info(info.pos, info.msg, force = false)
+          case API_WARNING => reporter.warning(info.pos, info.msg)
+          case API_ERROR   => reporter.error(info.pos, info.msg)
+        }
 
-      def interactive(): Unit = reporter match {
-        case reporter: AbstractReporter => reporter.displayPrompt()
-        case _ => // do nothing
-      }
+      def interactive(): Unit =
+        reporter match {
+          case reporter: AbstractReporter => reporter.displayPrompt()
+          case _                          => // do nothing
+        }
 
       override def flush(): Unit = {
         super.flush()
@@ -75,25 +78,31 @@ package object reflect {
     }
 
   private[reflect] def frontEndToReporter(
-      frontEnd: FrontEnd, settings0: Settings): Reporter =
+      frontEnd: FrontEnd,
+      settings0: Settings
+  ): Reporter =
     new AbstractReporter {
       val settings = settings0
 
-      val API_INFO = frontEnd.INFO
+      val API_INFO    = frontEnd.INFO
       val API_WARNING = frontEnd.WARNING
-      val API_ERROR = frontEnd.ERROR
+      val API_ERROR   = frontEnd.ERROR
 
       type NscSeverity = Severity
-      val NSC_INFO = INFO
+      val NSC_INFO    = INFO
       val NSC_WARNING = WARNING
-      val NSC_ERROR = ERROR
+      val NSC_ERROR   = ERROR
 
       def display(pos: Position, msg: String, nscSeverity: NscSeverity): Unit =
-        frontEnd.log(pos, msg, nscSeverity match {
-          case NSC_INFO => API_INFO
-          case NSC_WARNING => API_WARNING
-          case NSC_ERROR => API_ERROR
-        })
+        frontEnd.log(
+          pos,
+          msg,
+          nscSeverity match {
+            case NSC_INFO    => API_INFO
+            case NSC_WARNING => API_WARNING
+            case NSC_ERROR   => API_ERROR
+          }
+        )
 
       def displayPrompt(): Unit =
         frontEnd.interactive()

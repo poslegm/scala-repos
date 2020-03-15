@@ -57,10 +57,11 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
     val mockCert = mock[X509Certificate]
     when(trans.peerCertificate).thenReturn(Some(mockCert))
     val service = new Service[String, String] {
-      override def apply(request: String): Future[String] = Future.value {
-        if (Contexts.local.get(Transport.peerCertCtx) == Some(mockCert)) "ok"
-        else "not ok"
-      }
+      override def apply(request: String): Future[String] =
+        Future.value {
+          if (Contexts.local.get(Transport.peerCertCtx) == Some(mockCert)) "ok"
+          else "not ok"
+        }
     }
 
     val disp = new SerialServerDispatcher(trans, service)
@@ -73,10 +74,12 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
     val mockAddr = mock[SocketAddress]
     when(trans.remoteAddress).thenReturn(mockAddr)
     val service = new Service[String, String] {
-      override def apply(request: String): Future[String] = Future.value {
-        if (Contexts.local.get(RemoteInfo.Upstream.AddressCtx) == Some(
-                mockAddr)) "ok" else "not ok"
-      }
+      override def apply(request: String): Future[String] =
+        Future.value {
+          if (Contexts.local
+                .get(RemoteInfo.Upstream.AddressCtx) == Some(mockAddr)) "ok"
+          else "not ok"
+        }
     }
 
     val disp = new SerialServerDispatcher(trans, service)
@@ -86,7 +89,7 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
   })
 
   test("Clear and delimit com.twitter.util.Local")(new Ctx {
-    val l = new Local[String]
+    val l     = new Local[String]
     var ncall = 0
 
     val s = new Service[String, String] {
@@ -109,8 +112,8 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
 
   trait Ictx {
     val onClose = new Promise[Throwable]
-    val writep = new Promise[Unit]
-    val trans = mock[Transport[String, String]]
+    val writep  = new Promise[Unit]
+    val trans   = mock[Transport[String, String]]
     when(trans.onClose).thenReturn(onClose)
     when(trans.write(any[String])).thenReturn(writep)
     when(trans.peerCertificate).thenReturn(None)
@@ -128,8 +131,7 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
     val disp = new SerialServerDispatcher(trans, service)
   }
 
-  test("interrupt on hangup: while pending")(
-      new Ictx {
+  test("interrupt on hangup: while pending")(new Ictx {
     readp.setValue("ok")
     verify(service).apply("ok")
     assert(!replyp.interrupted.isDefined)
@@ -162,8 +164,8 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
 
   trait Dctx {
     val onClose = new Promise[Throwable]
-    val writep = new Promise[Unit]
-    val trans = mock[Transport[String, String]]
+    val writep  = new Promise[Unit]
+    val trans   = mock[Transport[String, String]]
     when(trans.onClose).thenReturn(onClose)
     when(trans.write(any[String])).thenReturn(writep)
     when(trans.peerCertificate).thenReturn(None)
@@ -178,8 +180,7 @@ class SerialServerDispatcherTest extends FunSuite with MockitoSugar {
     verify(trans).read()
   }
 
-  test("isClosing")(
-      new Ictx {
+  test("isClosing")(new Ictx {
     assert(!disp.isClosing)
     disp.close(Time.now)
     assert(disp.isClosing)

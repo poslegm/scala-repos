@@ -55,7 +55,8 @@ object BytecodeUtils {
 
   object VarInstruction {
     def unapply(
-        instruction: AbstractInsnNode): Option[(AbstractInsnNode, Int)] = {
+        instruction: AbstractInsnNode
+    ): Option[(AbstractInsnNode, Int)] = {
       if (isLoadStoreOrRet(instruction))
         Some((instruction, instruction.asInstanceOf[VarInsnNode].`var`))
       else if (instruction.getOpcode == IINC)
@@ -118,8 +119,8 @@ object BytecodeUtils {
 
   def hasCallerSensitiveAnnotation(methodNode: MethodNode) =
     methodNode.visibleAnnotations != null &&
-    methodNode.visibleAnnotations.asScala
-      .exists(_.desc == "Lsun/reflect/CallerSensitive;")
+      methodNode.visibleAnnotations.asScala
+        .exists(_.desc == "Lsun/reflect/CallerSensitive;")
 
   def isFinalClass(classNode: ClassNode): Boolean =
     (classNode.access & ACC_FINAL) != 0
@@ -135,8 +136,9 @@ object BytecodeUtils {
 
   @tailrec
   def nextExecutableInstruction(
-      insn: AbstractInsnNode, alsoKeep: AbstractInsnNode => Boolean = Set())
-    : Option[AbstractInsnNode] = {
+      insn: AbstractInsnNode,
+      alsoKeep: AbstractInsnNode => Boolean = Set()
+  ): Option[AbstractInsnNode] = {
     val next = insn.getNext
     if (next == null || isExecutable(next) || alsoKeep(next)) Option(next)
     else nextExecutableInstruction(next, alsoKeep)
@@ -144,7 +146,8 @@ object BytecodeUtils {
 
   @tailrec
   def nextExecutableInstructionOrLabel(
-      insn: AbstractInsnNode): Option[AbstractInsnNode] = {
+      insn: AbstractInsnNode
+  ): Option[AbstractInsnNode] = {
     val next = insn.getNext
     if (next == null || isExecutable(next) || next.isInstanceOf[LabelNode])
       Option(next)
@@ -152,7 +155,9 @@ object BytecodeUtils {
   }
 
   def sameTargetExecutableInstruction(
-      a: JumpInsnNode, b: JumpInsnNode): Boolean = {
+      a: JumpInsnNode,
+      b: JumpInsnNode
+  ): Boolean = {
     // Compare next executable instead of the labels. Identifies a, b as the same target:
     //   LabelNode(a)
     //   LabelNode(b)
@@ -162,7 +167,7 @@ object BytecodeUtils {
 
   def removeJumpAndAdjustStack(method: MethodNode, jump: JumpInsnNode) {
     val instructions = method.instructions
-    val op = jump.getOpcode
+    val op           = jump.getOpcode
     if ((op >= IFEQ && op <= IFLE) || op == IFNULL || op == IFNONNULL) {
       instructions.insert(jump, getPop(1))
     } else if ((op >= IF_ICMPEQ && op <= IF_ICMPLE) || op == IF_ACMPEQ ||
@@ -189,36 +194,38 @@ object BytecodeUtils {
     followGoto(source.label, Set(source.label))
   }
 
-  def negateJumpOpcode(jumpOpcode: Int): Int = (jumpOpcode: @switch) match {
-    case IFEQ => IFNE
-    case IFNE => IFEQ
+  def negateJumpOpcode(jumpOpcode: Int): Int =
+    (jumpOpcode: @switch) match {
+      case IFEQ => IFNE
+      case IFNE => IFEQ
 
-    case IFLT => IFGE
-    case IFGE => IFLT
+      case IFLT => IFGE
+      case IFGE => IFLT
 
-    case IFGT => IFLE
-    case IFLE => IFGT
+      case IFGT => IFLE
+      case IFLE => IFGT
 
-    case IF_ICMPEQ => IF_ICMPNE
-    case IF_ICMPNE => IF_ICMPEQ
+      case IF_ICMPEQ => IF_ICMPNE
+      case IF_ICMPNE => IF_ICMPEQ
 
-    case IF_ICMPLT => IF_ICMPGE
-    case IF_ICMPGE => IF_ICMPLT
+      case IF_ICMPLT => IF_ICMPGE
+      case IF_ICMPGE => IF_ICMPLT
 
-    case IF_ICMPGT => IF_ICMPLE
-    case IF_ICMPLE => IF_ICMPGT
+      case IF_ICMPGT => IF_ICMPLE
+      case IF_ICMPLE => IF_ICMPGT
 
-    case IF_ACMPEQ => IF_ACMPNE
-    case IF_ACMPNE => IF_ACMPEQ
+      case IF_ACMPEQ => IF_ACMPNE
+      case IF_ACMPNE => IF_ACMPEQ
 
-    case IFNULL => IFNONNULL
-    case IFNONNULL => IFNULL
-  }
+      case IFNULL    => IFNONNULL
+      case IFNONNULL => IFNULL
+    }
 
-  def isSize2LoadOrStore(opcode: Int): Boolean = (opcode: @switch) match {
-    case LLOAD | DLOAD | LSTORE | DSTORE => true
-    case _ => false
-  }
+  def isSize2LoadOrStore(opcode: Int): Boolean =
+    (opcode: @switch) match {
+      case LLOAD | DLOAD | LSTORE | DSTORE => true
+      case _                               => false
+    }
 
   def getPop(size: Int): InsnNode = {
     val op = if (size == 1) POP else POP2
@@ -228,21 +235,22 @@ object BytecodeUtils {
   def instructionResultSize(insn: AbstractInsnNode) =
     InstructionStackEffect.prod(InstructionStackEffect.forClassfile(insn))
 
-  def loadZeroForTypeSort(sort: Int) = (sort: @switch) match {
-    case Type.BOOLEAN | Type.BYTE | Type.CHAR | Type.SHORT | Type.INT =>
-      new InsnNode(ICONST_0)
-    case Type.LONG => new InsnNode(LCONST_0)
-    case Type.FLOAT => new InsnNode(FCONST_0)
-    case Type.DOUBLE => new InsnNode(DCONST_0)
-    case Type.OBJECT => new InsnNode(ACONST_NULL)
-  }
+  def loadZeroForTypeSort(sort: Int) =
+    (sort: @switch) match {
+      case Type.BOOLEAN | Type.BYTE | Type.CHAR | Type.SHORT | Type.INT =>
+        new InsnNode(ICONST_0)
+      case Type.LONG   => new InsnNode(LCONST_0)
+      case Type.FLOAT  => new InsnNode(FCONST_0)
+      case Type.DOUBLE => new InsnNode(DCONST_0)
+      case Type.OBJECT => new InsnNode(ACONST_NULL)
+    }
 
   /**
     * The number of local variable slots used for parameters and for the `this` reference.
     */
   def parametersSize(methodNode: MethodNode): Int = {
     (Type.getArgumentsAndReturnSizes(methodNode.desc) >> 2) -
-    (if (isStaticMethod(methodNode)) 1 else 0)
+      (if (isStaticMethod(methodNode)) 1 else 0)
   }
 
   def labelReferences(method: MethodNode): Map[LabelNode, Set[AnyRef]] = {
@@ -251,7 +259,7 @@ object BytecodeUtils {
       if (res contains l) res(l) = res(l) + ref else res(l) = Set(ref)
 
     method.instructions.iterator().asScala foreach {
-      case jump: JumpInsnNode => add(jump.label, jump)
+      case jump: JumpInsnNode   => add(jump.label, jump)
       case line: LineNumberNode => add(line.start, line)
       case switch: LookupSwitchInsnNode =>
         switch.labels.asScala.foreach(add(_, switch)); add(switch.dflt, switch)
@@ -276,7 +284,10 @@ object BytecodeUtils {
   }
 
   def substituteLabel(
-      reference: AnyRef, from: LabelNode, to: LabelNode): Unit = {
+      reference: AnyRef,
+      from: LabelNode,
+      to: LabelNode
+  ): Unit = {
     def substList(list: java.util.List[LabelNode]) = {
       foreachWithIndex(list.asScala.toList) {
         case (l, i) =>
@@ -284,7 +295,7 @@ object BytecodeUtils {
       }
     }
     reference match {
-      case jump: JumpInsnNode => jump.label = to
+      case jump: JumpInsnNode   => jump.label = to
       case line: LineNumberNode => line.start = to
       case switch: LookupSwitchInsnNode =>
         substList(switch.labels); if (switch.dflt == from) switch.dflt = to
@@ -313,7 +324,7 @@ object BytecodeUtils {
     }
 
     (roughUpperBound(caller) +
-        roughUpperBound(callee) > maxMethodSizeAfterInline) &&
+      roughUpperBound(callee) > maxMethodSizeAfterInline) &&
     (maxSize(caller) + maxSize(callee) > maxMethodSizeAfterInline)
   }
 
@@ -325,7 +336,7 @@ object BytecodeUtils {
     val iter = instructions.iterator()
     while (iter.hasNext) iter.next() match {
       case _: LineNumberNode => iter.remove()
-      case _ =>
+      case _                 =>
     }
   }
 
@@ -343,7 +354,7 @@ object BytecodeUtils {
     * Create a new [[LabelNode]] with a correctly associated [[Label]].
     */
   def newLabelNode: LabelNode = {
-    val label = new Label
+    val label     = new Label
     val labelNode = new LabelNode(label)
     label.info = labelNode
     labelNode
@@ -353,23 +364,25 @@ object BytecodeUtils {
     * Clone the local variable descriptors of `methodNode` and map their `start` and `end` labels
     * according to the `labelMap`.
     */
-  def cloneLocalVariableNodes(methodNode: MethodNode,
-                              labelMap: Map[LabelNode, LabelNode],
-                              prefix: String,
-                              shift: Int): List[LocalVariableNode] = {
+  def cloneLocalVariableNodes(
+      methodNode: MethodNode,
+      labelMap: Map[LabelNode, LabelNode],
+      prefix: String,
+      shift: Int
+  ): List[LocalVariableNode] = {
     methodNode.localVariables
       .iterator()
       .asScala
-      .map(
-          localVariable =>
-            new LocalVariableNode(
-                prefix + localVariable.name,
-                localVariable.desc,
-                localVariable.signature,
-                labelMap(localVariable.start),
-                labelMap(localVariable.end),
-                localVariable.index + shift
-          ))
+      .map(localVariable =>
+        new LocalVariableNode(
+          prefix + localVariable.name,
+          localVariable.desc,
+          localVariable.signature,
+          labelMap(localVariable.start),
+          labelMap(localVariable.end),
+          localVariable.index + shift
+        )
+      )
       .toList
   }
 
@@ -379,17 +392,19 @@ object BytecodeUtils {
     */
   def cloneTryCatchBlockNodes(
       methodNode: MethodNode,
-      labelMap: Map[LabelNode, LabelNode]): List[TryCatchBlockNode] = {
+      labelMap: Map[LabelNode, LabelNode]
+  ): List[TryCatchBlockNode] = {
     methodNode.tryCatchBlocks
       .iterator()
       .asScala
       .map(tryCatch =>
-            new TryCatchBlockNode(
-                labelMap(tryCatch.start),
-                labelMap(tryCatch.end),
-                labelMap(tryCatch.handler),
-                tryCatch.`type`
-          ))
+        new TryCatchBlockNode(
+          labelMap(tryCatch.start),
+          labelMap(tryCatch.end),
+          labelMap(tryCatch.handler),
+          tryCatch.`type`
+        )
+      )
       .toList
   }
 
@@ -404,10 +419,12 @@ object BytecodeUtils {
     * During bytecode generation this is handled by BCodeBodyBuilder.adapt. See the comment in that
     * method which explains the issue with such phantom values.
     */
-  def fixLoadedNothingOrNullValue(loadedType: Type,
-                                  loadInstr: AbstractInsnNode,
-                                  methodNode: MethodNode,
-                                  bTypes: BTypes): Unit = {
+  def fixLoadedNothingOrNullValue(
+      loadedType: Type,
+      loadInstr: AbstractInsnNode,
+      methodNode: MethodNode,
+      bTypes: BTypes
+  ): Unit = {
     if (loadedType == bTypes.coreBTypes.srNothingRef.toASMType) {
       methodNode.instructions.insert(loadInstr, new InsnNode(ATHROW))
     } else if (loadedType == bTypes.coreBTypes.srNullRef.toASMType) {
@@ -419,7 +436,9 @@ object BytecodeUtils {
   implicit class AnalyzerExtensions[V <: Value](val analyzer: Analyzer[V])
       extends AnyVal {
     def frameAt(
-        instruction: AbstractInsnNode, methodNode: MethodNode): Frame[V] =
+        instruction: AbstractInsnNode,
+        methodNode: MethodNode
+    ): Frame[V] =
       analyzer.getFrames()(methodNode.instructions.indexOf(instruction))
   }
 

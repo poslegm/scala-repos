@@ -47,12 +47,8 @@ class LoggerConfig extends Config[Logger] {
 
   def apply(): Logger = {
     val logger = Logger.get(node)
-    level.foreach { x =>
-      logger.setLevel(x)
-    }
-    handlers.foreach { h =>
-      logger.addHandler(h())
-    }
+    level.foreach { x => logger.setLevel(x) }
+    handlers.foreach { h => logger.addHandler(h()) }
     logger.setUseParentHandlers(useParents)
     logger
   }
@@ -103,11 +99,13 @@ class FormatterConfig extends Config[Formatter] {
   var prefix: String = "%.3s [<yyyyMMdd-HH:mm:ss.SSS>] %s: "
 
   def apply() =
-    new Formatter(timezone,
-                  truncateAt,
-                  truncateStackTracesAt,
-                  useFullPackageNames,
-                  prefix)
+    new Formatter(
+      timezone,
+      truncateAt,
+      truncateStackTracesAt,
+      useFullPackageNames,
+      prefix
+    )
 }
 
 @deprecated("use BareFormatter directly", "6.12.1")
@@ -141,13 +139,15 @@ class SyslogFormatterConfig extends FormatterConfig {
   def serverName_=(name: String) { serverName = Some(name) }
 
   override def apply() =
-    new SyslogFormatter(hostname,
-                        serverName,
-                        useIsoDateFormat,
-                        priority,
-                        timezone,
-                        truncateAt,
-                        truncateStackTracesAt)
+    new SyslogFormatter(
+      hostname,
+      serverName,
+      useIsoDateFormat,
+      priority,
+      timezone,
+      truncateAt,
+      truncateStackTracesAt
+    )
 }
 
 @deprecated("use Formatter directly", "6.12.1")
@@ -251,20 +251,22 @@ class ScribeHandlerConfig extends HandlerConfig {
   var connectBackoff = 15.seconds
 
   var maxMessagesPerTransaction = 1000
-  var maxMessagesToBuffer = 10000
+  var maxMessagesToBuffer       = 10000
 
   var hostname = "localhost"
-  var port = 1463
+  var port     = 1463
   var category = "scala"
 
   def apply() =
-    new ScribeHandler(hostname,
-                      port,
-                      category,
-                      bufferTime,
-                      connectBackoff,
-                      maxMessagesPerTransaction,
-                      maxMessagesToBuffer,
-                      formatter(),
-                      level)
+    new ScribeHandler(
+      hostname,
+      port,
+      category,
+      bufferTime,
+      connectBackoff,
+      maxMessagesPerTransaction,
+      maxMessagesToBuffer,
+      formatter(),
+      level
+    )
 }

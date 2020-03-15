@@ -32,7 +32,8 @@ import org.apache.spark.network.shuffle.protocol.ExecutorShuffleInfo
 object ShuffleTestAccessor {
 
   def getBlockResolver(
-      handler: ExternalShuffleBlockHandler): ExternalShuffleBlockResolver = {
+      handler: ExternalShuffleBlockHandler
+  ): ExternalShuffleBlockResolver = {
     handler.blockManager
   }
 
@@ -54,18 +55,22 @@ object ShuffleTestAccessor {
   }
 
   def reloadRegisteredExecutors(file: File): ConcurrentMap[
-      ExternalShuffleBlockResolver.AppExecId, ExecutorShuffleInfo] = {
+    ExternalShuffleBlockResolver.AppExecId,
+    ExecutorShuffleInfo
+  ] = {
     val options: Options = new Options
     options.createIfMissing(true)
     val factory = new JniDBFactory
-    val db = factory.open(file, options)
-    val result = ExternalShuffleBlockResolver.reloadRegisteredExecutors(db)
+    val db      = factory.open(file, options)
+    val result  = ExternalShuffleBlockResolver.reloadRegisteredExecutors(db)
     db.close()
     result
   }
 
   def reloadRegisteredExecutors(db: DB): ConcurrentMap[
-      ExternalShuffleBlockResolver.AppExecId, ExecutorShuffleInfo] = {
+    ExternalShuffleBlockResolver.AppExecId,
+    ExecutorShuffleInfo
+  ] = {
     ExternalShuffleBlockResolver.reloadRegisteredExecutors(db)
   }
 }

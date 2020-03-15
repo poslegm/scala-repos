@@ -12,10 +12,11 @@ import org.scalatest.{OneInstancePerTest, FunSuite}
 
 @RunWith(classOf[JUnitRunner])
 class ByteBufAsBufTest
-    extends FunSuite with GeneratorDrivenPropertyChecks
+    extends FunSuite
+    with GeneratorDrivenPropertyChecks
     with OneInstancePerTest {
 
-  val bytes = Array[Byte](1, 2, 3, 4)
+  val bytes      = Array[Byte](1, 2, 3, 4)
   val underlying = Unpooled.buffer(100)
   underlying.writeBytes(bytes)
   val buf = new ByteBufAsBuf(underlying)
@@ -26,7 +27,9 @@ class ByteBufAsBufTest
     assert(buf.length == 3)
   }
 
-  test("writes to underlying ByteBuf are reflected in containing ByteBufAsBuf") {
+  test(
+    "writes to underlying ByteBuf are reflected in containing ByteBufAsBuf"
+  ) {
     assert(Buf.ByteArray.Owned(bytes) == buf)
     val newBytes = Array[Byte](10, 20, 30, 40)
     underlying.writerIndex(0)
@@ -35,7 +38,8 @@ class ByteBufAsBufTest
   }
 
   test(
-      "writes to slices of the underlying ByteBuf are reflected in ByteBufAsBuf") {
+    "writes to slices of the underlying ByteBuf are reflected in ByteBufAsBuf"
+  ) {
     val bbSlice = underlying.slice(1, 2)
     bbSlice.writerIndex(0)
     bbSlice.writeByte(99)
@@ -46,8 +50,8 @@ class ByteBufAsBufTest
 
   test("equality") {
     forAll { bytes: Array[Byte] =>
-      val baBuf = Buf.ByteArray.Owned(bytes)
-      val wrappedBB = new ByteBufAsBuf(Unpooled.wrappedBuffer(bytes))
+      val baBuf           = Buf.ByteArray.Owned(bytes)
+      val wrappedBB       = new ByteBufAsBuf(Unpooled.wrappedBuffer(bytes))
       val wrappedCopiedBB = new ByteBufAsBuf(Unpooled.copiedBuffer(bytes))
       assert(wrappedBB.equals(baBuf))
       assert(wrappedBB.equals(wrappedCopiedBB))

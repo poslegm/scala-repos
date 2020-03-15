@@ -5,7 +5,7 @@ class Outer {
 }
 object Outer {
   implicit def convert[T](p: T): Outer#Inner = {
-    val outer = new Outer
+    val outer              = new Outer
     val inner: Outer#Inner = new outer.Inner
     inner
   }

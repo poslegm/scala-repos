@@ -13,15 +13,15 @@ class HKeyManipulator extends AbstractElementManipulator[HKey] {
   import org.jetbrains.plugins.hocon.lexer.HoconTokenType._
 
   def handleContentChange(key: HKey, range: TextRange, newContent: String) = {
-    val psiManager = PsiManager.getInstance(key.getProject)
+    val psiManager     = PsiManager.getInstance(key.getProject)
     val allStringTypes = key.keyParts.map(_.stringType).toSet
 
     lazy val escapedContent = StringUtil.escapeStringCharacters(newContent)
 
     lazy val needsQuoting =
       newContent.isEmpty || newContent.startsWith(" ") ||
-      newContent.endsWith(" ") || escapedContent != newContent ||
-      newContent.exists(HoconLexer.ForbiddenCharsAndDot.contains)
+        newContent.endsWith(" ") || escapedContent != newContent ||
+        newContent.exists(HoconLexer.ForbiddenCharsAndDot.contains)
 
     val quotedEscapedContent =
       if (allStringTypes.contains(MultilineString))

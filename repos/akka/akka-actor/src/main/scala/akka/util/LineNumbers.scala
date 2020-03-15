@@ -20,7 +20,7 @@ import java.io.InputStream
 object LineNumbers {
 
   sealed trait Result
-  case object NoSourceInfo extends Result
+  case object NoSourceInfo                                  extends Result
   final case class UnknownSourceFormat(explanation: String) extends Result
   final case class SourceFile(filename: String) extends Result {
     override def toString = filename
@@ -61,10 +61,10 @@ object LineNumbers {
     */
   def prettyName(obj: AnyRef): String =
     apply(obj) match {
-      case NoSourceInfo ⇒ obj.getClass.getName
+      case NoSourceInfo             ⇒ obj.getClass.getName
       case UnknownSourceFormat(msg) ⇒ s"${obj.getClass.getName}($msg)"
-      case SourceFile(f) ⇒ s"${obj.getClass.getName}($f)"
-      case l: SourceFileLines ⇒ s"${obj.getClass.getPackage.getName}/$l"
+      case SourceFile(f)            ⇒ s"${obj.getClass.getName}($f)"
+      case l: SourceFileLines       ⇒ s"${obj.getClass.getPackage.getName}/$l"
     }
 
   /*
@@ -76,8 +76,8 @@ object LineNumbers {
 
   private class Constants(count: Int) {
 
-    private var _fwd = Map.empty[Int, String]
-    private var _rev = Map.empty[String, Int]
+    private var _fwd  = Map.empty[Int, String]
+    private var _rev  = Map.empty[String, Int]
     private var _xref = Map.empty[Int, Int]
 
     def fwd: Map[Int, String] = _fwd
@@ -90,7 +90,7 @@ object LineNumbers {
     def apply(idx: Int): String = _fwd(idx)
     def apply(str: String): Int = _rev(str)
 
-    def resolve(): Unit = _xref foreach (p ⇒ put(p._1, apply(p._2)))
+    def resolve(): Unit                = _xref foreach (p ⇒ put(p._1, apply(p._2)))
     def contains(str: String): Boolean = _rev contains str
 
     private def put(idx: Int, str: String): Unit = {
@@ -149,7 +149,7 @@ object LineNumbers {
 
   private def forObject(obj: AnyRef): Result =
     getStreamForClass(obj.getClass).orElse(getStreamForLambda(obj)) match {
-      case None ⇒ NoSourceInfo
+      case None                   ⇒ NoSourceInfo
       case Some((stream, filter)) ⇒ getInfo(stream, filter)
     }
 
@@ -162,42 +162,46 @@ object LineNumbers {
       implicit val constants = getConstants(dis)
       if (debug)
         println(
-            s"LNB:   fwd(${constants.fwd.size}) rev(${constants.rev.size}) ${constants.fwd.keys.toList.sorted}")
+          s"LNB:   fwd(${constants.fwd.size}) rev(${constants.rev.size}) ${constants.fwd.keys.toList.sorted}"
+        )
       skipClassInfo(dis)
       skipInterfaceInfo(dis)
       skipFields(dis)
-      val lines = readMethods(dis, filter)
+      val lines  = readMethods(dis, filter)
       val source = readAttributes(dis)
 
       if (source.isEmpty) NoSourceInfo
       else
         lines match {
-          case None ⇒ SourceFile(source.get)
+          case None             ⇒ SourceFile(source.get)
           case Some((from, to)) ⇒ SourceFileLines(source.get, from, to)
         }
     } catch {
       case NonFatal(ex) ⇒ UnknownSourceFormat(s"parse error: ${ex.getMessage}")
     } finally {
-      try dis.close() catch {
+      try dis.close()
+      catch {
         case ex: InterruptedException ⇒ throw ex
-        case NonFatal(ex) ⇒ // ignore
+        case NonFatal(ex)             ⇒ // ignore
       }
     }
   }
 
   private def getStreamForClass(
-      c: Class[_]): Option[(InputStream, None.type)] = {
+      c: Class[_]
+  ): Option[(InputStream, None.type)] = {
     val resource = c.getName.replace('.', '/') + ".class"
-    val cl = c.getClassLoader
-    val r = cl.getResourceAsStream(resource)
+    val cl       = c.getClassLoader
+    val r        = cl.getResourceAsStream(resource)
     if (debug) println(s"LNB:     resource '$resource' resolved to stream $r")
     Option(r).map(_ -> None)
   }
 
   private def getStreamForLambda(
-      l: AnyRef): Option[(InputStream, Some[String])] =
+      l: AnyRef
+  ): Option[(InputStream, Some[String])] =
     try {
-      val c = l.getClass
+      val c            = l.getClass
       val writeReplace = c.getDeclaredMethod("writeReplace")
       writeReplace.setAccessible(true)
       writeReplace.invoke(l) match {
@@ -242,8 +246,9 @@ object LineNumbers {
     if (debug) println(s"LNB: class name = ${c(name)}")
   }
 
-  private def skipInterfaceInfo(d: DataInputStream)(
-      implicit c: Constants): Unit = {
+  private def skipInterfaceInfo(
+      d: DataInputStream
+  )(implicit c: Constants): Unit = {
     val count = d.readUnsignedShort()
     for (_ ← 1 to count) {
       val intf = d.readUnsignedShort()
@@ -257,8 +262,9 @@ object LineNumbers {
     for (_ ← 1 to count) skipMethodOrField(d)
   }
 
-  private def skipMethodOrField(d: DataInputStream)(
-      implicit c: Constants): Unit = {
+  private def skipMethodOrField(
+      d: DataInputStream
+  )(implicit c: Constants): Unit = {
     skip(d, 2) // access flags
     val name = d.readUnsignedShort() // name
     skip(d, 2) // signature
@@ -274,7 +280,8 @@ object LineNumbers {
   }
 
   private def readMethods(d: DataInputStream, filter: Option[String])(
-      implicit c: Constants): Option[(Int, Int)] = {
+      implicit c: Constants
+  ): Option[(Int, Int)] = {
     val count = d.readUnsignedShort()
     if (debug) println(s"LNB: reading $count methods")
     if (c.contains("Code") && c.contains("LineNumberTable")) {
@@ -286,7 +293,7 @@ object LineNumbers {
             (Math.min(low, start), Math.max(high, end))
         } match {
         case (Int.MaxValue, 0) ⇒ None
-        case other ⇒ Some(other)
+        case other             ⇒ Some(other)
       }
     } else {
       if (debug) println(s"LNB:   (skipped)")
@@ -295,35 +302,36 @@ object LineNumbers {
     }
   }
 
-  private def readMethod(d: DataInputStream,
-                         codeTag: Int,
-                         lineNumberTableTag: Int,
-                         filter: Option[String])(
-      implicit c: Constants): Option[(Int, Int)] = {
+  private def readMethod(
+      d: DataInputStream,
+      codeTag: Int,
+      lineNumberTableTag: Int,
+      filter: Option[String]
+  )(implicit c: Constants): Option[(Int, Int)] = {
     skip(d, 2) // access flags
     val name = d.readUnsignedShort() // name
     skip(d, 2) // signature
     if (debug) println(s"LNB:   ${c(name)}")
     val attributes = for (_ ← 1 to d.readUnsignedShort()) yield {
-      val tag = d.readUnsignedShort()
+      val tag    = d.readUnsignedShort()
       val length = d.readInt()
       if (tag != codeTag || (filter.isDefined && c(name) != filter.get)) {
         skip(d, length)
         None
       } else {
-        skip(d, 4) // shorts: max stack, max locals
+        skip(d, 4)           // shorts: max stack, max locals
         skip(d, d.readInt()) // skip byte-code
         // skip exception table: N records of 4 shorts (start PC, end PC, handler PC, catch type)
         skip(d, 8 * d.readUnsignedShort())
         val possibleLines = for (_ ← 1 to d.readUnsignedShort()) yield {
-          val tag = d.readUnsignedShort()
+          val tag    = d.readUnsignedShort()
           val length = d.readInt()
           if (tag != lineNumberTableTag) {
             skip(d, length)
             None
           } else {
             val lines = for (_ ← 1 to d.readUnsignedShort()) yield {
-              skip(d, 2) // start PC
+              skip(d, 2)            // start PC
               d.readUnsignedShort() // finally: the line number
             }
             Some(lines.min -> lines.max)
@@ -337,14 +345,15 @@ object LineNumbers {
     attributes.flatten.headOption
   }
 
-  private def readAttributes(d: DataInputStream)(
-      implicit c: Constants): Option[String] = {
+  private def readAttributes(
+      d: DataInputStream
+  )(implicit c: Constants): Option[String] = {
     val count = d.readUnsignedShort()
     if (debug) println(s"LNB: reading $count attributes")
     if (c contains "SourceFile") {
       val s = c("SourceFile")
       val attributes = for (_ ← 1 to count) yield {
-        val tag = d.readUnsignedShort()
+        val tag    = d.readUnsignedShort()
         val length = d.readInt()
         if (debug) println(s"LNB:   tag ${c(tag)} ($length bytes)")
         if (tag != s) {

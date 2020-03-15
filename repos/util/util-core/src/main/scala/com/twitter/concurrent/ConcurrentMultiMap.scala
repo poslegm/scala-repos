@@ -9,21 +9,23 @@ class ConcurrentMultiMap[K <% Ordered[K], V <% Ordered[V]] {
   class Container(k: K, v: Option[V])
   // TODO: extending tuples is deprecated and will be removed in the next version.
   // Remove this inheritance in the next major version
-      extends Tuple2[K, Option[V]](k, v) with Comparable[Container] {
-    def key = k
+      extends Tuple2[K, Option[V]](k, v)
+      with Comparable[Container] {
+    def key   = k
     def value = v
 
     def isDefined = value.isDefined
 
-    def compareTo(that: Container) = this.key.compare(that.key) match {
-      case 0 if (this.isDefined && that.isDefined) =>
-        this.value.get.compare(that.value.get)
-      case 0 if (!this.isDefined && !that.isDefined) => 0
-      case 0 if (!this.isDefined) => -1
-      case 0 if (!that.isDefined) => 1
+    def compareTo(that: Container) =
+      this.key.compare(that.key) match {
+        case 0 if (this.isDefined && that.isDefined) =>
+          this.value.get.compare(that.value.get)
+        case 0 if (!this.isDefined && !that.isDefined) => 0
+        case 0 if (!this.isDefined)                    => -1
+        case 0 if (!that.isDefined)                    => 1
 
-      case x => x
-    }
+        case x => x
+      }
   }
 
   val underlying = new ConcurrentSkipListMap[Container, Unit]

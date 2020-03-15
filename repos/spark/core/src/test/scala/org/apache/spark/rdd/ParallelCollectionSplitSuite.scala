@@ -28,7 +28,7 @@ import org.apache.spark.SparkFunSuite
 
 class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   test("one element per slice") {
-    val data = Array(1, 2, 3)
+    val data   = Array(1, 2, 3)
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices(0).mkString(",") === "1")
@@ -37,14 +37,14 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("one slice") {
-    val data = Array(1, 2, 3)
+    val data   = Array(1, 2, 3)
     val slices = ParallelCollectionRDD.slice(data, 1)
     assert(slices.size === 1)
     assert(slices(0).mkString(",") === "1,2,3")
   }
 
   test("equal slices") {
-    val data = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    val data   = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices(0).mkString(",") === "1,2,3")
@@ -53,7 +53,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("non-equal slices") {
-    val data = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    val data   = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices(0).mkString(",") === "1,2,3")
@@ -62,7 +62,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("splitting exclusive range") {
-    val data = 0 until 100
+    val data   = 0 until 100
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices(0).mkString(",") === (0 to 32).mkString(","))
@@ -71,7 +71,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("splitting inclusive range") {
-    val data = 0 to 100
+    val data   = 0 to 100
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices(0).mkString(",") === (0 to 32).mkString(","))
@@ -81,7 +81,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("empty data") {
-    val data = new Array[Int](0)
+    val data   = new Array[Int](0)
     val slices = ParallelCollectionRDD.slice(data, 5)
     assert(slices.size === 5)
     for (slice <- slices) assert(slice.size === 0)
@@ -102,7 +102,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("exclusive ranges sliced into ranges") {
-    val data = 1 until 100
+    val data   = 1 until 100
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices.map(_.size).sum === 99)
@@ -110,7 +110,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("inclusive ranges sliced into ranges") {
-    val data = 1 to 100
+    val data   = 1 to 100
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices.map(_.size).sum === 100)
@@ -118,7 +118,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("identical slice sizes between Range and NumericRange") {
-    val r = ParallelCollectionRDD.slice(1 to 7, 4)
+    val r  = ParallelCollectionRDD.slice(1 to 7, 4)
     val nr = ParallelCollectionRDD.slice(1L to 7L, 4)
     assert(r.size === 4)
     for (i <- 0 until r.size) {
@@ -127,7 +127,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("identical slice sizes between List and NumericRange") {
-    val r = ParallelCollectionRDD.slice(List(1, 2), 4)
+    val r  = ParallelCollectionRDD.slice(List(1, 2), 4)
     val nr = ParallelCollectionRDD.slice(1L to 2L, 4)
     assert(r.size === 4)
     for (i <- 0 until r.size) {
@@ -136,8 +136,8 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("large ranges don't overflow") {
-    val N = 100 * 1000 * 1000
-    val data = 0 until N
+    val N      = 100 * 1000 * 1000
+    val data   = 0 until N
     val slices = ParallelCollectionRDD.slice(data, 40)
     assert(slices.size === 40)
     for (i <- 0 until 40) {
@@ -155,25 +155,26 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
       n <- Gen.choose(1, 100)
     } yield (d, n)
     val prop = forAll(gen) { (tuple: (List[Int], Int)) =>
-      val d = tuple._1
-      val n = tuple._2
+      val d      = tuple._1
+      val n      = tuple._2
       val slices = ParallelCollectionRDD.slice(d, n)
       ("n slices" |: slices.size == n) &&
       ("concat to d" |: Seq.concat(slices: _*).mkString(",") == d.mkString(
-              ",")) &&
+        ","
+      )) &&
       ("equal sizes" |: slices
-            .map(_.size)
-            .forall(x => x == d.size / n || x == d.size / n + 1))
+        .map(_.size)
+        .forall(x => x == d.size / n || x == d.size / n + 1))
     }
     check(prop)
   }
 
   test("random exclusive range tests") {
     val gen = for {
-      a <- Gen.choose(-100, 100)
-      b <- Gen.choose(-100, 100)
+      a    <- Gen.choose(-100, 100)
+      b    <- Gen.choose(-100, 100)
       step <- Gen.choose(-5, 5) suchThat (_ != 0)
-      n <- Gen.choose(1, 100)
+      n    <- Gen.choose(1, 100)
     } yield (a until b by step, n)
     val prop = forAll(gen) {
       case (d: Range, n: Int) =>
@@ -181,20 +182,21 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
         ("n slices" |: slices.size == n) &&
         ("all ranges" |: slices.forall(_.isInstanceOf[Range])) &&
         ("concat to d" |: Seq.concat(slices: _*).mkString(",") == d.mkString(
-                ",")) &&
+          ","
+        )) &&
         ("equal sizes" |: slices
-              .map(_.size)
-              .forall(x => x == d.size / n || x == d.size / n + 1))
+          .map(_.size)
+          .forall(x => x == d.size / n || x == d.size / n + 1))
     }
     check(prop)
   }
 
   test("random inclusive range tests") {
     val gen = for {
-      a <- Gen.choose(-100, 100)
-      b <- Gen.choose(-100, 100)
+      a    <- Gen.choose(-100, 100)
+      b    <- Gen.choose(-100, 100)
       step <- Gen.choose(-5, 5) suchThat (_ != 0)
-      n <- Gen.choose(1, 100)
+      n    <- Gen.choose(1, 100)
     } yield (a to b by step, n)
     val prop = forAll(gen) {
       case (d: Range, n: Int) =>
@@ -202,16 +204,17 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
         ("n slices" |: slices.size == n) &&
         ("all ranges" |: slices.forall(_.isInstanceOf[Range])) &&
         ("concat to d" |: Seq.concat(slices: _*).mkString(",") == d.mkString(
-                ",")) &&
+          ","
+        )) &&
         ("equal sizes" |: slices
-              .map(_.size)
-              .forall(x => x == d.size / n || x == d.size / n + 1))
+          .map(_.size)
+          .forall(x => x == d.size / n || x == d.size / n + 1))
     }
     check(prop)
   }
 
   test("exclusive ranges of longs") {
-    val data = 1L until 100L
+    val data   = 1L until 100L
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices.map(_.size).sum === 99)
@@ -219,7 +222,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("inclusive ranges of longs") {
-    val data = 1L to 100L
+    val data   = 1L to 100L
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices.map(_.size).sum === 100)
@@ -227,7 +230,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("exclusive ranges of doubles") {
-    val data = 1.0 until 100.0 by 1.0
+    val data   = 1.0 until 100.0 by 1.0
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices.map(_.size).sum === 99)
@@ -235,7 +238,7 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("inclusive ranges of doubles") {
-    val data = 1.0 to 100.0 by 1.0
+    val data   = 1.0 to 100.0 by 1.0
     val slices = ParallelCollectionRDD.slice(data, 3)
     assert(slices.size === 3)
     assert(slices.map(_.size).sum === 100)
@@ -243,12 +246,12 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("inclusive ranges with Int.MaxValue and Int.MinValue") {
-    val data1 = 1 to Int.MaxValue
+    val data1   = 1 to Int.MaxValue
     val slices1 = ParallelCollectionRDD.slice(data1, 3)
     assert(slices1.size === 3)
     assert(slices1.map(_.size).sum === Int.MaxValue)
     assert(slices1(2).isInstanceOf[Range.Inclusive])
-    val data2 = -2 to Int.MinValue by -1
+    val data2   = -2 to Int.MinValue by -1
     val slices2 = ParallelCollectionRDD.slice(data2, 3)
     assert(slices2.size == 3)
     assert(slices2.map(_.size).sum === Int.MaxValue)
@@ -256,11 +259,11 @@ class ParallelCollectionSplitSuite extends SparkFunSuite with Checkers {
   }
 
   test("empty ranges with Int.MaxValue and Int.MinValue") {
-    val data1 = Int.MaxValue until Int.MaxValue
+    val data1   = Int.MaxValue until Int.MaxValue
     val slices1 = ParallelCollectionRDD.slice(data1, 5)
     assert(slices1.size === 5)
     for (i <- 0 until 5) assert(slices1(i).size === 0)
-    val data2 = Int.MaxValue until Int.MaxValue
+    val data2   = Int.MaxValue until Int.MaxValue
     val slices2 = ParallelCollectionRDD.slice(data2, 5)
     assert(slices2.size === 5)
     for (i <- 0 until 5) assert(slices2(i).size === 0)

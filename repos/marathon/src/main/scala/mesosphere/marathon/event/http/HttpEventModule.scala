@@ -21,18 +21,22 @@ import scala.language.postfixOps
 trait HttpEventConfiguration extends ScallopConf {
 
   lazy val httpEventEndpoints = opt[String](
-      "http_endpoints",
-      descr = "The URLs of the event endpoints added to the current list of subscribers on startup. " +
+    "http_endpoints",
+    descr =
+      "The URLs of the event endpoints added to the current list of subscribers on startup. " +
         "You can manage this list during runtime by using the /v2/eventSubscriptions API endpoint.",
-      required = false,
-      noshort = true).map(parseHttpEventEndpoints)
+    required = false,
+    noshort = true
+  ).map(parseHttpEventEndpoints)
 
   lazy val httpEventCallbackSlowConsumerTimeout = opt[Long](
-      "http_event_callback_slow_consumer_timeout",
-      descr = "A http event callback consumer is considered slow, if the delivery takes longer than this timeout (ms)",
-      required = false,
-      noshort = true,
-      default = Some(10.seconds.toMillis))
+    "http_event_callback_slow_consumer_timeout",
+    descr =
+      "A http event callback consumer is considered slow, if the delivery takes longer than this timeout (ms)",
+    required = false,
+    noshort = true,
+    default = Some(10.seconds.toMillis)
+  )
 
   private[this] def parseHttpEventEndpoints(str: String): List[String] =
     str.split(',').map(_.trim).toList
@@ -57,11 +61,22 @@ class HttpEventModule(httpEventConfiguration: HttpEventConfiguration)
   @Named(HttpEventModule.StatusUpdateActor)
   def provideStatusUpdateActor(
       system: ActorSystem,
-      @Named(HttpEventModule.SubscribersKeeperActor) subscribersKeeper: ActorRef,
+      @Named(
+        HttpEventModule.SubscribersKeeperActor
+      ) subscribersKeeper: ActorRef,
       metrics: HttpEventActor.HttpEventActorMetrics,
-      clock: Clock): ActorRef = {
-    system.actorOf(Props(new HttpEventActor(
-                httpEventConfiguration, subscribersKeeper, metrics, clock)))
+      clock: Clock
+  ): ActorRef = {
+    system.actorOf(
+      Props(
+        new HttpEventActor(
+          httpEventConfiguration,
+          subscribersKeeper,
+          metrics,
+          clock
+        )
+      )
+    )
   }
 
   @Provides
@@ -69,22 +84,24 @@ class HttpEventModule(httpEventConfiguration: HttpEventConfiguration)
   def provideSubscribersKeeperActor(
       conf: HttpEventConfiguration,
       system: ActorSystem,
-      @Named(STORE_EVENT_SUBSCRIBERS) store: EntityStore[EventSubscribers])
-    : ActorRef = {
+      @Named(STORE_EVENT_SUBSCRIBERS) store: EntityStore[EventSubscribers]
+  ): ActorRef = {
     implicit val timeout = HttpEventModule.timeout
-    val local_ip = java.net.InetAddress.getLocalHost.getHostAddress
+    val local_ip         = java.net.InetAddress.getLocalHost.getHostAddress
 
     val actor = system.actorOf(Props(new SubscribersKeeperActor(store)))
     conf.httpEventEndpoints.get foreach { urls =>
       log.info(
-          s"http_endpoints($urls) are specified at startup. Those will be added to subscribers list.")
+        s"http_endpoints($urls) are specified at startup. Those will be added to subscribers list."
+      )
       urls foreach { url =>
         val f =
           (actor ? Subscribe(local_ip, url)).mapTo[MarathonSubscriptionEvent]
         f.onFailure {
           case th: Throwable =>
             log.warn(
-                s"Failed to add $url to event subscribers. exception message => ${th.getMessage}")
+              s"Failed to add $url to event subscribers. exception message => ${th.getMessage}"
+            )
         }(ExecutionContext.global)
       }
     }
@@ -94,7 +111,7 @@ class HttpEventModule(httpEventConfiguration: HttpEventConfiguration)
 }
 
 object HttpEventModule {
-  final val StatusUpdateActor = "EventsActor"
+  final val StatusUpdateActor      = "EventsActor"
   final val SubscribersKeeperActor = "SubscriberKeeperActor"
 
   //TODO(everpeace) this should be configurable option?

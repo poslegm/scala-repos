@@ -8,7 +8,7 @@ object Test {
     assert(xs.size == 200002)
     assert(xs.sum == 100001)
 
-    val ys = ListSet[Int]()
+    val ys  = ListSet[Int]()
     val ys1 = (1 to 12).grouped(3).foldLeft(ys)(_ ++ _)
     val ys2 = (1 to 12).foldLeft(ys)(_ + _)
 

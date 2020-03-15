@@ -16,9 +16,7 @@ object PersistentViewSpec {
       extends NamedPersistentActor(name) {
     def receiveCommand = {
       case msg ⇒
-        persist(msg) { m ⇒
-          probe ! s"${m}-${lastSequenceNr}"
-        }
+        persist(msg) { m ⇒ probe ! s"${m}-${lastSequenceNr}" }
     }
 
     override def receiveRecover: Receive = {
@@ -26,11 +24,12 @@ object PersistentViewSpec {
     }
   }
 
-  private class TestPersistentView(name: String,
-                                   probe: ActorRef,
-                                   interval: FiniteDuration,
-                                   var failAt: Option[String])
-      extends PersistentView {
+  private class TestPersistentView(
+      name: String,
+      probe: ActorRef,
+      interval: FiniteDuration,
+      var failAt: Option[String]
+  ) extends PersistentView {
     def this(name: String, probe: ActorRef, interval: FiniteDuration) =
       this(name, probe, interval, None)
 
@@ -40,7 +39,7 @@ object PersistentViewSpec {
     override def autoUpdateInterval: FiniteDuration =
       interval.dilated(context.system)
     override val persistenceId: String = name
-    override val viewId: String = name + "-view"
+    override val viewId: String        = name + "-view"
 
     var last: String = _
 
@@ -64,16 +63,16 @@ object PersistentViewSpec {
     }
 
     def shouldFailOn(m: Any): Boolean =
-      failAt.foldLeft(false) { (a, f) ⇒
-        a || (m == f)
-      }
+      failAt.foldLeft(false) { (a, f) ⇒ a || (m == f) }
   }
 
   private class PassiveTestPersistentView(
-      name: String, probe: ActorRef, var failAt: Option[String])
-      extends PersistentView {
+      name: String,
+      probe: ActorRef,
+      var failAt: Option[String]
+  ) extends PersistentView {
     override val persistenceId: String = name
-    override val viewId: String = name + "-view"
+    override val viewId: String        = name + "-view"
 
     override def autoUpdate: Boolean = false
     override def autoUpdateReplayMax: Long =
@@ -96,18 +95,16 @@ object PersistentViewSpec {
     }
 
     def shouldFailOn(m: Any): Boolean =
-      failAt.foldLeft(false) { (a, f) ⇒
-        a || (m == f)
-      }
+      failAt.foldLeft(false) { (a, f) ⇒ a || (m == f) }
   }
 
   private class ActiveTestPersistentView(name: String, probe: ActorRef)
       extends PersistentView {
     override val persistenceId: String = name
-    override val viewId: String = name + "-view"
+    override val viewId: String        = name + "-view"
 
     override def autoUpdateInterval: FiniteDuration = 50.millis
-    override def autoUpdateReplayMax: Long = 2
+    override def autoUpdateReplayMax: Long          = 2
 
     def receive = {
       case payload ⇒
@@ -118,7 +115,7 @@ object PersistentViewSpec {
   private class BecomingPersistentView(name: String, probe: ActorRef)
       extends PersistentView {
     override def persistenceId = name
-    override def viewId = name + "-view"
+    override def viewId        = name + "-view"
 
     def receive = Actor.emptyBehavior
 
@@ -130,7 +127,7 @@ object PersistentViewSpec {
   private class StashingPersistentView(name: String, probe: ActorRef)
       extends PersistentView {
     override def persistenceId = name
-    override def viewId = name + "-view"
+    override def viewId        = name + "-view"
 
     def receive = {
       case "other" ⇒ stash()
@@ -143,11 +140,10 @@ object PersistentViewSpec {
     }
   }
 
-  private class PersistentOrNotTestPersistentView(
-      name: String, probe: ActorRef)
+  private class PersistentOrNotTestPersistentView(name: String, probe: ActorRef)
       extends PersistentView {
     override val persistenceId: String = name
-    override val viewId: String = name + "-view"
+    override val viewId: String        = name + "-view"
 
     def receive = {
       case payload if isPersistent ⇒
@@ -159,7 +155,7 @@ object PersistentViewSpec {
   private class SnapshottingPersistentView(name: String, probe: ActorRef)
       extends PersistentView {
     override val persistenceId: String = name
-    override val viewId: String = s"${name}-replicator"
+    override val viewId: String        = s"${name}-replicator"
 
     override def autoUpdateInterval: FiniteDuration =
       100.microseconds.dilated(context.system)
@@ -186,14 +182,15 @@ object PersistentViewSpec {
 }
 
 abstract class PersistentViewSpec(config: Config)
-    extends PersistenceSpec(config) with ImplicitSender {
+    extends PersistenceSpec(config)
+    with ImplicitSender {
   import akka.persistence.PersistentViewSpec._
 
   var persistentActor: ActorRef = _
-  var view: ActorRef = _
+  var view: ActorRef            = _
 
   var persistentActorProbe: TestProbe = _
-  var viewProbe: TestProbe = _
+  var viewProbe: TestProbe            = _
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
@@ -202,7 +199,8 @@ abstract class PersistentViewSpec(config: Config)
     viewProbe = TestProbe()
 
     persistentActor = system.actorOf(
-        Props(classOf[TestPersistentActor], name, persistentActorProbe.ref))
+      Props(classOf[TestPersistentActor], name, persistentActorProbe.ref)
+    )
     persistentActor ! "a"
     persistentActor ! "b"
 
@@ -221,14 +219,14 @@ abstract class PersistentViewSpec(config: Config)
 
   "A persistent view" must {
     "receive past updates from a persistent actor" in {
-      view = system.actorOf(
-          Props(classOf[TestPersistentView], name, viewProbe.ref))
+      view =
+        system.actorOf(Props(classOf[TestPersistentView], name, viewProbe.ref))
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
     }
     "receive live updates from a persistent actor" in {
-      view = system.actorOf(
-          Props(classOf[TestPersistentView], name, viewProbe.ref))
+      view =
+        system.actorOf(Props(classOf[TestPersistentView], name, viewProbe.ref))
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
       persistentActor ! "c"
@@ -236,7 +234,8 @@ abstract class PersistentViewSpec(config: Config)
     }
     "run updates at specified interval" in {
       view = system.actorOf(
-          Props(classOf[TestPersistentView], name, viewProbe.ref, 2.seconds))
+        Props(classOf[TestPersistentView], name, viewProbe.ref, 2.seconds)
+      )
       // initial update is done on start
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
@@ -247,7 +246,8 @@ abstract class PersistentViewSpec(config: Config)
     }
     "run updates on user request" in {
       view = system.actorOf(
-          Props(classOf[TestPersistentView], name, viewProbe.ref, 5.seconds))
+        Props(classOf[TestPersistentView], name, viewProbe.ref, 5.seconds)
+      )
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
       persistentActor ! "c"
@@ -257,7 +257,8 @@ abstract class PersistentViewSpec(config: Config)
     }
     "run updates on user request and await update" in {
       view = system.actorOf(
-          Props(classOf[TestPersistentView], name, viewProbe.ref, 5.seconds))
+        Props(classOf[TestPersistentView], name, viewProbe.ref, 5.seconds)
+      )
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
       persistentActor ! "c"
@@ -268,7 +269,8 @@ abstract class PersistentViewSpec(config: Config)
     }
     "run updates again on failure outside an update cycle" in {
       view = system.actorOf(
-          Props(classOf[TestPersistentView], name, viewProbe.ref, 5.seconds))
+        Props(classOf[TestPersistentView], name, viewProbe.ref, 5.seconds)
+      )
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
       view ! "boom"
@@ -279,11 +281,14 @@ abstract class PersistentViewSpec(config: Config)
       persistentActor ! "c"
       persistentActorProbe.expectMsg("c-3")
       view = system.actorOf(
-          Props(classOf[TestPersistentView],
-                name,
-                viewProbe.ref,
-                5.seconds,
-                Some("b")))
+        Props(
+          classOf[TestPersistentView],
+          name,
+          viewProbe.ref,
+          5.seconds,
+          Some("b")
+        )
+      )
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
@@ -301,7 +306,8 @@ abstract class PersistentViewSpec(config: Config)
       persistentActorProbe.expectMsg("f-6")
 
       view = system.actorOf(
-          Props(classOf[PassiveTestPersistentView], name, viewProbe.ref, None))
+        Props(classOf[PassiveTestPersistentView], name, viewProbe.ref, None)
+      )
 
       view ! Update(await = true, replayMax = 2)
       view ! "get"
@@ -327,7 +333,8 @@ abstract class PersistentViewSpec(config: Config)
       subscribeToReplay(replayProbe)
 
       view = system.actorOf(
-          Props(classOf[ActiveTestPersistentView], name, viewProbe.ref))
+        Props(classOf[ActiveTestPersistentView], name, viewProbe.ref)
+      )
 
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
@@ -340,7 +347,8 @@ abstract class PersistentViewSpec(config: Config)
     }
     "support context.become" in {
       view = system.actorOf(
-          Props(classOf[BecomingPersistentView], name, viewProbe.ref))
+        Props(classOf[BecomingPersistentView], name, viewProbe.ref)
+      )
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
     }
@@ -349,8 +357,9 @@ abstract class PersistentViewSpec(config: Config)
 
       persistentActorProbe.expectMsg("c-3")
 
-      view = system.actorOf(Props(
-              classOf[PersistentOrNotTestPersistentView], name, viewProbe.ref))
+      view = system.actorOf(
+        Props(classOf[PersistentOrNotTestPersistentView], name, viewProbe.ref)
+      )
 
       view ! "d"
       view ! "e"
@@ -366,7 +375,8 @@ abstract class PersistentViewSpec(config: Config)
     }
     "take snapshots" in {
       view = system.actorOf(
-          Props(classOf[SnapshottingPersistentView], name, viewProbe.ref))
+        Props(classOf[SnapshottingPersistentView], name, viewProbe.ref)
+      )
       viewProbe.expectMsg("replicated-a-1")
       viewProbe.expectMsg("replicated-b-2")
       view ! "snap"
@@ -378,10 +388,13 @@ abstract class PersistentViewSpec(config: Config)
     }
     "support stash" in {
       view = system.actorOf(
-          Props(classOf[StashingPersistentView], name, viewProbe.ref))
+        Props(classOf[StashingPersistentView], name, viewProbe.ref)
+      )
       view ! "other"
       view ! "unstash"
-      viewProbe.expectMsg("a-2") // note that the lastSequenceNumber is 2, since we have replayed b-2
+      viewProbe.expectMsg(
+        "a-2"
+      ) // note that the lastSequenceNumber is 2, since we have replayed b-2
       viewProbe.expectMsg("b-2")
       viewProbe.expectMsg("other-2")
     }
@@ -390,7 +403,9 @@ abstract class PersistentViewSpec(config: Config)
 
 class LeveldbPersistentViewSpec
     extends PersistentViewSpec(
-        PersistenceSpec.config("leveldb", "LeveldbPersistentViewSpec"))
+      PersistenceSpec.config("leveldb", "LeveldbPersistentViewSpec")
+    )
 class InmemPersistentViewSpec
     extends PersistentViewSpec(
-        PersistenceSpec.config("inmem", "InmemPersistentViewSpec"))
+      PersistenceSpec.config("inmem", "InmemPersistentViewSpec")
+    )

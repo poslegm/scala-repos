@@ -15,8 +15,10 @@ class FreeTests extends CatsSuite {
   implicit val iso = CartesianTests.Isomorphisms.invariant[Free[Option, ?]]
 
   checkAll("Free[Option, ?]", MonadTests[Free[Option, ?]].monad[Int, Int, Int])
-  checkAll("Monad[Free[Option, ?]]",
-           SerializableTests.serializable(Monad[Free[Option, ?]]))
+  checkAll(
+    "Monad[Free[Option, ?]]",
+    SerializableTests.serializable(Monad[Free[Option, ?]])
+  )
 
   test("mapSuspension id") {
     forAll { x: Free[List, Int] =>
@@ -25,9 +27,7 @@ class FreeTests extends CatsSuite {
   }
 
   test("suspend doesn't change value") {
-    forAll { x: Free[List, Int] =>
-      Free.suspend(x) should ===(x)
-    }
+    forAll { x: Free[List, Int] => Free.suspend(x) should ===(x) }
   }
 
   test("suspend is lazy") {
@@ -58,11 +58,13 @@ class FreeTests extends CatsSuite {
         z <- if (j < 10000) a(j) else Free.pure[FTestApi, Int](j)
       } yield z
 
-    def runner: FTestApi ~> Id = new (FTestApi ~> Id) {
-      def apply[A](fa: FTestApi[A]): Id[A] = fa match {
-        case TB(i) => i + 1
+    def runner: FTestApi ~> Id =
+      new (FTestApi ~> Id) {
+        def apply[A](fa: FTestApi[A]): Id[A] =
+          fa match {
+            case TB(i) => i + 1
+          }
       }
-    }
 
     assert(10000 == a(0).foldMap(runner))
   }
@@ -71,10 +73,10 @@ class FreeTests extends CatsSuite {
 object FreeTests extends FreeTestsInstances {
   import cats.std.function._
 
-  implicit def trampolineArbitrary[A : Arbitrary]: Arbitrary[Trampoline[A]] =
+  implicit def trampolineArbitrary[A: Arbitrary]: Arbitrary[Trampoline[A]] =
     freeArbitrary[Function0, A]
 
-  implicit def trampolineEq[A : Eq]: Eq[Trampoline[A]] =
+  implicit def trampolineEq[A: Eq]: Eq[Trampoline[A]] =
     freeEq[Function0, A]
 }
 
@@ -83,18 +85,23 @@ sealed trait FreeTestsInstances {
     def apply[A](fa: List[A]): Option[A] = fa.headOption
   }
 
-  private def freeGen[F[_], A](maxDepth: Int)(
-      implicit F: Arbitrary[F[A]], A: Arbitrary[A]): Gen[Free[F, A]] = {
+  private def freeGen[F[_], A](
+      maxDepth: Int
+  )(implicit F: Arbitrary[F[A]], A: Arbitrary[A]): Gen[Free[F, A]] = {
     val noGosub = Gen.oneOf(
-        A.arbitrary.map(Free.pure[F, A]), F.arbitrary.map(Free.liftF[F, A]))
+      A.arbitrary.map(Free.pure[F, A]),
+      F.arbitrary.map(Free.liftF[F, A])
+    )
 
     val nextDepth = Gen.chooseNum(1, maxDepth - 1)
 
     def withGosub =
       for {
-        fDepth <- nextDepth
+        fDepth    <- nextDepth
         freeDepth <- nextDepth
-        f <- arbFunction1[A, Free[F, A]](Arbitrary(freeGen[F, A](fDepth))).arbitrary
+        f <- arbFunction1[A, Free[F, A]](
+              Arbitrary(freeGen[F, A](fDepth))
+            ).arbitrary
         freeFA <- freeGen[F, A](freeDepth)
       } yield freeFA.flatMap(f)
 
@@ -102,8 +109,10 @@ sealed trait FreeTestsInstances {
     else Gen.oneOf(noGosub, withGosub)
   }
 
-  implicit def freeArbitrary[F[_], A](
-      implicit F: Arbitrary[F[A]], A: Arbitrary[A]): Arbitrary[Free[F, A]] =
+  implicit def freeArbitrary[F[_], A](implicit
+      F: Arbitrary[F[A]],
+      A: Arbitrary[A]
+  ): Arbitrary[Free[F, A]] =
     Arbitrary(freeGen[F, A](4))
 
   implicit def freeEq[S[_]: Monad, A](implicit SA: Eq[S[A]]): Eq[Free[S, A]] =

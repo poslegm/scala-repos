@@ -40,7 +40,7 @@ class appTest extends JUnitSuite with ShouldMatchers {
 
   @Test
   def testRunOnUIThread(): Unit = {
-    val activity = Robolectric.buildActivity(classOf[SActivityImpl]).create.get
+    val activity   = Robolectric.buildActivity(classOf[SActivityImpl]).create.get
     val mainThread = Looper.getMainLooper.getThread
     activity.runOnUiThread {
       Thread.currentThread shouldBe mainThread
@@ -57,7 +57,7 @@ class appTest extends JUnitSuite with ShouldMatchers {
   @Test
   def testButtonClick(): Unit = {
     val activity = Robolectric.buildActivity(classOf[SActivityImpl]).create.get
-    val button = activity.find[Button](2)
+    val button   = activity.find[Button](2)
     button.performClick()
     button.getText shouldBe "Pressed"
   }
@@ -72,20 +72,20 @@ class appTest extends JUnitSuite with ShouldMatchers {
     val pressedDrawable =
       shadowDrawable.getDrawableForState(Array(android.R.attr.state_pressed))
     pressedDrawable shouldBe activity.getResources.getDrawable(
-        android.R.drawable.btn_star_big_on)
+      android.R.drawable.btn_star_big_on
+    )
 
     val normalDrawable = shadowDrawable.getDrawableForState(Array.empty)
     normalDrawable shouldBe activity.getResources.getDrawable(
-        android.R.drawable.btn_star_big_off)
+      android.R.drawable.btn_star_big_off
+    )
   }
 
   @Test
   def testAlertDialog(): Unit = {
     val activity = Robolectric.buildActivity(classOf[SActivityImpl]).create.get
     val alert = activity.alertDialog
-      .positiveButton("POS", { (di: DialogInterface, id: Int) =>
-        di.dismiss
-      })
+      .positiveButton("POS", { (di: DialogInterface, id: Int) => di.dismiss })
       .show()
     alert shouldBe a('showing)
 

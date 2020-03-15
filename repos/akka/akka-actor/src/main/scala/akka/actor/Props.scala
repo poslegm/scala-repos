@@ -44,8 +44,8 @@ object Props extends AbstractProps {
   /**
     * The default Props instance, uses the settings from the Props object starting with default*.
     */
-  final val default = Props(
-      defaultDeploy, classOf[CreatorFunctionConsumer], List(defaultCreator))
+  final val default =
+    Props(defaultDeploy, classOf[CreatorFunctionConsumer], List(defaultCreator))
 
   /**
     * INTERNAL API
@@ -60,7 +60,7 @@ object Props extends AbstractProps {
     * Scala API: Returns a Props that has default values except for "creator" which will be a function that creates an instance
     * of the supplied type using the default constructor.
     */
-  def apply[T <: Actor : ClassTag](): Props =
+  def apply[T <: Actor: ClassTag](): Props =
     apply(defaultDeploy, implicitly[ClassTag[T]].runtimeClass, List.empty)
 
   /**
@@ -76,7 +76,7 @@ object Props extends AbstractProps {
     * Instead you must create a named class that mixin the trait,
     * e.g. `class MyActor extends Actor with Stash`.
     */
-  def apply[T <: Actor : ClassTag](creator: ⇒ T): Props =
+  def apply[T <: Actor: ClassTag](creator: ⇒ T): Props =
     mkProps(implicitly[ClassTag[T]].runtimeClass, () ⇒ creator)
 
   private def mkProps(classOfActor: Class[_], ctor: () ⇒ Actor): Props =
@@ -114,7 +114,10 @@ object Props extends AbstractProps {
   */
 @SerialVersionUID(2L)
 final case class Props(
-    deploy: Deploy, clazz: Class[_], args: immutable.Seq[Any]) {
+    deploy: Deploy,
+    clazz: Class[_],
+    args: immutable.Seq[Any]
+) {
 
   Props.validate(clazz)
 
@@ -148,19 +151,21 @@ final case class Props(
     * Convenience method for extracting the dispatcher information from the
     * contained [[Deploy]] instance.
     */
-  def dispatcher: String = deploy.dispatcher match {
-    case NoDispatcherGiven ⇒ Dispatchers.DefaultDispatcherId
-    case x ⇒ x
-  }
+  def dispatcher: String =
+    deploy.dispatcher match {
+      case NoDispatcherGiven ⇒ Dispatchers.DefaultDispatcherId
+      case x                 ⇒ x
+    }
 
   /**
     * Convenience method for extracting the mailbox information from the
     * contained [[Deploy]] instance.
     */
-  def mailbox: String = deploy.mailbox match {
-    case NoMailboxGiven ⇒ Mailboxes.DefaultMailboxId
-    case x ⇒ x
-  }
+  def mailbox: String =
+    deploy.mailbox match {
+      case NoMailboxGiven ⇒ Mailboxes.DefaultMailboxId
+      case x              ⇒ x
+    }
 
   /**
     * Convenience method for extracting the router configuration from the
@@ -171,18 +176,20 @@ final case class Props(
   /**
     * Returns a new Props with the specified dispatcher set.
     */
-  def withDispatcher(d: String): Props = deploy.dispatcher match {
-    case NoDispatcherGiven ⇒ copy(deploy = deploy.copy(dispatcher = d))
-    case x ⇒ if (x == d) this else copy(deploy = deploy.copy(dispatcher = d))
-  }
+  def withDispatcher(d: String): Props =
+    deploy.dispatcher match {
+      case NoDispatcherGiven ⇒ copy(deploy = deploy.copy(dispatcher = d))
+      case x                 ⇒ if (x == d) this else copy(deploy = deploy.copy(dispatcher = d))
+    }
 
   /**
     * Returns a new Props with the specified mailbox set.
     */
-  def withMailbox(m: String): Props = deploy.mailbox match {
-    case NoMailboxGiven ⇒ copy(deploy = deploy.copy(mailbox = m))
-    case x ⇒ if (x == m) this else copy(deploy = deploy.copy(mailbox = m))
-  }
+  def withMailbox(m: String): Props =
+    deploy.mailbox match {
+      case NoMailboxGiven ⇒ copy(deploy = deploy.copy(mailbox = m))
+      case x              ⇒ if (x == m) this else copy(deploy = deploy.copy(mailbox = m))
+    }
 
   /**
     * Returns a new Props with the specified router config set.

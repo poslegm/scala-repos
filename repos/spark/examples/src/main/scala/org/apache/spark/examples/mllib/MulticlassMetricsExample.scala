@@ -30,12 +30,14 @@ object MulticlassMetricsExample {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("MulticlassMetricsExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     // $example on$
     // Load training data in LIBSVM format
     val data = MLUtils.loadLibSVMFile(
-        sc, "data/mllib/sample_multiclass_classification_data.txt")
+      sc,
+      "data/mllib/sample_multiclass_classification_data.txt"
+    )
 
     // Split data into training (60%) and test (40%)
     val Array(training, test) = data.randomSplit(Array(0.6, 0.4), seed = 11L)
@@ -61,8 +63,8 @@ object MulticlassMetricsExample {
 
     // Overall Statistics
     val precision = metrics.precision
-    val recall = metrics.recall // same as true positive rate
-    val f1Score = metrics.fMeasure
+    val recall    = metrics.recall // same as true positive rate
+    val f1Score   = metrics.fMeasure
     println("Summary Statistics")
     println(s"Precision = $precision")
     println(s"Recall = $recall")
@@ -70,14 +72,10 @@ object MulticlassMetricsExample {
 
     // Precision by label
     val labels = metrics.labels
-    labels.foreach { l =>
-      println(s"Precision($l) = " + metrics.precision(l))
-    }
+    labels.foreach { l => println(s"Precision($l) = " + metrics.precision(l)) }
 
     // Recall by label
-    labels.foreach { l =>
-      println(s"Recall($l) = " + metrics.recall(l))
-    }
+    labels.foreach { l => println(s"Recall($l) = " + metrics.recall(l)) }
 
     // False positive rate by label
     labels.foreach { l =>
@@ -85,16 +83,15 @@ object MulticlassMetricsExample {
     }
 
     // F-measure by label
-    labels.foreach { l =>
-      println(s"F1-Score($l) = " + metrics.fMeasure(l))
-    }
+    labels.foreach { l => println(s"F1-Score($l) = " + metrics.fMeasure(l)) }
 
     // Weighted stats
     println(s"Weighted precision: ${metrics.weightedPrecision}")
     println(s"Weighted recall: ${metrics.weightedRecall}")
     println(s"Weighted F1 score: ${metrics.weightedFMeasure}")
     println(
-        s"Weighted false positive rate: ${metrics.weightedFalsePositiveRate}")
+      s"Weighted false positive rate: ${metrics.weightedFalsePositiveRate}"
+    )
     // $example off$
   }
 }

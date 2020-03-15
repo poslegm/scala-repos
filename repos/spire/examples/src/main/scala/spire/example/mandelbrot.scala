@@ -23,16 +23,16 @@ object MandelbrotDemo {
     * Print an ASCII approximation of the 4x4 box from -2-2i to 2+2i.
     */
   def main(args: Array[String]): Unit = {
-    val res = 26 // number of iterations to try before including pt in the set
+    val res  = 26                                      // number of iterations to try before including pt in the set
     val rows = if (args.isEmpty) 20 else args(0).toInt // rows to print
-    val cols = rows * 2 // cols to print. most fonts are roughly 1:2
+    val cols = rows * 2                                // cols to print. most fonts are roughly 1:2
 
-    val h = 4.0 / rows // height per pixel character
-    val w = 4.0 / cols // width per pixel character
-    val x0 = -2.0 // starting x value (x offset)
-    val y0 = -2.0 // starting y value (y offset)
+    val h  = 4.0 / rows // height per pixel character
+    val w  = 4.0 / cols // width per pixel character
+    val x0 = -2.0       // starting x value (x offset)
+    val y0 = -2.0       // starting y value (y offset)
 
-    def pt(x: Int, y: Int) = Complex(x * w + x0, y * h + y0)
+    def pt(x: Int, y: Int)         = Complex(x * w + x0, y * h + y0)
     def display(s: String, n: Int) = print(Xterm.rainbow(n) + s)
 
     // render the area in ASCII, using o's and spaces.
@@ -40,7 +40,7 @@ object MandelbrotDemo {
       cfor(0)(_ <= cols, _ + 1) { x =>
         // if n<res, color the pixel accordingly, otherwise then we
         // treat it as being in the set.
-        val n = mandelbrot(pt(x, y), res)
+        val n     = mandelbrot(pt(x, y), res)
         val pixel = if (n == res) " " else "x"
         display(pixel, n)
       }

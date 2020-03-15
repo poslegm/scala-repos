@@ -35,19 +35,20 @@ import org.apache.spark.internal.Logging
   * Parses and holds information about inputFormat (and files) specified as a parameter.
   */
 @DeveloperApi
-class InputFormatInfo(val configuration: Configuration,
-                      val inputFormatClazz: Class[_],
-                      val path: String)
-    extends Logging {
+class InputFormatInfo(
+    val configuration: Configuration,
+    val inputFormatClazz: Class[_],
+    val path: String
+) extends Logging {
 
   var mapreduceInputFormat: Boolean = false
-  var mapredInputFormat: Boolean = false
+  var mapredInputFormat: Boolean    = false
 
   validate()
 
   override def toString: String = {
     "InputFormatInfo " + super.toString + " .. inputFormatClazz " +
-    inputFormatClazz + ", " + "path : " + path
+      inputFormatClazz + ", " + "path : " + path
   }
 
   override def hashCode(): Int = {
@@ -58,18 +59,20 @@ class InputFormatInfo(val configuration: Configuration,
 
   // Since we are not doing canonicalization of path, this can be wrong : like relative vs
   // absolute path .. which is fine, this is best case effort to remove duplicates - right ?
-  override def equals(other: Any): Boolean = other match {
-    case that: InputFormatInfo => {
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: InputFormatInfo => {
         // not checking config - that should be fine, right ?
         this.inputFormatClazz == that.inputFormatClazz &&
         this.path == that.path
       }
-    case _ => false
-  }
+      case _ => false
+    }
 
   private def validate() {
     logDebug(
-        "validate InputFormatInfo : " + inputFormatClazz + ", path  " + path)
+      "validate InputFormatInfo : " + inputFormatClazz + ", path  " + path
+    )
 
     try {
       if (classOf[org.apache.hadoop.mapreduce.InputFormat[_, _]]
@@ -82,17 +85,19 @@ class InputFormatInfo(val configuration: Configuration,
         mapredInputFormat = true
       } else {
         throw new IllegalArgumentException(
-            "Specified inputformat " + inputFormatClazz +
+          "Specified inputformat " + inputFormatClazz +
             " is NOT a supported input format ? does not implement either of the supported hadoop " +
-            "api's")
+            "api's"
+        )
       }
     } catch {
       case e: ClassNotFoundException => {
-          throw new IllegalArgumentException(
-              "Specified inputformat " + inputFormatClazz +
-              " cannot be found ?",
-              e)
-        }
+        throw new IllegalArgumentException(
+          "Specified inputformat " + inputFormatClazz +
+            " cannot be found ?",
+          e
+        )
+      }
     }
   }
 
@@ -109,7 +114,7 @@ class InputFormatInfo(val configuration: Configuration,
     val job = Job.getInstance(conf)
 
     val retval = new ArrayBuffer[SplitInfo]()
-    val list = instance.getSplits(job)
+    val list   = instance.getSplits(job)
     for (split <- list.asScala) {
       retval ++= SplitInfo.toSplitInfo(inputFormatClazz, path, split)
     }
@@ -130,9 +135,8 @@ class InputFormatInfo(val configuration: Configuration,
     val retval = new ArrayBuffer[SplitInfo]()
     instance
       .getSplits(jobConf, jobConf.getNumMapTasks())
-      .foreach(
-          elem =>
-            retval ++= SplitInfo.toSplitInfo(inputFormatClazz, path, elem)
+      .foreach(elem =>
+        retval ++= SplitInfo.toSplitInfo(inputFormatClazz, path, elem)
       )
 
     retval.toSet
@@ -140,9 +144,10 @@ class InputFormatInfo(val configuration: Configuration,
 
   private def findPreferredLocations(): Set[SplitInfo] = {
     logDebug(
-        "mapreduceInputFormat : " + mapreduceInputFormat +
+      "mapreduceInputFormat : " + mapreduceInputFormat +
         ", mapredInputFormat : " + mapredInputFormat +
-        ", inputFormatClazz : " + inputFormatClazz)
+        ", inputFormatClazz : " + inputFormatClazz
+    )
     if (mapreduceInputFormat) {
       prefLocsFromMapreduceInputFormat()
     } else {
@@ -173,7 +178,8 @@ object InputFormatInfo {
     PS: I know the wording here is weird, hopefully it makes some sense !
     */
   def computePreferredLocations(
-      formats: Seq[InputFormatInfo]): Map[String, Set[SplitInfo]] = {
+      formats: Seq[InputFormatInfo]
+  ): Map[String, Set[SplitInfo]] = {
 
     val nodeToSplit = new HashMap[String, HashSet[SplitInfo]]
     for (inputSplit <- formats) {
@@ -181,7 +187,7 @@ object InputFormatInfo {
 
       for (split <- splits) {
         val location = split.hostLocation
-        val set = nodeToSplit.getOrElseUpdate(location, new HashSet[SplitInfo])
+        val set      = nodeToSplit.getOrElseUpdate(location, new HashSet[SplitInfo])
         set += split
       }
     }

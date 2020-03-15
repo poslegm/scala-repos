@@ -2,6 +2,6 @@ package foo
 package bar
 
 class A {
-  val s: Val = false
+  val s: Val     = false
   val o: Outside = false
 }

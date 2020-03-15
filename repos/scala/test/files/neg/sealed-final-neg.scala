@@ -6,7 +6,7 @@ package neg1 {
     def mkFoo(): Foo = new Baz2
   }
 
-  object Baz1 extends Foo
+  object Baz1      extends Foo
   final class Baz2 extends Foo
   final class Baz3 extends Foo {
     override def bar(x: Int) = x - 1
@@ -26,7 +26,7 @@ package neg2 {
     def mkFoo(): Foo = new Baz2
   }
 
-  object Baz1 extends Foo
+  object Baz1      extends Foo
   final class Baz2 extends Foo
   class Baz3 extends Foo {
     override def bar(x: Int) = x - 1

@@ -11,15 +11,15 @@ case class MSchema(schema: String, catalog: Option[String]) {
 object MSchema {
   def getSchemas(catalog: Option[String], schemaPattern: Option[String]) = {
     ResultSetAction[MSchema] { s =>
-      try s.metaData.getSchemas(catalog.orNull, schemaPattern.orNull) catch {
+      try s.metaData.getSchemas(catalog.orNull, schemaPattern.orNull)
+      catch {
         case _: AbstractMethodError => null
       }
-    } { r =>
-      MSchema(r.<<, r.<<?)
-    }
+    } { r => MSchema(r.<<, r.<<?) }
   }
 
-  def getSchemas = ResultSetAction[MSchema](_.metaData.getSchemas()) { r =>
-    MSchema(r.<<, r.<<?)
-  }
+  def getSchemas =
+    ResultSetAction[MSchema](_.metaData.getSchemas()) { r =>
+      MSchema(r.<<, r.<<?)
+    }
 }

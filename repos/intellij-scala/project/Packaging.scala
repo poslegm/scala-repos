@@ -28,18 +28,22 @@ object Packaging {
   }
 
   def compressPackagedPlugin(source: File, destination: File): Unit =
-    IO.zip((source.getParentFile ***) pair
-           (relativeTo(source.getParentFile), false),
-           destination)
+    IO.zip(
+      (source.getParentFile ***) pair
+        (relativeTo(source.getParentFile), false),
+      destination
+    )
 
   import PackageEntry._
 
-  def convertEntriesToMappings(entries: Seq[PackageEntry],
-                               libraries: Classpath): Seq[(File, String)] = {
+  def convertEntriesToMappings(
+      entries: Seq[PackageEntry],
+      libraries: Classpath
+  ): Seq[(File, String)] = {
     val resolvedLibraries = (for {
-      jarFile <- libraries
+      jarFile  <- libraries
       moduleId <- jarFile.get(moduleID.key)
-      key = moduleId.organization % moduleId.name % moduleId.revision
+      key       = moduleId.organization % moduleId.name % moduleId.revision
     } yield (key, jarFile.data)).toMap
     entries.map(e => convertEntry(e, resolvedLibraries))
   }
@@ -55,7 +59,7 @@ object Packaging {
 
   def patchedPluginXML(mapping: (File, String)): (File, String) = {
     val (f, path) = mapping
-    val tmpFile = java.io.File.createTempFile("plugin", ".xml")
+    val tmpFile   = java.io.File.createTempFile("plugin", ".xml")
     IO.copyFile(f, tmpFile)
     replaceInFile(tmpFile, "VERSION", pluginVersion)
     (tmpFile, path)
@@ -63,7 +67,8 @@ object Packaging {
 
   private def convertEntry(
       entry: PackageEntry,
-      resolvedLibraries: Map[ModuleID, File]): (File, String) =
+      resolvedLibraries: Map[ModuleID, File]
+  ): (File, String) =
     entry match {
       case Directory(source, destination) =>
         source -> destination

@@ -20,13 +20,17 @@ import javax.net.ssl.{TrustManagerFactory, KeyManagerFactory}
   * @param data The data to load the key store file from.
   * @param password The password to use to load the key store file, if the file is password protected.
   */
-case class KeyStoreConfig(storeType: String = KeyStore.getDefaultType,
-                          filePath: Option[String] = None,
-                          data: Option[String] = None,
-                          password: Option[String] = None) {
+case class KeyStoreConfig(
+    storeType: String = KeyStore.getDefaultType,
+    filePath: Option[String] = None,
+    data: Option[String] = None,
+    password: Option[String] = None
+) {
 
-  assert(filePath.isDefined ^ data.isDefined,
-         "Either key store path or data must be defined, but not both.")
+  assert(
+    filePath.isDefined ^ data.isDefined,
+    "Either key store path or data must be defined, but not both."
+  )
 }
 
 /**
@@ -38,12 +42,16 @@ case class KeyStoreConfig(storeType: String = KeyStore.getDefaultType,
   * @param filePath The path of the key store file.
   * @param data The data to load the key store file from.
   */
-case class TrustStoreConfig(storeType: String = KeyStore.getDefaultType,
-                            filePath: Option[String],
-                            data: Option[String]) {
+case class TrustStoreConfig(
+    storeType: String = KeyStore.getDefaultType,
+    filePath: Option[String],
+    data: Option[String]
+) {
 
-  assert(filePath.isDefined ^ data.isDefined,
-         "Either trust store path or data must be defined, but not both.")
+  assert(
+    filePath.isDefined ^ data.isDefined,
+    "Either trust store path or data must be defined, but not both."
+  )
 }
 
 /**
@@ -54,7 +62,8 @@ case class TrustStoreConfig(storeType: String = KeyStore.getDefaultType,
   */
 case class KeyManagerConfig(
     algorithm: String = KeyManagerFactory.getDefaultAlgorithm,
-    keyStoreConfigs: Seq[KeyStoreConfig] = Nil)
+    keyStoreConfigs: Seq[KeyStoreConfig] = Nil
+)
 
 /**
   * The trust manager config.
@@ -64,40 +73,45 @@ case class KeyManagerConfig(
   */
 case class TrustManagerConfig(
     algorithm: String = TrustManagerFactory.getDefaultAlgorithm,
-    trustStoreConfigs: Seq[TrustStoreConfig] = Nil)
+    trustStoreConfigs: Seq[TrustStoreConfig] = Nil
+)
 
 /**
   * SSL debug configuration.
   */
-case class SSLDebugConfig(all: Boolean = false,
-                          ssl: Boolean = false,
-                          certpath: Boolean = false,
-                          ocsp: Boolean = false,
-                          record: Option[SSLDebugRecordOptions] = None,
-                          handshake: Option[SSLDebugHandshakeOptions] = None,
-                          keygen: Boolean = false,
-                          session: Boolean = false,
-                          defaultctx: Boolean = false,
-                          sslctx: Boolean = false,
-                          sessioncache: Boolean = false,
-                          keymanager: Boolean = false,
-                          trustmanager: Boolean = false,
-                          pluggability: Boolean = false) {
+case class SSLDebugConfig(
+    all: Boolean = false,
+    ssl: Boolean = false,
+    certpath: Boolean = false,
+    ocsp: Boolean = false,
+    record: Option[SSLDebugRecordOptions] = None,
+    handshake: Option[SSLDebugHandshakeOptions] = None,
+    keygen: Boolean = false,
+    session: Boolean = false,
+    defaultctx: Boolean = false,
+    sslctx: Boolean = false,
+    sessioncache: Boolean = false,
+    keymanager: Boolean = false,
+    trustmanager: Boolean = false,
+    pluggability: Boolean = false
+) {
 
   /**
     * Whether any debug options are enabled.
     */
   def enabled =
     all || ssl || certpath || ocsp || record.isDefined ||
-    handshake.isDefined || keygen || session || defaultctx || sslctx ||
-    sessioncache || keymanager || trustmanager || pluggability
+      handshake.isDefined || keygen || session || defaultctx || sslctx ||
+      sessioncache || keymanager || trustmanager || pluggability
 
   def withAll = this.copy(all = true)
 
   def withCertPath = this.copy(certpath = true)
 
   def withOcsp =
-    this.withCertPath.copy(ocsp = true) // technically a part of certpath, only available in 1.7+
+    this.withCertPath.copy(ocsp =
+      true
+    ) // technically a part of certpath, only available in 1.7+
 
   def withRecord(plaintext: Boolean = false, packet: Boolean = false) = {
     this.copy(record = Some(SSLDebugRecordOptions(plaintext, packet)))
@@ -130,13 +144,17 @@ case class SSLDebugConfig(all: Boolean = false,
   * SSL handshake debugging options.
   */
 case class SSLDebugHandshakeOptions(
-    data: Boolean = false, verbose: Boolean = false)
+    data: Boolean = false,
+    verbose: Boolean = false
+)
 
 /**
   * SSL record debugging options.
   */
 case class SSLDebugRecordOptions(
-    plaintext: Boolean = false, packet: Boolean = false)
+    plaintext: Boolean = false,
+    packet: Boolean = false
+)
 
 /**
   * Configuration for specifying loose (potentially dangerous) ssl config.
@@ -149,11 +167,13 @@ case class SSLDebugRecordOptions(
   *                                 default.
   * @param acceptAnyCertificate Whether any X.509 certificate should be accepted or not.
   */
-case class SSLLooseConfig(allowWeakCiphers: Boolean = false,
-                          allowWeakProtocols: Boolean = false,
-                          allowLegacyHelloMessages: Option[Boolean] = None,
-                          allowUnsafeRenegotiation: Option[Boolean] = None,
-                          acceptAnyCertificate: Boolean = false)
+case class SSLLooseConfig(
+    allowWeakCiphers: Boolean = false,
+    allowWeakProtocols: Boolean = false,
+    allowLegacyHelloMessages: Option[Boolean] = None,
+    allowUnsafeRenegotiation: Option[Boolean] = None,
+    acceptAnyCertificate: Boolean = false
+)
 
 /**
   * The SSL configuration.
@@ -179,15 +199,17 @@ case class SSLConfig(
     revocationLists: Option[Seq[URL]] = None,
     enabledCipherSuites: Option[Seq[String]] = None,
     enabledProtocols: Option[Seq[String]] = Some(
-          Seq("TLSv1.2", "TLSv1.1", "TLSv1")),
+      Seq("TLSv1.2", "TLSv1.1", "TLSv1")
+    ),
     disabledSignatureAlgorithms: Seq[String] = Seq("MD2", "MD4", "MD5"),
-    disabledKeyAlgorithms: Seq[String] = Seq(
-          "RSA keySize < 2048", "DSA keySize < 2048", "EC keySize < 224"),
+    disabledKeyAlgorithms: Seq[String] =
+      Seq("RSA keySize < 2048", "DSA keySize < 2048", "EC keySize < 224"),
     keyManagerConfig: KeyManagerConfig = KeyManagerConfig(),
     trustManagerConfig: TrustManagerConfig = TrustManagerConfig(),
     secureRandom: Option[SecureRandom] = None,
     debug: SSLDebugConfig = SSLDebugConfig(),
-    loose: SSLLooseConfig = SSLLooseConfig())
+    loose: SSLLooseConfig = SSLLooseConfig()
+)
 
 /**
   * Factory for creating SSL config (for use from Java).
@@ -205,14 +227,14 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
 
   def parse(): SSLConfig = {
 
-    val default = c.get[Boolean]("default")
-    val protocol = c.get[String]("protocol")
+    val default         = c.get[Boolean]("default")
+    val protocol        = c.get[String]("protocol")
     val checkRevocation = c.get[Option[Boolean]]("checkRevocation")
     val revocationLists: Option[Seq[URL]] = Some(
-        c.get[Seq[String]]("revocationLists").map(new URL(_))
+      c.get[Seq[String]]("revocationLists").map(new URL(_))
     ).filter(_.nonEmpty)
 
-    val debug = parseDebug(c.get[PlayConfig]("debug"))
+    val debug        = parseDebug(c.get[PlayConfig]("debug"))
     val looseOptions = parseLooseOptions(c.get[PlayConfig]("loose"))
 
     val ciphers =
@@ -228,19 +250,21 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
 
     val trustManagers = parseTrustManager(c.get[PlayConfig]("trustManager"))
 
-    SSLConfig(default = default,
-              protocol = protocol,
-              checkRevocation = checkRevocation,
-              revocationLists = revocationLists,
-              enabledCipherSuites = ciphers,
-              enabledProtocols = protocols,
-              keyManagerConfig = keyManagers,
-              disabledSignatureAlgorithms = disabledSignatureAlgorithms,
-              disabledKeyAlgorithms = disabledKeyAlgorithms,
-              trustManagerConfig = trustManagers,
-              secureRandom = None,
-              debug = debug,
-              loose = looseOptions)
+    SSLConfig(
+      default = default,
+      protocol = protocol,
+      checkRevocation = checkRevocation,
+      revocationLists = revocationLists,
+      enabledCipherSuites = ciphers,
+      enabledProtocols = protocols,
+      keyManagerConfig = keyManagers,
+      disabledSignatureAlgorithms = disabledSignatureAlgorithms,
+      disabledKeyAlgorithms = disabledKeyAlgorithms,
+      trustManagerConfig = trustManagers,
+      secureRandom = None,
+      debug = debug,
+      loose = looseOptions
+    )
   }
 
   /**
@@ -249,18 +273,18 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
   def parseLooseOptions(config: PlayConfig): SSLLooseConfig = {
 
     val allowWeakProtocols = config.get[Boolean]("allowWeakProtocols")
-    val allowWeakCiphers = config.get[Boolean]("allowWeakCiphers")
-    val allowMessages = config.get[Option[Boolean]]("allowLegacyHelloMessages")
+    val allowWeakCiphers   = config.get[Boolean]("allowWeakCiphers")
+    val allowMessages      = config.get[Option[Boolean]]("allowLegacyHelloMessages")
     val allowUnsafeRenegotiation =
       config.get[Option[Boolean]]("allowUnsafeRenegotiation")
     val acceptAnyCertificate = config.get[Boolean]("acceptAnyCertificate")
 
     SSLLooseConfig(
-        allowWeakCiphers = allowWeakCiphers,
-        allowWeakProtocols = allowWeakProtocols,
-        allowLegacyHelloMessages = allowMessages,
-        allowUnsafeRenegotiation = allowUnsafeRenegotiation,
-        acceptAnyCertificate = acceptAnyCertificate
+      allowWeakCiphers = allowWeakCiphers,
+      allowWeakProtocols = allowWeakProtocols,
+      allowLegacyHelloMessages = allowMessages,
+      allowUnsafeRenegotiation = allowUnsafeRenegotiation,
+      acceptAnyCertificate = acceptAnyCertificate
     )
   }
 
@@ -277,41 +301,43 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
       val record: Option[SSLDebugRecordOptions] =
         if (config.get[Boolean]("record")) {
           val plaintext = config.get[Boolean]("plaintext")
-          val packet = config.get[Boolean]("packet")
+          val packet    = config.get[Boolean]("packet")
           Some(SSLDebugRecordOptions(plaintext = plaintext, packet = packet))
         } else None
 
       val handshake =
         if (config.get[Boolean]("handshake")) {
-          val data = config.get[Boolean]("data")
+          val data    = config.get[Boolean]("data")
           val verbose = config.get[Boolean]("verbose")
           Some(SSLDebugHandshakeOptions(data = data, verbose = verbose))
         } else {
           None
         }
 
-      val keygen = config.get[Boolean]("keygen")
-      val session = config.get[Boolean]("session")
-      val defaultctx = config.get[Boolean]("defaultctx")
-      val sslctx = config.get[Boolean]("sslctx")
+      val keygen       = config.get[Boolean]("keygen")
+      val session      = config.get[Boolean]("session")
+      val defaultctx   = config.get[Boolean]("defaultctx")
+      val sslctx       = config.get[Boolean]("sslctx")
       val sessioncache = config.get[Boolean]("sessioncache")
-      val keymanager = config.get[Boolean]("keymanager")
+      val keymanager   = config.get[Boolean]("keymanager")
       val trustmanager = config.get[Boolean]("trustmanager")
       val pluggability = config.get[Boolean]("pluggability")
-      val ssl = config.get[Boolean]("ssl")
+      val ssl          = config.get[Boolean]("ssl")
 
-      SSLDebugConfig(ssl = ssl,
-                     record = record,
-                     handshake = handshake,
-                     keygen = keygen,
-                     session = session,
-                     defaultctx = defaultctx,
-                     sslctx = sslctx,
-                     sessioncache = sessioncache,
-                     keymanager = keymanager,
-                     trustmanager = trustmanager,
-                     pluggability = pluggability,
-                     certpath = certpath)
+      SSLDebugConfig(
+        ssl = ssl,
+        record = record,
+        handshake = handshake,
+        keygen = keygen,
+        session = session,
+        defaultctx = defaultctx,
+        sslctx = sslctx,
+        sessioncache = sessioncache,
+        keymanager = keymanager,
+        trustmanager = trustmanager,
+        pluggability = pluggability,
+        certpath = certpath
+      )
     }
   }
 
@@ -321,14 +347,16 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
   def parseKeyStoreInfo(config: PlayConfig): KeyStoreConfig = {
     val storeType =
       config.get[Option[String]]("type").getOrElse(KeyStore.getDefaultType)
-    val path = config.get[Option[String]]("path")
-    val data = config.get[Option[String]]("data")
+    val path     = config.get[Option[String]]("path")
+    val data     = config.get[Option[String]]("data")
     val password = config.get[Option[String]]("password")
 
-    KeyStoreConfig(filePath = path,
-                   storeType = storeType,
-                   data = data,
-                   password = password)
+    KeyStoreConfig(
+      filePath = path,
+      storeType = storeType,
+      data = data,
+      password = password
+    )
   }
 
   /**
@@ -349,7 +377,7 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
   def parseKeyManager(config: PlayConfig): KeyManagerConfig = {
 
     val algorithm = config.get[Option[String]]("algorithm") match {
-      case None => KeyManagerFactory.getDefaultAlgorithm
+      case None        => KeyManagerFactory.getDefaultAlgorithm
       case Some(other) => other
     }
 
@@ -365,7 +393,7 @@ class SSLConfigParser(c: PlayConfig, classLoader: ClassLoader) {
     */
   def parseTrustManager(config: PlayConfig): TrustManagerConfig = {
     val algorithm = config.get[Option[String]]("algorithm") match {
-      case None => TrustManagerFactory.getDefaultAlgorithm
+      case None        => TrustManagerFactory.getDefaultAlgorithm
       case Some(other) => other
     }
 

@@ -41,17 +41,19 @@ object ProdServerStart {
 
       // Start the application
       val application: Application = {
-        val environment = Environment(
-            config.rootDir, process.classLoader, Mode.Prod)
+        val environment =
+          Environment(config.rootDir, process.classLoader, Mode.Prod)
         val context = ApplicationLoader.createContext(environment)
-        val loader = ApplicationLoader(context)
+        val loader  = ApplicationLoader(context)
         loader.load(context)
       }
       Play.start(application)
 
       // Start the server
       val serverProvider: ServerProvider = ServerProvider.fromConfiguration(
-          process.classLoader, config.configuration)
+        process.classLoader,
+        config.configuration
+      )
       val server = serverProvider.createServer(config, application)
       process.addShutdownHook {
         server.stop()
@@ -74,10 +76,15 @@ object ProdServerStart {
   def readServerConfigSettings(process: ServerProcess): ServerConfig = {
     val configuration: Configuration = {
       val rootDirArg: Option[File] = process.args.headOption.map(new File(_))
-      val rootDirConfig = rootDirArg.fold(Map.empty[String, String])(
-          dir => ServerConfig.rootDirConfig(dir))
+      val rootDirConfig = rootDirArg.fold(Map.empty[String, String])(dir =>
+        ServerConfig.rootDirConfig(dir)
+      )
       Configuration.load(
-          process.classLoader, process.properties, rootDirConfig, true)
+        process.classLoader,
+        process.properties,
+        rootDirConfig,
+        true
+      )
     }
 
     val rootDir: File = {
@@ -95,16 +102,19 @@ object ProdServerStart {
       configuration.getString(s"play.server.${portType}.port").flatMap {
         case "disabled" => None
         case str =>
-          val i = try Integer.parseInt(str) catch {
-            case _: NumberFormatException =>
-              throw ServerStartException(
-                  s"Invalid ${portType.toUpperCase} port: $str")
-          }
+          val i =
+            try Integer.parseInt(str)
+            catch {
+              case _: NumberFormatException =>
+                throw ServerStartException(
+                  s"Invalid ${portType.toUpperCase} port: $str"
+                )
+            }
           Some(i)
       }
     }
 
-    val httpPort = parsePort("http")
+    val httpPort  = parsePort("http")
     val httpsPort = parsePort("https")
     if (!(httpPort orElse httpsPort).isDefined)
       throw ServerStartException("Must provide either an HTTP or HTTPS port")
@@ -113,13 +123,13 @@ object ProdServerStart {
       configuration.getString("play.server.http.address").getOrElse("0.0.0.0")
 
     ServerConfig(
-        rootDir = rootDir,
-        port = httpPort,
-        sslPort = httpsPort,
-        address = address,
-        mode = Mode.Prod,
-        properties = process.properties,
-        configuration = configuration
+      rootDir = rootDir,
+      port = httpPort,
+      sslPort = httpsPort,
+      address = address,
+      mode = Mode.Prod,
+      properties = process.properties,
+      configuration = configuration
     )
   }
 
@@ -127,7 +137,9 @@ object ProdServerStart {
     * Create a pid file for the current process.
     */
   def createPidFile(
-      process: ServerProcess, configuration: Configuration): Option[File] = {
+      process: ServerProcess,
+      configuration: Configuration
+  ): Option[File] = {
     val pidFilePath = configuration
       .getString("play.server.pidfile.path")
       .getOrElse(throw ServerStartException("Pid file path not configured"))
@@ -137,15 +149,18 @@ object ProdServerStart {
 
       if (pidFile.exists) {
         throw ServerStartException(
-            s"This application is already running (Or delete ${pidFile.getPath} file).")
+          s"This application is already running (Or delete ${pidFile.getPath} file)."
+        )
       }
 
       val pid =
         process.pid getOrElse
-        (throw ServerStartException(
-                "Couldn't determine current process's pid"))
+          (throw ServerStartException(
+            "Couldn't determine current process's pid"
+          ))
       val out = new FileOutputStream(pidFile)
-      try out.write(pid.getBytes) finally out.close()
+      try out.write(pid.getBytes)
+      finally out.close()
 
       Some(pidFile)
     }

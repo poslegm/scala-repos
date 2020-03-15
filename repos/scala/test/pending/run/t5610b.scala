@@ -1,7 +1,7 @@
 object Bug {
   def main(args: Array[String]) {
     var test: String = null
-    val result = bar(foo(test))
+    val result       = bar(foo(test))
     test = "bar"
 
     if (result.str == null) {

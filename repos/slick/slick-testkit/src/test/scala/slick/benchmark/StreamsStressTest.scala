@@ -9,15 +9,15 @@ object StreamsStressTest extends App {
   val url = "jdbc:derby:memory:StreamsStressTest;create=true"
   val driver = "org.apache.derby.jdbc.EmbeddedDriver"*/
   import slick.jdbc.H2Profile.api._
-  val url = "jdbc:h2:mem:StreamsStressTest"
+  val url    = "jdbc:h2:mem:StreamsStressTest"
   val driver = "org.h2.Driver"
 
-  val repeats = 10000
+  val repeats    = 10000
   val numThreads = 500
 
-  val env = new TestEnvironment(30000)
+  val env       = new TestEnvironment(30000)
   val entityNum = new AtomicInteger()
-  val db = Database.forURL(url, driver = driver, keepAliveConnection = true)
+  val db        = Database.forURL(url, driver = driver, keepAliveConnection = true)
   try {
     val threads = 1.to(numThreads).toVector.map { i =>
       new Thread(new Runnable {
@@ -40,7 +40,8 @@ object StreamsStressTest extends App {
   def run1: Unit = {
     val sub = env.newManualSubscriber(createPublisher(1L))
     sub.requestNextElementOrEndOfStream(
-        "Timeout while waiting for next element from Publisher")
+      "Timeout while waiting for next element from Publisher"
+    )
     sub.requestEndOfStream()
   }
 
@@ -48,7 +49,7 @@ object StreamsStressTest extends App {
     val tableName = "data_" + elements + "_" + entityNum.incrementAndGet()
     class Data(tag: Tag) extends Table[Int](tag, tableName) {
       def id = column[Int]("id")
-      def * = id
+      def *  = id
     }
     val data = TableQuery[Data]
     val a =

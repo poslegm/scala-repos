@@ -34,9 +34,9 @@ class StagePageSuite extends SparkFunSuite with LocalSparkContext {
   private val peakExecutionMemory = 10
 
   test("peak execution memory only displayed if unsafe is enabled") {
-    val unsafeConf = "spark.sql.unsafe.enabled"
-    val conf = new SparkConf(false).set(unsafeConf, "true")
-    val html = renderStagePage(conf).toString().toLowerCase
+    val unsafeConf   = "spark.sql.unsafe.enabled"
+    val conf         = new SparkConf(false).set(unsafeConf, "true")
+    val html         = renderStagePage(conf).toString().toLowerCase
     val targetString = "peak execution memory"
     assert(html.contains(targetString))
     // Disable unsafe and make sure it's not there
@@ -50,10 +50,11 @@ class StagePageSuite extends SparkFunSuite with LocalSparkContext {
   }
 
   test(
-      "SPARK-10543: peak execution memory should be per-task rather than cumulative") {
+    "SPARK-10543: peak execution memory should be per-task rather than cumulative"
+  ) {
     val unsafeConf = "spark.sql.unsafe.enabled"
-    val conf = new SparkConf(false).set(unsafeConf, "true")
-    val html = renderStagePage(conf).toString().toLowerCase
+    val conf       = new SparkConf(false).set(unsafeConf, "true")
+    val html       = renderStagePage(conf).toString().toLowerCase
     // verify min/25/50/75/max show task value not cumulative values
     assert(html.contains(s"<td>$peakExecutionMemory.0 b</td>" * 5))
   }
@@ -63,10 +64,10 @@ class StagePageSuite extends SparkFunSuite with LocalSparkContext {
     * This also runs a dummy stage to populate the page with useful content.
     */
   private def renderStagePage(conf: SparkConf): Seq[Node] = {
-    val jobListener = new JobProgressListener(conf)
+    val jobListener   = new JobProgressListener(conf)
     val graphListener = new RDDOperationGraphListener(conf)
-    val tab = mock(classOf[StagesTab], RETURNS_SMART_NULLS)
-    val request = mock(classOf[HttpServletRequest])
+    val tab           = mock(classOf[StagesTab], RETURNS_SMART_NULLS)
+    val request       = mock(classOf[HttpServletRequest])
     when(tab.conf).thenReturn(conf)
     when(tab.progressListener).thenReturn(jobListener)
     when(tab.operationGraphListener).thenReturn(graphListener)
@@ -77,19 +78,28 @@ class StagePageSuite extends SparkFunSuite with LocalSparkContext {
     val page = new StagePage(tab)
 
     // Simulate a stage in job progress listener
-    val stageInfo = new StageInfo(
-        0, 0, "dummy", 1, Seq.empty, Seq.empty, "details")
+    val stageInfo =
+      new StageInfo(0, 0, "dummy", 1, Seq.empty, Seq.empty, "details")
     // Simulate two tasks to test PEAK_EXECUTION_MEMORY correctness
     (1 to 2).foreach { taskId =>
       val taskInfo = new TaskInfo(
-          taskId, taskId, 0, 0, "0", "localhost", TaskLocality.ANY, false)
+        taskId,
+        taskId,
+        0,
+        0,
+        "0",
+        "localhost",
+        TaskLocality.ANY,
+        false
+      )
       jobListener.onStageSubmitted(SparkListenerStageSubmitted(stageInfo))
       jobListener.onTaskStart(SparkListenerTaskStart(0, 0, taskInfo))
       taskInfo.markSuccessful()
       val taskMetrics = TaskMetrics.empty
       taskMetrics.incPeakExecutionMemory(peakExecutionMemory)
       jobListener.onTaskEnd(
-          SparkListenerTaskEnd(0, 0, "result", Success, taskInfo, taskMetrics))
+        SparkListenerTaskEnd(0, 0, "result", Success, taskInfo, taskMetrics)
+      )
     }
     jobListener.onStageCompleted(SparkListenerStageCompleted(stageInfo))
     page.render(request)

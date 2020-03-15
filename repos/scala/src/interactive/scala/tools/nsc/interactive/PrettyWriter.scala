@@ -4,7 +4,7 @@ import java.io.Writer
 
 class PrettyWriter(wr: Writer) extends Writer {
   protected val indentStep = "  "
-  private var indent = 0
+  private var indent       = 0
   private def newLine() {
     wr.write('\n')
     wr.write(indentStep * indent)

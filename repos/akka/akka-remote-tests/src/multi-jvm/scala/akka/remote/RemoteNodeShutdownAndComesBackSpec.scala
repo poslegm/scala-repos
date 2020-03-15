@@ -8,7 +8,10 @@ import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 import akka.actor._
 import akka.remote.testconductor.RoleName
-import akka.remote.transport.ThrottlerTransportAdapter.{ForceDisassociate, Direction}
+import akka.remote.transport.ThrottlerTransportAdapter.{
+  ForceDisassociate,
+  Direction
+}
 import akka.remote.testkit.MultiNodeConfig
 import akka.remote.testkit.MultiNodeSpec
 import akka.remote.testkit.STMultiNodeSpec
@@ -19,7 +22,7 @@ import akka.actor.Identify
 import scala.concurrent.Await
 
 object RemoteNodeShutdownAndComesBackSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
 
   commonConfig(debugConfig(on = false).withFallback(ConfigFactory.parseString("""
@@ -36,7 +39,7 @@ object RemoteNodeShutdownAndComesBackSpec extends MultiNodeConfig {
   class Subject extends Actor {
     def receive = {
       case "shutdown" ⇒ context.system.terminate()
-      case msg ⇒ sender() ! msg
+      case msg        ⇒ sender() ! msg
     }
   }
 }
@@ -48,15 +51,15 @@ class RemoteNodeShutdownAndComesBackMultiJvmNode2
 
 abstract class RemoteNodeShutdownAndComesBackSpec
     extends MultiNodeSpec(RemoteNodeShutdownAndComesBackSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import RemoteNodeShutdownAndComesBackSpec._
 
   override def initialParticipants = roles.size
 
   def identify(role: RoleName, actorName: String): ActorRef = {
-    system.actorSelection(node(role) / "user" / actorName) ! Identify(
-        actorName)
+    system.actorSelection(node(role) / "user" / actorName) ! Identify(actorName)
     expectMsgType[ActorIdentity].ref.get
   }
 
@@ -68,7 +71,7 @@ abstract class RemoteNodeShutdownAndComesBackSpec
         system.actorOf(Props[Subject], "subject1")
         enterBarrier("actors-started")
 
-        val subject = identify(second, "subject")
+        val subject       = identify(second, "subject")
         val sysmsgBarrier = identify(second, "sysmsgBarrier")
 
         // Prime up the system message buffer
@@ -84,9 +87,11 @@ abstract class RemoteNodeShutdownAndComesBackSpec
         // Drop all messages from this point so no SHUTDOWN is ever received
         testConductor.blackhole(second, first, Direction.Send).await
         // Shut down all existing connections so that the system can enter recovery mode (association attempts)
-        Await.result(RARP(system).provider.transport.managementCommand(
-                         ForceDisassociate(node(second).address)),
-                     3.seconds)
+        Await.result(
+          RARP(system).provider.transport
+            .managementCommand(ForceDisassociate(node(second).address)),
+          3.seconds
+        )
 
         // Trigger reconnect attempt and also queue up a system message to be in limbo state (UID of remote system
         // is unknown, and system message is pending)
@@ -104,8 +109,7 @@ abstract class RemoteNodeShutdownAndComesBackSpec
           awaitAssert {
             val p = TestProbe()
             system
-              .actorSelection(
-                  RootActorPath(secondAddress) / "user" / "subject")
+              .actorSelection(RootActorPath(secondAddress) / "user" / "subject")
               .tell(Identify("subject"), p.ref)
             p.expectMsgPF(1 second) {
               case ActorIdentity("subject", Some(ref)) ⇒ true
@@ -119,8 +123,8 @@ abstract class RemoteNodeShutdownAndComesBackSpec
         // of sync the remote system will be quarantined and the rest of the test will fail (or even in earlier
         // stages depending on circumstances).
         system.actorSelection(
-            RootActorPath(secondAddress) / "user" / "subject") ! Identify(
-            "subject")
+          RootActorPath(secondAddress) / "user" / "subject"
+        ) ! Identify("subject")
         val subjectNew = expectMsgType[ActorIdentity].ref.get
         watch(subjectNew)
 
@@ -144,12 +148,15 @@ abstract class RemoteNodeShutdownAndComesBackSpec
         Await.ready(system.whenTerminated, 30.seconds)
 
         val freshSystem =
-          ActorSystem(system.name, ConfigFactory.parseString(s"""
+          ActorSystem(
+            system.name,
+            ConfigFactory.parseString(s"""
                     akka.remote.netty.tcp {
                       hostname = ${addr.host.get}
                       port = ${addr.port.get}
                     }
-                    """).withFallback(system.settings.config))
+                    """).withFallback(system.settings.config)
+          )
         freshSystem.actorOf(Props[Subject], "subject")
 
         Await.ready(freshSystem.whenTerminated, 30.seconds)

@@ -9,7 +9,7 @@ class FunctionUnaryTest extends ResolveTestBase {
   }
 
   def testParenthesisedPrefix() = doTest()
-  def testUnary() = doTest()
-  def testUnaryIllegal() = doTest()
-  def testUnaryParameter() = doTest()
+  def testUnary()               = doTest()
+  def testUnaryIllegal()        = doTest()
+  def testUnaryParameter()      = doTest()
 }

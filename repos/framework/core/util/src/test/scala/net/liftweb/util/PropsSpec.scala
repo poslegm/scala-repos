@@ -36,20 +36,22 @@ object PropsSpec extends Specification {
     }
 
     "Allow modification of whereToLook before run-mode is set" in {
-      val testProps = TestProps()
+      val testProps   = TestProps()
       val originalWtl = testProps.whereToLook
 
       var wasCalled = false
-      testProps.whereToLook = () =>
-        {
-          wasCalled = true
+      testProps.whereToLook = () => {
+        wasCalled = true
 
-          List(
-              ("test propsters",
-               () =>
-                 Full(new ByteArrayInputStream(
-                         "test.prop=value".getBytes("UTF-8"))))
+        List(
+          (
+            "test propsters",
+            () =>
+              Full(
+                new ByteArrayInputStream("test.prop=value".getBytes("UTF-8"))
+              )
           )
+        )
       }
 
       testProps.getInt("jetty.port") must_== Empty
@@ -153,7 +155,8 @@ object PropsSpec extends Specification {
       val testProps = TestProps()
 
       testProps.appendInterpolationValues(
-          Map("DB_HOST" -> "localhost", "DB_PORT" -> "3306"))
+        Map("DB_HOST" -> "localhost", "DB_PORT" -> "3306")
+      )
       val url = testProps.get("db.url")
 
       url must_== Full("jdbc:mysql://localhost:3306/MYDB")

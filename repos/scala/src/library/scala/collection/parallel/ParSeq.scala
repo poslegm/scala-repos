@@ -28,15 +28,17 @@ import scala.collection.parallel.mutable.ParArrayCombiner
   *  @author Aleksandar Prokopec
   */
 trait ParSeq[+T]
-    extends GenSeq[T] with ParIterable[T]
-    with GenericParTemplate[T, ParSeq] with ParSeqLike[T, ParSeq[T], Seq[T]] {
-  override def companion: GenericCompanion[ParSeq] with GenericParCompanion[
-      ParSeq] = ParSeq
+    extends GenSeq[T]
+    with ParIterable[T]
+    with GenericParTemplate[T, ParSeq]
+    with ParSeqLike[T, ParSeq[T], Seq[T]] {
+  override def companion
+      : GenericCompanion[ParSeq] with GenericParCompanion[ParSeq] = ParSeq
   //protected[this] override def newBuilder = ParSeq.newBuilder[T]
 
   def apply(i: Int): T
 
-  override def toString = super [ParIterable].toString
+  override def toString = super[ParIterable].toString
 
   override def stringPrefix = getClass.getSimpleName
 }
@@ -45,6 +47,6 @@ object ParSeq extends ParFactory[ParSeq] {
   implicit def canBuildFrom[T]: CanCombineFrom[Coll, T, ParSeq[T]] =
     new GenericCanCombineFrom[T]
 
-  def newBuilder[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]
+  def newBuilder[T]: Combiner[T, ParSeq[T]]  = ParArrayCombiner[T]
   def newCombiner[T]: Combiner[T, ParSeq[T]] = ParArrayCombiner[T]
 }

@@ -10,12 +10,13 @@ import scala.language.implicitConversions
 @RunWith(classOf[JUnitRunner])
 class ServersetNamerTest extends FunSuite with AssertionsForJUnit {
 
-  def mkNamer(f: String => Var[Addr]): Namer = new com.twitter.serverset {
-    override protected[this] def resolve(spec: String) = f(spec)
-  }
+  def mkNamer(f: String => Var[Addr]): Namer =
+    new com.twitter.serverset {
+      override protected[this] def resolve(spec: String) = f(spec)
+    }
 
   def schemeOk(scheme: String): Unit = {
-    val addr = Addr.Bound(Address(7127))
+    val addr  = Addr.Bound(Address(7127))
     var named = 0
     val namer = mkNamer { spec =>
       assert(spec == s"$scheme!hosts!/twitter/service/role/env/job!endpoint")
@@ -31,14 +32,17 @@ class ServersetNamerTest extends FunSuite with AssertionsForJUnit {
         assert(bound.addr.sample() == addr)
         assert(bound.path == Path.empty)
         assert(
-            bound.id == Path.Utf8("$",
-                                  "com.twitter.serverset",
-                                  "hosts",
-                                  "twitter",
-                                  "service",
-                                  "role",
-                                  "env",
-                                  "job:endpoint"))
+          bound.id == Path.Utf8(
+            "$",
+            "com.twitter.serverset",
+            "hosts",
+            "twitter",
+            "service",
+            "role",
+            "env",
+            "job:endpoint"
+          )
+        )
 
       case _ => fail(s"invalid name: ${path.show}")
     }

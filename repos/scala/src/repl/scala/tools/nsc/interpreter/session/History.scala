@@ -20,6 +20,6 @@ trait History {
 }
 object NoHistory extends History {
   def asStrings = Nil
-  def index = 0
-  def size = 0
+  def index     = 0
+  def size      = 0
 }

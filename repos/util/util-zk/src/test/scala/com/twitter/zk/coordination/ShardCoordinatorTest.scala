@@ -23,7 +23,7 @@ class ShardCoordinatorTest extends WordSpec with MockitoSugar {
       connectString =>
         def withClient(f: (ZkClient) => Unit) = {
           implicit val timer = new JavaTimer(true)
-          val connector = NativeConnector(connectString, 5.seconds, 10.minutes)
+          val connector      = NativeConnector(connectString, 5.seconds, 10.minutes)
           val zk = ZkClient(connector)
             .withRetryPolicy(RetryPolicy.Basic(3))
             .withAcl(OPEN_ACL_UNSAFE.asScala)

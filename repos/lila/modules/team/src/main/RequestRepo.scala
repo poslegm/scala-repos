@@ -30,6 +30,6 @@ object RequestRepo {
 
   def selectId(teamId: ID, userId: ID) =
     $select(Request.makeId(teamId, userId))
-  def teamQuery(teamId: ID) = Json.obj("team" -> teamId)
+  def teamQuery(teamId: ID)         = Json.obj("team" -> teamId)
   def teamsQuery(teamIds: List[ID]) = Json.obj("team" -> $in(teamIds))
 }

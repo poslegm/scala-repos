@@ -22,6 +22,6 @@ object FooSeq {
 }
 
 class Bar {
-  var size: Int = 50
+  var size: Int         = 50
   var name: Seq[String] = List("medium", "M")
 }

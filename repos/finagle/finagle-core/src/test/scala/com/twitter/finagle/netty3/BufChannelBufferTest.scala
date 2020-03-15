@@ -13,10 +13,10 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 
 @RunWith(classOf[JUnitRunner])
 class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
-  private[this] val CAPACITY = 4096 // Must be even
-  private[this] val BLOCK_SIZE = 128
-  private[this] var seed: Long = 0
-  private[this] var random: Random = null
+  private[this] val CAPACITY              = 4096 // Must be even
+  private[this] val BLOCK_SIZE            = 128
+  private[this] var seed: Long            = 0
+  private[this] var random: Random        = null
   private[this] var buffer: ChannelBuffer = null
 
   before {
@@ -310,10 +310,11 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random byte access") {
-    val buf = Buf.ByteArray.Owned(0
-          .until(CAPACITY)
-          .map(_ => random.nextInt().asInstanceOf[Byte])
-          .toArray)
+    val buf = Buf.ByteArray.Owned(
+      0.until(CAPACITY)
+        .map(_ => random.nextInt().asInstanceOf[Byte])
+        .toArray
+    )
     val bcb = new BufChannelBuffer(buf)
 
     random.setSeed(seed)
@@ -324,7 +325,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned byte access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY) foreach { i =>
       val value = random.nextInt().asInstanceOf[Byte]
@@ -340,7 +341,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random short access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY, 2) foreach { i =>
       val value = random.nextInt().asInstanceOf[Short]
@@ -356,7 +357,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned short access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY, 2) foreach { i =>
       val value = random.nextInt().asInstanceOf[Short]
@@ -372,7 +373,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random medium access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY - 2, 3) foreach { i =>
       val value = random.nextInt()
@@ -388,7 +389,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned medium access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY - 2, 3) foreach { i =>
       val value = random.nextInt()
@@ -404,7 +405,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random int access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY - 3, 4) foreach { i =>
       val value = random.nextInt()
@@ -420,7 +421,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random unsigned int access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY - 3, 4) foreach { i =>
       val value = random.nextInt()
@@ -436,7 +437,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("test random long access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     0.until(CAPACITY - 7, 8) foreach { i =>
       val value = random.nextLong()
@@ -458,7 +459,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential byte access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY) foreach { i =>
@@ -481,7 +482,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned byte access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY) foreach { i =>
@@ -504,7 +505,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential short access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY, 2) foreach { i =>
@@ -527,7 +528,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned short access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY, 2) foreach { i =>
@@ -550,7 +551,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential medium access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     val limit = CAPACITY / 3 * 3
@@ -573,7 +574,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned medium access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     val limit = CAPACITY / 3 * 3
@@ -596,7 +597,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential int access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY, 4) foreach { i =>
@@ -618,7 +619,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential unsigned int access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY, 4) foreach { i =>
@@ -640,7 +641,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential long access") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
     wrapped.writerIndex(0)
     0.until(CAPACITY, 8) foreach { i =>
@@ -662,9 +663,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("byte array transfer") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val value = new Array[Byte](BLOCK_SIZE * 2)
+    val value   = new Array[Byte](BLOCK_SIZE * 2)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(value)
       wrapped.setBytes(i, value, random.nextInt(BLOCK_SIZE), BLOCK_SIZE)
@@ -684,9 +685,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random byte array transfer 1") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val value = new Array[Byte](BLOCK_SIZE)
+    val value   = new Array[Byte](BLOCK_SIZE)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(value)
       wrapped.setBytes(i, value)
@@ -695,7 +696,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       bcb.getBytes(i, value)
@@ -706,9 +707,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random byte array transfer 2") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val value = new Array[Byte](BLOCK_SIZE * 2)
+    val value   = new Array[Byte](BLOCK_SIZE * 2)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(value)
       wrapped.setBytes(i, value, random.nextInt(BLOCK_SIZE), BLOCK_SIZE)
@@ -717,7 +718,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BLOCK_SIZE)
@@ -729,10 +730,10 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random heap buffer transfer 1") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
     val valueContent = new Array[Byte](BLOCK_SIZE)
-    val value = ChannelBuffers.wrappedBuffer(valueContent)
+    val value        = ChannelBuffers.wrappedBuffer(valueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(valueContent)
       value.setIndex(0, BLOCK_SIZE)
@@ -744,7 +745,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       value.clear()
@@ -758,10 +759,10 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random heap buffer transfer 2") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val value = ChannelBuffers.wrappedBuffer(valueContent)
+    val value        = ChannelBuffers.wrappedBuffer(valueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(valueContent)
       wrapped.setBytes(i, value, random.nextInt(BLOCK_SIZE), BLOCK_SIZE)
@@ -770,7 +771,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BLOCK_SIZE)
@@ -782,10 +783,10 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random direct buffer transfer") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val tmp = new Array[Byte](BLOCK_SIZE * 2)
-    val value = ChannelBuffers.directBuffer(BLOCK_SIZE * 2)
+    val tmp     = new Array[Byte](BLOCK_SIZE * 2)
+    val value   = ChannelBuffers.directBuffer(BLOCK_SIZE * 2)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(tmp)
       value.setBytes(0, tmp, 0, value.capacity())
@@ -807,9 +808,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("random ByteBuffer transfer") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val value = ByteBuffer.allocate(BLOCK_SIZE * 2)
+    val value   = ByteBuffer.allocate(BLOCK_SIZE * 2)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(value.array())
       value.clear().position(random.nextInt(BLOCK_SIZE))
@@ -833,10 +834,10 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential Array[Byte] transfer 1") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
-    val value = new Array[Byte](BLOCK_SIZE)
+    val bcb     = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val value   = new Array[Byte](BLOCK_SIZE)
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(value)
@@ -858,10 +859,10 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential Array[Byte] transfer 2") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
-    val value = new Array[Byte](BLOCK_SIZE * 2)
+    val bcb     = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val value   = new Array[Byte](BLOCK_SIZE * 2)
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(value)
@@ -885,11 +886,11 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential heap buffer transfer 1") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
+    val bcb          = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val value = ChannelBuffers.wrappedBuffer(valueContent)
+    val value        = ChannelBuffers.wrappedBuffer(valueContent)
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(valueContent)
@@ -901,7 +902,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BLOCK_SIZE)
@@ -917,11 +918,11 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential heap buffer transfer 2") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
+    val bcb          = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val value = ChannelBuffers.wrappedBuffer(valueContent)
+    val value        = ChannelBuffers.wrappedBuffer(valueContent)
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(valueContent)
@@ -936,7 +937,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BLOCK_SIZE)
@@ -954,11 +955,11 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential direct buffer transfer 1") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
+    val bcb          = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val value = ChannelBuffers.directBuffer(BLOCK_SIZE * 2)
+    val value        = ChannelBuffers.directBuffer(BLOCK_SIZE * 2)
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(valueContent)
@@ -971,7 +972,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BLOCK_SIZE)
@@ -988,11 +989,11 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential direct buffer transfer 2") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
+    val bcb          = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val value = ChannelBuffers.directBuffer(BLOCK_SIZE * 2)
+    val value        = ChannelBuffers.directBuffer(BLOCK_SIZE * 2)
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(valueContent)
@@ -1009,7 +1010,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       value.setBytes(0, valueContent)
@@ -1028,9 +1029,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential ByteBuffer-backed heap buffer transfer 1") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
+    val bcb          = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
     val value =
       ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(BLOCK_SIZE * 2))
@@ -1047,7 +1048,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       val valueOffset = random.nextInt(BLOCK_SIZE)
@@ -1064,9 +1065,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential ByteBuffer-backed heap buffer transfer 2") {
-    val bytes = new Array[Byte](CAPACITY)
-    val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bytes        = new Array[Byte](CAPACITY)
+    val wrapped      = ChannelBuffers.wrappedBuffer(bytes)
+    val bcb          = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     val valueContent = new Array[Byte](BLOCK_SIZE * 2)
     val value =
       ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(BLOCK_SIZE * 2))
@@ -1087,7 +1088,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     random.setSeed(seed)
     val expectedValueContent = new Array[Byte](BLOCK_SIZE * 2)
-    val expectedValue = ChannelBuffers.wrappedBuffer(expectedValueContent)
+    val expectedValue        = ChannelBuffers.wrappedBuffer(expectedValueContent)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       random.nextBytes(expectedValueContent)
       value.setBytes(0, valueContent)
@@ -1106,9 +1107,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential ByteBuffer transfer") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bcb     = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
     val value = ByteBuffer.allocate(BLOCK_SIZE * 2)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
@@ -1132,9 +1133,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential copied buffer transfer") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bcb     = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       val value = new Array[Byte](BLOCK_SIZE)
@@ -1160,9 +1161,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("sequential slice") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bcb     = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       val value = new Array[Byte](BLOCK_SIZE)
@@ -1200,13 +1201,11 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("discardReadBytes") {
-    val bytes = new Array[Byte](CAPACITY)
+    val bytes   = new Array[Byte](CAPACITY)
     val wrapped = ChannelBuffers.wrappedBuffer(bytes)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bcb     = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     wrapped.writerIndex(0)
-    0.until(CAPACITY, 4) foreach { i =>
-      wrapped.writeInt(i)
-    }
+    0.until(CAPACITY, 4) foreach { i => wrapped.writeInt(i) }
     bcb.readByte()
     intercept[ReadOnlyBufferException] {
       bcb.discardReadBytes()
@@ -1303,12 +1302,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
   test("slice endianness") {
     assertEquals(buffer.order(), buffer.slice(0, buffer.capacity()).order())
-    assertEquals(
-        buffer.order(), buffer.slice(0, buffer.capacity() - 1).order())
-    assertEquals(
-        buffer.order(), buffer.slice(1, buffer.capacity() - 1).order())
-    assertEquals(
-        buffer.order(), buffer.slice(1, buffer.capacity() - 2).order())
+    assertEquals(buffer.order(), buffer.slice(0, buffer.capacity() - 1).order())
+    assertEquals(buffer.order(), buffer.slice(1, buffer.capacity() - 1).order())
+    assertEquals(buffer.order(), buffer.slice(1, buffer.capacity() - 2).order())
   }
 
   test("slice index") {
@@ -1318,13 +1314,21 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
     assertEquals(0, buffer.slice(1, buffer.capacity() - 2).readerIndex())
 
     assertEquals(
-        buffer.capacity(), buffer.slice(0, buffer.capacity()).writerIndex())
-    assertEquals(buffer.capacity() - 1,
-                 buffer.slice(0, buffer.capacity() - 1).writerIndex())
-    assertEquals(buffer.capacity() - 1,
-                 buffer.slice(1, buffer.capacity() - 1).writerIndex())
-    assertEquals(buffer.capacity() - 2,
-                 buffer.slice(1, buffer.capacity() - 2).writerIndex())
+      buffer.capacity(),
+      buffer.slice(0, buffer.capacity()).writerIndex()
+    )
+    assertEquals(
+      buffer.capacity() - 1,
+      buffer.slice(0, buffer.capacity() - 1).writerIndex()
+    )
+    assertEquals(
+      buffer.capacity() - 1,
+      buffer.slice(1, buffer.capacity() - 1).writerIndex()
+    )
+    assertEquals(
+      buffer.capacity() - 2,
+      buffer.slice(1, buffer.capacity() - 2).writerIndex()
+    )
   }
 
   test("equals") {
@@ -1334,19 +1338,22 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
     val value = new Array[Byte](32)
     random.nextBytes(value)
     val bytes = Arrays.copyOf(value, CAPACITY)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bcb   = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     bcb.setIndex(0, value.length)
 
+    assertEquals(bcb, ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value))
     assertEquals(
-        bcb, ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value))
-    assertEquals(
-        bcb, ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value))
+      bcb,
+      ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)
+    )
 
     value(0) = (value(0) + 1).asInstanceOf[Byte]
     assert(
-        !bcb.equals(ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)))
-    assert(!bcb.equals(
-            ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)))
+      !bcb.equals(ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value))
+    )
+    assert(
+      !bcb.equals(ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value))
+    )
   }
 
   test("compareTo") {
@@ -1365,42 +1372,68 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
     }
 
     val bytes = Arrays.copyOf(value, CAPACITY)
-    val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
+    val bcb   = new BufChannelBuffer(Buf.ByteArray.Owned(bytes))
     bcb.setIndex(0, value.length)
 
     assertEquals(
-        0,
-        bcb.compareTo(
-            ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)))
+      0,
+      bcb.compareTo(ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value))
+    )
     assertEquals(
-        0,
-        bcb.compareTo(
-            ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)))
+      0,
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)
+      )
+    )
 
     value(0) = (value(0) + 1).asInstanceOf[Byte]
-    assert(bcb.compareTo(
-            ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)) < 0)
-    assert(bcb.compareTo(
-            ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)) < 0)
-    value(0) = (value(0) - 2).asInstanceOf[Byte]
-    assert(bcb.compareTo(
-            ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)) > 0)
-    assert(bcb.compareTo(
-            ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)) > 0)
-    value(0) = (value(0) + 1).asInstanceOf[Byte]
-
-    assert(bcb.compareTo(ChannelBuffers.wrappedBuffer(
-                ByteOrder.BIG_ENDIAN, value, 0, 31)) > 0)
-    assert(bcb.compareTo(ChannelBuffers.wrappedBuffer(
-                ByteOrder.LITTLE_ENDIAN, value, 0, 31)) > 0)
-    assert(bcb
-          .slice(0, 31)
-          .compareTo(ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)) < 0)
     assert(
-        bcb
-          .slice(0, 31)
-          .compareTo(ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN,
-                                                  value)) < 0)
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)
+      ) < 0
+    )
+    assert(
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)
+      ) < 0
+    )
+    value(0) = (value(0) - 2).asInstanceOf[Byte]
+    assert(
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)
+      ) > 0
+    )
+    assert(
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)
+      ) > 0
+    )
+    value(0) = (value(0) + 1).asInstanceOf[Byte]
+
+    assert(
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value, 0, 31)
+      ) > 0
+    )
+    assert(
+      bcb.compareTo(
+        ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value, 0, 31)
+      ) > 0
+    )
+    assert(
+      bcb
+        .slice(0, 31)
+        .compareTo(
+          ChannelBuffers.wrappedBuffer(ByteOrder.BIG_ENDIAN, value)
+        ) < 0
+    )
+    assert(
+      bcb
+        .slice(0, 31)
+        .compareTo(
+          ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, value)
+        ) < 0
+    )
   }
 
   test("toString") {
@@ -1431,8 +1464,10 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
     random.nextBytes(value)
     val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(value))
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
-      assertEquals(ByteBuffer.wrap(value, i, BLOCK_SIZE),
-                   bcb.toByteBuffer(i, BLOCK_SIZE))
+      assertEquals(
+        ByteBuffer.wrap(value, i, BLOCK_SIZE),
+        bcb.toByteBuffer(i, BLOCK_SIZE)
+      )
     }
   }
 
@@ -1446,7 +1481,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
     val bcb = new BufChannelBuffer(Buf.ByteArray.Owned(value))
 
     val nioBuffers = bcb.toByteBuffers()
-    var length = 0
+    var length     = 0
     for (b <- nioBuffers) {
       length = length + b.remaining()
     }
@@ -1467,7 +1502,7 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
 
     0.until(CAPACITY - BLOCK_SIZE + 1, BLOCK_SIZE) foreach { i =>
       val nioBuffers = bcb.toByteBuffers(i, BLOCK_SIZE)
-      val nioBuffer = ByteBuffer.allocate(BLOCK_SIZE)
+      val nioBuffer  = ByteBuffer.allocate(BLOCK_SIZE)
       for (b <- nioBuffers) {
         nioBuffer.put(b)
       }
@@ -1492,8 +1527,8 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("hashCode") {
-    val a = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5)
-    val b = Array[Byte](6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9)
+    val a   = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5)
+    val b   = Array[Byte](6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9)
     val cbA = ChannelBuffers.buffer(15)
     val cbB = ChannelBuffers.directBuffer(15)
     cbA.writeBytes(a)
@@ -1525,9 +1560,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("BufChannelBuffer.apply from Buf.ByteArray.Owned") {
-    val arr = Array[Byte](0, 1, 2, 3, 4)
+    val arr   = Array[Byte](0, 1, 2, 3, 4)
     val baBuf = Buf.ByteArray.Owned(arr, 1, 4)
-    val bcb = BufChannelBuffer(baBuf)
+    val bcb   = BufChannelBuffer(baBuf)
     assert(bcb.readableBytes() == 3)
     assert(bcb.capacity() == 3)
     assert(bcb.getByte(0) == 1)
@@ -1536,9 +1571,9 @@ class BufChannelBufferTest extends FunSuite with BeforeAndAfter {
   }
 
   test("BufChannelBuffer.apply from Buf.ByteBuffer.Owned") {
-    val arr = Array[Byte](0, 1, 2)
+    val arr   = Array[Byte](0, 1, 2)
     val baBuf = Buf.ByteBuffer.Owned(ByteBuffer.wrap(arr))
-    val bcb = BufChannelBuffer(baBuf)
+    val bcb   = BufChannelBuffer(baBuf)
     assert(bcb.readableBytes() == 3)
     assert(bcb.capacity() == 3)
     assert(bcb.getByte(0) == 0)

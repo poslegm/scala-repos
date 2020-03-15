@@ -4,8 +4,8 @@ import org.junit.Test
 import org.junit.Assert._
 
 class JUnitNamesTest {
-  @Test def +(): Unit = ()
-  @Test def `*`(): Unit = ()
+  @Test def +(): Unit    = ()
+  @Test def `*`(): Unit  = ()
   @Test def `∆ƒ`(): Unit = ()
 }
 

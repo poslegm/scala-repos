@@ -15,7 +15,7 @@ import akka.remote.EndpointException
 object ThrottlerTransportAdapterSpec {
   val configA: Config =
     ConfigFactory parseString
-    ("""
+      ("""
     akka {
       actor.provider = "akka.remote.RemoteActorRefProvider"
 
@@ -33,20 +33,19 @@ object ThrottlerTransportAdapterSpec {
   class Echo extends Actor {
     override def receive = {
       case "ping" ⇒ sender() ! "pong"
-      case x ⇒ sender() ! x
+      case x      ⇒ sender() ! x
     }
   }
 
-  val PingPacketSize = 148
-  val MessageCount = 30
-  val BytesPerSecond = 500
+  val PingPacketSize  = 148
+  val MessageCount    = 30
+  val BytesPerSecond  = 500
   val TotalTime: Long = (MessageCount * PingPacketSize) / BytesPerSecond
 
-  class ThrottlingTester(remote: ActorRef, controller: ActorRef)
-      extends Actor {
+  class ThrottlingTester(remote: ActorRef, controller: ActorRef) extends Actor {
     var messageCount = MessageCount
-    var received = 0
-    var startTime = 0L
+    var received     = 0
+    var startTime    = 0L
 
     override def receive = {
       case "start" ⇒
@@ -69,41 +68,47 @@ object ThrottlerTransportAdapterSpec {
 }
 
 class ThrottlerTransportAdapterSpec
-    extends AkkaSpec(configA) with ImplicitSender with DefaultTimeout {
+    extends AkkaSpec(configA)
+    with ImplicitSender
+    with DefaultTimeout {
 
   val systemB = ActorSystem("systemB", system.settings.config)
-  val remote = systemB.actorOf(Props[Echo], "echo")
+  val remote  = systemB.actorOf(Props[Echo], "echo")
 
   val rootB = RootActorPath(
-      systemB.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress)
+    systemB.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress
+  )
   val here = {
     system.actorSelection(rootB / "user" / "echo") ! Identify(None)
     expectMsgType[ActorIdentity].ref.get
   }
 
   def throttle(direction: Direction, mode: ThrottleMode): Boolean = {
-    val rootBAddress = Address(
-        "akka", "systemB", "localhost", rootB.address.port.get)
+    val rootBAddress =
+      Address("akka", "systemB", "localhost", rootB.address.port.get)
     val transport = system
       .asInstanceOf[ExtendedActorSystem]
       .provider
       .asInstanceOf[RemoteActorRefProvider]
       .transport
-    Await.result(transport.managementCommand(
-                     SetThrottle(rootBAddress, direction, mode)),
-                 3.seconds)
+    Await.result(
+      transport.managementCommand(SetThrottle(rootBAddress, direction, mode)),
+      3.seconds
+    )
   }
 
   def disassociate(): Boolean = {
-    val rootBAddress = Address(
-        "akka", "systemB", "localhost", rootB.address.port.get)
+    val rootBAddress =
+      Address("akka", "systemB", "localhost", rootB.address.port.get)
     val transport = system
       .asInstanceOf[ExtendedActorSystem]
       .provider
       .asInstanceOf[RemoteActorRefProvider]
       .transport
-    Await.result(transport.managementCommand(ForceDisassociate(rootBAddress)),
-                 3.seconds)
+    Await.result(
+      transport.managementCommand(ForceDisassociate(rootBAddress)),
+      3.seconds
+    )
   }
 
   "ThrottlerTransportAdapter" must {
@@ -138,17 +143,20 @@ class ThrottlerTransportAdapterSpec
       // after we remove the Blackhole we can't be certain of the state
       // of the connection, repeat until success
       here ! Lost("Blackhole 3")
-      awaitCond({
-        if (receiveOne(Duration.Zero) == Lost("Blackhole 3")) true
-        else {
-          here ! Lost("Blackhole 3")
-          false
-        }
-      }, 15.seconds)
+      awaitCond(
+        {
+          if (receiveOne(Duration.Zero) == Lost("Blackhole 3")) true
+          else {
+            here ! Lost("Blackhole 3")
+            false
+          }
+        },
+        15.seconds
+      )
 
       here ! "Cleanup"
       fishForMessage(5.seconds) {
-        case "Cleanup" ⇒ true
+        case "Cleanup"           ⇒ true
         case Lost("Blackhole 3") ⇒ false
       }
     }
@@ -156,18 +164,25 @@ class ThrottlerTransportAdapterSpec
 
   override def beforeTermination() {
     system.eventStream.publish(
-        TestEvent.Mute(
-            EventFilter.warning(
-                source = "akka://AkkaProtocolStressTest/user/$a",
-                start = "received dead letter"),
-            EventFilter.warning(
-                pattern = "received dead letter.*(InboundPayload|Disassociate)")))
+      TestEvent.Mute(
+        EventFilter.warning(
+          source = "akka://AkkaProtocolStressTest/user/$a",
+          start = "received dead letter"
+        ),
+        EventFilter.warning(
+          pattern = "received dead letter.*(InboundPayload|Disassociate)"
+        )
+      )
+    )
     systemB.eventStream.publish(
-        TestEvent.Mute(
-            EventFilter[EndpointException](),
-            EventFilter.error(start = "AssociationError"),
-            EventFilter.warning(
-                pattern = "received dead letter.*(InboundPayload|Disassociate)")))
+      TestEvent.Mute(
+        EventFilter[EndpointException](),
+        EventFilter.error(start = "AssociationError"),
+        EventFilter.warning(
+          pattern = "received dead letter.*(InboundPayload|Disassociate)"
+        )
+      )
+    )
   }
 
   override def afterTermination(): Unit = shutdown(systemB)
@@ -176,9 +191,11 @@ class ThrottlerTransportAdapterSpec
 class ThrottlerTransportAdapterGenericSpec
     extends GenericTransportSpec(withAkkaProtocol = true) {
 
-  def transportName = "ThrottlerTransportAdapter"
+  def transportName    = "ThrottlerTransportAdapter"
   def schemeIdentifier = "akka.trttl"
   def freshTransport(testTransport: TestTransport) =
     new ThrottlerTransportAdapter(
-        testTransport, system.asInstanceOf[ExtendedActorSystem])
+      testTransport,
+      system.asInstanceOf[ExtendedActorSystem]
+    )
 }

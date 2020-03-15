@@ -19,9 +19,9 @@ package com.twitter.summingbird.planner
 import com.twitter.summingbird._
 
 class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
-  private type Prod[T] = Producer[P, T]
+  private type Prod[T]      = Producer[P, T]
   private type VisitedStore = Set[Prod[_]]
-  private type CNode = Node[P]
+  private type CNode        = Node[P]
   private type CFlatMapNode = FlatMapNode[P]
 
   private val depData = Dependants(tail)
@@ -34,37 +34,37 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
   // That is just a hueristic, and in some cases perhaps we should
   private def mergableWithSource(dep: Producer[P, _]): Boolean =
     dep match {
-      case NamedProducer(producer, _) => true
-      case IdentityKeyedProducer(producer) => true
+      case NamedProducer(producer, _)        => true
+      case IdentityKeyedProducer(producer)   => true
       case OptionMappedProducer(producer, _) => true
-      case Source(_) => true
-      case AlsoProducer(_, _) => true
+      case Source(_)                         => true
+      case AlsoProducer(_, _)                => true
       // The rest are flatMaps, joins, merges or tails
-      case FlatMappedProducer(_, _) => false
+      case FlatMappedProducer(_, _)      => false
       case ValueFlatMappedProducer(_, _) => false
-      case KeyFlatMappedProducer(_, _) => false
-      case LeftJoinedProducer(_, _) => false
-      case Summer(_, _, _) => false
-      case WrittenProducer(_, _) => false
-      case MergedProducer(_, _) => false
+      case KeyFlatMappedProducer(_, _)   => false
+      case LeftJoinedProducer(_, _)      => false
+      case Summer(_, _, _)               => false
+      case WrittenProducer(_, _)         => false
+      case MergedProducer(_, _)          => false
     }
 
   private def noOpProducer(dep: Producer[P, _]): Boolean =
     dep match {
       // These are merely planning hint nodes, and don't do any logic
-      case NamedProducer(_, _) => true
+      case NamedProducer(_, _)      => true
       case IdentityKeyedProducer(_) => true
-      case MergedProducer(_, _) => true
-      case AlsoProducer(_, _) => true
+      case MergedProducer(_, _)     => true
+      case AlsoProducer(_, _)       => true
       // All the rest have some direct effect on the plan
-      case FlatMappedProducer(_, _) => false
+      case FlatMappedProducer(_, _)      => false
       case ValueFlatMappedProducer(_, _) => false
-      case KeyFlatMappedProducer(_, _) => false
-      case LeftJoinedProducer(_, _) => false
-      case OptionMappedProducer(_, _) => false
-      case Source(_) => false
-      case Summer(_, _, _) => false
-      case WrittenProducer(_, _) => false
+      case KeyFlatMappedProducer(_, _)   => false
+      case LeftJoinedProducer(_, _)      => false
+      case OptionMappedProducer(_, _)    => false
+      case Source(_)                     => false
+      case Summer(_, _, _)               => false
+      case WrittenProducer(_, _)         => false
     }
 
   private def noOpNode(c: CNode): Boolean = c.members.forall(noOpProducer)
@@ -90,7 +90,7 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
    */
   private def allTransDepsMergeableWithSource(p: Prod[_]): Boolean =
     mergableWithSource(p) &&
-    Producer.dependenciesOf(p).forall(allTransDepsMergeableWithSource)
+      Producer.dependenciesOf(p).forall(allTransDepsMergeableWithSource)
 
   /**
     * This is the main planning loop that goes bottom up planning into CNodes.
@@ -101,11 +101,12 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
       dependantProducer: Prod[T],
       previousBolt: CNode,
       nodeSet: List[CNode],
-      visited: VisitedStore): (List[CNode], VisitedStore) =
+      visited: VisitedStore
+  ): (List[CNode], VisitedStore) =
     if (visited.contains(dependantProducer)) {
       (distinctAddToList(nodeSet, previousBolt), visited)
     } else {
-      val currentBolt = previousBolt.add(dependantProducer)
+      val currentBolt  = previousBolt.add(dependantProducer)
       val visitedWithN = visited + dependantProducer
 
       /*
@@ -116,7 +117,8 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
           producer: Prod[U],
           updatedBolt: CNode,
           updatedRegistry: List[CNode] = nodeSet,
-          visited: VisitedStore = visitedWithN): (List[CNode], VisitedStore) =
+          visited: VisitedStore = visitedWithN
+      ): (List[CNode], VisitedStore) =
         addWithDependencies(producer, updatedBolt, updatedRegistry, visited)
 
       /*
@@ -132,7 +134,8 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
       def maybeSplitThenRecurse[U, A](
           currentProducer: Prod[U],
           dep: Prod[A],
-          activeBolt: CNode = currentBolt): (List[CNode], VisitedStore) = {
+          activeBolt: CNode = currentBolt
+      ): (List[CNode], VisitedStore) = {
         /*
          * First we enumerate the cases where we need to split. Then, the other cases are where we
          * don't split
@@ -156,9 +159,8 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
            * now
            */
           case _
-              if
-              (!noOpNode(activeBolt) &&
-                  dependsOnSummerProducer(currentProducer)) =>
+              if (!noOpNode(activeBolt) &&
+                dependsOnSummerProducer(currentProducer)) =>
             true
           /*
            * This should possibly be improved, but currently, we force a FlatMapNode just before a
@@ -167,25 +169,26 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
            */
           case FlatMapNode(_)
               if hasSummerAsDependantProducer(currentProducer) &&
-              allTransDepsMergeableWithSource(dep) =>
+                allTransDepsMergeableWithSource(dep) =>
             true
           /*
            * if the current node can't be merged with a source, but the transitive deps can
            * then split now.
            */
           case _
-              if
-              ((!mergableWithSource(currentProducer)) &&
-                  allTransDepsMergeableWithSource(dep)) =>
+              if ((!mergableWithSource(currentProducer)) &&
+                allTransDepsMergeableWithSource(dep)) =>
             true
           case _ => false
         }
         // Note the currentProducer is *ALREADY* a part of activeBolt
         if (doSplit) {
           // Note that FlatMapNode is used as the default empty node
-          recurse(dep,
-                  updatedBolt = FlatMapNode(),
-                  updatedRegistry = distinctAddToList(nodeSet, activeBolt))
+          recurse(
+            dep,
+            updatedBolt = FlatMapNode(),
+            updatedRegistry = distinctAddToList(nodeSet, activeBolt)
+          )
         } else {
           recurse(dep, updatedBolt = activeBolt)
         }
@@ -201,18 +204,22 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
 
       def mergeCollapse[A](
           p: Prod[A],
-          rootMerge: Boolean = false): (List[Prod[A]], List[Prod[A]]) =
+          rootMerge: Boolean = false
+      ): (List[Prod[A]], List[Prod[A]]) =
         p match {
           case MergedProducer(subL, subR)
               if (!forkedNodes.contains(p) || rootMerge) =>
             // TODO support de-duping self merges  https://github.com/twitter/summingbird/issues/237
             if (subL == subR)
               sys.error(
-                  "Online Planner doesn't support both the left and right sides of a join being the same node.")
+                "Online Planner doesn't support both the left and right sides of a join being the same node."
+              )
             val (lMergeNodes, lSiblings) = mergeCollapse(subL)
             val (rMergeNodes, rSiblings) = mergeCollapse(subR)
-            (distinctAddToList((lMergeNodes ::: rMergeNodes).distinct, p),
-             (lSiblings ::: rSiblings).distinct)
+            (
+              distinctAddToList((lMergeNodes ::: rMergeNodes).distinct, p),
+              (lSiblings ::: rSiblings).distinct
+            )
           case _ => (List(), List(p))
         }
 
@@ -238,10 +245,13 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
         // The following are special cases
         case Summer(producer, _, _) =>
           maybeSplitThenRecurse(
-              dependantProducer, producer, currentBolt.toSummer)
+            dependantProducer,
+            producer,
+            currentBolt.toSummer
+          )
         case AlsoProducer(lProducer, rProducer) =>
-          val (updatedReg, updatedVisited) = maybeSplitThenRecurse(
-              dependantProducer, rProducer)
+          val (updatedReg, updatedVisited) =
+            maybeSplitThenRecurse(dependantProducer, rProducer)
           recurse(lProducer, FlatMapNode(), updatedReg, updatedVisited)
         case Source(spout) =>
           (distinctAddToList(nodeSet, currentBolt.toSource), visitedWithN)
@@ -249,43 +259,45 @@ class OnlinePlan[P <: Platform[P], V](tail: Producer[P, V]) {
           // TODO support de-duping self merges  https://github.com/twitter/summingbird/issues/237
           if (l == r)
             throw new Exception(
-                "Online Planner doesn't support both the left and right sides of a join being the same node.")
-          val (otherMergeNodes, dependencies) = mergeCollapse(
-              dependantProducer, rootMerge = true)
+              "Online Planner doesn't support both the left and right sides of a join being the same node."
+            )
+          val (otherMergeNodes, dependencies) =
+            mergeCollapse(dependantProducer, rootMerge = true)
           val newCurrentBolt = otherMergeNodes.foldLeft(currentBolt)(_.add(_))
           val visitedWithOther = otherMergeNodes.foldLeft(visitedWithN) {
-            (visited, n) =>
-              visited + n
+            (visited, n) => visited + n
           }
 
           // Recurse down all the newly generated dependencies
           dependencies.foldLeft(
-              (distinctAddToList(nodeSet, newCurrentBolt), visitedWithOther)) {
+            (distinctAddToList(nodeSet, newCurrentBolt), visitedWithOther)
+          ) {
             case ((newNodeSet, newVisited), n) =>
               recurse(n, FlatMapNode(), newNodeSet, newVisited)
           }
       }
     }
 
-  val (nodeSet, _) = addWithDependencies(
-      tail, FlatMapNode(), List[CNode](), Set())
-  require(nodeSet.collect { case n @ SourceNode(_) => n }.size > 0,
-          "Valid nodeSet should have at least one source node")
+  val (nodeSet, _) =
+    addWithDependencies(tail, FlatMapNode(), List[CNode](), Set())
+  require(
+    nodeSet.collect { case n @ SourceNode(_) => n }.size > 0,
+    "Valid nodeSet should have at least one source node"
+  )
 }
 
 object OnlinePlan {
   def apply[P <: Platform[P], T](tail: TailProducer[P, T]): Dag[P] = {
     val (nameMap, strippedTail) = StripNamedNode(tail)
-    val planner = new OnlinePlan(strippedTail)
-    val nodesSet = planner.nodeSet
+    val planner                 = new OnlinePlan(strippedTail)
+    val nodesSet                = planner.nodeSet
 
     // The nodes are added in a source -> summer way with how we do list prepends
     // but its easier to look at laws in a summer -> source manner
     // We also drop all Nodes with no members(may occur when we visit a node already seen and its the first in that Node)
     val reversedNodeSet =
       nodesSet.filter(_.members.size > 0).foldLeft(List[Node[P]]()) {
-        (nodes, n) =>
-          n.reverse :: nodes
+        (nodes, n) => n.reverse :: nodes
       }
     Dag(tail, nameMap, strippedTail, reversedNodeSet)
   }

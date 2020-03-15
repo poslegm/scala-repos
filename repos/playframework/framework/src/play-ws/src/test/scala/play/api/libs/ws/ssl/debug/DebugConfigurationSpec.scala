@@ -37,11 +37,11 @@ object DebugConfigurationSpec extends Specification with After {
 
       Option(System.getProperty("java.security.debug")) must beLike {
         case Some(value) => value must beEmpty
-        case None => ok
+        case None        => ok
       }
 
       val debugConfig = SSLDebugConfig(certpath = true)
-      val config = new DebugConfiguration()
+      val config      = new DebugConfiguration()
       config.configure(debugConfig)
 
       System.getProperty("java.security.debug") must contain("certpath")
@@ -51,7 +51,7 @@ object DebugConfigurationSpec extends Specification with After {
       System.setProperty("java.security.debug", "certpath")
 
       val debugConfig = SSLDebugConfig(certpath = false)
-      val config = new DebugConfiguration()
+      val config      = new DebugConfiguration()
       config.configure(debugConfig)
 
       System.getProperty("java.security.debug") must not contain ("certpath")
@@ -62,11 +62,11 @@ object DebugConfigurationSpec extends Specification with After {
 
       Option(System.getProperty("javax.net.debug")) must beLike {
         case Some(value) => value must beEmpty
-        case None => ok
+        case None        => ok
       }
 
       val debugConfig = SSLDebugConfig(ssl = true)
-      val config = new DebugConfiguration()
+      val config      = new DebugConfiguration()
       config.configure(debugConfig)
 
       System.getProperty("javax.net.debug") must contain("ssl")
@@ -76,7 +76,7 @@ object DebugConfigurationSpec extends Specification with After {
       System.setProperty("javax.net.debug", "ssl")
 
       val debugConfig = SSLDebugConfig(ssl = false)
-      val config = new DebugConfiguration()
+      val config      = new DebugConfiguration()
       config.configure(debugConfig)
 
       System.getProperty("javax.net.debug") must not contain ("ssl")

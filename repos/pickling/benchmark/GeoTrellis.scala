@@ -9,7 +9,8 @@ import scala.util.Random
 trait MutableRasterData
 trait IntBasedArray
 final case class IntArrayRasterData(array: Array[Int], cols: Int, rows: Int)
-    extends MutableRasterData with IntBasedArray
+    extends MutableRasterData
+    with IntBasedArray
 
 trait GeoTrellisBenchmark extends scala.pickling.testing.PicklingBenchmark {
   // println("alloc new arr of size " + size)
@@ -20,7 +21,7 @@ trait GeoTrellisBenchmark extends scala.pickling.testing.PicklingBenchmark {
 object GeoTrellisPicklingBench extends GeoTrellisBenchmark {
   override def run() {
     val pickle = data.pickle
-    val res = pickle.unpickle[IntArrayRasterData]
+    val res    = pickle.unpickle[IntArrayRasterData]
   }
 }
 
@@ -29,9 +30,9 @@ object GeoTrellisJavaBench extends GeoTrellisBenchmark {
     val bos = new ByteArrayOutputStream()
     val out = new ObjectOutputStream(bos)
     out.writeObject(data)
-    val ba = bos.toByteArray()
+    val ba  = bos.toByteArray()
     val bis = new ByteArrayInputStream(ba)
-    val in = new ObjectInputStream(bis)
+    val in  = new ObjectInputStream(bis)
     val res = in.readObject.asInstanceOf[IntArrayRasterData]
   }
 }

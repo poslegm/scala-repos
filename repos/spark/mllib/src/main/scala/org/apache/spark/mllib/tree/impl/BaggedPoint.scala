@@ -39,8 +39,9 @@ import org.apache.spark.util.random.XORShiftRandom
   *       dataset support, update.  (We store subsampleWeights as Double for this future extension.)
   */
 private[spark] class BaggedPoint[Datum](
-    val datum: Datum, val subsampleWeights: Array[Double])
-    extends Serializable
+    val datum: Datum,
+    val subsampleWeights: Array[Double]
+) extends Serializable
 
 private[spark] object BaggedPoint {
 
@@ -61,16 +62,25 @@ private[spark] object BaggedPoint {
       subsamplingRate: Double,
       numSubsamples: Int,
       withReplacement: Boolean,
-      seed: Long = Utils.random.nextLong()): RDD[BaggedPoint[Datum]] = {
+      seed: Long = Utils.random.nextLong()
+  ): RDD[BaggedPoint[Datum]] = {
     if (withReplacement) {
       convertToBaggedRDDSamplingWithReplacement(
-          input, subsamplingRate, numSubsamples, seed)
+        input,
+        subsamplingRate,
+        numSubsamples,
+        seed
+      )
     } else {
       if (numSubsamples == 1 && subsamplingRate == 1.0) {
         convertToBaggedRDDWithoutSampling(input)
       } else {
         convertToBaggedRDDSamplingWithoutReplacement(
-            input, subsamplingRate, numSubsamples, seed)
+          input,
+          subsamplingRate,
+          numSubsamples,
+          seed
+        )
       }
     }
   }
@@ -79,14 +89,15 @@ private[spark] object BaggedPoint {
       input: RDD[Datum],
       subsamplingRate: Double,
       numSubsamples: Int,
-      seed: Long): RDD[BaggedPoint[Datum]] = {
+      seed: Long
+  ): RDD[BaggedPoint[Datum]] = {
     input.mapPartitionsWithIndex { (partitionIndex, instances) =>
       // Use random seed = seed + partitionIndex + 1 to make generation reproducible.
       val rng = new XORShiftRandom
       rng.setSeed(seed + partitionIndex + 1)
       instances.map { instance =>
         val subsampleWeights = new Array[Double](numSubsamples)
-        var subsampleIndex = 0
+        var subsampleIndex   = 0
         while (subsampleIndex < numSubsamples) {
           val x = rng.nextDouble()
           subsampleWeights(subsampleIndex) = {
@@ -103,14 +114,15 @@ private[spark] object BaggedPoint {
       input: RDD[Datum],
       subsample: Double,
       numSubsamples: Int,
-      seed: Long): RDD[BaggedPoint[Datum]] = {
+      seed: Long
+  ): RDD[BaggedPoint[Datum]] = {
     input.mapPartitionsWithIndex { (partitionIndex, instances) =>
       // Use random seed = seed + partitionIndex + 1 to make generation reproducible.
       val poisson = new PoissonDistribution(subsample)
       poisson.reseedRandomGenerator(seed + partitionIndex + 1)
       instances.map { instance =>
         val subsampleWeights = new Array[Double](numSubsamples)
-        var subsampleIndex = 0
+        var subsampleIndex   = 0
         while (subsampleIndex < numSubsamples) {
           subsampleWeights(subsampleIndex) = poisson.sample()
           subsampleIndex += 1
@@ -121,7 +133,8 @@ private[spark] object BaggedPoint {
   }
 
   private def convertToBaggedRDDWithoutSampling[Datum](
-      input: RDD[Datum]): RDD[BaggedPoint[Datum]] = {
+      input: RDD[Datum]
+  ): RDD[BaggedPoint[Datum]] = {
     input.map(datum => new BaggedPoint(datum, Array(1.0)))
   }
 }

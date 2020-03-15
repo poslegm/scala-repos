@@ -12,7 +12,12 @@ import spray.json._
 import akka.actor.ActorSystem
 
 import akka.stream.ActorMaterializer
-import akka.stream.stage.{TerminationDirective, Context, SyncDirective, PushStage}
+import akka.stream.stage.{
+  TerminationDirective,
+  Context,
+  SyncDirective,
+  PushStage
+}
 import akka.stream.scaladsl._
 
 import akka.http.scaladsl.Http
@@ -24,7 +29,7 @@ object WSClientAutobahnTest extends App {
   import system.dispatcher
   implicit val materializer = ActorMaterializer()
 
-  val Agent = "akka-http"
+  val Agent       = "akka-http"
   val Parallelism = 4
 
   val getCaseCountUri: Uri = s"ws://localhost:9001/getCaseCount"
@@ -43,12 +48,11 @@ object WSClientAutobahnTest extends App {
 
   def runCase(caseIndex: Int, agent: String = Agent): Future[CaseStatus] =
     runWs(runCaseUri(caseIndex, agent), echo).recover { case _ ⇒ () }.flatMap {
-      _ ⇒
-        getCaseStatus(caseIndex, agent)
+      _ ⇒ getCaseStatus(caseIndex, agent)
     }
 
   def richRunCase(caseIndex: Int, agent: String = Agent): Future[CaseResult] = {
-    val info = getCaseInfo(caseIndex)
+    val info        = getCaseInfo(caseIndex)
     val startMillis = System.currentTimeMillis()
     val status = runCase(caseIndex, agent).map { res ⇒
       val lastedMillis = System.currentTimeMillis() - startMillis
@@ -95,9 +99,7 @@ object WSClientAutobahnTest extends App {
         .traverse(1 to count)(getCaseInfo)
         .map(_.map(e ⇒ e.caseInfo.id -> e).toMap)
     }
-    res.foreach { res ⇒
-      println(s"Received info for ${res.size} cases")
-    }
+    res.foreach { res ⇒ println(s"Received info for ${res.size} cases") }
     res
   }
 
@@ -108,48 +110,54 @@ object WSClientAutobahnTest extends App {
     // run one
     val testId = args(0)
     println(s"Trying to run test $testId")
-    getCaseMap().flatMap { map ⇒
-      val info = map(testId)
-      richRunCase(info.index)
-    }.onComplete {
-      case Success(res) ⇒
-        println(s"[OK] Run successfully finished!")
-        updateReportsAndShutdown()
-      case Failure(e) ⇒
-        println(s"[${RED}FAILED$RESET] Run failed with this exception: ")
-        e.printStackTrace()
-        updateReportsAndShutdown()
-    }
+    getCaseMap()
+      .flatMap { map ⇒
+        val info = map(testId)
+        richRunCase(info.index)
+      }
+      .onComplete {
+        case Success(res) ⇒
+          println(s"[OK] Run successfully finished!")
+          updateReportsAndShutdown()
+        case Failure(e) ⇒
+          println(s"[${RED}FAILED$RESET] Run failed with this exception: ")
+          e.printStackTrace()
+          updateReportsAndShutdown()
+      }
   } else {
     println("Running complete test suite")
-    getCaseCount().flatMap { count ⇒
-      println(s"Found $count tests.")
-      Source(1 to count)
-        .mapAsyncUnordered(Parallelism)(richRunCase(_))
-        .grouped(count)
-        .runWith(Sink.head)
-    }.map { results ⇒
-      val grouped = results.groupBy(_.status.behavior)
-
-      println(s"${results.size} tests run.")
-      println()
-      println(s"${GREEN}OK$RESET: ${grouped.getOrElse("OK", Nil).size}")
-      val notOk = grouped.filterNot(_._1 == "OK")
-      notOk.toSeq.sortBy(_._2.size).foreach {
-        case (status, cases) ⇒ println(s"$RED$status$RESET: ${cases.size}")
+    getCaseCount()
+      .flatMap { count ⇒
+        println(s"Found $count tests.")
+        Source(1 to count)
+          .mapAsyncUnordered(Parallelism)(richRunCase(_))
+          .grouped(count)
+          .runWith(Sink.head)
       }
-      println()
-      println("Not OK tests: ")
-      println()
-      results
-        .filterNot(_.status.behavior == "OK")
-        .foreach { r ⇒
-          println(
-              f"$RED${r.status.behavior}%-20s$RESET $YELLOW${r.info.id}%-7s$RESET - $RESET${r.info.description}")
+      .map { results ⇒
+        val grouped = results.groupBy(_.status.behavior)
+
+        println(s"${results.size} tests run.")
+        println()
+        println(s"${GREEN}OK$RESET: ${grouped.getOrElse("OK", Nil).size}")
+        val notOk = grouped.filterNot(_._1 == "OK")
+        notOk.toSeq.sortBy(_._2.size).foreach {
+          case (status, cases) ⇒ println(s"$RED$status$RESET: ${cases.size}")
         }
+        println()
+        println("Not OK tests: ")
+        println()
+        results
+          .filterNot(_.status.behavior == "OK")
+          .foreach { r ⇒
+            println(
+              f"$RED${r.status.behavior}%-20s$RESET $YELLOW${r.info.id}%-7s$RESET - $RESET${r.info.description}"
+            )
+          }
 
         ()
-    }.onComplete(completion)
+      }
+      .onComplete(completion)
   }
 
   def completion[T]: Try[T] ⇒ Unit = {
@@ -164,7 +172,8 @@ object WSClientAutobahnTest extends App {
   def updateReportsAndShutdown(): Unit =
     updateReports().onComplete { res ⇒
       println(
-          "Reports should now be accessible at http://localhost:8080/cwd/reports/clients/index.html")
+        "Reports should now be accessible at http://localhost:8080/cwd/reports/clients/index.html"
+      )
       system.terminate()
     }
 
@@ -185,12 +194,15 @@ object WSClientAutobahnTest extends App {
           super.onUpstreamFinish(ctx)
         }
         override def onDownstreamFinish(
-            ctx: Context[T]): TerminationDirective = {
+            ctx: Context[T]
+        ): TerminationDirective = {
           p.success(()) // should this be failure as well?
           super.onDownstreamFinish(ctx)
         }
         override def onUpstreamFailure(
-            cause: Throwable, ctx: Context[T]): TerminationDirective = {
+            cause: Throwable,
+            ctx: Context[T]
+        ): TerminationDirective = {
           p.failure(cause)
           super.onUpstreamFailure(cause, ctx)
         }
@@ -207,15 +219,17 @@ object WSClientAutobahnTest extends App {
   def runToSingleText(uri: Uri): Future[String] = {
     val sink = Sink.head[Message]
     runWs(
-        uri,
-        Flow.fromSinkAndSourceMat(sink, Source.maybe[Message])(Keep.left)).flatMap {
+      uri,
+      Flow.fromSinkAndSourceMat(sink, Source.maybe[Message])(Keep.left)
+    ).flatMap {
       case tm: TextMessage ⇒ tm.textStream.runWith(Sink.fold("")(_ + _))
       case other ⇒
         throw new IllegalStateException(
-            s"unexpected element of type ${other.getClass}")
+          s"unexpected element of type ${other.getClass}"
+        )
     }
   }
-  def runToSingleJsonValue[T : JsonReader](uri: Uri): Future[T] =
+  def runToSingleJsonValue[T: JsonReader](uri: Uri): Future[T] =
     runToSingleText(uri).map(_.parseJson.convertTo[T])
 
   case class IndexedCaseInfo(index: Int, caseInfo: CaseInfo)

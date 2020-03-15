@@ -28,7 +28,7 @@ object Test {
   }
 
   implicit val name = "t2104"
-  val chars = List('\n', '\r', 'a')
+  val chars         = List('\n', '\r', 'a')
 
   type Cs = List[Char]
   def all_strings(n: Int): List[Cs] = {

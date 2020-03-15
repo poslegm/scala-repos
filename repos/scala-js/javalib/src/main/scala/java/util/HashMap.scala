@@ -5,7 +5,9 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
-    extends AbstractMap[K, V] with Serializable with Cloneable { self =>
+    extends AbstractMap[K, V]
+    with Serializable
+    with Cloneable { self =>
 
   def this() =
     this(mutable.HashMap.empty[Box[K], V])
@@ -149,5 +151,5 @@ class HashMap[K, V] protected (inner: mutable.Map[Box[K], V])
 
 object HashMap {
   private[HashMap] final val DEFAULT_INITIAL_CAPACITY = 16
-  private[HashMap] final val DEFAULT_LOAD_FACTOR = 0.75f
+  private[HashMap] final val DEFAULT_LOAD_FACTOR      = 0.75f
 }

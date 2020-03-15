@@ -16,7 +16,9 @@ import org.ensime.api._
 
 object EnsimeConfigProtocol {
   object Protocol
-      extends DefaultSexpProtocol with OptionAltFormat with ScalariformFormat
+      extends DefaultSexpProtocol
+      with OptionAltFormat
+      with ScalariformFormat
       with CamelCaseToDashes
   import org.ensime.config.EnsimeConfigProtocol.Protocol._
 
@@ -38,9 +40,10 @@ object EnsimeConfigProtocol {
     if (Properties.envOrNone("ENSIME_SKIP_JRE_INDEX").isDefined) Nil
     else javaHome.tree.filter(_.getName == "rt.jar").toList
 
-  def validated(c: EnsimeConfig): EnsimeConfig = c.copy(
+  def validated(c: EnsimeConfig): EnsimeConfig =
+    c.copy(
       subprojects = c.subprojects.map(validated)
-  )
+    )
 
   /*
    We use the canonical form of files/directories to keep OS X happy
@@ -57,12 +60,13 @@ object EnsimeConfigProtocol {
       }
     }
     Canonised(
-        m.copy(
-            target = None,
-            targets = m.targetDirs,
-            testTarget = None,
-            testTargets = m.testTargetDirs,
-            sourceRoots = m.sourceRoots
-        ))
+      m.copy(
+        target = None,
+        targets = m.targetDirs,
+        testTarget = None,
+        testTargets = m.testTargetDirs,
+        sourceRoots = m.sourceRoots
+      )
+    )
   }
 }

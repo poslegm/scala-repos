@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-14 Miles Sabin 
+ * Copyright (c) 2012-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import shapeless._
 
 /*
  * Examples of optic (ie. lens/prism) usage.
- * 
+ *
  * @author Miles Sabin
  */
 package opticDemoDatatypes {
@@ -29,7 +29,7 @@ package opticDemoDatatypes {
 
   sealed trait Tree[T]
   case class Node[T](left: Tree[T], right: Tree[T]) extends Tree[T]
-  case class Leaf[T](value: T) extends Tree[T]
+  case class Leaf[T](value: T)                      extends Tree[T]
 
   case class Foo(i: Int, s: String)
   case class Bar(i: Int, b: Boolean)
@@ -39,8 +39,8 @@ object OpticExamples extends App {
   import opticDemoDatatypes._
 
   // 1. Basic nested case classes
-  val mary = Person("Mary", 32, Address("Southover Street", "Brighton"))
-  val ageLens = lens[Person].age
+  val mary       = Person("Mary", 32, Address("Southover Street", "Brighton"))
+  val ageLens    = lens[Person].age
   val streetLens = lens[Person].address.street
 
   val age = ageLens.get(mary)

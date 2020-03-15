@@ -8,7 +8,13 @@
 
 package scala
 
-import scala.collection.{mutable, immutable, generic, SortedSetLike, AbstractSet}
+import scala.collection.{
+  mutable,
+  immutable,
+  generic,
+  SortedSetLike,
+  AbstractSet
+}
 import java.lang.reflect.{Method => JMethod, Field => JField}
 import scala.reflect.NameTransformer._
 import scala.util.matching.Regex
@@ -64,7 +70,7 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     */
   override def toString =
     ((getClass.getName stripSuffix MODULE_SUFFIX_STRING split '.').last split Regex
-          .quote(NAME_JOIN_STRING)).last
+      .quote(NAME_JOIN_STRING)).last
 
   /** The mapping from the integer used to identify values to the actual
     * values. */
@@ -160,15 +166,16 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     val fields: Array[JField] = getClass.getDeclaredFields
     def isValDef(m: JMethod): Boolean =
       fields exists
-      (fd => fd.getName == m.getName && fd.getType == m.getReturnType)
+        (fd => fd.getName == m.getName && fd.getType == m.getReturnType)
 
     // The list of possible Value methods: 0-args which return a conforming type
     val methods: Array[JMethod] =
       getClass.getMethods filter
-      (m =>
-            m.getParameterTypes.isEmpty &&
+        (m =>
+          m.getParameterTypes.isEmpty &&
             classOf[Value].isAssignableFrom(m.getReturnType) &&
-            m.getDeclaringClass != classOf[Enumeration] && isValDef(m))
+            m.getDeclaringClass != classOf[Enumeration] && isValDef(m)
+        )
     methods foreach { m =>
       val name = m.getName
       // invoke method to obtain actual `Value` instance
@@ -184,9 +191,10 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
   /* Obtains the name for the value with id `i`. If no name is cached
    * in `nmap`, it populates `nmap` using reflection.
    */
-  private def nameOf(i: Int): String = synchronized {
-    nmap.getOrElse(i, { populateNameMap(); nmap(i) })
-  }
+  private def nameOf(i: Int): String =
+    synchronized {
+      nmap.getOrElse(i, { populateNameMap(); nmap(i) })
+    }
 
   /** The type of the enumerated values. */
   @SerialVersionUID(7091335633555234129L)
@@ -202,11 +210,12 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
       if (this.id < that.id) -1
       else if (this.id == that.id) 0
       else 1
-    override def equals(other: Any) = other match {
-      case that: Enumeration#Value =>
-        (outerEnum eq that.outerEnum) && (id == that.id)
-      case _ => false
-    }
+    override def equals(other: Any) =
+      other match {
+        case that: Enumeration#Value =>
+          (outerEnum eq that.outerEnum) && (id == that.id)
+        case _ => false
+      }
     override def hashCode: Int = id.##
 
     /** Create a ValueSet which contains this value and another one */
@@ -233,7 +242,8 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     override def toString() =
       if (name != null) name
       else
-        try thisenum.nameOf(i) catch {
+        try thisenum.nameOf(i)
+        catch {
           case _: NoSuchElementException =>
             "<Invalid enum: no field for #" + i + ">"
         }
@@ -257,21 +267,23 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     *    not fall below zero), organized as a `BitSet`.
     *  @define Coll `collection.immutable.SortedSet`
     */
-  class ValueSet private[ValueSet](private[this] var nnIds: immutable.BitSet)
-      extends AbstractSet[Value] with immutable.SortedSet[Value]
-      with SortedSetLike[Value, ValueSet] with Serializable {
+  class ValueSet private[ValueSet] (private[this] var nnIds: immutable.BitSet)
+      extends AbstractSet[Value]
+      with immutable.SortedSet[Value]
+      with SortedSetLike[Value, ValueSet]
+      with Serializable {
 
     implicit def ordering: Ordering[Value] = ValueOrdering
     def rangeImpl(from: Option[Value], until: Option[Value]): ValueSet =
       new ValueSet(
-          nnIds.rangeImpl(
-              from.map(_.id - bottomId), until.map(_.id - bottomId)))
+        nnIds.rangeImpl(from.map(_.id - bottomId), until.map(_.id - bottomId))
+      )
 
-    override def empty = ValueSet.empty
+    override def empty     = ValueSet.empty
     def contains(v: Value) = nnIds contains (v.id - bottomId)
-    def +(value: Value) = new ValueSet(nnIds + (value.id - bottomId))
-    def -(value: Value) = new ValueSet(nnIds - (value.id - bottomId))
-    def iterator = nnIds.iterator map (id => thisenum.apply(bottomId + id))
+    def +(value: Value)    = new ValueSet(nnIds + (value.id - bottomId))
+    def -(value: Value)    = new ValueSet(nnIds - (value.id - bottomId))
+    def iterator           = nnIds.iterator map (id => thisenum.apply(bottomId + id))
     override def keysIteratorFrom(start: Value) =
       nnIds keysIteratorFrom start.id map (id => thisenum.apply(bottomId + id))
     override def stringPrefix = thisenum + ".ValueSet"
@@ -300,16 +312,16 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     def newBuilder: mutable.Builder[Value, ValueSet] =
       new mutable.Builder[Value, ValueSet] {
         private[this] val b = new mutable.BitSet
-        def +=(x: Value) = { b += (x.id - bottomId); this }
-        def clear() = b.clear()
-        def result() = new ValueSet(b.toImmutable)
+        def +=(x: Value)    = { b += (x.id - bottomId); this }
+        def clear()         = b.clear()
+        def result()        = new ValueSet(b.toImmutable)
       }
 
     /** The implicit builder for value sets */
     implicit def canBuildFrom: CanBuildFrom[ValueSet, Value, ValueSet] =
       new CanBuildFrom[ValueSet, Value, ValueSet] {
         def apply(from: ValueSet) = newBuilder
-        def apply() = newBuilder
+        def apply()               = newBuilder
       }
   }
 }

@@ -33,8 +33,8 @@ trait ClassPathFactory[T] {
 
   def contentsOfDirsInPath(path: String): List[T] =
     for {
-      dir <- expandPath(path, expandStar = false)
-      name <- expandDir(dir)
+      dir   <- expandPath(path, expandStar = false)
+      name  <- expandDir(dir)
       entry <- Option(AbstractFile.getDirectory(name))
     } yield newClassPath(entry)
 
@@ -45,14 +45,15 @@ trait ClassPathFactory[T] {
 
   def classesInManifest(useManifestClassPath: Boolean) =
     if (useManifestClassPath)
-      ClassPath.manifests.map(
-          url => newClassPath(AbstractFile getResources url))
+      ClassPath.manifests.map(url =>
+        newClassPath(AbstractFile getResources url)
+      )
     else Nil
 
   // Internal
   protected def classesInPathImpl(path: String, expand: Boolean) =
     for {
       file <- expandPath(path, expand)
-      dir <- Option(AbstractFile.getDirectory(file))
+      dir  <- Option(AbstractFile.getDirectory(file))
     } yield newClassPath(dir)
 }

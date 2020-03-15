@@ -43,10 +43,12 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class SceneAntialiasingSpec
     extends SimpleSFXDelegateSpec[jfxs.SceneAntialiasing, SceneAntialiasing](
-        classOf[jfxs.SceneAntialiasing], classOf[SceneAntialiasing]) {
+      classOf[jfxs.SceneAntialiasing],
+      classOf[SceneAntialiasing]
+    ) {
 
-  override protected def getScalaClassInstance = SceneAntialiasing.Balanced
-  override protected def getJavaClassInstance = jfxs.SceneAntialiasing.DISABLED
+  override protected def getScalaClassInstance     = SceneAntialiasing.Balanced
+  override protected def getJavaClassInstance      = jfxs.SceneAntialiasing.DISABLED
   override protected def expectedNullJFXToSFXValue = SceneAntialiasing.Disabled
 
   /**
@@ -54,30 +56,30 @@ class SceneAntialiasingSpec
     */
   it should "treat a null JFX SceneAntialiasing reference as disabled" in {
     val jfxNull: jfxs.SceneAntialiasing = null
-    val scalaEquiv: SceneAntialiasing = jfxNull
+    val scalaEquiv: SceneAntialiasing   = jfxNull
     assert(scalaEquiv === expectedNullJFXToSFXValue)
   }
 
   it should "treat JFX SceneAntialiasing.DISABLED as disabled" in {
-    val jfxDisabled = jfxs.SceneAntialiasing.DISABLED
+    val jfxDisabled                   = jfxs.SceneAntialiasing.DISABLED
     val scalaEquiv: SceneAntialiasing = jfxDisabled
     assert(scalaEquiv === SceneAntialiasing.Disabled)
   }
 
   it should "convert SFX SceneAntialiasing.Disabled to disabled" in {
-    val sfxDisabled = SceneAntialiasing.Disabled
+    val sfxDisabled                       = SceneAntialiasing.Disabled
     val javaEquiv: jfxs.SceneAntialiasing = sfxDisabled
     assert(javaEquiv === jfxs.SceneAntialiasing.DISABLED)
   }
 
   it should "treat JFX SceneAntialiasing.BALANCED as balanced" in {
-    val jfxBalanced = jfxs.SceneAntialiasing.BALANCED
+    val jfxBalanced                   = jfxs.SceneAntialiasing.BALANCED
     val scalaEquiv: SceneAntialiasing = jfxBalanced
     assert(scalaEquiv === SceneAntialiasing.Balanced)
   }
 
   it should "convert SFX SceneAntialiasing.Balanced to balanced" in {
-    val sfxBalanced = SceneAntialiasing.Balanced
+    val sfxBalanced                       = SceneAntialiasing.Balanced
     val javaEquiv: jfxs.SceneAntialiasing = sfxBalanced
     assert(javaEquiv === jfxs.SceneAntialiasing.BALANCED)
   }

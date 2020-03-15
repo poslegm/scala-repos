@@ -4,7 +4,8 @@ class ImaginaryCanBuildFrom[-From, -Elem, +To]
 class CompletelyIndependentList[+A] {
   type Repr <: CompletelyIndependentList[A]
   def map[B, That](f: A => B)(
-      implicit cbf: ImaginaryCanBuildFrom[Repr, B, That]): That = ???
+      implicit cbf: ImaginaryCanBuildFrom[Repr, B, That]
+  ): That                                      = ???
   def distinct(): CompletelyIndependentList[A] = ???
 }
 
@@ -17,11 +18,11 @@ object Test {
   }
 
   /** Attempt to use a method type as a type argument - expect failure. */
-  def tcon[T : TypeTag](args: Type*) =
+  def tcon[T: TypeTag](args: Type*) =
     appliedType(typeOf[T].typeConstructor, args.toList)
 
-  def cil = typeOf[CompletelyIndependentList[Int]]
-  def map = cil.member(TermName("map")).asMethod
+  def cil      = typeOf[CompletelyIndependentList[Int]]
+  def map      = cil.member(TermName("map")).asMethod
   def distinct = cil.member(TermName("distinct")).asMethod
 
   def main(args: Array[String]): Unit = {

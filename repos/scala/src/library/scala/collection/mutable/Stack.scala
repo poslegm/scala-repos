@@ -23,16 +23,16 @@ import scala.annotation.migration
   */
 object Stack extends SeqFactory[Stack] {
   class StackBuilder[A] extends Builder[A, Stack[A]] {
-    val lbuff = new ListBuffer[A]
+    val lbuff       = new ListBuffer[A]
     def +=(elem: A) = { lbuff += elem; this }
-    def clear() = lbuff.clear()
-    def result = new Stack(lbuff.result)
+    def clear()     = lbuff.clear()
+    def result      = new Stack(lbuff.result)
   }
 
   implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, Stack[A]] =
     ReusableCBF.asInstanceOf[GenericCanBuildFrom[A]]
   def newBuilder[A]: Builder[A, Stack[A]] = new StackBuilder[A]
-  val empty: Stack[Nothing] = new Stack(Nil)
+  val empty: Stack[Nothing]               = new Stack(Nil)
 }
 
 /** A stack implements a data structure which allows to store and retrieve
@@ -54,9 +54,12 @@ object Stack extends SeqFactory[Stack] {
   *  @define willNotTerminateInf
   */
 class Stack[A] private (var elems: List[A])
-    extends AbstractSeq[A] with Seq[A] with SeqLike[A, Stack[A]]
+    extends AbstractSeq[A]
+    with Seq[A]
+    with SeqLike[A, Stack[A]]
     with GenericTraversableTemplate[A, Stack]
-    with Cloneable[Stack[A]] with Serializable {
+    with Cloneable[Stack[A]]
+    with Serializable {
   def this() = this(Nil)
 
   override def companion = Stack

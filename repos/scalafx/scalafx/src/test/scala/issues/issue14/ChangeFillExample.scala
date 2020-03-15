@@ -58,8 +58,8 @@ object ChangeFillExample extends JFXApp {
   //   cannot be applied to (scalafx.beans.property.ObjectProperty[scalafx.scene.paint.Paint])
   //   fill <== fillPaint
   val fillPaint = ObjectProperty(this, "fillPaint", Color.LightGray)
-  val Light = Color.LightGray
-  val Dark = Color.Gray
+  val Light     = Color.LightGray
+  val Dark      = Color.Gray
 
   stage = new PrimaryStage {
     title = "Change Fill Example"

@@ -5,7 +5,7 @@ import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
 object InputSizeReducerEstimator {
-  val BytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
+  val BytesPerReducer        = "scalding.reducer.estimator.bytes.per.reducer"
   val defaultBytesPerReducer = 1L << 32 // 4 GB
 
   /**
@@ -37,11 +37,12 @@ class InputSizeReducerEstimator extends ReducerEstimator {
     Common.inputSizes(info.step) match {
       case Nil =>
         LOG.warn(
-            "InputSizeReducerEstimator unable to estimate reducers; " +
+          "InputSizeReducerEstimator unable to estimate reducers; " +
             "cannot compute size of:\n - " + Common
-              .unrollTaps(info.step)
-              .filterNot(_.isInstanceOf[Hfs])
-              .mkString("\n - "))
+            .unrollTaps(info.step)
+            .filterNot(_.isInstanceOf[Hfs])
+            .mkString("\n - ")
+        )
         None
       case inputSizes =>
         val bytesPerReducer =
@@ -51,14 +52,17 @@ class InputSizeReducerEstimator extends ReducerEstimator {
         val nReducers =
           (totalBytes.toDouble / bytesPerReducer).ceil.toInt max 1
 
-        lazy val logStr = inputSizes.map {
-          case (name, bytes) => s"   - ${name}\t${bytes}"
-        }.mkString("\n")
+        lazy val logStr = inputSizes
+          .map {
+            case (name, bytes) => s"   - ${name}\t${bytes}"
+          }
+          .mkString("\n")
 
         LOG.info(
-            "\nInputSizeReducerEstimator" + "\n - input size (bytes): " +
+          "\nInputSizeReducerEstimator" + "\n - input size (bytes): " +
             totalBytes + "\n - reducer estimate:   " + nReducers +
-            "\n - Breakdown:\n" + logStr)
+            "\n - Breakdown:\n" + logStr
+        )
 
         Some(nReducers)
     }

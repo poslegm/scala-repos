@@ -5,7 +5,7 @@ object WhatsYourTypeIsMyType {
 
   class Foo extends WithMyType[Foo] {
     var x: MyType = _
-    def setX() = x = new Foo
+    def setX()    = x = new Foo
   }
 
   class Bar extends Foo with WithMyType[Bar] {

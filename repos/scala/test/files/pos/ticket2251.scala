@@ -2,8 +2,8 @@
 // derived from pos/t1001
 class A
 trait B[T <: B[T]] extends A
-class C extends B[C]
-class D extends B[D]
+class C            extends B[C]
+class D            extends B[D]
 
 class Data {
   // force computing lub of C and D (printLubs enabled:)

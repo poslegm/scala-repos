@@ -10,20 +10,23 @@ object KleisliTest extends SpecLite {
 
   type KleisliOpt[A, B] = Kleisli[Option, A, B]
   type KleisliOptInt[B] = KleisliOpt[Int, B]
-  type IntOr[A] = Int \/ A
+  type IntOr[A]         = Int \/ A
   type KleisliEither[A] = Kleisli[IntOr, Int, A]
 
   implicit def Function1IntOptInt[A](
-      implicit A: Arbitrary[Option[Int]]): Arbitrary[Int => Option[Int]] =
+      implicit A: Arbitrary[Option[Int]]
+  ): Arbitrary[Int => Option[Int]] =
     Arbitrary(
-        Gen.frequency[Int => Option[Int]](
-            (1, Gen.const((x: Int) => Some(x))),
-            (1, Gen.const((x: Int) => Some(x + 1))),
-            (3, A.arbitrary.map(a => (_: Int) => a))
-        ))
+      Gen.frequency[Int => Option[Int]](
+        (1, Gen.const((x: Int) => Some(x))),
+        (1, Gen.const((x: Int) => Some(x + 1))),
+        (3, A.arbitrary.map(a => (_: Int) => a))
+      )
+    )
 
   implicit def KleisliEqual[M[_]](
-      implicit M: Equal[M[Int]]): Equal[Kleisli[M, Int, Int]] =
+      implicit M: Equal[M[Int]]
+  ): Equal[Kleisli[M, Int, Int]] =
     new Equal[Kleisli[M, Int, Int]] {
       def equal(a1: Kleisli[M, Int, Int], a2: Kleisli[M, Int, Int]): Boolean = {
         val mb1: M[Int] = a1.run(0)
@@ -34,7 +37,7 @@ object KleisliTest extends SpecLite {
 
   "mapK" ! forAll { (f: Int => Option[Int], a: Int) =>
     Kleisli(f).mapK(_.toList.map(_.toString)).run(a) must_===
-    (f(a).toList.map(_.toString))
+      (f(a).toList.map(_.toString))
   }
 
   checkAll(monoid.laws[KleisliOptInt[Int]])
@@ -49,66 +52,66 @@ object KleisliTest extends SpecLite {
       Semigroup[Kleisli[F, A, B]]
     def monoid[F[_], A, B](implicit FB: Monoid[F[B]]) =
       Monoid[Kleisli[F, A, B]]
-    def functor[F[_]: Functor, A] = Functor[Kleisli[F, A, ?]]
-    def apply[F[_]: Apply, A] = Apply[Kleisli[F, A, ?]]
+    def functor[F[_]: Functor, A]         = Functor[Kleisli[F, A, ?]]
+    def apply[F[_]: Apply, A]             = Apply[Kleisli[F, A, ?]]
     def applicative[F[_]: Applicative, A] = Applicative[Kleisli[F, A, ?]]
-    def bind[F[_]: Bind, A] = Bind[Kleisli[F, A, ?]]
-    def plus[F[_]: Plus, A] = Plus[Kleisli[F, A, ?]]
-    def empty[F[_]: PlusEmpty, A] = PlusEmpty[Kleisli[F, A, ?]]
-    def bindRec[F[_]: BindRec, A] = BindRec[Kleisli[F, A, ?]]
-    def monadReader[F[_]: Monad, A] = MonadReader[Kleisli[F, A, ?], A]
-    def zip[F[_]: Zip, A] = Zip[Kleisli[F, A, ?]]
+    def bind[F[_]: Bind, A]               = Bind[Kleisli[F, A, ?]]
+    def plus[F[_]: Plus, A]               = Plus[Kleisli[F, A, ?]]
+    def empty[F[_]: PlusEmpty, A]         = PlusEmpty[Kleisli[F, A, ?]]
+    def bindRec[F[_]: BindRec, A]         = BindRec[Kleisli[F, A, ?]]
+    def monadReader[F[_]: Monad, A]       = MonadReader[Kleisli[F, A, ?], A]
+    def zip[F[_]: Zip, A]                 = Zip[Kleisli[F, A, ?]]
 
-    def profunctor[F[_]: Functor] = Profunctor[Kleisli[F, ?, ?]]
-    def strong[F[_]: Functor] = Strong[Kleisli[F, ?, ?]]
+    def profunctor[F[_]: Functor]    = Profunctor[Kleisli[F, ?, ?]]
+    def strong[F[_]: Functor]        = Strong[Kleisli[F, ?, ?]]
     def proChoice[F[_]: Applicative] = ProChoice[Kleisli[F, ?, ?]]
-    def compose[F[_]: Bind] = Compose[Kleisli[F, ?, ?]]
-    def category[F[_]: Monad] = Category[Kleisli[F, ?, ?]]
-    def arrow[F[_]: Monad] = Arrow[Kleisli[F, ?, ?]]
-    def choice[F[_]: Monad] = Choice[Kleisli[F, ?, ?]]
+    def compose[F[_]: Bind]          = Compose[Kleisli[F, ?, ?]]
+    def category[F[_]: Monad]        = Category[Kleisli[F, ?, ?]]
+    def arrow[F[_]: Monad]           = Arrow[Kleisli[F, ?, ?]]
+    def choice[F[_]: Monad]          = Choice[Kleisli[F, ?, ?]]
 
     // checking absence of ambiguity
     def semigroup[F[_], A, B](implicit FB: Monoid[F[B]]) =
       Semigroup[Kleisli[F, A, B]]
-    def functor[F[_]: Monad, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Bind, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Apply, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Applicative, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Monad : BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Applicative : BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: ApplicativePlus : BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def apply[F[_]: Monad, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: Bind, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: BindRec, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: Applicative, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: Monad : BindRec, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: Applicative : BindRec, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: ApplicativePlus : BindRec, A] = Apply[Kleisli[F, A, ?]]
-    def applicative[F[_]: Monad, A] = Applicative[Kleisli[F, A, ?]]
-    def bind[F[_]: BindRec, A] = Bind[Kleisli[F, A, ?]]
-    def bind[F[_]: Monad : BindRec, A] = Bind[Kleisli[F, A, ?]]
-    def plus[F[_]: PlusEmpty, A] = Plus[Kleisli[F, A, ?]]
-    def empty[F[_]: MonadPlus, A] = PlusEmpty[Kleisli[F, A, ?]]
-    def profunctor[F[_]: Applicative] = Profunctor[Kleisli[F, ?, ?]]
-    def profunctor[F[_]: Monad] = Profunctor[Kleisli[F, ?, ?]]
-    def strong[F[_]: Monad] = Strong[Kleisli[F, ?, ?]]
-    def proChoice[F[_]: Monad] = ProChoice[Kleisli[F, ?, ?]]
-    def compose[F[_]: Monad] = Compose[Kleisli[F, ?, ?]]
+    def functor[F[_]: Monad, A]                    = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Bind, A]                     = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Apply, A]                    = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Applicative, A]              = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: BindRec, A]                  = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Monad: BindRec, A]           = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Applicative: BindRec, A]     = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: ApplicativePlus: BindRec, A] = Functor[Kleisli[F, A, ?]]
+    def apply[F[_]: Monad, A]                      = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: Bind, A]                       = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: BindRec, A]                    = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: Applicative, A]                = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: Monad: BindRec, A]             = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: Applicative: BindRec, A]       = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: ApplicativePlus: BindRec, A]   = Apply[Kleisli[F, A, ?]]
+    def applicative[F[_]: Monad, A]                = Applicative[Kleisli[F, A, ?]]
+    def bind[F[_]: BindRec, A]                     = Bind[Kleisli[F, A, ?]]
+    def bind[F[_]: Monad: BindRec, A]              = Bind[Kleisli[F, A, ?]]
+    def plus[F[_]: PlusEmpty, A]                   = Plus[Kleisli[F, A, ?]]
+    def empty[F[_]: MonadPlus, A]                  = PlusEmpty[Kleisli[F, A, ?]]
+    def profunctor[F[_]: Applicative]              = Profunctor[Kleisli[F, ?, ?]]
+    def profunctor[F[_]: Monad]                    = Profunctor[Kleisli[F, ?, ?]]
+    def strong[F[_]: Monad]                        = Strong[Kleisli[F, ?, ?]]
+    def proChoice[F[_]: Monad]                     = ProChoice[Kleisli[F, ?, ?]]
+    def compose[F[_]: Monad]                       = Compose[Kleisli[F, ?, ?]]
 
     object reader {
       // F = Id
-      def readerFunctor[A] = Functor[Reader[A, ?]]
-      def readerApply[A] = Apply[Reader[A, ?]]
+      def readerFunctor[A]     = Functor[Reader[A, ?]]
+      def readerApply[A]       = Apply[Reader[A, ?]]
       def readerMonadReader[A] = MonadReader[Reader[A, ?], A]
-      def readerCategory = Category[Reader]
-      def readerArrow = Arrow[Reader]
+      def readerCategory       = Category[Reader]
+      def readerArrow          = Arrow[Reader]
 
       // Sigh, more tests needed, see http://stackoverflow.com/questions/11913128/scalaz-7-why-using-type-alias-results-in-ambigous-typeclass-resolution-for-rea
       trait X
       type ReaderX[A] = Reader[X, A]
       def readerXFunctor = Functor[ReaderX]
-      def readerXApply = Apply[ReaderX]
+      def readerXApply   = Apply[ReaderX]
     }
   }
 
@@ -167,7 +170,7 @@ object KleisliTest extends SpecLite {
     import effect.IO
 
     type F[A] = Kleisli[IO, Int, A]
-    val C = Catchable[F]
+    val C   = Catchable[F]
     val err = new Error("oh noes")
     val bad = C.fail[Int](err)
 

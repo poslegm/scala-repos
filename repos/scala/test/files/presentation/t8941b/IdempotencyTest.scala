@@ -50,7 +50,7 @@ abstract class IdempotencyTest { self =>
   }
   protected def checkTypedTree(tree: Tree): Unit = {}
 
-  private val source: SourceFile = newSourceFile(code)
+  private val source: SourceFile       = newSourceFile(code)
   private def markerPosition: Position = source.position(code.indexOf("/*?*/"))
 
   def assertNoProblems() {

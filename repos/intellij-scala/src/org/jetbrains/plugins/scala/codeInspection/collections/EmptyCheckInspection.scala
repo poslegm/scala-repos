@@ -19,9 +19,10 @@ object CheckIsEmpty extends SimplificationType {
       case _ `.isEmpty` () => None
       case CheckIsEmpty(qual, start, end) if !isArray(qual) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "isEmpty"))
-              .highlightRange(start, end))
+          replace(expr)
+            .withText(invocationText(qual, "isEmpty"))
+            .highlightRange(start, end)
+        )
       case _ => None
     }
 
@@ -44,8 +45,9 @@ object CheckIsEmpty extends SimplificationType {
     extractInner(firstLevel)
   }
 
-  def extractInner(firstLevel: Option[(ScExpression, Int, Int)])
-    : Option[(ScExpression, Int, Int)] = {
+  def extractInner(
+      firstLevel: Option[(ScExpression, Int, Int)]
+  ): Option[(ScExpression, Int, Int)] = {
     firstLevel match {
       case None => None
       case Some((inner @ coll `.headOption` (), start, end)) if coll != null =>
@@ -66,9 +68,10 @@ object CheckNonEmpty extends SimplificationType {
       case CheckNonEmpty(qual, start, end)
           if !isOption(qual) && !isArray(qual) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "nonEmpty"))
-              .highlightRange(start, end))
+          replace(expr)
+            .withText(invocationText(qual, "nonEmpty"))
+            .highlightRange(start, end)
+        )
       case _ => None
     }
 
@@ -105,9 +108,10 @@ object CheckIsDefined extends SimplificationType {
       case _ `.isDefined` () => None
       case CheckIsDefined(qual, start, end) =>
         Some(
-            replace(expr)
-              .withText(invocationText(qual, "isDefined"))
-              .highlightRange(start, end))
+          replace(expr)
+            .withText(invocationText(qual, "isDefined"))
+            .highlightRange(start, end)
+        )
       case _ => None
     }
 

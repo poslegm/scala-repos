@@ -101,72 +101,94 @@ trait Metalevels { self: Reifier =>
     *  However, we must not touch anything inside the splice'd block, because it's not getting reified.
     */
   val metalevels = new Transformer {
-    var insideSplice = false
+    var insideSplice       = false
     val inlineableBindings = mutable.Map[TermName, Tree]()
 
     def withinSplice[T](op: => T) = {
       val old = insideSplice
       insideSplice = true
-      try op finally insideSplice = old
+      try op
+      finally insideSplice = old
     }
 
     // Q: here we deal with all sorts of reified trees. what about ReifiedType(_, _, _, _, _, _)?
     // A: nothing. reified trees give us problems because they sometimes create dimensional rifts as described above
     //    to the contrast, reified types (i.e. synthetic typetags materialized by Implicits.scala) always stay on the same metalevel as their enclosing code
-    override def transform(tree: Tree): Tree = tree match {
-      case TreeSplice(
-          ReifiedTree(universe, mirror, symtab, rtree, tpe, rtpe, concrete)) =>
-        if (reifyDebug) println("entering inlineable splice: " + tree)
-        val inlinees = symtab.syms filter (_.isLocalToReifee)
-        inlinees foreach
-        (inlinee =>
+    override def transform(tree: Tree): Tree =
+      tree match {
+        case TreeSplice(
+              ReifiedTree(universe, mirror, symtab, rtree, tpe, rtpe, concrete)
+            ) =>
+          if (reifyDebug) println("entering inlineable splice: " + tree)
+          val inlinees = symtab.syms filter (_.isLocalToReifee)
+          inlinees foreach
+            (inlinee =>
               symtab.symAliases(inlinee) foreach
-              (alias =>
-                    inlineableBindings(alias) = symtab.symBinding(inlinee)))
-        val symtab1 = symtab -- inlinees
-        if (reifyDebug)
-          println(
+                (alias =>
+                  inlineableBindings(alias) = symtab.symBinding(inlinee)
+                )
+            )
+          val symtab1 = symtab -- inlinees
+          if (reifyDebug)
+            println(
               "trimmed %s inlineable free defs from its symbol table: %s"
                 .format(
                   inlinees.length,
                   inlinees map (inlinee => symtab.symName(inlinee)) mkString
-                  (", ")))
-        withinSplice {
-          super.transform(TreeSplice(ReifiedTree(
-                      universe, mirror, symtab1, rtree, tpe, rtpe, concrete)))
-        }
-      case TreeSplice(splicee) =>
-        if (reifyDebug) println("entering splice: " + splicee)
-        val breaches =
-          splicee filter
-          (sub =>
+                    (", ")
+                )
+            )
+          withinSplice {
+            super.transform(
+              TreeSplice(
+                ReifiedTree(
+                  universe,
+                  mirror,
+                  symtab1,
+                  rtree,
+                  tpe,
+                  rtpe,
+                  concrete
+                )
+              )
+            )
+          }
+        case TreeSplice(splicee) =>
+          if (reifyDebug) println("entering splice: " + splicee)
+          val breaches =
+            splicee filter
+              (sub =>
                 sub.hasSymbolField && sub.symbol != NoSymbol &&
-                sub.symbol.metalevel > 0)
-        if (!insideSplice && breaches.nonEmpty) {
-          // we used to convert dynamic splices into runtime evals transparently, but we no longer do that
-          // why? see comments above
-          // if (settings.logRuntimeSplices.value) reporter.echo(tree.pos, "this splice cannot be resolved statically")
-          // withinSplice { super.transform(tree) }
-          if (reifyDebug)
-            println(
+                  sub.symbol.metalevel > 0
+              )
+          if (!insideSplice && breaches.nonEmpty) {
+            // we used to convert dynamic splices into runtime evals transparently, but we no longer do that
+            // why? see comments above
+            // if (settings.logRuntimeSplices.value) reporter.echo(tree.pos, "this splice cannot be resolved statically")
+            // withinSplice { super.transform(tree) }
+            if (reifyDebug)
+              println(
                 "metalevel breach in %s: %s".format(
-                    tree, (breaches map (_.symbol)).distinct mkString ", "))
-          CannotReifyRuntimeSplice(tree)
-        } else {
-          withinSplice { super.transform(tree) }
-        }
-      // todo. also inline usages of `inlineableBindings` in the symtab itself
-      // e.g. a free$Foo can well use free$x, if Foo is path-dependent w.r.t x
-      // FreeRef(_, _) check won't work, because metalevels of symbol table and body are different, hence, freerefs in symbol table look different from freerefs in body
-      case FreeRef(_, name) if inlineableBindings contains name =>
-        if (reifyDebug)
-          println("inlineable free ref: %s in %s".format(name, showRaw(tree)))
-        val inlined = reify(inlineableBindings(name))
-        if (reifyDebug)
-          println("verdict: inlined as %s".format(showRaw(inlined)))
-        inlined
-      case _ =>
-        super.transform(tree)
-    }
+                  tree,
+                  (breaches map (_.symbol)).distinct mkString ", "
+                )
+              )
+            CannotReifyRuntimeSplice(tree)
+          } else {
+            withinSplice { super.transform(tree) }
+          }
+        // todo. also inline usages of `inlineableBindings` in the symtab itself
+        // e.g. a free$Foo can well use free$x, if Foo is path-dependent w.r.t x
+        // FreeRef(_, _) check won't work, because metalevels of symbol table and body are different, hence, freerefs in symbol table look different from freerefs in body
+        case FreeRef(_, name) if inlineableBindings contains name =>
+          if (reifyDebug)
+            println("inlineable free ref: %s in %s".format(name, showRaw(tree)))
+          val inlined = reify(inlineableBindings(name))
+          if (reifyDebug)
+            println("verdict: inlined as %s".format(showRaw(inlined)))
+          inlined
+        case _ =>
+          super.transform(tree)
+      }
   }
 }

@@ -32,11 +32,11 @@ trait TreeDSL {
     }
 
     // Boring, predictable trees.
-    def TRUE = LIT typed true
+    def TRUE  = LIT typed true
     def FALSE = LIT typed false
-    def ZERO = LIT(0)
-    def NULL = LIT(null)
-    def UNIT = LIT(())
+    def ZERO  = LIT(0)
+    def NULL  = LIT(null)
+    def UNIT  = LIT(())
 
     def fn(lhs: Tree, op: Name, args: Tree*) =
       Apply(Select(lhs, op), args.toList)
@@ -90,11 +90,11 @@ trait TreeDSL {
         fn(target, getMember(kind, nme.NE), other)
 
       /** Apply, Select, Match **/
-      def APPLY(params: Tree*) = Apply(target, params.toList)
+      def APPLY(params: Tree*)      = Apply(target, params.toList)
       def APPLY(params: List[Tree]) = Apply(target, params)
 
       def DOT(member: Name) = SelectStart(Select(target, member))
-      def DOT(sym: Symbol) = SelectStart(Select(target, sym))
+      def DOT(sym: Symbol)  = SelectStart(Select(target, sym))
 
       /** Assignment */
       // !!! This method is responsible for some tree sharing, but a diligent
@@ -120,22 +120,22 @@ trait TreeDSL {
     }
 
     class CaseStart(pat: Tree, guard: Tree) {
-      def IF(g: Tree): CaseStart = new CaseStart(pat, g)
+      def IF(g: Tree): CaseStart   = new CaseStart(pat, g)
       def ==>(body: Tree): CaseDef = CaseDef(pat, guard, body)
     }
 
     class IfStart(cond: Tree, thenp: Tree) {
-      def THEN(x: Tree) = new IfStart(cond, x)
+      def THEN(x: Tree)     = new IfStart(cond, x)
       def ELSE(elsep: Tree) = If(cond, thenp, elsep)
-      def ENDIF = If(cond, thenp, EmptyTree)
+      def ENDIF             = If(cond, thenp, EmptyTree)
     }
     class TryStart(body: Tree, catches: List[CaseDef], fin: Tree) {
       def CATCH(xs: CaseDef*) = new TryStart(body, xs.toList, fin)
-      def ENDTRY = Try(body, catches, fin)
+      def ENDTRY              = Try(body, catches, fin)
     }
 
     def CASE(pat: Tree): CaseStart = new CaseStart(pat, EmptyTree)
-    def DEFAULT: CaseStart = new CaseStart(Ident(nme.WILDCARD), EmptyTree)
+    def DEFAULT: CaseStart         = new CaseStart(Ident(nme.WILDCARD), EmptyTree)
 
     def NEW(tpt: Tree, args: Tree*): Tree = New(tpt, List(args.toList))
 
@@ -143,14 +143,14 @@ trait TreeDSL {
     def AND(guards: Tree*) =
       if (guards.isEmpty) EmptyTree else guards reduceLeft gen.mkAnd
 
-    def IF(tree: Tree) = new IfStart(tree, EmptyTree)
-    def TRY(tree: Tree) = new TryStart(tree, Nil, EmptyTree)
+    def IF(tree: Tree)   = new IfStart(tree, EmptyTree)
+    def TRY(tree: Tree)  = new TryStart(tree, Nil, EmptyTree)
     def BLOCK(xs: Tree*) = Block(xs.init.toList, xs.last)
     def SOME(xs: Tree*) =
       Apply(SomeClass.companionSymbol, gen.mkTuple(xs.toList))
 
     /** Typed trees from symbols. */
-    def REF(sym: Symbol) = gen.mkAttributedRef(sym)
+    def REF(sym: Symbol)            = gen.mkAttributedRef(sym)
     def REF(pre: Type, sym: Symbol) = gen.mkAttributedRef(pre, sym)
 
     /** Implicits - some of these should probably disappear **/

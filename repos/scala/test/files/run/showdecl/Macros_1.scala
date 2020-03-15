@@ -3,7 +3,7 @@ import scala.language.experimental.macros
 
 object Macros {
   def impl(c: Context) = {
-    var messages = List[String]()
+    var messages             = List[String]()
     def println(msg: String) = messages :+= msg
 
     import c.universe._

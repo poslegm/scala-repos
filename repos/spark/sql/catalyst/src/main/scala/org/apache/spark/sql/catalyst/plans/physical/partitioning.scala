@@ -52,10 +52,11 @@ case object AllTuples extends Distribution
 case class ClusteredDistribution(clustering: Seq[Expression])
     extends Distribution {
   require(
-      clustering != Nil,
-      "The clustering expressions of a ClusteredDistribution should not be Nil. " +
+    clustering != Nil,
+    "The clustering expressions of a ClusteredDistribution should not be Nil. " +
       "An AllTuples should be used to represent a distribution that only has " +
-      "a single partition.")
+      "a single partition."
+  )
 }
 
 /**
@@ -67,10 +68,11 @@ case class ClusteredDistribution(clustering: Seq[Expression])
   */
 case class OrderedDistribution(ordering: Seq[SortOrder]) extends Distribution {
   require(
-      ordering != Nil,
-      "The ordering expressions of a OrderedDistribution should not be Nil. " +
+    ordering != Nil,
+    "The ordering expressions of a OrderedDistribution should not be Nil. " +
       "An AllTuples should be used to represent a distribution that only has " +
-      "a single partition.")
+      "a single partition."
+  )
 
   // TODO: This is not really valid...
   def clustering: Set[Expression] = ordering.map(_.child).toSet
@@ -195,10 +197,11 @@ object Partitioning {
 }
 
 case class UnknownPartitioning(numPartitions: Int) extends Partitioning {
-  override def satisfies(required: Distribution): Boolean = required match {
-    case UnspecifiedDistribution => true
-    case _ => false
-  }
+  override def satisfies(required: Distribution): Boolean =
+    required match {
+      case UnspecifiedDistribution => true
+      case _                       => false
+    }
 
   override def compatibleWith(other: Partitioning): Boolean = false
 
@@ -211,10 +214,11 @@ case class UnknownPartitioning(numPartitions: Int) extends Partitioning {
   * fashion. This partitioning is used when implementing the DataFrame.repartition() operator.
   */
 case class RoundRobinPartitioning(numPartitions: Int) extends Partitioning {
-  override def satisfies(required: Distribution): Boolean = required match {
-    case UnspecifiedDistribution => true
-    case _ => false
-  }
+  override def satisfies(required: Distribution): Boolean =
+    required match {
+      case UnspecifiedDistribution => true
+      case _                       => false
+    }
 
   override def compatibleWith(other: Partitioning): Boolean = false
 
@@ -224,10 +228,11 @@ case class RoundRobinPartitioning(numPartitions: Int) extends Partitioning {
 case object SinglePartition extends Partitioning {
   val numPartitions = 1
 
-  override def satisfies(required: Distribution): Boolean = required match {
-    case _: BroadcastDistribution => false
-    case _ => true
-  }
+  override def satisfies(required: Distribution): Boolean =
+    required match {
+      case _: BroadcastDistribution => false
+      case _                        => true
+    }
 
   override def compatibleWith(other: Partitioning): Boolean =
     other.numPartitions == 1
@@ -242,28 +247,33 @@ case object SinglePartition extends Partitioning {
   * in the same partition.
   */
 case class HashPartitioning(expressions: Seq[Expression], numPartitions: Int)
-    extends Expression with Partitioning with Unevaluable {
+    extends Expression
+    with Partitioning
+    with Unevaluable {
 
   override def children: Seq[Expression] = expressions
-  override def nullable: Boolean = false
-  override def dataType: DataType = IntegerType
+  override def nullable: Boolean         = false
+  override def dataType: DataType        = IntegerType
 
-  override def satisfies(required: Distribution): Boolean = required match {
-    case UnspecifiedDistribution => true
-    case ClusteredDistribution(requiredClustering) =>
-      expressions.forall(x => requiredClustering.exists(_.semanticEquals(x)))
-    case _ => false
-  }
+  override def satisfies(required: Distribution): Boolean =
+    required match {
+      case UnspecifiedDistribution => true
+      case ClusteredDistribution(requiredClustering) =>
+        expressions.forall(x => requiredClustering.exists(_.semanticEquals(x)))
+      case _ => false
+    }
 
-  override def compatibleWith(other: Partitioning): Boolean = other match {
-    case o: HashPartitioning => this.semanticEquals(o)
-    case _ => false
-  }
+  override def compatibleWith(other: Partitioning): Boolean =
+    other match {
+      case o: HashPartitioning => this.semanticEquals(o)
+      case _                   => false
+    }
 
-  override def guarantees(other: Partitioning): Boolean = other match {
-    case o: HashPartitioning => this.semanticEquals(o)
-    case _ => false
-  }
+  override def guarantees(other: Partitioning): Boolean =
+    other match {
+      case o: HashPartitioning => this.semanticEquals(o)
+      case _                   => false
+    }
 
   /**
     * Returns an expression that will produce a valid partition ID(i.e. non-negative and is less
@@ -286,33 +296,38 @@ case class HashPartitioning(expressions: Seq[Expression], numPartitions: Int)
   * into its child.
   */
 case class RangePartitioning(ordering: Seq[SortOrder], numPartitions: Int)
-    extends Expression with Partitioning with Unevaluable {
+    extends Expression
+    with Partitioning
+    with Unevaluable {
 
   override def children: Seq[SortOrder] = ordering
-  override def nullable: Boolean = false
-  override def dataType: DataType = IntegerType
+  override def nullable: Boolean        = false
+  override def dataType: DataType       = IntegerType
 
-  override def satisfies(required: Distribution): Boolean = required match {
-    case UnspecifiedDistribution => true
-    case OrderedDistribution(requiredOrdering) =>
-      val minSize = Seq(requiredOrdering.size, ordering.size).min
-      requiredOrdering.take(minSize) == ordering.take(minSize)
-    case ClusteredDistribution(requiredClustering) =>
-      ordering
-        .map(_.child)
-        .forall(x => requiredClustering.exists(_.semanticEquals(x)))
-    case _ => false
-  }
+  override def satisfies(required: Distribution): Boolean =
+    required match {
+      case UnspecifiedDistribution => true
+      case OrderedDistribution(requiredOrdering) =>
+        val minSize = Seq(requiredOrdering.size, ordering.size).min
+        requiredOrdering.take(minSize) == ordering.take(minSize)
+      case ClusteredDistribution(requiredClustering) =>
+        ordering
+          .map(_.child)
+          .forall(x => requiredClustering.exists(_.semanticEquals(x)))
+      case _ => false
+    }
 
-  override def compatibleWith(other: Partitioning): Boolean = other match {
-    case o: RangePartitioning => this.semanticEquals(o)
-    case _ => false
-  }
+  override def compatibleWith(other: Partitioning): Boolean =
+    other match {
+      case o: RangePartitioning => this.semanticEquals(o)
+      case _                    => false
+    }
 
-  override def guarantees(other: Partitioning): Boolean = other match {
-    case o: RangePartitioning => this.semanticEquals(o)
-    case _ => false
-  }
+  override def guarantees(other: Partitioning): Boolean =
+    other match {
+      case o: RangePartitioning => this.semanticEquals(o)
+      case _                    => false
+    }
 }
 
 /**
@@ -329,15 +344,19 @@ case class RangePartitioning(ordering: Seq[SortOrder], numPartitions: Int)
   * Outer Join operators.
   */
 case class PartitioningCollection(partitionings: Seq[Partitioning])
-    extends Expression with Partitioning with Unevaluable {
+    extends Expression
+    with Partitioning
+    with Unevaluable {
 
   require(
-      partitionings.map(_.numPartitions).distinct.length == 1,
-      s"PartitioningCollection requires all of its partitionings have the same numPartitions.")
+    partitionings.map(_.numPartitions).distinct.length == 1,
+    s"PartitioningCollection requires all of its partitionings have the same numPartitions."
+  )
 
-  override def children: Seq[Expression] = partitionings.collect {
-    case expr: Expression => expr
-  }
+  override def children: Seq[Expression] =
+    partitionings.collect {
+      case expr: Expression => expr
+    }
 
   override def nullable: Boolean = false
 
@@ -378,13 +397,15 @@ case class PartitioningCollection(partitionings: Seq[Partitioning])
 case class BroadcastPartitioning(mode: BroadcastMode) extends Partitioning {
   override val numPartitions: Int = 1
 
-  override def satisfies(required: Distribution): Boolean = required match {
-    case BroadcastDistribution(m) if m == mode => true
-    case _ => false
-  }
+  override def satisfies(required: Distribution): Boolean =
+    required match {
+      case BroadcastDistribution(m) if m == mode => true
+      case _                                     => false
+    }
 
-  override def compatibleWith(other: Partitioning): Boolean = other match {
-    case BroadcastPartitioning(m) if m == mode => true
-    case _ => false
-  }
+  override def compatibleWith(other: Partitioning): Boolean =
+    other match {
+      case BroadcastPartitioning(m) if m == mode => true
+      case _                                     => false
+    }
 }

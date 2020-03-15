@@ -23,13 +23,14 @@ import scala.reflect.ClassTag
   *    @author Aleksandar Prokopec
   *    @since 2.8
   */
-abstract class ClassTagTraversableFactory[
-    CC[X] <: Traversable[X] with GenericClassTagTraversableTemplate[X, CC]]
+abstract class ClassTagTraversableFactory[CC[X] <: Traversable[
+  X
+] with GenericClassTagTraversableTemplate[X, CC]]
     extends GenericClassTagCompanion[CC] {
 
   class GenericCanBuildFrom[A](implicit tag: ClassTag[A])
       extends CanBuildFrom[CC[_], A, CC[A]] {
     def apply(from: CC[_]) = from.genericClassTagBuilder[A]
-    def apply = newBuilder[A]
+    def apply              = newBuilder[A]
   }
 }

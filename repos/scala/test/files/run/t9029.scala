@@ -4,7 +4,7 @@ object X { def unapply(u: Unit): Option[Y] = Some(new Y(42, "!")) }
 
 object Test {
   def test1 = {
-    val X(y) = ()
+    val X(y)  = ()
     val yy: Y = y
     assert(yy._1 == "!")
     assert(yy._2 == 42)

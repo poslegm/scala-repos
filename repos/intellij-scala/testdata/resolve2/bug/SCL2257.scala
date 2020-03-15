@@ -4,10 +4,10 @@ package p {
   class Container {
     type t = java.lang.Double
 
-    def m(p: java.lang.Float) {} //(1)
+    def m(p: java.lang.Float) {}  //(1)
     def m(p: java.lang.Object) {} //(2)
-    def m(p: t) {} //(3)
-    def m(p: Int) {} //(4)
+    def m(p: t) {}                //(3)
+    def m(p: Int) {}              //(4)
 
     /* line: 7 */
     m(new java.lang.Float(1f)) // resolved to (1) and (2)

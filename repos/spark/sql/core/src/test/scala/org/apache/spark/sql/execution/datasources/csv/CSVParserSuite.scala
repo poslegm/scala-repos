@@ -27,7 +27,7 @@ class CSVParserSuite extends SparkFunSuite {
   private def readAll(iter: Iterator[String]) = {
     val reader = new StringIteratorReader(iter)
     var c: Int = -1
-    val read = new scala.collection.mutable.StringBuilder()
+    val read   = new scala.collection.mutable.StringBuilder()
     do {
       c = reader.read()
       read.append(c.toChar)
@@ -38,14 +38,14 @@ class CSVParserSuite extends SparkFunSuite {
 
   private def readBufAll(iter: Iterator[String], bufSize: Int) = {
     val reader = new StringIteratorReader(iter)
-    val cbuf = new Array[Char](bufSize)
-    val read = new scala.collection.mutable.StringBuilder()
+    val cbuf   = new Array[Char](bufSize)
+    val read   = new scala.collection.mutable.StringBuilder()
 
     var done = false
     do {
       // read all input one cbuf at a time
       var numRead = 0
-      var n = 0
+      var n       = 0
       do {
         // try to fill cbuf
         var off = 0
@@ -81,37 +81,43 @@ class CSVParserSuite extends SparkFunSuite {
   }
 
   test("Regular case") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small",
+      "",
+      "\"quoted\""
+    )
     val read = readAll(input.toIterator)
     assert(read === input.mkString("\n") ++ ("\n"))
   }
 
   test("Empty iter") {
     val input = List[String]()
-    val read = readAll(input.toIterator)
+    val read  = readAll(input.toIterator)
     assert(read === "")
   }
 
   test("Embedded new line") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small\n",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small\n",
+      "",
+      "\"quoted\""
+    )
     val read = readAll(input.toIterator)
     assert(read === input.mkString("\n") ++ ("\n"))
   }
 
   test("Buffer Regular case") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small",
+      "",
+      "\"quoted\""
+    )
     val output = input.mkString("\n") ++ ("\n")
     for (i <- 1 to output.length + 5) {
       val read = readBufAll(input.toIterator, i)
@@ -120,7 +126,7 @@ class CSVParserSuite extends SparkFunSuite {
   }
 
   test("Buffer Empty iter") {
-    val input = List[String]()
+    val input  = List[String]()
     val output = ""
     for (i <- 1 to output.length + 5) {
       val read = readBufAll(input.toIterator, 1)
@@ -129,11 +135,13 @@ class CSVParserSuite extends SparkFunSuite {
   }
 
   test("Buffer Embedded new line") {
-    val input = List("This is a string",
-                     "This is another string",
-                     "Small\n",
-                     "",
-                     "\"quoted\"")
+    val input = List(
+      "This is a string",
+      "This is another string",
+      "Small\n",
+      "",
+      "\"quoted\""
+    )
     val output = input.mkString("\n") ++ ("\n")
     for (i <- 1 to output.length + 5) {
       val read = readBufAll(input.toIterator, 1)

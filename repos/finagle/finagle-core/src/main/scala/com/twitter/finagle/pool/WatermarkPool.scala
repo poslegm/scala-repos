@@ -26,16 +26,18 @@ object WatermarkPool {
   * @see The [[https://twitter.github.io/finagle/guide/Clients.html#watermark-pool user guide]]
   *      for more details.
   */
-class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
-                              lowWatermark: Int,
-                              highWatermark: Int = Int.MaxValue,
-                              statsReceiver: StatsReceiver = NullStatsReceiver,
-                              maxWaiters: Int = Int.MaxValue)
-    extends ServiceFactory[Req, Rep] { thePool => // note: avoids `self` as an alias because ServiceProxy has a `self`
+class WatermarkPool[Req, Rep](
+    factory: ServiceFactory[Req, Rep],
+    lowWatermark: Int,
+    highWatermark: Int = Int.MaxValue,
+    statsReceiver: StatsReceiver = NullStatsReceiver,
+    maxWaiters: Int = Int.MaxValue
+) extends ServiceFactory[Req, Rep] {
+  thePool => // note: avoids `self` as an alias because ServiceProxy has a `self`
 
-  private[this] val queue = new ArrayDeque[ServiceWrapper]()
-  private[this] val waiters = new ArrayDeque[Promise[Service[Req, Rep]]]()
-  private[this] var numServices = 0
+  private[this] val queue            = new ArrayDeque[ServiceWrapper]()
+  private[this] val waiters          = new ArrayDeque[Promise[Service[Req, Rep]]]()
+  private[this] var numServices      = 0
   @volatile private[this] var isOpen = true
 
   private[this] val numWaiters = statsReceiver.counter("pool_num_waited")
@@ -52,12 +54,13 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
     * Flush waiters by creating new services for them. This must
     * be called whenever we decrease the service count.
     */
-  private[this] def flushWaiters() = thePool.synchronized {
-    while (numServices < highWatermark && !waiters.isEmpty) {
-      val waiter = waiters.removeFirst()
-      waiter.become(this())
+  private[this] def flushWaiters() =
+    thePool.synchronized {
+      while (numServices < highWatermark && !waiters.isEmpty) {
+        val waiter = waiters.removeFirst()
+        waiter.become(this())
+      }
     }
-  }
 
   private[this] class ServiceWrapper(underlying: Service[Req, Rep])
       extends ServiceProxy[Req, Rep](underlying) {
@@ -126,8 +129,10 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
             case _cause =>
               if (thePool.synchronized(waiters.remove(p))) {
                 val failure =
-                  Failure.adapt(new CancelledConnectionException(_cause),
-                                Failure.Restartable | Failure.Interrupted)
+                  Failure.adapt(
+                    new CancelledConnectionException(_cause),
+                    Failure.Restartable | Failure.Interrupted
+                  )
                 p.setException(failure)
               }
           }
@@ -137,7 +142,7 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
 
     // If we reach this point, we've committed to creating a service
     // (numServices was increased by one).
-    val p = new Promise[Service[Req, Rep]]
+    val p          = new Promise[Service[Req, Rep]]
     val underlying = factory(conn).map { new ServiceWrapper(_) }
     underlying.respond { res =>
       p.updateIfEmpty(res)
@@ -156,25 +161,26 @@ class WatermarkPool[Req, Rep](factory: ServiceFactory[Req, Rep],
     p
   }
 
-  def close(deadline: Time): Future[Unit] = thePool.synchronized {
-    // Mark the pool closed, relinquishing completed requests &
-    // denying the issuance of further requests. The order here is
-    // important: we mark the service unavailable before releasing the
-    // individual channels so that they are actually released in the
-    // wrapper.
-    isOpen = false
+  def close(deadline: Time): Future[Unit] =
+    thePool.synchronized {
+      // Mark the pool closed, relinquishing completed requests &
+      // denying the issuance of further requests. The order here is
+      // important: we mark the service unavailable before releasing the
+      // individual channels so that they are actually released in the
+      // wrapper.
+      isOpen = false
 
-    // Drain the pool.
-    queue.asScala foreach { _.close() }
-    queue.clear()
+      // Drain the pool.
+      queue.asScala foreach { _.close() }
+      queue.clear()
 
-    // Kill the existing waiters.
-    waiters.asScala foreach { _ () = Throw(new ServiceClosedException) }
-    waiters.clear()
+      // Kill the existing waiters.
+      waiters.asScala foreach { _() = Throw(new ServiceClosedException) }
+      waiters.clear()
 
-    // Close the underlying factory.
-    factory.close(deadline)
-  }
+      // Close the underlying factory.
+      factory.close(deadline)
+    }
 
   override def status: Status =
     if (isOpen) factory.status

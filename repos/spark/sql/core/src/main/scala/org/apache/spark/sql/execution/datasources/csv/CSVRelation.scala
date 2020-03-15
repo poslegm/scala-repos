@@ -35,28 +35,38 @@ import org.apache.spark.sql.types._
 
 object CSVRelation extends Logging {
 
-  def univocityTokenizer(file: RDD[String],
-                         header: Seq[String],
-                         firstLine: String,
-                         params: CSVOptions): RDD[Array[String]] = {
+  def univocityTokenizer(
+      file: RDD[String],
+      header: Seq[String],
+      firstLine: String,
+      params: CSVOptions
+  ): RDD[Array[String]] = {
     // If header is set, make sure firstLine is materialized before sending to executors.
-    file.mapPartitionsWithIndex({
-      case (split, iter) =>
-        new BulkCsvReader(if (params.headerFlag)
-                            iter.filterNot(_ == firstLine) else iter,
-                          params,
-                          headers = header)
-    }, true)
+    file.mapPartitionsWithIndex(
+      {
+        case (split, iter) =>
+          new BulkCsvReader(
+            if (params.headerFlag)
+              iter.filterNot(_ == firstLine)
+            else iter,
+            params,
+            headers = header
+          )
+      },
+      true
+    )
   }
 
-  def parseCsv(tokenizedRDD: RDD[Array[String]],
-               schema: StructType,
-               requiredColumns: Array[String],
-               inputs: Seq[FileStatus],
-               sqlContext: SQLContext,
-               params: CSVOptions): RDD[InternalRow] = {
+  def parseCsv(
+      tokenizedRDD: RDD[Array[String]],
+      schema: StructType,
+      requiredColumns: Array[String],
+      inputs: Seq[FileStatus],
+      sqlContext: SQLContext,
+      params: CSVOptions
+  ): RDD[InternalRow] = {
 
-    val schemaFields = schema.fields
+    val schemaFields   = schema.fields
     val requiredFields = StructType(requiredColumns.map(schema(_))).fields
     val safeRequiredFields =
       if (params.dropMalformed) {
@@ -67,22 +77,27 @@ object CSVRelation extends Logging {
         requiredFields
       }
     val safeRequiredIndices = new Array[Int](safeRequiredFields.length)
-    schemaFields.zipWithIndex.filter {
-      case (field, _) => safeRequiredFields.contains(field)
-    }.foreach {
-      case (field, index) =>
-        safeRequiredIndices(safeRequiredFields.indexOf(field)) = index
-    }
+    schemaFields.zipWithIndex
+      .filter {
+        case (field, _) => safeRequiredFields.contains(field)
+      }
+      .foreach {
+        case (field, index) =>
+          safeRequiredIndices(safeRequiredFields.indexOf(field)) = index
+      }
     val requiredSize = requiredFields.length
-    val row = new GenericMutableRow(requiredSize)
+    val row          = new GenericMutableRow(requiredSize)
     tokenizedRDD.flatMap { tokens =>
       if (params.dropMalformed && schemaFields.length != tokens.length) {
         logWarning(
-            s"Dropping malformed line: ${tokens.mkString(params.delimiter.toString)}")
+          s"Dropping malformed line: ${tokens.mkString(params.delimiter.toString)}"
+        )
         None
       } else if (params.failFast && schemaFields.length != tokens.length) {
-        throw new RuntimeException(s"Malformed line in FAILFAST mode: " +
-            s"${tokens.mkString(params.delimiter.toString)}")
+        throw new RuntimeException(
+          s"Malformed line in FAILFAST mode: " +
+            s"${tokens.mkString(params.delimiter.toString)}"
+        )
       } else {
         val indexSafeTokens =
           if (params.permissive && schemaFields.length > tokens.length) {
@@ -94,7 +109,7 @@ object CSVRelation extends Logging {
             tokens
           }
         try {
-          var index: Int = 0
+          var index: Int    = 0
           var subIndex: Int = 0
           while (subIndex < safeRequiredIndices.length) {
             index = safeRequiredIndices(subIndex)
@@ -102,10 +117,12 @@ object CSVRelation extends Logging {
             // It anyway needs to try to parse since it decides if this row is malformed
             // or not after trying to cast in `DROPMALFORMED` mode even if the casted
             // value is not stored in the row.
-            val value = CSVTypeCast.castTo(indexSafeTokens(index),
-                                           field.dataType,
-                                           field.nullable,
-                                           params.nullValue)
+            val value = CSVTypeCast.castTo(
+              indexSafeTokens(index),
+              field.dataType,
+              field.nullable,
+              params.nullValue
+            )
             if (subIndex < requiredSize) {
               row(subIndex) = value
             }
@@ -114,8 +131,10 @@ object CSVRelation extends Logging {
           Some(row)
         } catch {
           case NonFatal(e) if params.dropMalformed =>
-            logWarning("Parse exception. " +
-                s"Dropping malformed line: ${tokens.mkString(params.delimiter.toString)}")
+            logWarning(
+              "Parse exception. " +
+                s"Dropping malformed line: ${tokens.mkString(params.delimiter.toString)}"
+            )
             None
         }
       }
@@ -125,20 +144,24 @@ object CSVRelation extends Logging {
 
 private[sql] class CSVOutputWriterFactory(params: CSVOptions)
     extends OutputWriterFactory {
-  override def newInstance(path: String,
-                           bucketId: Option[Int],
-                           dataSchema: StructType,
-                           context: TaskAttemptContext): OutputWriter = {
+  override def newInstance(
+      path: String,
+      bucketId: Option[Int],
+      dataSchema: StructType,
+      context: TaskAttemptContext
+  ): OutputWriter = {
     if (bucketId.isDefined) sys.error("csv doesn't support bucketing")
     new CsvOutputWriter(path, dataSchema, context, params)
   }
 }
 
-private[sql] class CsvOutputWriter(path: String,
-                                   dataSchema: StructType,
-                                   context: TaskAttemptContext,
-                                   params: CSVOptions)
-    extends OutputWriter with Logging {
+private[sql] class CsvOutputWriter(
+    path: String,
+    dataSchema: StructType,
+    context: TaskAttemptContext,
+    params: CSVOptions
+) extends OutputWriter
+    with Logging {
 
   // create the Generator without separator inserted between 2 records
   private[this] val text = new Text()
@@ -146,12 +169,14 @@ private[sql] class CsvOutputWriter(path: String,
   private val recordWriter: RecordWriter[NullWritable, Text] = {
     new TextOutputFormat[NullWritable, Text]() {
       override def getDefaultWorkFile(
-          context: TaskAttemptContext, extension: String): Path = {
+          context: TaskAttemptContext,
+          extension: String
+      ): Path = {
         val configuration = context.getConfiguration
         val uniqueWriteJobId =
           configuration.get("spark.sql.sources.writeJobUUID")
         val taskAttemptId = context.getTaskAttemptID
-        val split = taskAttemptId.getTaskID.getId
+        val split         = taskAttemptId.getTaskID.getId
         new Path(path, f"part-r-$split%05d-$uniqueWriteJobId.csv$extension")
       }
     }.getRecordWriter(context)
@@ -159,16 +184,16 @@ private[sql] class CsvOutputWriter(path: String,
 
   private var firstRow: Boolean = params.headerFlag
 
-  private val csvWriter = new LineCsvWriter(
-      params, dataSchema.fieldNames.toSeq)
+  private val csvWriter = new LineCsvWriter(params, dataSchema.fieldNames.toSeq)
 
-  private def rowToString(row: Seq[Any]): Seq[String] = row.map { field =>
-    if (field != null) {
-      field.toString
-    } else {
-      params.nullValue
+  private def rowToString(row: Seq[Any]): Seq[String] =
+    row.map { field =>
+      if (field != null) {
+        field.toString
+      } else {
+        params.nullValue
+      }
     }
-  }
 
   override def write(row: Row): Unit =
     throw new UnsupportedOperationException("call writeInternal")

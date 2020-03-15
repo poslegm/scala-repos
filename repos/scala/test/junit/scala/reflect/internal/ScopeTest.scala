@@ -23,15 +23,15 @@ class ScopeTest {
 
   private def testNestedScope(initSize: Int) {
     def sym(termName: String): Symbol = NoSymbol.newValue(TermName(termName))
-    val foo = sym("foo")
-    val bar = sym("bar")
+    val foo                           = sym("foo")
+    val bar                           = sym("bar")
 
     val outerElems = List.tabulate(initSize)(i => sym(i.toString))
-    val outer = newScopeWith(outerElems ++ List(foo, bar): _*)
+    val outer      = newScopeWith(outerElems ++ List(foo, bar): _*)
     assertTrue(outer.containsName(foo.name))
     assertTrue(outer.containsName(bar.name))
 
-    val baz = sym("baz")
+    val baz    = sym("baz")
     val nested = newNestedScope(outer)
 
     // Entries from the outer scope are entered in the nested.

@@ -6,29 +6,37 @@ class Defaults(someArg: String = "a default String") {
     println()
   }
   def methWithDefaults2(arg1: String, arg2: Int = 42)(
-      barg1: String, barg2: Int = arg2 + 1) = {}
+      barg1: String,
+      barg2: Int = arg2 + 1
+  ) = {}
 }
 
 trait BaseTrait {
-  def concreteTraitMethod1(x: Int) = x
-  def concreteTraitMethod2(x: Int, y: Int): Boolean = false
-  def concreteTraitMethod3(x: Int, y: Long, z: String): Long = y
+  def concreteTraitMethod1(x: Int)                                        = x
+  def concreteTraitMethod2(x: Int, y: Int): Boolean                       = false
+  def concreteTraitMethod3(x: Int, y: Long, z: String): Long              = y
   def concreteTraitMethod4(x: Int, y: Double, z: String, t: Object): Unit = ()
 
-  private def private_concreteTraitMethod1(x: Int) = x
+  private def private_concreteTraitMethod1(x: Int)                  = x
   private def private_concreteTraitMethod2(x: Int, y: Int): Boolean = false
   private def private_concreteTraitMethod3(x: Int, y: Long, z: String): Long =
     y
   private def private_concreteTraitMethod4(
-      x: Int, y: Double, z: String, t: Object): Unit = ()
+      x: Int,
+      y: Double,
+      z: String,
+      t: Object
+  ): Unit = ()
 
   def concreteTraitMethodWithDefault(
-      someArg2: String = "yet another default String") = {
+      someArg2: String = "yet another default String"
+  ) = {
     someArg2
   }
 
   def abstractMethodWithDefault(
-      someArg3: String = "last default String"): String
+      someArg3: String = "last default String"
+  ): String
 
   val concreteField1: Int = 42
   val abstractField1: String
@@ -44,7 +52,7 @@ class ConcreteClass extends BaseTrait {
     System.console()
   }
 
-  val abstractField1: String = "f1"
+  val abstractField1: String  = "f1"
   var abstractMField1: String = "f2"
 
   private var fakePrivate: String = "fakePrivate"
@@ -68,28 +76,8 @@ class MethodClassifiers {
     c.abstractMethodWithDefault()
     c.concreteTraitMethod4(42, 42.0, "42", new Object)
     val maxArgs = new MaxArgsC
-    maxArgs.manyArgs(42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0,
-                     42.0)
+    maxArgs.manyArgs(42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0,
+      42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0, 42.0)
   }
 }
 

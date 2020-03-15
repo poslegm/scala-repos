@@ -53,14 +53,14 @@ class DatasetPrimitiveSuite extends QueryTest with SharedSQLContext {
   }
 
   test("foreach") {
-    val ds = Seq(1, 2, 3).toDS()
+    val ds  = Seq(1, 2, 3).toDS()
     val acc = sparkContext.accumulator(0)
     ds.foreach(acc += _)
     assert(acc.value == 6)
   }
 
   test("foreachPartition") {
-    val ds = Seq(1, 2, 3).toDS()
+    val ds  = Seq(1, 2, 3).toDS()
     val acc = sparkContext.accumulator(0)
     ds.foreachPartition(_.foreach(acc +=))
     assert(acc.value == 6)
@@ -72,13 +72,13 @@ class DatasetPrimitiveSuite extends QueryTest with SharedSQLContext {
   }
 
   test("groupBy function, keys") {
-    val ds = Seq(1, 2, 3, 4, 5).toDS()
+    val ds      = Seq(1, 2, 3, 4, 5).toDS()
     val grouped = ds.groupByKey(_ % 2)
     checkDataset(grouped.keys, 0, 1)
   }
 
   test("groupBy function, map") {
-    val ds = Seq(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11).toDS()
+    val ds      = Seq(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11).toDS()
     val grouped = ds.groupByKey(_ % 2)
     val agged = grouped.mapGroups {
       case (g, iter) =>
@@ -90,7 +90,7 @@ class DatasetPrimitiveSuite extends QueryTest with SharedSQLContext {
   }
 
   test("groupBy function, flatMap") {
-    val ds = Seq("a", "b", "c", "xyz", "hello").toDS()
+    val ds      = Seq("a", "b", "c", "xyz", "hello").toDS()
     val grouped = ds.groupByKey(_.length)
     val agged = grouped.flatMapGroups {
       case (g, iter) => Iterator(g.toString, iter.mkString)

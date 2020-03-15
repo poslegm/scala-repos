@@ -43,7 +43,9 @@ object Statistics {
 
   /** If enabled, push and start a new timer in timer stack */
   @inline final def pushTimer(
-      timers: TimerStack, timer: => StackableTimer): TimerSnapshot =
+      timers: TimerStack,
+      timer: => StackableTimer
+  ): TimerSnapshot =
     if (_enabled && timers != null) timers.push(timer) else null
 
   /** If enabled, stop and pop timer from timer stack */
@@ -98,12 +100,14 @@ object Statistics {
   /** Create a new quantity map that shows as `prefix` and is active in given phases.
     */
   def newQuantMap[K, V <% Ordered[V]](prefix: String, phases: String*)(
-      initValue: => V): QuantMap[K, V] =
+      initValue: => V
+  ): QuantMap[K, V] =
     new QuantMap(prefix, phases, initValue)
 
   /** Same as newQuantMap, where the key type is fixed to be Class[_] */
   def newByClass[V <% Ordered[V]](prefix: String, phases: String*)(
-      initValue: => V): QuantMap[Class[_], V] =
+      initValue: => V
+  ): QuantMap[Class[_], V] =
     new QuantMap(prefix, phases, initValue)
 
   /** Create a new timer stack */
@@ -111,7 +115,7 @@ object Statistics {
 
   def allQuantities: Iterable[Quantity] =
     for ((_, q) <- qs if q.underlying == q;
-    r <- q :: q.children.toList if r.prefix.nonEmpty) yield r
+         r      <- q :: q.children.toList if r.prefix.nonEmpty) yield r
 
   private def showPercent(x: Long, base: Long) =
     if (base == 0) "" else f" (${x.toDouble / base.toDouble * 100}%2.1f%%)"
@@ -126,10 +130,10 @@ object Statistics {
     }
     val prefix: String
     val phases: Seq[String]
-    def underlying: Quantity = this
+    def underlying: Quantity  = this
     def showAt(phase: String) = phases.isEmpty || (phases contains phase)
-    def line = f"$prefix%-30s: ${this}"
-    val children = new mutable.ListBuffer[Quantity]
+    def line                  = f"$prefix%-30s: ${this}"
+    val children              = new mutable.ListBuffer[Quantity]
   }
 
   trait SubQuantity extends Quantity {
@@ -138,7 +142,8 @@ object Statistics {
   }
 
   class Counter(val prefix: String, val phases: Seq[String])
-      extends Quantity with Ordered[Counter] {
+      extends Quantity
+      with Ordered[Counter] {
     var value: Int = 0
     def compare(that: Counter): Int =
       if (this.value < that.value) -1
@@ -147,7 +152,7 @@ object Statistics {
     override def equals(that: Any): Boolean =
       that match {
         case that: Counter => (this compare that) == 0
-        case _ => false
+        case _             => false
       }
     override def hashCode = value
     override def toString = value.toString
@@ -159,7 +164,8 @@ object Statistics {
   }
 
   private class RelCounter(prefix: String, override val underlying: Counter)
-      extends Counter(prefix, underlying.phases) with SubQuantity {
+      extends Counter(prefix, underlying.phases)
+      with SubQuantity {
     override def toString =
       if (value == 0) "0"
       else {
@@ -169,7 +175,8 @@ object Statistics {
   }
 
   class SubCounter(prefix: String, override val underlying: Counter)
-      extends Counter(prefix, underlying.phases) with SubQuantity {
+      extends Counter(prefix, underlying.phases)
+      with SubQuantity {
     def start() = (value, underlying.value)
     def stop(prev: (Int, Int)) {
       val (value0, uvalue0) = prev
@@ -181,7 +188,7 @@ object Statistics {
 
   class Timer(val prefix: String, val phases: Seq[String]) extends Quantity {
     var nanos: Long = 0
-    var timings = 0
+    var timings     = 0
     def start() = {
       (nanos, System.nanoTime())
     }
@@ -191,17 +198,19 @@ object Statistics {
       timings += 1
     }
     protected def show(ns: Long) = s"${ns / 1000000}ms"
-    override def toString = s"$timings spans, ${show(nanos)}"
+    override def toString        = s"$timings spans, ${show(nanos)}"
   }
 
   class SubTimer(prefix: String, override val underlying: Timer)
-      extends Timer(prefix, underlying.phases) with SubQuantity {
+      extends Timer(prefix, underlying.phases)
+      with SubQuantity {
     override protected def show(ns: Long) =
       super.show(ns) + showPercent(ns, underlying.nanos)
   }
 
   class StackableTimer(prefix: String, underlying: Timer)
-      extends SubTimer(prefix, underlying) with Ordered[StackableTimer] {
+      extends SubTimer(prefix, underlying)
+      with Ordered[StackableTimer] {
     var specificNanos: Long = 0
     def compare(that: StackableTimer): Int =
       if (this.specificNanos < that.specificNanos) -1
@@ -210,7 +219,7 @@ object Statistics {
     override def equals(that: Any): Boolean =
       that match {
         case that: StackableTimer => (this compare that) == 0
-        case _ => false
+        case _                    => false
       }
     override def hashCode = specificNanos.##
     override def toString =
@@ -221,8 +230,11 @@ object Statistics {
     *  on access by executing `initValue`.
     */
   class QuantMap[K, V <% Ordered[V]](
-      val prefix: String, val phases: Seq[String], initValue: => V)
-      extends mutable.HashMap[K, V] with mutable.SynchronizedMap[K, V]
+      val prefix: String,
+      val phases: Seq[String],
+      initValue: => V
+  ) extends mutable.HashMap[K, V]
+      with mutable.SynchronizedMap[K, V]
       with Quantity {
     override def default(key: K) = {
       val elem = initValue
@@ -257,8 +269,8 @@ object Statistics {
     /** Stop and pop top timer in stack
       */
     def pop(prev: TimerSnapshot) = {
-      val (nanos0, start) = prev
-      val duration = System.nanoTime() - start
+      val (nanos0, start)                 = prev
+      val duration                        = System.nanoTime() - start
       val (topTimer, nestedNanos) :: rest = elems
       topTimer.nanos = nanos0 + duration
       topTimer.specificNanos += duration - nestedNanos
@@ -273,7 +285,7 @@ object Statistics {
   }
 
   private var _enabled = false
-  private val qs = new mutable.HashMap[String, Quantity]
+  private val qs       = new mutable.HashMap[String, Quantity]
 
   /** replace with
     *
@@ -302,8 +314,10 @@ object Statistics {
         total += System.nanoTime() - time
       }
       val total2 = System.nanoTime() - start
-      println("Enabling statistics, measuring overhead = " + total / 10000.0 +
-          "ns to " + total2 / 10000.0 + "ns per timer")
+      println(
+        "Enabling statistics, measuring overhead = " + total / 10000.0 +
+          "ns to " + total2 / 10000.0 + "ns per timer"
+      )
       _enabled = true
     }
   }

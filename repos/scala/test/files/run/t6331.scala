@@ -12,27 +12,28 @@ object Test extends DirectTest {
     def check(c1: Any, c2: Any): Unit = {
       val const1 = Constant(c1)
       val const2 = Constant(c2)
-      val equal = const1 == const2
+      val equal  = const1 == const2
       def show(a: Any) =
         "" + a +
-        (a match {
-              case _: Byte => ".toByte"
-              case _: Short => ".toShort"
-              case _: Long => "L"
-              case _: Float => "f"
-              case _: Double => "d"
-              case _ => ""
-            })
+          (a match {
+            case _: Byte   => ".toByte"
+            case _: Short  => ".toShort"
+            case _: Long   => "L"
+            case _: Float  => "f"
+            case _: Double => "d"
+            case _         => ""
+          })
       val op = if (equal) "==" else "!="
       println(f"${show(c1)}%12s $op ${show(c2)}")
 
-      val hash1 = const1.hashCode
-      val hash2 = const2.hashCode
+      val hash1       = const1.hashCode
+      val hash2       = const2.hashCode
       val hashesEqual = hash1 == hash2
-      val hashBroken = equal && !hashesEqual
+      val hashBroken  = equal && !hashesEqual
       if (hashBroken)
         println(
-            f"$hash1%12s != $hash2 // hash codes differ for equal objects!!")
+          f"$hash1%12s != $hash2 // hash codes differ for equal objects!!"
+        )
     }
 
     check((), ())

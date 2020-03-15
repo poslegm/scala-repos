@@ -22,9 +22,8 @@ private object LatencyProfile {
         Duration.fromNanoseconds((line.toDouble * 1000000).toLong)
       }
     val size = latencies.size
-    var i = rng.nextInt(size)
-    () =>
-      { i = i + 1; latencies(i % size) }
+    var i    = rng.nextInt(size)
+    () => { i = i + 1; latencies(i % size) }
   }
 
   /**
@@ -33,8 +32,7 @@ private object LatencyProfile {
     */
   def between(low: Duration, high: Duration): () => Duration = {
     require(low <= high)
-    () =>
-      low + ((high - low) * math.random)
+    () => low + ((high - low) * math.random)
   }
 
   /**
@@ -50,12 +48,12 @@ private object LatencyProfile {
       p9999: Duration
   ): () => Duration = {
     val dist = Seq(
-        0.5 -> between(min, p50),
-        0.4 -> between(p50, p90),
-        0.05 -> between(p90, p95),
-        0.04 -> between(p95, p99),
-        0.009 -> between(p99, p999),
-        0.0009 -> between(p999, p9999)
+      0.5    -> between(min, p50),
+      0.4    -> between(p50, p90),
+      0.05   -> between(p90, p95),
+      0.04   -> between(p95, p99),
+      0.009  -> between(p99, p999),
+      0.0009 -> between(p999, p9999)
     )
     val (d, l) = dist.unzip
     apply(d, l.toIndexedSeq)
@@ -70,8 +68,7 @@ private object LatencyProfile {
       latencies: IndexedSeq[() => Duration]
   ): () => Duration = {
     val drv = Drv(dist)
-    () =>
-      latencies(drv(rng))()
+    () => latencies(drv(rng))()
   }
 }
 
@@ -85,11 +82,11 @@ private[finagle] class LatencyProfile(stopWatch: () => Duration) {
     * within `start` and `end`.
     */
   def slowWithin(start: Duration, end: Duration, factor: Long)(
-      next: () => Duration) =
-    () =>
-      {
-        val time = stopWatch()
-        if (time >= start && time <= end) next() * factor else next()
+      next: () => Duration
+  ) =
+    () => {
+      val time = stopWatch()
+      if (time >= start && time <= end) next() * factor else next()
     }
 
   /**
@@ -97,14 +94,14 @@ private[finagle] class LatencyProfile(stopWatch: () => Duration) {
     * within the window terminated at `end`.
     */
   def warmup(end: Duration, maxFactor: Double = 5.0)(next: () => Duration) =
-    () =>
-      {
-        val time = stopWatch()
-        val factor =
-          if (time < end) (1.0 / time.inNanoseconds) * (end.inNanoseconds)
-          else 1.0
-        Duration.fromNanoseconds(
-            (next().inNanoseconds * factor.min(maxFactor)).toLong)
+    () => {
+      val time = stopWatch()
+      val factor =
+        if (time < end) (1.0 / time.inNanoseconds) * (end.inNanoseconds)
+        else 1.0
+      Duration.fromNanoseconds(
+        (next().inNanoseconds * factor.min(maxFactor)).toLong
+      )
     }
 }
 
@@ -121,11 +118,11 @@ private[finagle] class LatencyFactory(sr: StatsReceiver) {
   ): ServiceFactory[Unit, Unit] = {
     val service = new Service[Unit, Unit] {
       implicit val timer = DefaultTimer.twitter
-      val load = new AtomicInteger(0)
-      val maxload = new AtomicInteger(0)
+      val load           = new AtomicInteger(0)
+      val maxload        = new AtomicInteger(0)
       val gauges = Seq(
-          sr.scope("load").addGauge("" + name) { load.get() },
-          sr.scope("maxload").addGauge("" + name) { maxload.get() }
+        sr.scope("load").addGauge("" + name) { load.get() },
+        sr.scope("maxload").addGauge("" + name) { maxload.get() }
       )
       val count = sr.scope("count").counter("" + name)
 
@@ -143,25 +140,25 @@ private[finagle] class LatencyFactory(sr: StatsReceiver) {
 
     new ServiceFactory[Unit, Unit] {
       def apply(conn: ClientConnection) = Future.value(service)
-      def close(deadline: Time) = Future.Done
-      override def toString = name.toString
+      def close(deadline: Time)         = Future.Done
+      override def toString             = name.toString
     }
   }
 }
 
 private[finagle] object Simulation extends com.twitter.app.App {
 
-  val qps = flag("qps", 1250, "QPS at which to run the benchmark")
-  val dur = flag("dur", 45.seconds, "Benchmark duration")
+  val qps     = flag("qps", 1250, "QPS at which to run the benchmark")
+  val dur     = flag("dur", 45.seconds, "Benchmark duration")
   val nstable = flag("stable", 10, "Number of stable hosts")
-  val bal = flag("bal", "p2c", "Load balancer")
+  val bal     = flag("bal", "p2c", "Load balancer")
 
   def main() {
     val Qpms = qps() / 1000
-    val Rem = qps() % 1000
+    val Rem  = qps() % 1000
 
-    val stats = new SummarizingStatsReceiver
-    val noBrokers = new NoBrokersAvailableException
+    val stats      = new SummarizingStatsReceiver
+    val noBrokers  = new NoBrokersAvailableException
     val newFactory = new LatencyFactory(stats)
 
     val data =
@@ -172,9 +169,8 @@ private[finagle] object Simulation extends com.twitter.app.App {
 
     val underlying = Var(stable)
     val activity: Activity[Set[ServiceFactory[Unit, Unit]]] = Activity(
-        underlying.map { facs =>
-      Activity.Ok(facs)
-    })
+      underlying.map { facs => Activity.Ok(facs) }
+    )
 
     val factory = bal() match {
       case "p2c" =>
@@ -190,20 +186,23 @@ private[finagle] object Simulation extends com.twitter.app.App {
       case "aperture" =>
         Balancers
           .aperture()
-          .newBalancer(activity,
-                       statsReceiver = stats.scope("aperture"),
-                       noBrokers)
+          .newBalancer(
+            activity,
+            statsReceiver = stats.scope("aperture"),
+            noBrokers
+          )
     }
 
     val balancer = factory.toService
 
     val latstat = stats.stat("latency")
-    def call() = Stat.timeFuture(latstat, TimeUnit.MILLISECONDS) {
-      balancer(())
-    }
+    def call() =
+      Stat.timeFuture(latstat, TimeUnit.MILLISECONDS) {
+        balancer(())
+      }
 
     val stopWatch = Stopwatch.start()
-    val p = new LatencyProfile(stopWatch)
+    val p         = new LatencyProfile(stopWatch)
 
     val coldStart =
       p.warmup(10.seconds) _ andThen p.slowWithin(19.seconds, 23.seconds, 10)
@@ -228,8 +227,9 @@ private[finagle] object Simulation extends com.twitter.app.App {
         println("-" * 100)
         println("Requests at %s".format(stopWatch()))
 
-        val lines = for ((name, fn) <- stats.gauges.toSeq) yield
-          (name.mkString("/"), fn())
+        val lines =
+          for ((name, fn) <- stats.gauges.toSeq)
+            yield (name.mkString("/"), fn())
         for ((name, value) <- lines.sortBy(_._1)) println(name + " " + value)
       }
     }

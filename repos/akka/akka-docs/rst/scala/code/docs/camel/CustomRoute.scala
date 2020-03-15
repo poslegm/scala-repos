@@ -19,9 +19,7 @@ object CustomRoute {
       def receive = {
         case msg: CamelMessage =>
           sender() !
-          (msg.mapBody { body: String =>
-                "received %s" format body
-              })
+            (msg.mapBody { body: String => "received %s" format body })
       }
     }
 
@@ -31,8 +29,8 @@ object CustomRoute {
         from("jetty:http://localhost:8877/camel/custom").to(responder)
       }
     }
-    val system = ActorSystem("some-system")
-    val camel = CamelExtension(system)
+    val system    = ActorSystem("some-system")
+    val camel     = CamelExtension(system)
     val responder = system.actorOf(Props[Responder], name = "TestResponder")
     camel.context.addRoutes(new CustomRouteBuilder(system, responder))
     //#CustomRoute

@@ -29,10 +29,10 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
 
     "be able to concat Flow with a Source" in {
       val f1: Flow[Int, String, _] = Flow[Int].map(_.toString + "-s")
-      val s1: Source[Int, _] = Source(List(1, 2, 3))
-      val s2: Source[String, _] = Source(List(4, 5, 6)).map(_.toString + "-s")
+      val s1: Source[Int, _]       = Source(List(1, 2, 3))
+      val s2: Source[String, _]    = Source(List(4, 5, 6)).map(_.toString + "-s")
 
-      val subs = TestSubscriber.manualProbe[Any]()
+      val subs    = TestSubscriber.manualProbe[Any]()
       val subSink = Sink.asPublisher[Any](false)
 
       val (_, res) = f1.concat(s2).runWith(s1, subSink)
@@ -45,11 +45,11 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
     }
 
     "be able to prepend a Source to a Flow" in {
-      val s1: Source[String, _] = Source(List(1, 2, 3)).map(_.toString + "-s")
-      val s2: Source[Int, _] = Source(List(4, 5, 6))
+      val s1: Source[String, _]    = Source(List(1, 2, 3)).map(_.toString + "-s")
+      val s2: Source[Int, _]       = Source(List(4, 5, 6))
       val f2: Flow[Int, String, _] = Flow[Int].map(_.toString + "-s")
 
-      val subs = TestSubscriber.manualProbe[Any]()
+      val subs    = TestSubscriber.manualProbe[Any]()
       val subSink = Sink.asPublisher[Any](false)
 
       val (_, res) = f2.prepend(s1).runWith(s2, subSink)
@@ -64,13 +64,13 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
     commonTests()
 
     "work with one immediately completed and one nonempty publisher" in assertAllStagesStopped {
-      val subscriber1 = setup(completedPublisher, nonemptyPublisher(1 to 4))
+      val subscriber1   = setup(completedPublisher, nonemptyPublisher(1 to 4))
       val subscription1 = subscriber1.expectSubscription()
       subscription1.request(5)
       (1 to 4).foreach(subscriber1.expectNext)
       subscriber1.expectComplete()
 
-      val subscriber2 = setup(nonemptyPublisher(1 to 4), completedPublisher)
+      val subscriber2   = setup(nonemptyPublisher(1 to 4), completedPublisher)
       val subscription2 = subscriber2.expectSubscription()
       subscription2.request(5)
       (1 to 4).foreach(subscriber2.expectNext)
@@ -103,8 +103,10 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
       subscriber.expectSubscription().request(5)
 
       val errorSignalled = (1 to 4).foldLeft(false)((errorSignalled, e) ⇒
-            if (!errorSignalled)
-              subscriber.expectNextOrError(e, TestException).isLeft else true)
+        if (!errorSignalled)
+          subscriber.expectNextOrError(e, TestException).isLeft
+        else true
+      )
       if (!errorSignalled) subscriber.expectSubscriptionAndError(TestException)
     }
 
@@ -118,13 +120,15 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
       subscriber.expectSubscription().request(5)
 
       val errorSignalled = (1 to 4).foldLeft(false)((errorSignalled, e) ⇒
-            if (!errorSignalled)
-              subscriber.expectNextOrError(e, TestException).isLeft else true)
+        if (!errorSignalled)
+          subscriber.expectNextOrError(e, TestException).isLeft
+        else true
+      )
       if (!errorSignalled) subscriber.expectSubscriptionAndError(TestException)
     }
 
     "correctly handle async errors in secondary upstream" in assertAllStagesStopped {
-      val promise = Promise[Int]()
+      val promise    = Promise[Int]()
       val subscriber = TestSubscriber.manualProbe[Int]()
       Source(List(1, 2, 3))
         .concat(Source.fromFuture(promise.future))
@@ -140,8 +144,7 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
     "work with Source DSL" in {
       val testSource =
         Source(1 to 5).concatMat(Source(6 to 10))(Keep.both).grouped(1000)
-      Await.result(testSource.runWith(Sink.head), 3.seconds) should ===(
-          1 to 10)
+      Await.result(testSource.runWith(Sink.head), 3.seconds) should ===(1 to 10)
 
       val runnable = testSource.toMat(Sink.ignore)(Keep.left)
       val (m1, m2) = runnable.run()
@@ -155,11 +158,12 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
       val testFlow: Flow[Int, Seq[Int], (NotUsed, NotUsed)] =
         Flow[Int].concatMat(Source(6 to 10))(Keep.both).grouped(1000)
       Await.result(
-          Source(1 to 5).viaMat(testFlow)(Keep.both).runWith(Sink.head),
-          3.seconds) should ===(1 to 10)
+        Source(1 to 5).viaMat(testFlow)(Keep.both).runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 10)
 
-      val runnable = Source(1 to 5).viaMat(testFlow)(Keep.both).to(Sink.ignore)
-      val x = runnable.run()
+      val runnable       = Source(1 to 5).viaMat(testFlow)(Keep.both).to(Sink.ignore)
+      val x              = runnable.run()
       val (m1, (m2, m3)) = x
       m1.isInstanceOf[NotUsed] should be(true)
       m2.isInstanceOf[NotUsed] should be(true)
@@ -172,8 +176,9 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
       val testFlow =
         Flow[Int].concatMat(Source(6 to 10))(Keep.both).grouped(1000)
       Await.result(
-          Source(1 to 5).viaMat(testFlow)(Keep.both).runWith(Sink.head),
-          3.seconds) should ===(1 to 10)
+        Source(1 to 5).viaMat(testFlow)(Keep.both).runWith(Sink.head),
+        3.seconds
+      ) should ===(1 to 10)
 
       val sink = testFlow
         .concatMat(Source(1 to 5))(Keep.both)
@@ -196,8 +201,8 @@ class FlowConcatSpec extends BaseTwoStreamsSetup {
         .concat(Source.fromPublisher(publisher2))
         .runWith(TestSink.probe[Int])
 
-      val sub1 = publisher1.expectSubscription()
-      val sub2 = publisher2.expectSubscription()
+      val sub1    = publisher1.expectSubscription()
+      val sub2    = publisher2.expectSubscription()
       val subSink = probeSink.expectSubscription()
 
       sub1.sendNext(1)

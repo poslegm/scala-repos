@@ -13,7 +13,11 @@ import scala.concurrent.duration._
 import scala.collection.immutable
 import akka.util.Timeout
 import de.kalpatec.pojosr.framework.launch.BundleDescriptor
-import test.{RuntimeNameActorSystemActivator, TestActivators, PingPongActorSystemActivator}
+import test.{
+  RuntimeNameActorSystemActivator,
+  TestActivators,
+  PingPongActorSystemActivator
+}
 import test.PingPong._
 import PojoSRTestSupport.bundle
 import org.scalatest.Matchers
@@ -29,20 +33,25 @@ object ActorSystemActivatorTest {
 }
 
 class PingPongActorSystemActivatorTest
-    extends WordSpec with Matchers with PojoSRTestSupport {
+    extends WordSpec
+    with Matchers
+    with PojoSRTestSupport {
 
   import ActorSystemActivatorTest._
 
   val testBundles: immutable.Seq[BundleDescriptor] = buildTestBundles(
-      List(bundle(TEST_BUNDLE_NAME).withActivator(
-              classOf[PingPongActorSystemActivator])))
+    List(
+      bundle(TEST_BUNDLE_NAME)
+        .withActivator(classOf[PingPongActorSystemActivator])
+    )
+  )
 
   "PingPongActorSystemActivator" must {
 
     "start and register the ActorSystem when bundle starts" in {
       filterErrors() {
         val system = serviceForType[ActorSystem]
-        val actor = system.actorSelection("/user/pong")
+        val actor  = system.actorSelection("/user/pong")
 
         implicit val timeout = Timeout(5 seconds)
         Await.result(actor ? Ping, timeout.duration) should be(Pong)
@@ -63,21 +72,27 @@ class PingPongActorSystemActivatorTest
 }
 
 class RuntimeNameActorSystemActivatorTest
-    extends WordSpec with Matchers with PojoSRTestSupport {
+    extends WordSpec
+    with Matchers
+    with PojoSRTestSupport {
 
   import ActorSystemActivatorTest._
 
   val testBundles: immutable.Seq[BundleDescriptor] = buildTestBundles(
-      List(bundle(TEST_BUNDLE_NAME).withActivator(
-              classOf[RuntimeNameActorSystemActivator])))
+    List(
+      bundle(TEST_BUNDLE_NAME)
+        .withActivator(classOf[RuntimeNameActorSystemActivator])
+    )
+  )
 
   "RuntimeNameActorSystemActivator" must {
 
     "register an ActorSystem and add the bundle id to the system name" in {
       filterErrors() {
         serviceForType[ActorSystem].name should be(
-            TestActivators.ACTOR_SYSTEM_NAME_PATTERN.format(
-                bundleForName(TEST_BUNDLE_NAME).getBundleId))
+          TestActivators.ACTOR_SYSTEM_NAME_PATTERN
+            .format(bundleForName(TEST_BUNDLE_NAME).getBundleId)
+        )
       }
     }
   }

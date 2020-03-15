@@ -50,12 +50,12 @@ abstract class Reporter extends scala.reflect.internal.Reporter {
   class Severity(val id: Int)(name: String) {
     var count: Int = 0; override def toString = name
   }
-  object INFO extends Severity(0)("INFO")
+  object INFO    extends Severity(0)("INFO")
   object WARNING extends Severity(1)("WARNING")
   // reason for copy/paste: this is used by partest (must be a val, not an object)
   // TODO: use count(ERROR) in scala.tools.partest.nest.DirectCompiler#errorCount, rather than ERROR.count
   lazy val ERROR = new Severity(2)("ERROR")
 
-  def count(severity: Severity): Int = severity.count
+  def count(severity: Severity): Int       = severity.count
   def resetCount(severity: Severity): Unit = severity.count = 0
 }

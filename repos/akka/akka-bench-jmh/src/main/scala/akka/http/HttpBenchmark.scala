@@ -28,11 +28,11 @@ class HttpBenchmark {
         loglevel = "ERROR"
       }""".stripMargin).withFallback(ConfigFactory.load())
 
-  implicit val system = ActorSystem("HttpBenchmark", config)
+  implicit val system       = ActorSystem("HttpBenchmark", config)
   implicit val materializer = ActorMaterializer()
 
-  var binding: ServerBinding = _
-  var request: HttpRequest = _
+  var binding: ServerBinding                                      = _
+  var request: HttpRequest                                        = _
   var pool: Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = _
 
   @Setup
@@ -45,12 +45,16 @@ class HttpBenchmark {
       }
     }
 
-    binding = Await.result(
-        Http().bindAndHandle(route, "127.0.0.1", 0), 1.second)
+    binding =
+      Await.result(Http().bindAndHandle(route, "127.0.0.1", 0), 1.second)
     request = HttpRequest(
-        uri = s"http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/test")
+      uri =
+        s"http://${binding.localAddress.getHostString}:${binding.localAddress.getPort}/test"
+    )
     pool = Http().cachedHostConnectionPool[Int](
-        binding.localAddress.getHostString, binding.localAddress.getPort)
+      binding.localAddress.getHostString,
+      binding.localAddress.getPort
+    )
   }
 
   @TearDown
@@ -71,11 +75,12 @@ class HttpBenchmark {
   def single_request_pool(): Unit = {
     import system.dispatcher
     val (response, id) = Await.result(
-        Source
-          .single(HttpRequest(uri = "/test") -> 42)
-          .via(pool)
-          .runWith(Sink.head),
-        1.second)
+      Source
+        .single(HttpRequest(uri = "/test") -> 42)
+        .via(pool)
+        .runWith(Sink.head),
+      1.second
+    )
     Await.result(Unmarshal(response.get.entity).to[String], 1.second)
   }
 }

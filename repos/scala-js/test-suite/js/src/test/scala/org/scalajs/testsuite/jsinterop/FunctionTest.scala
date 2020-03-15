@@ -34,7 +34,7 @@ class FunctionTest {
     """).asInstanceOf[js.Function]
 
     val args = Seq[js.Any](42, true)
-    val res = f.call(null, args: _*).asInstanceOf[js.Dictionary[Any]]
+    val res  = f.call(null, args: _*).asInstanceOf[js.Dictionary[Any]]
     assertEquals(42, res("0"))
     assertEquals(true, res("1"))
     assertFalse(res.contains("2"))

@@ -37,25 +37,42 @@ private[akka] trait Children {
   final def getChild(name: String): ActorRef =
     childrenRefs.getByName(name) match {
       case Some(s: ChildRestartStats) ⇒ s.child
-      case _ ⇒ null
+      case _                          ⇒ null
     }
 
   def actorOf(props: Props): ActorRef =
     makeChild(this, props, randomName(), async = false, systemService = false)
   def actorOf(props: Props, name: String): ActorRef =
     makeChild(
-        this, props, checkName(name), async = false, systemService = false)
+      this,
+      props,
+      checkName(name),
+      async = false,
+      systemService = false
+    )
   private[akka] def attachChild(
-      props: Props, systemService: Boolean): ActorRef =
+      props: Props,
+      systemService: Boolean
+  ): ActorRef =
     makeChild(
-        this, props, randomName(), async = true, systemService = systemService)
+      this,
+      props,
+      randomName(),
+      async = true,
+      systemService = systemService
+    )
   private[akka] def attachChild(
-      props: Props, name: String, systemService: Boolean): ActorRef =
-    makeChild(this,
-              props,
-              checkName(name),
-              async = true,
-              systemService = systemService)
+      props: Props,
+      name: String,
+      systemService: Boolean
+  ): ActorRef =
+    makeChild(
+      this,
+      props,
+      checkName(name),
+      async = true,
+      systemService = systemService
+    )
 
   @volatile private var _functionRefsDoNotCallMeDirectly =
     Map.empty[String, FunctionRef]
@@ -65,7 +82,9 @@ private[akka] trait Children {
       .asInstanceOf[Map[String, FunctionRef]]
 
   private[akka] def getFunctionRefOrNobody(
-      name: String, uid: Int = ActorCell.undefinedUid): InternalActorRef =
+      name: String,
+      uid: Int = ActorCell.undefinedUid
+  ): InternalActorRef =
     functionRefs.getOrElse(name, Children.GetNobody()) match {
       case f: FunctionRef ⇒
         if (uid == ActorCell.undefinedUid || f.path.uid == uid) f else Nobody
@@ -75,16 +94,21 @@ private[akka] trait Children {
 
   private[akka] def addFunctionRef(f: (ActorRef, Any) ⇒ Unit): FunctionRef = {
     val childPath = new ChildActorPath(
-        self.path,
-        randomName(new java.lang.StringBuilder("$$")),
-        ActorCell.newUid())
+      self.path,
+      randomName(new java.lang.StringBuilder("$$")),
+      ActorCell.newUid()
+    )
     val ref = new FunctionRef(childPath, provider, system.eventStream, f)
 
     @tailrec def rec(): Unit = {
-      val old = functionRefs
+      val old   = functionRefs
       val added = old.updated(childPath.name, ref)
       if (!Unsafe.instance.compareAndSwapObject(
-              this, AbstractActorCell.functionRefsOffset, old, added)) rec()
+            this,
+            AbstractActorCell.functionRefsOffset,
+            old,
+            added
+          )) rec()
     }
     rec()
 
@@ -92,8 +116,10 @@ private[akka] trait Children {
   }
 
   private[akka] def removeFunctionRef(ref: FunctionRef): Boolean = {
-    require(ref.path.parent eq self.path,
-            "trying to remove FunctionRef from wrong ActorCell")
+    require(
+      ref.path.parent eq self.path,
+      "trying to remove FunctionRef from wrong ActorCell"
+    )
     val name = ref.path.name
     @tailrec def rec(): Boolean = {
       val old = functionRefs
@@ -101,7 +127,11 @@ private[akka] trait Children {
       else {
         val removed = old - name
         if (!Unsafe.instance.compareAndSwapObject(
-                this, AbstractActorCell.functionRefsOffset, old, removed))
+              this,
+              AbstractActorCell.functionRefsOffset,
+              old,
+              removed
+            ))
           rec()
         else {
           ref.stop()
@@ -140,7 +170,7 @@ private[akka] trait Children {
 
       if (actor match {
             case r: RepointableRef ⇒ r.isStarted
-            case _ ⇒ true
+            case _                 ⇒ true
           }) shallDie(actor)
     }
     actor.asInstanceOf[InternalActorRef].stop()
@@ -151,9 +181,14 @@ private[akka] trait Children {
    */
   @inline private final def swapChildrenRefs(
       oldChildren: ChildrenContainer,
-      newChildren: ChildrenContainer): Boolean =
+      newChildren: ChildrenContainer
+  ): Boolean =
     Unsafe.instance.compareAndSwapObject(
-        this, AbstractActorCell.childrenOffset, oldChildren, newChildren)
+      this,
+      AbstractActorCell.childrenOffset,
+      oldChildren,
+      newChildren
+    )
 
   @tailrec final def reserveChild(name: String): Boolean = {
     val c = childrenRefs
@@ -171,7 +206,7 @@ private[akka] trait Children {
       case old @ Some(_: ChildRestartStats) ⇒
         old.asInstanceOf[Option[ChildRestartStats]]
       case Some(ChildNameReserved) ⇒
-        val crs = ChildRestartStats(ref)
+        val crs  = ChildRestartStats(ref)
         val name = ref.path.name
         if (swapChildrenRefs(cc, cc.add(name, crs))) Some(crs)
         else initChild(ref)
@@ -180,18 +215,22 @@ private[akka] trait Children {
   }
 
   @tailrec final protected def setChildrenTerminationReason(
-      reason: ChildrenContainer.SuspendReason): Boolean = {
+      reason: ChildrenContainer.SuspendReason
+  ): Boolean = {
     childrenRefs match {
       case c: ChildrenContainer.TerminatingChildrenContainer ⇒
         swapChildrenRefs(c, c.copy(reason = reason)) ||
-        setChildrenTerminationReason(reason)
+          setChildrenTerminationReason(reason)
       case _ ⇒ false
     }
   }
 
   final protected def setTerminated(): Unit =
     Unsafe.instance.putObjectVolatile(
-        this, AbstractActorCell.childrenOffset, TerminatedChildrenContainer)
+      this,
+      AbstractActorCell.childrenOffset,
+      TerminatedChildrenContainer
+    )
 
   /*
    * ActorCell-internal API
@@ -201,10 +240,11 @@ private[akka] trait Children {
 
   protected def isTerminating = childrenRefs.isTerminating
 
-  protected def waitingForChildrenOrNull = childrenRefs match {
-    case TerminatingChildrenContainer(_, _, w: WaitingForChildren) ⇒ w
-    case _ ⇒ null
-  }
+  protected def waitingForChildrenOrNull =
+    childrenRefs match {
+      case TerminatingChildrenContainer(_, _, w: WaitingForChildren) ⇒ w
+      case _                                                         ⇒ null
+    }
 
   protected def suspendChildren(exceptFor: Set[ActorRef] = Set.empty): Unit =
     childrenRefs.stats foreach {
@@ -214,7 +254,9 @@ private[akka] trait Children {
     }
 
   protected def resumeChildren(
-      causedByFailure: Throwable, perp: ActorRef): Unit =
+      causedByFailure: Throwable,
+      perp: ActorRef
+  ): Unit =
     childrenRefs.stats foreach {
       case ChildRestartStats(child: InternalActorRef, _, _) ⇒
         child.resume(if (perp == child) causedByFailure else null)
@@ -248,7 +290,8 @@ private[akka] trait Children {
     }
 
   protected def removeChildAndGetStateChange(
-      child: ActorRef): Option[SuspendReason] = {
+      child: ActorRef
+  ): Option[SuspendReason] = {
     @tailrec def removeChild(ref: ActorRef): ChildrenContainer = {
       val c = childrenRefs
       val n = c.remove(ref)
@@ -260,7 +303,7 @@ private[akka] trait Children {
       case TerminatingChildrenContainer(_, _, reason) ⇒
         removeChild(child) match {
           case _: TerminatingChildrenContainer ⇒ None
-          case _ ⇒ Some(reason)
+          case _                               ⇒ Some(reason)
         }
       case _ ⇒
         removeChild(child)
@@ -284,35 +327,41 @@ private[akka] trait Children {
     }
   }
 
-  private def makeChild(cell: ActorCell,
-                        props: Props,
-                        name: String,
-                        async: Boolean,
-                        systemService: Boolean): ActorRef = {
+  private def makeChild(
+      cell: ActorCell,
+      props: Props,
+      name: String,
+      async: Boolean,
+      systemService: Boolean
+  ): ActorRef = {
     if (cell.system.settings.SerializeAllCreators && !systemService &&
         props.deploy.scope != LocalScope)
       try {
         val ser = SerializationExtension(cell.system)
         props.args forall
-        (arg ⇒
-              arg == null ||
+          (arg ⇒
+            arg == null ||
               arg.isInstanceOf[NoSerializationVerificationNeeded] || {
-                val o = arg.asInstanceOf[AnyRef]
-                val serializer = ser.findSerializerFor(o)
-                val bytes = serializer.toBinary(o)
-                serializer match {
-                  case ser2: SerializerWithStringManifest ⇒
-                    val manifest = ser2.manifest(o)
-                    ser.deserialize(bytes, serializer.identifier, manifest).get != null
-                  case _ ⇒
-                    ser.deserialize(bytes, arg.getClass).get != null
-                }
-            })
+              val o          = arg.asInstanceOf[AnyRef]
+              val serializer = ser.findSerializerFor(o)
+              val bytes      = serializer.toBinary(o)
+              serializer match {
+                case ser2: SerializerWithStringManifest ⇒
+                  val manifest = ser2.manifest(o)
+                  ser
+                    .deserialize(bytes, serializer.identifier, manifest)
+                    .get != null
+                case _ ⇒
+                  ser.deserialize(bytes, arg.getClass).get != null
+              }
+            }
+          )
       } catch {
         case NonFatal(e) ⇒
           throw new IllegalArgumentException(
-              s"pre-creation serialization check failed at [${cell.self.path}/$name]",
-              e)
+            s"pre-creation serialization check failed at [${cell.self.path}/$name]",
+            e
+          )
       }
     /*
      * in case we are currently terminating, fail external attachChild requests
@@ -320,30 +369,35 @@ private[akka] trait Children {
      */
     if (cell.childrenRefs.isTerminating)
       throw new IllegalStateException(
-          "cannot create children while terminating or terminated")
+        "cannot create children while terminating or terminated"
+      )
     else {
       reserveChild(name)
       // this name will either be unreserved or overwritten with a real child below
-      val actor = try {
-        val childPath = new ChildActorPath(
-            cell.self.path, name, ActorCell.newUid())
-        cell.provider.actorOf(cell.systemImpl,
-                              props,
-                              cell.self,
-                              childPath,
-                              systemService = systemService,
-                              deploy = None,
-                              lookupDeploy = true,
-                              async = async)
-      } catch {
-        case e: InterruptedException ⇒
-          unreserveChild(name)
-          Thread.interrupted() // clear interrupted flag before throwing according to java convention
-          throw e
-        case NonFatal(e) ⇒
-          unreserveChild(name)
-          throw e
-      }
+      val actor =
+        try {
+          val childPath =
+            new ChildActorPath(cell.self.path, name, ActorCell.newUid())
+          cell.provider.actorOf(
+            cell.systemImpl,
+            props,
+            cell.self,
+            childPath,
+            systemService = systemService,
+            deploy = None,
+            lookupDeploy = true,
+            async = async
+          )
+        } catch {
+          case e: InterruptedException ⇒
+            unreserveChild(name)
+            Thread
+              .interrupted() // clear interrupted flag before throwing according to java convention
+            throw e
+          case NonFatal(e) ⇒
+            unreserveChild(name)
+            throw e
+        }
       // mailbox==null during RoutedActorCell constructor, where suspends are queued otherwise
       if (mailbox ne null) for (_ ← 1 to mailbox.suspendCount) actor.suspend()
       initChild(actor)

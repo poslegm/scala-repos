@@ -10,16 +10,16 @@ import org.apache.commons.vfs2.impl._
 import org.apache.commons.vfs2.provider.zip.ZipFileSystem
 
 abstract class ExtSelector extends FileSelector {
-  def includeFile(f: FileObject): Boolean = include(f.getName.getExtension)
+  def includeFile(f: FileObject): Boolean        = include(f.getName.getExtension)
   def includeFile(info: FileSelectInfo): Boolean = includeFile(info.getFile)
-  def includeFile(f: File): Boolean = include.exists(f.getName.endsWith(_))
-  def traverseDescendents(info: FileSelectInfo) = true
+  def includeFile(f: File): Boolean              = include.exists(f.getName.endsWith(_))
+  def traverseDescendents(info: FileSelectInfo)  = true
   def include: Set[String]
 }
 
 // intended to be used when watching a single jar file
 object JarSelector extends ExtSelector {
-  val include = Set("jar")
+  val include                                            = Set("jar")
   override def traverseDescendents(info: FileSelectInfo) = false
 }
 
@@ -49,26 +49,33 @@ object `package` {
   implicit class RichVFS(val vfs: DefaultFileSystemManager) extends AnyVal {
     implicit def toFileObject(f: File): FileObject = vfile(f)
 
-    private def withContext[T](msg: String)(t: => T): T = try { t } catch {
-      case e: FileSystemException =>
-        throw new FileSystemException(e.getMessage + " in " + msg, e)
-    }
+    private def withContext[T](msg: String)(t: => T): T =
+      try { t }
+      catch {
+        case e: FileSystemException =>
+          throw new FileSystemException(e.getMessage + " in " + msg, e)
+      }
 
-    def vfile(name: String) = withContext(s"$name =>")(
+    def vfile(name: String) =
+      withContext(s"$name =>")(
         vfs.resolveFile(name.intern)
-    )
-    def vfile(file: File) = withContext(s"$file =>")(
+      )
+    def vfile(file: File) =
+      withContext(s"$file =>")(
         vfs.toFileObject(file)
-    )
-    def vres(path: String) = withContext(s"$path =>")(
+      )
+    def vres(path: String) =
+      withContext(s"$path =>")(
         vfs.resolveFile(("res:" + path).intern)
-    )
-    def vjar(jar: File) = withContext(s"$jar =>")(
+      )
+    def vjar(jar: File) =
+      withContext(s"$jar =>")(
         vfs.resolveFile(("jar:" + jar.getAbsolutePath).intern)
-    )
-    def vjar(jar: FileObject) = withContext(s"$jar =>")(
+      )
+    def vjar(jar: FileObject) =
+      withContext(s"$jar =>")(
         vfs.resolveFile(("jar:" + jar.getName.getURI).intern)
-    )
+      )
 
     // WORKAROUND https://issues.apache.org/jira/browse/VFS-594
     def nuke(jar: FileObject) = {

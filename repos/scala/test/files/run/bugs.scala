@@ -22,8 +22,7 @@ class Bug120A(x: Int) {
 trait Bug120B {
   println("B")
 }
-class Bug120C(x: Int)
-    extends Bug120A(Bug120Test.print("one", 1)) with Bug120B {
+class Bug120C(x: Int) extends Bug120A(Bug120Test.print("one", 1)) with Bug120B {
   println("C")
 }
 object Bug120Test {
@@ -45,7 +44,7 @@ object Bug135Test {
 
   def test(args: Array[String]) {
     val myMap: TreeMap[Int, String] = new TreeMap
-    val map1 = myMap + ((42, "The answer"))
+    val map1                        = myMap + ((42, "The answer"))
     println(map1.get(42))
   }
 }
@@ -198,7 +197,7 @@ trait Bug176B {
 class Bug176C extends Bug176A with Bug176B {
   class S;
   def foo(x: S) = 1;
-  def bar = new S;
+  def bar       = new S;
 }
 object Bug176Test {
   def test(args: Array[String]): Unit = {
@@ -226,7 +225,7 @@ trait Bug213Foo {
 }
 
 class Bug213Bar extends Bug213Foo {
-  def testAll = (().asInstanceOf[Nothing]: Nothing);
+  def testAll    = (().asInstanceOf[Nothing]: Nothing);
   def testAllRef = ("".asInstanceOf[Null]: Null);
 }
 
@@ -325,9 +324,9 @@ object Bug250Test {
 
 object Bug257Test {
   def sayhello(): Unit = { Console.println("I should come 1st and 2nd"); };
-  def sayhi(): Unit = { Console.println("I should come last"); };
+  def sayhi(): Unit    = { Console.println("I should come last"); };
 
-  def f1(x: Unit): Unit = ();
+  def f1(x: Unit): Unit          = ();
   def f2(x: Unit)(y: Unit): Unit = ();
 
   def f(x: => Unit): Unit => Unit = {
@@ -376,11 +375,11 @@ trait Bug266BB extends Bug266BA {
     def f(x: Int) { Console.println(x + 1) }
   }
   def mkP = new P1;
-  val in = 3;
+  val in  = 3;
 }
 
 object Bug266BTest {
-  val a: Bug266BA1 = new Bug266BA1 with Bug266BB;
+  val a: Bug266BA1                    = new Bug266BA1 with Bug266BB;
   def test(args: Array[String]): Unit = a.mkP.f(a.in);
 }
 
@@ -398,14 +397,12 @@ object Bug266Test {
 
 class Bug316MyIterator extends Iterator[Int] {
   def hasNext = false
-  def next = 42
+  def next    = 42
 }
 
 object Bug316Test {
   def test(args: Array[String]): Unit =
-    (new Bug316MyIterator) filter { x: Int =>
-      x == 1
-    };
+    (new Bug316MyIterator) filter { x: Int => x == 1 };
 }
 
 //############################################################################
@@ -435,7 +432,7 @@ trait Bug396C extends Bug396A {
   }
 }
 object Bug396Test extends Bug396B with Bug396C {
-  class I2 extends super [Bug396B].I with super [Bug396C].I;
+  class I2 extends super[Bug396B].I with super[Bug396C].I;
   def test(args: Array[String]): Unit = (new I2).run
 }
 
@@ -467,8 +464,10 @@ object Test {
       test;
     } catch {
       case exception: Throwable =>
-        Console.print("Exception in thread \"" + Thread.currentThread + "\" " +
-            exception);
+        Console.print(
+          "Exception in thread \"" + Thread.currentThread + "\" " +
+            exception
+        );
         Console.println;
         errors += 1
     }

@@ -30,8 +30,8 @@ object FaultHandlingDocSample extends App {
     }
     """)
 
-  val system = ActorSystem("FaultToleranceSample", config)
-  val worker = system.actorOf(Props[Worker], name = "worker")
+  val system   = ActorSystem("FaultToleranceSample", config)
+  val worker   = system.actorOf(Props[Worker], name = "worker")
   val listener = system.actorOf(Props[Listener], name = "listener")
   // start the work and listen on progress
   // note that the listener is used as sender of the tell,
@@ -89,25 +89,26 @@ class Worker extends Actor with ActorLogging {
   // The sender of the initial Start message will continuously be notified
   // about progress
   var progressListener: Option[ActorRef] = None
-  val counterService = context.actorOf(Props[CounterService], name = "counter")
-  val totalCount = 51
+  val counterService                     = context.actorOf(Props[CounterService], name = "counter")
+  val totalCount                         = 51
   import context.dispatcher // Use this Actors' Dispatcher as ExecutionContext
 
-  def receive = LoggingReceive {
-    case Start if progressListener.isEmpty =>
-      progressListener = Some(sender())
-      context.system.scheduler.schedule(Duration.Zero, 1 second, self, Do)
+  def receive =
+    LoggingReceive {
+      case Start if progressListener.isEmpty =>
+        progressListener = Some(sender())
+        context.system.scheduler.schedule(Duration.Zero, 1 second, self, Do)
 
-    case Do =>
-      counterService ! Increment(1)
-      counterService ! Increment(1)
-      counterService ! Increment(1)
+      case Do =>
+        counterService ! Increment(1)
+        counterService ! Increment(1)
+        counterService ! Increment(1)
 
-      // Send current progress to the initial sender
-      counterService ? GetCurrentCount map {
-        case CurrentCount(_, count) => Progress(100.0 * count / totalCount)
-      } pipeTo progressListener.get
-  }
+        // Send current progress to the initial sender
+        counterService ? GetCurrentCount map {
+          case CurrentCount(_, count) => Progress(100.0 * count / totalCount)
+        } pipeTo progressListener.get
+    }
 }
 
 //#messages
@@ -139,11 +140,11 @@ class CounterService extends Actor {
       case _: Storage.StorageException => Restart
     }
 
-  val key = self.path.name
+  val key                       = self.path.name
   var storage: Option[ActorRef] = None
   var counter: Option[ActorRef] = None
-  var backlog = IndexedSeq.empty[(ActorRef, Any)]
-  val MaxBacklog = 10000
+  var backlog                   = IndexedSeq.empty[(ActorRef, Any)]
+  val MaxBacklog                = 10000
 
   import context.dispatcher // Use this Actors' Dispatcher as ExecutionContext
 
@@ -159,42 +160,44 @@ class CounterService extends Actor {
     */
   def initStorage() {
     storage = Some(
-        context.watch(context.actorOf(Props[Storage], name = "storage")))
+      context.watch(context.actorOf(Props[Storage], name = "storage"))
+    )
     // Tell the counter, if any, to use the new storage
     counter foreach { _ ! UseStorage(storage) }
     // We need the initial value to be able to operate
     storage.get ! Get(key)
   }
 
-  def receive = LoggingReceive {
+  def receive =
+    LoggingReceive {
 
-    case Entry(k, v) if k == key && counter == None =>
-      // Reply from Storage of the initial value, now we can create the Counter
-      val c = context.actorOf(Props(classOf[Counter], key, v))
-      counter = Some(c)
-      // Tell the counter to use current storage
-      c ! UseStorage(storage)
-      // and send the buffered backlog to the counter
-      for ((replyTo, msg) <- backlog) c.tell(msg, sender = replyTo)
-      backlog = IndexedSeq.empty
+      case Entry(k, v) if k == key && counter == None =>
+        // Reply from Storage of the initial value, now we can create the Counter
+        val c = context.actorOf(Props(classOf[Counter], key, v))
+        counter = Some(c)
+        // Tell the counter to use current storage
+        c ! UseStorage(storage)
+        // and send the buffered backlog to the counter
+        for ((replyTo, msg) <- backlog) c.tell(msg, sender = replyTo)
+        backlog = IndexedSeq.empty
 
-    case msg: Increment => forwardOrPlaceInBacklog(msg)
+      case msg: Increment => forwardOrPlaceInBacklog(msg)
 
-    case msg: GetCurrentCount => forwardOrPlaceInBacklog(msg)
+      case msg: GetCurrentCount => forwardOrPlaceInBacklog(msg)
 
-    case Terminated(actorRef) if Some(actorRef) == storage =>
-      // After 3 restarts the storage child is stopped.
-      // We receive Terminated because we watch the child, see initStorage.
-      storage = None
-      // Tell the counter that there is no storage for the moment
-      counter foreach { _ ! UseStorage(None) }
-      // Try to re-establish storage after while
-      context.system.scheduler.scheduleOnce(10 seconds, self, Reconnect)
+      case Terminated(actorRef) if Some(actorRef) == storage =>
+        // After 3 restarts the storage child is stopped.
+        // We receive Terminated because we watch the child, see initStorage.
+        storage = None
+        // Tell the counter that there is no storage for the moment
+        counter foreach { _ ! UseStorage(None) }
+        // Try to re-establish storage after while
+        context.system.scheduler.scheduleOnce(10 seconds, self, Reconnect)
 
-    case Reconnect =>
-      // Re-establish storage after the scheduled delay
-      initStorage()
-  }
+      case Reconnect =>
+        // Re-establish storage after the scheduled delay
+        initStorage()
+    }
 
   def forwardOrPlaceInBacklog(msg: Any) {
     // We need the initial value from storage before we can start delegate to
@@ -205,7 +208,8 @@ class CounterService extends Actor {
       case None =>
         if (backlog.size >= MaxBacklog)
           throw new ServiceUnavailable(
-              "CounterService not available, lack of initial value")
+            "CounterService not available, lack of initial value"
+          )
         backlog :+= (sender() -> msg)
     }
   }
@@ -227,21 +231,22 @@ class Counter(key: String, initialValue: Long) extends Actor {
   import CounterService._
   import Storage._
 
-  var count = initialValue
+  var count                     = initialValue
   var storage: Option[ActorRef] = None
 
-  def receive = LoggingReceive {
-    case UseStorage(s) =>
-      storage = s
-      storeCount()
+  def receive =
+    LoggingReceive {
+      case UseStorage(s) =>
+        storage = s
+        storeCount()
 
-    case Increment(n) =>
-      count += n
-      storeCount()
+      case Increment(n) =>
+        count += n
+        storeCount()
 
-    case GetCurrentCount =>
-      sender() ! CurrentCount(key, count)
-  }
+      case GetCurrentCount =>
+        sender() ! CurrentCount(key, count)
+    }
 
   def storeCount() {
     // Delegate dangerous work, to protect our valuable state.
@@ -269,10 +274,11 @@ class Storage extends Actor {
 
   val db = DummyDB
 
-  def receive = LoggingReceive {
-    case Store(Entry(key, count)) => db.save(key, count)
-    case Get(key) => sender() ! Entry(key, db.load(key).getOrElse(0L))
-  }
+  def receive =
+    LoggingReceive {
+      case Store(Entry(key, count)) => db.save(key, count)
+      case Get(key)                 => sender() ! Entry(key, db.load(key).getOrElse(0L))
+    }
 }
 
 //#dummydb
@@ -281,16 +287,18 @@ object DummyDB {
   private var db = Map[String, Long]()
 
   @throws(classOf[StorageException])
-  def save(key: String, value: Long): Unit = synchronized {
-    if (11 <= value && value <= 14)
-      throw new StorageException("Simulated store failure " + value)
-    db += (key -> value)
-  }
+  def save(key: String, value: Long): Unit =
+    synchronized {
+      if (11 <= value && value <= 14)
+        throw new StorageException("Simulated store failure " + value)
+      db += (key -> value)
+    }
 
   @throws(classOf[StorageException])
-  def load(key: String): Option[Long] = synchronized {
-    db.get(key)
-  }
+  def load(key: String): Option[Long] =
+    synchronized {
+      db.get(key)
+    }
 }
 //#dummydb
 //#all

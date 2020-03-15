@@ -17,26 +17,27 @@ class RequestSemaphoreFilterTest extends FunSuite {
     })
 
     val stk: StackBuilder[ServiceFactory[Int, Int]] = new StackBuilder(
-        Stack.Leaf(Stack.Role("never"), neverFactory)
+      Stack.Leaf(Stack.Role("never"), neverFactory)
     )
 
     stk.push(RequestSemaphoreFilter.module[Int, Int])
 
-    val sr = new InMemoryStatsReceiver
+    val sr  = new InMemoryStatsReceiver
     val max = 10
 
     val params =
       Stack.Params.empty + RequestSemaphoreFilter.Param(
-          Some(new AsyncSemaphore(max, 0))) + param.Stats(sr)
+        Some(new AsyncSemaphore(max, 0))
+      ) + param.Stats(sr)
 
     val factory = stk.make(params)
 
-    for (_ <- 0 to max) factory().flatMap(_ (1))
+    for (_ <- 0 to max) factory().flatMap(_(1))
 
     assert(sr.gauges(Seq("request_concurrency"))() == max)
     assert(sr.gauges(Seq("request_queue_size"))() == 0.0)
 
-    for (_ <- 0 to max) factory().flatMap(_ (1))
+    for (_ <- 0 to max) factory().flatMap(_(1))
 
     assert(sr.gauges(Seq("request_concurrency"))() == max)
     assert(sr.gauges(Seq("request_queue_size"))() == 0.0)
@@ -46,7 +47,7 @@ class RequestSemaphoreFilterTest extends FunSuite {
     val neverSvc = new Service[Int, Int] {
       def apply(req: Int) = Future.never
     }
-    val q = new AsyncSemaphore(1, 0)
+    val q   = new AsyncSemaphore(1, 0)
     val svc = new RequestSemaphoreFilter(q) andThen neverSvc
     svc(1)
     val f = intercept[Failure] { Await.result(svc(1)) }
@@ -58,7 +59,7 @@ class RequestSemaphoreFilterTest extends FunSuite {
     val neverSvc = new Service[Int, Int] {
       def apply(req: Int) = Future.exception(exc)
     }
-    val q = new AsyncSemaphore(1, 0)
+    val q   = new AsyncSemaphore(1, 0)
     val svc = new RequestSemaphoreFilter(q) andThen neverSvc
     svc(1)
     val e = intercept[Exception] { Await.result(svc(1)) }

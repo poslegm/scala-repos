@@ -26,7 +26,7 @@ object LiveJournalPageRank {
   def main(args: Array[String]) {
     if (args.length < 1) {
       System.err.println(
-          "Usage: LiveJournalPageRank <edge_list_file>\n" +
+        "Usage: LiveJournalPageRank <edge_list_file>\n" +
           "    --numEPart=<num_edge_partitions>\n" +
           "        The number of partitions for the graph's edge RDD.\n" +
           "    [--tol=<tolerance>]\n" +
@@ -35,7 +35,8 @@ object LiveJournalPageRank {
           "        If specified, the file to write the ranks to.\n" +
           "    [--partStrategy=RandomVertexCut | EdgePartition1D | EdgePartition2D | " +
           "CanonicalRandomVertexCut]\n" +
-          "        The way edges are assigned to edge partitions. Default is RandomVertexCut.")
+          "        The way edges are assigned to edge partitions. Default is RandomVertexCut."
+      )
       System.exit(-1)
     }
 

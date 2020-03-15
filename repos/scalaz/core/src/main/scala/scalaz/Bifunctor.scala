@@ -13,7 +13,8 @@ trait Bifunctor[F[_, _]] { self =>
 
   /**The composition of Bifunctors `F` and `G`, `[x,y]F[G[x,y],G[x,y]]`, is a Bifunctor */
   def compose[G[_, _]](
-      implicit G0: Bifunctor[G]): Bifunctor[λ[(α, β) => F[G[α, β], G[α, β]]]] =
+      implicit G0: Bifunctor[G]
+  ): Bifunctor[λ[(α, β) => F[G[α, β], G[α, β]]]] =
     new CompositionBifunctor[F, G] {
       implicit def F = self
       implicit def G = G0
@@ -21,7 +22,8 @@ trait Bifunctor[F[_, _]] { self =>
 
   /**The product of Bifunctors `F` and `G`, `[x,y](F[x,y], G[x,y])`, is a Bifunctor */
   def product[G[_, _]](
-      implicit G0: Bifunctor[G]): Bifunctor[λ[(α, β) => (F[α, β], G[α, β])]] =
+      implicit G0: Bifunctor[G]
+  ): Bifunctor[λ[(α, β) => (F[α, β], G[α, β])]] =
     new ProductBifunctor[F, G] {
       implicit def F = self
       implicit def G = G0
@@ -49,9 +51,10 @@ trait Bifunctor[F[_, _]] { self =>
     bimap(faa)(f, f)
 
   /** Embed two Functors , one on each side */
-  def embed[G[_], H[_]](
-      implicit G0: Functor[G],
-      H0: Functor[H]): Bifunctor[λ[(α, β) => F[G[α], H[β]]]] =
+  def embed[G[_], H[_]](implicit
+      G0: Functor[G],
+      H0: Functor[H]
+  ): Bifunctor[λ[(α, β) => F[G[α], H[β]]]] =
     new CompositionBifunctorFunctors[F, G, H] {
       def F = self
       def G = G0
@@ -60,12 +63,14 @@ trait Bifunctor[F[_, _]] { self =>
 
   /** Embed one Functor to the left */
   def embedLeft[G[_]](
-      implicit G0: Functor[G]): Bifunctor[λ[(α, β) => F[G[α], β]]] =
+      implicit G0: Functor[G]
+  ): Bifunctor[λ[(α, β) => F[G[α], β]]] =
     embed[G, Id.Id]
 
   /** Embed one Functor to the right */
   def embedRight[H[_]](
-      implicit H0: Functor[H]): Bifunctor[λ[(α, β) => F[α, H[β]]]] =
+      implicit H0: Functor[H]
+  ): Bifunctor[λ[(α, β) => F[α, H[β]]]] =
     embed[Id.Id, H]
 
   /** Bifunctors are covariant by nature */

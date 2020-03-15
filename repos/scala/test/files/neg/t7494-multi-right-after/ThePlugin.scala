@@ -9,16 +9,16 @@ import nsc.plugins.PluginComponent
 class ThePlugin(val global: Global) extends Plugin {
   import global._
 
-  val name = "multi-rafter"
+  val name        = "multi-rafter"
   val description = ""
-  val components = List[PluginComponent](thePhase)
+  val components  = List[PluginComponent](thePhase)
 
   private object thePhase extends PluginComponent {
     val global = ThePlugin.this.global
 
-    val runsAfter = List[String]()
+    val runsAfter               = List[String]()
     override val runsRightAfter = Some("explicitouter")
-    val phaseName = ThePlugin.this.name
+    val phaseName               = ThePlugin.this.name
 
     def newPhase(prev: Phase) = new ThePhase(prev)
   }

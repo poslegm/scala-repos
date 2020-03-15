@@ -33,7 +33,7 @@ object Test extends App {
   t1.f(b = "dkljf", a = 1)
 
   object t3 {
-    def f(a1: Int) = "first"
+    def f(a1: Int)         = "first"
     def f(a2: Int)(b: Int) = "second"
   }
   t3.f(1)
@@ -41,7 +41,7 @@ object Test extends App {
 
   object t7 {
     def g(a: C, b: Int*) = "third"
-    def g(a: B) = "fourth"
+    def g(a: B)          = "fourth"
   }
   t7.g(new C()) // ambiguous reference
 
@@ -58,7 +58,7 @@ object Test extends App {
   println(t8.f(a = 0, b = "1")) // ambiguous reference
 
   // case class copy does not exist if there's a vararg
-  val fac = Fact(1)(2, 3)
+  val fac  = Fact(1)(2, 3)
   val facc = fac.copy(b = "dlkfj")()
 
   // no defaults in patterns
@@ -82,8 +82,8 @@ object Test extends App {
   }
 
   // deprecated names
-  def deprNam1(x: Int, @deprecatedName('x) y: String) = 0
-  def deprNam2(a: String)(@deprecatedName('a) b: Int) = 1
+  def deprNam1(x: Int, @deprecatedName('x) y: String)                  = 0
+  def deprNam2(a: String)(@deprecatedName('a) b: Int)                  = 1
   def deprNam3(@deprecatedName('x) a: Int, @deprecatedName('y) b: Int) = a + b
   deprNam3(y = 10, b = 2)
 
@@ -98,14 +98,14 @@ object Test extends App {
 
   // DEFINITIONS
   def test1(a: Int, b: String) = a + ": " + b
-  def test2(x: Unit) = println("test2")
-  def test3(a: Int, b: Int) = a + b
-  def test7(m: Int) = m
-  def test8[T](x: => T) = println("test8")
+  def test2(x: Unit)           = println("test2")
+  def test3(a: Int, b: Int)    = a + b
+  def test7(m: Int)            = m
+  def test8[T](x: => T)        = println("test8")
 }
 
 class B {
-  def foo(a: Int) = a
+  def foo(a: Int)              = a
   def bar(u: String = "ldksj") = u
 }
 
@@ -129,9 +129,9 @@ object anfun {
   delay(var2 = 40)
 
   def testAnnFun(a: Int, b: String) = println(a + ": " + b)
-  val taf2: Int => Unit = testAnnFun(a = _, b = get("+"))
-  val taf3 = testAnnFun(b = _: String, a = get(8))
-  val taf4: (Int, String) => Unit = testAnnFun(_, b = _)
+  val taf2: Int => Unit             = testAnnFun(a = _, b = get("+"))
+  val taf3                          = testAnnFun(b = _: String, a = get(8))
+  val taf4: (Int, String) => Unit   = testAnnFun(_, b = _)
 }
 
 object t3685 {
@@ -143,9 +143,9 @@ object t3685 {
   object t4 { def x = t.f(x = 1) }
   object t5 { val x = t.f(x = 1) }
   object t6 { var x = t.f(x = 1) }
-  class t7 { def x = t.f(x = 1) }
-  class t8 { val x = t.f(x = 1) }
-  class t9 { var x = t.f(x = 1) }
+  class t7  { def x = t.f(x = 1) }
+  class t8  { val x = t.f(x = 1) }
+  class t9  { var x = t.f(x = 1) }
 
   def t10 { def x: Int = t.f(x = 1) }
   def t11 { val x: Int = t.f(x = 1) }
@@ -156,25 +156,25 @@ object t3685 {
 
   object u { def f[T](x: T) = 100 }
 
-  def u1 { def x = u.f(x = 1) }
-  def u2 { val x = u.f(x = 1) }
-  def u3 { var x = u.f(x = 1) }
-  def u4 { def x = u.f(x = "23") }
-  def u5 { val x = u.f(x = "32") }
-  def u6 { var x = u.f(x = "32") }
-  def u7 { def x: Int = u.f(x = 1) }
-  def u8 { val x: Int = u.f(x = 1) }
-  def u9 { var x: Int = u.f(x = 1) }
+  def u1 { def x       = u.f(x = 1) }
+  def u2 { val x       = u.f(x = 1) }
+  def u3 { var x       = u.f(x = 1) }
+  def u4 { def x       = u.f(x = "23") }
+  def u5 { val x       = u.f(x = "32") }
+  def u6 { var x       = u.f(x = "32") }
+  def u7 { def x: Int  = u.f(x = 1) }
+  def u8 { val x: Int  = u.f(x = 1) }
+  def u9 { var x: Int  = u.f(x = 1) }
   def u10 { def x: Int = u.f(x = "32") }
   def u11 { val x: Int = u.f(x = "32") }
   def u12 { var x: Int = u.f(x = "32") }
 
-  class u13 { def x = u.f(x = 1) }
-  class u14 { val x = u.f(x = 1) }
-  class u15 { var x = u.f(x = 1) }
-  class u16 { def x: Int = u.f(x = 1) }
-  class u17 { val x: Int = u.f(x = 1) }
-  class u18 { var x: Int = u.f(x = 1) }
+  class u13 { def x      = u.f(x = 1)    }
+  class u14 { val x      = u.f(x = 1)    }
+  class u15 { var x      = u.f(x = 1)    }
+  class u16 { def x: Int = u.f(x = 1)    }
+  class u17 { val x: Int = u.f(x = 1)    }
+  class u18 { var x: Int = u.f(x = 1)    }
   class u19 { def x: Int = u.f(x = "32") }
   class u20 { val x: Int = u.f(x = "32") }
   class u21 { var x: Int = u.f(x = "32") }

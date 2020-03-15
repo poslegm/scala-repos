@@ -13,9 +13,9 @@ object SCL3385 {
   private def getCheapestTripId(trips: List[JObject]): String = {
 
     val cheapestTrips = for {
-      JObject(trip) <- trips
+      JObject(trip)                   <- trips
       JField("Price", JDouble(price)) <- trip
-      JField("Id", JString(id)) <- trip
+      JField("Id", JString(id))       <- trip
     } yield Trip(id, price, 0)
 
     val list = (cheapestTrips sortWith (/*start*/ _.price < _.price /*end*/ ))

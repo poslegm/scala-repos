@@ -8,7 +8,7 @@ class Foo {
   import Test._
   def foo = {
     val classTag = implicitly[ClassTag[R.type]]
-    val sym = cm.moduleSymbol(classTag.runtimeClass)
+    val sym      = cm.moduleSymbol(classTag.runtimeClass)
     try {
       val cls = cm.reflect(this).reflectModule(sym)
       cls.instance

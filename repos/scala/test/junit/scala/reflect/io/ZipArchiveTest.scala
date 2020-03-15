@@ -11,7 +11,7 @@ class ZipArchiveTest {
 
   @Test
   def corruptZip {
-    val f = JFile.createTempFile("test", ".jar")
+    val f   = JFile.createTempFile("test", ".jar")
     val fza = new FileZipArchive(f)
     try {
       fza.iterator
@@ -25,7 +25,7 @@ class ZipArchiveTest {
 
   @Test
   def missingFile {
-    val f = new JFile("xxx.does.not.exist")
+    val f   = new JFile("xxx.does.not.exist")
     val fza = new FileZipArchive(f)
     try {
       fza.iterator

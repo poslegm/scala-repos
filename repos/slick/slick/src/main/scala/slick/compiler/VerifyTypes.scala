@@ -12,26 +12,30 @@ import scala.collection.mutable
 class VerifyTypes(after: Option[Phase] = None) extends Phase {
   val name = "verifyTypes"
 
-  def apply(state: CompilerState) = state.map { tree =>
-    logger.debug(s"Verifying types")
-    check(tree)
-  }
+  def apply(state: CompilerState) =
+    state.map { tree =>
+      logger.debug(s"Verifying types")
+      check(tree)
+    }
 
   def check(tree: Node): Node = {
     val retyped = tree
-      .replace({
-        case t: TableNode =>
-          t.nodeType match {
-            case CollectionType(cons, NominalType(ts, _)) =>
-            case _ =>
-              logger.warn("Table has unexpected type:", t)
-          }
-          t
-        case n => n.untyped
-      }, bottomUp = true)
+      .replace(
+        {
+          case t: TableNode =>
+            t.nodeType match {
+              case CollectionType(cons, NominalType(ts, _)) =>
+              case _ =>
+                logger.warn("Table has unexpected type:", t)
+            }
+            t
+          case n => n.untyped
+        },
+        bottomUp = true
+      )
       .infer()
 
-    val errors = mutable.Set.empty[RefId[Dumpable]]
+    val errors    = mutable.Set.empty[RefId[Dumpable]]
     var nodeCount = 0
 
     def compare(n1: Node, n2: Node): Unit = {
@@ -51,11 +55,12 @@ class VerifyTypes(after: Option[Phase] = None) extends Phase {
 
     if (errors.nonEmpty)
       throw new SlickTreeException(
-          after.map(p => "After " + p.name + ": ").getOrElse("") +
+        after.map(p => "After " + p.name + ": ").getOrElse("") +
           errors.size + " type errors found in " + nodeCount + " nodes:",
-          tree,
-          removeUnmarked = false,
-          mark = (errors contains RefId(_)))
+        tree,
+        removeUnmarked = false,
+        mark = (errors contains RefId(_))
+      )
 
     tree
   }

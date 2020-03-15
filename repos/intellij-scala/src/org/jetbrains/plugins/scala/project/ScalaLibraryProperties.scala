@@ -12,14 +12,14 @@ import com.intellij.openapi.vfs.VfsUtilCore._
 class ScalaLibraryProperties
     extends LibraryProperties[ScalaLibraryPropertiesState] {
   var languageLevel: ScalaLanguageLevel = _
-  var compilerClasspath: Seq[File] = _
+  var compilerClasspath: Seq[File]      = _
 
   loadState(new ScalaLibraryPropertiesState())
 
   def loadState(state: ScalaLibraryPropertiesState) {
     languageLevel = ScalaLanguageLevel.from(state.languageLevel)
-    compilerClasspath = state.compilerClasspath.map(
-        path => new File(urlToPath(path)))
+    compilerClasspath =
+      state.compilerClasspath.map(path => new File(urlToPath(path)))
   }
 
   def getState = {
@@ -31,12 +31,13 @@ class ScalaLibraryProperties
     state
   }
 
-  override def equals(obj: scala.Any) = obj match {
-    case that: ScalaLibraryProperties =>
-      languageLevel == that.languageLevel &&
-      compilerClasspath == that.compilerClasspath
-    case _ => false
-  }
+  override def equals(obj: scala.Any) =
+    obj match {
+      case that: ScalaLibraryProperties =>
+        languageLevel == that.languageLevel &&
+          compilerClasspath == that.compilerClasspath
+      case _ => false
+    }
 
   override def hashCode() =
     languageLevel.hashCode * 31 + compilerClasspath.hashCode

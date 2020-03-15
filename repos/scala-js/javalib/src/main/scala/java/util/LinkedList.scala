@@ -4,7 +4,10 @@ import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 
 class LinkedList[E]()
-    extends AbstractSequentialList[E] with List[E] with Deque[E] with Cloneable
+    extends AbstractSequentialList[E]
+    with List[E]
+    with Deque[E]
+    with Cloneable
     with Serializable {
 
   def this(c: Collection[_ <: E]) = {
@@ -97,7 +100,7 @@ class LinkedList[E]()
     _removeOccurrence(listIterator, o)
 
   override def addAll(c: Collection[_ <: E]): Boolean = {
-    val iter = c.iterator
+    val iter    = c.iterator
     val changed = iter.hasNext()
     while (iter.hasNext()) addLast(iter.next())
 
@@ -133,7 +136,7 @@ class LinkedList[E]()
 
   override def set(index: Int, element: E): E = {
     checkIndexInBounds(index)
-    val node = getNodeAt(index)
+    val node     = getNodeAt(index)
     val oldValue = node.value
     node.value = element
     oldValue
@@ -244,7 +247,7 @@ class LinkedList[E]()
     new ListIterator[E] {
 
       private var last: Double = -1
-      private var i: Double = index
+      private var i: Double    = index
 
       private var currentNode: Node[E] =
         if (index == size) null else getNodeAt(index)
@@ -331,7 +334,7 @@ class LinkedList[E]()
   def descendingIterator(): Iterator[E] = {
     new Iterator[E] {
 
-      private var removeEnabled = false
+      private var removeEnabled     = false
       private var nextNode: Node[E] = LinkedList.this.last
 
       def hasNext(): Boolean =
@@ -362,7 +365,9 @@ class LinkedList[E]()
 
 object LinkedList {
 
-  protected[LinkedList] final class Node[T](var value: T,
-                                            var prev: Node[T] = null,
-                                            var next: Node[T] = null)
+  protected[LinkedList] final class Node[T](
+      var value: T,
+      var prev: Node[T] = null,
+      var next: Node[T] = null
+  )
 }

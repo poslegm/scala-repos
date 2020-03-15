@@ -17,7 +17,7 @@ private[twitter] object EndpointRegistry {
   private type Observation = (AtomicReference[Addr], Closable)
 
   private type EndpointMap = mutable.Map[String, Observation]
-  private type DtabMap = mutable.Map[Dtab, EndpointMap]
+  private type DtabMap     = mutable.Map[Dtab, EndpointMap]
 
   val registry = new EndpointRegistry()
 }
@@ -33,15 +33,16 @@ private[twitter] class EndpointRegistry {
     *
     * @param client Name of the client
     */
-  def endpoints(client: String): Map[Dtab, Map[String, Addr]] = synchronized {
-    registry.get(client) match {
-      case Some(dtabMap) =>
-        dtabMap.mapValues { paths =>
-          paths.mapValues { case (observation, _) => observation.get() }.toMap
-        }.toMap
-      case None => Map.empty
+  def endpoints(client: String): Map[Dtab, Map[String, Addr]] =
+    synchronized {
+      registry.get(client) match {
+        case Some(dtabMap) =>
+          dtabMap.mapValues { paths =>
+            paths.mapValues { case (observation, _) => observation.get() }.toMap
+          }.toMap
+        case None => Map.empty
+      }
     }
-  }
 
   /**
     * Register a collection of endpoints for a given client, Dtab, and path.
@@ -59,8 +60,8 @@ private[twitter] class EndpointRegistry {
       endpoints: Var[Addr]
   ): Unit = {
     val ar: AtomicReference[Addr] = new AtomicReference()
-    val closable = endpoints.changes.register(Witness(ar))
-    val observation = (ar, closable)
+    val closable                  = endpoints.changes.register(Witness(ar))
+    val observation               = (ar, closable)
     synchronized {
       registry.get(client) match {
         case Some(dtabMap) =>
@@ -74,7 +75,7 @@ private[twitter] class EndpointRegistry {
           }
         case None =>
           val endpointMap: EndpointMap = mutable.Map(path -> observation)
-          val dtabMap: DtabMap = mutable.Map(dtab -> endpointMap)
+          val dtabMap: DtabMap         = mutable.Map(dtab -> endpointMap)
           registry.put(client, dtabMap)
       }
     }

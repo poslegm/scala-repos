@@ -29,11 +29,13 @@ package object util {
     * @param callback Generates a string at each offset
     * @param break Produces a string to insert as a break
     */
-  def buildStr(count: Int,
-               total: Int,
-               callback: Int => String,
-               break: => String = " ... "): String = {
-    var i = 0
+  def buildStr(
+      count: Int,
+      total: Int,
+      callback: Int => String,
+      break: => String = " ... "
+  ): String = {
+    var i   = 0
     val buf = new StringBuilder()
     if (total <= count) {
       while (i < total) {

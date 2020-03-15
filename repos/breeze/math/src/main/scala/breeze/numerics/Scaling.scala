@@ -52,7 +52,7 @@ trait Scaling {
     */
   def computeScaleDelta(scores: Array[Double]): Int = {
     var maxScale = -10000
-    var i = 0
+    var i        = 0
     while (i < scores.length) {
       val score = scores(i)
       if (score != 0.0) {
@@ -87,7 +87,10 @@ trait Scaling {
   }
 
   def scaleArrayToScale(
-      scores: Array[Double], currentScale: Int, targetScale: Int) {
+      scores: Array[Double],
+      currentScale: Int,
+      targetScale: Int
+  ) {
     val scaleDelta = targetScale - currentScale
 
     if (scaleDelta != 0) {
@@ -108,10 +111,12 @@ trait Scaling {
     * @param destScale
     * @return the new scale
     */
-  def sumArrays(src: Array[Double],
-                srcScale: Int,
-                dest: Array[Double],
-                destScale: Int): Int = {
+  def sumArrays(
+      src: Array[Double],
+      srcScale: Int,
+      dest: Array[Double],
+      destScale: Int
+  ): Int = {
     if (destScale == srcScale) {
       axpy(1.0, src, dest)
       destScale
@@ -134,7 +139,7 @@ trait Scaling {
     } else {
       // hybrid axpy/scale
       val scaleDelta = destScale - srcScale
-      var i = 0
+      var i          = 0
       while (i < dest.length) {
         dest(i) += java.lang.Math.scalb(src(i), -scaleDelta)
         i += 1

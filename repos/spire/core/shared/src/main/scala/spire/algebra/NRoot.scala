@@ -27,7 +27,8 @@ import spire.math.{ConvertableTo, ConvertableFrom, Number}
 
 object NRoot {
   @inline final def apply[@sp(Int, Long, Float, Double) A](
-      implicit ev: NRoot[A]): NRoot[A] = ev
+      implicit ev: NRoot[A]
+  ): NRoot[A] = ev
 
   /**
     * This will return the largest integer that meets some criteria. Specifically,
@@ -55,8 +56,8 @@ object NRoot {
     */
   private def decDiv(x: BigInt, y: BigInt, r: Int): Stream[BigInt] = {
     val expanded = x * r
-    val quot = expanded / y
-    val rem = expanded - (quot * y)
+    val quot     = expanded / y
+    val rem      = expanded - (quot * y)
 
     if (rem == 0) {
       Stream.cons(quot, Stream.empty)
@@ -100,9 +101,9 @@ object NRoot {
       }
     } else {
       val underlying = BigInt(a.bigDecimal.unscaledValue.toByteArray)
-      val scale = BigInt(10) pow a.scale
-      val intPart = digitize(underlying / scale, radix)
-      val fracPart = decDiv(underlying % scale, scale, radix) map (_.toInt)
+      val scale      = BigInt(10) pow a.scale
+      val intPart    = digitize(underlying / scale, radix)
+      val fracPart   = decDiv(underlying % scale, scale, radix) map (_.toInt)
       val leader =
         if (intPart.size % k == 0) Stream.empty
         else {
@@ -118,12 +119,16 @@ object NRoot {
       val maxSize = (ctxt.getPrecision + 8) / 9 + 2
 
       def findRoot(
-          digits: Stream[Int], y: BigInt, r: BigInt, i: Int): (Int, BigInt) = {
+          digits: Stream[Int],
+          y: BigInt,
+          r: BigInt,
+          i: Int
+      ): (Int, BigInt) = {
         val y_ = y * radix
-        val a = undigitize(digits take k, radix)
+        val a  = undigitize(digits take k, radix)
         // Note: target grows quite fast (so I imagine (y_ + b) pow k does too).
         val target = radixPowK * r + a + (y_ pow k)
-        val b = intSearch(b => ((y_ + b) pow k) <= target)
+        val b      = intSearch(b => ((y_ + b) pow k) <= target)
 
         val ny = y_ + b
 
@@ -140,7 +145,7 @@ object NRoot {
       }
 
       val (size, unscaled) = findRoot(digits, 0, 0, 1)
-      val newscale = (size - (intPart.size + k - 1) / k) * 9
+      val newscale         = (size - (intPart.size + k - 1) / k) * 9
       BigDecimal(unscaled, newscale, ctxt)
     }
 }

@@ -16,7 +16,7 @@ class ScalaBuildProcessParametersProvider
     customScalaCompilerInterfaceDir().toSeq.asJava
 
   private def customScalaCompilerInterfaceDir(): Option[String] = {
-    val key = SbtData.compilerInterfacesKey
+    val key    = SbtData.compilerInterfacesKey
     val custom = Option(System.getProperty(key))
     custom.map(path => s"-D$key=$path")
   }

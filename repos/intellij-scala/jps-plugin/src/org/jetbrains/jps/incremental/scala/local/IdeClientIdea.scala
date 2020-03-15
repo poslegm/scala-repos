@@ -19,24 +19,25 @@ import scala.collection.mutable.ArrayBuffer
   * Nikolay.Tropin
   * 11/18/13
   */
-class IdeClientIdea(compilerName: String,
-                    context: CompileContext,
-                    modules: Seq[String],
-                    consumer: OutputConsumer,
-                    mappingsCallback: Callbacks.Backend,
-                    successfullyCompiled: mutable.Set[File],
-                    packageObjectsData: PackageObjectsData)
-    extends IdeClient(compilerName, context, modules, consumer) {
+class IdeClientIdea(
+    compilerName: String,
+    context: CompileContext,
+    modules: Seq[String],
+    consumer: OutputConsumer,
+    mappingsCallback: Callbacks.Backend,
+    successfullyCompiled: mutable.Set[File],
+    packageObjectsData: PackageObjectsData
+) extends IdeClient(compilerName, context, modules, consumer) {
 
-  private val tempSuccessfullyCompiled = mutable.Set[File]()
+  private val tempSuccessfullyCompiled  = mutable.Set[File]()
   private val packageObjectsBaseClasses = ArrayBuffer[PackageObjectBaseClass]()
 
   //logic is taken from org.jetbrains.jps.incremental.java.OutputFilesSink.save
   def generated(source: File, outputFile: File, name: String): Unit = {
-    val compiledClass = new LazyCompiledClass(outputFile, source, name)
-    val content = compiledClass.getContent
+    val compiledClass   = new LazyCompiledClass(outputFile, source, name)
+    val content         = compiledClass.getContent
     var isTemp: Boolean = false
-    val isClassFile = outputFile.getName.endsWith(".class")
+    val isClassFile     = outputFile.getName.endsWith(".class")
 
     if (source != null && content != null) {
       val sourcePath: String = FileUtil.toSystemIndependentName(source.getPath)
@@ -48,12 +49,15 @@ class IdeClientIdea(compilerName: String,
           try {
             if (isClassFile)
               consumer.registerCompiledClass(
-                  rootDescriptor.target, compiledClass)
+                rootDescriptor.target,
+                compiledClass
+              )
             else
               consumer.registerOutputFile(
-                  rootDescriptor.target,
-                  outputFile,
-                  Collections.singleton[String](sourcePath))
+                rootDescriptor.target,
+                outputFile,
+                Collections.singleton[String](sourcePath)
+              )
           } catch {
             case e: IOException =>
               context.processMessage(new CompilerMessage(compilerName, e))
@@ -63,23 +67,29 @@ class IdeClientIdea(compilerName: String,
       if (!isTemp && isClassFile && !Utils.errorsDetected(context)) {
         try {
           val reader: ClassReader = new ClassReader(
-              content.getBuffer, content.getOffset, content.getLength)
+            content.getBuffer,
+            content.getOffset,
+            content.getLength
+          )
           mappingsCallback.associate(
-              FileUtil.toSystemIndependentName(outputFile.getPath),
-              sourcePath,
-              reader)
+            FileUtil.toSystemIndependentName(outputFile.getPath),
+            sourcePath,
+            reader
+          )
           handlePackageObject(source, outputFile, reader)
         } catch {
           case e: Throwable =>
             val message: String =
               "Class dependency information may be incomplete! Error parsing generated class " +
-              outputFile.getPath
+                outputFile.getPath
             context.processMessage(
-                new CompilerMessage(
-                    compilerName,
-                    BuildMessage.Kind.WARNING,
-                    message + "\n" + CompilerMessage.getTextFromThrowable(e),
-                    sourcePath))
+              new CompilerMessage(
+                compilerName,
+                BuildMessage.Kind.WARNING,
+                message + "\n" + CompilerMessage.getTextFromThrowable(e),
+                sourcePath
+              )
+            )
         }
       }
     }
@@ -101,7 +111,10 @@ class IdeClientIdea(compilerName: String,
   }
 
   private def handlePackageObject(
-      source: File, outputFile: File, reader: ClassReader): Any = {
+      source: File,
+      outputFile: File,
+      reader: ClassReader
+  ): Any = {
     if (outputFile.getName == s"$packageObjectClassName.class") {
       packageObjectsBaseClasses ++=
         collectPackageObjectBaseClasses(source, reader)
@@ -109,7 +122,9 @@ class IdeClientIdea(compilerName: String,
   }
 
   private def collectPackageObjectBaseClasses(
-      source: File, reader: ClassReader): Seq[PackageObjectBaseClass] = {
+      source: File,
+      reader: ClassReader
+  ): Seq[PackageObjectBaseClass] = {
     val baseTypes: Seq[String] = {
       val superClass =
         Option(reader.getSuperName).filterNot(_ == "java/lang/Object")
@@ -122,8 +137,11 @@ class IdeClientIdea(compilerName: String,
     for {
       typeName <- baseTypes.map(_.replace('/', '.'))
       packObjectBaseClass = PackageObjectBaseClass(
-          source, packageName, typeName)
-          if !packageObjectsBaseClasses.contains(packObjectBaseClass)
+        source,
+        packageName,
+        typeName
+      )
+      if !packageObjectsBaseClasses.contains(packObjectBaseClass)
     } yield {
       packObjectBaseClass
     }
@@ -132,10 +150,10 @@ class IdeClientIdea(compilerName: String,
   private def persistPackageObjectData(): Unit = {
     val compiledClasses = consumer.getCompiledClasses
 
-    for (item <- packageObjectsBaseClasses;
-    cc <- Option(compiledClasses.get(item.baseClassName));
-    className <- Option(cc.getClassName)
-                    if className.startsWith(item.packageName)) {
+    for (item      <- packageObjectsBaseClasses;
+         cc        <- Option(compiledClasses.get(item.baseClassName));
+         className <- Option(cc.getClassName)
+         if className.startsWith(item.packageName)) {
 
       packageObjectsData.add(cc.getSourceFile, item.packObjectSrc)
     }
@@ -144,5 +162,8 @@ class IdeClientIdea(compilerName: String,
   }
 
   private case class PackageObjectBaseClass(
-      packObjectSrc: File, packageName: String, baseClassName: String)
+      packObjectSrc: File,
+      packageName: String,
+      baseClassName: String
+  )
 }

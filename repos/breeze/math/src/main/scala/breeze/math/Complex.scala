@@ -73,8 +73,10 @@ case class Complex(real: Double, imag: Double) {
     Complex(this.real - that, this.imag)
 
   def *(that: Complex) =
-    Complex(this.real * that.real - this.imag * that.imag,
-            this.real * that.imag + this.imag * that.real)
+    Complex(
+      this.real * that.real - this.imag * that.imag,
+      this.real * that.imag + this.imag * that.real
+    )
 
   def *(that: Int) =
     Complex(this.real * that, this.imag * that)
@@ -90,8 +92,10 @@ case class Complex(real: Double, imag: Double) {
 
   def /(that: Complex) = {
     val denom = that.real * that.real + that.imag * that.imag
-    Complex((this.real * that.real + this.imag * that.imag) / denom,
-            (this.imag * that.real - this.real * that.imag) / denom)
+    Complex(
+      (this.real * that.real + this.imag * that.imag) / denom,
+      (this.imag * that.real - this.real * that.imag) / denom
+    )
   }
 
   def /(that: Int) =
@@ -111,9 +115,9 @@ case class Complex(real: Double, imag: Double) {
     this - (Complex(floor(div.re()), floor(div.im())) * div)
   }
 
-  def %(that: Int): Complex = this.%(Complex(that, 0))
-  def %(that: Long): Complex = %(Complex(that, 0))
-  def %(that: Float): Complex = %(Complex(that, 0))
+  def %(that: Int): Complex    = this.%(Complex(that, 0))
+  def %(that: Long): Complex   = %(Complex(that, 0))
+  def %(that: Float): Complex  = %(Complex(that, 0))
   def %(that: Double): Complex = %(Complex(that, 0))
 
   def unary_- =
@@ -141,21 +145,22 @@ case class Complex(real: Double, imag: Double) {
       if (b.imag != 0.0 || b.real < 0.0) Complex.nan
       else Complex.zero
     } else {
-      val c = log * b
+      val c       = log * b
       val expReal = math.exp(c.real)
       Complex(expReal * math.cos(c.imag), expReal * math.sin(c.imag))
     }
   }
 
-  override def equals(that: Any) = that match {
-    case that: Complex => this.real == that.real && this.imag == that.imag
-    case real: Double => this.real == real && this.imag == 0
-    case real: Int => this.real == real && this.imag == 0
-    case real: Short => this.real == real && this.imag == 0
-    case real: Long => this.real == real && this.imag == 0
-    case real: Float => this.real == real && this.imag == 0
-    case _ => false
-  }
+  override def equals(that: Any) =
+    that match {
+      case that: Complex => this.real == that.real && this.imag == that.imag
+      case real: Double  => this.real == real && this.imag == 0
+      case real: Int     => this.real == real && this.imag == 0
+      case real: Short   => this.real == real && this.imag == 0
+      case real: Long    => this.real == real && this.imag == 0
+      case real: Float   => this.real == real && this.imag == 0
+      case _             => false
+    }
 
   // ensure hashcode contract is maintained for comparison to non-Complex numbers
   // x ^ 0 is x
@@ -213,7 +218,8 @@ object Complex { outer =>
 
     def toDouble(a: Complex) =
       throw new UnsupportedOperationException(
-          "Cannot automatically convert complex numbers to doubles")
+        "Cannot automatically convert complex numbers to doubles"
+      )
 
     def isNaN(a: Complex) =
       a.real.isNaN || a.imag.isNaN
@@ -469,15 +475,15 @@ object Complex { outer =>
     * Conversions to `Int`, `Long`, `Float` and `Double` are only performed
     * if the imaginary component of the complex number is exactly 0. */
   trait ComplexIsConflicted extends Numeric[Complex] {
-    def plus(x: Complex, y: Complex): Complex = x + y
+    def plus(x: Complex, y: Complex): Complex  = x + y
     def minus(x: Complex, y: Complex): Complex = x - y
     def times(x: Complex, y: Complex): Complex = x * y
-    def negate(x: Complex): Complex = -x
-    def fromInt(x: Int): Complex = Complex(x, 0)
-    def toInt(x: Complex): Int = strictlyReal(x).toInt
-    def toLong(x: Complex): Long = strictlyReal(x).toLong
-    def toFloat(x: Complex): Float = strictlyReal(x).toFloat
-    def toDouble(x: Complex): Double = strictlyReal(x)
+    def negate(x: Complex): Complex            = -x
+    def fromInt(x: Int): Complex               = Complex(x, 0)
+    def toInt(x: Complex): Int                 = strictlyReal(x).toInt
+    def toLong(x: Complex): Long               = strictlyReal(x).toLong
+    def toFloat(x: Complex): Float             = strictlyReal(x).toFloat
+    def toDouble(x: Complex): Double           = strictlyReal(x)
 
     /** Checks that a `Complex` number is strictly real, and returns the real
       * component. */
@@ -489,7 +495,8 @@ object Complex { outer =>
 
   /** `Complex` as `scala.math.Fractional` trait. */
   trait ComplexIsFractional
-      extends ComplexIsConflicted with Fractional[Complex] {
+      extends ComplexIsConflicted
+      with Fractional[Complex] {
     def div(x: Complex, y: Complex): Complex = x / y
   }
 
@@ -510,7 +517,8 @@ object Complex { outer =>
     * `Ordering` is required because `Numeric` extends `Ordering`.  Hence,
     * an ordering based upon the real then imaginary components is used. */
   implicit object ComplexIsFractional
-      extends ComplexIsFractional with ComplexOrdering
+      extends ComplexIsFractional
+      with ComplexOrdering
 
   implicit object logComplexImpl
       extends breeze.numerics.log.Impl[Complex, Complex] {

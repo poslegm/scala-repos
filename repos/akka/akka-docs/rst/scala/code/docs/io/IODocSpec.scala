@@ -44,7 +44,7 @@ class Server extends Actor {
       //#server
       context.parent ! c
       //#server
-      val handler = context.actorOf(Props[SimplisticHandler])
+      val handler    = context.actorOf(Props[SimplisticHandler])
       val connection = sender()
       connection ! Register(handler)
   }
@@ -56,7 +56,7 @@ class SimplisticHandler extends Actor {
   import Tcp._
   def receive = {
     case Received(data) => sender() ! Write(data)
-    case PeerClosed => context stop self
+    case PeerClosed     => context stop self
   }
 }
 //#simplistic-handler

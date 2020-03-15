@@ -6,8 +6,8 @@ import scala.collection.mutable.ArrayBuffer
 final class SQLBuilder { self =>
   import SQLBuilder._
 
-  private val sb = new StringBuilder(128)
-  private val setters = new ArrayBuffer[Setter]
+  private val sb                      = new StringBuilder(128)
+  private val setters                 = new ArrayBuffer[Setter]
   private var currentIndentLevel: Int = 0
 
   def +=(s: String) = { sb append s; this }
@@ -34,13 +34,16 @@ final class SQLBuilder { self =>
   }
 
   def build =
-    Result(sb.toString, { (p: PreparedStatement, idx: Int, param: Any) =>
-      var i = idx
-      for (s <- setters) {
-        s(p, i, param)
-        i += 1
+    Result(
+      sb.toString,
+      { (p: PreparedStatement, idx: Int, param: Any) =>
+        var i = idx
+        for (s <- setters) {
+          s(p, i, param)
+          i += 1
+        }
       }
-    })
+    )
 
   def newLineIndent(): Unit = {
     currentIndentLevel += 1
@@ -55,11 +58,12 @@ final class SQLBuilder { self =>
   def newLineOrSpace(): Unit =
     if (GlobalConfig.sqlIndent) newLine() else this += " "
 
-  private def newLine(): Unit = if (GlobalConfig.sqlIndent) {
-    this += "\n"
-    if (1 <= currentIndentLevel)
-      1.to(currentIndentLevel).foreach(_ => this += "  ")
-  }
+  private def newLine(): Unit =
+    if (GlobalConfig.sqlIndent) {
+      this += "\n"
+      if (1 <= currentIndentLevel)
+        1.to(currentIndentLevel).foreach(_ => this += "  ")
+    }
 }
 
 object SQLBuilder {

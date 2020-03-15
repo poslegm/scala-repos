@@ -8,5 +8,5 @@ trait HostStatsReceiver extends StatsReceiverProxy
 
 class InMemoryHostStatsReceiver extends HostStatsReceiver {
   private[this] val _self: InMemoryStatsReceiver = new InMemoryStatsReceiver
-  def self = _self
+  def self                                       = _self
 }

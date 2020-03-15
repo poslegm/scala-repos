@@ -7,7 +7,7 @@ package bar {
   class S[X[_] <: M[X], A](val x: X[A])
   object S {
     def apply[X[_] <: M[X], A](x: X[A]): S[X, A] = new S[X, A](x)
-    def unapply[X[_] <: M[X], A](p: S[X, A]) = Some(p.x)
+    def unapply[X[_] <: M[X], A](p: S[X, A])     = Some(p.x)
   }
 }
 package foo {

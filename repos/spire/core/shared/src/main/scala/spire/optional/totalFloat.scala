@@ -28,7 +28,7 @@ object totalfloat {
     override def min(x: Float, y: Float): Float =
       if (java.lang.Float.compare(x, y) < 0) x else y
     override def max(x: Float, y: Float): Float = Math.max(x, y)
-    def compare(x: Float, y: Float): Int = java.lang.Float.compare(x, y)
+    def compare(x: Float, y: Float): Int        = java.lang.Float.compare(x, y)
   }
   implicit final val TotalFloatOrder = new TotalFloatOrder {}
 
@@ -48,7 +48,7 @@ object totalfloat {
     override def min(x: Double, y: Double): Double =
       if (java.lang.Double.compare(x, y) < 0) x else y
     override def max(x: Double, y: Double): Double = Math.max(x, y)
-    def compare(x: Double, y: Double): Int = java.lang.Double.compare(x, y)
+    def compare(x: Double, y: Double): Int         = java.lang.Double.compare(x, y)
   }
   implicit final val TotalDoubleOrder = new TotalDoubleOrder {}
 }

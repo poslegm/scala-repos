@@ -1,7 +1,13 @@
 package lila.lobby
 
 import org.joda.time.DateTime
-import reactivemongo.bson.{BSONDocument, BSONInteger, BSONRegex, BSONArray, BSONBoolean}
+import reactivemongo.bson.{
+  BSONDocument,
+  BSONInteger,
+  BSONRegex,
+  BSONArray,
+  BSONBoolean
+}
 import reactivemongo.core.commands._
 import scala.concurrent.duration._
 
@@ -11,11 +17,13 @@ import lila.db.Types.Coll
 import lila.memo.AsyncCache
 import lila.user.{User, UserRepo}
 
-final class SeekApi(coll: Coll,
-                    archiveColl: Coll,
-                    blocking: String => Fu[Set[String]],
-                    maxPerPage: Int,
-                    maxPerUser: Int) {
+final class SeekApi(
+    coll: Coll,
+    archiveColl: Coll,
+    blocking: String => Fu[Set[String]],
+    maxPerPage: Int,
+    maxPerUser: Int
+) {
 
   private sealed trait CacheKey
   private object ForAnon extends CacheKey
@@ -27,10 +35,13 @@ final class SeekApi(coll: Coll,
       .sort(BSONDocument("createdAt" -> -1))
       .cursor[Seek]()
 
-  private val cache = AsyncCache[CacheKey, List[Seek]](f = {
-    case ForAnon => allCursor.collect[List](maxPerPage)
-    case ForUser => allCursor.collect[List]()
-  }, timeToLive = 3.seconds)
+  private val cache = AsyncCache[CacheKey, List[Seek]](
+    f = {
+      case ForAnon => allCursor.collect[List](maxPerPage)
+      case ForUser => allCursor.collect[List]()
+    },
+    timeToLive = 3.seconds
+  )
 
   def forAnon = cache(ForAnon)
 
@@ -39,12 +50,13 @@ final class SeekApi(coll: Coll,
       forUser(LobbyUser.make(user, blocking))
     }
 
-  def forUser(user: LobbyUser): Fu[List[Seek]] = cache(ForUser) map { seeks =>
-    val filtered = seeks.filter { seek =>
-      seek.user.id == user.id || Biter.canJoin(seek, user)
+  def forUser(user: LobbyUser): Fu[List[Seek]] =
+    cache(ForUser) map { seeks =>
+      val filtered = seeks.filter { seek =>
+        seek.user.id == user.id || Biter.canJoin(seek, user)
+      }
+      noDupsFor(user, filtered) take maxPerPage
     }
-    noDupsFor(user, filtered) take maxPerPage
-  }
 
   private def noDupsFor(user: LobbyUser, seeks: List[Seek]) =
     seeks
@@ -52,11 +64,13 @@ final class SeekApi(coll: Coll,
         case ((res, h), seek) if seek.user.id == user.id => (seek :: res, h)
         case ((res, h), seek) =>
           val seekH =
-            List(seek.variant,
-                 seek.daysPerTurn,
-                 seek.mode,
-                 seek.color,
-                 seek.user.id) mkString ","
+            List(
+              seek.variant,
+              seek.daysPerTurn,
+              seek.mode,
+              seek.color,
+              seek.user.id
+            ) mkString ","
           if (h contains seekH) (res, h)
           else (seek :: res, h + seekH)
       }
@@ -86,8 +100,12 @@ final class SeekApi(coll: Coll,
   def archive(seek: Seek, gameId: String) = {
     val archiveDoc =
       Seek.seekBSONHandler.write(seek) ++ BSONDocument(
-          "gameId" -> gameId, "archivedAt" -> DateTime.now)
-    coll.remove(BSONDocument("_id" -> seek.id)).void >> cache.clear >> archiveColl
+        "gameId"     -> gameId,
+        "archivedAt" -> DateTime.now
+      )
+    coll
+      .remove(BSONDocument("_id" -> seek.id))
+      .void >> cache.clear >> archiveColl
       .insert(archiveDoc)
   }
 
@@ -96,9 +114,11 @@ final class SeekApi(coll: Coll,
 
   def removeBy(seekId: String, userId: String) =
     coll
-      .remove(BSONDocument(
-              "_id" -> seekId,
-              "user.id" -> userId
-          ))
+      .remove(
+        BSONDocument(
+          "_id"     -> seekId,
+          "user.id" -> userId
+        )
+      )
       .void >> cache.clear
 }

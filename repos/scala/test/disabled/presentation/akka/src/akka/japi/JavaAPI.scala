@@ -90,7 +90,7 @@ object Option {
     * <code>A</code>.
     */
   final case class Some[A](v: A) extends Option[A] {
-    def get = v
+    def get     = v
     def isEmpty = false
     def asScala = scala.Some(v)
   }
@@ -99,7 +99,7 @@ object Option {
     * This case object represents non-existent values.
     */
   private case object None extends Option[Nothing] {
-    def get = throw new NoSuchElementException("None.get")
+    def get     = throw new NoSuchElementException("None.get")
     def isEmpty = true
     def asScala = scala.None
   }

@@ -179,7 +179,7 @@ class TailCall[S](s: S) {
   final def b2(x: Int): Boolean =
     (x > 0) && ((x == 1) || b1(x - 1))
 
-  def h1(n: Int, v: Int): Int = hP(n, v);
+  def h1(n: Int, v: Int): Int         = hP(n, v);
   private def hP(n: Int, v: Int): Int = if (n == 0) v else hP(n - 1, v - 1);
 
   // !!! test return in non-tail-call position
@@ -225,7 +225,8 @@ class FancyTailCalls {
     if ({
       def loop(n: Int): Int = if (n == 0) v else loop(n - 1)
       loop(x)
-    } == v) true else false
+    } == v) true
+    else false
   }
   def tcInPatternGuard(x: Int, v: Int): Boolean =
     v match {
@@ -253,10 +254,11 @@ class NonTailCall {
       Console.print(" " + n)
     }
 
-  final def f2(n: Int): Int = synchronized {
-    if (n == 0) 0
-    else f2(n - 1)
-  }
+  final def f2(n: Int): Int =
+    synchronized {
+      if (n == 0) 0
+      else f2(n - 1)
+    }
 }
 
 //############################################################################
@@ -274,8 +276,8 @@ object Test {
       }
     } catch {
       case exception: Throwable => {
-          print(" raised exception " + exception)
-        }
+        print(" raised exception " + exception)
+      }
     }
     println
   }
@@ -291,8 +293,8 @@ object Test {
       }
     } catch {
       case exception: Throwable => {
-          Console.print(" raised exception " + exception);
-        }
+        Console.print(" raised exception " + exception);
+      }
     }
     println
   }
@@ -305,16 +307,16 @@ object Test {
       case exception: compat.Platform.StackOverflowError =>
         println(" was successful")
       case exception: Throwable => {
-          print(" raised exception " + exception)
-        }
+        print(" raised exception " + exception)
+      }
     }
     println
   }
 
   def calibrate: Int = {
     val calibrator = new Calibrator();
-    var stop = false;
-    var n = 1;
+    var stop       = false;
+    var n          = 1;
     while (!stop) {
       try {
         calibrator.f(n, n);
@@ -334,10 +336,10 @@ object Test {
       if (scala.tools.partest.utils.Properties.isAvian) 10000 else calibrate
 
     // test tail calls in different contexts
-    val Final = new Final()
-    val Class = new Class()
-    val SubClass = new SubClass()
-    val Sealed = new Sealed()
+    val Final     = new Final()
+    val Class     = new Class()
+    val SubClass  = new SubClass()
+    val Sealed    = new Sealed()
     val SubSealed = new SubSealed()
     check_success("Object   .f", Object.f(max, max), 0)
     check_success("Final    .f", Final.f(max, max), 0)
@@ -401,21 +403,35 @@ object Test {
 
     val FancyTailCalls = new FancyTailCalls;
     check_success(
-        "FancyTailCalls.tcTryLocal", FancyTailCalls.tcTryLocal(max, max), max)
-    check_success_b("FancyTailCalls.tcInBooleanExprFirstOp",
-                    FancyTailCalls.tcInBooleanExprFirstOp(max, max),
-                    true)
-    check_success_b("FancyTailCalls.tcInBooleanExprSecondOp",
-                    FancyTailCalls.tcInBooleanExprSecondOp(max, max),
-                    true)
+      "FancyTailCalls.tcTryLocal",
+      FancyTailCalls.tcTryLocal(max, max),
+      max
+    )
     check_success_b(
-        "FancyTailCalls.tcInIfCond", FancyTailCalls.tcInIfCond(max, max), true)
-    check_success_b("FancyTailCalls.tcInPatternGuard",
-                    FancyTailCalls.tcInPatternGuard(max, max),
-                    true)
-    check_success("FancyTailCalls.differentInstance",
-                  FancyTailCalls.differentInstance(max, 42),
-                  42)
+      "FancyTailCalls.tcInBooleanExprFirstOp",
+      FancyTailCalls.tcInBooleanExprFirstOp(max, max),
+      true
+    )
+    check_success_b(
+      "FancyTailCalls.tcInBooleanExprSecondOp",
+      FancyTailCalls.tcInBooleanExprSecondOp(max, max),
+      true
+    )
+    check_success_b(
+      "FancyTailCalls.tcInIfCond",
+      FancyTailCalls.tcInIfCond(max, max),
+      true
+    )
+    check_success_b(
+      "FancyTailCalls.tcInPatternGuard",
+      FancyTailCalls.tcInPatternGuard(max, max),
+      true
+    )
+    check_success(
+      "FancyTailCalls.differentInstance",
+      FancyTailCalls.differentInstance(max, 42),
+      42
+    )
     check_success("PolyObject.tramp", PolyObject.tramp[Int](max), 0)
   }
 

@@ -16,7 +16,7 @@ class ScalaTypeSurrounder extends ScalaExpressionSurrounder {
   override def getTemplateAsString(elements: Array[PsiElement]): String = {
     val expression = elements(0).asInstanceOf[ScExpression]
     val typeResult = expression.getType(TypingContext.empty)
-    val typeText = typeResult.map(ScType.presentableText(_)).getOrElse("Any")
+    val typeText   = typeResult.map(ScType.presentableText(_)).getOrElse("Any")
     "(" + super.getTemplateAsString(elements) + ": " + typeText + ")"
   }
 
@@ -26,14 +26,14 @@ class ScalaTypeSurrounder extends ScalaExpressionSurrounder {
     if (elements.length != 1) return false
     elements(0) match {
       case x: ScExpression => true
-      case _ => return false
+      case _               => return false
     }
   }
 
   override def getSurroundSelectionRange(withType: ASTNode): TextRange = {
     lazy val defaultRange = {
       val expr: ScExpression = withType.getPsi.asInstanceOf[ScExpression]
-      val offset = expr.getTextRange.getEndOffset
+      val offset             = expr.getTextRange.getEndOffset
       new TextRange(offset, offset)
     }
 
@@ -43,9 +43,9 @@ class ScalaTypeSurrounder extends ScalaExpressionSurrounder {
           case Some(y: ScTypedStmt) =>
             y.typeElement match {
               case Some(te: ScTypeElement) => {
-                  if (te.getText() == "Any") te.getTextRange
-                  else defaultRange
-                }
+                if (te.getText() == "Any") te.getTextRange
+                else defaultRange
+              }
               case _ => defaultRange
             }
           case _ => defaultRange

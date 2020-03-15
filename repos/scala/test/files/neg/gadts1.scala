@@ -1,13 +1,13 @@
 object Test {
 
   abstract class Number
-  case class Int(n: scala.Int) extends Number
+  case class Int(n: scala.Int)       extends Number
   case class Double(d: scala.Double) extends Number
 
   trait Term[+a]
-  case class Cell[a](var x: a) extends Term[a]
+  case class Cell[a](var x: a)      extends Term[a]
   case class NumTerm(val n: Number) extends Term[Number]
-  class IntTerm(n: Int) extends NumTerm(n) with Term[Int]
+  class IntTerm(n: Int)             extends NumTerm(n) with Term[Int]
 
   def f[a](t: Term[a], c: Cell[a]): Unit = {
     t match {

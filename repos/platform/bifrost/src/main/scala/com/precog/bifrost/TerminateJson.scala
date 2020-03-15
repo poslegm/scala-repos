@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -26,9 +26,10 @@ import scalaz._
 import scalaz.syntax.monad._
 
 object TerminateJson {
-  final class ArrayStack[@specialized(Int) A : Manifest](
-      initCapacity: Int = 128) {
-    private[bifrost] var stack = new Array[A](initCapacity)
+  final class ArrayStack[@specialized(Int) A: Manifest](
+      initCapacity: Int = 128
+  ) {
+    private[bifrost] var stack     = new Array[A](initCapacity)
     private[bifrost] var next: Int = 0
 
     private def resize() {
@@ -47,7 +48,8 @@ object TerminateJson {
     def head: A = {
       if (next == 0)
         throw new IllegalStateException(
-            "Cannot pop element off of empty stack.")
+          "Cannot pop element off of empty stack."
+        )
       stack(next - 1)
     }
 
@@ -60,12 +62,13 @@ object TerminateJson {
     def pop(): A = {
       if (next == 0)
         throw new IllegalStateException(
-            "Cannot pop element off of empty stack.")
+          "Cannot pop element off of empty stack."
+        )
       next -= 1
       stack(next)
     }
 
-    def isEmpty: Boolean = next == 0
+    def isEmpty: Boolean  = next == 0
     def nonEmpty: Boolean = next > 0
     override def toString: String =
       stack.take(next).mkString("ArrayStack(", ", ", ")")
@@ -73,10 +76,10 @@ object TerminateJson {
 
   @inline private final val ExpectValue = 0
   @inline private final val ExpectField = 1
-  @inline private final val SkipChar = 2
-  @inline private final val FieldDelim = 3
+  @inline private final val SkipChar    = 2
+  @inline private final val FieldDelim  = 3
   @inline private final val CloseString = 4
-  @inline private final val CloseArray = 5
+  @inline private final val CloseArray  = 5
   @inline private final val CloseObject = 6
 
   /**
@@ -88,22 +91,26 @@ object TerminateJson {
     * least 1 value in the stream. If the stream is empty, then `null` will be
     * inserted.
     */
-  def ensure[M[+ _]: Monad](
-      stream0: StreamT[M, CharBuffer]): StreamT[M, CharBuffer] = {
-    def build(stack0: ArrayStack[Int],
-              buf: CharBuffer): (ArrayStack[Int], CharBuffer) = {
+  def ensure[M[+_]: Monad](
+      stream0: StreamT[M, CharBuffer]
+  ): StreamT[M, CharBuffer] = {
+    def build(
+        stack0: ArrayStack[Int],
+        buf: CharBuffer
+    ): (ArrayStack[Int], CharBuffer) = {
       val stack = stack0.copy()
 
       while (buf.remaining() > 0) {
         val c = buf.get()
 
-        def anyValue(): Boolean = c match {
-          case '"' => stack.push(CloseString); true
-          case '[' => stack.push(CloseArray); true
-          case '{' => stack.push(CloseObject); true
-          case s if isWhitespace(s) => false
-          case c => true
-        }
+        def anyValue(): Boolean =
+          c match {
+            case '"'                  => stack.push(CloseString); true
+            case '['                  => stack.push(CloseArray); true
+            case '{'                  => stack.push(CloseObject); true
+            case s if isWhitespace(s) => false
+            case c                    => true
+          }
 
         if (stack.isEmpty) {
           anyValue()
@@ -155,23 +162,25 @@ object TerminateJson {
           val sb = new StringBuilder()
           while (stack.nonEmpty) {
             sb ++=
-            (stack.pop() match {
-                  case ExpectValue => "null"
-                  case ExpectField => "\"\":null"
-                  case SkipChar => "\""
-                  case FieldDelim => ":"
-                  case CloseString => "\""
-                  case CloseArray => "]"
-                  case CloseObject => "}"
-                  case _ => sys.error("Unreachable.")
-                })
+              (stack.pop() match {
+                case ExpectValue => "null"
+                case ExpectField => "\"\":null"
+                case SkipChar    => "\""
+                case FieldDelim  => ":"
+                case CloseString => "\""
+                case CloseArray  => "]"
+                case CloseObject => "}"
+                case _           => sys.error("Unreachable.")
+              })
           }
           CharBuffer.wrap(sb.toString)
         })
     }
 
-    def rec(stack0: ArrayStack[Int],
-            stream: StreamT[M, CharBuffer]): StreamT[M, CharBuffer] = {
+    def rec(
+        stack0: ArrayStack[Int],
+        stream: StreamT[M, CharBuffer]
+    ): StreamT[M, CharBuffer] = {
       StreamT(stream.uncons map {
         case Some((buf0, tail)) =>
           val (stack, buf) = build(stack0, buf0)

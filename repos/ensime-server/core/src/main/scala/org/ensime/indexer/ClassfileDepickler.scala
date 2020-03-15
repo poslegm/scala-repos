@@ -15,8 +15,8 @@ class ClassfileDepickler(file: FileObject) {
   private def depickle: Option[ScalaSig] = {
     val in = file.getContent.getInputStream
     try {
-      val bytes = ByteStreams.toByteArray(in)
-      val byteCode = ByteCode(bytes)
+      val bytes     = ByteStreams.toByteArray(in)
+      val byteCode  = ByteCode(bytes)
       val classFile = ClassFileParser.parse(byteCode)
       ScalaSigParser.parse(classFile)
     } catch {
@@ -30,7 +30,7 @@ class ClassfileDepickler(file: FileObject) {
       case Some(sig: ScalaSig) =>
         sig.symbols.flatMap {
           case s: AliasSymbol => Some(RawType(symbolName(s), access(s)))
-          case _ => None
+          case _              => None
         }
       case None => Nil
     }
@@ -45,8 +45,8 @@ class ClassfileDepickler(file: FileObject) {
   private def symbolName(a: Symbol): String = {
     a.parent match {
       case Some(s: SymbolInfoSymbol) => symbolName(s) + "$" + a.name
-      case Some(s: Symbol) => s.toString + "." + a.name
-      case None => a.name
+      case Some(s: Symbol)           => s.toString + "." + a.name
+      case None                      => a.name
     }
   }
 }

@@ -25,17 +25,16 @@ object TalkToMeGoose {
     */
   def main(args: Array[String]) {
     try {
-      val url: String = args(0)
+      val url: String           = args(0)
       val config: Configuration = new Configuration
       config.enableImageFetching = false
-      val goose = new Goose(config)
+      val goose   = new Goose(config)
       val article = goose.extractContent(url)
       println(article.cleanedArticleText)
     } catch {
       case e: Exception => {
-          System.out.println(
-              "Make sure you pass in a valid URL: " + e.toString)
-        }
+        System.out.println("Make sure you pass in a valid URL: " + e.toString)
+      }
     }
   }
 }

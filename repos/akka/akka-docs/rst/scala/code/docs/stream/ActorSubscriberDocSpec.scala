@@ -33,7 +33,7 @@ object ActorSubscriberDocSpec {
     import ActorSubscriberMessage._
 
     val MaxQueueSize = 10
-    var queue = Map.empty[Int, ActorRef]
+    var queue        = Map.empty[Int, ActorRef]
 
     val router = {
       val routees = Vector.fill(3) {
@@ -43,7 +43,8 @@ object ActorSubscriberDocSpec {
     }
 
     override val requestStrategy = new MaxInFlightRequestStrategy(
-        max = MaxQueueSize) {
+      max = MaxQueueSize
+    ) {
       override def inFlightInternally: Int = queue.size
     }
 

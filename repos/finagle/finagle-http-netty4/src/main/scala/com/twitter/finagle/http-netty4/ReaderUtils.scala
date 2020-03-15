@@ -11,19 +11,19 @@ private[http4] object ReaderUtils {
   /**
     * Serialize a http chunk into a Buf.
     */
-  def readChunk(chunk: Any): Future[Option[Buf]] = chunk match {
-    case chunk: NettyHttp.LastHttpContent =>
-      Future.None
+  def readChunk(chunk: Any): Future[Option[Buf]] =
+    chunk match {
+      case chunk: NettyHttp.LastHttpContent =>
+        Future.None
 
-    case chunk: NettyHttp.HttpContent =>
-      Future.value(Some(ByteBufAsBuf.Owned(chunk.content.duplicate)))
+      case chunk: NettyHttp.HttpContent =>
+        Future.value(Some(ByteBufAsBuf.Owned(chunk.content.duplicate)))
 
-    case invalid =>
-      Future.exception(
-          new IllegalArgumentException(
-              "invalid message \"%s\"".format(invalid))
-      )
-  }
+      case invalid =>
+        Future.exception(
+          new IllegalArgumentException("invalid message \"%s\"".format(invalid))
+        )
+    }
 
   /**
     * Translates a Buf into HttpContent. Beware: an empty buffer indicates end
@@ -47,7 +47,7 @@ private[http4] object ReaderUtils {
       case Some(buf) =>
         trans.write(chunkOfBuf(buf)).transform {
           case Return(_) => streamChunks(trans, r, bufSize)
-          case _ => Future(r.discard())
+          case _         => Future(r.discard())
         }
     }
   }

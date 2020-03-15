@@ -100,9 +100,11 @@ object MultipleShapeDrawingDemo extends JFXApp {
   val drawingPane = new Pane {
     // For simplicity of the demo, just add all shapes to canvas, single instance of each type.
     // Initially, they have zero area so they will not be visible.
-    children ++= Seq(RectangleInteractor.rectangle,
-                     EllipseInteractor.ellipse,
-                     LineInteractor.line)
+    children ++= Seq(
+      RectangleInteractor.rectangle,
+      EllipseInteractor.ellipse,
+      LineInteractor.line
+    )
   }
 
   stage = new PrimaryStage {
@@ -112,35 +114,35 @@ object MultipleShapeDrawingDemo extends JFXApp {
         top = new ToolBar {
           val alignToggleGroup = new ToggleGroup()
           content = List(
-              new ToggleButton {
-                id = "rectangle"
-                graphic = new Rectangle {
-                  fill = Color.web("RED", 0.5)
-                  width = 32
-                  height = 32
-                }
-                toggleGroup = alignToggleGroup
-              },
-              new ToggleButton {
-                id = "ellipse"
-                graphic = new Circle {
-                  fill = Color.web("GREEN", 0.5)
-                  radius = 16
-                }
-                toggleGroup = alignToggleGroup
-              },
-              new ToggleButton {
-                id = "line"
-                graphic = new Line {
-                  stroke = Color.web("BLUE", 0.5)
-                  startX = 0
-                  startY = 0
-                  endX = 28
-                  endY = 28
-                  strokeWidth = 3
-                }
-                toggleGroup = alignToggleGroup
+            new ToggleButton {
+              id = "rectangle"
+              graphic = new Rectangle {
+                fill = Color.web("RED", 0.5)
+                width = 32
+                height = 32
               }
+              toggleGroup = alignToggleGroup
+            },
+            new ToggleButton {
+              id = "ellipse"
+              graphic = new Circle {
+                fill = Color.web("GREEN", 0.5)
+                radius = 16
+              }
+              toggleGroup = alignToggleGroup
+            },
+            new ToggleButton {
+              id = "line"
+              graphic = new Line {
+                stroke = Color.web("BLUE", 0.5)
+                startX = 0
+                startY = 0
+                endX = 28
+                endY = 28
+                strokeWidth = 3
+              }
+              toggleGroup = alignToggleGroup
+            }
           )
 
           // Subscription to the current mouse event handler
@@ -157,14 +159,14 @@ object MultipleShapeDrawingDemo extends JFXApp {
               .id()
             val selectedHandler = handlerId match {
               case "rectangle" => Some(RectangleInteractor.handler)
-              case "ellipse" => Some(EllipseInteractor.handler)
-              case "line" => Some(LineInteractor.handler)
-              case _ => None
+              case "ellipse"   => Some(EllipseInteractor.handler)
+              case "line"      => Some(LineInteractor.handler)
+              case _           => None
             }
             // Selected corresponding handler
             mouseHandlerSubscription = selectedHandler match {
               case Some(h) => Some(drawingPane.handleEvent(MouseEvent.Any)(h))
-              case None => None
+              case None    => None
             }
           }
 
@@ -186,7 +188,7 @@ object MultipleShapeDrawingDemo extends JFXApp {
   /** Encapsulates common behaviour of interaction when drawing a shape based on two points. */
   trait ShapeDrawInteractor extends MouseHandler {
     private var _start = new Point2D(0, 0)
-    private var _end = new Point2D(0, 0)
+    private var _end   = new Point2D(0, 0)
 
     def start: Point2D = _start
     def start_=(p: Point2D) {
@@ -209,7 +211,7 @@ object MultipleShapeDrawingDemo extends JFXApp {
         me.eventType match {
           case MouseEvent.MousePressed => start = new Point2D(me.x, me.y)
           case MouseEvent.MouseDragged => end = new Point2D(me.x, me.y)
-          case _ => {}
+          case _                       => {}
         }
       }
     }

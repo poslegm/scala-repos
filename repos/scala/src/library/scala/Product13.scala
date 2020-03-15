@@ -11,8 +11,8 @@ package scala
 
 object Product13 {
   def unapply[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13](
-      x: Product13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13])
-    : Option[Product13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]] =
+      x: Product13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]
+  ): Option[Product13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]] =
     Some(x)
 }
 
@@ -20,8 +20,21 @@ object Product13 {
   *  @since 2.3
   */
 trait Product13[
-    +T1, +T2, +T3, +T4, +T5, +T6, +T7, +T8, +T9, +T10, +T11, +T12, +T13]
-    extends Any with Product {
+    +T1,
+    +T2,
+    +T3,
+    +T4,
+    +T5,
+    +T6,
+    +T7,
+    +T8,
+    +T9,
+    +T10,
+    +T11,
+    +T12,
+    +T13
+] extends Any
+    with Product {
 
   /** The arity of this product.
     *  @return 13
@@ -36,22 +49,23 @@ trait Product13[
     *  @throws  IndexOutOfBoundsException
     */
   @throws(classOf[IndexOutOfBoundsException])
-  override def productElement(n: Int) = n match {
-    case 0 => _1
-    case 1 => _2
-    case 2 => _3
-    case 3 => _4
-    case 4 => _5
-    case 5 => _6
-    case 6 => _7
-    case 7 => _8
-    case 8 => _9
-    case 9 => _10
-    case 10 => _11
-    case 11 => _12
-    case 12 => _13
-    case _ => throw new IndexOutOfBoundsException(n.toString())
-  }
+  override def productElement(n: Int) =
+    n match {
+      case 0  => _1
+      case 1  => _2
+      case 2  => _3
+      case 3  => _4
+      case 4  => _5
+      case 5  => _6
+      case 6  => _7
+      case 7  => _8
+      case 8  => _9
+      case 9  => _10
+      case 10 => _11
+      case 11 => _12
+      case 12 => _13
+      case _  => throw new IndexOutOfBoundsException(n.toString())
+    }
 
   /** A projection of element 1 of this Product.
     *  @return   A projection of element 1.

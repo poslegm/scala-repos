@@ -5,9 +5,9 @@ import scala.{specialized => sp}
 //       frames we want to inspect.
 
 object Test {
-  def caller = new Exception().getStackTrace()(1).getMethodName
-  def f1[@sp(Int) A](a: A, b: Any) = { val c = caller; print(""); c }
-  def f2[@sp(Int) A, B](a: A, b: String) = { val c = caller; print(""); c }
+  def caller                              = new Exception().getStackTrace()(1).getMethodName
+  def f1[@sp(Int) A](a: A, b: Any)        = { val c = caller; print(""); c }
+  def f2[@sp(Int) A, B](a: A, b: String)  = { val c = caller; print(""); c }
   def f3[B, @sp(Int) A](a: A, b: List[B]) = { val c = caller; print(""); c }
   def f4[B, @sp(Int) A](a: A, b: List[(A, B)]) = {
     val c = caller; print(""); c
@@ -32,7 +32,7 @@ object Test {
   }
 
   def main(args: Array[String]) {
-    val s = ""
+    val s      = ""
     val result = s"""|- Unspecialized type args
           |// Specialized
           |f1 ${f1(1, "some ref")}

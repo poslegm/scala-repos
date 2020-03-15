@@ -54,17 +54,19 @@ object StreamingKMeansExample {
 
   def main(args: Array[String]) {
     if (args.length != 5) {
-      System.err.println("Usage: StreamingKMeansExample " +
-          "<trainingDir> <testDir> <batchDuration> <numClusters> <numDimensions>")
+      System.err.println(
+        "Usage: StreamingKMeansExample " +
+          "<trainingDir> <testDir> <batchDuration> <numClusters> <numDimensions>"
+      )
       System.exit(1)
     }
 
     // $example on$
     val conf = new SparkConf().setAppName("StreamingKMeansExample")
-    val ssc = new StreamingContext(conf, Seconds(args(2).toLong))
+    val ssc  = new StreamingContext(conf, Seconds(args(2).toLong))
 
     val trainingData = ssc.textFileStream(args(0)).map(Vectors.parse)
-    val testData = ssc.textFileStream(args(1)).map(LabeledPoint.parse)
+    val testData     = ssc.textFileStream(args(1)).map(LabeledPoint.parse)
 
     val model = new StreamingKMeans()
       .setK(args(3).toInt)

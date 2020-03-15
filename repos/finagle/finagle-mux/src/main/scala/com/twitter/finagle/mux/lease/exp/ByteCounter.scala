@@ -33,11 +33,12 @@ private[lease] trait ByteCounter {
   * running.
   */
 // It might be simpler to just make it an exponential moving average.
-private[lease] class WindowedByteCounter private[lease](
+private[lease] class WindowedByteCounter private[lease] (
     val info: JvmInfo,
     ctx: Context
-)
-    extends Thread("WindowedByteClock") with ByteCounter with Closable {
+) extends Thread("WindowedByteClock")
+    with ByteCounter
+    with Closable {
 
   import WindowedByteCounter._
 
@@ -66,23 +67,23 @@ private[lease] class WindowedByteCounter private[lease](
   }
 
   @volatile private[this] var count = info.generation()
-  @volatile private[this] var idx = 0
+  @volatile private[this] var idx   = 0
 
   // possible range of gc
   /** The timestamp of the last gc, precise to within period P. */
-  @volatile var lastGc: Time = Time.now
+  @volatile var lastGc: Time          = Time.now
   @volatile private[this] var running = true
 
   // used to unflaky our tests--DO NOT USE
   @volatile private[lease] var passCount: Int = 0
 
   /** @return allocation rate in bytes per millisecond. */
-  def rate(): Double = sum().inBytes / W.inMilliseconds
+  def rate(): Double                   = sum().inBytes / W.inMilliseconds
   private[this] def lastRate(): Double = allocs(idx).inBytes / P.inMilliseconds
 
   override def toString =
     "WindowedByteCounter(windowed=" + rate() + "bpms; last=" + lastRate() +
-    "bpms; count=" + count + "; sum=" + sum() + "bytes)"
+      "bpms; count=" + count + "; sum=" + sum() + "bytes)"
 
   /**
     * Measures the amount of bytes used since the last sample, and bumps
@@ -95,8 +96,8 @@ private[lease] class WindowedByteCounter private[lease](
     while (running) {
       Time.sleep(P)
 
-      val curUsed = info.used()
-      val curCount = info.generation()
+      val curUsed   = info.used()
+      val curCount  = info.generation()
       val newlyUsed = curUsed - prevUsed
 
       // TODO: Wake up sleepers if the rate changes more than some
@@ -131,7 +132,7 @@ private[lease] class WindowedByteCounter private[lease](
 private[lease] object WindowedByteCounter {
   // TODO: W, P could be configurable--for some servers, 100ms may be too slow
   private[lease] val W = 2000.milliseconds // window size
-  private[lease] val P = 100.milliseconds // poll period
+  private[lease] val P = 100.milliseconds  // poll period
   private[lease] val N =
     (W.inMilliseconds / P.inMilliseconds).toInt // # of polls in a window
 }

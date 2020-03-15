@@ -26,7 +26,7 @@ class SerializationSuite extends SparkFunSuite {
     val hiveContext = org.apache.spark.sql.hive.test.TestHive
     hiveContext.hiveconf
     val serializer = new JavaSerializer(new SparkConf()).newInstance()
-    val bytes = serializer.serialize(hiveContext)
-    val deSer = serializer.deserialize[AnyRef](bytes)
+    val bytes      = serializer.serialize(hiveContext)
+    val deSer      = serializer.deserialize[AnyRef](bytes)
   }
 }

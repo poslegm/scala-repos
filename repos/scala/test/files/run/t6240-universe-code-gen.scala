@@ -2,22 +2,25 @@ import scala.tools.partest.nest.FileManager._
 
 object Test extends App {
   val cm = reflect.runtime.currentMirror
-  val u = cm.universe
+  val u  = cm.universe
   import u._
 
-  val JavaUniverseTpe = typeOf[reflect.runtime.JavaUniverse]
+  val JavaUniverseTpe   = typeOf[reflect.runtime.JavaUniverse]
   val DefinitionsModule = JavaUniverseTpe.member(TermName("definitions"))
 
   def forceCode(prefix: String, tp: Type): String = {
-    def isLazyAccessorOrObject(sym: Symbol) = ((sym.isMethod &&
-            sym.asMethod.isLazy) || sym.isModule)
+    def isLazyAccessorOrObject(sym: Symbol) =
+      ((sym.isMethod &&
+        sym.asMethod.isLazy) || sym.isModule)
     val forceables = tp.members.sorted.filter(isLazyAccessorOrObject)
-    forceables.map { sym =>
-      val path = s"$prefix.${sym.name}"
-      "    " +
-      (if (sym.isPrivate || sym.isProtected) s"// inaccessible: $path"
-       else path)
-    }.mkString("\n")
+    forceables
+      .map { sym =>
+        val path = s"$prefix.${sym.name}"
+        "    " +
+          (if (sym.isPrivate || sym.isProtected) s"// inaccessible: $path"
+           else path)
+      }
+      .mkString("\n")
   }
 
   val code =
@@ -51,20 +54,28 @@ object Test extends App {
         |${forceCode("this", JavaUniverseTpe)}
         |${forceCode("definitions", DefinitionsModule.info)}
         |${forceCode(
-           "refChecks", typeOf[scala.reflect.internal.transform.RefChecks])}
+         "refChecks",
+         typeOf[scala.reflect.internal.transform.RefChecks]
+       )}
         |${forceCode(
-           "uncurry", typeOf[scala.reflect.internal.transform.UnCurry])}
+         "uncurry",
+         typeOf[scala.reflect.internal.transform.UnCurry]
+       )}
         |${forceCode(
-           "erasure", typeOf[scala.reflect.internal.transform.Erasure])}
+         "erasure",
+         typeOf[scala.reflect.internal.transform.Erasure]
+       )}
         |  }
         |}""".stripMargin
 
   import java.io.File
   val testFile = new File(sys.props("partest.test-path"))
-  val actualFile = new java.io.File(testFile.getParent +
-      "/../../../src/reflect/scala/reflect/runtime/JavaUniverseForce.scala").getCanonicalFile
-  val actual = scala.io.Source.fromFile(actualFile)
-  val actualLines = actual.getLines.toList
+  val actualFile = new java.io.File(
+    testFile.getParent +
+      "/../../../src/reflect/scala/reflect/runtime/JavaUniverseForce.scala"
+  ).getCanonicalFile
+  val actual         = scala.io.Source.fromFile(actualFile)
+  val actualLines    = actual.getLines.toList
   val generatedLines = code.lines.toList
   if (actualLines != generatedLines) {
     val msg = s"""|${actualFile} must be updated.

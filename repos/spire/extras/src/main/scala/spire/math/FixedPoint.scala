@@ -58,9 +58,9 @@ class FixedPoint(val long: Long) extends AnyVal { lhs =>
   def compare(rhs: FixedPoint): Int =
     if (lhs.long < rhs.long) -1 else if (lhs.long == rhs.long) 0 else 1
 
-  def <(rhs: FixedPoint): Boolean = lhs.long < rhs.long
+  def <(rhs: FixedPoint): Boolean  = lhs.long < rhs.long
   def <=(rhs: FixedPoint): Boolean = lhs.long <= rhs.long
-  def >(rhs: FixedPoint): Boolean = lhs.long > rhs.long
+  def >(rhs: FixedPoint): Boolean  = lhs.long > rhs.long
   def >=(rhs: FixedPoint): Boolean = lhs.long >= rhs.long
 
   def +(rhs: FixedPoint): FixedPoint = {
@@ -107,18 +107,19 @@ class FixedPoint(val long: Long) extends AnyVal { lhs =>
 
   def *(rhs: FixedPoint)(implicit scale: FixedScale): FixedPoint = {
     if (lhs.long < rhs.long) return rhs * lhs
-    val d = scale.denom
-    val q = lhs.long / d
-    val r = lhs.long % d
+    val d  = scale.denom
+    val q  = lhs.long / d
+    val r  = lhs.long % d
     val qq = rhs * q
-    val rr = try {
-      (rhs * r) / d
-    } catch {
-      case _: FixedPointOverflow =>
-        val n = (SafeLong(rhs.long) * r) / d
-        if (n.isValidLong) new FixedPoint(n.toLong)
-        else throw new FixedPointOverflow(n.toLong)
-    }
+    val rr =
+      try {
+        (rhs * r) / d
+      } catch {
+        case _: FixedPointOverflow =>
+          val n = (SafeLong(rhs.long) * r) / d
+          if (n.isValidLong) new FixedPoint(n.toLong)
+          else throw new FixedPointOverflow(n.toLong)
+      }
     qq + rr
   }
 
@@ -165,8 +166,9 @@ class FixedPoint(val long: Long) extends AnyVal { lhs =>
   def /~(rhs: FixedPoint)(implicit scale: FixedScale): FixedPoint =
     (lhs - lhs % rhs) / rhs
 
-  def /%(rhs: FixedPoint)(
-      implicit scale: FixedScale): (FixedPoint, FixedPoint) = {
+  def /%(
+      rhs: FixedPoint
+  )(implicit scale: FixedScale): (FixedPoint, FixedPoint) = {
     val rem = lhs % rhs
     ((lhs - rem) / rhs, rem)
   }
@@ -285,8 +287,9 @@ object FixedPoint extends FixedPointInstances {
   def apply(s: String)(implicit scale: FixedScale): FixedPoint =
     apply(Rational(s))
 
-  def apply[@sp(Float, Double) A](a: A)(
-      implicit scale: FixedScale, fr: Fractional[A]): FixedPoint = {
+  def apply[@sp(Float, Double) A](
+      a: A
+  )(implicit scale: FixedScale, fr: Fractional[A]): FixedPoint = {
     val x = a * scale.denom
     if (x < fr.fromLong(Long.MinValue) || fr.fromLong(Long.MaxValue) < x)
       throw new FixedPointOverflow(x.toLong)
@@ -296,67 +299,69 @@ object FixedPoint extends FixedPointInstances {
 
 trait FixedPointInstances {
 
-  implicit def algebra(implicit scale: FixedScale)
-    : Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] =
+  implicit def algebra(
+      implicit scale: FixedScale
+  ): Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] =
     new Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] {
       def abs(x: FixedPoint): FixedPoint = x.abs
-      def signum(x: FixedPoint): Int = x.signum
+      def signum(x: FixedPoint): Int     = x.signum
 
       override def eqv(x: FixedPoint, y: FixedPoint): Boolean = x == y
-      def compare(x: FixedPoint, y: FixedPoint): Int = x compare y
+      def compare(x: FixedPoint, y: FixedPoint): Int          = x compare y
 
-      def zero: FixedPoint = FixedPoint.zero
-      def one: FixedPoint = FixedPoint.one
-      def negate(x: FixedPoint): FixedPoint = -x
-      def plus(x: FixedPoint, y: FixedPoint): FixedPoint = x + y
+      def zero: FixedPoint                                         = FixedPoint.zero
+      def one: FixedPoint                                          = FixedPoint.one
+      def negate(x: FixedPoint): FixedPoint                        = -x
+      def plus(x: FixedPoint, y: FixedPoint): FixedPoint           = x + y
       override def minus(x: FixedPoint, y: FixedPoint): FixedPoint = x - y
-      def times(x: FixedPoint, y: FixedPoint): FixedPoint = x * y
+      def times(x: FixedPoint, y: FixedPoint): FixedPoint          = x * y
 
-      def gcd(x: FixedPoint, y: FixedPoint): FixedPoint = x gcd y
+      def gcd(x: FixedPoint, y: FixedPoint): FixedPoint  = x gcd y
       def quot(x: FixedPoint, y: FixedPoint): FixedPoint = x /~ y
-      def mod(x: FixedPoint, y: FixedPoint): FixedPoint = x % y
+      def mod(x: FixedPoint, y: FixedPoint): FixedPoint  = x % y
 
       override def reciprocal(x: FixedPoint): FixedPoint = one / x
-      def div(x: FixedPoint, y: FixedPoint): FixedPoint = x / y
+      def div(x: FixedPoint, y: FixedPoint): FixedPoint  = x / y
 
-      override def sqrt(x: FixedPoint): FixedPoint = x.sqrt
-      def nroot(x: FixedPoint, k: Int): FixedPoint = x.nroot(k)
+      override def sqrt(x: FixedPoint): FixedPoint       = x.sqrt
+      def nroot(x: FixedPoint, k: Int): FixedPoint       = x.nroot(k)
       def fpow(x: FixedPoint, y: FixedPoint): FixedPoint = x.fpow(y)
 
-      def ceil(x: FixedPoint): FixedPoint = x.ceil
+      def ceil(x: FixedPoint): FixedPoint  = x.ceil
       def floor(x: FixedPoint): FixedPoint = x.floor
-      def isWhole(x: FixedPoint): Boolean = x.isWhole
+      def isWhole(x: FixedPoint): Boolean  = x.isWhole
       def round(x: FixedPoint): FixedPoint = x.round
 
-      def toByte(x: FixedPoint): Byte = x.toRational.toByte
-      def toShort(x: FixedPoint): Short = x.toRational.toShort
-      def toInt(x: FixedPoint): Int = x.toRational.toInt
-      def toLong(x: FixedPoint): Long = x.toRational.toLong
-      def toFloat(x: FixedPoint): Float = x.toRational.toFloat
+      def toByte(x: FixedPoint): Byte     = x.toRational.toByte
+      def toShort(x: FixedPoint): Short   = x.toRational.toShort
+      def toInt(x: FixedPoint): Int       = x.toRational.toInt
+      def toLong(x: FixedPoint): Long     = x.toRational.toLong
+      def toFloat(x: FixedPoint): Float   = x.toRational.toFloat
       def toDouble(x: FixedPoint): Double = x.toRational.toDouble
       def toBigInt(x: FixedPoint): BigInt = x.toRational.toBigInt
       def toBigDecimal(x: FixedPoint): BigDecimal =
         x.toRational.toBigDecimal(MathContext.DECIMAL64)
-      def toRational(x: FixedPoint): Rational = x.toRational
+      def toRational(x: FixedPoint): Rational   = x.toRational
       def toAlgebraic(x: FixedPoint): Algebraic = Algebraic(x.toRational)
-      def toReal(x: FixedPoint): Real = Real(x.toRational)
-      def toNumber(x: FixedPoint): Number = Number(x.toRational)
-      def toString(x: FixedPoint): String = x.toString
+      def toReal(x: FixedPoint): Real           = Real(x.toRational)
+      def toNumber(x: FixedPoint): Number       = Number(x.toRational)
+      def toString(x: FixedPoint): String       = x.toString
 
       def toType[B](x: FixedPoint)(implicit ev: ConvertableTo[B]): B =
         ev.fromRational(x.toRational)
 
-      def fromByte(n: Byte): FixedPoint = FixedPoint(n)
-      def fromShort(n: Short): FixedPoint = FixedPoint(n)
-      def fromFloat(n: Float): FixedPoint = FixedPoint(n)
-      def fromLong(n: Long): FixedPoint = FixedPoint(n)
-      def fromBigInt(n: BigInt): FixedPoint = FixedPoint(BigDecimal(n))
+      def fromByte(n: Byte): FixedPoint             = FixedPoint(n)
+      def fromShort(n: Short): FixedPoint           = FixedPoint(n)
+      def fromFloat(n: Float): FixedPoint           = FixedPoint(n)
+      def fromLong(n: Long): FixedPoint             = FixedPoint(n)
+      def fromBigInt(n: BigInt): FixedPoint         = FixedPoint(BigDecimal(n))
       def fromBigDecimal(n: BigDecimal): FixedPoint = FixedPoint(n)
-      def fromRational(n: Rational): FixedPoint = FixedPoint(n)
+      def fromRational(n: Rational): FixedPoint     = FixedPoint(n)
       def fromAlgebraic(n: Algebraic): FixedPoint =
         FixedPoint(
-            n.toRational.getOrElse(
-                Rational(n.toBigDecimal(MathContext.DECIMAL64))))
+          n.toRational
+            .getOrElse(Rational(n.toBigDecimal(MathContext.DECIMAL64)))
+        )
       def fromReal(n: Real): FixedPoint = FixedPoint(n.toRational)
 
       def fromType[B](b: B)(implicit ev: ConvertableFrom[B]): FixedPoint =
@@ -365,10 +370,11 @@ trait FixedPointInstances {
 
   import NumberTag._
   implicit final val FixedPointTag = new CustomTag[FixedPoint](
-      Approximate,
-      Some(FixedPoint.zero),
-      Some(FixedPoint.MinValue),
-      Some(FixedPoint.MaxValue),
-      true,
-      true)
+    Approximate,
+    Some(FixedPoint.zero),
+    Some(FixedPoint.MinValue),
+    Some(FixedPoint.MaxValue),
+    true,
+    true
+  )
 }

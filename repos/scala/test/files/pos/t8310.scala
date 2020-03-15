@@ -16,7 +16,7 @@ object TestOkay3 {
 }
 
 object TestKoOverloaded {
-  def sort[T](xs: Option[T]) = ()
+  def sort[T](xs: Option[T])                          = ()
   def sort[T](xs: Option[T], x: Comparinator[_ >: T]) = ()
   sort(Some(""), (a: String, b: String) => a.compareToIgnoreCase(b))
 }

@@ -12,7 +12,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   def familyName: String = ReplaceTypeCheckWithMatchIntention.familyName
 
   def test_1() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |if (<caret>x.isInstanceOf[Int]) {
         |  x.toString
         |}"""
@@ -26,7 +26,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_2() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |if (x.isInstanc<caret>eOf[Int]) {
         |  x.asInstanceOf[Int].toString
         |  println(x.asInstanceOf[Int])
@@ -42,7 +42,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_3() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |if (x.isInstanc<caret>eOf[Int]) {
         |  val y = x.asInstanceOf[Int]
         |  x.asInstanceOf[Int].toString
@@ -59,7 +59,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_4() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |if (<caret>x.isInstanceOf[Int] && x.asInstanceOf[Int] == 1) {
         |  val y = x.asInstanceOf[Int]
         |  println(y)
@@ -90,7 +90,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_6() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |if (<caret>x.isInstanceOf[Int]) {
         |  val y = x.asInstanceOf[Int]
         |  println(y)
@@ -109,7 +109,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_7() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |if (<caret>x.isInstanceOf[Int] && x.asInstanceOf[Long] == 1) {
         |  val y = x.asInstanceOf[Int]
         |  println(y)
@@ -135,7 +135,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_8a() {
-    val text = """val x1 = 0
+    val text   = """val x1 = 0
         |val x2 = 0
         |if (x<caret>1.isInstanceOf[Int] && x2.isInstanceOf[Int]) {
         |  val y1 = x1.asInstanceOf[Int]
@@ -162,7 +162,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_8b() {
-    val text = """val x1 = 0
+    val text   = """val x1 = 0
         |val x2 = 0
         |if (x1.isInstanceOf[Int] && <caret>x2.isInstanceOf[Int]) {
         |  val y1 = x1.asInstanceOf[Int]
@@ -219,7 +219,7 @@ class ReplaceTypeCheckWithMatchIntentionTest extends ScalaIntentionTestBase {
   }
 
   def test_9() {
-    val text = """val x = 0
+    val text   = """val x = 0
         |val i = 0
         |if (x.isInstanc<caret>eOf[Int]) {
         |  x.asInstanceOf[Int].toString

@@ -26,11 +26,11 @@ class VotingService extends Actor {
   import akka.cluster.ddata.Replicator._
   import VotingService._
 
-  val replicator = DistributedData(context.system).replicator
+  val replicator       = DistributedData(context.system).replicator
   implicit val cluster = Cluster(context.system)
-  val OpenedKey = FlagKey("contestOpened")
-  val ClosedKey = FlagKey("contestClosed")
-  val CountersKey = PNCounterMapKey("contestCounters")
+  val OpenedKey        = FlagKey("contestOpened")
+  val ClosedKey        = FlagKey("contestClosed")
+  val CountersKey      = PNCounterMapKey("contestCounters")
 
   replicator ! Subscribe(OpenedKey, self)
 
@@ -72,7 +72,10 @@ class VotingService extends Actor {
   def getVotes(open: Boolean): Receive = {
     case GetVotes ⇒
       replicator ! Get(
-          CountersKey, ReadAll(3.seconds), Some(GetVotesReq(sender())))
+        CountersKey,
+        ReadAll(3.seconds),
+        Some(GetVotesReq(sender()))
+      )
 
     case g @ GetSuccess(CountersKey, Some(GetVotesReq(replyTo))) ⇒
       val data = g.get(CountersKey)
@@ -81,7 +84,7 @@ class VotingService extends Actor {
     case NotFound(CountersKey, Some(GetVotesReq(replyTo))) ⇒
       replyTo ! Votes(Map.empty, open)
 
-    case _: GetFailure[_] ⇒
+    case _: GetFailure[_]    ⇒
     case _: UpdateSuccess[_] ⇒
   }
 }

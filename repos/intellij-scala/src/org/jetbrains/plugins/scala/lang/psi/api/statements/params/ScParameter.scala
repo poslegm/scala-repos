@@ -15,12 +15,31 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.scala.icons.Icons
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScPrimaryConstructor
 import org.jetbrains.plugins.scala.lang.psi.api.base.types._
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScFunctionExpr, ScUnderScoreSectionUtil}
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScMember}
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.{ScImportableDeclarationsOwner, ScModifierListOwner, ScTypedDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScExpression,
+  ScFunctionExpr,
+  ScUnderScoreSectionUtil
+}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{
+  ScClass,
+  ScMember
+}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.{
+  ScImportableDeclarationsOwner,
+  ScModifierListOwner,
+  ScTypedDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Success, TypeResult, TypingContext}
-import org.jetbrains.plugins.scala.lang.psi.types.{ScFunctionType, ScParameterizedType, ScType}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Success,
+  TypeResult,
+  TypingContext
+}
+import org.jetbrains.plugins.scala.lang.psi.types.{
+  ScFunctionType,
+  ScParameterizedType,
+  ScType
+}
 import org.jetbrains.plugins.scala.macroAnnotations.{Cached, ModCount}
 
 import scala.annotation.tailrec
@@ -31,8 +50,11 @@ import scala.collection.immutable.HashSet
   * Date: 22.02.2008
   */
 trait ScParameter
-    extends ScTypedDefinition with ScModifierListOwner with PsiParameter
-    with ScAnnotationsHolder with ScImportableDeclarationsOwner {
+    extends ScTypedDefinition
+    with ScModifierListOwner
+    with PsiParameter
+    with ScAnnotationsHolder
+    with ScImportableDeclarationsOwner {
   def getTypeElement: PsiTypeElement
 
   def isWildcard: Boolean = "_" == name
@@ -64,15 +86,18 @@ trait ScParameter
   def getActualDefaultExpression: Option[ScExpression]
 
   def getRealParameterType(
-      ctx: TypingContext = TypingContext.empty): TypeResult[ScType] = {
+      ctx: TypingContext = TypingContext.empty
+  ): TypeResult[ScType] = {
     if (!isRepeatedParameter) return getType(ctx)
     getType(ctx) match {
       case f @ Success(tp: ScType, elem) =>
         val seq = ScalaPsiManager
           .instance(getProject)
-          .getCachedClass("scala.collection.Seq",
-                          getResolveScope,
-                          ScalaPsiManager.ClassCategory.TYPE)
+          .getCachedClass(
+            "scala.collection.Seq",
+            getResolveScope,
+            ScalaPsiManager.ClassCategory.TYPE
+          )
         if (seq != null) {
           Success(ScParameterizedType(ScType.designator(seq), Seq(tp)), elem)
         } else f
@@ -82,16 +107,21 @@ trait ScParameter
 
   def getDeclarationScope =
     PsiTreeUtil.getParentOfType(
-        this, classOf[ScParameterOwner], classOf[ScFunctionExpr])
+      this,
+      classOf[ScParameterOwner],
+      classOf[ScFunctionExpr]
+    )
 
   def deprecatedName: Option[String]
 
   def owner: PsiElement = {
-    ScalaPsiUtil.getContextOfType(this,
-                                  true,
-                                  classOf[ScFunctionExpr],
-                                  classOf[ScFunction],
-                                  classOf[ScPrimaryConstructor])
+    ScalaPsiUtil.getContextOfType(
+      this,
+      true,
+      classOf[ScFunctionExpr],
+      classOf[ScFunction],
+      classOf[ScPrimaryConstructor]
+    )
   }
 
   def remove()
@@ -102,11 +132,12 @@ trait ScParameter
     clause.isImplicit
   }
 
-  def index = getParent.getParent match {
-    case parameters: ScParameters => parameters.params.indexOf(this)
-    case _ =>
-      getParent.asInstanceOf[ScParameterClause].parameters.indexOf(this)
-  }
+  def index =
+    getParent.getParent match {
+      case parameters: ScParameters => parameters.params.indexOf(this)
+      case _ =>
+        getParent.asInstanceOf[ScParameterClause].parameters.indexOf(this)
+    }
 
   override def getName: String = {
     val res = super.getName
@@ -116,8 +147,8 @@ trait ScParameter
 
   abstract override def getUseScope = {
     val specificScope = getDeclarationScope match {
-      case null => GlobalSearchScope.EMPTY_SCOPE
-      case expr: ScFunctionExpr => new LocalSearchScope(expr)
+      case null                           => GlobalSearchScope.EMPTY_SCOPE
+      case expr: ScFunctionExpr           => new LocalSearchScope(expr)
       case clazz: ScClass if clazz.isCase => clazz.getUseScope
       case clazz: ScClass if this.isInstanceOf[ScClassParameter] =>
         clazz.getUseScope //for named parameters
@@ -127,59 +158,65 @@ trait ScParameter
   }
 
   def getType: PsiType =
-    ScType.toPsi(getRealParameterType(TypingContext.empty).getOrNothing,
-                 getProject,
-                 getResolveScope)
+    ScType.toPsi(
+      getRealParameterType(TypingContext.empty).getOrNothing,
+      getProject,
+      getResolveScope
+    )
 
-  def isAnonymousParameter: Boolean = getContext match {
-    case clause: ScParameterClause =>
-      clause.getContext.getContext match {
-        case f: ScFunctionExpr => true
-        case _ => false
-      }
-    case _ => false
-  }
+  def isAnonymousParameter: Boolean =
+    getContext match {
+      case clause: ScParameterClause =>
+        clause.getContext.getContext match {
+          case f: ScFunctionExpr => true
+          case _                 => false
+        }
+      case _ => false
+    }
 
-  def expectedParamType: Option[ScType] = getContext match {
-    case clause: ScParameterClause =>
-      clause.getContext.getContext match {
-        // For parameter of anonymous functions to infer parameter's type from an appropriate
-        // an. fun's type
-        case f: ScFunctionExpr =>
-          var flag = false
-          var result: Option[ScType] =
-            None //strange logic to handle problems with detecting type
-          for (tp <- f.expectedTypes(fromUnderscore = false) if !flag) {
-            @tailrec
-            def applyForFunction(tp: ScType, checkDeep: Boolean) {
-              tp.removeAbstracts match {
-                case ScFunctionType(ret, _) if checkDeep =>
-                  applyForFunction(ret, checkDeep = false)
-                case ScFunctionType(_, params)
-                    if params.length == f.parameters.length =>
-                  val i = clause.parameters.indexOf(this)
-                  if (result.isDefined) {
-                    result = None
-                    flag = true
-                  } else result = Some(params(i))
-                case any if ScalaPsiUtil.isSAMEnabled(f) =>
-                  //infer type if it's a Single Abstract Method
-                  ScalaPsiUtil.toSAMType(any, f.getResolveScope) match {
-                    case Some(ScFunctionType(_, params)) =>
-                      val i = clause.parameters.indexOf(this)
-                      if (i < params.length) result = Some(params(i))
-                    case _ =>
-                  }
-                case _ =>
+  def expectedParamType: Option[ScType] =
+    getContext match {
+      case clause: ScParameterClause =>
+        clause.getContext.getContext match {
+          // For parameter of anonymous functions to infer parameter's type from an appropriate
+          // an. fun's type
+          case f: ScFunctionExpr =>
+            var flag = false
+            var result: Option[ScType] =
+              None //strange logic to handle problems with detecting type
+            for (tp <- f.expectedTypes(fromUnderscore = false) if !flag) {
+              @tailrec
+              def applyForFunction(tp: ScType, checkDeep: Boolean) {
+                tp.removeAbstracts match {
+                  case ScFunctionType(ret, _) if checkDeep =>
+                    applyForFunction(ret, checkDeep = false)
+                  case ScFunctionType(_, params)
+                      if params.length == f.parameters.length =>
+                    val i = clause.parameters.indexOf(this)
+                    if (result.isDefined) {
+                      result = None
+                      flag = true
+                    } else result = Some(params(i))
+                  case any if ScalaPsiUtil.isSAMEnabled(f) =>
+                    //infer type if it's a Single Abstract Method
+                    ScalaPsiUtil.toSAMType(any, f.getResolveScope) match {
+                      case Some(ScFunctionType(_, params)) =>
+                        val i = clause.parameters.indexOf(this)
+                        if (i < params.length) result = Some(params(i))
+                      case _ =>
+                    }
+                  case _ =>
+                }
               }
+              applyForFunction(
+                tp,
+                ScUnderScoreSectionUtil.underscores(f).nonEmpty
+              )
             }
-            applyForFunction(
-                tp, ScUnderScoreSectionUtil.underscores(f).nonEmpty)
-          }
-          result
-        case _ => None
-      }
-  }
+            result
+          case _ => None
+        }
+    }
 
   def getTypeNoResolve: PsiType = PsiType.VOID
 
@@ -188,7 +225,9 @@ trait ScParameter
 
   @tailrec
   private def calcIsDefaultParam(
-      param: ScParameter, visited: HashSet[ScParameter]): Boolean = {
+      param: ScParameter,
+      visited: HashSet[ScParameter]
+  ): Boolean = {
     if (param.baseDefaultParam) return true
     if (visited.contains(param)) return false
     getSuperParameter match {
@@ -218,22 +257,23 @@ trait ScParameter
             if (containingMember == null) res
             else {
               def extractFromParameterOwner(
-                  owner: ScParameterOwner): Option[ScExpression] = {
+                  owner: ScParameterOwner
+              ): Option[ScExpression] = {
                 owner.parameters.find(_.name == name) match {
                   case Some(param) => param.getDefaultExpression
-                  case _ => res
+                  case _           => res
                 }
               }
               containingMember match {
                 case c: ScClass =>
                   c.getSourceMirrorClass match {
                     case c: ScClass => extractFromParameterOwner(c)
-                    case _ => res
+                    case _          => res
                   }
                 case f: ScFunction =>
                   f.getNavigationElement match {
                     case f: ScFunction => extractFromParameterOwner(f)
-                    case _ => res
+                    case _             => res
                   }
                 case _ => res
               }

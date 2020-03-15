@@ -31,24 +31,26 @@ private[spark] object SignalLogger {
   private var registered = false
 
   /** Register a signal handler to log signals on UNIX-like systems. */
-  def register(log: Logger): Unit = synchronized {
-    if (SystemUtils.IS_OS_UNIX) {
-      require(!registered, "Can't re-install the signal handlers")
-      registered = true
+  def register(log: Logger): Unit =
+    synchronized {
+      if (SystemUtils.IS_OS_UNIX) {
+        require(!registered, "Can't re-install the signal handlers")
+        registered = true
 
-      val signals = Seq("TERM", "HUP", "INT")
-      for (signal <- signals) {
-        try {
-          new SignalLoggerHandler(signal, log)
-        } catch {
-          case e: Exception =>
-            log.warn("Failed to register signal handler " + signal, e)
+        val signals = Seq("TERM", "HUP", "INT")
+        for (signal <- signals) {
+          try {
+            new SignalLoggerHandler(signal, log)
+          } catch {
+            case e: Exception =>
+              log.warn("Failed to register signal handler " + signal, e)
+          }
         }
+        log.info(
+          "Registered signal handlers for [" + signals.mkString(", ") + "]"
+        )
       }
-      log.info(
-          "Registered signal handlers for [" + signals.mkString(", ") + "]")
     }
-  }
 }
 
 private sealed class SignalLoggerHandler(name: String, log: Logger)
@@ -58,7 +60,8 @@ private sealed class SignalLoggerHandler(name: String, log: Logger)
 
   override def handle(signal: Signal): Unit = {
     log.error(
-        "RECEIVED SIGNAL " + signal.getNumber() + ": SIG" + signal.getName())
+      "RECEIVED SIGNAL " + signal.getNumber() + ": SIG" + signal.getName()
+    )
     prevHandler.handle(signal)
   }
 }

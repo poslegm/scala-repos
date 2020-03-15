@@ -1,8 +1,8 @@
 object Test extends App {
   import util.Try
 
-  val a = "apple"
-  def fail: String = throw new Exception("Fail!")
+  val a                 = "apple"
+  def fail: String      = throw new Exception("Fail!")
   def argh: Try[String] = throw new Exception("Argh!")
 
   // No throw tests
@@ -10,7 +10,7 @@ object Test extends App {
     Try(expr) orElse argh
     Try(expr).transform(_ => argh, _ => argh)
     Try(expr).recoverWith { case e if (a == fail) => Try(a) }
-    Try(expr).recoverWith { case _ => argh }
+    Try(expr).recoverWith { case _                => argh }
     Try(expr).getOrElse(a)
     // TODO - Fail getOrElse?
     Try(expr) orElse argh

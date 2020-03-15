@@ -3,22 +3,31 @@ package tests
 
 import cats.arrow.NaturalTransformation
 import cats.free.FreeApplicative
-import cats.laws.discipline.{CartesianTests, ApplicativeTests, SerializableTests}
+import cats.laws.discipline.{
+  CartesianTests,
+  ApplicativeTests,
+  SerializableTests
+}
 import cats.laws.discipline.eq.{tuple3Eq, tuple2Eq}
 import cats.data.State
 
 import org.scalacheck.{Arbitrary, Gen}
 
 class FreeApplicativeTests extends CatsSuite {
-  implicit def freeApplicativeArbitrary[F[_], A](
-      implicit F: Arbitrary[F[A]],
-      A: Arbitrary[A]): Arbitrary[FreeApplicative[F, A]] =
+  implicit def freeApplicativeArbitrary[F[_], A](implicit
+      F: Arbitrary[F[A]],
+      A: Arbitrary[A]
+  ): Arbitrary[FreeApplicative[F, A]] =
     Arbitrary(
-        Gen.oneOf(A.arbitrary.map(FreeApplicative.pure[F, A]),
-                  F.arbitrary.map(FreeApplicative.lift[F, A])))
+      Gen.oneOf(
+        A.arbitrary.map(FreeApplicative.pure[F, A]),
+        F.arbitrary.map(FreeApplicative.lift[F, A])
+      )
+    )
 
   implicit def freeApplicativeEq[S[_]: Applicative, A](
-      implicit SA: Eq[S[A]]): Eq[FreeApplicative[S, A]] =
+      implicit SA: Eq[S[A]]
+  ): Eq[FreeApplicative[S, A]] =
     new Eq[FreeApplicative[S, A]] {
       def eqv(a: FreeApplicative[S, A], b: FreeApplicative[S, A]): Boolean = {
         val nt = NaturalTransformation.id[S]
@@ -30,14 +39,16 @@ class FreeApplicativeTests extends CatsSuite {
     CartesianTests.Isomorphisms.invariant[FreeApplicative[Option, ?]]
 
   checkAll(
-      "FreeApplicative[Option, ?]",
-      ApplicativeTests[FreeApplicative[Option, ?]].applicative[Int, Int, Int])
+    "FreeApplicative[Option, ?]",
+    ApplicativeTests[FreeApplicative[Option, ?]].applicative[Int, Int, Int]
+  )
   checkAll(
-      "Monad[FreeApplicative[Option, ?]]",
-      SerializableTests.serializable(Applicative[FreeApplicative[Option, ?]]))
+    "Monad[FreeApplicative[Option, ?]]",
+    SerializableTests.serializable(Applicative[FreeApplicative[Option, ?]])
+  )
 
   test("FreeApplicative#fold") {
-    val n = 2
+    val n  = 2
     val o1 = Option(1)
     val o2 = Applicative[Option].pure(n)
 
@@ -49,9 +60,9 @@ class FreeApplicativeTests extends CatsSuite {
   }
 
   test("FreeApplicative#compile") {
-    val x = FreeApplicative.lift[Id, Int](1)
-    val y = FreeApplicative.pure[Id, Int](2)
-    val f = x.map(i => (j: Int) => i + j)
+    val x  = FreeApplicative.lift[Id, Int](1)
+    val y  = FreeApplicative.pure[Id, Int](2)
+    val f  = x.map(i => (j: Int) => i + j)
     val nt = NaturalTransformation.id[Id]
     val r1 = y.ap(f)
     val r2 = r1.compile(nt)
@@ -59,9 +70,9 @@ class FreeApplicativeTests extends CatsSuite {
   }
 
   test("FreeApplicative#monad") {
-    val x = FreeApplicative.lift[Id, Int](1)
-    val y = FreeApplicative.pure[Id, Int](2)
-    val f = x.map(i => (j: Int) => i + j)
+    val x  = FreeApplicative.lift[Id, Int](1)
+    val y  = FreeApplicative.pure[Id, Int](2)
+    val f  = x.map(i => (j: Int) => i + j)
     val r1 = y.ap(f)
     val r2 = r1.monad
     val nt = new NaturalTransformation[Id, Id] {
@@ -97,7 +108,7 @@ class FreeApplicativeTests extends CatsSuite {
     trait Foo[A] {
       def getA: A
     }
-    final case class Bar(getA: Int) extends Foo[Int]
+    final case class Bar(getA: Int)  extends Foo[Int]
     final case class Baz(getA: Long) extends Foo[Long]
 
     type Dsl[A] = FreeApplicative[Foo, A]
@@ -105,12 +116,11 @@ class FreeApplicativeTests extends CatsSuite {
     type Tracked[A] = State[String, A]
 
     val f: Foo ~> Tracked = new (Foo ~> Tracked) {
-      def apply[A](fa: Foo[A]): Tracked[A] = State[String, A] { s0 =>
-        (s0 + fa.toString + ";", fa.getA)
-      }
+      def apply[A](fa: Foo[A]): Tracked[A] =
+        State[String, A] { s0 => (s0 + fa.toString + ";", fa.getA) }
     }
 
-    val x: Dsl[Int] = FreeApplicative.lift(Bar(3))
+    val x: Dsl[Int]  = FreeApplicative.lift(Bar(3))
     val y: Dsl[Long] = FreeApplicative.lift(Baz(5L))
 
     val z1: Dsl[Long] = Apply[Dsl].map2(x, y)((x, y) => x.toLong + y)

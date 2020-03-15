@@ -4,8 +4,8 @@ object Test extends App {
   trait TA
   trait TB
 
-  class A extends T with TA
-  class B extends T with TB
+  class A  extends T with TA
+  class B  extends T with TB
   class AB extends T with TA with TB
   // Matching on _: TA with TB
 
@@ -14,8 +14,8 @@ object Test extends App {
   val matched = (for (l <- li) yield {
     l match {
       case _: TA with TB => "tab"
-      case _: TA => "ta"
-      case _: TB => "tb"
+      case _: TA         => "ta"
+      case _: TB         => "tb"
     }
   })
 

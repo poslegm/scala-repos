@@ -8,11 +8,13 @@ import org.scalacheck.Prop
 import Prop._
 
 trait MonadCombineTests[F[_]]
-    extends MonadFilterTests[F] with AlternativeTests[F] {
+    extends MonadFilterTests[F]
+    with AlternativeTests[F] {
   def laws: MonadCombineLaws[F]
 
-  def monadCombine[A : Arbitrary : Eq, B : Arbitrary : Eq, C : Arbitrary : Eq](
-      implicit ArbFA: Arbitrary[F[A]],
+  def monadCombine[A: Arbitrary: Eq, B: Arbitrary: Eq, C: Arbitrary: Eq](
+      implicit
+      ArbFA: Arbitrary[F[A]],
       ArbFB: Arbitrary[F[B]],
       ArbFC: Arbitrary[F[C]],
       ArbFAtoB: Arbitrary[F[A => B]],
@@ -21,16 +23,19 @@ trait MonadCombineTests[F[_]]
       EqFB: Eq[F[B]],
       EqFC: Eq[F[C]],
       EqFABC: Eq[F[(A, B, C)]],
-      iso: Isomorphisms[F]): RuleSet = {
+      iso: Isomorphisms[F]
+  ): RuleSet = {
     new RuleSet {
-      def name: String = "monadCombine"
+      def name: String                  = "monadCombine"
       def bases: Seq[(String, RuleSet)] = Nil
       def parents: Seq[RuleSet] =
         Seq(monadFilter[A, B, C], alternative[A, B, C])
-      def props: Seq[(String, Prop)] = Seq(
+      def props: Seq[(String, Prop)] =
+        Seq(
           "monadCombine left distributivity" -> forAll(
-              laws.monadCombineLeftDistributivity[A, B] _)
-      )
+            laws.monadCombineLeftDistributivity[A, B] _
+          )
+        )
     }
   }
 }

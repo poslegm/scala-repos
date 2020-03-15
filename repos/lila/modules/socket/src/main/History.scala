@@ -11,7 +11,7 @@ final class History[Metadata](ttl: Duration) {
   type Message = History.Message[Metadata]
 
   private var privateVersion = 0
-  private val messages = lila.memo.Builder.expiry[Int, Message](ttl)
+  private val messages       = lila.memo.Builder.expiry[Int, Message](ttl)
 
   def version = privateVersion
 
@@ -38,7 +38,10 @@ final class History[Metadata](ttl: Duration) {
 object History {
 
   case class Message[Metadata](
-      payload: JsObject, version: Int, metadata: Metadata) {
+      payload: JsObject,
+      version: Int,
+      metadata: Metadata
+  ) {
 
     lazy val fullMsg = payload + ("v" -> JsNumber(version))
 

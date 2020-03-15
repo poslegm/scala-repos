@@ -15,13 +15,14 @@ import org.scalajs.testsuite.utils.Platform._
 
 class EnumerationTest {
 
-  @Test def should_use_explicit_naming_for_enumerated_values_issue_38(): Unit = {
+  @Test def should_use_explicit_naming_for_enumerated_values_issue_38()
+      : Unit = {
     object HelpLevel extends Enumeration {
       type HelpLevel = Value
-      val None = Value("None")
-      val Basic = Value("Basic")
+      val None   = Value("None")
+      val Basic  = Value("Basic")
       val Medium = Value("Medium")
-      val Full = Value("Full")
+      val Full   = Value("Full")
     }
 
     val h = HelpLevel.None
@@ -33,8 +34,8 @@ class EnumerationTest {
     object HelpLevel extends Enumeration {
       type HelpLevel = Value
       val None, Basic, Medium, Full = Value
-      val Special = Value(100)
-      val / = Value
+      val Special                   = Value(100)
+      val /                         = Value
     }
 
     val h = HelpLevel.Medium
@@ -47,12 +48,13 @@ class EnumerationTest {
     if (!executingInJVM) {
       object Test extends Enumeration {
         private val nullStr: String = null
-        val A = Value(nullStr) // Circumvent compiler replacement and warning
+        val A                       = Value(nullStr) // Circumvent compiler replacement and warning
       }
 
       assertTrue(
-          Test.A.toString
-            .startsWith("<Unknown name for enum field #0 of class "))
+        Test.A.toString
+          .startsWith("<Unknown name for enum field #0 of class ")
+      )
     }
   }
 
@@ -61,16 +63,15 @@ class EnumerationTest {
       ): Unit = {
     object Test extends Enumeration {
       private val nullStr: String = null
-      val A = Value(nullStr) // Circumvent compiler replacement and warning
+      val A                       = Value(nullStr) // Circumvent compiler replacement and warning
     }
 
     if (!executingInJVM) {
       // In the JVM the exception thrown is a ClassCastException
-      val ex = expectThrows(
-          classOf[NoSuchElementException], Test.withName("A"))
+      val ex = expectThrows(classOf[NoSuchElementException], Test.withName("A"))
       val subMsg =
         "Couldn't find enum field with name A.\n" +
-        "However, there were the following unnamed fields:"
+          "However, there were the following unnamed fields:"
       assertTrue(ex.getMessage.contains(subMsg))
     }
   }
@@ -81,7 +82,9 @@ class EnumerationTest {
 
   @Test def should_respond_to_values(): Unit = {
     assertEquals(
-        "FooBarEnum.ValueSet(A, B, C, D, E, F)", FooBarEnum.values.toString)
+      "FooBarEnum.ValueSet(A, B, C, D, E, F)",
+      FooBarEnum.values.toString
+    )
   }
 
   @Test def should_allow_setting_nextName(): Unit = {

@@ -31,16 +31,18 @@ object AddrMetadataExtraction {
       val role = Role
       val description =
         "May extract metadata from the destination address and name"
-      val parameters = Seq(implicitly[Stack.Param[LoadBalancerFactory.Dest]],
-                           implicitly[Stack.Param[BindingFactory.Dest]])
+      val parameters = Seq(
+        implicitly[Stack.Param[LoadBalancerFactory.Dest]],
+        implicitly[Stack.Param[BindingFactory.Dest]]
+      )
 
       def make(params: Stack.Params, next: Stack[ServiceFactory[Req, Rep]]) = {
         val LoadBalancerFactory.Dest(addr) = params[LoadBalancerFactory.Dest]
-        val BindingFactory.Dest(name) = params[BindingFactory.Dest]
+        val BindingFactory.Dest(name)      = params[BindingFactory.Dest]
 
         val idMetadata = name match {
           case bound: Name.Bound => Addr.Metadata("id" -> bound.idStr)
-          case _ => Addr.Metadata.empty
+          case _                 => Addr.Metadata.empty
         }
 
         // delay construction of the ServiceFactory while Addr is Pending

@@ -41,14 +41,18 @@ private[sql] abstract class SparkPlanTest extends SparkFunSuite {
     * @param sortAnswers if true, the answers will be sorted by their toString representations prior
     *                    to being compared.
     */
-  protected def checkAnswer(input: DataFrame,
-                            planFunction: SparkPlan => SparkPlan,
-                            expectedAnswer: Seq[Row],
-                            sortAnswers: Boolean = true): Unit = {
-    doCheckAnswer(input :: Nil,
-                  (plans: Seq[SparkPlan]) => planFunction(plans.head),
-                  expectedAnswer,
-                  sortAnswers)
+  protected def checkAnswer(
+      input: DataFrame,
+      planFunction: SparkPlan => SparkPlan,
+      expectedAnswer: Seq[Row],
+      sortAnswers: Boolean = true
+  ): Unit = {
+    doCheckAnswer(
+      input :: Nil,
+      (plans: Seq[SparkPlan]) => planFunction(plans.head),
+      expectedAnswer,
+      sortAnswers
+    )
   }
 
   /**
@@ -61,15 +65,19 @@ private[sql] abstract class SparkPlanTest extends SparkFunSuite {
     * @param sortAnswers if true, the answers will be sorted by their toString representations prior
     *                    to being compared.
     */
-  protected def checkAnswer2(left: DataFrame,
-                             right: DataFrame,
-                             planFunction: (SparkPlan, SparkPlan) => SparkPlan,
-                             expectedAnswer: Seq[Row],
-                             sortAnswers: Boolean = true): Unit = {
-    doCheckAnswer(left :: right :: Nil,
-                  (plans: Seq[SparkPlan]) => planFunction(plans(0), plans(1)),
-                  expectedAnswer,
-                  sortAnswers)
+  protected def checkAnswer2(
+      left: DataFrame,
+      right: DataFrame,
+      planFunction: (SparkPlan, SparkPlan) => SparkPlan,
+      expectedAnswer: Seq[Row],
+      sortAnswers: Boolean = true
+  ): Unit = {
+    doCheckAnswer(
+      left :: right :: Nil,
+      (plans: Seq[SparkPlan]) => planFunction(plans(0), plans(1)),
+      expectedAnswer,
+      sortAnswers
+    )
   }
 
   /**
@@ -81,14 +89,21 @@ private[sql] abstract class SparkPlanTest extends SparkFunSuite {
     * @param sortAnswers if true, the answers will be sorted by their toString representations prior
     *                    to being compared.
     */
-  protected def doCheckAnswer(input: Seq[DataFrame],
-                              planFunction: Seq[SparkPlan] => SparkPlan,
-                              expectedAnswer: Seq[Row],
-                              sortAnswers: Boolean = true): Unit = {
+  protected def doCheckAnswer(
+      input: Seq[DataFrame],
+      planFunction: Seq[SparkPlan] => SparkPlan,
+      expectedAnswer: Seq[Row],
+      sortAnswers: Boolean = true
+  ): Unit = {
     SparkPlanTest.checkAnswer(
-        input, planFunction, expectedAnswer, sortAnswers, sqlContext) match {
+      input,
+      planFunction,
+      expectedAnswer,
+      sortAnswers,
+      sqlContext
+    ) match {
       case Some(errorMessage) => fail(errorMessage)
-      case None =>
+      case None               =>
     }
   }
 
@@ -108,14 +123,17 @@ private[sql] abstract class SparkPlanTest extends SparkFunSuite {
       input: DataFrame,
       planFunction: SparkPlan => SparkPlan,
       expectedPlanFunction: SparkPlan => SparkPlan,
-      sortAnswers: Boolean = true): Unit = {
-    SparkPlanTest.checkAnswer(input,
-                              planFunction,
-                              expectedPlanFunction,
-                              sortAnswers,
-                              sqlContext) match {
+      sortAnswers: Boolean = true
+  ): Unit = {
+    SparkPlanTest.checkAnswer(
+      input,
+      planFunction,
+      expectedPlanFunction,
+      sortAnswers,
+      sqlContext
+    ) match {
       case Some(errorMessage) => fail(errorMessage)
-      case None =>
+      case None               =>
     }
   }
 }
@@ -135,43 +153,48 @@ object SparkPlanTest {
     *                             that's being tested. The result of executing this plan will be
     *                             treated as the source-of-truth for the test.
     */
-  def checkAnswer(input: DataFrame,
-                  planFunction: SparkPlan => SparkPlan,
-                  expectedPlanFunction: SparkPlan => SparkPlan,
-                  sortAnswers: Boolean,
-                  sqlContext: SQLContext): Option[String] = {
+  def checkAnswer(
+      input: DataFrame,
+      planFunction: SparkPlan => SparkPlan,
+      expectedPlanFunction: SparkPlan => SparkPlan,
+      sortAnswers: Boolean,
+      sqlContext: SQLContext
+  ): Option[String] = {
 
     val outputPlan = planFunction(input.queryExecution.sparkPlan)
     val expectedOutputPlan = expectedPlanFunction(
-        input.queryExecution.sparkPlan)
+      input.queryExecution.sparkPlan
+    )
 
-    val expectedAnswer: Seq[Row] = try {
-      executePlan(expectedOutputPlan, sqlContext)
-    } catch {
-      case NonFatal(e) =>
-        val errorMessage = s"""
+    val expectedAnswer: Seq[Row] =
+      try {
+        executePlan(expectedOutputPlan, sqlContext)
+      } catch {
+        case NonFatal(e) =>
+          val errorMessage = s"""
              | Exception thrown while executing Spark plan to calculate expected answer:
              | $expectedOutputPlan
              | == Exception ==
              | $e
              | ${org.apache.spark.sql.catalyst.util.stackTraceToString(e)}
           """.stripMargin
-        return Some(errorMessage)
-    }
+          return Some(errorMessage)
+      }
 
-    val actualAnswer: Seq[Row] = try {
-      executePlan(outputPlan, sqlContext)
-    } catch {
-      case NonFatal(e) =>
-        val errorMessage = s"""
+    val actualAnswer: Seq[Row] =
+      try {
+        executePlan(outputPlan, sqlContext)
+      } catch {
+        case NonFatal(e) =>
+          val errorMessage = s"""
              | Exception thrown while executing Spark plan:
              | $outputPlan
              | == Exception ==
              | $e
              | ${org.apache.spark.sql.catalyst.util.stackTraceToString(e)}
           """.stripMargin
-        return Some(errorMessage)
-    }
+          return Some(errorMessage)
+      }
 
     SQLTestUtils
       .compareAnswers(actualAnswer, expectedAnswer, sortAnswers)
@@ -196,27 +219,30 @@ object SparkPlanTest {
     * @param sortAnswers if true, the answers will be sorted by their toString representations prior
     *                    to being compared.
     */
-  def checkAnswer(input: Seq[DataFrame],
-                  planFunction: Seq[SparkPlan] => SparkPlan,
-                  expectedAnswer: Seq[Row],
-                  sortAnswers: Boolean,
-                  sqlContext: SQLContext): Option[String] = {
+  def checkAnswer(
+      input: Seq[DataFrame],
+      planFunction: Seq[SparkPlan] => SparkPlan,
+      expectedAnswer: Seq[Row],
+      sortAnswers: Boolean,
+      sqlContext: SQLContext
+  ): Option[String] = {
 
     val outputPlan = planFunction(input.map(_.queryExecution.sparkPlan))
 
-    val sparkAnswer: Seq[Row] = try {
-      executePlan(outputPlan, sqlContext)
-    } catch {
-      case NonFatal(e) =>
-        val errorMessage = s"""
+    val sparkAnswer: Seq[Row] =
+      try {
+        executePlan(outputPlan, sqlContext)
+      } catch {
+        case NonFatal(e) =>
+          val errorMessage = s"""
              | Exception thrown while executing Spark plan:
              | $outputPlan
              | == Exception ==
              | $e
              | ${org.apache.spark.sql.catalyst.util.stackTraceToString(e)}
           """.stripMargin
-        return Some(errorMessage)
-    }
+          return Some(errorMessage)
+      }
 
     SQLTestUtils.compareAnswers(sparkAnswer, expectedAnswer, sortAnswers).map {
       errorMessage =>
@@ -229,22 +255,26 @@ object SparkPlanTest {
   }
 
   private def executePlan(
-      outputPlan: SparkPlan, sqlContext: SQLContext): Seq[Row] = {
+      outputPlan: SparkPlan,
+      sqlContext: SQLContext
+  ): Seq[Row] = {
     // A very simple resolver to make writing tests easier. In contrast to the real resolver
     // this is always case sensitive and does not try to handle scoping or complex type resolution.
     val resolvedPlan = sqlContext.sessionState.prepareForExecution.execute(
-        outputPlan transform {
-          case plan: SparkPlan =>
-            val inputMap =
-              plan.children.flatMap(_.output).map(a => (a.name, a)).toMap
-            plan transformExpressions {
-              case UnresolvedAttribute(Seq(u)) =>
-                inputMap.getOrElse(
-                    u,
-                    sys.error(
-                        s"Invalid Test: Cannot resolve $u given input $inputMap"))
-            }
-        }
+      outputPlan transform {
+        case plan: SparkPlan =>
+          val inputMap =
+            plan.children.flatMap(_.output).map(a => (a.name, a)).toMap
+          plan transformExpressions {
+            case UnresolvedAttribute(Seq(u)) =>
+              inputMap.getOrElse(
+                u,
+                sys.error(
+                  s"Invalid Test: Cannot resolve $u given input $inputMap"
+                )
+              )
+          }
+      }
     )
     resolvedPlan.executeCollectPublic().toSeq
   }

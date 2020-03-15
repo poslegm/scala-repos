@@ -10,7 +10,7 @@ object typerep extends App {
     override def toString = "List"
   }
 
-  implicit def intRep: TypeRep[Int] = IntRep
+  implicit def intRep: TypeRep[Int]         = IntRep
   implicit def booleanRep: TypeRep[Boolean] = BooleanRep
   implicit def listRep[T](implicit elemrep: TypeRep[T]): TypeRep[List[T]] =
     ListRep(elemrep)

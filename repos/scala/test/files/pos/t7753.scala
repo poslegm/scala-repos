@@ -11,13 +11,15 @@ object Test {
   def test {
     def indirect(si: SI)(v: si.instance.Out) = v
 
-    val foo: Foo { type Out = Int } = ???
+    val foo: Foo { type Out         = Int }                         = ???
     def conv(i: Foo): SI { type Out = i.Out; val instance: i.type } = ???
 
     val converted = conv(foo)
 
     val v1: Int =
-      indirect(converted)(23) // Okay (after refining the return type `instance` in the return type of `conv`)
+      indirect(converted)(
+        23
+      ) // Okay (after refining the return type `instance` in the return type of `conv`)
     /*
     indirect(converted){(v: converted.instance.Out)converted.instance.Out}(
       23{Int(23)}

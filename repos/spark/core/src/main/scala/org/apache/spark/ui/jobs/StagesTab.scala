@@ -25,10 +25,10 @@ import org.apache.spark.ui.{SparkUI, SparkUITab}
 /** Web UI showing progress status of all stages in the given SparkContext. */
 private[ui] class StagesTab(parent: SparkUI)
     extends SparkUITab(parent, "stages") {
-  val sc = parent.sc
-  val conf = parent.conf
-  val killEnabled = parent.killEnabled
-  val progressListener = parent.jobProgressListener
+  val sc                     = parent.sc
+  val conf                   = parent.conf
+  val killEnabled            = parent.killEnabled
+  val progressListener       = parent.jobProgressListener
   val operationGraphListener = parent.operationGraphListener
 
   attachPage(new AllStagesPage(this))

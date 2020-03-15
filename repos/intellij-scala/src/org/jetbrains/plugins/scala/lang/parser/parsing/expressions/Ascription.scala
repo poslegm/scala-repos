@@ -38,7 +38,7 @@ object Ascription {
       case _ =>
     }
     if (!Type.parse(builder)) {
-      var x = 0
+      var x                 = 0
       val annotationsMarker = builder.mark
       while (Annotation.parse(builder)) {
         x = x + 1

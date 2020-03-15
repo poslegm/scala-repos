@@ -27,8 +27,10 @@ class ActorMaterializerSpec extends AkkaSpec with ImplicitSender {
 
       m.shutdown()
 
-      an[AbruptTerminationException] should be thrownBy Await.result(f,
-                                                                     3.seconds)
+      an[AbruptTerminationException] should be thrownBy Await.result(
+        f,
+        3.seconds
+      )
     }
 
     "refuse materialization after shutdown" in {
@@ -54,15 +56,16 @@ class ActorMaterializerSpec extends AkkaSpec with ImplicitSender {
     "handle properly broken Props" in {
       val m = ActorMaterializer.create(system)
       an[IllegalArgumentException] should be thrownBy Await.result(
-          Source
-            .actorPublisher(Props(classOf[TestActor], "wrong", "arguments"))
-            .runWith(Sink.head)(m),
-          3.seconds)
+        Source
+          .actorPublisher(Props(classOf[TestActor], "wrong", "arguments"))
+          .runWith(Sink.head)(m),
+        3.seconds
+      )
     }
 
     "report correctly if it has been shut down from the side" in {
       val sys = ActorSystem()
-      val m = ActorMaterializer.create(sys)
+      val m   = ActorMaterializer.create(sys)
       Await.result(sys.terminate(), Duration.Inf)
       m.isShutdown should ===(true)
     }

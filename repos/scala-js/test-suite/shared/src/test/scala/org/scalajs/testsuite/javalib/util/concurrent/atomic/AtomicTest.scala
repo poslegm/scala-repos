@@ -82,9 +82,9 @@ class AtomicTest {
   }
 
   @Test def atomicReferenceTest(): Unit = {
-    val thing1 = Foo(5)
+    val thing1    = Foo(5)
     val thing1bis = Foo(5) // equals(), but not the same reference
-    val thing2 = Foo(10)
+    val thing2    = Foo(10)
 
     // sanity
     assertEquals(thing1bis, thing1)
@@ -107,9 +107,9 @@ class AtomicTest {
   }
 
   @Test def atomicReferenceArrayTest(): Unit = {
-    val thing1 = Foo(5)
+    val thing1    = Foo(5)
     val thing1bis = Foo(5) // equals(), but not the same reference
-    val thing2 = Foo(10)
+    val thing2    = Foo(10)
 
     val atomic = new java.util.concurrent.atomic.AtomicReferenceArray[Foo](2)
     assertEquals(2, atomic.length)

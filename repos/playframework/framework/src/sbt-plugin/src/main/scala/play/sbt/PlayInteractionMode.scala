@@ -31,7 +31,7 @@ trait PlayInteractionMode {
   * This is provided, rather than adding a new flag to PlayInteractionMode, to preserve binary compatibility.
   */
 trait PlayNonBlockingInteractionMode extends PlayInteractionMode {
-  def waitForCancel() = ()
+  def waitForCancel()           = ()
   def doWithoutEcho(f: => Unit) = f
 
   /**
@@ -55,7 +55,8 @@ object PlayConsoleInteractionMode extends PlayInteractionMode {
 
   private def withConsoleReader[T](f: ConsoleReader => T): T = {
     val consoleReader = new ConsoleReader
-    try f(consoleReader) finally consoleReader.shutdown()
+    try f(consoleReader)
+    finally consoleReader.shutdown()
   }
   private def waitForKey(): Unit = {
     withConsoleReader { consoleReader =>
@@ -78,7 +79,8 @@ object PlayConsoleInteractionMode extends PlayInteractionMode {
     withConsoleReader { consoleReader =>
       val terminal = consoleReader.getTerminal
       terminal.setEchoEnabled(false)
-      try f finally terminal.restore()
+      try f
+      finally terminal.restore()
     }
   }
   override def waitForCancel(): Unit = waitForKey()
@@ -99,26 +101,28 @@ object StaticPlayNonBlockingInteractionMode
     *
     * @param server A callback to start the server, that returns a closeable to stop it
     */
-  def start(server: => Closeable) = synchronized {
-    current match {
-      case Some(_) =>
-        println("Not starting server since one is already started")
-      case None =>
-        println("Starting server")
-        current = Some(server)
+  def start(server: => Closeable) =
+    synchronized {
+      current match {
+        case Some(_) =>
+          println("Not starting server since one is already started")
+        case None =>
+          println("Starting server")
+          current = Some(server)
+      }
     }
-  }
 
   /**
     * Stop the server started by the last start request, if such a server exists
     */
-  def stop() = synchronized {
-    current match {
-      case Some(server) =>
-        println("Stopping server")
-        server.close()
-        current = None
-      case None => println("Not stopping server since none is started")
+  def stop() =
+    synchronized {
+      current match {
+        case Some(server) =>
+          println("Stopping server")
+          server.close()
+          current = None
+        case None => println("Not stopping server since none is started")
+      }
     }
-  }
 }

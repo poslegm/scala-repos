@@ -17,9 +17,11 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder
   * in little endian byte order.
   */
 class PacketFrameDecoder extends FrameDecoder {
-  override def decode(ctx: ChannelHandlerContext,
-                      channel: Channel,
-                      buffer: ChannelBuffer): Packet = {
+  override def decode(
+      ctx: ChannelHandlerContext,
+      channel: Channel,
+      buffer: ChannelBuffer
+  ): Packet = {
     if (buffer.readableBytes < Packet.HeaderSize) return null
 
     buffer.markReaderIndex()
@@ -29,7 +31,7 @@ class PacketFrameDecoder extends FrameDecoder {
     val br = BufferReader(header)
 
     val length = br.readUnsignedInt24()
-    val seq = br.readUnsignedByte()
+    val seq    = br.readUnsignedByte()
 
     if (buffer.readableBytes < length) {
       buffer.resetReaderIndex()
@@ -57,8 +59,10 @@ class PacketEncoder extends SimpleChannelDownstreamHandler {
 
       case unknown =>
         evt.getFuture.setFailure(
-            new ChannelException("Unsupported request type %s".format(
-                    unknown.getClass.getName)))
+          new ChannelException(
+            "Unsupported request type %s".format(unknown.getClass.getName)
+          )
+        )
     }
 }
 

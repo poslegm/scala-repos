@@ -5,7 +5,7 @@ object Test {
 
   @annotation.implicitAmbiguous("Could not prove ${J} =!= ${J}")
   implicit def neqAmbig1[G, H, J]: J =!= J = null
-  implicit def neqAmbig2[I]: I =!= I = null
+  implicit def neqAmbig2[I]: I =!= I       = null
 
   implicitly[Int =!= Int]
 }

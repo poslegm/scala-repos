@@ -120,24 +120,28 @@ abstract class TreeBrowsers {
   class BrowserFrame(phaseName: String = "unknown") {
     try {
       UIManager.setLookAndFeel(
-          "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel")
+        "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"
+      )
     } catch {
       case _: Throwable =>
         UIManager.setLookAndFeel(
-            UIManager.getCrossPlatformLookAndFeelClassName())
+          UIManager.getCrossPlatformLookAndFeelClassName()
+        )
     }
 
     val frame = new JFrame("Scala AST after " + phaseName + " phase")
     frame.setJMenuBar(new ASTMenuBar())
-    val topLeftPane = new JPanel(new BorderLayout())
-    val topRightPane = new JPanel(new BorderLayout())
-    val bottomPane = new JPanel(new BorderLayout())
-    var splitPane: JSplitPane = _
+    val topLeftPane             = new JPanel(new BorderLayout())
+    val topRightPane            = new JPanel(new BorderLayout())
+    val bottomPane              = new JPanel(new BorderLayout())
+    var splitPane: JSplitPane   = _
     var treeModel: ASTTreeModel = _
-    var jTree: JTree = _
-    val textArea: JTextArea = new JTextArea(30, 120)
-    textArea.setBorder(BorderFactory.createEmptyBorder(
-            borderSize, borderSize, borderSize, borderSize))
+    var jTree: JTree            = _
+    val textArea: JTextArea     = new JTextArea(30, 120)
+    textArea.setBorder(
+      BorderFactory
+        .createEmptyBorder(borderSize, borderSize, borderSize, borderSize)
+    )
 
     val infoPanel = new TextInfoPanel()
 
@@ -145,11 +149,12 @@ abstract class TreeBrowsers {
       def _setExpansionState(root: JTree, path: TreePath): Unit = {
         val last = path.getLastPathComponent
         for (i <- 0 until root.getModel.getChildCount(last)) {
-          val child = root.getModel.getChild(last, i)
+          val child     = root.getModel.getChild(last, i)
           val childPath = path pathByAddingChild child
           _setExpansionState(root, childPath)
         }
-        if (expand) { jTree expandPath path } else { jTree collapsePath path }
+        if (expand) { jTree expandPath path }
+        else { jTree collapsePath path }
       }
       _setExpansionState(root, new TreePath(root.getModel.getRoot))
     }
@@ -171,8 +176,7 @@ abstract class TreeBrowsers {
 
       frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
-      frame.addWindowListener(
-          new WindowAdapter() {
+      frame.addWindowListener(new WindowAdapter() {
 
         /** Release the lock, so compilation may resume after the window is closed. */
         override def windowClosed(e: WindowEvent): Unit = lock.release()
@@ -181,12 +185,14 @@ abstract class TreeBrowsers {
       jTree = new JTree(treeModel) {
 
         /** Return the string for a tree node. */
-        override def convertValueToText(value: Any,
-                                        sel: Boolean,
-                                        exp: Boolean,
-                                        leaf: Boolean,
-                                        row: Int,
-                                        hasFocus: Boolean) = {
+        override def convertValueToText(
+            value: Any,
+            sel: Boolean,
+            exp: Boolean,
+            leaf: Boolean,
+            row: Int,
+            hasFocus: Boolean
+        ) = {
           val (cls, name) = TreeInfo.treeName(value.asInstanceOf[Tree])
           if (name != EMPTY) cls + "[" + name + "]"
           else cls
@@ -194,36 +200,39 @@ abstract class TreeBrowsers {
       }
 
       jTree.addTreeSelectionListener(
-          new javax.swing.event.TreeSelectionListener() {
-        def valueChanged(e: javax.swing.event.TreeSelectionEvent): Unit = {
-          textArea.setText(e.getPath().getLastPathComponent().toString)
-          infoPanel.update(e.getPath().getLastPathComponent())
+        new javax.swing.event.TreeSelectionListener() {
+          def valueChanged(e: javax.swing.event.TreeSelectionEvent): Unit = {
+            textArea.setText(e.getPath().getLastPathComponent().toString)
+            infoPanel.update(e.getPath().getLastPathComponent())
+          }
         }
-      })
+      )
 
-      val topSplitPane = new JSplitPane(
-          JSplitPane.HORIZONTAL_SPLIT, topLeftPane, topRightPane)
+      val topSplitPane =
+        new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, topLeftPane, topRightPane)
       topSplitPane.setResizeWeight(0.5)
 
-      jTree.setBorder(BorderFactory.createEmptyBorder(
-              borderSize, borderSize, borderSize, borderSize))
+      jTree.setBorder(
+        BorderFactory
+          .createEmptyBorder(borderSize, borderSize, borderSize, borderSize)
+      )
       topLeftPane.add(new JScrollPane(jTree), BorderLayout.CENTER)
       topRightPane.add(new JScrollPane(infoPanel), BorderLayout.CENTER)
       bottomPane.add(new JScrollPane(textArea), BorderLayout.CENTER)
       textArea.setFont(new Font("monospaced", Font.PLAIN, 14))
       textArea.setEditable(false)
 
-      splitPane = new JSplitPane(
-          JSplitPane.VERTICAL_SPLIT, topSplitPane, bottomPane)
+      splitPane =
+        new JSplitPane(JSplitPane.VERTICAL_SPLIT, topSplitPane, bottomPane)
       frame.getContentPane().add(splitPane)
       frame.pack()
       frame.setVisible(true)
     }
 
     class ASTMenuBar extends JMenuBar {
-      val menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
+      val menuKey  = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
       val shiftKey = InputEvent.SHIFT_MASK
-      val jmFile = new JMenu("File")
+      val jmFile   = new JMenu("File")
       // val jmiSaveImage = new JMenuItem(
       //   new AbstractAction("Save Tree Image") {
       //     putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuKey, false))
@@ -242,47 +251,54 @@ abstract class TreeBrowsers {
           .postEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
 
       val jmiCancel = new JMenuItem(
-          new AbstractAction("Cancel Compilation") {
-            putValue(Action.ACCELERATOR_KEY,
-                     KeyStroke.getKeyStroke(
-                         KeyEvent.VK_Q, menuKey + shiftKey, false))
-            override def actionPerformed(e: ActionEvent) {
-              closeWindow()
-              global.currentRun.cancel()
-            }
+        new AbstractAction("Cancel Compilation") {
+          putValue(
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey + shiftKey, false)
+          )
+          override def actionPerformed(e: ActionEvent) {
+            closeWindow()
+            global.currentRun.cancel()
           }
+        }
       )
       jmFile add jmiCancel
 
       val jmiExit = new JMenuItem(
-          new AbstractAction("Exit") {
-            putValue(Action.ACCELERATOR_KEY,
-                     KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey, false))
-            override def actionPerformed(e: ActionEvent) = closeWindow()
-          }
+        new AbstractAction("Exit") {
+          putValue(
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey, false)
+          )
+          override def actionPerformed(e: ActionEvent) = closeWindow()
+        }
       )
       jmFile add jmiExit
       add(jmFile)
 
       val jmView = new JMenu("View")
       val jmiExpand = new JMenuItem(
-          new AbstractAction("Expand All Nodes") {
-            putValue(Action.ACCELERATOR_KEY,
-                     KeyStroke.getKeyStroke(KeyEvent.VK_E, menuKey, false))
-            override def actionPerformed(e: ActionEvent) {
-              expandAll(jTree)
-            }
+        new AbstractAction("Expand All Nodes") {
+          putValue(
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_E, menuKey, false)
+          )
+          override def actionPerformed(e: ActionEvent) {
+            expandAll(jTree)
           }
+        }
       )
       jmView add jmiExpand
       val jmiCollapse = new JMenuItem(
-          new AbstractAction("Collapse All Nodes") {
-            putValue(Action.ACCELERATOR_KEY,
-                     KeyStroke.getKeyStroke(KeyEvent.VK_L, menuKey, false))
-            override def actionPerformed(e: ActionEvent) {
-              collapseAll(jTree)
-            }
+        new AbstractAction("Collapse All Nodes") {
+          putValue(
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_L, menuKey, false)
+          )
+          override def actionPerformed(e: ActionEvent) {
+            collapseAll(jTree)
           }
+        }
       )
       jmView add jmiCollapse
       add(jmView)
@@ -297,31 +313,36 @@ abstract class TreeBrowsers {
   class TextInfoPanel extends JTextArea(20, 50) {
 
     setBorder(
-        BorderFactory.createEmptyBorder(
-            borderSize, borderSize, borderSize, borderSize))
+      BorderFactory
+        .createEmptyBorder(borderSize, borderSize, borderSize, borderSize)
+    )
     setEditable(false)
     setFont(new Font("monospaced", Font.PLAIN, 12))
 
     def update(v: AnyRef): Unit = {
       val t: Tree = v.asInstanceOf[Tree]
-      val str = new StringBuilder()
-      var buf = new StringWriter()
+      val str     = new StringBuilder()
+      var buf     = new StringWriter()
 
       t match {
         case ProgramTree(_) => ()
-        case UnitTree(_) => ()
+        case UnitTree(_)    => ()
         case _ =>
           str.append("tree.id: ").append(t.id)
           str.append("\ntree.pos: ").append(t.pos)
           str.append("\nSymbol: ").append(TreeInfo.symbolText(t))
           str
             .append("\nSymbol owner: ")
-            .append(if ((t.symbol ne null) && t.symbol != NoSymbol)
-                  t.symbol.owner.toString
-                else "NoSymbol has no owner")
+            .append(
+              if ((t.symbol ne null) && t.symbol != NoSymbol)
+                t.symbol.owner.toString
+              else "NoSymbol has no owner"
+            )
           if ((t.symbol ne null) && t.symbol.isType) {
-            str.append("\ntermSymbol: " + t.symbol.tpe.termSymbol +
-                "\ntypeSymbol: " + t.symbol.tpe.typeSymbol)
+            str.append(
+              "\ntermSymbol: " + t.symbol.tpe.termSymbol +
+                "\ntypeSymbol: " + t.symbol.tpe.typeSymbol
+            )
             if (t.symbol.isTypeSkolem)
               str.append("\nSkolem of: " + t.symbol.deSkolemize)
           }
@@ -362,157 +383,163 @@ abstract class TreeBrowsers {
 
     /** Return the case class name and the Name, if the node defines one */
     def treeName(t: Tree): (String, Name) =
-      ((t.productPrefix, t match {
-        case UnitTree(unit) => newTermName("" + unit)
-        case Super(_, mix) => newTermName("mix: " + mix)
-        case This(qual) => qual
-        case Select(_, selector) => selector
-        case Ident(name) => name
-        case SelectFromTypeTree(_, selector) => selector
-        case x: DefTree => x.name
-        case _ => EMPTY
-      }))
+      (
+        (
+          t.productPrefix,
+          t match {
+            case UnitTree(unit)                  => newTermName("" + unit)
+            case Super(_, mix)                   => newTermName("mix: " + mix)
+            case This(qual)                      => qual
+            case Select(_, selector)             => selector
+            case Ident(name)                     => name
+            case SelectFromTypeTree(_, selector) => selector
+            case x: DefTree                      => x.name
+            case _                               => EMPTY
+          }
+        )
+      )
 
     /** Return a list of children for the given tree node */
-    def children(t: Tree): List[Tree] = t match {
-      case ProgramTree(units) =>
-        units
+    def children(t: Tree): List[Tree] =
+      t match {
+        case ProgramTree(units) =>
+          units
 
-      case UnitTree(unit) =>
-        List(unit.body)
+        case UnitTree(unit) =>
+          List(unit.body)
 
-      case DocDef(comment, definition) =>
-        List(definition)
+        case DocDef(comment, definition) =>
+          List(definition)
 
-      case ClassDef(mods, name, tparams, impl) => {
+        case ClassDef(mods, name, tparams, impl) => {
           var children: List[Tree] = List()
           children = tparams ::: children
           mods.annotations ::: impl :: children
         }
 
-      case PackageDef(pid, stats) =>
-        stats
+        case PackageDef(pid, stats) =>
+          stats
 
-      case ModuleDef(mods, name, impl) =>
-        mods.annotations ::: List(impl)
+        case ModuleDef(mods, name, impl) =>
+          mods.annotations ::: List(impl)
 
-      case ValDef(mods, name, tpe, rhs) =>
-        mods.annotations ::: List(tpe, rhs)
+        case ValDef(mods, name, tpe, rhs) =>
+          mods.annotations ::: List(tpe, rhs)
 
-      case DefDef(mods, name, tparams, vparams, tpe, rhs) =>
-        mods.annotations ::: tpe :: rhs :: vparams.flatten ::: tparams
+        case DefDef(mods, name, tparams, vparams, tpe, rhs) =>
+          mods.annotations ::: tpe :: rhs :: vparams.flatten ::: tparams
 
-      case TypeDef(mods, name, tparams, rhs) =>
-        mods.annotations ::: rhs :: tparams // @M: was List(rhs, lobound)
+        case TypeDef(mods, name, tparams, rhs) =>
+          mods.annotations ::: rhs :: tparams // @M: was List(rhs, lobound)
 
-      case Import(expr, selectors) =>
-        List(expr)
+        case Import(expr, selectors) =>
+          List(expr)
 
-      case CaseDef(pat, guard, body) =>
-        List(pat, guard, body)
+        case CaseDef(pat, guard, body) =>
+          List(pat, guard, body)
 
-      case Template(parents, self, body) =>
-        parents ::: List(self) ::: body
+        case Template(parents, self, body) =>
+          parents ::: List(self) ::: body
 
-      case LabelDef(name, params, rhs) =>
-        params ::: List(rhs)
+        case LabelDef(name, params, rhs) =>
+          params ::: List(rhs)
 
-      case Block(stats, expr) =>
-        stats ::: List(expr)
+        case Block(stats, expr) =>
+          stats ::: List(expr)
 
-      case Alternative(trees) =>
-        trees
+        case Alternative(trees) =>
+          trees
 
-      case Bind(name, rhs) =>
-        List(rhs)
+        case Bind(name, rhs) =>
+          List(rhs)
 
-      case UnApply(fun, args) =>
-        fun :: args
+        case UnApply(fun, args) =>
+          fun :: args
 
-      case Match(selector, cases) =>
-        selector :: cases
+        case Match(selector, cases) =>
+          selector :: cases
 
-      case Function(vparams, body) =>
-        vparams ::: List(body)
+        case Function(vparams, body) =>
+          vparams ::: List(body)
 
-      case Assign(lhs, rhs) =>
-        List(lhs, rhs)
+        case Assign(lhs, rhs) =>
+          List(lhs, rhs)
 
-      case If(cond, thenp, elsep) =>
-        List(cond, thenp, elsep)
+        case If(cond, thenp, elsep) =>
+          List(cond, thenp, elsep)
 
-      case Return(expr) =>
-        List(expr)
+        case Return(expr) =>
+          List(expr)
 
-      case Throw(expr) =>
-        List(expr)
+        case Throw(expr) =>
+          List(expr)
 
-      case New(init) =>
-        List(init)
+        case New(init) =>
+          List(init)
 
-      case Typed(expr, tpe) =>
-        List(expr, tpe)
+        case Typed(expr, tpe) =>
+          List(expr, tpe)
 
-      case TypeApply(fun, args) =>
-        List(fun) ::: args
+        case TypeApply(fun, args) =>
+          List(fun) ::: args
 
-      case Apply(fun, args) =>
-        List(fun) ::: args
+        case Apply(fun, args) =>
+          List(fun) ::: args
 
-      case ApplyDynamic(qual, args) =>
-        List(qual) ::: args
+        case ApplyDynamic(qual, args) =>
+          List(qual) ::: args
 
-      case Super(qualif, mix) =>
-        List(qualif)
+        case Super(qualif, mix) =>
+          List(qualif)
 
-      case This(qualif) =>
-        Nil
+        case This(qualif) =>
+          Nil
 
-      case Select(qualif, selector) =>
-        List(qualif)
+        case Select(qualif, selector) =>
+          List(qualif)
 
-      case Ident(name) =>
-        Nil
+        case Ident(name) =>
+          Nil
 
-      case Literal(value) =>
-        Nil
+        case Literal(value) =>
+          Nil
 
-      case TypeTree() =>
-        Nil
+        case TypeTree() =>
+          Nil
 
-      case Annotated(annot, arg) =>
-        annot :: List(arg)
+        case Annotated(annot, arg) =>
+          annot :: List(arg)
 
-      case SingletonTypeTree(ref) =>
-        List(ref)
+        case SingletonTypeTree(ref) =>
+          List(ref)
 
-      case SelectFromTypeTree(qualif, selector) =>
-        List(qualif)
+        case SelectFromTypeTree(qualif, selector) =>
+          List(qualif)
 
-      case CompoundTypeTree(templ) =>
-        List(templ)
+        case CompoundTypeTree(templ) =>
+          List(templ)
 
-      case AppliedTypeTree(tpe, args) =>
-        tpe :: args
+        case AppliedTypeTree(tpe, args) =>
+          tpe :: args
 
-      case TypeBoundsTree(lo, hi) =>
-        List(lo, hi)
+        case TypeBoundsTree(lo, hi) =>
+          List(lo, hi)
 
-      case ExistentialTypeTree(tpt, whereClauses) =>
-        tpt :: whereClauses
+        case ExistentialTypeTree(tpt, whereClauses) =>
+          tpt :: whereClauses
 
-      case Try(block, catches, finalizer) =>
-        block :: catches ::: List(finalizer)
+        case Try(block, catches, finalizer) =>
+          block :: catches ::: List(finalizer)
 
-      case ArrayValue(elemtpt, elems) =>
-        elemtpt :: elems
+        case ArrayValue(elemtpt, elems) =>
+          elemtpt :: elems
 
-      case EmptyTree =>
-        Nil
+        case EmptyTree =>
+          Nil
 
-      case Star(t) =>
-        List(t)
-    }
+        case Star(t) =>
+          List(t)
+      }
 
     /** Return a textual representation of this t's symbol */
     def symbolText(t: Tree): String = {
@@ -540,9 +567,10 @@ abstract class TreeBrowsers {
         var str = s.flagString
         if (s.isStaticMember) str = str + " isStatic "
         (str + " annotations: " + s.annotations.mkString("", " ", "") +
-            (if (s.isTypeSkolem)
-               "\ndeSkolemized annotations: " +
-               s.deSkolemize.annotations.mkString("", " ", "") else ""))
+          (if (s.isTypeSkolem)
+             "\ndeSkolemized annotations: " +
+               s.deSkolemize.annotations.mkString("", " ", "")
+           else ""))
       } else ""
     }
   }
@@ -556,117 +584,142 @@ abstract class TreeBrowsers {
     def toDocument(sym: Symbol): Document =
       toDocument(sym.info)
 
-    def symsToDocument(syms: List[Symbol]): Document = syms match {
-      case Nil => DocNil
-      case s :: Nil => Document.group(toDocument(s))
-      case _ =>
-        Document.group(syms.tail.foldLeft(toDocument(syms.head) :: ", ")(
-                (d: Document, s2: Symbol) => toDocument(s2) :: ", " :/: d))
-    }
+    def symsToDocument(syms: List[Symbol]): Document =
+      syms match {
+        case Nil      => DocNil
+        case s :: Nil => Document.group(toDocument(s))
+        case _ =>
+          Document.group(
+            syms.tail.foldLeft(toDocument(syms.head) :: ", ")(
+              (d: Document, s2: Symbol) => toDocument(s2) :: ", " :/: d
+            )
+          )
+      }
 
-    def toDocument(ts: List[Type]): Document = ts match {
-      case Nil => DocNil
-      case t :: Nil => Document.group(toDocument(t))
-      case _ =>
-        Document.group(ts.tail.foldLeft(toDocument(ts.head) :: ", ")(
-                (d: Document, t2: Type) => toDocument(t2) :: ", " :/: d))
-    }
+    def toDocument(ts: List[Type]): Document =
+      ts match {
+        case Nil      => DocNil
+        case t :: Nil => Document.group(toDocument(t))
+        case _ =>
+          Document.group(
+            ts.tail.foldLeft(toDocument(ts.head) :: ", ")(
+              (d: Document, t2: Type) => toDocument(t2) :: ", " :/: d
+            )
+          )
+      }
 
-    def toDocument(t: Type): Document = t match {
-      case ErrorType => "ErrorType()"
-      case WildcardType => "WildcardType()"
-      case NoType => "NoType()"
-      case NoPrefix => "NoPrefix()"
-      case ThisType(s) => "ThisType(" + s.name + ")"
+    def toDocument(t: Type): Document =
+      t match {
+        case ErrorType    => "ErrorType()"
+        case WildcardType => "WildcardType()"
+        case NoType       => "NoType()"
+        case NoPrefix     => "NoPrefix()"
+        case ThisType(s)  => "ThisType(" + s.name + ")"
 
-      case SingleType(pre, sym) =>
-        Document.group(
+        case SingleType(pre, sym) =>
+          Document.group(
             Document.nest(
-                4,
-                "SingleType(" :/: toDocument(pre) :: ", " :/: sym.name.toString :: ")")
-        )
+              4,
+              "SingleType(" :/: toDocument(
+                pre
+              ) :: ", " :/: sym.name.toString :: ")"
+            )
+          )
 
-      case ConstantType(value) =>
-        "ConstantType(" + value + ")"
+        case ConstantType(value) =>
+          "ConstantType(" + value + ")"
 
-      case TypeRef(pre, sym, args) =>
-        Document.group(
+        case TypeRef(pre, sym, args) =>
+          Document.group(
             Document.nest(
-                4,
-                "TypeRef(" :/: toDocument(pre) :: ", " :/: sym.name.toString +
-                sym.idString :: ", " :/: "[ " :: toDocument(args) :: "]" :: ")")
-        )
+              4,
+              "TypeRef(" :/: toDocument(pre) :: ", " :/: sym.name.toString +
+                sym.idString :: ", " :/: "[ " :: toDocument(args) :: "]" :: ")"
+            )
+          )
 
-      case TypeBounds(lo, hi) =>
-        Document.group(
+        case TypeBounds(lo, hi) =>
+          Document.group(
             Document.nest(
-                4,
-                "TypeBounds(" :/: toDocument(lo) :: ", " :/: toDocument(hi) :: ")")
-        )
+              4,
+              "TypeBounds(" :/: toDocument(lo) :: ", " :/: toDocument(hi) :: ")"
+            )
+          )
 
-      case RefinedType(parents, defs) =>
-        Document.group(
+        case RefinedType(parents, defs) =>
+          Document.group(
             Document.nest(4, "RefinedType(" :/: toDocument(parents) :: ")")
-        )
+          )
 
-      case ClassInfoType(parents, defs, clazz) =>
-        Document.group(
+        case ClassInfoType(parents, defs, clazz) =>
+          Document.group(
             Document.nest(
-                4,
-                "ClassInfoType(" :/: toDocument(parents) :: ", " :/: clazz.name.toString +
-                clazz.idString :: ")")
-        )
+              4,
+              "ClassInfoType(" :/: toDocument(
+                parents
+              ) :: ", " :/: clazz.name.toString +
+                clazz.idString :: ")"
+            )
+          )
 
-      case MethodType(params, result) =>
-        Document.group(
+        case MethodType(params, result) =>
+          Document.group(
             Document.nest(
-                4,
-                "MethodType(" :/: Document.group(
-                    "(" :/: symsToDocument(params) :/: "), ") :/: toDocument(
-                    result) :: ")")
-        )
+              4,
+              "MethodType(" :/: Document.group(
+                "(" :/: symsToDocument(params) :/: "), "
+              ) :/: toDocument(result) :: ")"
+            )
+          )
 
-      case NullaryMethodType(result) =>
-        Document.group(
+        case NullaryMethodType(result) =>
+          Document.group(
+            Document.nest(4, "NullaryMethodType(" :/: toDocument(result) :: ")")
+          )
+
+        case PolyType(tparams, result) =>
+          Document.group(
             Document.nest(
-                4, "NullaryMethodType(" :/: toDocument(result) :: ")")
-        )
+              4,
+              "PolyType(" :/: Document.group(
+                "(" :/: symsToDocument(tparams) :/: "), "
+              ) :/: toDocument(result) :: ")"
+            )
+          )
 
-      case PolyType(tparams, result) =>
-        Document.group(
+        case AnnotatedType(annots, tp) =>
+          Document.group(
             Document.nest(
-                4,
-                "PolyType(" :/: Document.group(
-                    "(" :/: symsToDocument(tparams) :/: "), ") :/: toDocument(
-                    result) :: ")")
-        )
+              4,
+              "AnnotatedType(" :/: annots
+                .mkString("[", ",", "]") :/: "," :/: toDocument(tp) :: ")"
+            )
+          )
 
-      case AnnotatedType(annots, tp) =>
-        Document.group(
+        case ExistentialType(tparams, result) =>
+          Document.group(
             Document.nest(
-                4,
-                "AnnotatedType(" :/: annots.mkString("[", ",", "]") :/: "," :/: toDocument(
-                    tp) :: ")")
-        )
+              4,
+              "ExistentialType(" :/: Document.group(
+                "(" :/: symsToDocument(tparams) :/: "), "
+              ) :/: toDocument(result) :: ")"
+            )
+          )
 
-      case ExistentialType(tparams, result) =>
-        Document.group(
+        case ImportType(expr) =>
+          "ImportType(" + expr.toString + ")"
+
+        case SuperType(thistpe, supertpe) =>
+          Document.group(
             Document.nest(
-                4,
-                "ExistentialType(" :/: Document.group("(" :/: symsToDocument(
-                        tparams) :/: "), ") :/: toDocument(result) :: ")"))
-
-      case ImportType(expr) =>
-        "ImportType(" + expr.toString + ")"
-
-      case SuperType(thistpe, supertpe) =>
-        Document.group(
-            Document.nest(
-                4,
-                "SuperType(" :/: toDocument(thistpe) :/: ", " :/: toDocument(
-                    supertpe) :: ")"))
-      case _ =>
-        sys.error("Unknown case: " + t.toString + ", " + t.getClass)
-    }
+              4,
+              "SuperType(" :/: toDocument(thistpe) :/: ", " :/: toDocument(
+                supertpe
+              ) :: ")"
+            )
+          )
+        case _ =>
+          sys.error("Unknown case: " + t.toString + ", " + t.getClass)
+      }
   }
 }

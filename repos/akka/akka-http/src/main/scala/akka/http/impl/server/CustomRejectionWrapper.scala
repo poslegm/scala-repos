@@ -13,5 +13,5 @@ import akka.http.scaladsl.server.Rejection
   * INTERNAL API
   */
 private[http] case class CustomRejectionWrapper(
-    customRejection: CustomRejection)
-    extends Rejection
+    customRejection: CustomRejection
+) extends Rejection

@@ -14,8 +14,8 @@ object Test extends App {
     }
 
     // find two hashes which have a large separation
-    val x = 0
-    var y = 1
+    val x  = 0
+    var y  = 1
     val ix = improve(x)
     while (y != 0 && improve(y) != ix + (1 << 31)) y += 1
     printf("%s %s %x %x\n", x, y, improve(x), improve(y))
@@ -80,14 +80,15 @@ package scala.collection.immutable {
       x match {
         case m: HashSet.HashTrieSet[_] =>
           require(
-              m.elems.size > 1 ||
+            m.elems.size > 1 ||
               (m.elems.size == 1 &&
-                  m.elems(0).isInstanceOf[HashSet.HashTrieSet[_]]))
+                m.elems(0).isInstanceOf[HashSet.HashTrieSet[_]])
+          )
           m.elems.foreach(validate _)
         case m: HashSet.HashSetCollision1[_] =>
           require(m.ks.size > 1)
         case m: HashSet.HashSet1[_] =>
-        case _ =>
+        case _                      =>
       }
     }
   }

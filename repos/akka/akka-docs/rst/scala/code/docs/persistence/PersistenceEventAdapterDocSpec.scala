@@ -15,7 +15,8 @@ import scala.collection.immutable
 class PersistenceEventAdapterDocSpec(config: String) extends AkkaSpec(config) {
 
   def this() {
-    this("""
+    this(
+      """
       akka.persistence.snapshot-store.plugin = "akka.persistence.snapshot-store.local"
 
       //#event-adapters-config
@@ -64,7 +65,8 @@ class PersistenceEventAdapterDocSpec(config: String) extends AkkaSpec(config) {
           }
         }
       }
-    """)
+    """
+    )
   }
 
   "MyAutomaticJsonEventAdapter" must {
@@ -78,14 +80,12 @@ class PersistenceEventAdapterDocSpec(config: String) extends AkkaSpec(config) {
 
         override def receiveRecover: Receive = {
           case RecoveryCompleted => // ignore...
-          case e => p.ref ! e
+          case e                 => p.ref ! e
         }
 
         override def receiveCommand: Receive = {
           case c =>
-            persist(c) { e =>
-              p.ref ! e
-            }
+            persist(c) { e => p.ref ! e }
         }
       })
 
@@ -114,14 +114,12 @@ class PersistenceEventAdapterDocSpec(config: String) extends AkkaSpec(config) {
 
         override def receiveRecover: Receive = {
           case RecoveryCompleted => // ignore...
-          case e => p.ref ! e
+          case e                 => p.ref ! e
         }
 
         override def receiveCommand: Receive = {
           case c =>
-            persist(c) { e =>
-              p.ref ! e
-            }
+            persist(c) { e => p.ref ! e }
         }
       })
 
@@ -142,7 +140,7 @@ class PersistenceEventAdapterDocSpec(config: String) extends AkkaSpec(config) {
 
 trait DomainEvent
 case class Person(name: String, age: Int) extends DomainEvent
-case class Box(length: Int) extends DomainEvent
+case class Box(length: Int)               extends DomainEvent
 
 case class MyTaggingJournalModel(payload: Any, tags: Set[String])
 
@@ -163,8 +161,7 @@ class MyEventAdapter(system: ExtendedActorSystem) extends EventAdapter {
   * This is an example adapter which completely takes care of domain<->json translation.
   * It allows the journal to take care of the manifest handling, which is the FQN of the serialized class.
   */
-class MyAutoJsonEventAdapter(system: ExtendedActorSystem)
-    extends EventAdapter {
+class MyAutoJsonEventAdapter(system: ExtendedActorSystem) extends EventAdapter {
   private val gson = new Gson
 
   override def manifest(event: Any): String =
@@ -213,13 +210,14 @@ class MyManualJsonEventAdapter(system: ExtendedActorSystem)
     out
   }
 
-  override def fromJournal(event: Any, m: String): EventSeq = event match {
-    case json: JsonElement =>
-      val manifest = json.getAsJsonObject.get("_manifest").getAsString
+  override def fromJournal(event: Any, m: String): EventSeq =
+    event match {
+      case json: JsonElement =>
+        val manifest = json.getAsJsonObject.get("_manifest").getAsString
 
-      val clazz = system.dynamicAccess.getClassFor[Any](manifest).get
-      EventSeq.single(gson.fromJson(json, clazz))
-  }
+        val clazz = system.dynamicAccess.getClassFor[Any](manifest).get
+        EventSeq.single(gson.fromJson(json, clazz))
+    }
 }
 
 class MyTaggingEventAdapter(system: ExtendedActorSystem) extends EventAdapter {
@@ -235,7 +233,7 @@ class MyTaggingEventAdapter(system: ExtendedActorSystem) extends EventAdapter {
       case Person(_, age) if age >= 18 =>
         MyTaggingJournalModel(event, tags = Set("adult"))
       case Person(_, age) => MyTaggingJournalModel(event, tags = Set("minor"))
-      case _ => MyTaggingJournalModel(event, tags = Set.empty)
+      case _              => MyTaggingJournalModel(event, tags = Set.empty)
     }
   }
 }

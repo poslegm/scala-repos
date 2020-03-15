@@ -8,8 +8,8 @@ trait PluginComponent extends TemplateComponent { self: Profile =>
 
   class Plugins(tag: Tag) extends Table[Plugin](tag, "PLUGIN") {
     val pluginId = column[String]("PLUGIN_ID", O PrimaryKey)
-    val version = column[String]("VERSION")
-    def * = (pluginId, version) <> (Plugin.tupled, Plugin.unapply)
+    val version  = column[String]("VERSION")
+    def *        = (pluginId, version) <> (Plugin.tupled, Plugin.unapply)
   }
 }
 

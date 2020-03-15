@@ -20,36 +20,39 @@ import org.saddle._
 /**
   * Helper class to do combine or transform after a groupBy
   */
-class SeriesGrouper[Y : ST : ORD, X : ST : ORD, T : ST](
-    ix: Index[Y], series: Series[X, T], sorted: Boolean = true)
-    extends IndexGrouper[Y](ix, sorted) {
+class SeriesGrouper[Y: ST: ORD, X: ST: ORD, T: ST](
+    ix: Index[Y],
+    series: Series[X, T],
+    sorted: Boolean = true
+) extends IndexGrouper[Y](ix, sorted) {
 
-  def combine[U : ST : ORD](fn: (Y, Vec[T]) => U): Series[Y, U] =
+  def combine[U: ST: ORD](fn: (Y, Vec[T]) => U): Series[Y, U] =
     Series(SeriesGrouper.combine(ix, keys, series.values, fn), Index(keys))
 
   // less powerful combine, ignores group key
-  def combine[U : ST : ORD](fn: Vec[T] => U): Series[Y, U] =
+  def combine[U: ST: ORD](fn: Vec[T] => U): Series[Y, U] =
     combine((k, v) => fn(v))
 
-  def transform[U : ST](fn: (Y, Vec[T]) => Vec[U]): Series[X, U] =
+  def transform[U: ST](fn: (Y, Vec[T]) => Vec[U]): Series[X, U] =
     Series(SeriesGrouper.transform(series.values, groups, fn), series.index)
 
   // less powerful transform, ignores group key
-  def transform[U : ST](fn: Vec[T] => Vec[U]): Series[X, U] =
+  def transform[U: ST](fn: Vec[T] => Vec[U]): Series[X, U] =
     transform((k, v) => fn(v))
 }
 
 object SeriesGrouper {
   // Collapses each group vector to a single value
-  private[saddle] def combine[Y : ST : ORD, T : ST, U : ST](
+  private[saddle] def combine[Y: ST: ORD, T: ST, U: ST](
       ix: Index[Y],
       uniq: Array[Y],
       vec: Vec[T],
-      fn: (Y, Vec[T]) => U): Vec[U] = {
+      fn: (Y, Vec[T]) => U
+  ): Vec[U] = {
     val sz = uniq.length
 
     val res = Array.ofDim[U](sz)
-    var i = 0
+    var i   = 0
     while (i < sz) {
       val v = uniq(i)
       res(i) = fn(v, vec.take(ix(v)))
@@ -60,15 +63,16 @@ object SeriesGrouper {
   }
 
   // Transforms each group vector into a new vector
-  private[saddle] def transform[Y : ST : ORD, T : ST, U : ST](
+  private[saddle] def transform[Y: ST: ORD, T: ST, U: ST](
       vec: Vec[T],
       groups: Array[(Y, Array[Int])],
-      fn: (Y, Vec[T]) => Vec[U]): Vec[U] = {
+      fn: (Y, Vec[T]) => Vec[U]
+  ): Vec[U] = {
     val iter = for ((k, i) <- groups) yield (fn(k, vec(i)), i)
-    val res = Array.ofDim[U](vec.length)
+    val res  = Array.ofDim[U](vec.length)
     for ((v, i) <- iter) {
       val sz = v.length
-      var k = 0
+      var k  = 0
       while (k < sz) {
         // put each value back into original location
         res(i(k)) = v(k)
@@ -78,10 +82,9 @@ object SeriesGrouper {
     Vec(res)
   }
 
-  def apply[Y : ST : ORD, X : ST : ORD, T : ST](
-      ix: Index[Y], ser: Series[X, T]) =
+  def apply[Y: ST: ORD, X: ST: ORD, T: ST](ix: Index[Y], ser: Series[X, T]) =
     new SeriesGrouper(ix, ser)
 
-  def apply[Y : ST : ORD, T : ST](series: Series[Y, T]) =
+  def apply[Y: ST: ORD, T: ST](series: Series[Y, T]) =
     new SeriesGrouper(series.index, series)
 }

@@ -12,10 +12,11 @@ package object list {
     /**
       * @return everything up to the last element, and the last element.
       */
-    def initLast: (List[T], T) = list.reverse match {
-      case head :: tail => (tail.reverse, head)
-      case _ => throw new IllegalArgumentException("list was empty")
-    }
+    def initLast: (List[T], T) =
+      list.reverse match {
+        case head :: tail => (tail.reverse, head)
+        case _            => throw new IllegalArgumentException("list was empty")
+      }
   }
 
   implicit class RichListTuple2[K, V](val list: List[(K, V)]) extends AnyVal {
@@ -27,7 +28,7 @@ package object list {
     def toMultiMapSet: Map[K, Set[V]] = {
       import collection.mutable
       val builder = new mutable.HashMap[K, mutable.Set[V]]
-      with mutable.MultiMap[K, V]
+        with mutable.MultiMap[K, V]
 
       list.foreach {
         case (k, v) => builder.addBinding(k, v)

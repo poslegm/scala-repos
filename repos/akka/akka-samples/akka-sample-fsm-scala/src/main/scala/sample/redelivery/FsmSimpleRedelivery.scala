@@ -34,7 +34,7 @@ object SimpleOrderedRedeliverer {
    * Various states the [[SimpleOrderedRedeliverer]] can be in.
    */
   sealed trait State
-  case object Idle extends State
+  case object Idle        extends State
   case object AwaitingAck extends State
 
   sealed trait Data
@@ -197,10 +197,11 @@ class Requester extends Actor {
 
   def receive = {
     case Tick =>
-      val msg = util.Random.shuffle(messages).head
+      val msg  = util.Random.shuffle(messages).head
       val uuid = UUID.randomUUID()
       println(
-          s"""[Requester] requesting ("$msg", $uuid) to be sent to [Receiver]...""")
+        s"""[Requester] requesting ("$msg", $uuid) to be sent to [Receiver]..."""
+      )
 
       /*
        * Make the actual request...

@@ -18,10 +18,10 @@ object PluginsTest extends Specification {
     "order enable plugins after required plugins" in {
       val ns = deducePlugin(A && B, log)
       ((ns indexOf Q) must beGreaterThan(ns indexOf A)) and
-      ((ns indexOf Q) must beGreaterThan(ns indexOf B)) and
-      ((ns indexOf R) must beGreaterThan(ns indexOf A)) and
-      ((ns indexOf R) must beGreaterThan(ns indexOf B)) and
-      ((ns indexOf R) must beGreaterThan(ns indexOf Q))
+        ((ns indexOf Q) must beGreaterThan(ns indexOf B)) and
+        ((ns indexOf R) must beGreaterThan(ns indexOf A)) and
+        ((ns indexOf R) must beGreaterThan(ns indexOf B)) and
+        ((ns indexOf R) must beGreaterThan(ns indexOf Q))
     }
     "not enable plugins with trigger=allRequirements but conflicting requirements" in {
       deducePlugin(A && B, log) must not contain (S)
@@ -32,43 +32,47 @@ object PluginsTest extends Specification {
     }
     "throw an AutoPluginException on conflicting requirements" in {
       deducePlugin(S, log) must throwAn[AutoPluginException](
-          message = """Contradiction in enabled plugins:
+        message =
+          """Contradiction in enabled plugins:
   - requested: sbt.AI\$S
   - enabled: sbt.AI\$S, sbt.AI\$Q, sbt.AI\$R, sbt.AI\$B, sbt.AI\$A
-  - conflict: sbt.AI\$R is enabled by sbt.AI\$Q; excluded by sbt.AI\$S""")
+  - conflict: sbt.AI\$R is enabled by sbt.AI\$Q; excluded by sbt.AI\$S"""
+      )
     }
     "generates a detailed report on conflicting requirements" in {
       deducePlugin(T && U, log) must throwAn[AutoPluginException](
-          message = """Contradiction in enabled plugins:
+        message =
+          """Contradiction in enabled plugins:
   - requested: sbt.AI\$T && sbt.AI\$U
   - enabled: sbt.AI\$U, sbt.AI\$T, sbt.AI\$A, sbt.AI\$Q, sbt.AI\$R, sbt.AI\$B
   - conflict: sbt.AI\$Q is enabled by sbt.AI\$A && sbt.AI\$B; required by sbt.AI\$T, sbt.AI\$R; excluded by sbt.AI\$U
-  - conflict: sbt.AI\$R is enabled by sbt.AI\$Q; excluded by sbt.AI\$T""")
+  - conflict: sbt.AI\$R is enabled by sbt.AI\$Q; excluded by sbt.AI\$T"""
+      )
     }
   }
 }
 
 object AI {
   lazy val allPlugins: List[AutoPlugin] = List(A, B, Q, R, S, T, U)
-  lazy val deducePlugin = Plugins.deducer(allPlugins)
-  lazy val log = Logger.Null
+  lazy val deducePlugin                 = Plugins.deducer(allPlugins)
+  lazy val log                          = Logger.Null
 
   object A extends AutoPlugin
   object B extends AutoPlugin
 
   object Q extends AutoPlugin {
     override def requires: Plugins = A && B
-    override def trigger = allRequirements
+    override def trigger           = allRequirements
   }
 
   object R extends AutoPlugin {
     override def requires = Q
-    override def trigger = allRequirements
+    override def trigger  = allRequirements
   }
 
   object S extends AutoPlugin {
     override def requires = Q && !R
-    override def trigger = allRequirements
+    override def trigger  = allRequirements
   }
 
   // This is an opt-in plugin with a requirement

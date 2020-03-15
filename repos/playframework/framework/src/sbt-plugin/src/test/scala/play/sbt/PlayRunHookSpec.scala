@@ -41,12 +41,13 @@ object PlayRunHookSpec extends Specification {
     "combine several thrown exceptions into a RunHookCompositeThrowable" in {
       val executedHooks: HashMap[play.runsupport.RunHook, Boolean] =
         HashMap.empty
-      class HookFirstMockException extends Throwable
+      class HookFirstMockException  extends Throwable
       class HookSecondMockException extends Throwable
 
-      def createDummyHooks = new PlayRunHook {
-        executedHooks += ((this, true))
-      }
+      def createDummyHooks =
+        new PlayRunHook {
+          executedHooks += ((this, true))
+        }
 
       val dummyHooks = Seq.fill(3)(createDummyHooks)
 
@@ -62,7 +63,8 @@ object PlayRunHookSpec extends Specification {
       val hooks = firstFailure +: dummyHooks :+ lastFailure
 
       hooks.run(_.beforeStarted()) must throwA[
-          play.runsupport.RunHookCompositeThrowable].like {
+        play.runsupport.RunHookCompositeThrowable
+      ].like {
         case e: Throwable =>
           e.getMessage must contain("HookFirstMockException")
           e.getMessage must contain("HookSecondMockException")

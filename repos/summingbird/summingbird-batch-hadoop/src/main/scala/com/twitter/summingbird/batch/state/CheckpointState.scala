@@ -58,7 +58,8 @@ trait CheckpointStore[T] {
     * when the job is completed or failed for checkpointing.
     */
   def checkpointBatchStart(
-      intersection: Intersection[InclusiveLower, ExclusiveUpper, Timestamp]): T
+      intersection: Intersection[InclusiveLower, ExclusiveUpper, Timestamp]
+  ): T
 
   /** is called when the batches are finished successfully */
   def checkpointSuccessfulRun(batchToken: T)
@@ -103,7 +104,8 @@ trait CheckpointState[T] extends WaitingState[Interval[Timestamp]] {
       low.map(Equiv[Timestamp].equiv(_, earliestTimestamp)).getOrElse(false)
 
     private def checkInterval(
-        intersection: Intersection[Lower, Upper, Timestamp]): Boolean = {
+        intersection: Intersection[Lower, Upper, Timestamp]
+    ): Boolean = {
       val Intersection(low, high) = intersection
 
       /** make sure the intesection alignes to batches and there is no holes in middle */
@@ -119,13 +121,20 @@ trait CheckpointState[T] extends WaitingState[Interval[Timestamp]] {
       available match {
         case intersection @ Intersection(low, high)
             if checkInterval(intersection) &&
-            hasStarted.compareAndSet(false, true) =>
+              hasStarted.compareAndSet(false, true) =>
           intersection.toLeftClosedRightOpen match {
             case Some(leftClosedRightOpenIntersection) =>
               val batchToken: T = checkpointStore.checkpointBatchStart(
-                  leftClosedRightOpenIntersection)
-              Right(new CheckpointRunningState(
-                      this, intersection, hasStarted, batchToken))
+                leftClosedRightOpenIntersection
+              )
+              Right(
+                new CheckpointRunningState(
+                  this,
+                  intersection,
+                  hasStarted,
+                  batchToken
+                )
+              )
             case _ => Left(waitingState)
           }
         case _ => Left(waitingState)
@@ -141,12 +150,13 @@ trait CheckpointState[T] extends WaitingState[Interval[Timestamp]] {
       prepareState: CheckpointPrepareState,
       succeedPart: Interval.GenIntersection[Timestamp],
       isRunning: AtomicBoolean,
-      val batchToken: T)
-      extends RunningState[Interval[Timestamp]] {
-    private def setStopped() = require(
+      val batchToken: T
+  ) extends RunningState[Interval[Timestamp]] {
+    private def setStopped() =
+      require(
         isRunning.compareAndSet(true, false),
         "Concurrent modification of HDFSState!"
-    )
+      )
 
     /**
       * On success, checkpoint successful batches
@@ -173,11 +183,12 @@ trait CheckpointState[T] extends WaitingState[Interval[Timestamp]] {
     * millisecond of a batch.
     */
   private def alignedToBatchBoundaries(
-      low: Lower[Timestamp], high: Upper[Timestamp]): Boolean =
+      low: Lower[Timestamp],
+      high: Upper[Timestamp]
+  ): Boolean =
     (for {
       lowerBound <- low.least
       upperBound <- high.strictUpperBound
-    } yield
-      checkpointStore.batcher.isLowerBatchEdge(lowerBound) &&
+    } yield checkpointStore.batcher.isLowerBatchEdge(lowerBound) &&
       checkpointStore.batcher.isLowerBatchEdge(upperBound)).getOrElse(false)
 }

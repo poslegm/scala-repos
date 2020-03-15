@@ -36,8 +36,8 @@ class FetcherTest extends KafkaServerTestHarness {
       .map(KafkaConfig.fromProps)
 
   val messages = new mutable.HashMap[Int, Seq[Array[Byte]]]
-  val topic = "topic"
-  val queue = new LinkedBlockingQueue[FetchedDataChunk]
+  val topic    = "topic"
+  val queue    = new LinkedBlockingQueue[FetchedDataChunk]
 
   var fetcher: ConsumerFetcherManager = null
 
@@ -45,29 +45,35 @@ class FetcherTest extends KafkaServerTestHarness {
   override def setUp() {
     super.setUp
     TestUtils.createTopic(
-        zkUtils,
-        topic,
-        partitionReplicaAssignment = Map(0 -> Seq(configs.head.brokerId)),
-        servers = servers)
+      zkUtils,
+      topic,
+      partitionReplicaAssignment = Map(0 -> Seq(configs.head.brokerId)),
+      servers = servers
+    )
 
     val cluster = new Cluster(
-        servers.map(
-            s => new Broker(s.config.brokerId, "localhost", s.boundPort())))
+      servers.map(s =>
+        new Broker(s.config.brokerId, "localhost", s.boundPort())
+      )
+    )
 
     fetcher = new ConsumerFetcherManager(
-        "consumer1",
-        new ConsumerConfig(TestUtils.createConsumerProperties("", "", "")),
-        zkUtils)
+      "consumer1",
+      new ConsumerConfig(TestUtils.createConsumerProperties("", "", "")),
+      zkUtils
+    )
     fetcher.stopConnections()
-    val topicInfos = configs.map(
-        c =>
-          new PartitionTopicInfo(topic,
-                                 0,
-                                 queue,
-                                 new AtomicLong(0),
-                                 new AtomicLong(0),
-                                 new AtomicInteger(0),
-                                 ""))
+    val topicInfos = configs.map(c =>
+      new PartitionTopicInfo(
+        topic,
+        0,
+        queue,
+        new AtomicLong(0),
+        new AtomicLong(0),
+        new AtomicInteger(0),
+        ""
+      )
+    )
     fetcher.startConnections(topicInfos, cluster)
   }
 
@@ -80,7 +86,7 @@ class FetcherTest extends KafkaServerTestHarness {
   @Test
   def testFetcher() {
     val perNode = 2
-    var count = TestUtils.produceMessages(servers, topic, perNode).size
+    var count   = TestUtils.produceMessages(servers, topic, perNode).size
 
     fetch(count)
     assertQueueEmpty()

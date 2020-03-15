@@ -125,8 +125,8 @@ trait HtmlHelpers extends CssBindImplicits {
   def findBox[T](nodes: Seq[Node])(f: Elem => Box[T]): Box[T] = {
     nodes.view.flatMap {
       case Group(g) => findBox(g)(f)
-      case e: Elem => f(e) or findBox(e.child)(f)
-      case _ => Empty
+      case e: Elem  => f(e) or findBox(e.child)(f)
+      case _        => Empty
     }.headOption
   }
 
@@ -138,8 +138,8 @@ trait HtmlHelpers extends CssBindImplicits {
   def findOption[T](nodes: Seq[Node])(f: Elem => Option[T]): Option[T] = {
     nodes.view.flatMap {
       case Group(g) => findOption(g)(f)
-      case e: Elem => f(e) orElse findOption(e.child)(f)
-      case _ => None
+      case e: Elem  => f(e) orElse findOption(e.child)(f)
+      case _        => None
     }.headOption
   }
 
@@ -190,7 +190,7 @@ trait HtmlHelpers extends CssBindImplicits {
   def removeAttribute(name: String, existingAttributes: MetaData): MetaData = {
     existingAttributes.filter {
       case up: UnprefixedAttribute => up.key != name
-      case _ => true
+      case _                       => true
     }
   }
 
@@ -205,7 +205,7 @@ trait HtmlHelpers extends CssBindImplicits {
   def addCssClass(cssClass: Box[String], elem: Elem): Elem = {
     cssClass match {
       case Full(css) => addCssClass(css, elem)
-      case _ => elem
+      case _         => elem
     }
   }
 
@@ -219,9 +219,9 @@ trait HtmlHelpers extends CssBindImplicits {
       case Some(existingClasses) =>
         def attributesWithUpdatedClass(existingAttributes: MetaData) = {
           new UnprefixedAttribute(
-              "class",
-              existingClasses.text.trim + " " + cssClass.trim,
-              removeAttribute("class", existingAttributes)
+            "class",
+            existingClasses.text.trim + " " + cssClass.trim,
+            removeAttribute("class", existingAttributes)
           )
         }
 
@@ -237,21 +237,24 @@ trait HtmlHelpers extends CssBindImplicits {
   // found as well as the duplicate id stripping function, and the
   // caller can decide whether to ensure uniqueness at only one level or
   // whether to recurse through children.
-  private def ensureUniqueIdHelper(in: Seq[NodeSeq],
-                                   processElement: (Elem,
-                                   (Node) => Node) => Elem): Seq[NodeSeq] = {
+  private def ensureUniqueIdHelper(
+      in: Seq[NodeSeq],
+      processElement: (Elem, (Node) => Node) => Elem
+  ): Seq[NodeSeq] = {
     var ids: Set[String] = Set()
 
-    def stripDuplicateId(node: Node): Node = node match {
-      case Group(ns) => Group(ns.map(stripDuplicateId))
-      case element: Elem =>
-        element.attribute("id") match {
-          case Some(id) => {
+    def stripDuplicateId(node: Node): Node =
+      node match {
+        case Group(ns) => Group(ns.map(stripDuplicateId))
+        case element: Elem =>
+          element.attribute("id") match {
+            case Some(id) => {
               if (ids.contains(id.text)) {
                 processElement(
-                    element.copy(attributes = removeAttribute(
-                              "id", element.attributes)),
-                    stripDuplicateId _
+                  element.copy(attributes =
+                    removeAttribute("id", element.attributes)
+                  ),
+                  stripDuplicateId _
                 )
               } else {
                 ids += id.text
@@ -260,11 +263,11 @@ trait HtmlHelpers extends CssBindImplicits {
               }
             }
 
-          case _ => element
-        }
+            case _ => element
+          }
 
-      case other => other
-    }
+        case other => other
+      }
 
     in.map(_.map(stripDuplicateId))
   }
@@ -284,9 +287,12 @@ trait HtmlHelpers extends CssBindImplicits {
     * returned without an id.
     */
   def deepEnsureUniqueId(in: NodeSeq): NodeSeq = {
-    ensureUniqueIdHelper(List(in), { (element, stripUniqueId) =>
-      element.copy(child = element.child.map(stripUniqueId))
-    }).head
+    ensureUniqueIdHelper(
+      List(in),
+      { (element, stripUniqueId) =>
+        element.copy(child = element.child.map(stripUniqueId))
+      }
+    ).head
   }
 
   /**
@@ -298,12 +304,12 @@ trait HtmlHelpers extends CssBindImplicits {
     ns.map {
       case x if found => x
       case element: Elem => {
-          val meta = removeAttribute("id", element.attributes)
+        val meta = removeAttribute("id", element.attributes)
 
-          found = true
+        found = true
 
-          element.copy(attributes = new UnprefixedAttribute("id", id, meta))
-        }
+        element.copy(attributes = new UnprefixedAttribute("id", id, meta))
+      }
 
       case x => x
     }
@@ -314,14 +320,16 @@ trait HtmlHelpers extends CssBindImplicits {
   def errorDiv(body: NodeSeq): Box[NodeSeq] = {
     Props.mode match {
       case Props.RunModes.Development | Props.RunModes.Test =>
-        Full(<div class="snippeterror" style="display: block; padding: 4px; margin: 8px; border: 2px solid red">
+        Full(
+          <div class="snippeterror" style="display: block; padding: 4px; margin: 8px; border: 2px solid red">
              {body}
           <i>note: this error is displayed in the browser because
           your application is running in "development" or "test" mode.If you
           set the system property run.mode=production, this error will not
           be displayed, but there will be errors in the output logs.
           </i>
-          </div>)
+          </div>
+        )
 
       case _ => Empty
     }
@@ -336,7 +344,11 @@ trait HtmlHelpers extends CssBindImplicits {
     key.indexOf(":") match {
       case x if x > 0 =>
         new PrefixedAttribute(
-            key.substring(0, x), key.substring(x + 1), value, rest)
+          key.substring(0, x),
+          key.substring(x + 1),
+          value,
+          rest
+        )
 
       case _ => new UnprefixedAttribute(key, value, rest)
     }
@@ -346,15 +358,16 @@ trait HtmlHelpers extends CssBindImplicits {
     *
     * The strings in the list must be in the format of key=value.
     */
-  def pairsToMetaData(in: List[String]): MetaData = in match {
-    case Nil => Null
-    case x :: xs => {
+  def pairsToMetaData(in: List[String]): MetaData =
+    in match {
+      case Nil => Null
+      case x :: xs => {
         val rest = pairsToMetaData(xs)
         x.charSplit('=').map(Helpers.urlDecode) match {
-          case Nil => rest
-          case x :: Nil => makeMetaData(x, "", rest)
+          case Nil         => rest
+          case x :: Nil    => makeMetaData(x, "", rest)
           case x :: y :: _ => makeMetaData(x, y, rest)
         }
       }
-  }
+    }
 }

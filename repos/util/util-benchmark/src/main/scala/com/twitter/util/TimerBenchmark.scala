@@ -18,11 +18,11 @@ import org.openjdk.jmh.annotations._
 @Threads(4)
 class TimerBenchmark extends StdBenchAnnotations {
 
-  private[this] val period = 5.minutes
+  private[this] val period   = 5.minutes
   private[this] val wayLater = Time.now + 20.minutes
 
-  private[this] val baseline = Timer.Nil
-  @volatile private[this] var javaUtil: JavaTimer = _
+  private[this] val baseline                                     = Timer.Nil
+  @volatile private[this] var javaUtil: JavaTimer                = _
   @volatile private[this] var executor: ScheduledThreadPoolTimer = _
 
   @Setup(Level.Iteration)

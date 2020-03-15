@@ -19,16 +19,20 @@ trait ConnectionContext extends akka.http.javadsl.ConnectionContext {
 
 object ConnectionContext {
   //#https-context-creation
-  def https(sslContext: SSLContext,
-            enabledCipherSuites: Option[immutable.Seq[String]] = None,
-            enabledProtocols: Option[immutable.Seq[String]] = None,
-            clientAuth: Option[TLSClientAuth] = None,
-            sslParameters: Option[SSLParameters] = None) = {
-    new HttpsConnectionContext(sslContext,
-                               enabledCipherSuites,
-                               enabledProtocols,
-                               clientAuth,
-                               sslParameters)
+  def https(
+      sslContext: SSLContext,
+      enabledCipherSuites: Option[immutable.Seq[String]] = None,
+      enabledProtocols: Option[immutable.Seq[String]] = None,
+      clientAuth: Option[TLSClientAuth] = None,
+      sslParameters: Option[SSLParameters] = None
+  ) = {
+    new HttpsConnectionContext(
+      sslContext,
+      enabledCipherSuites,
+      enabledProtocols,
+      clientAuth,
+      sslParameters
+    )
   }
   //#https-context-creation
 
@@ -40,24 +44,30 @@ final class HttpsConnectionContext(
     val enabledCipherSuites: Option[immutable.Seq[String]] = None,
     val enabledProtocols: Option[immutable.Seq[String]] = None,
     val clientAuth: Option[TLSClientAuth] = None,
-    val sslParameters: Option[SSLParameters] = None)
-    extends akka.http.javadsl.HttpsConnectionContext with ConnectionContext {
+    val sslParameters: Option[SSLParameters] = None
+) extends akka.http.javadsl.HttpsConnectionContext
+    with ConnectionContext {
 
   def firstSession =
     NegotiateNewSession(
-        enabledCipherSuites, enabledProtocols, clientAuth, sslParameters)
+      enabledCipherSuites,
+      enabledProtocols,
+      clientAuth,
+      sslParameters
+    )
 
   override def getSslContext = sslContext
   override def getEnabledCipherSuites: Optional[JCollection[String]] =
     enabledCipherSuites.map(_.asJavaCollection).asJava
   override def getEnabledProtocols: Optional[JCollection[String]] =
     enabledProtocols.map(_.asJavaCollection).asJava
-  override def getClientAuth: Optional[TLSClientAuth] = clientAuth.asJava
+  override def getClientAuth: Optional[TLSClientAuth]    = clientAuth.asJava
   override def getSslParameters: Optional[SSLParameters] = sslParameters.asJava
 }
 
 sealed class HttpConnectionContext
-    extends akka.http.javadsl.HttpConnectionContext with ConnectionContext
+    extends akka.http.javadsl.HttpConnectionContext
+    with ConnectionContext
 final object HttpConnectionContext extends HttpConnectionContext {
 
   /** Java API */

@@ -27,7 +27,8 @@ class BitArraySuite extends FunSuite {
   test("error case when create BitArray") {
     intercept[IllegalArgumentException](new BitArray(0))
     intercept[IllegalArgumentException](
-        new BitArray(64L * Integer.MAX_VALUE + 1))
+      new BitArray(64L * Integer.MAX_VALUE + 1)
+    )
   }
 
   test("bitSize") {
@@ -51,7 +52,7 @@ class BitArraySuite extends FunSuite {
     val r = new Random(37)
 
     val bitArray = new BitArray(320)
-    val indexes = (1 to 100).map(_ => r.nextInt(320).toLong).distinct
+    val indexes  = (1 to 100).map(_ => r.nextInt(320).toLong).distinct
 
     indexes.foreach(bitArray.set)
     indexes.foreach(i => assert(bitArray.get(i)))

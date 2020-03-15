@@ -13,10 +13,13 @@ import org.jboss.netty.handler.codec.http.{HttpRequest, HttpChunk, HttpResponse}
 /**
   * Stream chunks into StreamResponses.
   */
-private[twitter] class StreamClientDispatcher[Req : RequestType](
-    trans: Transport[Any, Any], statsReceiver: StatsReceiver)
-    extends GenSerialClientDispatcher[Req, StreamResponse, Any, Any](
-        trans, statsReceiver) {
+private[twitter] class StreamClientDispatcher[Req: RequestType](
+    trans: Transport[Any, Any],
+    statsReceiver: StatsReceiver
+) extends GenSerialClientDispatcher[Req, StreamResponse, Any, Any](
+      trans,
+      statsReceiver
+    ) {
   import Bijections._
   import GenSerialClientDispatcher.wrapWriteException
 
@@ -31,12 +34,14 @@ private[twitter] class StreamClientDispatcher[Req : RequestType](
         Future.Done
 
       case chunk: HttpChunk =>
-        out.send(ChannelBufferBuf.Owned(chunk.getContent)).sync() before readChunks(
-            out)
+        out
+          .send(ChannelBufferBuf.Owned(chunk.getContent))
+          .sync() before readChunks(out)
 
       case invalid =>
-        Future.exception(new IllegalArgumentException(
-                "invalid message \"%s\"".format(invalid)))
+        Future.exception(
+          new IllegalArgumentException("invalid message \"%s\"".format(invalid))
+        )
     }
 
   protected def dispatch(req: Req, p: Promise[StreamResponse]) =
@@ -46,8 +51,8 @@ private[twitter] class StreamClientDispatcher[Req : RequestType](
       .before {
         trans.read() flatMap {
           case httpRes: HttpResponse =>
-            val out = new Broker[Buf]
-            val err = new Broker[Throwable]
+            val out  = new Broker[Buf]
+            val err  = new Broker[Throwable]
             val done = new Promise[Unit]
 
             if (!httpRes.isChunked) {
@@ -64,9 +69,9 @@ private[twitter] class StreamClientDispatcher[Req : RequestType](
             }
 
             val res = new StreamResponse {
-              val info = from(httpRes)
-              def messages = out.recv
-              def error = err.recv
+              val info      = from(httpRes)
+              def messages  = out.recv
+              def error     = err.recv
               def release() = done.setDone()
             }
             p.updateIfEmpty(Return(res))
@@ -76,8 +81,11 @@ private[twitter] class StreamClientDispatcher[Req : RequestType](
             }
 
           case invalid =>
-            Future.exception(new IllegalArgumentException(
-                    "invalid message \"%s\"".format(invalid)))
+            Future.exception(
+              new IllegalArgumentException(
+                "invalid message \"%s\"".format(invalid)
+              )
+            )
         }
       }
 }

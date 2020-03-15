@@ -15,7 +15,10 @@
   **/
 package org.saddle.locator
 
-import it.unimi.dsi.fastutil.longs.{Long2IntLinkedOpenHashMap, Long2IntOpenHashMap}
+import it.unimi.dsi.fastutil.longs.{
+  Long2IntLinkedOpenHashMap,
+  Long2IntOpenHashMap
+}
 
 /**
   * A Long-to-integer hash map, backed by fastutil implementation
@@ -46,8 +49,8 @@ class LocatorLong(sz: Int = Locator.INIT_CAPACITY) extends Locator[Long] {
 
   def counts() = {
     val iter = map.keySet().iterator()
-    val res = Array.ofDim[Int](size)
-    var i = 0
+    val res  = Array.ofDim[Int](size)
+    var i    = 0
     while (iter.hasNext) {
       res(i) = cts.get(iter.nextLong())
       i += 1

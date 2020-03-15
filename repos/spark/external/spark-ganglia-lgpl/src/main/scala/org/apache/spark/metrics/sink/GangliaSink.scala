@@ -28,14 +28,15 @@ import info.ganglia.gmetric4j.gmetric.GMetric.UDPAddressingMode
 import org.apache.spark.SecurityManager
 import org.apache.spark.metrics.MetricsSystem
 
-class GangliaSink(val property: Properties,
-                  val registry: MetricRegistry,
-                  securityMgr: SecurityManager)
-    extends Sink {
-  val GANGLIA_KEY_PERIOD = "period"
+class GangliaSink(
+    val property: Properties,
+    val registry: MetricRegistry,
+    securityMgr: SecurityManager
+) extends Sink {
+  val GANGLIA_KEY_PERIOD     = "period"
   val GANGLIA_DEFAULT_PERIOD = 10
 
-  val GANGLIA_KEY_UNIT = "unit"
+  val GANGLIA_KEY_UNIT               = "unit"
   val GANGLIA_DEFAULT_UNIT: TimeUnit = TimeUnit.SECONDS
 
   val GANGLIA_KEY_MODE = "mode"
@@ -43,7 +44,7 @@ class GangliaSink(val property: Properties,
     GMetric.UDPAddressingMode.MULTICAST
 
   // TTL for multicast messages. If listeners are X hops away in network, must be at least X.
-  val GANGLIA_KEY_TTL = "ttl"
+  val GANGLIA_KEY_TTL     = "ttl"
   val GANGLIA_DEFAULT_TTL = 1
 
   val GANGLIA_KEY_HOST = "host"

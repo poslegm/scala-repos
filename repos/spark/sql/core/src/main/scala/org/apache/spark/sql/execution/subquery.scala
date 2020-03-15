@@ -18,8 +18,15 @@
 package org.apache.spark.sql.execution
 
 import org.apache.spark.sql.catalyst.{expressions, InternalRow}
-import org.apache.spark.sql.catalyst.expressions.{ExprId, Literal, SubqueryExpression}
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, ExprCode}
+import org.apache.spark.sql.catalyst.expressions.{
+  ExprId,
+  Literal,
+  SubqueryExpression
+}
+import org.apache.spark.sql.catalyst.expressions.codegen.{
+  CodegenContext,
+  ExprCode
+}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, ReturnAnswer}
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.internal.SessionState
@@ -40,8 +47,8 @@ case class ScalarSubquery(@transient executedPlan: SparkPlan, exprId: ExprId)
   override def plan: SparkPlan = Subquery(simpleString, executedPlan)
 
   override def dataType: DataType = executedPlan.schema.fields.head.dataType
-  override def nullable: Boolean = true
-  override def toString: String = s"subquery#${exprId.id}"
+  override def nullable: Boolean  = true
+  override def toString: String   = s"subquery#${exprId.id}"
 
   // the first column in first row from `query`.
   private var result: Any = null

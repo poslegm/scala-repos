@@ -67,7 +67,7 @@ abstract class MutableValue extends Serializable {
 }
 
 final class MutableInt extends MutableValue {
-  var value: Int = 0
+  var value: Int          = 0
   override def boxed: Any = if (isNull) null else value
   override def update(v: Any): Unit = {
     isNull = false
@@ -82,7 +82,7 @@ final class MutableInt extends MutableValue {
 }
 
 final class MutableFloat extends MutableValue {
-  var value: Float = 0
+  var value: Float        = 0
   override def boxed: Any = if (isNull) null else value
   override def update(v: Any): Unit = {
     isNull = false
@@ -97,7 +97,7 @@ final class MutableFloat extends MutableValue {
 }
 
 final class MutableBoolean extends MutableValue {
-  var value: Boolean = false
+  var value: Boolean      = false
   override def boxed: Any = if (isNull) null else value
   override def update(v: Any): Unit = {
     isNull = false
@@ -112,7 +112,7 @@ final class MutableBoolean extends MutableValue {
 }
 
 final class MutableDouble extends MutableValue {
-  var value: Double = 0
+  var value: Double       = 0
   override def boxed: Any = if (isNull) null else value
   override def update(v: Any): Unit = {
     isNull = false
@@ -127,12 +127,13 @@ final class MutableDouble extends MutableValue {
 }
 
 final class MutableShort extends MutableValue {
-  var value: Short = 0
+  var value: Short        = 0
   override def boxed: Any = if (isNull) null else value
-  override def update(v: Any): Unit = value = {
-    isNull = false
-    v.asInstanceOf[Short]
-  }
+  override def update(v: Any): Unit =
+    value = {
+      isNull = false
+      v.asInstanceOf[Short]
+    }
   override def copy(): MutableShort = {
     val newCopy = new MutableShort
     newCopy.isNull = isNull
@@ -142,12 +143,13 @@ final class MutableShort extends MutableValue {
 }
 
 final class MutableLong extends MutableValue {
-  var value: Long = 0
+  var value: Long         = 0
   override def boxed: Any = if (isNull) null else value
-  override def update(v: Any): Unit = value = {
-    isNull = false
-    v.asInstanceOf[Long]
-  }
+  override def update(v: Any): Unit =
+    value = {
+      isNull = false
+      v.asInstanceOf[Long]
+    }
   override def copy(): MutableLong = {
     val newCopy = new MutableLong
     newCopy.isNull = isNull
@@ -157,12 +159,13 @@ final class MutableLong extends MutableValue {
 }
 
 final class MutableByte extends MutableValue {
-  var value: Byte = 0
+  var value: Byte         = 0
   override def boxed: Any = if (isNull) null else value
-  override def update(v: Any): Unit = value = {
-    isNull = false
-    v.asInstanceOf[Byte]
-  }
+  override def update(v: Any): Unit =
+    value = {
+      isNull = false
+      v.asInstanceOf[Byte]
+    }
   override def copy(): MutableByte = {
     val newCopy = new MutableByte
     newCopy.isNull = isNull
@@ -172,7 +175,7 @@ final class MutableByte extends MutableValue {
 }
 
 final class MutableAny extends MutableValue {
-  var value: Any = _
+  var value: Any          = _
   override def boxed: Any = if (isNull) null else value
   override def update(v: Any): Unit = {
     isNull = false
@@ -192,20 +195,21 @@ final class MutableAny extends MutableValue {
   * values of primitive columns.
   */
 final class SpecificMutableRow(val values: Array[MutableValue])
-    extends MutableRow with BaseGenericInternalRow {
+    extends MutableRow
+    with BaseGenericInternalRow {
 
   def this(dataTypes: Seq[DataType]) =
     this(dataTypes.map {
       case BooleanType => new MutableBoolean
-      case ByteType => new MutableByte
-      case ShortType => new MutableShort
+      case ByteType    => new MutableByte
+      case ShortType   => new MutableShort
       // We use INT for DATE internally
       case IntegerType | DateType => new MutableInt
       // We use Long for Timestamp internally
       case LongType | TimestampType => new MutableLong
-      case FloatType => new MutableFloat
-      case DoubleType => new MutableDouble
-      case _ => new MutableAny
+      case FloatType                => new MutableFloat
+      case DoubleType               => new MutableDouble
+      case _                        => new MutableAny
     }.toArray)
 
   def this() = this(Seq.empty)
@@ -222,7 +226,7 @@ final class SpecificMutableRow(val values: Array[MutableValue])
 
   override def copy(): InternalRow = {
     val newValues = new Array[Any](values.length)
-    var i = 0
+    var i         = 0
     while (i < values.length) {
       newValues(i) = values(i).boxed
       i += 1

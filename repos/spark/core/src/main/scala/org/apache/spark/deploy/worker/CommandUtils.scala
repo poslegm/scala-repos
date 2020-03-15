@@ -44,11 +44,17 @@ private[deploy] object CommandUtils extends Logging {
       sparkHome: String,
       substituteArguments: String => String,
       classPaths: Seq[String] = Seq[String](),
-      env: Map[String, String] = sys.env): ProcessBuilder = {
+      env: Map[String, String] = sys.env
+  ): ProcessBuilder = {
     val localCommand = buildLocalCommand(
-        command, securityMgr, substituteArguments, classPaths, env)
-    val commandSeq = buildCommandSeq(localCommand, memory, sparkHome)
-    val builder = new ProcessBuilder(commandSeq: _*)
+      command,
+      securityMgr,
+      substituteArguments,
+      classPaths,
+      env
+    )
+    val commandSeq  = buildCommandSeq(localCommand, memory, sparkHome)
+    val builder     = new ProcessBuilder(commandSeq: _*)
     val environment = builder.environment()
     for ((key, value) <- localCommand.environment) {
       environment.put(key, value)
@@ -57,7 +63,10 @@ private[deploy] object CommandUtils extends Logging {
   }
 
   private def buildCommandSeq(
-      command: Command, memory: Int, sparkHome: String): Seq[String] = {
+      command: Command,
+      memory: Int,
+      sparkHome: String
+  ): Seq[String] = {
     // SPARK-698: do not call the run.cmd script, as process.destroy()
     // fails to kill a process tree on Windows
     val cmd =
@@ -70,21 +79,23 @@ private[deploy] object CommandUtils extends Logging {
     * of where this command is expected to run, substitute any placeholders, and append
     * any extra class paths.
     */
-  private def buildLocalCommand(command: Command,
-                                securityMgr: SecurityManager,
-                                substituteArguments: String => String,
-                                classPath: Seq[String] = Seq[String](),
-                                env: Map[String, String]): Command = {
-    val libraryPathName = Utils.libraryPathEnvName
+  private def buildLocalCommand(
+      command: Command,
+      securityMgr: SecurityManager,
+      substituteArguments: String => String,
+      classPath: Seq[String] = Seq[String](),
+      env: Map[String, String]
+  ): Command = {
+    val libraryPathName    = Utils.libraryPathEnvName
     val libraryPathEntries = command.libraryPathEntries
-    val cmdLibraryPath = command.environment.get(libraryPathName)
+    val cmdLibraryPath     = command.environment.get(libraryPathName)
 
     var newEnvironment =
       if (libraryPathEntries.nonEmpty && libraryPathName.nonEmpty) {
         val libraryPaths =
           libraryPathEntries ++ cmdLibraryPath ++ env.get(libraryPathName)
         command.environment +
-        ((libraryPathName, libraryPaths.mkString(File.pathSeparator)))
+          ((libraryPathName, libraryPaths.mkString(File.pathSeparator)))
       } else {
         command.environment
       }
@@ -92,18 +103,20 @@ private[deploy] object CommandUtils extends Logging {
     // set auth secret to env variable if needed
     if (securityMgr.isAuthenticationEnabled) {
       newEnvironment +=
-      (SecurityManager.ENV_AUTH_SECRET -> securityMgr.getSecretKey)
+        (SecurityManager.ENV_AUTH_SECRET -> securityMgr.getSecretKey)
     }
 
     Command(
-        command.mainClass,
-        command.arguments.map(substituteArguments),
-        newEnvironment,
-        command.classPathEntries ++ classPath,
-        Seq[String](), // library path already captured in environment variable
-        // filter out auth secret from java options
-        command.javaOpts.filterNot(
-            _.startsWith("-D" + SecurityManager.SPARK_AUTH_SECRET_CONF)))
+      command.mainClass,
+      command.arguments.map(substituteArguments),
+      newEnvironment,
+      command.classPathEntries ++ classPath,
+      Seq[String](), // library path already captured in environment variable
+      // filter out auth secret from java options
+      command.javaOpts.filterNot(
+        _.startsWith("-D" + SecurityManager.SPARK_AUTH_SECRET_CONF)
+      )
+    )
   }
 
   /** Spawn a thread that will redirect a given stream to a file */

@@ -17,14 +17,14 @@ import play.api.mvc.{ActionBuilder, Request, Result}
   * @see [[play.filters.cors.CORSFilter]]
   * @see [[http://www.w3.org/TR/cors/ CORS specification]]
   */
-trait CORSActionBuilder
-    extends ActionBuilder[Request] with AbstractCORSPolicy {
+trait CORSActionBuilder extends ActionBuilder[Request] with AbstractCORSPolicy {
 
   override protected val logger = Logger.apply(classOf[CORSActionBuilder])
 
   override def invokeBlock[A](
       request: Request[A],
-      block: Request[A] => Future[Result]): Future[Result] = {
+      block: Request[A] => Future[Result]
+  ): Future[Result] = {
     filterRequest(rh => block(Request(rh, request.body)), request)
   }
 }
@@ -62,16 +62,19 @@ object CORSActionBuilder {
     * @param  configuration  The configuration to load the config from
     * @param  configPath  The path to the subtree of the application configuration.
     */
-  def apply(configuration: Configuration,
-            errorHandler: HttpErrorHandler = DefaultHttpErrorHandler,
-            configPath: String = "play.filters.cors"): CORSActionBuilder = {
+  def apply(
+      configuration: Configuration,
+      errorHandler: HttpErrorHandler = DefaultHttpErrorHandler,
+      configPath: String = "play.filters.cors"
+  ): CORSActionBuilder = {
     val eh = errorHandler
     new CORSActionBuilder {
       override protected def corsConfig = {
-        val config = PlayConfig(configuration)
+        val config    = PlayConfig(configuration)
         val prototype = config.get[Config]("play.filters.cors")
         val corsConfig = PlayConfig(
-            config.get[Config](configPath).withFallback(prototype))
+          config.get[Config](configPath).withFallback(prototype)
+        )
         CORSConfig.fromUnprefixedConfiguration(corsConfig)
       }
       override protected val errorHandler = eh
@@ -84,11 +87,13 @@ object CORSActionBuilder {
     * @param  config  The local configuration to use in place of the global configuration.
     * @see [[play.filters.cors.CORSConfig]]
     */
-  def apply(config: CORSConfig,
-            errorHandler: HttpErrorHandler): CORSActionBuilder = {
+  def apply(
+      config: CORSConfig,
+      errorHandler: HttpErrorHandler
+  ): CORSActionBuilder = {
     val eh = errorHandler
     new CORSActionBuilder {
-      override protected val corsConfig = config
+      override protected val corsConfig   = config
       override protected val errorHandler = eh
     }
   }

@@ -23,9 +23,7 @@ class LAFutureSpec extends Specification {
       val transformedFuture = future.map(tranformThrowingException)
 
       var notifiedAboutFailure: Boolean = false
-      transformedFuture.onFail { _ =>
-        notifiedAboutFailure = true
-      }
+      transformedFuture.onFail { _ => notifiedAboutFailure = true }
 
       transformedFuture.get(timeout)
       notifiedAboutFailure shouldEqual true
@@ -40,16 +38,14 @@ class LAFutureSpec extends Specification {
       val transformedFuture = future.flatMap(tranformThrowingException)
 
       var notifiedAboutFailure: Boolean = false
-      transformedFuture.onFail { _ =>
-        notifiedAboutFailure = true
-      }
+      transformedFuture.onFail { _ => notifiedAboutFailure = true }
 
       transformedFuture.get(timeout)
       notifiedAboutFailure shouldEqual true
     }
 
     "return original Failure after timeout" in {
-      val future = new LAFuture()
+      val future       = new LAFuture()
       val givenFailure = Failure("fooFailure")
       LAScheduler.execute { () =>
         Thread.sleep(500)
@@ -63,17 +59,19 @@ class LAFutureSpec extends Specification {
 
     "collect one future result" in {
       val givenOneResult = 123
-      val one = LAFuture(() => givenOneResult)
+      val one            = LAFuture(() => givenOneResult)
       LAFuture.collect(one).get(timeout) shouldEqual List(givenOneResult)
     }
 
     "collect more future results in correct order" in {
       val givenOneResult = 123
       val givenTwoResult = 234
-      val one = LAFuture(() => givenOneResult)
-      val two = LAFuture(() => givenTwoResult)
-      LAFuture.collect(one, two).get(timeout) shouldEqual List(givenOneResult,
-                                                               givenTwoResult)
+      val one            = LAFuture(() => givenOneResult)
+      val two            = LAFuture(() => givenTwoResult)
+      LAFuture.collect(one, two).get(timeout) shouldEqual List(
+        givenOneResult,
+        givenTwoResult
+      )
     }
 
     "collect empty list immediately" in {

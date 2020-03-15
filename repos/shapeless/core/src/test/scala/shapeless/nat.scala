@@ -34,7 +34,7 @@ class NatTests {
     implicitly[Pred.Aux[_19, _18]]
 
     def pred(n: Nat)(implicit pred: Pred[n.N]) = new Check[pred.Out] {}
-    val pd1 = pred(19)
+    val pd1                                    = pred(19)
     check(18)(pd1)
 
     implicitly[Sum.Aux[_2, _3, _5]]
@@ -181,7 +181,9 @@ class NatTests {
     assertTypedEquals[_0 :: HNil](_0 :: HNil, r2())
     assertTypedEquals[HNil](HNil, r3())
     assertTypedEquals[_1 :: _2 :: _3 :: _4 :: HNil](
-        _1 :: _2 :: _3 :: _4 :: HNil, r4())
+      _1 :: _2 :: _3 :: _4 :: HNil,
+      r4()
+    )
 
     // GCD tests
 

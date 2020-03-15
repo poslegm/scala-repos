@@ -20,9 +20,9 @@ object Producers {
     import scala.concurrent.duration._
     implicit val timeout = Timeout(10 seconds)
 
-    val system = ActorSystem("some-system")
+    val system   = ActorSystem("some-system")
     val producer = system.actorOf(Props[Producer1])
-    val future = producer.ask("some request").mapTo[CamelMessage]
+    val future   = producer.ask("some request").mapTo[CamelMessage]
     //#AskProducer
   }
   object Sample2 {
@@ -38,19 +38,21 @@ object Producers {
       }
     }
 
-    class Forwarder(uri: String, target: ActorRef)
-        extends Actor with Producer {
+    class Forwarder(uri: String, target: ActorRef) extends Actor with Producer {
       def endpointUri = uri
 
       override def routeResponse(msg: Any) { target forward msg }
     }
-    val system = ActorSystem("some-system")
+    val system   = ActorSystem("some-system")
     val receiver = system.actorOf(Props[ResponseReceiver])
     val forwardResponse = system.actorOf(
-        Props(classOf[Forwarder],
-              this,
-              "http://localhost:8080/news/akka",
-              receiver))
+      Props(
+        classOf[Forwarder],
+        this,
+        "http://localhost:8080/news/akka",
+        receiver
+      )
+    )
     // the Forwarder sends out a request to the web page and forwards the response to
     // the ResponseReceiver
     forwardResponse ! "some request"
@@ -64,13 +66,13 @@ object Producers {
     class Transformer(uri: String) extends Actor with Producer {
       def endpointUri = uri
 
-      def upperCase(msg: CamelMessage) = msg.mapBody { body: String =>
-        body.toUpperCase
-      }
+      def upperCase(msg: CamelMessage) =
+        msg.mapBody { body: String => body.toUpperCase }
 
-      override def transformOutgoingMessage(msg: Any) = msg match {
-        case msg: CamelMessage => upperCase(msg)
-      }
+      override def transformOutgoingMessage(msg: Any) =
+        msg match {
+          case msg: CamelMessage => upperCase(msg)
+        }
     }
     //#TransformOutgoingMessage
   }
@@ -80,7 +82,7 @@ object Producers {
     import akka.camel.Producer
 
     class OnewaySender(uri: String) extends Actor with Producer {
-      def endpointUri = uri
+      def endpointUri              = uri
       override def oneway: Boolean = true
     }
 
@@ -99,11 +101,10 @@ object Producers {
     class Producer2 extends Actor with Producer {
       def endpointUri = "activemq:FOO.BAR"
     }
-    val system = ActorSystem("some-system")
+    val system   = ActorSystem("some-system")
     val producer = system.actorOf(Props[Producer2])
 
-    producer ! CamelMessage(
-        "bar", Map(CamelMessage.MessageExchangeId -> "123"))
+    producer ! CamelMessage("bar", Map(CamelMessage.MessageExchangeId -> "123"))
     //#Correlate
   }
   object Sample6 {

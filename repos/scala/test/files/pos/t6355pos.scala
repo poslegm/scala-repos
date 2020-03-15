@@ -1,8 +1,8 @@
 import scala.language.dynamics
 
 class A extends Dynamic {
-  def applyDynamic[T1](method: String)(x1: T1): Any = 1
-  def applyDynamic[T1, T2](method: String)(x: T1, y: T2): Any = 2
+  def applyDynamic[T1](method: String)(x1: T1): Any                      = 1
+  def applyDynamic[T1, T2](method: String)(x: T1, y: T2): Any            = 2
   def applyDynamic[T1, T2, T3](method: String)(x: T1, y: T2, z: T3): Any = 3
 }
 

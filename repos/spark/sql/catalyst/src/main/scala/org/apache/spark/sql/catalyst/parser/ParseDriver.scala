@@ -33,31 +33,26 @@ object ParseDriver extends Logging {
 
   /** Create an LogicalPlan ASTNode from a SQL command. */
   def parsePlan(command: String, conf: ParserConf): ASTNode =
-    parse(command, conf) { parser =>
-      parser.statement().getTree
-    }
+    parse(command, conf) { parser => parser.statement().getTree }
 
   /** Create an Expression ASTNode from a SQL command. */
   def parseExpression(command: String, conf: ParserConf): ASTNode =
-    parse(command, conf) { parser =>
-      parser.singleNamedExpression().getTree
-    }
+    parse(command, conf) { parser => parser.singleNamedExpression().getTree }
 
   /** Create an TableIdentifier ASTNode from a SQL command. */
   def parseTableName(command: String, conf: ParserConf): ASTNode =
-    parse(command, conf) { parser =>
-      parser.singleTableName().getTree
-    }
+    parse(command, conf) { parser => parser.singleTableName().getTree }
 
   private def parse(command: String, conf: ParserConf)(
-      toTree: SparkSqlParser => CommonTree): ASTNode = {
+      toTree: SparkSqlParser => CommonTree
+  ): ASTNode = {
     logInfo(s"Parsing command: $command")
 
     // Setup error collection.
     val reporter = new ParseErrorReporter()
 
     // Create lexer.
-    val lexer = new SparkSqlLexer(new ANTLRNoCaseStringStream(command))
+    val lexer  = new SparkSqlLexer(new ANTLRNoCaseStringStream(command))
     val tokens = new TokenRewriteStream(lexer)
     lexer.configure(conf, reporter)
 
@@ -90,11 +85,13 @@ object ParseDriver extends Logging {
         val children = (0 until tree.getChildCount).map { i =>
           createASTNode(tree.getChild(i).asInstanceOf[CommonTree])
         }.toList
-        ASTNode(tree.token,
-                tree.getTokenStartIndex,
-                tree.getTokenStopIndex,
-                children,
-                tokens)
+        ASTNode(
+          tree.token,
+          tree.getTokenStartIndex,
+          tree.getTokenStopIndex,
+          children,
+          tokens
+        )
       }
       createASTNode(tree)
     } catch {
@@ -139,20 +136,24 @@ private[parser] class ANTLRNoCaseStringStream(input: String)
 private[parser] class ParseErrorReporter {
   val errors = scala.collection.mutable.Buffer.empty[ParseError]
 
-  def report(br: BaseRecognizer,
-             re: RecognitionException,
-             tokenNames: Array[String]): Unit = {
+  def report(
+      br: BaseRecognizer,
+      re: RecognitionException,
+      tokenNames: Array[String]
+  ): Unit = {
     errors += ParseError(br, re, tokenNames)
   }
 
   def checkForErrors(): Unit = {
     if (errors.nonEmpty) {
       val first = errors.head
-      val e = first.re
-      throwError(e.line,
-                 e.charPositionInLine,
-                 first.buildMessage().toString,
-                 errors.tail)
+      val e     = first.re
+      throwError(
+        e.line,
+        e.charPositionInLine,
+        first.buildMessage().toString,
+        errors.tail
+      )
     }
   }
 
@@ -160,15 +161,16 @@ private[parser] class ParseErrorReporter {
     throwError(e.line, e.charPositionInLine, e.toString, errors)
   }
 
-  private def throwError(line: Int,
-                         startPosition: Int,
-                         msg: String,
-                         errors: Seq[ParseError]): Nothing = {
+  private def throwError(
+      line: Int,
+      startPosition: Int,
+      msg: String,
+      errors: Seq[ParseError]
+  ): Nothing = {
     val b = new StringBuilder
     b.append(msg).append("\n")
     errors.foreach(error => error.buildMessage(b).append("\n"))
-    throw new AnalysisException(
-        b.toString, Option(line), Option(startPosition))
+    throw new AnalysisException(b.toString, Option(line), Option(startPosition))
   }
 }
 
@@ -177,9 +179,11 @@ private[parser] class ParseErrorReporter {
   *
   * This is based on Hive's org.apache.hadoop.hive.ql.parse.ParseError
   */
-private[parser] case class ParseError(br: BaseRecognizer,
-                                      re: RecognitionException,
-                                      tokenNames: Array[String]) {
+private[parser] case class ParseError(
+    br: BaseRecognizer,
+    re: RecognitionException,
+    tokenNames: Array[String]
+) {
   def buildMessage(s: StringBuilder = new StringBuilder): StringBuilder = {
     s.append(br.getErrorHeader(re))
       .append(" ")

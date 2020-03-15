@@ -31,7 +31,9 @@ import org.apache.karaf.tooling.exam.options.LogLevelOption
   */
 @RunWith(classOf[JUnit4TestRunner])
 class HakkerStatusTest
-    extends JUnitSuite with Matchers with AssertionsForJUnit {
+    extends JUnitSuite
+    with Matchers
+    with AssertionsForJUnit {
 
   @Inject
   @Filter(timeout = 30000)
@@ -44,10 +46,11 @@ class HakkerStatusTest
   var testProbe: TestProbe = _
 
   @Configuration
-  def config: Array[PaxOption] = Array[PaxOption](
+  def config: Array[PaxOption] =
+    Array[PaxOption](
       karafOptionsWithTestBundles(),
       featureDiningHakkers() //, debugOptions(level = LogLevelOption.LogLevel.DEBUG)
-  )
+    )
 
   // Junit @Before and @After can be used as well
 
@@ -61,8 +64,11 @@ class HakkerStatusTest
 
     val name = "TestHakker"
     val hakker = Option(service.getHakker(name, 2))
-      .getOrElse(throw new IllegalStateException(
-            "No Hakker was created via DiningHakkerService"))
+      .getOrElse(
+        throw new IllegalStateException(
+          "No Hakker was created via DiningHakkerService"
+        )
+      )
 
     // takes some time for the first message to get through
     testProbe.within(10.seconds) {
@@ -71,7 +77,8 @@ class HakkerStatusTest
         testProbe.expectMsgType[Identification]
 
       println(
-          "---------------> %s is busy with %s.".format(fromHakker, busyWith))
+        "---------------> %s is busy with %s.".format(fromHakker, busyWith)
+      )
       fromHakker should be("TestHakker")
       busyWith should not be (null)
     }
@@ -80,8 +87,8 @@ class HakkerStatusTest
   @Test
   def verifyHakkerTracker() {
 
-    val name = "TestHakker"
-    val hakker = service.getHakker(name, 3)
+    val name    = "TestHakker"
+    val hakker  = service.getHakker(name, 3)
     val tracker = service.getTracker()
     tracker ! TrackHakker(hakker)
     testProbe.within(10.seconds) {

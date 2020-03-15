@@ -37,37 +37,36 @@ object KuhnMunkres extends BipartiteMatching {
       if (costs.length > costs(0).length) {
         val newCosts = Array.fill(costs(0).length, costs.length)(0.0)
         for (i <- 0 until costs.length;
-        j <- 0 until costs(0).length) {
+             j <- 0 until costs(0).length) {
           newCosts(j)(i) = costs(i)(j)
         }
-        (newCosts.map { row =>
-          row.toSeq
-        }.toSeq, true)
+        (newCosts.map { row => row.toSeq }.toSeq, true)
       } else {
         (costs, false)
       }
 
     val C: Array[Array[Double]] = padMatrix(costs2);
-    val n = C.size;
-    val rowCovered = Array.fill(n)(false);
-    val colCovered = Array.fill(n)(false);
+    val n                       = C.size;
+    val rowCovered              = Array.fill(n)(false);
+    val colCovered              = Array.fill(n)(false);
 
     var primeR = 0;
     var primeC = 0;
-    val path = Array.fill(2 * n, 2 * n)(0);
+    val path   = Array.fill(2 * n, 2 * n)(0);
     val marked = Array.fill(n, n)(0);
 
     def findSmallestNotCovered() = {
-      val mins = for (i <- 0 until n iterator;
-      j <- 0 until n iterator; if !rowCovered(i) && !colCovered(j)) yield
-        C(i)(j);
+      val mins =
+        for (i <- 0 until n iterator;
+             j <- 0 until n iterator; if !rowCovered(i) && !colCovered(j))
+          yield C(i)(j);
       mins.reduceLeft(_ min _)
     }
 
     def findZero() = {
-      var row = -1
-      var col = -1
-      var i = 0
+      var row  = -1
+      var col  = -1
+      var i    = 0
       var done = false
 
       while (!done && i < n) {
@@ -117,9 +116,9 @@ object KuhnMunkres extends BipartiteMatching {
 
     def step1() = {
       for {
-        i <- 0 until n;
+        i  <- 0 until n;
         min = C(i).reduceLeft(_ min _);
-        j <- 0 until n
+        j  <- 0 until n
       } {
         C(i)(j) -= min;
       }
@@ -160,8 +159,8 @@ object KuhnMunkres extends BipartiteMatching {
 
     def step4() = {
       var star_col = -1;
-      var done = false;
-      var step = 0;
+      var done     = false;
+      var step     = 0;
       while (!done) {
         val (row, col) = findZero();
         if (row == -1) {
@@ -241,7 +240,7 @@ object KuhnMunkres extends BipartiteMatching {
     }
 
     var answers = Array.fill(costs2.length)(-1);
-    var cost = 0.0;
+    var cost    = 0.0;
     for (i <- 0 until answers.length) {
       val j = marked(i).indexWhere(_ == 1);
       if (j >= 0) {
@@ -268,7 +267,7 @@ object KuhnMunkres extends BipartiteMatching {
   private def padMatrix(costs: Seq[Seq[Double]]) = {
     val rows = costs.length;
     val cols = costs(0).length;
-    val n = rows max cols;
+    val n    = rows max cols;
     val ret = Array.tabulate(n, n) { (i, j) =>
       if (i >= rows) 0.0;
       else if (j >= costs(i).length) 0.0

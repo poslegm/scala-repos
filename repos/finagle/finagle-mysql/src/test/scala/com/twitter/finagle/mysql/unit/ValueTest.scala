@@ -9,8 +9,8 @@ import com.twitter.finagle.exp.mysql.transport.{BufferReader, BufferWriter}
 
 @RunWith(classOf[JUnitRunner])
 class TimestampValueTest extends FunSuite {
-  val timestampValueLocal = new TimestampValue(
-      TimeZone.getDefault, TimeZone.getDefault)
+  val timestampValueLocal =
+    new TimestampValue(TimeZone.getDefault, TimeZone.getDefault)
 
   test("encode timestamp") {
     val RawValue(_, _, true, bytes) =
@@ -28,7 +28,7 @@ class TimestampValueTest extends FunSuite {
 
   test("decode binary timestamp") {
     val bytes = Array.ofDim[Byte](11)
-    val bw = BufferWriter(bytes)
+    val bw    = BufferWriter(bytes)
     bw.writeShort(2015)
       .writeByte(1)
       .writeByte(2)

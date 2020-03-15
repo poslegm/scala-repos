@@ -24,8 +24,11 @@ import mutable.Builder
   */
 @SerialVersionUID(1611436763290191562L)
 abstract class BitSet
-    extends scala.collection.AbstractSet[Int] with SortedSet[Int]
-    with scala.collection.BitSet with BitSetLike[BitSet] with Serializable {
+    extends scala.collection.AbstractSet[Int]
+    with SortedSet[Int]
+    with scala.collection.BitSet
+    with BitSetLike[BitSet]
+    with Serializable {
   override def empty = BitSet.empty
 
   protected def fromBitMaskNoCopy(elems: Array[Long]): BitSet =
@@ -67,12 +70,13 @@ object BitSet extends BitSetFactory[BitSet] {
   val empty: BitSet = new BitSet1(0L)
 
   /** A builder that takes advantage of mutable BitSets. */
-  def newBuilder: Builder[Int, BitSet] = new Builder[Int, BitSet] {
-    private[this] val b = new mutable.BitSet
-    def +=(x: Int) = { b += x; this }
-    def clear() = b.clear()
-    def result() = b.toImmutable
-  }
+  def newBuilder: Builder[Int, BitSet] =
+    new Builder[Int, BitSet] {
+      private[this] val b = new mutable.BitSet
+      def +=(x: Int)      = { b += x; this }
+      def clear()         = b.clear()
+      def result()        = b.toImmutable
+    }
 
   /** $bitsetCanBuildFrom */
   implicit def canBuildFrom: CanBuildFrom[BitSet, Int, BitSet] =
@@ -104,7 +108,7 @@ object BitSet extends BitSetFactory[BitSet] {
 
   @SerialVersionUID(2260107458435649300L)
   class BitSet1(val elems: Long) extends BitSet {
-    protected def nwords = 1
+    protected def nwords         = 1
     protected def word(idx: Int) = if (idx == 0) elems else 0L
     protected def updateWord(idx: Int, w: Long): BitSet =
       if (idx == 0) new BitSet1(w)
@@ -145,7 +149,7 @@ object BitSet extends BitSetFactory[BitSet] {
     *  array.
     */
   class BitSetN(val elems: Array[Long]) extends BitSet {
-    protected def nwords = elems.length
+    protected def nwords         = elems.length
     protected def word(idx: Int) = if (idx < nwords) elems(idx) else 0L
     protected def updateWord(idx: Int, w: Long): BitSet =
       fromBitMaskNoCopy(updateArray(elems, idx, w))
@@ -156,7 +160,8 @@ object BitSet extends BitSetFactory[BitSet] {
         val wi = word(i)
         if (wi != 0L)
           return fromBitMaskNoCopy(
-              updateArray(elems, i, wi - java.lang.Long.lowestOneBit(wi)))
+            updateArray(elems, i, wi - java.lang.Long.lowestOneBit(wi))
+          )
         i += 1
       }
       throw new NoSuchElementException("Empty BitSet")

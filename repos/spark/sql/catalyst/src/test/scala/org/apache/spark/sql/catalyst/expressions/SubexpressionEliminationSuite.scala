@@ -21,11 +21,11 @@ import org.apache.spark.sql.types.IntegerType
 
 class SubexpressionEliminationSuite extends SparkFunSuite {
   test("Semantic equals and hash") {
-    val id = ExprId(1)
+    val id                    = ExprId(1)
     val a: AttributeReference = AttributeReference("name", IntegerType)()
-    val b1 = a.withName("name2").withExprId(id)
-    val b2 = a.withExprId(id)
-    val b3 = a.withQualifiers("qualifierName" :: Nil)
+    val b1                    = a.withName("name2").withExprId(id)
+    val b2                    = a.withExprId(id)
+    val b3                    = a.withQualifiers("qualifierName" :: Nil)
 
     assert(b1 != b2)
     assert(a != b1)
@@ -87,8 +87,8 @@ class SubexpressionEliminationSuite extends SparkFunSuite {
     val one = Literal(1)
     val two = Literal(2)
 
-    val add = Add(one, two)
-    val abs = Abs(add)
+    val add  = Add(one, two)
+    val abs  = Abs(add)
     val add2 = Add(add, add)
 
     var equivalence = new EquivalentExpressions
@@ -106,10 +106,10 @@ class SubexpressionEliminationSuite extends SparkFunSuite {
     //   sqrt( (one * two) * (one * two) )
     //   (one * two) + sqrt( (one * two) * (one * two) )
     equivalence = new EquivalentExpressions
-    val mul = Multiply(one, two)
+    val mul  = Multiply(one, two)
     val mul2 = Multiply(mul, mul)
     val sqrt = Sqrt(mul2)
-    val sum = Add(mul2, sqrt)
+    val sum  = Add(mul2, sqrt)
     equivalence.addExprTree(mul, true)
     equivalence.addExprTree(mul2, true)
     equivalence.addExprTree(sqrt, true)
@@ -131,17 +131,22 @@ class SubexpressionEliminationSuite extends SparkFunSuite {
     // avg(l_discount) as avg_disc
     equivalence = new EquivalentExpressions
     val quantity = Literal(1)
-    val price = Literal(1.1)
+    val price    = Literal(1.1)
     val discount = Literal(.24)
-    val tax = Literal(0.1)
+    val tax      = Literal(0.1)
     equivalence.addExprTree(quantity, false)
     equivalence.addExprTree(price, false)
     equivalence.addExprTree(
-        Multiply(price, Subtract(Literal(1), discount)), false)
+      Multiply(price, Subtract(Literal(1), discount)),
+      false
+    )
     equivalence.addExprTree(
-        Multiply(Multiply(price, Subtract(Literal(1), discount)),
-                 Add(Literal(1), tax)),
-        false)
+      Multiply(
+        Multiply(price, Subtract(Literal(1), discount)),
+        Add(Literal(1), tax)
+      ),
+      false
+    )
     equivalence.addExprTree(price, false)
     equivalence.addExprTree(discount, false)
     // quantity, price, discount and (price * (1 - discount))
@@ -149,7 +154,7 @@ class SubexpressionEliminationSuite extends SparkFunSuite {
   }
 
   test("Expression equivalence - non deterministic") {
-    val sum = Add(Rand(0), Rand(0))
+    val sum         = Add(Rand(0), Rand(0))
     val equivalence = new EquivalentExpressions
     equivalence.addExpr(sum)
     equivalence.addExpr(sum)
@@ -157,15 +162,17 @@ class SubexpressionEliminationSuite extends SparkFunSuite {
   }
 
   test("Children of CodegenFallback") {
-    val one = Literal(1)
-    val two = Add(one, one)
+    val one     = Literal(1)
+    val two     = Add(one, one)
     val explode = Explode(two)
-    val add = Add(two, explode)
+    val add     = Add(two, explode)
 
     var equivalence = new EquivalentExpressions
     equivalence.addExprTree(add, true)
     // the `two` inside `explode` should not be added
     assert(equivalence.getAllEquivalentExprs.count(_.size > 1) == 0)
-    assert(equivalence.getAllEquivalentExprs.count(_.size == 1) == 3) // add, two, explode
+    assert(
+      equivalence.getAllEquivalentExprs.count(_.size == 1) == 3
+    ) // add, two, explode
   }
 }

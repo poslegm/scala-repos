@@ -14,9 +14,9 @@ import org.scalatest.mock.MockitoSugar
 class DarkTrafficFilterTest extends FunSuite with MockitoSugar {
 
   trait Fixture {
-    val request = "annyang"
-    val response = "hello"
-    val gate = mock[() => Boolean]
+    val request       = "annyang"
+    val response      = "hello"
+    val gate          = mock[() => Boolean]
     val statsReceiver = new InMemoryStatsReceiver
 
     val darkService = new Service[String, String] {
@@ -30,12 +30,12 @@ class DarkTrafficFilterTest extends FunSuite with MockitoSugar {
 
     val enableSampling = (s: String) => gate()
 
-    val filter = new DarkTrafficFilter(
-        darkService, enableSampling, statsReceiver)
+    val filter =
+      new DarkTrafficFilter(darkService, enableSampling, statsReceiver)
 
     val forwarded = Seq("darkTrafficFilter", "forwarded")
-    val skipped = Seq("darkTrafficFilter", "skipped")
-    val failed = Seq("darkTrafficFilter", "failed")
+    val skipped   = Seq("darkTrafficFilter", "skipped")
+    val failed    = Seq("darkTrafficFilter", "failed")
 
     val service = mock[Service[String, String]]
     when(service.apply(anyObject())) thenReturn Future.value(response)
@@ -55,7 +55,8 @@ class DarkTrafficFilterTest extends FunSuite with MockitoSugar {
   }
 
   test(
-      "when decider is on, send dark traffic to darkService and light to service") {
+    "when decider is on, send dark traffic to darkService and light to service"
+  ) {
     new Fixture {
       when(gate()) thenReturn true
       assert(Await.result(filter(request, service)) == response)

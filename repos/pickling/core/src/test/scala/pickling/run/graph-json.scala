@@ -31,7 +31,7 @@ class GraphJsonTest extends FunSuite {
 
     // NOTE - Gets around diverging implicit expansion issue, temporarily.
     implicit val pu = {
-      implicit val vu = PicklerUnpickler.generate[Vertex]
+      implicit val vu  = PicklerUnpickler.generate[Vertex]
       implicit val lvu = Defaults.listPickler[Vertex]
       PicklerUnpickler.generate[Graph]
     }
@@ -49,8 +49,9 @@ class GraphJsonTest extends FunSuite {
     d4.connectTo(d3)
 
     val pickle = g.pickle
-    val res = pickle.unpickle[Graph]
+    val res    = pickle.unpickle[Graph]
     assert(
-        res.vertices.toString === "List(Vertex(PHILIPP), Vertex(EPFL), Vertex(MS), Vertex(BBC))")
+      res.vertices.toString === "List(Vertex(PHILIPP), Vertex(EPFL), Vertex(MS), Vertex(BBC))"
+    )
   }
 }

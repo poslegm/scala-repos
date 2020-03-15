@@ -15,18 +15,18 @@ import MemberStatus._
 import InternalClusterAction._
 
 object TransitionMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
+    debugConfig(on = false)
+      .withFallback(ConfigFactory.parseString("""
       akka.cluster.periodic-tasks-initial-delay = 300 s # turn off all periodic tasks
       akka.cluster.publish-stats-interval = 0 s # always, when it happens
       """))
-        .withFallback(
-            MultiNodeClusterSpec.clusterConfigWithFailureDetectorPuppet))
+      .withFallback(MultiNodeClusterSpec.clusterConfigWithFailureDetectorPuppet)
+  )
 }
 
 class TransitionMultiJvmNode1 extends TransitionSpec
@@ -34,7 +34,8 @@ class TransitionMultiJvmNode2 extends TransitionSpec
 class TransitionMultiJvmNode3 extends TransitionSpec
 
 abstract class TransitionSpec
-    extends MultiNodeSpec(TransitionMultiJvmSpec) with MultiNodeClusterSpec
+    extends MultiNodeSpec(TransitionMultiJvmSpec)
+    with MultiNodeClusterSpec
     with ImplicitSender {
 
   import TransitionMultiJvmSpec._
@@ -42,7 +43,7 @@ abstract class TransitionSpec
   muteMarkingAsUnreachable()
 
   // sorted in the order used by the cluster
-  def leader(roles: RoleName*) = roles.sorted.head
+  def leader(roles: RoleName*)    = roles.sorted.head
   def nonLeader(roles: RoleName*) = roles.toSeq.sorted.tail
 
   def memberStatus(address: Address): MemberStatus = {
@@ -59,14 +60,16 @@ abstract class TransitionSpec
 
   def seenLatestGossip: Set[RoleName] = clusterView.seenBy flatMap roleName
 
-  def awaitSeen(addresses: Address*): Unit = awaitAssert {
-    (seenLatestGossip map address) should ===(addresses.toSet)
-  }
+  def awaitSeen(addresses: Address*): Unit =
+    awaitAssert {
+      (seenLatestGossip map address) should ===(addresses.toSet)
+    }
 
-  def awaitMembers(addresses: Address*): Unit = awaitAssert {
-    clusterView.refreshCurrentState()
-    memberAddresses should ===(addresses.toSet)
-  }
+  def awaitMembers(addresses: Address*): Unit =
+    awaitAssert {
+      clusterView.refreshCurrentState()
+      memberAddresses should ===(addresses.toSet)
+    }
 
   def awaitMemberStatus(address: Address, status: MemberStatus): Unit =
     awaitAssert {
@@ -82,7 +85,7 @@ abstract class TransitionSpec
 
   // DSL sugar for `role1 gossipTo role2`
   implicit def roleExtras(role: RoleName): RoleWrapper = new RoleWrapper(role)
-  var gossipBarrierCounter = 0
+  var gossipBarrierCounter                             = 0
   class RoleWrapper(fromRole: RoleName) {
     def gossipTo(toRole: RoleName): Unit = {
       gossipBarrierCounter += 1
@@ -235,8 +238,9 @@ abstract class TransitionSpec
         markNodeAsUnavailable(second)
         reapUnreachable()
         awaitAssert(
-            clusterView.unreachableMembers.map(_.address) should contain(
-                address(second)))
+          clusterView.unreachableMembers
+            .map(_.address) should contain(address(second))
+        )
         awaitAssert(seenLatestGossip should ===(Set(third)))
       }
 
@@ -246,8 +250,9 @@ abstract class TransitionSpec
 
       runOn(first, third) {
         awaitAssert(
-            clusterView.unreachableMembers.map(_.address) should contain(
-                address(second)))
+          clusterView.unreachableMembers
+            .map(_.address) should contain(address(second))
+        )
       }
 
       runOn(first) {
@@ -260,8 +265,9 @@ abstract class TransitionSpec
 
       runOn(first, third) {
         awaitAssert(
-            clusterView.unreachableMembers.map(_.address) should contain(
-                address(second)))
+          clusterView.unreachableMembers
+            .map(_.address) should contain(address(second))
+        )
         awaitMemberStatus(second, Down)
         awaitAssert(seenLatestGossip should ===(Set(first, third)))
       }

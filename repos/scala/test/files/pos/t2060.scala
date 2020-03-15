@@ -19,8 +19,8 @@ object Test {
   class IntOp extends Op[Int];
 
   class Rich(x: Double) {
-    def +(op: IntOp): IntOp = op;
-    def +[I](op: Op[I]): Op[I] = op;
+    def +(op: IntOp): IntOp       = op;
+    def +[I](op: Op[I]): Op[I]    = op;
     def plus[I](op: Op[I]): Op[I] = op;
   }
 

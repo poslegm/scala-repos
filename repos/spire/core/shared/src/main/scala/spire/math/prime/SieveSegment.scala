@@ -55,22 +55,22 @@ object SieveSegment {
     b |= (1 << 23)
     b |= (1 << 29)
     val n: Long = b | (b << 30L)
-    val arr = new Array[Int](15)
+    val arr     = new Array[Int](15)
     cfor(0)(_ < 15, _ + 1) { i =>
-      arr(i) = ((n >>> (i * 2)) & 0xffffffffL).toInt
+      arr(i) = ((n >>> (i * 2)) & 0xFFFFFFFFL).toInt
     }
     arr
   }
 }
 
 case class SieveSegment(start: SafeLong, primes: BitSet, cutoff: SafeLong) {
-  def isPrime(n: SafeLong): Boolean = primes((n - start).toInt)
+  def isPrime(n: SafeLong): Boolean     = primes((n - start).toInt)
   def isComposite(n: SafeLong): Boolean = !primes((n - start).toInt)
-  def set(n: SafeLong): Unit = primes += (n - start).toInt
-  def unset(n: SafeLong): Unit = primes -= (n - start).toInt
+  def set(n: SafeLong): Unit            = primes += (n - start).toInt
+  def unset(n: SafeLong): Unit          = primes -= (n - start).toInt
 
   def nextAfter(n: SafeLong): SafeLong = {
-    var i = (n - start + 2).toInt
+    var i   = (n - start + 2).toInt
     val len = primes.length
     while (i < len) {
       if (primes(i)) return start + i
@@ -107,7 +107,7 @@ case class SieveSegment(start: SafeLong, primes: BitSet, cutoff: SafeLong) {
 
   private def initFromArray(fastq: FastFactors): Unit = {
     val arr = fastq.arr
-    var i = 0
+    var i   = 0
 
     val len: Long =
       if (start + primes.length < cutoff) (cutoff - start).toLong
@@ -115,10 +115,10 @@ case class SieveSegment(start: SafeLong, primes: BitSet, cutoff: SafeLong) {
 
     while (i < arr.length) {
       val factor = arr(i)
-      var j = (factor.m - start).toInt
-      val k = factor.p
-      val kk = k + k
-      val lim = len - kk
+      var j      = (factor.m - start).toInt
+      val k      = factor.p
+      val kk     = k + k
+      val lim    = len - kk
       primes -= j
       while (j < lim) {
         j += kk
@@ -133,14 +133,14 @@ case class SieveSegment(start: SafeLong, primes: BitSet, cutoff: SafeLong) {
     if (q.isEmpty) return ()
 
     val factor = q.dequeue
-    val m = factor.next
+    val m      = factor.next
     if (m < limit) {
-      val p = factor.p
+      val p   = factor.p
       val len = primes.length
-      var i = (m - start).toInt
+      var i   = (m - start).toInt
       val m2 =
         if (p < len) {
-          val k = p.toInt
+          val k  = p.toInt
           val kk = k + k
           while (i < len) { primes -= i; i += kk }
           start + i
@@ -158,14 +158,14 @@ case class SieveSegment(start: SafeLong, primes: BitSet, cutoff: SafeLong) {
 
   def initFirst(fastq: FastFactors, slowq: FactorHeap): Unit = {
     var p: Int = 1
-    val len = primes.length
-    val buf = ArrayBuffer.empty[FastFactor]
+    val len    = primes.length
+    val buf    = ArrayBuffer.empty[FastFactor]
     while (p < len) {
       if (primes(p)) {
         var m = p.toLong * p.toLong
         if (m < len) {
           val pp = p + p
-          var k = m.toInt
+          var k  = m.toInt
           primes -= k
           val lim = len - pp
           while (k < lim) { k += pp; primes -= k }

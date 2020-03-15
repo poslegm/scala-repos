@@ -20,7 +20,7 @@ class ScalaLookupRenderingTest extends ScalaCodeInsightTestBase {
       |  public static void foo(int... x) {}
       |}
       """.stripMargin('|').replaceAll("\r", "").trim()
-    val fileText = """
+    val fileText     = """
       |import a.Java
       |class A {
       |  Java.fo<caret>
@@ -43,12 +43,11 @@ class ScalaLookupRenderingTest extends ScalaCodeInsightTestBase {
 
     val result = activeLookup
       .filter(_.getLookupString == "foo")
-      .map(p =>
-            {
-          val presentation: LookupElementPresentation =
-            new LookupElementPresentation
-          p.renderElement(presentation)
-          presentation.getItemText + presentation.getTailText
+      .map(p => {
+        val presentation: LookupElementPresentation =
+          new LookupElementPresentation
+        p.renderElement(presentation)
+        presentation.getItemText + presentation.getTailText
       })
       .sorted
       .mkString("\n")

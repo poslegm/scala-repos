@@ -16,20 +16,24 @@ trait RepositorySearchService { self: IssuesService =>
   import RepositorySearchService._
 
   def countIssues(owner: String, repository: String, query: String)(
-      implicit session: Session): Int =
+      implicit session: Session
+  ): Int =
     searchIssuesByKeyword(owner, repository, query).length
 
   def searchIssues(owner: String, repository: String, query: String)(
-      implicit session: Session): List[IssueSearchResult] =
+      implicit session: Session
+  ): List[IssueSearchResult] =
     searchIssuesByKeyword(owner, repository, query).map {
       case (issue, commentCount, content) =>
-        IssueSearchResult(issue.issueId,
-                          issue.isPullRequest,
-                          issue.title,
-                          issue.openedUserName,
-                          issue.registeredDate,
-                          commentCount,
-                          getHighlightText(content, query)._1)
+        IssueSearchResult(
+          issue.issueId,
+          issue.isPullRequest,
+          issue.title,
+          issue.openedUserName,
+          issue.registeredDate,
+          commentCount,
+          getHighlightText(content, query)._1
+        )
     }
 
   def countFiles(owner: String, repository: String, query: String): Int =
@@ -38,9 +42,11 @@ trait RepositorySearchService { self: IssuesService =>
       else searchRepositoryFiles(git, query).length
     }
 
-  def searchFiles(owner: String,
-                  repository: String,
-                  query: String): List[FileSearchResult] =
+  def searchFiles(
+      owner: String,
+      repository: String,
+      query: String
+  ): List[FileSearchResult] =
     using(Git.open(getRepositoryDir(owner, repository))) { git =>
       if (JGitUtil.isEmpty(git)) {
         Nil
@@ -51,25 +57,29 @@ trait RepositorySearchService { self: IssuesService =>
         files.map {
           case (path, text) =>
             val (highlightText, lineNumber) = getHighlightText(text, query)
-            FileSearchResult(path,
-                             commits(path).getCommitterIdent.getWhen,
-                             highlightText,
-                             lineNumber)
+            FileSearchResult(
+              path,
+              commits(path).getCommitterIdent.getWhen,
+              highlightText,
+              lineNumber
+            )
         }
       }
     }
 
   private def searchRepositoryFiles(
-      git: Git, query: String): List[(String, String)] = {
-    val revWalk = new RevWalk(git.getRepository)
-    val objectId = git.getRepository.resolve("HEAD")
+      git: Git,
+      query: String
+  ): List[(String, String)] = {
+    val revWalk   = new RevWalk(git.getRepository)
+    val objectId  = git.getRepository.resolve("HEAD")
     val revCommit = revWalk.parseCommit(objectId)
-    val treeWalk = new TreeWalk(git.getRepository)
+    val treeWalk  = new TreeWalk(git.getRepository)
     treeWalk.setRecursive(true)
     treeWalk.addTree(revCommit.getTree)
 
     val keywords = StringUtil.splitWords(query.toLowerCase)
-    val list = new scala.collection.mutable.ListBuffer[(String, String)]
+    val list     = new scala.collection.mutable.ListBuffer[(String, String)]
 
     while (treeWalk.next()) {
       val mode = treeWalk.getFileMode(0)
@@ -78,9 +88,9 @@ trait RepositorySearchService { self: IssuesService =>
           .getContentFromId(git, treeWalk.getObjectId(0), false)
           .foreach { bytes =>
             if (FileUtil.isText(bytes)) {
-              val text = StringUtil.convertFromByteArray(bytes)
+              val text      = StringUtil.convertFromByteArray(bytes)
               val lowerText = text.toLowerCase
-              val indices = keywords.map(lowerText.indexOf _)
+              val indices   = keywords.map(lowerText.indexOf _)
               if (!indices.exists(_ < 0)) {
                 list.append((treeWalk.getPathString, text))
               }
@@ -97,41 +107,47 @@ trait RepositorySearchService { self: IssuesService =>
 
 object RepositorySearchService {
 
-  val CodeLimit = 10
+  val CodeLimit  = 10
   val IssueLimit = 10
 
   def getHighlightText(content: String, query: String): (String, Int) = {
-    val keywords = StringUtil.splitWords(query.toLowerCase)
+    val keywords  = StringUtil.splitWords(query.toLowerCase)
     val lowerText = content.toLowerCase
-    val indices = keywords.map(lowerText.indexOf _)
+    val indices   = keywords.map(lowerText.indexOf _)
 
     if (!indices.exists(_ < 0)) {
       val lineNumber = content.substring(0, indices.min).split("\n").size - 1
       val highlightText = StringUtil
-        .escapeHtml(
-            content.split("\n").drop(lineNumber).take(5).mkString("\n"))
+        .escapeHtml(content.split("\n").drop(lineNumber).take(5).mkString("\n"))
         .replaceAll(
-            "(?i)(" + keywords.map("\\Q" + _ + "\\E").mkString("|") + ")",
-            "<span class=\"highlight\">$1</span>")
-        (highlightText, lineNumber + 1)
+          "(?i)(" + keywords.map("\\Q" + _ + "\\E").mkString("|") + ")",
+          "<span class=\"highlight\">$1</span>"
+        )
+      (highlightText, lineNumber + 1)
     } else {
       (content.split("\n").take(5).mkString("\n"), 1)
     }
   }
 
   case class SearchResult(
-      files: List[(String, String)], issues: List[(Issue, Int, String)])
+      files: List[(String, String)],
+      issues: List[(Issue, Int, String)]
+  )
 
-  case class IssueSearchResult(issueId: Int,
-                               isPullRequest: Boolean,
-                               title: String,
-                               openedUserName: String,
-                               registeredDate: java.util.Date,
-                               commentCount: Int,
-                               highlightText: String)
+  case class IssueSearchResult(
+      issueId: Int,
+      isPullRequest: Boolean,
+      title: String,
+      openedUserName: String,
+      registeredDate: java.util.Date,
+      commentCount: Int,
+      highlightText: String
+  )
 
-  case class FileSearchResult(path: String,
-                              lastModified: java.util.Date,
-                              highlightText: String,
-                              highlightLineNumber: Int)
+  case class FileSearchResult(
+      path: String,
+      lastModified: java.util.Date,
+      highlightText: String,
+      highlightLineNumber: Int
+  )
 }

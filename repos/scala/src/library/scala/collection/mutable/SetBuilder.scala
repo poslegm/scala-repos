@@ -18,11 +18,11 @@ package mutable
   *  @since 2.8
   */
 class SetBuilder[
-    A, Coll <: scala.collection.Set[A] with scala.collection.SetLike[A, Coll]](
-    empty: Coll)
+    A, Coll <: scala.collection.Set[A] with scala.collection.SetLike[A, Coll]
+](empty: Coll)
     extends ReusableBuilder[A, Coll] {
   protected var elems: Coll = empty
-  def +=(x: A): this.type = { elems = elems + x; this }
+  def +=(x: A): this.type   = { elems = elems + x; this }
   def clear() { elems = empty }
   def result: Coll = elems
 }

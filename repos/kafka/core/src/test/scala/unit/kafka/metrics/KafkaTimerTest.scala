@@ -25,10 +25,10 @@ class KafkaTimerTest {
 
   @Test
   def testKafkaTimer() {
-    val clock = new ManualClock
+    val clock        = new ManualClock
     val testRegistry = new MetricsRegistry(clock)
-    val metric = testRegistry.newTimer(this.getClass, "TestTimer")
-    val Epsilon = java.lang.Double.longBitsToDouble(0x3ca0000000000000L)
+    val metric       = testRegistry.newTimer(this.getClass, "TestTimer")
+    val Epsilon      = java.lang.Double.longBitsToDouble(0x3CA0000000000000L)
 
     val timer = new KafkaTimer(metric)
     timer.time {

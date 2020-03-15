@@ -23,26 +23,29 @@ trait ServletBase extends ScalatraBase with SessionSupport with Initializable {
     def getInitParameterNames(): ju.Enumeration[String]
   }
 
-  protected implicit def configWrapper(config: ConfigT) = new Config {
+  protected implicit def configWrapper(config: ConfigT) =
+    new Config {
 
-    override def context: ServletContext = config.getServletContext
+      override def context: ServletContext = config.getServletContext
 
-    object initParameters extends DefaultMap[String, String] {
+      object initParameters extends DefaultMap[String, String] {
 
-      override def get(key: String): Option[String] =
-        Option(config.getInitParameter(key))
+        override def get(key: String): Option[String] =
+          Option(config.getInitParameter(key))
 
-      override def iterator: Iterator[(String, String)] = {
-        for (name <- config.getInitParameterNames.asScala.toIterator) yield
-          (name, config.getInitParameter(name))
+        override def iterator: Iterator[(String, String)] = {
+          for (name <- config.getInitParameterNames.asScala.toIterator)
+            yield (name, config.getInitParameter(name))
+        }
       }
     }
-  }
 
   override def handle(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
     // As default, the servlet tries to decode params with ISO_8859-1.
-    // It causes an EOFException if params are actually encoded with the 
+    // It causes an EOFException if params are actually encoded with the
     // other code (such as UTF-8)
     if (request.getCharacterEncoding == null) {
       request.setCharacterEncoding(defaultCharacterEncoding)

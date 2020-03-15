@@ -8,7 +8,7 @@ class Poly {
 object MyApp {
   val r: Poly = sys.error("")
   val s: Poly = sys.error("")
-  val b: r.E = sys.error("")
+  val b: r.E  = sys.error("")
 
   // okay
   s.E.conv(b): s.E

@@ -16,8 +16,8 @@ package pickling
   */
 class PickleBuffer(data: Array[Byte], from: Int, to: Int) {
 
-  var bytes = data
-  var readIndex = from
+  var bytes      = data
+  var readIndex  = from
   var writeIndex = to
 
   /** Double bytes array */
@@ -107,7 +107,7 @@ class PickleBuffer(data: Array[Byte], from: Int, to: Int) {
     do {
       b = readByte().toLong
       x = (x << 7) + (b & 0x7f)
-    } while ( (b & 0x80) != 0L)
+    } while ((b & 0x80) != 0L)
     x
   }
 
@@ -133,8 +133,8 @@ class PickleBuffer(data: Array[Byte], from: Int, to: Int) {
     val result = new Array[(Int, Array[Byte])](readNat())
 
     result.indices foreach { index =>
-      val tag = readNat()
-      val len = readNat()
+      val tag   = readNat()
+      val len   = readNat()
       val bytes = data.slice(readIndex, len + readIndex)
       readIndex += len
 
@@ -170,7 +170,7 @@ class PickleBuffer(data: Array[Byte], from: Int, to: Int) {
     val index = new Array[Int](readNat()) // nbEntries_Nat
     for (i <- 0 until index.length) {
       index(i) = readIndex
-      readByte() // skip type_Nat
+      readByte()                        // skip type_Nat
       readIndex = readNat() + readIndex // read length_Nat, jump to next entry
     }
     index

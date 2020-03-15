@@ -39,6 +39,7 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class CullFaceSpec
     extends SFXEnumDelegateSpec[jfxss.CullFace, CullFace](
-        javaClass = classOf[jfxss.CullFace],
-        scalaClass = classOf[CullFace],
-        companion = CullFace)
+      javaClass = classOf[jfxss.CullFace],
+      scalaClass = classOf[CullFace],
+      companion = CullFace
+    )

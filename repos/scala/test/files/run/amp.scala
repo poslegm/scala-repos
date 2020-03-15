@@ -2,7 +2,7 @@ object Test extends App {
 
   def foo() = {
     def f: Int = 1
-    val x = f _
+    val x      = f _
     x
   }
 

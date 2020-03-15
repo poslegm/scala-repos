@@ -3,7 +3,7 @@ object A {
     def x: Array[Int] = Array.empty
   }
   def foo(f: S => Seq[Int]): Int = 1
-  def foo(x: Int): Boolean = false
+  def foo(x: Int): Boolean       = false
 
   /*start*/
   foo(_.x) /*end*/

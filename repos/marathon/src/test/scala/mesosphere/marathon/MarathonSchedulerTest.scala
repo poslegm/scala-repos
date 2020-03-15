@@ -7,10 +7,18 @@ import mesosphere.marathon.core.base.Clock
 import mesosphere.marathon.core.launcher.OfferProcessor
 import mesosphere.marathon.core.launchqueue.LaunchQueue
 import mesosphere.marathon.core.task.update.TaskStatusUpdateProcessor
-import mesosphere.marathon.event.{SchedulerDisconnectedEvent, SchedulerRegisteredEvent, SchedulerReregisteredEvent}
+import mesosphere.marathon.event.{
+  SchedulerDisconnectedEvent,
+  SchedulerRegisteredEvent,
+  SchedulerReregisteredEvent
+}
 import mesosphere.marathon.state.AppRepository
 import mesosphere.marathon.test.{Mockito, MarathonActorSupport}
-import mesosphere.util.state.{FrameworkIdUtil, MesosLeaderInfo, MutableMesosLeaderInfo}
+import mesosphere.util.state.{
+  FrameworkIdUtil,
+  MesosLeaderInfo,
+  MutableMesosLeaderInfo
+}
 import org.apache.mesos.Protos._
 import org.apache.mesos.SchedulerDriver
 import org.scalatest.{Matchers, GivenWhenThen, BeforeAndAfterAll}
@@ -18,22 +26,24 @@ import org.scalatest.{Matchers, GivenWhenThen, BeforeAndAfterAll}
 import scala.concurrent.Future
 
 class MarathonSchedulerTest
-    extends MarathonActorSupport with MarathonSpec with BeforeAndAfterAll
-    with Mockito with Matchers with GivenWhenThen {
+    extends MarathonActorSupport
+    with MarathonSpec
+    with BeforeAndAfterAll
+    with Mockito
+    with Matchers
+    with GivenWhenThen {
 
-  var probe: TestProbe = _
-  var repo: AppRepository = _
-  var queue: LaunchQueue = _
-  var scheduler: MarathonScheduler = _
-  var frameworkIdUtil: FrameworkIdUtil = _
-  var mesosLeaderInfo: MesosLeaderInfo = _
-  var config: MarathonConf = _
-  var eventBus: EventStream = _
-  var offerProcessor: OfferProcessor = _
+  var probe: TestProbe                               = _
+  var repo: AppRepository                            = _
+  var queue: LaunchQueue                             = _
+  var scheduler: MarathonScheduler                   = _
+  var frameworkIdUtil: FrameworkIdUtil               = _
+  var mesosLeaderInfo: MesosLeaderInfo               = _
+  var config: MarathonConf                           = _
+  var eventBus: EventStream                          = _
+  var offerProcessor: OfferProcessor                 = _
   var taskStatusProcessor: TaskStatusUpdateProcessor = _
-  var suicideFn: (Boolean) => Unit = { _ =>
-    ()
-  }
+  var suicideFn: (Boolean) => Unit                   = { _ => () }
 
   before {
     repo = mock[AppRepository]
@@ -46,17 +56,17 @@ class MarathonSchedulerTest
     eventBus = system.eventStream
     taskStatusProcessor = mock[TaskStatusUpdateProcessor]
     scheduler = new MarathonScheduler(
-        eventBus,
-        Clock(),
-        offerProcessor = offerProcessor,
-        taskStatusProcessor = taskStatusProcessor,
-        frameworkIdUtil,
-        mesosLeaderInfo,
-        mock[ActorSystem],
-        config,
-        new SchedulerCallbacks {
-          override def disconnected(): Unit = {}
-        }
+      eventBus,
+      Clock(),
+      offerProcessor = offerProcessor,
+      taskStatusProcessor = taskStatusProcessor,
+      frameworkIdUtil,
+      mesosLeaderInfo,
+      mock[ActorSystem],
+      config,
+      new SchedulerCallbacks {
+        override def disconnected(): Unit = {}
+      }
     ) {
       override protected def suicide(removeFrameworkId: Boolean): Unit = {
         suicideFn(removeFrameworkId)
@@ -65,7 +75,7 @@ class MarathonSchedulerTest
   }
 
   test("Publishes event when registered") {
-    val driver = mock[SchedulerDriver]
+    val driver      = mock[SchedulerDriver]
     val frameworkId = FrameworkID.newBuilder.setValue("some_id").build()
 
     val masterInfo = MasterInfo
@@ -136,7 +146,7 @@ class MarathonSchedulerTest
 
   test("Suicide with an unknown error will not remove the framework id") {
     Given("A suicide call trap")
-    val driver = mock[SchedulerDriver]
+    val driver                       = mock[SchedulerDriver]
     var suicideCall: Option[Boolean] = None
     suicideFn = remove => { suicideCall = Some(remove) }
 
@@ -150,7 +160,7 @@ class MarathonSchedulerTest
 
   test("Suicide with a framework error will remove the framework id") {
     Given("A suicide call trap")
-    val driver = mock[SchedulerDriver]
+    val driver                       = mock[SchedulerDriver]
     var suicideCall: Option[Boolean] = None
     suicideFn = remove => { suicideCall = Some(remove) }
 

@@ -35,7 +35,7 @@ object SpanIdBenchmark {
   @State(Scope.Benchmark)
   class SpanIdState {
     val rng = new Random(31415926535897932L)
-    val n = 1024
+    val n   = 1024
     val ids = Array.fill(n)(SpanId(rng.nextLong()))
   }
 }

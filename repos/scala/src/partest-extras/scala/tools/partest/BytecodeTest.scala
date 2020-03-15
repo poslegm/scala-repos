@@ -60,9 +60,10 @@ abstract class BytecodeTest {
     sameCharacteristics(clazzA, clazzB)(_.erasedCharacteristics)
 
   private def sameCharacteristics(clazzA: ClassNode, clazzB: ClassNode)(
-      f: AsmNode[_] => String): Boolean = {
-    val ms1 = clazzA.fieldsAndMethods.toIndexedSeq
-    val ms2 = clazzB.fieldsAndMethods.toIndexedSeq
+      f: AsmNode[_] => String
+  ): Boolean = {
+    val ms1   = clazzA.fieldsAndMethods.toIndexedSeq
+    val ms2   = clazzB.fieldsAndMethods.toIndexedSeq
     val name1 = clazzA.name
     val name2 = clazzB.name
 
@@ -85,10 +86,11 @@ abstract class BytecodeTest {
     *
     * For the `similar` function, you probably want to pass [[ASMConverters.equivalentBytecode]].
     */
-  def similarBytecode(methA: MethodNode,
-                      methB: MethodNode,
-                      similar: (List[Instruction],
-                      List[Instruction]) => Boolean) = {
+  def similarBytecode(
+      methA: MethodNode,
+      methB: MethodNode,
+      similar: (List[Instruction], List[Instruction]) => Boolean
+  ) = {
     val isa = instructionsFromMethod(methA)
     val isb = instructionsFromMethod(methB)
     if (isa == isb) println("bytecode identical")
@@ -99,17 +101,19 @@ abstract class BytecodeTest {
   def diffInstructions(isa: List[Instruction], isb: List[Instruction]) = {
     val len = Math.max(isa.length, isb.length)
     if (len > 0) {
-      val width = isa.map(_.toString.length).max
+      val width     = isa.map(_.toString.length).max
       val lineWidth = len.toString.length
       (1 to len) foreach { line =>
         val isaPadded = isa.map(_.toString) orElse Stream.continually("")
         val isbPadded = isb.map(_.toString) orElse Stream.continually("")
-        val a = isaPadded(line - 1)
-        val b = isbPadded(line - 1)
+        val a         = isaPadded(line - 1)
+        val b         = isbPadded(line - 1)
 
         println(
-            s"""$line${" " * (lineWidth - line.toString.length)} ${if (a == b)
-          "==" else "<>"} $a${" " * (width - a.length)} | $b""")
+          s"""$line${" " * (lineWidth - line.toString.length)} ${if (a == b)
+            "=="
+          else "<>"} $a${" " * (width - a.length)} | $b"""
+        )
       }
     }
   }
@@ -117,15 +121,19 @@ abstract class BytecodeTest {
 // loading
   protected def getMethod(classNode: ClassNode, name: String): MethodNode =
     classNode.methods.asScala.find(_.name == name) getOrElse sys.error(
-        s"Didn't find method '$name' in class '${classNode.name}'")
+      s"Didn't find method '$name' in class '${classNode.name}'"
+    )
 
   protected def loadClassNode(
-      name: String, skipDebugInfo: Boolean = true): ClassNode = {
+      name: String,
+      skipDebugInfo: Boolean = true
+  ): ClassNode = {
     val classBytes: InputStream = classpath
       .findClassFile(name)
       .map(_.input)
       .getOrElse(
-          sys.error(s"failed to load class '$name'; classpath = $classpath"))
+        sys.error(s"failed to load class '$name'; classpath = $classpath")
+      )
 
     val cr = new ClassReader(classBytes)
     val cn = new ClassNode()

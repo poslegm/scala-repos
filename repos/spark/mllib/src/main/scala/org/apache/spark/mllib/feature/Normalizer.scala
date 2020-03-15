@@ -18,7 +18,12 @@
 package org.apache.spark.mllib.feature
 
 import org.apache.spark.annotation.Since
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.linalg.{
+  DenseVector,
+  SparseVector,
+  Vector,
+  Vectors
+}
 
 /**
   * Normalizes samples individually to unit L^p^ norm
@@ -31,7 +36,7 @@ import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors
   * @param p Normalization in L^p^ space, p = 2 by default.
   */
 @Since("1.1.0")
-class Normalizer @Since("1.1.0")(p: Double) extends VectorTransformer {
+class Normalizer @Since("1.1.0") (p: Double) extends VectorTransformer {
 
   @Since("1.1.0")
   def this() = this(2)
@@ -55,8 +60,8 @@ class Normalizer @Since("1.1.0")(p: Double) extends VectorTransformer {
       vector match {
         case DenseVector(vs) =>
           val values = vs.clone()
-          val size = values.length
-          var i = 0
+          val size   = values.length
+          var i      = 0
           while (i < size) {
             values(i) /= norm
             i += 1
@@ -64,8 +69,8 @@ class Normalizer @Since("1.1.0")(p: Double) extends VectorTransformer {
           Vectors.dense(values)
         case SparseVector(size, ids, vs) =>
           val values = vs.clone()
-          val nnz = values.length
-          var i = 0
+          val nnz    = values.length
+          var i      = 0
           while (i < nnz) {
             values(i) /= norm
             i += 1
@@ -73,7 +78,8 @@ class Normalizer @Since("1.1.0")(p: Double) extends VectorTransformer {
           Vectors.sparse(size, ids, values)
         case v =>
           throw new IllegalArgumentException(
-              "Do not support vector type " + v.getClass)
+            "Do not support vector type " + v.getClass
+          )
       }
     } else {
       // Since the norm is zero, return the input vector object itself.

@@ -19,15 +19,17 @@ import com.twitter.util.{Time, TimerTask, Duration}
   * @param timer the timer used to schedule TTL evictions
   * @param evictor a Function invoked for each eviction
   */
-private[finagle] class Cache[A](cacheSize: Int,
-                                ttl: Duration,
-                                timer: com.twitter.util.Timer,
-                                evictor: Option[A => Unit] = None) {
+private[finagle] class Cache[A](
+    cacheSize: Int,
+    ttl: Duration,
+    timer: com.twitter.util.Timer,
+    evictor: Option[A => Unit] = None
+) {
   require(cacheSize > 0)
 
   // We assume monotonically increasing time.  Thus the items at the
   // end of the deque are also the newest (i.e. LIFO behavior).
-  private[this] var deque = new ArrayDeque[(Time, A)]
+  private[this] var deque                        = new ArrayDeque[(Time, A)]
   private[this] var timerTask: Option[TimerTask] = None
 
   /**
@@ -42,35 +44,38 @@ private[finagle] class Cache[A](cacheSize: Int,
     * Implementation: Assume that there are relatively few items to
     * evict, so it is cheaper to traverse from old->new than new->old
     */
-  private[this] def removeExpiredItems(): Seq[A] = synchronized {
-    val deadline = Time.now - ttl
+  private[this] def removeExpiredItems(): Seq[A] =
+    synchronized {
+      val deadline = Time.now - ttl
 
-    @tailrec
-    def constructExpiredList(acc: List[A]): List[A] = {
-      Option(deque.peekLast) match {
-        case Some((ts, item)) if ts <= deadline =>
-          // should ditch *oldest* items, so take from deque's last
-          deque.removeLast()
-          constructExpiredList(item :: acc)
-        case _ =>
-          // assumes time monotonicity (all items below the split
-          //   point are old, all items above the split point are
-          //   young)
-          acc
+      @tailrec
+      def constructExpiredList(acc: List[A]): List[A] = {
+        Option(deque.peekLast) match {
+          case Some((ts, item)) if ts <= deadline =>
+            // should ditch *oldest* items, so take from deque's last
+            deque.removeLast()
+            constructExpiredList(item :: acc)
+          case _ =>
+            // assumes time monotonicity (all items below the split
+            //   point are old, all items above the split point are
+            //   young)
+            acc
+        }
       }
+      constructExpiredList(Nil)
     }
-    constructExpiredList(Nil)
-  }
 
-  private[this] def scheduleTimer(): Unit = synchronized {
-    require(!timerTask.isDefined)
-    timerTask = Some(timer.schedule(ttl.fromNow) { timeout() })
-  }
+  private[this] def scheduleTimer(): Unit =
+    synchronized {
+      require(!timerTask.isDefined)
+      timerTask = Some(timer.schedule(ttl.fromNow) { timeout() })
+    }
 
-  private[this] def cancelTimer() = synchronized {
-    timerTask foreach { _.cancel() }
-    timerTask = None
-  }
+  private[this] def cancelTimer() =
+    synchronized {
+      timerTask foreach { _.cancel() }
+      timerTask = None
+    }
 
   private[this] def timeout() = {
     val evicted = synchronized {
@@ -82,21 +87,22 @@ private[finagle] class Cache[A](cacheSize: Int,
     evicted foreach { evict(_) }
   }
 
-  private[this] def evict(item: A) = evictor foreach { _ (item) }
+  private[this] def evict(item: A) = evictor foreach { _(item) }
 
   /**
     * Retrieve an item from the cache.  Items are retrieved in LIFO
     * order.
     */
-  def get() = synchronized {
-    if (!deque.isEmpty) {
-      val rv = Some(deque.pop()._2)
-      if (deque.isEmpty) cancelTimer()
-      rv
-    } else {
-      None
+  def get() =
+    synchronized {
+      if (!deque.isEmpty) {
+        val rv = Some(deque.pop()._2)
+        if (deque.isEmpty) cancelTimer()
+        rv
+      } else {
+        None
+      }
     }
-  }
 
   /**
     * Insert an item into the cache.

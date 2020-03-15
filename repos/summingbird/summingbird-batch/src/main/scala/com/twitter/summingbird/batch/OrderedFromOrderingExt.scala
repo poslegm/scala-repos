@@ -20,10 +20,10 @@ object OrderedFromOrderingExt {
   // Use an implicit class to give the ordering operations on T
   // This lets us use an Ordering similar to the convenince of an Ordered
   implicit class HelperClass[T](val ts: T) extends AnyVal {
-    def >(other: T)(implicit ord: Ordering[T]) = ord.gt(ts, other)
-    def <(other: T)(implicit ord: Ordering[T]) = ord.lt(ts, other)
-    def <=(other: T)(implicit ord: Ordering[T]) = ord.lteq(ts, other)
-    def >=(other: T)(implicit ord: Ordering[T]) = ord.gteq(ts, other)
+    def >(other: T)(implicit ord: Ordering[T])       = ord.gt(ts, other)
+    def <(other: T)(implicit ord: Ordering[T])       = ord.lt(ts, other)
+    def <=(other: T)(implicit ord: Ordering[T])      = ord.lteq(ts, other)
+    def >=(other: T)(implicit ord: Ordering[T])      = ord.gteq(ts, other)
     def compare(other: T)(implicit ord: Ordering[T]) = ord.compare(ts, other)
   }
 }

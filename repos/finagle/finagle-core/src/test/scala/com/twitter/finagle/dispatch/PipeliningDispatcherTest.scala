@@ -14,12 +14,12 @@ import org.scalatest.mock.MockitoSugar
 class PipeliningDispatcherTest extends FunSuite with MockitoSugar {
   test("PipeliningDispatcher: should treat interrupts properly") {
     val closeP = new Promise[Throwable]
-    val trans = mock[Transport[Unit, Unit]]
+    val trans  = mock[Transport[Unit, Unit]]
     when(trans.write(())).thenReturn(Future.Done)
     when(trans.read()).thenReturn(Future.never)
     when(trans.onClose).thenReturn(closeP)
     val dispatch = new PipeliningDispatcher[Unit, Unit](trans)
-    val f = dispatch(())
+    val f        = dispatch(())
     f.raise(new Exception())
     verify(trans, never()).close()
   }
@@ -31,7 +31,7 @@ class PipeliningDispatcherTest extends FunSuite with MockitoSugar {
       assert(size == stats.gauges(Seq("pipelining", "pending"))())
 
     val p0, p1, p2 = new Promise[String]()
-    val trans = mock[Transport[String, String]]
+    val trans      = mock[Transport[String, String]]
     when(trans.write(any[String])).thenReturn(Future.Done)
     when(trans.read()).thenReturn(p0).thenReturn(p1).thenReturn(p2)
     val closeP = new Promise[Throwable]
@@ -47,7 +47,9 @@ class PipeliningDispatcherTest extends FunSuite with MockitoSugar {
     dispatcher("0")
     dispatcher("1")
     dispatcher("2")
-    assertGaugeSize(2) // as noted above, the "0" has been removed from the queue
+    assertGaugeSize(
+      2
+    ) // as noted above, the "0" has been removed from the queue
 
     // then even if we fulfil them out of order...
     p2.setValue("2")

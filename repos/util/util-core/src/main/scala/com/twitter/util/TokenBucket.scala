@@ -40,35 +40,36 @@ object TokenBucket {
     *
     * @param limit: the upper bound on the number of tokens in the bucket.
     */
-  def newBoundedBucket(limit: Long): TokenBucket = new TokenBucket {
-    private[this] var counter = 0L
+  def newBoundedBucket(limit: Long): TokenBucket =
+    new TokenBucket {
+      private[this] var counter = 0L
 
-    /**
-      * Put `n` tokens into the bucket.
-      *
-      * If putting in `n` tokens would overflow `limit` tokens, instead sets the
-      * number of tokens to be `limit`.
-      */
-    def put(n: Int): Unit = {
-      require(n >= 0)
-      synchronized {
-        counter = math.min((counter + n), limit)
-      }
-    }
-
-    def tryGet(n: Int): Boolean = {
-      require(n >= 0)
-      synchronized {
-        val ok = counter >= n
-        if (ok) {
-          counter -= n
+      /**
+        * Put `n` tokens into the bucket.
+        *
+        * If putting in `n` tokens would overflow `limit` tokens, instead sets the
+        * number of tokens to be `limit`.
+        */
+      def put(n: Int): Unit = {
+        require(n >= 0)
+        synchronized {
+          counter = math.min((counter + n), limit)
         }
-        ok
       }
-    }
 
-    def count: Long = synchronized { counter }
-  }
+      def tryGet(n: Int): Boolean = {
+        require(n >= 0)
+        synchronized {
+          val ok = counter >= n
+          if (ok) {
+            counter -= n
+          }
+          ok
+        }
+      }
+
+      def count: Long = synchronized { counter }
+    }
 
   /**
     * A leaky bucket expires tokens after approximately `ttl` time.
@@ -84,7 +85,10 @@ object TokenBucket {
     * @param nowMs The current time in milliseconds
     */
   def newLeakyBucket(
-      ttl: Duration, reserve: Int, nowMs: () => Long): TokenBucket =
+      ttl: Duration,
+      reserve: Int,
+      nowMs: () => Long
+  ): TokenBucket =
     new TokenBucket {
       private[this] val w = WindowedAdder(ttl.inMilliseconds, 10, nowMs)
 

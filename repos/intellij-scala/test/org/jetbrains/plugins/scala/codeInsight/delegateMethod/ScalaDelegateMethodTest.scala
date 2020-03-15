@@ -13,20 +13,27 @@ class ScalaDelegateMethodTest
     extends ScalaLightPlatformCodeInsightTestCaseAdapter {
 
   def runTest(
-      fileText: String, expectedText: String, specifyType: Boolean = true) {
+      fileText: String,
+      expectedText: String,
+      specifyType: Boolean = true
+  ) {
     configureFromFileTextAdapter(
-        "dummy.scala", fileText.replace("\r", "").stripMargin.trim)
+      "dummy.scala",
+      fileText.replace("\r", "").stripMargin.trim
+    )
     val oldSpecifyType =
       ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY
-    ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY = specifyType
+    ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY =
+      specifyType
     new ScalaGenerateDelegateHandler()
       .invoke(getProjectAdapter, getEditorAdapter, getFileAdapter)
     checkResultByText(expectedText.replace("\r", "").stripMargin.trim)
-    ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY = oldSpecifyType
+    ScalaApplicationSettings.getInstance.SPECIFY_RETURN_TYPE_EXPLICITLY =
+      oldSpecifyType
   }
 
   def testVal() {
-    val text = """class D {
+    val text       = """class D {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -47,7 +54,7 @@ class ScalaDelegateMethodTest
   }
 
   def testVar() {
-    val text = """class D {
+    val text       = """class D {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -68,7 +75,7 @@ class ScalaDelegateMethodTest
   }
 
   def testDefParameterless() {
-    val text = """class D {
+    val text       = """class D {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -89,7 +96,7 @@ class ScalaDelegateMethodTest
   }
 
   def testDefEmptyParen() {
-    val text = """class D {
+    val text       = """class D {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -110,7 +117,7 @@ class ScalaDelegateMethodTest
   }
 
   def testDelegateCompoundType() {
-    val text = """trait DT {
+    val text       = """trait DT {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -135,7 +142,7 @@ class ScalaDelegateMethodTest
   }
 
   def testTargetFromBaseClass() {
-    val text = """class Base {
+    val text   = """class Base {
         |  val d = new D()
         |}
         |
@@ -173,7 +180,7 @@ class ScalaDelegateMethodTest
         |<caret>
         |}"""
     val result = //no action
-    """class Base {
+      """class Base {
         |  private val d = new D()
         |}
         |
@@ -188,7 +195,7 @@ class ScalaDelegateMethodTest
   }
 
   def testOverride() {
-    val text = """trait DT {
+    val text   = """trait DT {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -213,7 +220,7 @@ class ScalaDelegateMethodTest
   }
 
   def testInInner() {
-    val text = """class D {
+    val text   = """class D {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -247,7 +254,7 @@ class ScalaDelegateMethodTest
         |  }
         |}"""
     val result = //no effect
-    """class D {
+      """class D {
         |  def foo(x: Int): Int = x
         |}
         |
@@ -260,7 +267,7 @@ class ScalaDelegateMethodTest
   }
 
   def testMultipleParamList() {
-    val text = """class D {
+    val text   = """class D {
         |  def foo(x: Int)(y: Int): Int = x
         |}
         |
@@ -281,7 +288,7 @@ class ScalaDelegateMethodTest
   }
 
   def testGenericDelegate() {
-    val text = """class D[T] {
+    val text   = """class D[T] {
         |  def foo(x: T): T = x
         |}
         |
@@ -302,7 +309,7 @@ class ScalaDelegateMethodTest
   }
 
   def testMethodCallNeedTypeParam() {
-    val text = """class D[T] {
+    val text   = """class D[T] {
         |  def foo[S <: T](x: T): T = x
         |}
         |
@@ -323,7 +330,7 @@ class ScalaDelegateMethodTest
   }
 
   def testNeedTypeParamWithoutRetType() {
-    val text = """class D[T] {
+    val text   = """class D[T] {
         |  def foo[S >: AnyRef](x: T): S = null
         |}
         |
@@ -344,7 +351,7 @@ class ScalaDelegateMethodTest
   }
 
   def testNoTypeParamWithReturn() {
-    val text = """class D[T] {
+    val text   = """class D[T] {
         |  def foo[S >: AnyRef](x: T): S = null
         |}
         |

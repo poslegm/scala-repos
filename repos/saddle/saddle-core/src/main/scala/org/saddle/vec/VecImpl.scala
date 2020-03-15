@@ -20,11 +20,14 @@ import org.saddle._
 
 // Specialized method implementations for code reuse in implementations of Vec; NA-safe
 private[saddle] object VecImpl {
-  def mask[@spec(Boolean, Int, Long, Double) A : ST](
-      v1: Vec[A], v2: Vec[Boolean], value: A): Vec[A] = {
+  def mask[@spec(Boolean, Int, Long, Double) A: ST](
+      v1: Vec[A],
+      v2: Vec[Boolean],
+      value: A
+  ): Vec[A] = {
     require(v1.length == v2.length, "Vectors must be the same length")
     val buf = Array.ofDim[A](v1.length)
-    var i = 0
+    var i   = 0
     while (i < v1.length) {
       val a = v1(i)
       val b = v2(i)
@@ -34,11 +37,14 @@ private[saddle] object VecImpl {
     Vec(buf)
   }
 
-  def mask[@spec(Boolean, Int, Long, Double) A : ST](
-      v1: Vec[A], f: A => Boolean, value: A): Vec[A] = {
-    val sa = implicitly[ST[A]]
+  def mask[@spec(Boolean, Int, Long, Double) A: ST](
+      v1: Vec[A],
+      f: A => Boolean,
+      value: A
+  ): Vec[A] = {
+    val sa  = implicitly[ST[A]]
     val buf = Array.ofDim[A](v1.length)
-    var i = 0
+    var i   = 0
     while (i < v1.length) {
       val a = v1(i)
       buf(i) = if (sa.isMissing(a) || !f(a)) a else value
@@ -47,12 +53,13 @@ private[saddle] object VecImpl {
     Vec(buf)
   }
 
-  def foldLeft[@spec(Boolean, Int, Long, Double) A : ST,
-               @spec(Boolean, Int, Long, Double) B](vec: Vec[A])(init: B)(
-      f: (B, A) => B): B = {
-    val sa = implicitly[ST[A]]
+  def foldLeft[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B
+  ](vec: Vec[A])(init: B)(f: (B, A) => B): B = {
+    val sa  = implicitly[ST[A]]
     var acc = init
-    var i = 0
+    var i   = 0
     while (i < vec.length) {
       val v = vec(i)
       if (sa.notMissing(v)) acc = f(acc, v)
@@ -65,12 +72,13 @@ private[saddle] object VecImpl {
     * Same as foldLeft, but with a condition that operates on the accumulator and element
     * that if false, breaks out of the fold
     */
-  def foldLeftWhile[@spec(Boolean, Int, Long, Double) A : ST,
-                    @spec(Boolean, Int, Long, Double) B](vec: Vec[A])(init: B)(
-      f: (B, A) => B)(cond: (B, A) => Boolean): B = {
-    val sa = implicitly[ST[A]]
+  def foldLeftWhile[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B
+  ](vec: Vec[A])(init: B)(f: (B, A) => B)(cond: (B, A) => Boolean): B = {
+    val sa  = implicitly[ST[A]]
     var acc = init
-    var i = 0
+    var i   = 0
     while (i < vec.length) {
       val v = vec(i)
       if (sa.notMissing(v)) {
@@ -82,13 +90,14 @@ private[saddle] object VecImpl {
     acc
   }
 
-  def map[@spec(Boolean, Int, Long, Double) A : ST,
-          @spec(Boolean, Int, Long, Double) B : ST](vec: Vec[A])(
-      f: A => B): Vec[B] = {
+  def map[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B: ST
+  ](vec: Vec[A])(f: A => B): Vec[B] = {
     val sca = implicitly[ST[A]]
     val scb = implicitly[ST[B]]
     val buf = Array.ofDim[B](vec.length)
-    var i = 0
+    var i   = 0
     while (i < vec.length) {
       val v: A = vec(i)
       if (sca.isMissing(v)) buf(i) = scb.missing
@@ -98,9 +107,10 @@ private[saddle] object VecImpl {
     Vec(buf)
   }
 
-  def flatMap[@spec(Boolean, Int, Long, Double) A : ST,
-              @spec(Boolean, Int, Long, Double) B : ST](vec: Vec[A])(
-      f: A => Vec[B]): Vec[B] = {
+  def flatMap[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B: ST
+  ](vec: Vec[A])(f: A => Vec[B]): Vec[B] = {
     var i = 0
     val b = implicitly[ST[B]].makeBuf(vec.length)
     while (i < vec.length) {
@@ -116,14 +126,15 @@ private[saddle] object VecImpl {
     * from the Scala collections library by not including the initial value at the head of the
     * scan.
     */
-  def scanLeft[@spec(Boolean, Int, Long, Double) A : ST,
-               @spec(Boolean, Int, Long, Double) B : ST](vec: Vec[A])(init: B)(
-      f: (B, A) => B): Vec[B] = {
+  def scanLeft[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B: ST
+  ](vec: Vec[A])(init: B)(f: (B, A) => B): Vec[B] = {
     val sca = implicitly[ST[A]]
     val scb = implicitly[ST[B]]
     val buf = Array.ofDim[B](vec.length)
     var acc = init
-    var i = 0
+    var i   = 0
     while (i < vec.length) {
       val v = vec(i)
       if (sca.notMissing(v)) {
@@ -137,16 +148,17 @@ private[saddle] object VecImpl {
     Vec(buf)
   }
 
-  def zipMap[@spec(Int, Long, Double) A : ST,
-             @spec(Int, Long, Double) B : ST,
-             @spec(Boolean, Int, Long, Double) C : ST](v1: Vec[A], v2: Vec[B])(
-      f: (A, B) => C): Vec[C] = {
+  def zipMap[
+      @spec(Int, Long, Double) A: ST,
+      @spec(Int, Long, Double) B: ST,
+      @spec(Boolean, Int, Long, Double) C: ST
+  ](v1: Vec[A], v2: Vec[B])(f: (A, B) => C): Vec[C] = {
     require(v1.length == v2.length, "Vectors must be the same length")
     val sca = implicitly[ST[A]]
     val scb = implicitly[ST[B]]
     val scc = implicitly[ST[C]]
     val buf = Array.ofDim[C](v1.length)
-    var i = 0
+    var i   = 0
     while (i < v1.length) {
       val a = v1(i)
       val b = v2(i)
@@ -160,12 +172,13 @@ private[saddle] object VecImpl {
     Vec(buf)
   }
 
-  def filterFoldLeft[@spec(Boolean, Int, Long, Double) A : ST,
-                     @spec(Boolean, Int, Long, Double) B](vec: Vec[A])(
-      pred: (A) => Boolean)(init: B)(f: (B, A) => B): B = {
-    val sa = implicitly[ST[A]]
+  def filterFoldLeft[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B
+  ](vec: Vec[A])(pred: (A) => Boolean)(init: B)(f: (B, A) => B): B = {
+    val sa  = implicitly[ST[A]]
     var acc = init
-    var i = 0
+    var i   = 0
     while (i < vec.length) {
       val vi = vec(i)
       if (sa.notMissing(vi) && pred(vi)) {
@@ -176,14 +189,15 @@ private[saddle] object VecImpl {
     acc
   }
 
-  def filterScanLeft[@spec(Boolean, Int, Long, Double) A : ST,
-                     @spec(Boolean, Int, Long, Double) B : ST](vec: Vec[A])(
-      pred: (A) => Boolean)(init: B)(f: (B, A) => B): Vec[B] = {
-    val sa = implicitly[ST[A]]
-    val sb = implicitly[ST[B]]
+  def filterScanLeft[
+      @spec(Boolean, Int, Long, Double) A: ST,
+      @spec(Boolean, Int, Long, Double) B: ST
+  ](vec: Vec[A])(pred: (A) => Boolean)(init: B)(f: (B, A) => B): Vec[B] = {
+    val sa  = implicitly[ST[A]]
+    val sb  = implicitly[ST[B]]
     val buf = Array.ofDim[B](vec.length)
     var acc = init
-    var i = 0
+    var i   = 0
     while (i < vec.length) {
       val v = vec(i)
       if (sa.notMissing(v) && pred(v)) {
@@ -197,9 +211,10 @@ private[saddle] object VecImpl {
     Vec(buf)
   }
 
-  def rolling[@spec(Boolean, Int, Long, Double) A,
-              @spec(Boolean, Int, Long, Double) B : ST](vec: Vec[A])(
-      winSz: Int, f: Vec[A] => B): Vec[B] = {
+  def rolling[
+      @spec(Boolean, Int, Long, Double) A,
+      @spec(Boolean, Int, Long, Double) B: ST
+  ](vec: Vec[A])(winSz: Int, f: Vec[A] => B): Vec[B] = {
     if (winSz <= 0) Vec.empty[B]
     else {
       val len = vec.length
@@ -207,7 +222,7 @@ private[saddle] object VecImpl {
       if (len == 0) Vec.empty
       else {
         val buf = new Array[B](len - win + 1)
-        var i = win
+        var i   = win
         while (i <= vec.length) {
           buf(i - win) = f(vec.slice(i - win, i))
           i += 1
@@ -217,10 +232,11 @@ private[saddle] object VecImpl {
     }
   }
 
-  def foreach[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      op: A => Unit) {
+  def foreach[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(op: A => Unit) {
     val sa = implicitly[ST[A]]
-    var i = 0
+    var i  = 0
     while (i < vec.length) {
       val v: A = vec(i)
       if (sa.notMissing(v)) op(v)
@@ -228,10 +244,11 @@ private[saddle] object VecImpl {
     }
   }
 
-  def forall[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      pred: A => Boolean)(op: A => Unit) {
+  def forall[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(pred: A => Boolean)(op: A => Unit) {
     val sa = implicitly[ST[A]]
-    var i = 0
+    var i  = 0
     while (i < vec.length) {
       val v: A = vec(i)
       if (sa.notMissing(v) && pred(v)) op(v)
@@ -239,10 +256,11 @@ private[saddle] object VecImpl {
     }
   }
 
-  def find[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      pred: A => Boolean): Vec[Int] = {
-    val sa = implicitly[ST[A]]
-    var i = 0
+  def find[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(pred: A => Boolean): Vec[Int] = {
+    val sa  = implicitly[ST[A]]
+    var i   = 0
     val buf = Buffer[Int]()
     while (i < vec.length) {
       val v: A = vec(i)
@@ -252,11 +270,12 @@ private[saddle] object VecImpl {
     Vec(buf.toArray)
   }
 
-  def findOneNA[@spec(Boolean, Int, Long, Double) A : ST](
-      vec: Vec[A]): Boolean = {
+  def findOneNA[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  ): Boolean = {
     val sa = implicitly[ST[A]]
     var ex = false
-    var i = 0
+    var i  = 0
     while (!ex && i < vec.length) {
       val v: A = vec(i)
       ex = sa.isMissing(v)
@@ -265,10 +284,10 @@ private[saddle] object VecImpl {
     ex
   }
 
-  def isAllNA[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A]): Boolean = {
+  def isAllNA[@spec(Boolean, Int, Long, Double) A: ST](vec: Vec[A]): Boolean = {
     val sa = implicitly[ST[A]]
     var ex = true
-    var i = 0
+    var i  = 0
     while (ex && i < vec.length) {
       val v: A = vec(i)
       ex = ex && sa.isMissing(v)
@@ -277,11 +296,12 @@ private[saddle] object VecImpl {
     ex
   }
 
-  def findOne[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      pred: A => Boolean): Int = {
+  def findOne[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(pred: A => Boolean): Int = {
     val sa = implicitly[ST[A]]
     var ex = false
-    var i = 0
+    var i  = 0
     while (!ex && i < vec.length) {
       val v: A = vec(i)
       ex = sa.notMissing(v) && pred(v)
@@ -290,10 +310,11 @@ private[saddle] object VecImpl {
     if (ex) i - 1 else -1
   }
 
-  def filter[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      pred: A => Boolean): Vec[A] = {
-    val sa = implicitly[ST[A]]
-    var i = 0
+  def filter[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(pred: A => Boolean): Vec[A] = {
+    val sa  = implicitly[ST[A]]
+    var i   = 0
     val buf = Buffer[A]()
     while (i < vec.length) {
       val v: A = vec(i)
@@ -303,9 +324,10 @@ private[saddle] object VecImpl {
     Vec(buf.toArray)
   }
 
-  def filterAt[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      pred: Int => Boolean): Vec[A] = {
-    var i = 0
+  def filterAt[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(pred: Int => Boolean): Vec[A] = {
+    var i   = 0
     val buf = Buffer[A]()
     while (i < vec.length) {
       val v: A = vec(i)
@@ -315,9 +337,10 @@ private[saddle] object VecImpl {
     Vec(buf.toArray)
   }
 
-  def where[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      pred: Array[Boolean]): Vec[A] = {
-    var i = 0
+  def where[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(pred: Array[Boolean]): Vec[A] = {
+    var i   = 0
     val buf = Buffer[A]()
     while (i < vec.length) {
       val v: A = vec(i)
@@ -327,12 +350,14 @@ private[saddle] object VecImpl {
     Vec(buf.toArray)
   }
 
-  def pad[@spec(Boolean, Int, Long, Double) A : ST](
-      vec: Vec[A], atMost: Int = 0): Vec[A] = {
+  def pad[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A],
+      atMost: Int = 0
+  ): Vec[A] = {
     if (vec.length == 0 || vec.length == 1) vec
     else {
       val lim = if (atMost > 0) atMost else vec.length
-      val sa = implicitly[ST[A]]
+      val sa  = implicitly[ST[A]]
       val buf = array.empty[A](vec.length)
       buf(0) = vec(0)
       var i = 1
@@ -352,12 +377,13 @@ private[saddle] object VecImpl {
     }
   }
 
-  def vecfillNA[@spec(Boolean, Int, Long, Double) A : ST](vec: Vec[A])(
-      f: (Int) => A): Vec[A] = {
+  def vecfillNA[@spec(Boolean, Int, Long, Double) A: ST](
+      vec: Vec[A]
+  )(f: (Int) => A): Vec[A] = {
     val buf = vec.contents
-    var i = 0
-    val l = vec.length
-    val s = implicitly[ST[A]]
+    var i   = 0
+    val l   = vec.length
+    val s   = implicitly[ST[A]]
     while (i < l) {
       if (s.isMissing(buf(i))) buf(i) = f(i)
       i += 1
@@ -366,12 +392,13 @@ private[saddle] object VecImpl {
   }
 
   def seriesfillNA[
-      @spec(Int, Long, Double) X, @spec(Boolean, Int, Long, Double) A : ST](
-      idx: Vec[X], vec: Vec[A])(f: X => A): Vec[A] = {
+      @spec(Int, Long, Double) X,
+      @spec(Boolean, Int, Long, Double) A: ST
+  ](idx: Vec[X], vec: Vec[A])(f: X => A): Vec[A] = {
     val buf = vec.contents
-    var i = 0
-    val l = vec.length
-    val s = implicitly[ST[A]]
+    var i   = 0
+    val l   = vec.length
+    val s   = implicitly[ST[A]]
     while (i < l) {
       if (s.isMissing(buf(i))) buf(i) = f(idx(i))
       i += 1

@@ -30,8 +30,8 @@ private[mllib] class BinaryClassificationPMMLModelExport(
     model: GeneralizedLinearModel,
     description: String,
     normalizationMethod: RegressionNormalizationMethodType,
-    threshold: Double)
-    extends PMMLModelExport {
+    threshold: Double
+) extends PMMLModelExport {
 
   populateBinaryClassificationPMML()
 
@@ -42,9 +42,9 @@ private[mllib] class BinaryClassificationPMMLModelExport(
     pmml.getHeader.setDescription(description)
 
     if (model.weights.size > 0) {
-      val fields = new SArray[FieldName](model.weights.size)
+      val fields         = new SArray[FieldName](model.weights.size)
       val dataDictionary = new DataDictionary
-      val miningSchema = new MiningSchema
+      val miningSchema   = new MiningSchema
       val regressionTableYES =
         new RegressionTable(model.intercept).setTargetCategory("1")
       var interceptNO = threshold
@@ -69,19 +69,24 @@ private[mllib] class BinaryClassificationPMMLModelExport(
       for (i <- 0 until model.weights.size) {
         fields(i) = FieldName.create("field_" + i)
         dataDictionary.addDataFields(
-            new DataField(fields(i), OpType.CONTINUOUS, DataType.DOUBLE))
+          new DataField(fields(i), OpType.CONTINUOUS, DataType.DOUBLE)
+        )
         miningSchema.addMiningFields(
-            new MiningField(fields(i)).setUsageType(FieldUsageType.ACTIVE))
+          new MiningField(fields(i)).setUsageType(FieldUsageType.ACTIVE)
+        )
         regressionTableYES.addNumericPredictors(
-            new NumericPredictor(fields(i), model.weights(i)))
+          new NumericPredictor(fields(i), model.weights(i))
+        )
       }
 
       // add target field
       val targetField = FieldName.create("target")
       dataDictionary.addDataFields(
-          new DataField(targetField, OpType.CATEGORICAL, DataType.STRING))
+        new DataField(targetField, OpType.CATEGORICAL, DataType.STRING)
+      )
       miningSchema.addMiningFields(
-          new MiningField(targetField).setUsageType(FieldUsageType.TARGET))
+        new MiningField(targetField).setUsageType(FieldUsageType.TARGET)
+      )
 
       dataDictionary.setNumberOfFields(dataDictionary.getDataFields.size)
 

@@ -5,7 +5,7 @@ trait Matrix[@specialized A, Repr[C] <: Matrix[C, Repr]] {
   }
 }
 trait DenseMatrix[@specialized A] extends Matrix[A, DenseMatrix]
-trait DenseMatrixFlt extends DenseMatrix[Float]
+trait DenseMatrixFlt              extends DenseMatrix[Float]
 
 trait MatrixBuilder[@specialized A, Repr[C] <: Matrix[C, Repr]] {
   def zeros: Repr[A]

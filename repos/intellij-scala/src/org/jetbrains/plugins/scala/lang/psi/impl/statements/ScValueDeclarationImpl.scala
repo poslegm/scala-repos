@@ -14,7 +14,10 @@ import org.jetbrains.plugins.scala.lang.psi.api.base._
 import org.jetbrains.plugins.scala.lang.psi.api.base.types.ScTypeElement
 import org.jetbrains.plugins.scala.lang.psi.api.statements._
 import org.jetbrains.plugins.scala.lang.psi.stubs.ScValueStub
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Failure, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Failure,
+  TypingContext
+}
 
 /**
   * @author Alexander Podkhalyuzin
@@ -22,8 +25,10 @@ import org.jetbrains.plugins.scala.lang.psi.types.result.{Failure, TypingContext
   * Time: 9:55:28
   */
 class ScValueDeclarationImpl private (
-    stub: StubElement[ScValue], nodeType: IElementType, node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    stub: StubElement[ScValue],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
     with ScValueDeclaration {
   def this(node: ASTNode) = { this(null, null, node) }
 
@@ -36,12 +41,15 @@ class ScValueDeclarationImpl private (
 
   def declaredElements = getIdList.fieldIds
 
-  override def getType(ctx: TypingContext) = typeElement match {
-    case None =>
-      Failure(
-          ScalaBundle.message("no.type.element.found", getText), Some(this))
-    case Some(te) => te.getType(ctx)
-  }
+  override def getType(ctx: TypingContext) =
+    typeElement match {
+      case None =>
+        Failure(
+          ScalaBundle.message("no.type.element.found", getText),
+          Some(this)
+        )
+      case Some(te) => te.getType(ctx)
+    }
 
   def typeElement: Option[ScTypeElement] = {
     val stub = getStub
@@ -54,8 +62,10 @@ class ScValueDeclarationImpl private (
     val stub = getStub
     if (stub != null) {
       stub
-        .getChildrenByType(ScalaElementTypes.IDENTIFIER_LIST,
-                           JavaArrayFactoryUtil.ScIdListFactory)
+        .getChildrenByType(
+          ScalaElementTypes.IDENTIFIER_LIST,
+          JavaArrayFactoryUtil.ScIdListFactory
+        )
         .apply(0)
     } else findChildByClass(classOf[ScIdList])
   }
@@ -67,7 +77,7 @@ class ScValueDeclarationImpl private (
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case s: ScalaElementVisitor => s.visitValueDeclaration(this)
-      case _ => super.accept(visitor)
+      case _                      => super.accept(visitor)
     }
   }
 }

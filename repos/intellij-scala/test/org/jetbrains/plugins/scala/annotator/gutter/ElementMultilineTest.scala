@@ -7,13 +7,13 @@ class ElementMultilineTest extends LineMarkerTestBase {
   protected override def getBasePath =
     super.getBasePath + "/element/multiline/"
 
-  def testAnonymousClass() = doTest()
-  def testBlock() = doTest()
-  def testClass() = doTest()
+  def testAnonymousClass()     = doTest()
+  def testBlock()              = doTest()
+  def testClass()              = doTest()
   def testFunctionDefinition() = doTest()
-  def testObject() = doTest()
-  def testPackageContainer() = doTest()
-  def testTrait() = doTest()
-  def testValue() = doTest()
+  def testObject()             = doTest()
+  def testPackageContainer()   = doTest()
+  def testTrait()              = doTest()
+  def testValue()              = doTest()
   def testVariableDefinition() = doTest()
 }

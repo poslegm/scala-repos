@@ -1,6 +1,6 @@
 trait Document {
   sealed trait FieldBase
-  trait StaticFieldBase extends FieldBase with StaticDocument
+  trait StaticFieldBase  extends FieldBase with StaticDocument
   trait DynamicFieldBase extends FieldBase with DynamicDocument
 }
 

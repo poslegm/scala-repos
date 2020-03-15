@@ -3,14 +3,14 @@ trait Trait[-A, +B, C] {
     // ok
     object O {
       private def f0(x: A): A = ???
-      def f1(x: A): B = ???
-      def f2(x: A): C = ???
+      def f1(x: A): B         = ???
+      def f2(x: A): C         = ???
       private def f3(x: B): A = ???
       private def f4(x: B): B = ???
       private def f5(x: B): C = ???
       private def f6(x: C): A = ???
-      def f7(x: C): B = ???
-      def f8(x: C): C = ???
+      def f7(x: C): B         = ???
+      def f8(x: C): C         = ???
     }
     O
   }

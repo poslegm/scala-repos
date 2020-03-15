@@ -22,7 +22,7 @@ import org.scalatest.{Matchers, WordSpec}
 class TimePathedSourceTest extends WordSpec with Matchers {
   "TimePathedSource.hdfsWritePath" should {
     val dateRange = DateRange(RichDate(0L), RichDate(0L))
-    val utcTZ = DateOps.UTC
+    val utcTZ     = DateOps.UTC
 
     "crib if path == /*" in {
       intercept[AssertionError] {
@@ -37,7 +37,11 @@ class TimePathedSourceTest extends WordSpec with Matchers {
     }
 
     "work for path ending with /*" in {
-      TestTimePathedSource("/my/path/*", dateRange, utcTZ).hdfsWritePath startsWith "/my/path"
+      TestTimePathedSource(
+        "/my/path/*",
+        dateRange,
+        utcTZ
+      ).hdfsWritePath startsWith "/my/path"
     }
   }
 }

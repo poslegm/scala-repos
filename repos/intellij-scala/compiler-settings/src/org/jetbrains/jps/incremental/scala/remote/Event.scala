@@ -23,11 +23,12 @@ object Event {
   def fromBytes(bytes: Array[Byte]): Event = {
     val buffer = new ByteArrayInputStream(bytes)
     val stream = new ObjectInputStream(buffer)
-    val event = stream.readObject().asInstanceOf[Event]
+    val event  = stream.readObject().asInstanceOf[Event]
     if (stream.available > 0) {
       val excess = FileUtil.loadTextAndClose(stream)
       throw new IllegalArgumentException(
-          "Excess bytes after event deserialization: " + excess)
+        "Excess bytes after event deserialization: " + excess
+      )
     }
     stream.close()
     event
@@ -35,12 +36,13 @@ object Event {
 }
 
 @SerialVersionUID(1317094340928824239L)
-case class MessageEvent(kind: Kind,
-                        text: String,
-                        source: Option[File],
-                        line: Option[Long],
-                        column: Option[Long])
-    extends Event
+case class MessageEvent(
+    kind: Kind,
+    text: String,
+    source: Option[File],
+    line: Option[Long],
+    column: Option[Long]
+) extends Event
 
 @SerialVersionUID(-6777609711619086870L)
 case class ProgressEvent(text: String, done: Option[Float]) extends Event

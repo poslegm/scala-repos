@@ -30,7 +30,7 @@ trait BreezeBenchmark extends SimpleBenchmark {
     */
   def run[A](reps: Int)(f: => A): A = {
     if (reps < 1) sys.error("!")
-    var i = 0
+    var i                 = 0
     var result: Option[A] = None
     while (i < reps) {
       result = Some(f)
@@ -41,9 +41,9 @@ trait BreezeBenchmark extends SimpleBenchmark {
 
   def runWith[A, B](reps: Int, constructor: => B)(f: B => A): A = {
     if (reps < 1) sys.error("!")
-    var i = 0
+    var i                 = 0
     var result: Option[A] = None
-    val obj: B = constructor
+    val obj: B            = constructor
     while (i < reps) {
       result = Some(f(obj))
       i += 1
@@ -52,12 +52,13 @@ trait BreezeBenchmark extends SimpleBenchmark {
   }
 
   def runWith2[A, B, C](reps: Int, constructor: => B, constructor2: => C)(
-      f: (B, C) => A): A = {
+      f: (B, C) => A
+  ): A = {
     if (reps < 1) sys.error("!")
-    var i = 0
+    var i                 = 0
     var result: Option[A] = None
-    val obj1: B = constructor
-    val obj2: C = constructor2
+    val obj1: B           = constructor
+    val obj2: C           = constructor2
     while (i < reps) {
       result = Some(f(obj1, obj2))
       i += 1
@@ -70,6 +71,7 @@ trait BreezeBenchmark extends SimpleBenchmark {
   * Extend this to create a main object which will run 'cls' (a benchmark).
   */
 abstract class MyRunner(
-    val cls: java.lang.Class[_ <: com.google.caliper.Benchmark]) {
+    val cls: java.lang.Class[_ <: com.google.caliper.Benchmark]
+) {
   def main(args: Array[String]): Unit = Runner.main(cls, args: _*)
 }

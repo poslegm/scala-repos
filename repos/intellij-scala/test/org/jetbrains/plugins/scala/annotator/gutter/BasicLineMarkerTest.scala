@@ -8,12 +8,12 @@ class BasicLineMarkerTest extends LineMarkerTestBase {
   // TODO enable annotations test
 //  def testAnnotations = doTest
 
-  def testArguments() = doTest()
-  def testBody() = doTest()
-  def testCalls() = doTest()
-  def testCurrying() = doTest()
-  def testImplicits() = doTest()
-  def testComplex() = doTest()
+  def testArguments()        = doTest()
+  def testBody()             = doTest()
+  def testCalls()            = doTest()
+  def testCurrying()         = doTest()
+  def testImplicits()        = doTest()
+  def testComplex()          = doTest()
   def testLexerErrorBypass() = doTest()
 
   def testGators() = {

@@ -39,4 +39,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class MeshViewSpec
     extends SimpleSFXDelegateSpec[jfxss.MeshView, MeshView](
-        classOf[jfxss.MeshView], classOf[MeshView])
+      classOf[jfxss.MeshView],
+      classOf[MeshView]
+    )

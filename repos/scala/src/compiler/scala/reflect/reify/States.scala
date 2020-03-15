@@ -24,9 +24,9 @@ trait States { self: Reifier =>
   // to aid you with that I've already removed all the setters from the reifier
   // so all the places that involve mutations are forced to do that by explicitly mentioning `state`
   class State {
-    var symtab = SymbolTable()
-    var reifyTreeSymbols = false
-    var reifyTreeTypes = false
+    var symtab                         = SymbolTable()
+    var reifyTreeSymbols               = false
+    var reifyTreeTypes                 = false
     private var _reificationIsConcrete = true
     def reificationIsConcrete: Boolean = _reificationIsConcrete
     def reificationIsConcrete_=(value: Boolean): Unit = {
@@ -37,12 +37,13 @@ trait States { self: Reifier =>
             CannotReifyWeakType(s" having unresolved type parameter $tpe")
           case sym: Symbol =>
             CannotReifyWeakType(
-                s" referring to ${sym.kindString} ${sym.fullName} local to the reifee")
+              s" referring to ${sym.kindString} ${sym.fullName} local to the reifee"
+            )
           case _ => CannotReifyWeakType("")
         }
       }
     }
-    var reifyStack = reifee :: Nil
+    var reifyStack   = reifee :: Nil
     var localSymbols = Map[Symbol, Int]()
 
     def backup: State = {

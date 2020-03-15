@@ -4,16 +4,17 @@ object Test {
 
   def makeFromInt(x: Int) =
     List(
-        x.toByte,
-        x.toShort,
-        x.toInt,
-        x.toLong,
-        x.toFloat,
-        x.toDouble,
-        BigInt(x),
-        BigDecimal(x)
+      x.toByte,
+      x.toShort,
+      x.toInt,
+      x.toLong,
+      x.toFloat,
+      x.toDouble,
+      BigInt(x),
+      BigDecimal(x)
     ) ::: (if (x < 0) Nil else List(x.toChar))
-  def makeFromDouble(x: Double) = List(
+  def makeFromDouble(x: Double) =
+    List(
       x.toShort,
       x.toInt,
       x.toLong,
@@ -21,7 +22,7 @@ object Test {
       x.toDouble,
       BigInt(x.toInt),
       BigDecimal(x)
-  )
+    )
 
   def main(args: Array[String]): Unit = {
     var xs = makeFromInt(5)

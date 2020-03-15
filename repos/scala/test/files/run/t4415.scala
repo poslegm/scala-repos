@@ -35,7 +35,7 @@ class TopProperty
 class StandardProperty extends TopProperty
 class SubclassProperty extends StandardProperty
 
-class SecondProperty extends TopProperty
+class SecondProperty         extends TopProperty
 class SubclassSecondProperty extends StandardProperty
 
 trait MyProp[T]

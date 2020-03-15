@@ -13,19 +13,23 @@ import scala.util.matching.Regex
 
 @RunWith(classOf[JUnitRunner])
 class JsonExporterTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   // 2015-02-05 20:05:00 +0000
   private val zeroSecs = Time.fromSeconds(1423166700)
 
   test("readBooleanParam") {
     val exporter = new JsonExporter(Metrics.createDetached())
-    val r = Request()
+    val r        = Request()
 
     def assertParam(r: Request, expected: Boolean, default: Boolean): Unit =
       withClue(s"params=${r.params}") {
-        assert(expected == exporter.readBooleanParam(
-                new RequestParamMap(r), "hi", default))
+        assert(
+          expected == exporter
+            .readBooleanParam(new RequestParamMap(r), "hi", default)
+        )
       }
 
     // param doesn't exist so uses default
@@ -36,13 +40,19 @@ class JsonExporterTest
     assertParam(Request(("hi", "")), expected = false, default = false)
     assertParam(Request(("hi", "")), expected = false, default = true)
     assertParam(
-        Request(("hi", ""), ("hi", "nope")), expected = false, default = true)
+      Request(("hi", ""), ("hi", "nope")),
+      expected = false,
+      default = true
+    )
 
     // param exists and value is true, so always true
     assertParam(Request(("hi", "1")), expected = true, default = false)
     assertParam(Request(("hi", "true")), expected = true, default = true)
     assertParam(
-        Request(("hi", "no"), ("hi", "true")), expected = true, default = true)
+      Request(("hi", "no"), ("hi", "true")),
+      expected = true,
+      default = true
+    )
   }
 
   test("samples can be filtered") {
@@ -52,27 +62,33 @@ class JsonExporterTest
         mkRegex("abc,ill_be_partially_matched.*")
     }
     val sample = Map[String, Number](
-        "jvm_uptime" -> 15.0,
-        "abc" -> 42,
-        "ill_be_partially_matched" -> 1
+      "jvm_uptime"               -> 15.0,
+      "abc"                      -> 42,
+      "ill_be_partially_matched" -> 1
     )
     val filteredSample = exporter.filterSample(sample)
-    assert(filteredSample.size == 1,
-           "Expected 1 metric to pass through the filter. Found: " +
-           filteredSample.size)
-    assert(filteredSample.contains("jvm_uptime"),
-           "Expected to find jvm_uptime metric in unfiltered samples")
+    assert(
+      filteredSample.size == 1,
+      "Expected 1 metric to pass through the filter. Found: " +
+        filteredSample.size
+    )
+    assert(
+      filteredSample.contains("jvm_uptime"),
+      "Expected to find jvm_uptime metric in unfiltered samples"
+    )
   }
 
   test("empty regex filter string should not result in a regex") {
     val registry = Metrics.createDetached()
     val exporter = new JsonExporter(registry)
-    assert(exporter.mkRegex("").isEmpty,
-           "Empty regex filter should result in no filter regex generated")
+    assert(
+      exporter.mkRegex("").isEmpty,
+      "Empty regex filter should result in no filter regex generated"
+    )
   }
 
   test("statsFilterFile defaults without exception") {
-    val registry = Metrics.createDetached()
+    val registry  = Metrics.createDetached()
     val exporter1 = new JsonExporter(registry)
     assert(exporter1.statsFilterRegex.isEmpty)
   }
@@ -93,7 +109,8 @@ class JsonExporterTest
     tFile1.deleteOnExit()
 
     val writer1 = new BufferedWriter(
-        new OutputStreamWriter(new FileOutputStream(tFile1), "UTF-8"))
+      new OutputStreamWriter(new FileOutputStream(tFile1), "UTF-8")
+    )
     writer1.write("abc123\r\n")
     writer1.close()
 
@@ -101,14 +118,15 @@ class JsonExporterTest
     tFile2.deleteOnExit()
 
     val writer2 = new BufferedWriter(
-        new OutputStreamWriter(new FileOutputStream(tFile2), "UTF-8"))
+      new OutputStreamWriter(new FileOutputStream(tFile2), "UTF-8")
+    )
     writer2.write("def456\r\n")
     writer2.write("ghi789\r\n")
     writer2.close()
 
     statsFilterFile.let(Set(tFile1, tFile2)) {
       val exporter = new JsonExporter(registry)
-      val regex = exporter.statsFilterRegex
+      val regex    = exporter.statsFilterRegex
       assert(regex.isDefined)
       assert(regex.get.pattern.matcher("abc123").matches)
       assert(regex.get.pattern.matcher("def456").matches)
@@ -123,14 +141,15 @@ class JsonExporterTest
     tFile.deleteOnExit()
 
     val writer = new BufferedWriter(
-        new OutputStreamWriter(new FileOutputStream(tFile), "UTF-8"))
+      new OutputStreamWriter(new FileOutputStream(tFile), "UTF-8")
+    )
     writer.write("abc123\r\n")
     writer.close()
 
     statsFilterFile.let(Set(tFile)) {
       statsFilter.let("def456") {
         val exporter = new JsonExporter(registry)
-        val regex = exporter.statsFilterRegex
+        val regex    = exporter.statsFilterRegex
         assert(regex.isDefined)
         assert(regex.get.pattern.matcher("abc123").matches)
         assert(regex.get.pattern.matcher("def456").matches)
@@ -139,9 +158,9 @@ class JsonExporterTest
   }
 
   test("end-to-end fetching stats works") {
-    val registry = Metrics.createDetached()
+    val registry     = Metrics.createDetached()
     val viewsCounter = registry.createCounter("views")
-    val gcCounter = registry.createCounter("jvm_gcs")
+    val gcCounter    = registry.createCounter("jvm_gcs")
     viewsCounter.increment()
     gcCounter.increment()
     val exporter = new JsonExporter(registry) {
@@ -150,20 +169,28 @@ class JsonExporterTest
     val requestFiltered = Request("/admin/metrics.json?filtered=1&pretty=0")
     val responseFiltered =
       Await.result(exporter.apply(requestFiltered)).contentString
-    assert(responseFiltered.contains("views"),
-           "'Views' should be present - 'vie' is not a match")
-    assert(!responseFiltered.contains("jvm_gcs"),
-           "'jvm_gcs' should be present - jvm.* matches it")
+    assert(
+      responseFiltered.contains("views"),
+      "'Views' should be present - 'vie' is not a match"
+    )
+    assert(
+      !responseFiltered.contains("jvm_gcs"),
+      "'jvm_gcs' should be present - jvm.* matches it"
+    )
 
-    val requestUnfiltered = Request("/admin/metrics.json")
+    val requestUnfiltered  = Request("/admin/metrics.json")
     val responseUnfiltered = Await.result(exporter.apply(requestUnfiltered))
     assert(Some(MediaType.Json) == responseUnfiltered.contentType)
 
     val responseUnfilteredContent = responseUnfiltered.contentString
-    assert(responseUnfilteredContent.contains("views"),
-           "'Views' should be present - 'vie' is not a match")
-    assert(responseUnfilteredContent.contains("jvm_gcs"),
-           "'jvm_gcs' should be present - jvm.* matches it")
+    assert(
+      responseUnfilteredContent.contains("views"),
+      "'Views' should be present - 'vie' is not a match"
+    )
+    assert(
+      responseUnfilteredContent.contains("jvm_gcs"),
+      "'jvm_gcs' should be present - jvm.* matches it"
+    )
   }
 
   test("startOfNextMinute") {
@@ -183,13 +210,13 @@ class JsonExporterTest
 
   test("useCounterDeltas flag enabled") {
     val reqWithPeriod = Request("/admin/metrics.json?period=60")
-    val reqNoPeriod = Request("/admin/metrics.json")
+    val reqNoPeriod   = Request("/admin/metrics.json")
 
-    val name = "anCounter"
+    val name     = "anCounter"
     val registry = Metrics.createDetached()
-    val counter = registry.createCounter(name)
+    val counter  = registry.createCounter(name)
 
-    val timer = new MockTimer()
+    val timer    = new MockTimer()
     val exporter = new JsonExporter(registry, timer)
 
     useCounterDeltas.let(true) {
@@ -242,10 +269,10 @@ class JsonExporterTest
     val reqWithPeriod = Request("/admin/metrics.json?period=60")
 
     val registry = Metrics.createDetached()
-    val counter = registry.createCounter("anCounter")
+    val counter  = registry.createCounter("anCounter")
     counter.add(11)
 
-    val timer = new MockTimer()
+    val timer    = new MockTimer()
     val exporter = new JsonExporter(registry, timer)
 
     useCounterDeltas.let(false) {
@@ -270,21 +297,21 @@ class JsonExporterTest
 
   test("formatter flag") {
     val registry = Metrics.createDetached()
-    val sr = new ImmediateMetricsStatsReceiver(registry)
-    val histo = sr.stat("anHisto")
+    val sr       = new ImmediateMetricsStatsReceiver(registry)
+    val histo    = sr.stat("anHisto")
     histo.add(555)
 
     val req = Request("/admin/metrics.json")
 
     format.let(format.Ostrich) {
       val exporter = new JsonExporter(registry)
-      val res = Await.result(exporter(req)).contentString
+      val res      = Await.result(exporter(req)).contentString
       assert(res.contains(""""anHisto.maximum":555"""))
     }
 
     format.let(format.CommonsMetrics) {
       val exporter = new JsonExporter(registry)
-      val res = Await.result(exporter(req)).contentString
+      val res      = Await.result(exporter(req)).contentString
       assert(res.contains(""""anHisto.max":555"""))
     }
   }
@@ -297,7 +324,7 @@ class JsonExporterTest
     val sr = registry.registerGauge(g)
 
     val exporter = new JsonExporter(registry)
-    val json = exporter.json(pretty = true, filtered = false)
+    val json     = exporter.json(pretty = true, filtered = false)
     assert(!json.contains("boom"), json)
   }
 }

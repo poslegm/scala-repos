@@ -14,16 +14,17 @@ object Imports {
   lazy val p = config("p").extend(q)
 
   lazy val demo = settingKey[String]("A demo setting.")
-  lazy val del = settingKey[String]("Another demo setting.")
+  lazy val del  = settingKey[String]("Another demo setting.")
 
   lazy val check = taskKey[Unit]("Verifies settings are as they should be.")
 }
 
 object OrgPlugin extends AutoPlugin {
   override def trigger = allRequirements
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       organization := "override"
-  )
+    )
 }
 
 object X extends AutoPlugin {
@@ -34,7 +35,7 @@ import Imports._
 
 object D extends AutoPlugin {
   override def requires: Plugins = E
-  override def trigger = allRequirements
+  override def trigger           = allRequirements
 
   object autoImport {
     lazy val keyTest = settingKey[String]("Another demo setting.")
@@ -43,7 +44,7 @@ object D extends AutoPlugin {
 
 object Q extends AutoPlugin {
   override def requires: Plugins = A && B
-  override def trigger = allRequirements
+  override def trigger           = allRequirements
 
   override def projectConfigurations: Seq[Configuration] =
     p :: q :: Nil
@@ -58,31 +59,33 @@ object Q extends AutoPlugin {
     (demo := s"global ${globalCount.getAndIncrement}") :: Nil
 
   // used to ensure the build-level and global settings are only added once
-  private[this] val buildCount = new AInt(0)
+  private[this] val buildCount  = new AInt(0)
   private[this] val globalCount = new AInt(0)
 }
 
 object R extends AutoPlugin {
   // NOTE - Only plugins themselves support exclusions...
   override def requires = Q
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       // tests proper ordering: R requires Q, so Q settings should come first
       del in q += " R",
       // tests that configurations are properly registered, enabling delegation from p to q
       demo += (del in p).value
-  )
+    )
 }
 
 // This is an opt-in plugin with a requirement
 // Unless explicitly loaded by the build user, this will not be activated.
 object S extends AutoPlugin {
   override def requires = Q
-  override def trigger = noTrigger
+  override def trigger  = noTrigger
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       del in q += " S",
       organization := "S"
-  )
+    )
 }

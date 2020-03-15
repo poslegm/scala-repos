@@ -32,7 +32,8 @@ private[spark] object JavaUtils {
 
   // Workaround for SPARK-3926 / SI-8911
   def mapAsSerializableJavaMap[A, B](
-      underlying: collection.Map[A, B]): SerializableMapWrapper[A, B] =
+      underlying: collection.Map[A, B]
+  ): SerializableMapWrapper[A, B] =
     new SerializableMapWrapper(underlying)
 
   // Implementation is copied from scala.collection.convert.Wrappers.MapWrapper,
@@ -40,7 +41,8 @@ private[spark] object JavaUtils {
   // Serializable since the MapWrapper class has no no-arg constructor. This class
   // doesn't need a no-arg constructor though.
   class SerializableMapWrapper[A, B](underlying: collection.Map[A, B])
-      extends ju.AbstractMap[A, B] with java.io.Serializable { self =>
+      extends ju.AbstractMap[A, B]
+      with java.io.Serializable { self =>
 
     override def size: Int = underlying.size
 
@@ -57,7 +59,7 @@ private[spark] object JavaUtils {
 
         override def iterator: ju.Iterator[ju.Map.Entry[A, B]] =
           new ju.Iterator[ju.Map.Entry[A, B]] {
-            val ui = underlying.iterator
+            val ui              = underlying.iterator
             var prev: Option[A] = None
 
             def hasNext: Boolean = ui.hasNext
@@ -67,16 +69,17 @@ private[spark] object JavaUtils {
               prev = Some(k)
               new ju.Map.Entry[A, B] {
                 import scala.util.hashing.byteswap32
-                override def getKey: A = k
-                override def getValue: B = v
+                override def getKey: A          = k
+                override def getValue: B        = v
                 override def setValue(v1: B): B = self.put(k, v1)
                 override def hashCode: Int =
                   byteswap32(k.hashCode) + (byteswap32(v.hashCode) << 16)
-                override def equals(other: Any): Boolean = other match {
-                  case e: ju.Map.Entry[_, _] =>
-                    k == e.getKey && v == e.getValue
-                  case _ => false
-                }
+                override def equals(other: Any): Boolean =
+                  other match {
+                    case e: ju.Map.Entry[_, _] =>
+                      k == e.getKey && v == e.getValue
+                    case _ => false
+                  }
               }
             }
 
@@ -92,7 +95,8 @@ private[spark] object JavaUtils {
                   }
                 case _ =>
                   throw new IllegalStateException(
-                      "next must be called at least once before remove")
+                    "next must be called at least once before remove"
+                  )
               }
             }
           }

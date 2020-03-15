@@ -5,14 +5,14 @@ object NeedTestJVM extends SpecLite {
   "Need" should {
     "clear the Function0 reference" in {
       @volatile var flag = false
-      val method = Need.getClass.getMethod("apply", classOf[Function0[_]])
+      val method         = Need.getClass.getMethod("apply", classOf[Function0[_]])
       val need = method
         .invoke(
-            Need,
-            new runtime.AbstractFunction0[String] {
-              override def finalize = { flag = true }
-              override def apply = ""
-            }
+          Need,
+          new runtime.AbstractFunction0[String] {
+            override def finalize = { flag = true }
+            override def apply    = ""
+          }
         )
         .asInstanceOf[Need[String]]
 

@@ -19,14 +19,14 @@ class XmlClosingTagAutoCompletionTest
   }
 
   def testSimpleTag() {
-    val text = "class A { val xml1 = <aaa" + CARET_MARKER + " }"
+    val text        = "class A { val xml1 = <aaa" + CARET_MARKER + " }"
     val assumedStub = "class A { val xml1 = <aaa></aaa> }"
 
     checkGeneratedTextGt(text, assumedStub)
   }
 
   def testSimpleEmptyTag() {
-    val text = "class A { val xml = <aaa" + CARET_MARKER + " }"
+    val text        = "class A { val xml = <aaa" + CARET_MARKER + " }"
     val assumedStub = "class A { val xml = <aaa/> }"
 
     checkGeneratedTextSlash(text, assumedStub)
@@ -49,14 +49,14 @@ class XmlClosingTagAutoCompletionTest
   }
 
   def testTagWithParams() {
-    val text = "class A { <a param1=\"blah blah\"" + CARET_MARKER + " }"
+    val text        = "class A { <a param1=\"blah blah\"" + CARET_MARKER + " }"
     val assumedStub = "class A { <a param1=\"blah blah\"></a> }"
 
     checkGeneratedTextGt(text, assumedStub)
   }
 
   def testEmptyTagWithParams() {
-    val text = "class A { <a param1=\"blah blah\"" + CARET_MARKER + " }"
+    val text        = "class A { <a param1=\"blah blah\"" + CARET_MARKER + " }"
     val assumedStub = "class A { <a param1=\"blah blah\"/> }"
 
     checkGeneratedTextSlash(text, assumedStub)

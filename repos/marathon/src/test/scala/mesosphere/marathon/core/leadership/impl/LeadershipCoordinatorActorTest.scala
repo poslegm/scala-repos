@@ -17,11 +17,14 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
   }
 
   test(
-      "in preparingForStart, Stop is send to all whenLeaderActors and preparation is aborted") {
+    "in preparingForStart, Stop is send to all whenLeaderActors and preparation is aborted"
+  ) {
     val probe = TestProbe()
 
-    coordinatorRef.underlying.become(coordinatorRef.underlyingActor
-          .preparingForStart(Set(probe.ref), Set(whenLeader1Probe.ref)))
+    coordinatorRef.underlying.become(
+      coordinatorRef.underlyingActor
+        .preparingForStart(Set(probe.ref), Set(whenLeader1Probe.ref))
+    )
 
     probe.send(coordinatorRef, WhenLeaderActor.Stop)
 
@@ -32,7 +35,8 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
   }
 
   test(
-      "in active, Stop is send to all whenLeaderActors and preparation is aborted") {
+    "in active, Stop is send to all whenLeaderActors and preparation is aborted"
+  ) {
     val probe = TestProbe()
 
     coordinatorRef.underlying.become(coordinatorRef.underlyingActor.active)
@@ -53,21 +57,31 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
 
     probe.send(whenLeader1Probe.ref, PoisonPill)
 
-    assert(coordinatorRef.underlyingActor.whenLeaderActors == Set(
-            whenLeader2Probe.ref))
+    assert(
+      coordinatorRef.underlyingActor.whenLeaderActors == Set(
+        whenLeader2Probe.ref
+      )
+    )
   }
 
   test("in prepareToStart, remove terminated whenLeaderActors") {
     val probe = TestProbe()
 
-    coordinatorRef.underlying.become(coordinatorRef.underlyingActor
-          .preparingForStart(Set(probe.ref), Set(whenLeader1Probe.ref)))
+    coordinatorRef.underlying.become(
+      coordinatorRef.underlyingActor
+        .preparingForStart(Set(probe.ref), Set(whenLeader1Probe.ref))
+    )
     probe.send(whenLeader1Probe.ref, PoisonPill)
 
-    assert(coordinatorRef.underlyingActor.whenLeaderActors == Set(
-            whenLeader2Probe.ref))
+    assert(
+      coordinatorRef.underlyingActor.whenLeaderActors == Set(
+        whenLeader2Probe.ref
+      )
+    )
     whenLeader2Probe.send(
-        coordinatorRef, PreparationMessages.Prepared(whenLeader2Probe.ref))
+      coordinatorRef,
+      PreparationMessages.Prepared(whenLeader2Probe.ref)
+    )
 
     probe.expectMsg(PreparationMessages.Prepared(coordinatorRef))
   }
@@ -78,12 +92,16 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
     coordinatorRef.underlying.become(coordinatorRef.underlyingActor.active)
     probe.send(whenLeader1Probe.ref, PoisonPill)
 
-    assert(coordinatorRef.underlyingActor.whenLeaderActors == Set(
-            whenLeader2Probe.ref))
+    assert(
+      coordinatorRef.underlyingActor.whenLeaderActors == Set(
+        whenLeader2Probe.ref
+      )
+    )
   }
 
   test(
-      "switch to prepareForStart and wait for all actors to prepare until started") {
+    "switch to prepareForStart and wait for all actors to prepare until started"
+  ) {
     val probe = TestProbe()
 
     probe.send(coordinatorRef, PreparationMessages.PrepareForStart)
@@ -103,17 +121,22 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
   }
 
   test(
-      "when preparingForStart with one requester, add another interested actorRef if necessary") {
+    "when preparingForStart with one requester, add another interested actorRef if necessary"
+  ) {
     val requester1 = TestProbe()
     val requester2 = TestProbe()
 
-    coordinatorRef.underlying.become(coordinatorRef.underlyingActor
-          .preparingForStart(Set(requester1.ref), Set(whenLeader1Probe.ref)))
+    coordinatorRef.underlying.become(
+      coordinatorRef.underlyingActor
+        .preparingForStart(Set(requester1.ref), Set(whenLeader1Probe.ref))
+    )
 
     requester2.send(coordinatorRef, PreparationMessages.PrepareForStart)
 
     whenLeader1Probe.send(
-        coordinatorRef, PreparationMessages.Prepared(whenLeader1Probe.ref))
+      coordinatorRef,
+      PreparationMessages.Prepared(whenLeader1Probe.ref)
+    )
 
     requester1.expectMsg(PreparationMessages.Prepared(coordinatorRef))
     requester2.expectMsg(PreparationMessages.Prepared(coordinatorRef))
@@ -127,9 +150,9 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
     probe.expectMsg(PreparationMessages.Prepared(coordinatorRef))
   }
 
-  private[this] implicit var actorSystem: ActorSystem = _
-  private[this] var whenLeader1Probe: TestProbe = _
-  private[this] var whenLeader2Probe: TestProbe = _
+  private[this] implicit var actorSystem: ActorSystem                        = _
+  private[this] var whenLeader1Probe: TestProbe                              = _
+  private[this] var whenLeader2Probe: TestProbe                              = _
   private[this] var coordinatorRef: TestActorRef[LeadershipCoordinatorActor] =
     _
 
@@ -137,8 +160,10 @@ class LeadershipCoordinatorActorTest extends MarathonSpec {
     actorSystem = ActorSystem()
     whenLeader1Probe = TestProbe()
     whenLeader2Probe = TestProbe()
-    coordinatorRef = TestActorRef(LeadershipCoordinatorActor.props(
-            Set(whenLeader1Probe.ref, whenLeader2Probe.ref)))
+    coordinatorRef = TestActorRef(
+      LeadershipCoordinatorActor
+        .props(Set(whenLeader1Probe.ref, whenLeader2Probe.ref))
+    )
 
     coordinatorRef.start()
   }

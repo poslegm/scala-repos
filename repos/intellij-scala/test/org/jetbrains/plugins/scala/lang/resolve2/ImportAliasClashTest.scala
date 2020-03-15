@@ -21,5 +21,5 @@ class ImportAliasClashTest extends ResolveTestBase {
   //TODO importexclude
 //  def testRenameMultiple = doTest
   def testRepeatOther() = doTest()
-  def testRepeatSame() = doTest()
+  def testRepeatSame()  = doTest()
 }

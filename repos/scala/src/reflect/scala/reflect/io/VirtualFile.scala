@@ -7,7 +7,13 @@ package scala
 package reflect
 package io
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, File => JFile}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  InputStream,
+  OutputStream,
+  File => JFile
+}
 
 /** This class implements an in-memory file.
   *
@@ -29,10 +35,11 @@ class VirtualFile(val name: String, override val path: String)
   def this(name: String) = this(name, name)
 
   override def hashCode = path.hashCode
-  override def equals(that: Any) = that match {
-    case x: VirtualFile => x.path == path
-    case _ => false
-  }
+  override def equals(that: Any) =
+    that match {
+      case x: VirtualFile => x.path == path
+      case _              => false
+    }
 
   private var content = Array.emptyByteArray
 

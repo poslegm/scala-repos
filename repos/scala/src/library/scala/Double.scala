@@ -276,7 +276,7 @@ object Double extends AnyValCompanion {
     *  representable as a Double.
     */
   final val MinPositiveValue = java.lang.Double.MIN_VALUE
-  final val NaN = java.lang.Double.NaN
+  final val NaN              = java.lang.Double.NaN
   final val PositiveInfinity = java.lang.Double.POSITIVE_INFINITY
   final val NegativeInfinity = java.lang.Double.NEGATIVE_INFINITY
 

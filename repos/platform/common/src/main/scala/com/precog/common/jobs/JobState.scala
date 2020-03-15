@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -24,7 +24,11 @@ import com.precog.common.security._
 
 import blueeyes.json._
 import blueeyes.json.serialization.{Decomposer, Extractor}
-import blueeyes.json.serialization.DefaultSerialization.{DateTimeExtractor => _, DateTimeDecomposer => _, _}
+import blueeyes.json.serialization.DefaultSerialization.{
+  DateTimeExtractor => _,
+  DateTimeDecomposer => _,
+  _
+}
 
 import org.joda.time.DateTime
 
@@ -48,21 +52,21 @@ object JobState extends JobStateSerialization {
       extends JobState(false)
   case class Aborted(reason: String, timestamp: DateTime, prev: JobState)
       extends JobState(true)
-  case class Expired(timestamp: DateTime, prev: JobState)
-      extends JobState(true)
+  case class Expired(timestamp: DateTime, prev: JobState) extends JobState(true)
   case class Finished(timestamp: DateTime, prev: JobState)
       extends JobState(true)
 
-  def describe(state: JobState): String = state match {
-    case NotStarted => "The job has not yet been started."
-    case Started(started, _) => "The job was started at %s." format started
-    case Cancelled(reason, _, _) =>
-      "The job has been cancelled due to '%s'." format reason
-    case Aborted(reason, _, _) =>
-      "The job was aborted early due to '%s'." format reason
-    case Expired(expiration, _) => "The job expired at %s." format expiration
-    case Finished(_, _) => "The job has finished successfully."
-  }
+  def describe(state: JobState): String =
+    state match {
+      case NotStarted          => "The job has not yet been started."
+      case Started(started, _) => "The job was started at %s." format started
+      case Cancelled(reason, _, _) =>
+        "The job has been cancelled due to '%s'." format reason
+      case Aborted(reason, _, _) =>
+        "The job was aborted early due to '%s'." format reason
+      case Expired(expiration, _) => "The job expired at %s." format expiration
+      case Finished(_, _)         => "The job has finished successfully."
+    }
 }
 
 trait JobStateSerialization {
@@ -72,42 +76,47 @@ trait JobStateSerialization {
   import scalaz.syntax.apply._
 
   implicit object JobStateDecomposer extends Decomposer[JobState] {
-    private def base(state: String,
-                     timestamp: DateTime,
-                     previous: JobState,
-                     reason: Option[String] = None): JObject = {
+    private def base(
+        state: String,
+        timestamp: DateTime,
+        previous: JobState,
+        reason: Option[String] = None
+    ): JObject = {
       JObject(
-          jfield("state", state) :: jfield("timestamp", timestamp) :: jfield(
-              "previous", decompose(previous)) ::
+        jfield("state", state) :: jfield("timestamp", timestamp) :: jfield(
+          "previous",
+          decompose(previous)
+        ) ::
           (reason map { jfield("reason", _) :: Nil } getOrElse Nil)
       )
     }
 
-    override def decompose(job: JobState): JValue = job match {
-      case NotStarted =>
-        jobject(jfield("state", "not_started"))
+    override def decompose(job: JobState): JValue =
+      job match {
+        case NotStarted =>
+          jobject(jfield("state", "not_started"))
 
-      case Started(ts, prev) =>
-        base("started", ts, prev)
+        case Started(ts, prev) =>
+          base("started", ts, prev)
 
-      case Cancelled(reason, ts, prev) =>
-        base("cancelled", ts, prev, Some(reason))
+        case Cancelled(reason, ts, prev) =>
+          base("cancelled", ts, prev, Some(reason))
 
-      case Aborted(reason, ts, prev) =>
-        base("aborted", ts, prev, Some(reason))
+        case Aborted(reason, ts, prev) =>
+          base("aborted", ts, prev, Some(reason))
 
-      case Expired(ts, prev) =>
-        base("expired", ts, prev)
+        case Expired(ts, prev) =>
+          base("expired", ts, prev)
 
-      case Finished(ts, prev) =>
-        base("finished", ts, prev)
-    }
+        case Finished(ts, prev) =>
+          base("finished", ts, prev)
+      }
   }
 
   implicit object JobStateExtractor extends Extractor[JobState] {
     def extractBase(obj: JValue): Validation[Error, (DateTime, JobState)] = {
       ((obj \ "timestamp").validated[DateTime] |@| (obj \ "previous")
-            .validated[JobState]).tupled
+        .validated[JobState]).tupled
     }
 
     override def validated(obj: JValue) = {
@@ -116,7 +125,7 @@ trait JobStateSerialization {
           success[Error, JobState](NotStarted)
 
         case "started" =>
-          extractBase(obj) map(Started(_, _)).tupled
+          extractBase(obj) map (Started(_, _)).tupled
 
         case "cancelled" =>
           ((obj \ "reason").validated[String] |@| extractBase(obj)) {
@@ -131,7 +140,7 @@ trait JobStateSerialization {
           }
 
         case "expired" =>
-          extractBase(obj) map(Expired(_, _)).tupled
+          extractBase(obj) map (Expired(_, _)).tupled
 
         case "finished" =>
           extractBase(obj) flatMap {

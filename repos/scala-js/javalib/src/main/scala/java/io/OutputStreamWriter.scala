@@ -6,8 +6,9 @@ import java.nio._
 import java.nio.charset._
 
 class OutputStreamWriter(
-    private[this] var out: OutputStream, private[this] var enc: CharsetEncoder)
-    extends Writer {
+    private[this] var out: OutputStream,
+    private[this] var enc: CharsetEncoder
+) extends Writer {
 
   private[this] var closed: Boolean = false
 
@@ -25,10 +26,12 @@ class OutputStreamWriter(
   private[this] var outBuf: ByteBuffer = ByteBuffer.allocate(4096)
 
   def this(out: OutputStream, cs: Charset) =
-    this(out,
-         cs.newEncoder
-           .onMalformedInput(CodingErrorAction.REPLACE)
-           .onUnmappableCharacter(CodingErrorAction.REPLACE))
+    this(
+      out,
+      cs.newEncoder
+        .onMalformedInput(CodingErrorAction.REPLACE)
+        .onUnmappableCharacter(CodingErrorAction.REPLACE)
+    )
 
   def this(out: OutputStream) =
     this(out, Charset.defaultCharset)
@@ -82,53 +85,55 @@ class OutputStreamWriter(
     out.flush()
   }
 
-  override def close(): Unit = if (!closed) {
-    // Finish up the input
-    @inline
-    @tailrec
-    def loopEncode(): Unit = {
-      val cbuf = CharBuffer.wrap(inBuf)
-      val result = enc.encode(cbuf, outBuf, true)
-      if (result.isUnderflow) {
-        assert(
+  override def close(): Unit =
+    if (!closed) {
+      // Finish up the input
+      @inline
+      @tailrec
+      def loopEncode(): Unit = {
+        val cbuf   = CharBuffer.wrap(inBuf)
+        val result = enc.encode(cbuf, outBuf, true)
+        if (result.isUnderflow) {
+          assert(
             !cbuf.hasRemaining,
             "CharsetEncoder.encode() should not have returned UNDERFLOW when " +
-            "both endOfInput and inBuf.hasRemaining are true. It should have " +
-            "returned a MalformedInput error instead.")
-      } else if (result.isOverflow) {
-        makeRoomInOutBuf()
-        loopEncode()
-      } else {
-        result.throwException()
-        throw new AssertionError("should not get here")
+              "both endOfInput and inBuf.hasRemaining are true. It should have " +
+              "returned a MalformedInput error instead."
+          )
+        } else if (result.isOverflow) {
+          makeRoomInOutBuf()
+          loopEncode()
+        } else {
+          result.throwException()
+          throw new AssertionError("should not get here")
+        }
       }
-    }
 
-    @inline
-    @tailrec
-    def loopFlush(): Unit = {
-      if (enc.flush(outBuf).isOverflow) {
-        makeRoomInOutBuf()
-        loopFlush()
+      @inline
+      @tailrec
+      def loopFlush(): Unit = {
+        if (enc.flush(outBuf).isOverflow) {
+          makeRoomInOutBuf()
+          loopFlush()
+        }
       }
+
+      loopEncode()
+      loopFlush()
+
+      // Flush before closing
+      flush()
+
+      // Close the underlying stream
+      out.close()
+
+      // Clean up all the resources
+      closed = true
+      out = null
+      enc = null
+      inBuf = null
+      outBuf = null
     }
-
-    loopEncode()
-    loopFlush()
-
-    // Flush before closing
-    flush()
-
-    // Close the underlying stream
-    out.close()
-
-    // Clean up all the resources
-    closed = true
-    out = null
-    enc = null
-    inBuf = null
-    outBuf = null
-  }
 
   private def ensureOpen(): Unit = {
     if (closed) throw new IOException("Closed writer.")

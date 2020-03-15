@@ -13,45 +13,53 @@ class MarathonTaskFormatTest extends MarathonSpec {
     val time = Timestamp(1024)
     val network = MesosProtos.NetworkInfo
       .newBuilder()
-      .addIpAddresses(MesosProtos.NetworkInfo.IPAddress
-            .newBuilder()
-            .setIpAddress("123.123.123.123"))
-      .addIpAddresses(MesosProtos.NetworkInfo.IPAddress
-            .newBuilder()
-            .setIpAddress("123.123.123.124"))
+      .addIpAddresses(
+        MesosProtos.NetworkInfo.IPAddress
+          .newBuilder()
+          .setIpAddress("123.123.123.123")
+      )
+      .addIpAddresses(
+        MesosProtos.NetworkInfo.IPAddress
+          .newBuilder()
+          .setIpAddress("123.123.123.124")
+      )
       .build()
 
     val taskWithoutIp = new Task.LaunchedEphemeral(
-        taskId = Task.Id("/foo/bar"),
-        agentInfo = Task.AgentInfo(
-              "agent1.mesos", Some("abcd-1234"), Iterable.empty),
-        appVersion = time,
-        status = Task.Status(time, None),
-        networking = Task.NoNetworking)
+      taskId = Task.Id("/foo/bar"),
+      agentInfo =
+        Task.AgentInfo("agent1.mesos", Some("abcd-1234"), Iterable.empty),
+      appVersion = time,
+      status = Task.Status(time, None),
+      networking = Task.NoNetworking
+    )
 
     val taskWithMultipleIPs = new Task.LaunchedEphemeral(
-        taskId = Task.Id("/foo/bar"),
-        agentInfo = Task.AgentInfo(
-              "agent1.mesos", Some("abcd-1234"), Iterable.empty),
-        appVersion = time,
-        status = Task.Status(time, None),
-        networking = Task.NetworkInfoList(network))
+      taskId = Task.Id("/foo/bar"),
+      agentInfo =
+        Task.AgentInfo("agent1.mesos", Some("abcd-1234"), Iterable.empty),
+      appVersion = time,
+      status = Task.Status(time, None),
+      networking = Task.NetworkInfoList(network)
+    )
 
     val taskWithLocalVolumes = new Task.LaunchedOnReservation(
-        taskId = Task.Id("/foo/bar"),
-        agentInfo = Task.AgentInfo(
-              "agent1.mesos", Some("abcd-1234"), Iterable.empty),
-        appVersion = time,
-        status = Task.Status(time, Some(time)),
-        networking = Task.NoNetworking,
-        reservation = Task
-            .Reservation(Seq(Task.LocalVolumeId.unapply(
-                                 "appid#container#random")).flatten,
-                         MarathonTestHelper.taskReservationStateNew))
+      taskId = Task.Id("/foo/bar"),
+      agentInfo =
+        Task.AgentInfo("agent1.mesos", Some("abcd-1234"), Iterable.empty),
+      appVersion = time,
+      status = Task.Status(time, Some(time)),
+      networking = Task.NoNetworking,
+      reservation = Task
+        .Reservation(
+          Seq(Task.LocalVolumeId.unapply("appid#container#random")).flatten,
+          MarathonTestHelper.taskReservationStateNew
+        )
+    )
   }
 
   test("JSON serialization of a Task without IPs") {
-    val f = new Fixture()
+    val f    = new Fixture()
     val json = """
         |{
         |  "id": "/foo/bar",
@@ -70,7 +78,7 @@ class MarathonTaskFormatTest extends MarathonSpec {
   }
 
   test("JSON serialization of a Task with multiple IPs") {
-    val f = new Fixture()
+    val f    = new Fixture()
     val json = """
         |{
         |  "id": "/foo/bar",
@@ -98,7 +106,7 @@ class MarathonTaskFormatTest extends MarathonSpec {
   }
 
   test("JSON serialization of a Task with reserved local volumes") {
-    val f = new Fixture()
+    val f    = new Fixture()
     val json = """
         |{
         |  "id": "/foo/bar",

@@ -25,12 +25,11 @@ import sbt.testing._
 import TaskDefSerializers._
 import ComUtils.LoopHandler
 
-final class ScalaJSRunner private[testadapter](
+final class ScalaJSRunner private[testadapter] (
     framework: ScalaJSFramework,
     val args: Array[String],
     val remoteArgs: Array[String]
-)
-    extends Runner {
+) extends Runner {
 
   // State and simple vals
 
@@ -50,72 +49,76 @@ final class ScalaJSRunner private[testadapter](
 
   // Public API
 
-  def tasks(taskDefs: Array[TaskDef]): Array[Task] = synchronized {
-    ensureNotDone()
+  def tasks(taskDefs: Array[TaskDef]): Array[Task] =
+    synchronized {
+      ensureNotDone()
 
-    val outData = taskDefs.toList.toJSON
-    master.send("tasks:" + jsonToString(outData))
+      val outData = taskDefs.toList.toJSON
+      master.send("tasks:" + jsonToString(outData))
 
-    val taskInfos = ComUtils.receiveResponse(master) {
-      case ("ok", data) => fromJSON[List[TaskInfo]](readJSON(data))
-    }
-
-    taskInfos.map(ScalaJSTask.fromInfo(this, _)).toArray
-  }
-
-  def done(): String = synchronized {
-    ensureNotDone()
-
-    /* Whatever happens in here, we must close and eventually terminate all
-     * VMs. So we capture all exceptions in Try's, and we'll rethrow one of
-     * them (if any) at the end.
-     */
-
-    // First we run the stopping sequence of the slaves
-    val slavesDeadline = VMTermTimeout.fromNow
-    val slavesClosing = stopSlaves(slavesDeadline)
-
-    /* Once all slaves are closing, we can schedule termination of the master.
-     * We need a fresh deadline for the master, since we can only start its
-     * scheduling when the slaves are closing.
-     * If we used the same deadline, and a slave timed out during its stopping
-     * sequence, the master would have 0 ms to stop, which is not fair.
-     */
-    val masterDeadline = VMTermTimeout.fromNow
-    val summaryTry = Try {
-      master.send("runnerDone")
-      val summary = ComUtils.receiveResponse(master, masterDeadline.timeLeft) {
-        case ("ok", summary) => summary
+      val taskInfos = ComUtils.receiveResponse(master) {
+        case ("ok", data) => fromJSON[List[TaskInfo]](readJSON(data))
       }
-      master.close()
-      summary
+
+      taskInfos.map(ScalaJSTask.fromInfo(this, _)).toArray
     }
 
-    // Now we wait for everyone to be completely stopped
-    val slavesStopped = slaves.values.toList
-      .map(s => Try(s.awaitOrStop(slavesDeadline.timeLeft)))
-    val masterStopped = Try(master.awaitOrStop(masterDeadline.timeLeft))
+  def done(): String =
+    synchronized {
+      ensureNotDone()
 
-    // Cleanup
-    master = null
-    slaves.clear()
+      /* Whatever happens in here, we must close and eventually terminate all
+       * VMs. So we capture all exceptions in Try's, and we'll rethrow one of
+       * them (if any) at the end.
+       */
 
-    framework.runDone()
+      // First we run the stopping sequence of the slaves
+      val slavesDeadline = VMTermTimeout.fromNow
+      val slavesClosing  = stopSlaves(slavesDeadline)
 
-    // At this point, rethrow any exception we captured on the way with Try's
-    slavesClosing.get
-    slavesStopped.foreach(_.get)
-    masterStopped.get
+      /* Once all slaves are closing, we can schedule termination of the master.
+       * We need a fresh deadline for the master, since we can only start its
+       * scheduling when the slaves are closing.
+       * If we used the same deadline, and a slave timed out during its stopping
+       * sequence, the master would have 0 ms to stop, which is not fair.
+       */
+      val masterDeadline = VMTermTimeout.fromNow
+      val summaryTry = Try {
+        master.send("runnerDone")
+        val summary =
+          ComUtils.receiveResponse(master, masterDeadline.timeLeft) {
+            case ("ok", summary) => summary
+          }
+        master.close()
+        summary
+      }
 
-    // And finally, if all went well, return the summary
-    summaryTry.get
-  }
+      // Now we wait for everyone to be completely stopped
+      val slavesStopped = slaves.values.toList
+        .map(s => Try(s.awaitOrStop(slavesDeadline.timeLeft)))
+      val masterStopped = Try(master.awaitOrStop(masterDeadline.timeLeft))
+
+      // Cleanup
+      master = null
+      slaves.clear()
+
+      framework.runDone()
+
+      // At this point, rethrow any exception we captured on the way with Try's
+      slavesClosing.get
+      slavesStopped.foreach(_.get)
+      masterStopped.get
+
+      // And finally, if all went well, return the summary
+      summaryTry.get
+    }
 
   // Runner Messaging
 
   /** A handler for messages sent from the slave to the master */
   private[testadapter] def msgHandler(
-      slave: ComJSRunner): LoopHandler[Nothing] = {
+      slave: ComJSRunner
+  ): LoopHandler[Nothing] = {
     case ("msg", msg) =>
       val optReply = synchronized {
         master.send(s"msg:$msg")
@@ -154,18 +157,17 @@ final class ScalaJSRunner private[testadapter](
     val slaves = this.slaves.values.toList // .toList to make it strict
 
     // First launch the stopping sequence on all slaves
-    val stopMessagesSent = for (slave <- slaves) yield
-      Try {
-        slave.send("stopSlave")
-      }
+    val stopMessagesSent = for (slave <- slaves) yield Try {
+      slave.send("stopSlave")
+    }
 
     // Then process all their messages and close them
-    val slavesClosed = for (slave <- slaves) yield
-      Try {
-        ComUtils.receiveLoop(slave, deadline)(
-            msgHandler(slave) orElse ComUtils.doneHandler)
-        slave.close()
-      }
+    val slavesClosed = for (slave <- slaves) yield Try {
+      ComUtils.receiveLoop(slave, deadline)(
+        msgHandler(slave) orElse ComUtils.doneHandler
+      )
+      slave.close()
+    }
 
     // Return the first failed of all these Try's
     (stopMessagesSent ++ slavesClosed) collectFirst {
@@ -191,10 +193,10 @@ final class ScalaJSRunner private[testadapter](
   // Helpers
 
   private def slaveLauncher = {
-    val frameworkJS = jsonToString(framework.frameworkName.toJSON)
-    val argsJS = jsonToString(args.toList.toJSON)
+    val frameworkJS  = jsonToString(framework.frameworkName.toJSON)
+    val argsJS       = jsonToString(args.toList.toJSON)
     val remoteArgsJS = jsonToString(args.toList.toJSON)
-    val code = s"""
+    val code         = s"""
       new org.scalajs.testinterface.internal.Slave($frameworkJS,
         $argsJS, $remoteArgsJS).init();
     """
@@ -209,10 +211,11 @@ final class ScalaJSRunner private[testadapter](
     new MemVirtualJSFile(s"testMaster.js").withContent(code)
   }
 
-  private def ensureNotDone(): Unit = synchronized {
-    if (master == null)
-      throw new IllegalStateException("Runner is already done")
-  }
+  private def ensureNotDone(): Unit =
+    synchronized {
+      if (master == null)
+        throw new IllegalStateException("Runner is already done")
+    }
 
   private def createRemoteRunner(): Unit = {
     assert(master == null)

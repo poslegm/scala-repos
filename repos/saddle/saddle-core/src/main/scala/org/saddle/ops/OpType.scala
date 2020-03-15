@@ -27,32 +27,32 @@ trait ScalarOp extends OpType
 trait MatrixOp extends OpType
 
 // basic ops
-trait Divide extends ScalarOp
+trait Divide   extends ScalarOp
 trait Multiply extends ScalarOp
-trait Add extends ScalarOp
+trait Add      extends ScalarOp
 trait Subtract extends ScalarOp
-trait Power extends ScalarOp
-trait Mod extends ScalarOp
+trait Power    extends ScalarOp
+trait Mod      extends ScalarOp
 
 // bitwise ops
-trait BitAnd extends ScalarOp
-trait BitOr extends ScalarOp
-trait BitXor extends ScalarOp
-trait BitShl extends ScalarOp
-trait BitShr extends ScalarOp
+trait BitAnd  extends ScalarOp
+trait BitOr   extends ScalarOp
+trait BitXor  extends ScalarOp
+trait BitShl  extends ScalarOp
+trait BitShr  extends ScalarOp
 trait BitUShr extends ScalarOp
 
 // comparison operators
-trait GtOp extends ScalarOp
+trait GtOp  extends ScalarOp
 trait GteOp extends ScalarOp
-trait LtOp extends ScalarOp
+trait LtOp  extends ScalarOp
 trait LteOp extends ScalarOp
 trait NeqOp extends ScalarOp
-trait EqOp extends ScalarOp
+trait EqOp  extends ScalarOp
 
 // boolean ops
 trait AndOp extends ScalarOp
-trait OrOp extends ScalarOp
+trait OrOp  extends ScalarOp
 trait XorOp extends ScalarOp
 
 // linear algebra

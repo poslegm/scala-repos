@@ -15,9 +15,11 @@ import scala.concurrent.duration._
 
 object ClusterClientStopSpec extends MultiNodeConfig {
   val client = role("client")
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.remote.log-remote-lifecycle-events = off
@@ -29,7 +31,8 @@ object ClusterClientStopSpec extends MultiNodeConfig {
 
     }
     akka.test.filter-leeway = 10s
-  """))
+  """)
+  )
 
   class Service extends Actor {
     def receive = {
@@ -43,7 +46,8 @@ class ClusterClientStopMultiJvmNode2 extends ClusterClientStopSpec
 class ClusterClientStopMultiJvmNode3 extends ClusterClientStopSpec
 
 class ClusterClientStopSpec
-    extends MultiNodeSpec(ClusterClientStopSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(ClusterClientStopSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   import ClusterClientStopSpec._
@@ -65,9 +69,8 @@ class ClusterClientStopSpec
     }
   }
 
-  def initialContacts = Set(first, second).map { r ⇒
-    node(r) / "system" / "receptionist"
-  }
+  def initialContacts =
+    Set(first, second).map { r ⇒ node(r) / "system" / "receptionist" }
 
   "A Cluster Client" should {
 
@@ -88,12 +91,18 @@ class ClusterClientStopSpec
     "stop if re-establish fails for too long time" in within(20.seconds) {
       runOn(client) {
         val c =
-          system.actorOf(ClusterClient.props(ClusterClientSettings(system)
-                               .withInitialContacts(initialContacts)),
-                         "client1")
-        c ! ClusterClient.Send("/user/testService",
-                               "hello",
-                               localAffinity = true)
+          system.actorOf(
+            ClusterClient.props(
+              ClusterClientSettings(system)
+                .withInitialContacts(initialContacts)
+            ),
+            "client1"
+          )
+        c ! ClusterClient.Send(
+          "/user/testService",
+          "hello",
+          localAffinity = true
+        )
         expectMsgType[String](3.seconds) should be("hello")
         enterBarrier("was-in-contact")
 
@@ -101,8 +110,9 @@ class ClusterClientStopSpec
 
         expectTerminated(c, 10.seconds)
         EventFilter.warning(
-            start = "Receptionist reconnect not successful within",
-            occurrences = 1)
+          start = "Receptionist reconnect not successful within",
+          occurrences = 1
+        )
       }
 
       runOn(first, second) {

@@ -55,7 +55,7 @@ object Sbt {
   lazy val FileIcon = IconLoader.getIcon("/sbt-file.png")
 
   def isProjectDefinitionFile(project: Project, file: File): Boolean = {
-    val baseDir = new File(project.getBasePath)
+    val baseDir    = new File(project.getBasePath)
     val projectDir = baseDir / Sbt.ProjectDirectory
     file.getName == Sbt.BuildFile && file.isUnder(baseDir) ||
     file.getName.endsWith(s".${Sbt.FileExtension}") && file.isUnder(baseDir) ||

@@ -18,7 +18,7 @@ object Statistics {
   def average[T](a: NonEmptyList[T])(implicit n: Numeric[T]): Double = {
     @tailrec def average(a: List[T], sum: T, depth: Int): Double = {
       a match {
-        case Nil => n.toDouble(sum) / depth
+        case Nil     => n.toDouble(sum) / depth
         case x :: xs => average(xs, n.plus(sum, x), depth + 1)
       }
     }
@@ -55,17 +55,19 @@ object Statistics {
   def confInterval[T](x: T, avg: T, sd: T)(implicit n: Numeric[T]): Double =
     1 - cdf(n.abs(x), avg, sd) + cdf(n.times(n.fromInt(-1), n.abs(x)), avg, sd)
 
-  def listAverage[T](x: List[T])(implicit n: Numeric[T]): Double = x match {
-    case Nil => 0
-    case a :: Nil => n.toDouble(a)
-    case a :: b => average(NonEmptyList.nel(a, b))
-  }
+  def listAverage[T](x: List[T])(implicit n: Numeric[T]): Double =
+    x match {
+      case Nil      => 0
+      case a :: Nil => n.toDouble(a)
+      case a :: b   => average(NonEmptyList.nel(a, b))
+    }
 
-  def listDeviation[T](x: List[T])(implicit n: Numeric[T]): Double = x match {
-    case Nil => 0
-    case _ :: Nil => 0
-    case a :: b => deviation(NonEmptyList.nel(a, b))
-  }
+  def listDeviation[T](x: List[T])(implicit n: Numeric[T]): Double =
+    x match {
+      case Nil      => 0
+      case _ :: Nil => 0
+      case a :: b   => deviation(NonEmptyList.nel(a, b))
+    }
 }
 
 object Erf {
@@ -75,7 +77,7 @@ object Erf {
   val a3: Double = 1.421413741
   val a4: Double = -1.453152027
   val a5: Double = 1.061405429
-  val p: Double = 0.3275911
+  val p: Double  = 0.3275911
 
   def erf(x: Double): Double = {
     // Save the sign of x

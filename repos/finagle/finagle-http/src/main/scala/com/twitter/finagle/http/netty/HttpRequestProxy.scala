@@ -6,7 +6,7 @@ import org.jboss.netty.handler.codec.http.{HttpMessage, HttpRequest, HttpMethod}
 private[finagle] trait HttpRequestProxy extends HttpMessageProxy {
   protected[finagle] def httpRequest: HttpRequest
   protected[finagle] def getHttpRequest(): HttpRequest = httpRequest
-  protected[finagle] def httpMessage: HttpMessage = httpRequest
+  protected[finagle] def httpMessage: HttpMessage      = httpRequest
 
   protected[finagle] def getMethod(): HttpMethod = httpRequest.getMethod
   protected[finagle] def setMethod(method: HttpMethod) {

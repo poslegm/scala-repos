@@ -10,7 +10,7 @@ object OrmToSlick extends App {
   // fake ORM
   object PeopleFinder {
     def getByIds(ids: Seq[Int]): Seq[Person] = Seq()
-    def getById(id: Int): Person = null
+    def getById(id: Int): Person             = null
   }
   implicit class OrmPersonAddress(person: Person) {
     def address: Address = null
@@ -19,9 +19,9 @@ object OrmToSlick extends App {
     def prefetch(f: Person => Address) = people
   }
   object session {
-    def createQuery(hql: String) = new HqlQuery
+    def createQuery(hql: String)                = new HqlQuery
     def createCriteria(cls: java.lang.Class[_]) = new Criteria
-    def save = ()
+    def save                                    = ()
   }
   class Criteria {
     def add(r: Restriction) = this
@@ -35,8 +35,8 @@ object OrmToSlick extends App {
   }
   class Property {
     def in(array: Array[_]): Restriction = new Restriction
-    def lt(i: Int) = new Restriction
-    def gt(i: Int) = new Restriction
+    def lt(i: Int)                       = new Restriction
+    def gt(i: Int)                       = new Restriction
   }
   object Restrictions {
     def disjunction = new Criteria
@@ -45,18 +45,18 @@ object OrmToSlick extends App {
   val db = Database.forConfig("h2mem1")
   try {
     val setup = DBIO.seq(
-        addresses.schema.create,
-        people.schema.create,
-        sql"ALTER TABLE PERSON ALTER COLUMN NAME VARCHAR(255) DEFAULT('')"
-          .as[Int],
-        sql"ALTER TABLE PERSON ALTER COLUMN AGE INT DEFAULT(-1)".as[Int],
-        sql"ALTER TABLE PERSON ALTER COLUMN ADDRESS_ID INT DEFAULT(1)".as[Int],
-        SqlToSlick.inserts
+      addresses.schema.create,
+      people.schema.create,
+      sql"ALTER TABLE PERSON ALTER COLUMN NAME VARCHAR(255) DEFAULT('')"
+        .as[Int],
+      sql"ALTER TABLE PERSON ALTER COLUMN AGE INT DEFAULT(-1)".as[Int],
+      sql"ALTER TABLE PERSON ALTER COLUMN ADDRESS_ID INT DEFAULT(1)".as[Int],
+      SqlToSlick.inserts
     )
     Await.result(db.run(setup), Duration.Inf);
     {
       //#ormObjectNavigation
-      val people: Seq[Person] = PeopleFinder.getByIds(Seq(2, 99, 17, 234))
+      val people: Seq[Person]     = PeopleFinder.getByIds(Seq(2, 99, 17, 234))
       val addresses: Seq[Address] = people.map(_.address)
       //#ormObjectNavigation
     };
@@ -77,7 +77,7 @@ object OrmToSlick extends App {
       //#slickNavigation
       //#slickExecution
       val addressesAction: DBIO[Seq[Address]] = addressesQuery.result
-      val addresses: Future[Seq[Address]] = db.run(addressesAction)
+      val addresses: Future[Seq[Address]]     = db.run(addressesAction)
       //#slickExecution
       Await.result(addresses, Duration.Inf)
     };
@@ -85,7 +85,7 @@ object OrmToSlick extends App {
       type Query = HqlQuery
       //#hqlQuery
       val hql: String = "FROM Person p WHERE p.id in (:ids)"
-      val q: Query = session.createQuery(hql)
+      val q: Query    = session.createQuery(hql)
       q.setParameterList("ids", Array(2, 99, 17, 234))
       //#hqlQuery
     };
@@ -100,8 +100,8 @@ object OrmToSlick extends App {
       def byIds(c: Criteria, ids: Array[Int]) = c.add(id in ids)
 
       val c = byIds(
-          session.createCriteria(classOf[Person]),
-          Array(2, 99, 17, 234)
+        session.createCriteria(classOf[Person]),
+        Array(2, 99, 17, 234)
       )
       //#criteriaQueryComposition
     };
@@ -111,7 +111,7 @@ object OrmToSlick extends App {
       val q = session
         .createCriteria(classOf[Person])
         .add(
-            Restrictions.disjunction.add(age lt 5).add(age gt 65)
+          Restrictions.disjunction.add(age lt 5).add(age gt 65)
         )
       //#criteriaComposition
     };
@@ -122,8 +122,8 @@ object OrmToSlick extends App {
     };
     {
       //#slickQueryWithTypes
-      val q = (people: Query[People, Person, Seq]).filter(
-          (p: People) => ( ((p.age: Rep[Int]) < 5 || p.age > 65): Rep[Boolean])
+      val q = (people: Query[People, Person, Seq]).filter((p: People) =>
+        (((p.age: Rep[Int]) < 5 || p.age > 65): Rep[Boolean])
       )
       //#slickQueryWithTypes
     };
@@ -149,11 +149,12 @@ object OrmToSlick extends App {
     };
     {
       Await.result(
-                   //#slickRun
-                   db.run(people.filter(_.id === 5).result)
-                   //#slickRun
-                   ,
-                   Duration.Inf)
+        //#slickRun
+        db.run(people.filter(_.id === 5).result)
+        //#slickRun
+        ,
+        Duration.Inf
+      )
     };
     {
       //#ormWriteCaching
@@ -164,7 +165,7 @@ object OrmToSlick extends App {
       import scala.language.reflectiveCalls
       val person = new {
         var name: String = ""
-        var age: Int = 0
+        var age: Int     = 0
       }
       //#ormWriteCaching
       person.name = "C. Vogt"
@@ -199,7 +200,7 @@ object OrmToSlick extends App {
       {
         //#slickRelationships
 
-        val chrisQuery = people.filter(_.id === 2)
+        val chrisQuery  = people.filter(_.id === 2)
         val stefanQuery = people.filter(_.id === 3)
 
         val chrisWithAddress: Future[(Person, Address)] =
@@ -212,7 +213,7 @@ object OrmToSlick extends App {
       };
       {
         //#relationshipNavigation
-        val chris: Person = PeopleFinder.getById(2)
+        val chris: Person    = PeopleFinder.getById(2)
         val address: Address = chris.address
         //#relationshipNavigation
       };

@@ -6,7 +6,7 @@ object test {
   }
 
   case class Sub() extends Base() {
-    val x = "hello";
+    val x          = "hello";
     override val y = 2.0;
   }
 

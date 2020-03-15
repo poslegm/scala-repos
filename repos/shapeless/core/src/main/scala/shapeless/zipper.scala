@@ -24,7 +24,10 @@ import ops.hlist.{IsHCons, ReversePrepend, Split, SplitLeft}
   * @author Miles Sabin
   */
 case class Zipper[C, L <: HList, R <: HList, P](
-    prefix: L, suffix: R, parent: P) {
+    prefix: L,
+    suffix: R,
+    parent: P
+) {
   import ops.zipper._
 
   type Self = Zipper[C, L, R, P]
@@ -96,21 +99,23 @@ case class Zipper[C, L <: HList, R <: HList, P](
 }
 
 object Zipper {
-  def apply[C, CL <: HList](c: C)(
-      implicit gen: Generic.Aux[C, CL]): Zipper[C, HNil, CL, None.type] =
+  def apply[C, CL <: HList](
+      c: C
+  )(implicit gen: Generic.Aux[C, CL]): Zipper[C, HNil, CL, None.type] =
     Zipper[C, HNil, CL, None.type](HNil, gen.to(c), None)
 
   def apply[L <: HList](l: L): Zipper[L, HNil, L, None.type] =
     Zipper[L, HNil, L, None.type](HNil, l, None)
 
   implicit class Modifier[C, L <: HList, RH, RT <: HList, P](
-      val zipper: Zipper[C, L, RH :: RT, P])
-      extends AnyVal {
+      val zipper: Zipper[C, L, RH :: RT, P]
+  ) extends AnyVal {
     import ops.zipper._
 
     /** Modifies the element at the cursor by the use of function f. Available only if the underlying `HList` is non-empty. */
-    def modify[E](f: RH => E)(
-        implicit modify: Modify[zipper.Self, RH, E]): modify.Out =
+    def modify[E](
+        f: RH => E
+    )(implicit modify: Modify[zipper.Self, RH, E]): modify.Out =
       modify(zipper, f)
   }
 }

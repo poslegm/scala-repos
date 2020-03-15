@@ -11,17 +11,18 @@ import org.ensime.api._
 class DocResolver(
     prefix: String,
     forceJavaVersion: Option[String] // for testing
-)(
-    implicit config: EnsimeConfig
-)
-    extends Actor with ActorLogging with DocUsecaseHandling {
+)(implicit
+    config: EnsimeConfig
+) extends Actor
+    with ActorLogging
+    with DocUsecaseHandling {
 
-  var htmlToJar = Map.empty[String, File]
+  var htmlToJar    = Map.empty[String, File]
   var jarNameToJar = Map.empty[String, File]
-  var docTypes = Map.empty[String, DocType]
+  var docTypes     = Map.empty[String, DocType]
 
   sealed trait DocType
-  case object Javadoc extends DocType
+  case object Javadoc  extends DocType
   case object Javadoc8 extends DocType
   case object Scaladoc extends DocType
 
@@ -36,15 +37,15 @@ class DocResolver(
 
     for (jarFile <- config.allDocJars if jarFile.exists()) {
       try {
-        val jar = new JarFile(jarFile)
+        val jar         = new JarFile(jarFile)
         val jarFileName = jarFile.getName
         jarNameToJar += jarFileName -> jarFile
-        docTypes += (jarFileName -> Scaladoc)
+        docTypes += (jarFileName    -> Scaladoc)
         val enumEntries = jar.entries()
         while (enumEntries.hasMoreElements) {
           val entry = enumEntries.nextElement()
           if (!entry.isDirectory) {
-            val f = new File(entry.getName)
+            val f   = new File(entry.getName)
             val dir = f.getParent
             if (dir != null) {
               htmlToJar += entry.getName -> jarFile
@@ -56,7 +57,7 @@ class DocResolver(
                 case JavadocComment(version: String)
                     if version.startsWith("1.8") =>
                   docTypes += jarFileName -> Javadoc8
-                case JavadocComment(_ *) =>
+                case JavadocComment(_*) =>
                   docTypes += jarFileName -> Javadoc
                 case _ =>
               }
@@ -88,12 +89,12 @@ class DocResolver(
   private def makeLocalUri(jar: File, sig: DocSigPair): String = {
     val jarName = jar.getName
     val docType = docTypes(jarName)
-    val java = docType == Javadoc || docType == Javadoc8
+    val java    = docType == Javadoc || docType == Javadoc8
     if (java) {
       val path = javaFqnToPath(sig.java.fqn)
-      val anchor = sig.java.member.map { s =>
-        "#" + { if (docType == Javadoc8) toJava8Anchor(s) else s }
-      }.getOrElse("")
+      val anchor = sig.java.member
+        .map { s => "#" + { if (docType == Javadoc8) toJava8Anchor(s) else s } }
+        .getOrElse("")
       s"$prefix/$jarName/$path$anchor"
     } else {
       val scalaSig = maybeReplaceWithUsecase(jar, sig.scala)
@@ -128,14 +129,17 @@ class DocResolver(
   // and https://bugs.openjdk.java.net/browse/JDK-8025633
   private val Java8Chars = """(?:, |\(|\)|\[\])""".r
   private def toJava8Anchor(anchor: String): String = {
-    Java8Chars.replaceAllIn(anchor, { m =>
-      anchor(m.start) match {
-        case ',' => "-"
-        case '(' => "-"
-        case ')' => "-"
-        case '[' => ":A"
+    Java8Chars.replaceAllIn(
+      anchor,
+      { m =>
+        anchor(m.start) match {
+          case ',' => "-"
+          case '(' => "-"
+          case ')' => "-"
+          case '[' => ":A"
+        }
       }
-    })
+    )
   }
 
   private def toAndroidAnchor(anchor: String): String =
@@ -148,16 +152,16 @@ class DocResolver(
         forceJavaVersion.getOrElse(scala.util.Properties.javaVersion)
       val version =
         if (rawVersion.startsWith("1.8")) "8"
-        else if (rawVersion.startsWith("1.7")) "7" else "6"
-      val anchor = sig.java.member.map { m =>
-        "#" + { if (version == "8") toJava8Anchor(m) else m }
-      }.getOrElse("")
+        else if (rawVersion.startsWith("1.7")) "7"
+        else "6"
+      val anchor = sig.java.member
+        .map { m => "#" + { if (version == "8") toJava8Anchor(m) else m } }
+        .getOrElse("")
       Some(s"http://docs.oracle.com/javase/$version/docs/api/$path$anchor")
     } else if (sig.java.fqn.androidStdLib) {
       val path = javaFqnToPath(sig.java.fqn)
-      val anchor = sig.java.member.map { m =>
-        "#" + toAndroidAnchor(m)
-      }.getOrElse("")
+      val anchor =
+        sig.java.member.map { m => "#" + toAndroidAnchor(m) }.getOrElse("")
       Some(s"http://developer.android.com/reference/$path$anchor")
     } else None
   }
@@ -172,7 +176,7 @@ class DocResolver(
     case p: DocSigPair =>
       val response = resolve(p) match {
         case Some(path) => StringResponse(path)
-        case None => FalseResponse
+        case None       => FalseResponse
       }
       sender() ! response
   }
@@ -181,7 +185,7 @@ object DocResolver {
   def apply(
       prefix: String = "docs",
       java: Option[String] = None
-  )(
-      implicit config: EnsimeConfig
+  )(implicit
+      config: EnsimeConfig
   ): Props = Props(classOf[DocResolver], prefix, java, config)
 }

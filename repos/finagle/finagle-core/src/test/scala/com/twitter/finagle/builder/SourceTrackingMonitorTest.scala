@@ -13,35 +13,38 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class SourceTrackingMonitorTest extends FunSuite with MockitoSugar {
   test("handles unrolling properly") {
-    val logger = mock[Logger]
+    val logger  = mock[Logger]
     val monitor = new SourceTrackingMonitor(logger, "qux")
-    val e = new Exception
+    val e       = new Exception
     val f1 = new Failure(
-        "foo", Some(e), sources = Map(Failure.Source.Service -> "tweet"))
-    val f2 = new Failure("bar", Some(f1))
+      "foo",
+      Some(e),
+      sources = Map(Failure.Source.Service -> "tweet")
+    )
+    val f2  = new Failure("bar", Some(f1))
     val exc = new RequestException(f2)
     exc.serviceName = "user"
     monitor.handle(exc)
     verify(logger).log(
-        Level.SEVERE,
-        "The 'qux' service " +
+      Level.SEVERE,
+      "The 'qux' service " +
         Seq("user", "tweet").mkString(" on behalf of ") +
         " threw an exception",
-        exc
+      exc
     )
   }
 
   test("logs IOExceptions at Level.FINE") {
-    val logger = mock[Logger]
-    val ioEx = new IOException("hi")
+    val logger  = mock[Logger]
+    val ioEx    = new IOException("hi")
     val monitor = new SourceTrackingMonitor(logger, "umm")
     monitor.handle(ioEx)
     verify(logger).log(mockitoEq(Level.FINE), any(), mockitoEq(ioEx))
   }
 
   test("logs Failure.rejected at Level.FINE") {
-    val logger = mock[Logger]
-    val monitor = new SourceTrackingMonitor(logger, "umm")
+    val logger   = mock[Logger]
+    val monitor  = new SourceTrackingMonitor(logger, "umm")
     val rejected = Failure.rejected("try again")
     monitor.handle(rejected)
 

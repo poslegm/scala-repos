@@ -10,7 +10,10 @@ import java.nio.ByteBuffer
   * LevelDB key.
   */
 private[leveldb] final case class Key(
-    persistenceId: Int, sequenceNr: Long, mappingId: Int)
+    persistenceId: Int,
+    sequenceNr: Long,
+    mappingId: Int
+)
 
 private[leveldb] object Key {
   def keyToBytes(key: Key): Array[Byte] = {
@@ -22,7 +25,7 @@ private[leveldb] object Key {
   }
 
   def keyFromBytes(bytes: Array[Byte]): Key = {
-    val bb = ByteBuffer.wrap(bytes)
+    val bb  = ByteBuffer.wrap(bytes)
     val aid = bb.getInt
     val snr = bb.getLong
     val mid = bb.getInt
@@ -35,7 +38,7 @@ private[leveldb] object Key {
   def counterFromBytes(bytes: Array[Byte]): Long =
     ByteBuffer.wrap(bytes).getLong
 
-  def mappingKey(id: Int) = Key(1, 0L, id)
+  def mappingKey(id: Int)             = Key(1, 0L, id)
   def isMappingKey(key: Key): Boolean = key.persistenceId == 1
 
   def deletionKey(persistenceId: Int, sequenceNr: Long): Key =

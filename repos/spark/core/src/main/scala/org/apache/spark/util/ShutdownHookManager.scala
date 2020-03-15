@@ -167,7 +167,7 @@ private[spark] object ShutdownHookManager extends Logging {
 
 private[util] class SparkShutdownHookManager {
 
-  private val hooks = new PriorityQueue[SparkShutdownHook]()
+  private val hooks                  = new PriorityQueue[SparkShutdownHook]()
   @volatile private var shuttingDown = false
 
   /**
@@ -187,7 +187,9 @@ private[util] class SparkShutdownHookManager {
   def runAll(): Unit = {
     shuttingDown = true
     var nextHook: SparkShutdownHook = null
-    while ({ nextHook = hooks.synchronized { hooks.poll() }; nextHook != null }) {
+    while ({
+      nextHook = hooks.synchronized { hooks.poll() }; nextHook != null
+    }) {
       Try(Utils.logUncaughtExceptions(nextHook.run()))
     }
   }
@@ -196,7 +198,8 @@ private[util] class SparkShutdownHookManager {
     hooks.synchronized {
       if (shuttingDown) {
         throw new IllegalStateException(
-            "Shutdown hooks cannot be modified during shutdown.")
+          "Shutdown hooks cannot be modified during shutdown."
+        )
       }
       val hookRef = new SparkShutdownHook(priority, hook)
       hooks.add(hookRef)

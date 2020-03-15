@@ -22,8 +22,8 @@ private[common] class NodeIdentifierParser(version: ForwardedHeaderVersion)
   def parseNode(s: String): Either[String, (IpAddress, Option[Port])] = {
     parse(node, s) match {
       case Success(matched, _) => Right(matched)
-      case Failure(msg, _) => Left("failure: " + msg)
-      case Error(msg, _) => Left("error: " + msg)
+      case Failure(msg, _)     => Left("failure: " + msg)
+      case Error(msg, _)       => Left("error: " + msg)
     }
   }
 
@@ -38,8 +38,8 @@ private[common] class NodeIdentifierParser(version: ForwardedHeaderVersion)
       (ipv4Address | "[" ~> ipv6Address <~ "]" | "unknown" | obfnode) ^^ {
         case x: Inet4Address => Ip(x)
         case x: Inet6Address => Ip(x)
-        case "unknown" => UnknownIp
-        case x => ObfuscatedIp(x.toString)
+        case "unknown"       => UnknownIp
+        case x               => ObfuscatedIp(x.toString)
       }
     case Xforwarded =>
       // X-Forwarded-For recognises IPv4 and escaped or unescaped IPv6 addresses
@@ -58,7 +58,7 @@ private[common] class NodeIdentifierParser(version: ForwardedHeaderVersion)
   private lazy val nodeport =
     (port | obfport) ^^ {
       case x: Int => PortNumber(x)
-      case x => ObfuscatedPort(x.toString)
+      case x      => ObfuscatedPort(x.toString)
     }
 
   private lazy val port =
@@ -68,19 +68,20 @@ private[common] class NodeIdentifierParser(version: ForwardedHeaderVersion)
 
   private def obfport = regex("_[\\p{Alnum}\\._-]+".r)
 
-  private def inetAddress = new PartialFunction[String, InetAddress] {
-    def isDefinedAt(s: String) = Try { InetAddress.getByName(s) }.isSuccess
-    def apply(s: String) = Try { InetAddress.getByName(s) }.get
-  }
+  private def inetAddress =
+    new PartialFunction[String, InetAddress] {
+      def isDefinedAt(s: String) = Try { InetAddress.getByName(s) }.isSuccess
+      def apply(s: String)       = Try { InetAddress.getByName(s) }.get
+    }
 }
 
 private[common] object NodeIdentifierParser {
   sealed trait Port
-  case class PortNumber(number: Int) extends Port
+  case class PortNumber(number: Int)   extends Port
   case class ObfuscatedPort(s: String) extends Port
 
   sealed trait IpAddress
-  case class Ip(ip: InetAddress) extends IpAddress
+  case class Ip(ip: InetAddress)     extends IpAddress
   case class ObfuscatedIp(s: String) extends IpAddress
-  case object UnknownIp extends IpAddress
+  case object UnknownIp              extends IpAddress
 }

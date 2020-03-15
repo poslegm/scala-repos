@@ -46,17 +46,19 @@ object LAPinger {
   /**
     * Re-create the underlying <code>SingleThreadScheduledExecutor</code>
     */
-  def restart: Unit = synchronized {
-    if ((service eq null) || service.isShutdown)
-      service = Executors.newSingleThreadScheduledExecutor(TF)
-  }
+  def restart: Unit =
+    synchronized {
+      if ((service eq null) || service.isShutdown)
+        service = Executors.newSingleThreadScheduledExecutor(TF)
+    }
 
   /**
     * Shut down the underlying <code>SingleThreadScheduledExecutor</code>
     */
-  def shutdown: Unit = synchronized {
-    service.shutdown
-  }
+  def shutdown: Unit =
+    synchronized {
+      service.shutdown
+    }
 
   /**
     * Schedules the sending of a message to occur after the specified delay.
@@ -64,9 +66,11 @@ object LAPinger {
     * @return a <code>ScheduledFuture</code> which sends the <code>msg</code> to
     * the <code>to<code> Actor after the specified TimeSpan <code>delay</code>.
     */
-  def schedule[T](to: SpecializedLiftActor[T],
-                  msg: T,
-                  delay: Long): ScheduledFuture[Unit] = {
+  def schedule[T](
+      to: SpecializedLiftActor[T],
+      msg: T,
+      delay: Long
+  ): ScheduledFuture[Unit] = {
     val r = new Callable[Unit] {
       def call: Unit = {
         to ! msg

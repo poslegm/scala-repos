@@ -26,7 +26,7 @@ object Pattern1 {
     }
 
     val pattern1Marker = builder.mark
-    val backupMarker = builder.mark
+    val backupMarker   = builder.mark
     builder.getTokenType match {
       case ScalaTokenTypes.tIDENTIFIER =>
         if (isVarId) {

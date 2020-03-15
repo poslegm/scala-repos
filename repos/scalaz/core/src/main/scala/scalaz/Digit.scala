@@ -86,26 +86,28 @@ object Digit extends DigitInstances {
     OptionT(F.map(cs)(digitFromChar))
 
   def digitsOr[F[_]](chars: F[Char], d: => Digit)(
-      implicit F: Functor[F]): F[Digit] =
+      implicit F: Functor[F]
+  ): F[Digit] =
     F.map(chars)(a => digitFromChar(a) getOrElse d)
 
-  def digitsCollapse[F[_]](
-      chars: F[Char])(implicit F: MonadPlus[F]): F[Digit] =
-    F.bind(chars)(
-        a =>
-          Digit.digitFromChar(a) match {
-        case None => F.empty[Digit]
+  def digitsCollapse[F[_]](chars: F[Char])(implicit F: MonadPlus[F]): F[Digit] =
+    F.bind(chars)(a =>
+      Digit.digitFromChar(a) match {
+        case None    => F.empty[Digit]
         case Some(d) => F.point(d)
-    })
+      }
+    )
 
-  def traverseDigits[F[_]](chars: F[Char])(
-      implicit F: Traverse[F]): Option[F[Digit]] = {
+  def traverseDigits[F[_]](
+      chars: F[Char]
+  )(implicit F: Traverse[F]): Option[F[Digit]] = {
     import std.option._
     F.sequence(digits(chars).run)
   }
 
   def traverseDigitsOr[F[_]](chars: F[Char], d: => F[Digit])(
-      implicit F: Traverse[F]): F[Digit] =
+      implicit F: Traverse[F]
+  ): F[Digit] =
     traverseDigits(chars) getOrElse d
 }
 
@@ -115,31 +117,33 @@ sealed abstract class DigitInstances {
 
       import std.anyVal._
 
-      def succ(d: Digit) = d match {
-        case Digit._0 => Digit._1
-        case Digit._1 => Digit._2
-        case Digit._2 => Digit._3
-        case Digit._3 => Digit._4
-        case Digit._4 => Digit._5
-        case Digit._5 => Digit._6
-        case Digit._6 => Digit._7
-        case Digit._7 => Digit._8
-        case Digit._8 => Digit._9
-        case Digit._9 => Digit._0
-      }
+      def succ(d: Digit) =
+        d match {
+          case Digit._0 => Digit._1
+          case Digit._1 => Digit._2
+          case Digit._2 => Digit._3
+          case Digit._3 => Digit._4
+          case Digit._4 => Digit._5
+          case Digit._5 => Digit._6
+          case Digit._6 => Digit._7
+          case Digit._7 => Digit._8
+          case Digit._8 => Digit._9
+          case Digit._9 => Digit._0
+        }
 
-      def pred(d: Digit) = d match {
-        case Digit._0 => Digit._9
-        case Digit._1 => Digit._0
-        case Digit._2 => Digit._1
-        case Digit._3 => Digit._2
-        case Digit._4 => Digit._3
-        case Digit._5 => Digit._4
-        case Digit._6 => Digit._5
-        case Digit._7 => Digit._6
-        case Digit._8 => Digit._7
-        case Digit._9 => Digit._8
-      }
+      def pred(d: Digit) =
+        d match {
+          case Digit._0 => Digit._9
+          case Digit._1 => Digit._0
+          case Digit._2 => Digit._1
+          case Digit._3 => Digit._2
+          case Digit._4 => Digit._3
+          case Digit._5 => Digit._4
+          case Digit._6 => Digit._5
+          case Digit._7 => Digit._6
+          case Digit._8 => Digit._7
+          case Digit._9 => Digit._8
+        }
 
       override def succn(n: Int, a: Digit) =
         super.succn(n % 10, a)

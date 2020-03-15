@@ -12,7 +12,7 @@ class Test {
 
   def okay2 {
     val cm: reflect.runtime.universe.Mirror = reflect.runtime.currentMirror
-    val u: reflect.runtime.universe.type = cm.universe
+    val u: reflect.runtime.universe.type    = cm.universe
     new u.Traverser
   }
 }

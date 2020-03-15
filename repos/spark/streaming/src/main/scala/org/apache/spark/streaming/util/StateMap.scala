@@ -25,7 +25,10 @@ import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
 import org.apache.spark.SparkConf
-import org.apache.spark.serializer.{KryoInputObjectInputBridge, KryoOutputObjectOutputBridge}
+import org.apache.spark.serializer.{
+  KryoInputObjectInputBridge,
+  KryoOutputObjectOutputBridge
+}
 import org.apache.spark.streaming.util.OpenHashMapBasedStateMap._
 import org.apache.spark.util.collection.OpenHashMap
 
@@ -60,10 +63,11 @@ private[streaming] abstract class StateMap[K, S] extends Serializable {
 private[streaming] object StateMap {
   def empty[K, S]: StateMap[K, S] = new EmptyStateMap[K, S]
 
-  def create[K : ClassTag, S : ClassTag](conf: SparkConf): StateMap[K, S] = {
+  def create[K: ClassTag, S: ClassTag](conf: SparkConf): StateMap[K, S] = {
     val deltaChainThreshold = conf.getInt(
-        "spark.streaming.sessionByKey.deltaChainThreshold",
-        DELTA_CHAIN_LENGTH_THRESHOLD)
+      "spark.streaming.sessionByKey.deltaChainThreshold",
+      DELTA_CHAIN_LENGTH_THRESHOLD
+    )
     new OpenHashMapBasedStateMap[K, S](deltaChainThreshold)
   }
 }
@@ -72,15 +76,16 @@ private[streaming] object StateMap {
 private[streaming] class EmptyStateMap[K, S] extends StateMap[K, S] {
   override def put(key: K, session: S, updateTime: Long): Unit = {
     throw new NotImplementedError(
-        "put() should not be called on an EmptyStateMap")
+      "put() should not be called on an EmptyStateMap"
+    )
   }
   override def get(key: K): Option[S] = None
   override def getByTime(threshUpdatedTime: Long): Iterator[(K, S, Long)] =
     Iterator.empty
   override def getAll(): Iterator[(K, S, Long)] = Iterator.empty
-  override def copy(): StateMap[K, S] = this
-  override def remove(key: K): Unit = {}
-  override def toDebugString(): String = ""
+  override def copy(): StateMap[K, S]           = this
+  override def remove(key: K): Unit             = {}
+  override def toDebugString(): String          = ""
 }
 
 /** Implementation of StateMap based on Spark's [[org.apache.spark.util.collection.OpenHashMap]] */
@@ -88,20 +93,29 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
     @transient @volatile var parentStateMap: StateMap[K, S],
     private var initialCapacity: Int = DEFAULT_INITIAL_CAPACITY,
     private var deltaChainThreshold: Int = DELTA_CHAIN_LENGTH_THRESHOLD
-)(implicit private var keyClassTag: ClassTag[K],
-  private var stateClassTag: ClassTag[S])
-    extends StateMap[K, S] with KryoSerializable { self =>
+)(implicit
+    private var keyClassTag: ClassTag[K],
+    private var stateClassTag: ClassTag[S]
+) extends StateMap[K, S]
+    with KryoSerializable { self =>
 
-  def this(initialCapacity: Int, deltaChainThreshold: Int)(
-      implicit keyClassTag: ClassTag[K], stateClassTag: ClassTag[S]) =
-    this(new EmptyStateMap[K, S],
-         initialCapacity = initialCapacity,
-         deltaChainThreshold = deltaChainThreshold)
+  def this(
+      initialCapacity: Int,
+      deltaChainThreshold: Int
+  )(implicit keyClassTag: ClassTag[K], stateClassTag: ClassTag[S]) =
+    this(
+      new EmptyStateMap[K, S],
+      initialCapacity = initialCapacity,
+      deltaChainThreshold = deltaChainThreshold
+    )
 
-  def this(deltaChainThreshold: Int)(
-      implicit keyClassTag: ClassTag[K], stateClassTag: ClassTag[S]) =
-    this(initialCapacity = DEFAULT_INITIAL_CAPACITY,
-         deltaChainThreshold = deltaChainThreshold)
+  def this(
+      deltaChainThreshold: Int
+  )(implicit keyClassTag: ClassTag[K], stateClassTag: ClassTag[S]) =
+    this(
+      initialCapacity = DEFAULT_INITIAL_CAPACITY,
+      deltaChainThreshold = deltaChainThreshold
+    )
 
   def this()(implicit keyClassTag: ClassTag[K], stateClassTag: ClassTag[S]) = {
     this(DELTA_CHAIN_LENGTH_THRESHOLD)
@@ -135,13 +149,15 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
         !deltaMap.contains(key)
     }
 
-    val updatedStates = deltaMap.iterator.filter {
-      case (_, stateInfo) =>
-        !stateInfo.deleted && stateInfo.updateTime < threshUpdatedTime
-    }.map {
-      case (key, stateInfo) =>
-        (key, stateInfo.data, stateInfo.updateTime)
-    }
+    val updatedStates = deltaMap.iterator
+      .filter {
+        case (_, stateInfo) =>
+          !stateInfo.deleted && stateInfo.updateTime < threshUpdatedTime
+      }
+      .map {
+        case (key, stateInfo) =>
+          (key, stateInfo.data, stateInfo.updateTime)
+      }
     oldStates ++ updatedStates
   }
 
@@ -187,7 +203,9 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
     */
   override def copy(): StateMap[K, S] = {
     new OpenHashMapBasedStateMap[K, S](
-        this, deltaChainThreshold = deltaChainThreshold)
+      this,
+      deltaChainThreshold = deltaChainThreshold
+    )
   }
 
   /** Whether the delta chain length is long enough that it should be compacted */
@@ -196,21 +214,23 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
   }
 
   /** Length of the delta chains of this map */
-  def deltaChainLength: Int = parentStateMap match {
-    case map: OpenHashMapBasedStateMap[_, _] => map.deltaChainLength + 1
-    case _ => 0
-  }
+  def deltaChainLength: Int =
+    parentStateMap match {
+      case map: OpenHashMapBasedStateMap[_, _] => map.deltaChainLength + 1
+      case _                                   => 0
+    }
 
   /**
     * Approximate number of keys in the map. This is an overestimation that is mainly used to
     * reserve capacity in a new map at delta compaction time.
     */
-  def approxSize: Int = deltaMap.size + {
-    parentStateMap match {
-      case s: OpenHashMapBasedStateMap[_, _] => s.approxSize
-      case _ => 0
+  def approxSize: Int =
+    deltaMap.size + {
+      parentStateMap match {
+        case s: OpenHashMapBasedStateMap[_, _] => s.approxSize
+        case _                                 => 0
+      }
     }
-  }
 
   /** Get all the data of this map as string formatted as a tree based on the delta depth */
   override def toDebugString(): String = {
@@ -219,7 +239,7 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
         ("    " * (deltaChainLength - 1)) + "+--- "
       } else ""
     parentStateMap.toDebugString() + "\n" +
-    deltaMap.iterator.mkString(tabs, "\n" + tabs, "")
+      deltaMap.iterator.mkString(tabs, "\n" + tabs, "")
   }
 
   override def toString(): String = {
@@ -234,7 +254,7 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
     // Write the data in the delta of this state map
     outputStream.writeInt(deltaMap.size)
     val deltaMapIterator = deltaMap.iterator
-    var deltaMapCount = 0
+    var deltaMapCount    = 0
     while (deltaMapIterator.hasNext) {
       deltaMapCount += 1
       val (key, stateInfo) = deltaMapIterator.next()
@@ -250,7 +270,9 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
       if (doCompaction) {
         val initCapacity = if (approxSize > 0) approxSize else 64
         new OpenHashMapBasedStateMap[K, S](
-            initialCapacity = initCapacity, deltaChainThreshold)
+          initialCapacity = initCapacity,
+          deltaChainThreshold
+        )
       } else { null }
 
     val iterOfActiveSessions = parentStateMap.getAll()
@@ -270,8 +292,8 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
       outputStream.writeLong(updateTime)
 
       if (doCompaction) {
-        newParentSessionStore.deltaMap.update(
-            key, StateInfo(state, updateTime, deleted = false))
+        newParentSessionStore.deltaMap
+          .update(key, StateInfo(state, updateTime, deleted = false))
       }
     }
 
@@ -294,7 +316,7 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
     }
     var deltaMapCount = 0
     while (deltaMapCount < deltaMapSize) {
-      val key = inputStream.readObject().asInstanceOf[K]
+      val key         = inputStream.readObject().asInstanceOf[K]
       val sessionInfo = inputStream.readObject().asInstanceOf[StateInfo[S]]
       deltaMap.update(key, sessionInfo)
       deltaMapCount += 1
@@ -307,7 +329,9 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
     val newStateMapInitialCapacity =
       math.max(parentStateMapSizeHint, DEFAULT_INITIAL_CAPACITY)
     val newParentSessionStore = new OpenHashMapBasedStateMap[K, S](
-        initialCapacity = newStateMapInitialCapacity, deltaChainThreshold)
+      initialCapacity = newStateMapInitialCapacity,
+      deltaChainThreshold
+    )
 
     // Read the records until the limit marking object has been reached
     var parentSessionLoopDone = false
@@ -318,11 +342,11 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
         val expectedCount = obj.asInstanceOf[LimitMarker].num
         assert(expectedCount == newParentSessionStore.deltaMap.size)
       } else {
-        val key = obj.asInstanceOf[K]
-        val state = inputStream.readObject().asInstanceOf[S]
+        val key        = obj.asInstanceOf[K]
+        val state      = inputStream.readObject().asInstanceOf[S]
         val updateTime = inputStream.readLong()
-        newParentSessionStore.deltaMap.update(
-            key, StateInfo(state, updateTime, deleted = false))
+        newParentSessionStore.deltaMap
+          .update(key, StateInfo(state, updateTime, deleted = false))
       }
     }
     parentStateMap = newParentSessionStore
@@ -364,9 +388,11 @@ private[streaming] class OpenHashMapBasedStateMap[K, S](
 private[streaming] object OpenHashMapBasedStateMap {
 
   /** Internal class to represent the state information */
-  case class StateInfo[S](var data: S = null.asInstanceOf[S],
-                          var updateTime: Long = -1,
-                          var deleted: Boolean = false) {
+  case class StateInfo[S](
+      var data: S = null.asInstanceOf[S],
+      var updateTime: Long = -1,
+      var deleted: Boolean = false
+  ) {
 
     def markDeleted(): Unit = {
       deleted = true

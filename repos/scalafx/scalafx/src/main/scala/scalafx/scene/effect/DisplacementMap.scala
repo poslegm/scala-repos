@@ -35,13 +35,15 @@ import scalafx.delegate.SFXDelegate
 
 object DisplacementMap {
   implicit def sfxDisplacementMap2jfx(
-      dm: DisplacementMap): jfxse.DisplacementMap =
+      dm: DisplacementMap
+  ): jfxse.DisplacementMap =
     if (dm != null) dm.delegate else null
 }
 
 class DisplacementMap(
-    override val delegate: jfxse.DisplacementMap = new jfxse.DisplacementMap)
-    extends Effect(delegate) with InputDelegate[jfxse.DisplacementMap]
+    override val delegate: jfxse.DisplacementMap = new jfxse.DisplacementMap
+) extends Effect(delegate)
+    with InputDelegate[jfxse.DisplacementMap]
     with SFXDelegate[jfxse.DisplacementMap] {
 
   /**
@@ -52,11 +54,13 @@ class DisplacementMap(
   /**
     * Creates a new instance of DisplacementMap with the specified mapData, offsetX, offsetY, scaleX, and scaleY.
     */
-  def this(mapData: FloatMap,
-           offsetX: Double,
-           offsetY: Double,
-           scaleX: Double,
-           scaleY: Double) =
+  def this(
+      mapData: FloatMap,
+      offsetX: Double,
+      offsetY: Double,
+      scaleX: Double,
+      scaleY: Double
+  ) =
     this(new jfxse.DisplacementMap(mapData, offsetX, offsetY, scaleX, scaleY))
 
   /**

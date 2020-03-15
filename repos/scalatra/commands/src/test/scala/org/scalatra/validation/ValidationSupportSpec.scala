@@ -23,7 +23,7 @@ class ValidationSupportSpec extends Specification {
     "do normal binding within 'bindTo'" in {
 
       val ageValidatedForm = new WithValidation
-      val params = Map("name" -> "John", "surname" -> "Doe", "age" -> "18")
+      val params           = Map("name" -> "John", "surname" -> "Doe", "age" -> "18")
 
       ageValidatedForm.bindTo(params)
 
@@ -36,7 +36,7 @@ class ValidationSupportSpec extends Specification {
     "validate only 'validatable bindings' within bindTo" in {
 
       val ageValidatedForm = new WithValidation
-      val params = Map("name" -> "John", "surname" -> "Doe", "age" -> "15")
+      val params           = Map("name" -> "John", "surname" -> "Doe", "age" -> "15")
 
       ageValidatedForm.isValid must beTrue
 
@@ -44,19 +44,21 @@ class ValidationSupportSpec extends Specification {
 
       ageValidatedForm.isValid must beFalse
 
-      ageValidatedForm.errors must contain { x: Binding =>
-        x.name == "age"
-      }
+      ageValidatedForm.errors must contain { x: Binding => x.name == "age" }
 
       ageValidatedForm.legalAge.validation aka "the validation result" must_==
-        Failure(ValidationError("Age must be greater than or equal to 18",
-                                FieldName("age"),
-                                ValidationFail))
+        Failure(
+          ValidationError(
+            "Age must be greater than or equal to 18",
+            FieldName("age"),
+            ValidationFail
+          )
+        )
     }
 
     "evaluate non-exhaustive validation as 'accepted'" in {
       val formUnderTest = new WithValidation
-      val params = Map("name" -> "John", "surname" -> "Doe", "age" -> "20")
+      val params        = Map("name" -> "John", "surname" -> "Doe", "age" -> "20")
 
       params must not haveKey ("cap")
 

@@ -49,9 +49,9 @@ class StringBasedKeyStoreBuilder(data: String) extends KeyStoreBuilder {
     val cf = CertificateFactory.getInstance("X.509")
     // CertificateFactory throws EOF on whitespace after end cert, which is very common in triple quoted strings.
     val trimmedString = certificateString.trim()
-    val is = new ByteArrayInputStream(trimmedString.getBytes("UTF-8"))
-    val bis = new BufferedInputStream(is)
-    val buffer = new scala.collection.mutable.ListBuffer[Certificate]()
+    val is            = new ByteArrayInputStream(trimmedString.getBytes("UTF-8"))
+    val bis           = new BufferedInputStream(is)
+    val buffer        = new scala.collection.mutable.ListBuffer[Certificate]()
     while (bis.available() > 0) {
       val cert = cf.generateCertificate(bis)
       buffer.append(cert)
@@ -66,8 +66,10 @@ class StringBasedKeyStoreBuilder(data: String) extends KeyStoreBuilder {
   * @see java.security.cert.CertificateFactory
   */
 class FileBasedKeyStoreBuilder(
-    keyStoreType: String, filePath: String, password: Option[Array[Char]])
-    extends KeyStoreBuilder {
+    keyStoreType: String,
+    filePath: String,
+    password: Option[Array[Char]]
+) extends KeyStoreBuilder {
 
   val logger = org.slf4j.LoggerFactory.getLogger(getClass)
 
@@ -90,7 +92,7 @@ class FileBasedKeyStoreBuilder(
     val inputStream = new BufferedInputStream(new FileInputStream(file))
     try {
       val storeType = keyStoreType
-      val store = KeyStore.getInstance(storeType)
+      val store     = KeyStore.getInstance(storeType)
       store.load(inputStream, password.orNull)
       store
     } finally {
@@ -100,7 +102,7 @@ class FileBasedKeyStoreBuilder(
 
   def readCertificates(file: File): Iterable[Certificate] = {
     import scala.collection.JavaConverters._
-    val cf = CertificateFactory.getInstance("X.509")
+    val cf  = CertificateFactory.getInstance("X.509")
     val fis = new FileInputStream(file)
     val bis = new BufferedInputStream(fis)
 

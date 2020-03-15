@@ -16,7 +16,7 @@ trait RoutingLog {
 object RoutingLog extends LowerPriorityRoutingLogImplicits {
   def apply(defaultLog: LoggingAdapter): RoutingLog =
     new RoutingLog {
-      def log = defaultLog
+      def log                              = defaultLog
       def requestLog(request: HttpRequest) = defaultLog
     }
 

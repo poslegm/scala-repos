@@ -22,7 +22,7 @@ import breeze.math.Semiring
   *
   * @author dlwh
   */
-@SerialVersionUID(1l)
+@SerialVersionUID(1L)
 trait Zero[@specialized T] extends Serializable {
   def zero: T
 }
@@ -39,9 +39,10 @@ object Zero extends ZeroLowPriority {
     else refDefault
   }
 
-  def apply[T](v: T): Zero[T] = new Zero[T] {
-    def zero = v
-  }
+  def apply[T](v: T): Zero[T] =
+    new Zero[T] {
+      def zero = v
+    }
 
   implicit object IntZero extends Zero[Int] {
     override def zero = 0
@@ -52,7 +53,7 @@ object Zero extends ZeroLowPriority {
   }
 
   implicit object LongZero extends Zero[Long] {
-    override def zero = 0l
+    override def zero = 0L
   }
 
   implicit object ByteZero extends Zero[Byte] {
@@ -98,6 +99,6 @@ trait ZeroVeryLowPriority {
 trait ZeroLowPriority extends ZeroVeryLowPriority {
   this: Zero.type =>
 
-  implicit def zeroFromSemiring[T : Semiring] =
+  implicit def zeroFromSemiring[T: Semiring] =
     Zero(implicitly[Semiring[T]].zero)
 }

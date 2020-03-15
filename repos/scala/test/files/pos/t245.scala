@@ -6,10 +6,10 @@ object Test {
 
   def foo(i: Int): Int = 0
 
-  def fun0: Value = null
+  def fun0: Value         = null
   def fun0(i: Int): Value = null
 
-  def fun1(i: Int): Value = null
+  def fun1(i: Int): Value  = null
   def fun1(l: Long): Value = null
 
   foo(fun0);

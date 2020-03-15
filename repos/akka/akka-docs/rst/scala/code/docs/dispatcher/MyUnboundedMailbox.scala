@@ -20,16 +20,17 @@ trait MyUnboundedMessageQueueSemantics
 object MyUnboundedMailbox {
   // This is the MessageQueue implementation
   class MyMessageQueue
-      extends MessageQueue with MyUnboundedMessageQueueSemantics {
+      extends MessageQueue
+      with MyUnboundedMessageQueueSemantics {
 
     private final val queue = new ConcurrentLinkedQueue[Envelope]()
 
     // these should be implemented; queue used as example
     def enqueue(receiver: ActorRef, handle: Envelope): Unit =
       queue.offer(handle)
-    def dequeue(): Envelope = queue.poll()
+    def dequeue(): Envelope   = queue.poll()
     def numberOfMessages: Int = queue.size
-    def hasMessages: Boolean = !queue.isEmpty
+    def hasMessages: Boolean  = !queue.isEmpty
     def cleanUp(owner: ActorRef, deadLetters: MessageQueue) {
       while (hasMessages) {
         deadLetters.enqueue(owner, dequeue())
@@ -53,7 +54,9 @@ class MyUnboundedMailbox
 
   // The create method is called to create the MessageQueue
   final override def create(
-      owner: Option[ActorRef], system: Option[ActorSystem]): MessageQueue =
+      owner: Option[ActorRef],
+      system: Option[ActorSystem]
+  ): MessageQueue =
     new MyMessageQueue()
 }
 //#mailbox-implementation-example

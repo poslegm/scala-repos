@@ -38,14 +38,22 @@ object MiscTests extends TestSuite {
         check(("A" | "B").rep, """ ("A" | "B").rep """)
         check(("A".? | "B").rep, """ ("A".? | "B").rep """)
         check(("A".? | "B").rep(1), """ ("A".? | "B").rep(1) """)
-        check(("A".? | "B").rep(1, max = 2),
-              """ ("A".? | "B").rep(1, max = 2) """)
-        check(("A".? | "B").rep(sep = "C"),
-              """ ("A".? | "B").rep(sep = "C") """)
-        check(("A".? | "B").rep(sep = "C", max = 2),
-              """ ("A".? | "B").rep(sep = "C", max = 2) """)
-        check(("A".? | "B").rep(1, sep = "C" ~ "D" | "E"),
-              """("A".? | "B").rep(1, sep = "C" ~ "D" | "E")""")
+        check(
+          ("A".? | "B").rep(1, max = 2),
+          """ ("A".? | "B").rep(1, max = 2) """
+        )
+        check(
+          ("A".? | "B").rep(sep = "C"),
+          """ ("A".? | "B").rep(sep = "C") """
+        )
+        check(
+          ("A".? | "B").rep(sep = "C", max = 2),
+          """ ("A".? | "B").rep(sep = "C", max = 2) """
+        )
+        check(
+          ("A".? | "B").rep(1, sep = "C" ~ "D" | "E"),
+          """("A".? | "B").rep(1, sep = "C" ~ "D" | "E")"""
+        )
       }
       'lookahead {
         check(&("A") ~ "ABC", """&("A") ~ "ABC" """)
@@ -62,18 +70,18 @@ object MiscTests extends TestSuite {
         check(AnyChar, """AnyChar""")
         check(CharIn("abc", "d", Seq('1', '2', '3')), """CharIn("abcd123")""")
         check(
-            StringIn("mango", "mandarin", "mangosteen"),
-            """StringIn("mango", "mandarin", "mangosteen")"""
+          StringIn("mango", "mandarin", "mangosteen"),
+          """StringIn("mango", "mandarin", "mangosteen")"""
         )
         check(CharPred(_.isUpper), """CharPred(<function1>)""")
       }
     }
     'logging {
-      val logged = mutable.Buffer.empty[String]
+      val logged          = mutable.Buffer.empty[String]
       implicit val logger = fastparse.Logger(logged.append(_))
 
       val DeepFailure = P("C")
-      val Foo = P((DeepFailure.log() | "A".log()) ~ "B".!.log()).log()
+      val Foo         = P((DeepFailure.log() | "A".log()) ~ "B".!.log()).log()
 
       Foo.parse("AB")
 
@@ -103,25 +111,25 @@ object MiscTests extends TestSuite {
         assert(("A" | ("B" | ("C" | "D"))) == expected)
       }
       'sequence {
-        val S = parsers.Combinators.Sequence
-        val F = S.Flat
+        val S                            = parsers.Combinators.Sequence
+        val F                            = S.Flat
         def C(p: P0, b: Boolean = false) = S.Chain(p, b)(null)
         // Need to be pulled out because it makes utest crash
         val expected1 = F("A", Vector(C("B"), C("C"), C("D")))
         val expected2 = F("A", Vector(C("B"), C(F("C", Vector(C("D"))))))
         assert(
-            ("A" ~ "B" ~ "C" ~ "D") == expected1,
-            (("A" ~ "B") ~ ("C" ~ "D")) == expected2
+          ("A" ~ "B" ~ "C" ~ "D") == expected1,
+          (("A" ~ "B") ~ ("C" ~ "D")) == expected2
         )
       }
     }
     'opaque {
-      def checkOpaqueness[T](p: Parser[T], strs: String*) = strs foreach {
-        str =>
+      def checkOpaqueness[T](p: Parser[T], strs: String*) =
+        strs foreach { str =>
           val failure = p.parse(str).asInstanceOf[Parsed.Failure]
           assert(failure.index == 0)
           assert(failure.extra.traced.traceParsers == Set(p))
-      }
+        }
       'nocut {
         val p = P("foo" ~ CharPred(_.isDigit).rep(1)).opaque("fooX")
         checkOpaqueness(p, "fo", "fooz")
@@ -132,11 +140,11 @@ object MiscTests extends TestSuite {
       }
     }
     'wspStr {
-      val literal = wspStr("ab")
+      val literal     = wspStr("ab")
       val charLiteral = wspStr("a")
       assert(
-          literal.isInstanceOf[parsers.Terminals.Literal],
-          charLiteral.isInstanceOf[parsers.Terminals.CharLiteral]
+        literal.isInstanceOf[parsers.Terminals.Literal],
+        charLiteral.isInstanceOf[parsers.Terminals.CharLiteral]
       )
     }
     'failureget {
@@ -146,13 +154,15 @@ object MiscTests extends TestSuite {
       }
     }
     'formatParser {
-      assert(Parsed.Failure.formatParser("a", "", 0) == """"a":0:0""",
-             Parsed.Failure.formatParser("A", "B", 0) == """"A":1:1""")
+      assert(
+        Parsed.Failure.formatParser("a", "", 0) == """"a":0:0""",
+        Parsed.Failure.formatParser("A", "B", 0) == """"A":1:1"""
+      )
     }
     'utils {
       'trieNode {
         val names = (0 until 1000).map(_.toString.flatMap(_.toString * 5))
-        val trie = new Utils.TrieNode(names)
+        val trie  = new Utils.TrieNode(names)
         for (name <- names) assert(trie.query(name, 0) != -1)
       }
     }

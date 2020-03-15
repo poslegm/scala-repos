@@ -22,11 +22,11 @@ object Test extends App {
 
 class C
 class D extends C {
-  val x = 2
-  lazy val y = 3
-  var z = 4
+  val x                         = 2
+  lazy val y                    = 3
+  var z                         = 4
   def t[T <: Int](x: D)(y: x.W) = 5
   type W = String
-  class C extends D
+  class C  extends D
   object O extends C
 }

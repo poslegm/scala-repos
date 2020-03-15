@@ -22,11 +22,20 @@ import java.io.IOException
 import scala.collection.mutable.{ArrayBuffer, HashSet}
 import scala.util.Random
 
-import org.apache.commons.math3.distribution.{BinomialDistribution, PoissonDistribution}
+import org.apache.commons.math3.distribution.{
+  BinomialDistribution,
+  PoissonDistribution
+}
 import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.mapred._
-import org.apache.hadoop.mapreduce.{JobContext => NewJobContext, OutputCommitter => NewOutputCommitter, OutputFormat => NewOutputFormat, RecordWriter => NewRecordWriter, TaskAttemptContext => NewTaskAttempContext}
+import org.apache.hadoop.mapreduce.{
+  JobContext => NewJobContext,
+  OutputCommitter => NewOutputCommitter,
+  OutputFormat => NewOutputFormat,
+  RecordWriter => NewRecordWriter,
+  TaskAttemptContext => NewTaskAttempContext
+}
 import org.apache.hadoop.util.Progressable
 
 import org.apache.spark._
@@ -50,7 +59,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
   }
 
   test("groupByKey") {
-    val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (2, 1)))
+    val pairs  = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (2, 1)))
     val groups = pairs.groupByKey().collect()
     assert(groups.size === 2)
     val valuesFor1 = groups.find(_._1 == 1).get._2
@@ -60,7 +69,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
   }
 
   test("groupByKey with duplicates") {
-    val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
+    val pairs  = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
     val groups = pairs.groupByKey().collect()
     assert(groups.size === 2)
     val valuesFor1 = groups.find(_._1 == 1).get._2
@@ -70,7 +79,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
   }
 
   test("groupByKey with negative key hash codes") {
-    val pairs = sc.parallelize(Array((-1, 1), (-1, 2), (-1, 3), (2, 1)))
+    val pairs  = sc.parallelize(Array((-1, 1), (-1, 2), (-1, 3), (2, 1)))
     val groups = pairs.groupByKey().collect()
     assert(groups.size === 2)
     val valuesForMinus1 = groups.find(_._1 == -1).get._2
@@ -80,7 +89,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
   }
 
   test("groupByKey with many output partitions") {
-    val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (2, 1)))
+    val pairs  = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (2, 1)))
     val groups = pairs.groupByKey(10).collect()
     assert(groups.size === 2)
     val valuesFor1 = groups.find(_._1 == 1).get._2
@@ -95,30 +104,38 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
 
     // vary RDD size
     for (n <- List(100, 1000, 1000000)) {
-      val data = sc.parallelize(1 to n, 2)
+      val data             = sc.parallelize(1 to n, 2)
       val fractionPositive = 0.3
       val stratifiedData =
         data.keyBy(StratifiedAuxiliary.stratifier(fractionPositive))
       val samplingRate = 0.1
       StratifiedAuxiliary.testSample(
-          stratifiedData, samplingRate, defaultSeed, n)
+        stratifiedData,
+        samplingRate,
+        defaultSeed,
+        n
+      )
     }
 
     // vary fractionPositive
     for (fractionPositive <- List(0.1, 0.3, 0.5, 0.7, 0.9)) {
-      val n = 100
+      val n    = 100
       val data = sc.parallelize(1 to n, 2)
       val stratifiedData =
         data.keyBy(StratifiedAuxiliary.stratifier(fractionPositive))
       val samplingRate = 0.1
       StratifiedAuxiliary.testSample(
-          stratifiedData, samplingRate, defaultSeed, n)
+        stratifiedData,
+        samplingRate,
+        defaultSeed,
+        n
+      )
     }
 
     // Use the same data for the rest of the tests
     val fractionPositive = 0.3
-    val n = 100
-    val data = sc.parallelize(1 to n, 2)
+    val n                = 100
+    val data             = sc.parallelize(1 to n, 2)
     val stratifiedData =
       data.keyBy(StratifiedAuxiliary.stratifier(fractionPositive))
 
@@ -131,7 +148,11 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
     // vary sampling rate
     for (samplingRate <- List(0.01, 0.05, 0.1, 0.5)) {
       StratifiedAuxiliary.testSample(
-          stratifiedData, samplingRate, defaultSeed, n)
+        stratifiedData,
+        samplingRate,
+        defaultSeed,
+        n
+      )
     }
   }
 
@@ -140,56 +161,67 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
 
     // vary RDD size
     for (n <- List(100, 1000, 1000000)) {
-      val data = sc.parallelize(1 to n, 2)
+      val data             = sc.parallelize(1 to n, 2)
       val fractionPositive = 0.3
       val stratifiedData =
         data.keyBy(StratifiedAuxiliary.stratifier(fractionPositive))
       val samplingRate = 0.1
       StratifiedAuxiliary.testSampleExact(
-          stratifiedData, samplingRate, defaultSeed, n)
+        stratifiedData,
+        samplingRate,
+        defaultSeed,
+        n
+      )
     }
 
     // vary fractionPositive
     for (fractionPositive <- List(0.1, 0.3, 0.5, 0.7, 0.9)) {
-      val n = 100
+      val n    = 100
       val data = sc.parallelize(1 to n, 2)
       val stratifiedData =
         data.keyBy(StratifiedAuxiliary.stratifier(fractionPositive))
       val samplingRate = 0.1
       StratifiedAuxiliary.testSampleExact(
-          stratifiedData, samplingRate, defaultSeed, n)
+        stratifiedData,
+        samplingRate,
+        defaultSeed,
+        n
+      )
     }
 
     // Use the same data for the rest of the tests
     val fractionPositive = 0.3
-    val n = 100
-    val data = sc.parallelize(1 to n, 2)
+    val n                = 100
+    val data             = sc.parallelize(1 to n, 2)
     val stratifiedData =
       data.keyBy(StratifiedAuxiliary.stratifier(fractionPositive))
 
     // vary seed
     for (seed <- defaultSeed to defaultSeed + 5L) {
       val samplingRate = 0.1
-      StratifiedAuxiliary.testSampleExact(
-          stratifiedData, samplingRate, seed, n)
+      StratifiedAuxiliary.testSampleExact(stratifiedData, samplingRate, seed, n)
     }
 
     // vary sampling rate
     for (samplingRate <- List(0.01, 0.05, 0.1, 0.5)) {
       StratifiedAuxiliary.testSampleExact(
-          stratifiedData, samplingRate, defaultSeed, n)
+        stratifiedData,
+        samplingRate,
+        defaultSeed,
+        n
+      )
     }
   }
 
   test("reduceByKey") {
     val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
-    val sums = pairs.reduceByKey(_ + _).collect()
+    val sums  = pairs.reduceByKey(_ + _).collect()
     assert(sums.toSet === Set((1, 7), (2, 1)))
   }
 
   test("reduceByKey with collectAsMap") {
     val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
-    val sums = pairs.reduceByKey(_ + _).collectAsMap()
+    val sums  = pairs.reduceByKey(_ + _).collectAsMap()
     assert(sums.size === 2)
     assert(sums(1) === 7)
     assert(sums(2) === 1)
@@ -197,13 +229,13 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
 
   test("reduceByKey with many output partitions") {
     val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
-    val sums = pairs.reduceByKey(_ + _, 10).collect()
+    val sums  = pairs.reduceByKey(_ + _, 10).collect()
     assert(sums.toSet === Set((1, 7), (2, 1)))
   }
 
   test("reduceByKey with partitioner") {
     val p = new Partitioner() {
-      def numPartitions = 2
+      def numPartitions          = 2
       def getPartition(key: Any) = key.asInstanceOf[Int]
     }
     val pairs =
@@ -232,7 +264,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
      * relatively tight error bounds to check correctness of functionality rather than checking
      * whether the approximation conforms with the requested bound.
      */
-    val p = 20
+    val p  = 20
     val sp = 0
     // When p = 20, the relative accuracy is about 0.001. So with high probability, the
     // relative error should be smaller than the threshold 0.01 we use here.
@@ -240,8 +272,8 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
 
     // For each value i, there are i tuples with first element equal to i.
     // Therefore, the expected count for key i would be i.
-    val stacked = (1 to 100).flatMap(i => (1 to i).map(j => (i, j)))
-    val rdd1 = sc.parallelize(stacked)
+    val stacked  = (1 to 100).flatMap(i => (1 to i).map(j => (i, j)))
+    val rdd1     = sc.parallelize(stacked)
     val counted1 = rdd1.countApproxDistinctByKey(p, sp).collect()
     counted1.foreach {
       case (k, count) => assert(error(count, k) < relativeSD)
@@ -254,58 +286,63 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
       val num = rnd.nextInt() % 500
       (1 to num).map(j => (num, j))
     }
-    val rdd2 = sc.parallelize(randStacked)
+    val rdd2     = sc.parallelize(randStacked)
     val counted2 = rdd2.countApproxDistinctByKey(relativeSD).collect()
     counted2.foreach {
       case (k, count) =>
-        assert(error(count, k) < relativeSD,
-               s"${error(count, k)} < $relativeSD")
+        assert(
+          error(count, k) < relativeSD,
+          s"${error(count, k)} < $relativeSD"
+        )
     }
   }
 
   test("join") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
     val joined = rdd1.join(rdd2).collect()
     assert(joined.size === 4)
     assert(
-        joined.toSet === Set(
-            (1, (1, 'x')),
-            (1, (2, 'x')),
-            (2, (1, 'y')),
-            (2, (1, 'z'))
-        ))
+      joined.toSet === Set(
+        (1, (1, 'x')),
+        (1, (2, 'x')),
+        (2, (1, 'y')),
+        (2, (1, 'z'))
+      )
+    )
   }
 
   test("join all-to-all") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (1, 3)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (1, 'y')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (1, 3)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (1, 'y')))
     val joined = rdd1.join(rdd2).collect()
     assert(joined.size === 6)
     assert(
-        joined.toSet === Set(
-            (1, (1, 'x')),
-            (1, (1, 'y')),
-            (1, (2, 'x')),
-            (1, (2, 'y')),
-            (1, (3, 'x')),
-            (1, (3, 'y'))
-        ))
+      joined.toSet === Set(
+        (1, (1, 'x')),
+        (1, (1, 'y')),
+        (1, (2, 'x')),
+        (1, (2, 'y')),
+        (1, (3, 'x')),
+        (1, (3, 'y'))
+      )
+    )
   }
 
   test("leftOuterJoin") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
     val joined = rdd1.leftOuterJoin(rdd2).collect()
     assert(joined.size === 5)
     assert(
-        joined.toSet === Set(
-            (1, (1, Some('x'))),
-            (1, (2, Some('x'))),
-            (2, (1, Some('y'))),
-            (2, (1, Some('z'))),
-            (3, (1, None))
-        ))
+      joined.toSet === Set(
+        (1, (1, Some('x'))),
+        (1, (2, Some('x'))),
+        (2, (1, Some('y'))),
+        (2, (1, Some('z'))),
+        (3, (1, None))
+      )
+    )
   }
 
   // See SPARK-9326
@@ -325,117 +362,123 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
     import scala.reflect.classTag
     val intCT = classTag[Int]
 
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.emptyRDD[Int](intCT).groupBy((x) => 5)
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.emptyRDD[Int](intCT).groupBy((x) => 5)
     val joined = rdd1.cogroup(rdd2).collect()
     assert(joined.size > 0)
   }
 
   test("rightOuterJoin") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
     val joined = rdd1.rightOuterJoin(rdd2).collect()
     assert(joined.size === 5)
     assert(
-        joined.toSet === Set(
-            (1, (Some(1), 'x')),
-            (1, (Some(2), 'x')),
-            (2, (Some(1), 'y')),
-            (2, (Some(1), 'z')),
-            (4, (None, 'w'))
-        ))
+      joined.toSet === Set(
+        (1, (Some(1), 'x')),
+        (1, (Some(2), 'x')),
+        (2, (Some(1), 'y')),
+        (2, (Some(1), 'z')),
+        (4, (None, 'w'))
+      )
+    )
   }
 
   test("fullOuterJoin") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
     val joined = rdd1.fullOuterJoin(rdd2).collect()
     assert(joined.size === 6)
     assert(
-        joined.toSet === Set(
-            (1, (Some(1), Some('x'))),
-            (1, (Some(2), Some('x'))),
-            (2, (Some(1), Some('y'))),
-            (2, (Some(1), Some('z'))),
-            (3, (Some(1), None)),
-            (4, (None, Some('w')))
-        ))
+      joined.toSet === Set(
+        (1, (Some(1), Some('x'))),
+        (1, (Some(2), Some('x'))),
+        (2, (Some(1), Some('y'))),
+        (2, (Some(1), Some('z'))),
+        (3, (Some(1), None)),
+        (4, (None, Some('w')))
+      )
+    )
   }
 
   test("join with no matches") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((4, 'x'), (5, 'y'), (5, 'z'), (6, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((4, 'x'), (5, 'y'), (5, 'z'), (6, 'w')))
     val joined = rdd1.join(rdd2).collect()
     assert(joined.size === 0)
   }
 
   test("join with many output partitions") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
     val joined = rdd1.join(rdd2, 10).collect()
     assert(joined.size === 4)
     assert(
-        joined.toSet === Set(
-            (1, (1, 'x')),
-            (1, (2, 'x')),
-            (2, (1, 'y')),
-            (2, (1, 'z'))
-        ))
+      joined.toSet === Set(
+        (1, (1, 'x')),
+        (1, (2, 'x')),
+        (2, (1, 'y')),
+        (2, (1, 'z'))
+      )
+    )
   }
 
   test("groupWith") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
     val joined = rdd1.groupWith(rdd2).collect()
     assert(joined.size === 4)
     val joinedSet =
       joined.map(x => (x._1, (x._2._1.toList, x._2._2.toList))).toSet
     assert(
-        joinedSet === Set(
-            (1, (List(1, 2), List('x'))),
-            (2, (List(1), List('y', 'z'))),
-            (3, (List(1), List())),
-            (4, (List(), List('w')))
-        ))
+      joinedSet === Set(
+        (1, (List(1, 2), List('x'))),
+        (2, (List(1), List('y', 'z'))),
+        (3, (List(1), List())),
+        (4, (List(), List('w')))
+      )
+    )
   }
 
   test("groupWith3") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
-    val rdd3 = sc.parallelize(Array((1, 'a'), (3, 'b'), (4, 'c'), (4, 'd')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd3   = sc.parallelize(Array((1, 'a'), (3, 'b'), (4, 'c'), (4, 'd')))
     val joined = rdd1.groupWith(rdd2, rdd3).collect()
     assert(joined.size === 4)
     val joinedSet = joined
       .map(x => (x._1, (x._2._1.toList, x._2._2.toList, x._2._3.toList)))
       .toSet
     assert(
-        joinedSet === Set(
-            (1, (List(1, 2), List('x'), List('a'))),
-            (2, (List(1), List('y', 'z'), List())),
-            (3, (List(1), List(), List('b'))),
-            (4, (List(), List('w'), List('c', 'd')))
-        ))
+      joinedSet === Set(
+        (1, (List(1, 2), List('x'), List('a'))),
+        (2, (List(1), List('y', 'z'), List())),
+        (3, (List(1), List(), List('b'))),
+        (4, (List(), List('w'), List('c', 'd')))
+      )
+    )
   }
 
   test("groupWith4") {
-    val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
-    val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
-    val rdd3 = sc.parallelize(Array((1, 'a'), (3, 'b'), (4, 'c'), (4, 'd')))
-    val rdd4 = sc.parallelize(Array((2, '@')))
+    val rdd1   = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1)))
+    val rdd2   = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w')))
+    val rdd3   = sc.parallelize(Array((1, 'a'), (3, 'b'), (4, 'c'), (4, 'd')))
+    val rdd4   = sc.parallelize(Array((2, '@')))
     val joined = rdd1.groupWith(rdd2, rdd3, rdd4).collect()
     assert(joined.size === 4)
     val joinedSet = joined
       .map(x =>
-            (x._1,
-             (x._2._1.toList, x._2._2.toList, x._2._3.toList, x._2._4.toList)))
+        (x._1, (x._2._1.toList, x._2._2.toList, x._2._3.toList, x._2._4.toList))
+      )
       .toSet
     assert(
-        joinedSet === Set(
-            (1, (List(1, 2), List('x'), List('a'), List())),
-            (2, (List(1), List('y', 'z'), List(), List('@'))),
-            (3, (List(1), List(), List('b'), List())),
-            (4, (List(), List('w'), List('c', 'd'), List()))
-        ))
+      joinedSet === Set(
+        (1, (List(1, 2), List('x'), List('a'), List())),
+        (2, (List(1), List('y', 'z'), List(), List('@'))),
+        (3, (List(1), List(), List('b'), List())),
+        (4, (List(), List('w'), List('c', 'd'), List()))
+      )
+    )
   }
 
   test("zero-partition RDD") {
@@ -446,7 +489,8 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
       assert(file.collect().toList === Nil)
       // Test that a shuffle on the file works, because this used to be a bug
       assert(
-          file.map(line => (line, 1)).reduceByKey(_ + _).collect().toList === Nil)
+        file.map(line => (line, 1)).reduceByKey(_ + _).collect().toList === Nil
+      )
     } finally {
       Utils.deleteRecursively(emptyDir)
     }
@@ -486,7 +530,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
   test("subtract with narrow dependency") {
     // use a deterministic partitioner
     val p = new Partitioner() {
-      def numPartitions = 5
+      def numPartitions          = 5
       def getPartition(key: Any) = key.asInstanceOf[Int]
     }
     // partitionBy so we have a narrow dependency
@@ -510,7 +554,7 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
   test("subtractByKey with narrow dependency") {
     // use a deterministic partitioner
     val p = new Partitioner() {
-      def numPartitions = 5
+      def numPartitions          = 5
       def getPartition(key: Any) = key.asInstanceOf[Int]
     }
     // partitionBy so we have a narrow dependency
@@ -526,24 +570,28 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
 
   test("foldByKey") {
     val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
-    val sums = pairs.foldByKey(0)(_ + _).collect()
+    val sums  = pairs.foldByKey(0)(_ + _).collect()
     assert(sums.toSet === Set((1, 7), (2, 1)))
   }
 
   test("foldByKey with mutable result type") {
     val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (1, 1), (2, 1)))
-    val bufs = pairs.mapValues(v => ArrayBuffer(v)).cache()
+    val bufs  = pairs.mapValues(v => ArrayBuffer(v)).cache()
     // Fold the values using in-place mutation
     val sums = bufs.foldByKey(new ArrayBuffer[Int])(_ ++= _).collect()
     assert(
-        sums.toSet === Set((1, ArrayBuffer(1, 2, 3, 1)), (2, ArrayBuffer(1))))
+      sums.toSet === Set((1, ArrayBuffer(1, 2, 3, 1)), (2, ArrayBuffer(1)))
+    )
     // Check that the mutable objects in the original RDD were not changed
     assert(
-        bufs.collect().toSet === Set((1, ArrayBuffer(1)),
-                                     (1, ArrayBuffer(2)),
-                                     (1, ArrayBuffer(3)),
-                                     (1, ArrayBuffer(1)),
-                                     (2, ArrayBuffer(1))))
+      bufs.collect().toSet === Set(
+        (1, ArrayBuffer(1)),
+        (1, ArrayBuffer(2)),
+        (1, ArrayBuffer(3)),
+        (1, ArrayBuffer(1)),
+        (2, ArrayBuffer(1))
+      )
+    )
   }
 
   test("saveNewAPIHadoopFile should call setConf if format is configurable") {
@@ -563,21 +611,24 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
 
   test("saveAsHadoopFile should respect configured output committers") {
     val pairs = sc.parallelize(Array((new Integer(1), new Integer(1))))
-    val conf = new JobConf()
+    val conf  = new JobConf()
     conf.setOutputCommitter(classOf[FakeOutputCommitter])
 
     FakeOutputCommitter.ran = false
-    pairs.saveAsHadoopFile("ignored",
-                           pairs.keyClass,
-                           pairs.valueClass,
-                           classOf[FakeOutputFormat],
-                           conf)
+    pairs.saveAsHadoopFile(
+      "ignored",
+      pairs.keyClass,
+      pairs.valueClass,
+      classOf[FakeOutputFormat],
+      conf
+    )
 
     assert(FakeOutputCommitter.ran, "OutputCommitter was never called")
   }
 
   test(
-      "failure callbacks should be called before calling writer.close() in saveNewAPIHadoopFile") {
+    "failure callbacks should be called before calling writer.close() in saveNewAPIHadoopFile"
+  ) {
     val pairs = sc.parallelize(Array((new Integer(1), new Integer(2))), 1)
 
     FakeWriterWithCallback.calledBy = ""
@@ -588,33 +639,42 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
     assert(e.getMessage contains "failed to write")
 
     assert(FakeWriterWithCallback.calledBy === "write,callback,close")
-    assert(FakeWriterWithCallback.exception != null,
-           "exception should be captured")
     assert(
-        FakeWriterWithCallback.exception.getMessage contains "failed to write")
+      FakeWriterWithCallback.exception != null,
+      "exception should be captured"
+    )
+    assert(
+      FakeWriterWithCallback.exception.getMessage contains "failed to write"
+    )
   }
 
   test(
-      "failure callbacks should be called before calling writer.close() in saveAsHadoopFile") {
+    "failure callbacks should be called before calling writer.close() in saveAsHadoopFile"
+  ) {
     val pairs = sc.parallelize(Array((new Integer(1), new Integer(2))), 1)
-    val conf = new JobConf()
+    val conf  = new JobConf()
 
     FakeWriterWithCallback.calledBy = ""
     FakeWriterWithCallback.exception = null
     val e = intercept[SparkException] {
-      pairs.saveAsHadoopFile("ignored",
-                             pairs.keyClass,
-                             pairs.valueClass,
-                             classOf[FakeFormatWithCallback],
-                             conf)
+      pairs.saveAsHadoopFile(
+        "ignored",
+        pairs.keyClass,
+        pairs.valueClass,
+        classOf[FakeFormatWithCallback],
+        conf
+      )
     }
     assert(e.getMessage contains "failed to write")
 
     assert(FakeWriterWithCallback.calledBy === "write,callback,close")
-    assert(FakeWriterWithCallback.exception != null,
-           "exception should be captured")
     assert(
-        FakeWriterWithCallback.exception.getMessage contains "failed to write")
+      FakeWriterWithCallback.exception != null,
+      "exception should be captured"
+    )
+    assert(
+      FakeWriterWithCallback.exception.getMessage contains "failed to write"
+    )
   }
 
   test("lookup") {
@@ -662,59 +722,69 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
       if (x % 10 < (10 * fractionPositive).toInt) "1" else "0"
     }
 
-    def assertBinomialSample(exact: Boolean,
-                             actual: Int,
-                             trials: Int,
-                             p: Double): Unit = {
+    def assertBinomialSample(
+        exact: Boolean,
+        actual: Int,
+        trials: Int,
+        p: Double
+    ): Unit = {
       if (exact) {
         assert(actual == math.ceil(p * trials).toInt)
       } else {
         val dist = new BinomialDistribution(trials, p)
-        val q = dist.cumulativeProbability(actual)
+        val q    = dist.cumulativeProbability(actual)
         withClue(s"p = $p: trials = $trials") {
           assert(q >= 0.001 && q <= 0.999)
         }
       }
     }
 
-    def assertPoissonSample(exact: Boolean,
-                            actual: Int,
-                            trials: Int,
-                            p: Double): Unit = {
+    def assertPoissonSample(
+        exact: Boolean,
+        actual: Int,
+        trials: Int,
+        p: Double
+    ): Unit = {
       if (exact) {
         assert(actual == math.ceil(p * trials).toInt)
       } else {
         val dist = new PoissonDistribution(p * trials)
-        val q = dist.cumulativeProbability(actual)
+        val q    = dist.cumulativeProbability(actual)
         withClue(s"p = $p: trials = $trials") {
           assert(q >= 0.001 && q <= 0.999)
         }
       }
     }
 
-    def testSampleExact(stratifiedData: RDD[(String, Int)],
-                        samplingRate: Double,
-                        seed: Long,
-                        n: Long): Unit = {
+    def testSampleExact(
+        stratifiedData: RDD[(String, Int)],
+        samplingRate: Double,
+        seed: Long,
+        n: Long
+    ): Unit = {
       testBernoulli(stratifiedData, true, samplingRate, seed, n)
       testPoisson(stratifiedData, true, samplingRate, seed, n)
     }
 
-    def testSample(stratifiedData: RDD[(String, Int)],
-                   samplingRate: Double,
-                   seed: Long,
-                   n: Long): Unit = {
+    def testSample(
+        stratifiedData: RDD[(String, Int)],
+        samplingRate: Double,
+        seed: Long,
+        n: Long
+    ): Unit = {
       testBernoulli(stratifiedData, false, samplingRate, seed, n)
       testPoisson(stratifiedData, false, samplingRate, seed, n)
     }
 
     // Without replacement validation
-    def testBernoulli(stratifiedData: RDD[(String, Int)],
-                      exact: Boolean,
-                      samplingRate: Double,
-                      seed: Long,
-                      n: Long): Unit = {
-      val trials = stratifiedData.countByKey()
+    def testBernoulli(
+        stratifiedData: RDD[(String, Int)],
+        exact: Boolean,
+        samplingRate: Double,
+        seed: Long,
+        n: Long
+    ): Unit = {
+      val trials    = stratifiedData.countByKey()
       val fractions = Map("1" -> samplingRate, "0" -> samplingRate)
       val sample =
         if (exact) {
@@ -723,13 +793,15 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
           stratifiedData.sampleByKey(false, fractions, seed)
         }
       val sampleCounts = sample.countByKey()
-      val takeSample = sample.collect()
+      val takeSample   = sample.collect()
       sampleCounts.foreach {
         case (k, v) =>
-          assertBinomialSample(exact = exact,
-                               actual = v.toInt,
-                               trials = trials(k).toInt,
-                               p = samplingRate)
+          assertBinomialSample(
+            exact = exact,
+            actual = v.toInt,
+            trials = trials(k).toInt,
+            p = samplingRate
+          )
       }
       assert(takeSample.size === takeSample.toSet.size)
       takeSample.foreach { x =>
@@ -738,11 +810,13 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
     }
 
     // With replacement validation
-    def testPoisson(stratifiedData: RDD[(String, Int)],
-                    exact: Boolean,
-                    samplingRate: Double,
-                    seed: Long,
-                    n: Long): Unit = {
+    def testPoisson(
+        stratifiedData: RDD[(String, Int)],
+        exact: Boolean,
+        samplingRate: Double,
+        seed: Long,
+        n: Long
+    ): Unit = {
       val trials = stratifiedData.countByKey()
       val expectedSampleSize = stratifiedData
         .countByKey()
@@ -755,13 +829,15 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
           stratifiedData.sampleByKey(true, fractions, seed)
         }
       val sampleCounts = sample.countByKey()
-      val takeSample = sample.collect()
+      val takeSample   = sample.collect()
       sampleCounts.foreach {
         case (k, v) =>
-          assertPoissonSample(exact,
-                              actual = v.toInt,
-                              trials = trials(k).toInt,
-                              p = samplingRate)
+          assertPoissonSample(
+            exact,
+            actual = v.toInt,
+            trials = trials(k).toInt,
+            p = samplingRate
+          )
       }
       val groupedByKey = takeSample.groupBy(_._1)
       for ((key, v) <- groupedByKey) {
@@ -772,15 +848,18 @@ class PairRDDFunctionsSuite extends SparkFunSuite with SharedSparkContext {
           if (exact) {
             assert(v.toSet.size <= expectedSampleSize(key))
           } else {
-            assertPoissonSample(false,
-                                actual = v.toSet.size,
-                                trials(key).toInt,
-                                p = samplingRate)
+            assertPoissonSample(
+              false,
+              actual = v.toSet.size,
+              trials(key).toInt,
+              p = samplingRate
+            )
           }
         }
       }
-      takeSample.foreach(
-          x => assert(1 <= x._2 && x._2 <= n, s"elements not in [1, $n]"))
+      takeSample.foreach(x =>
+        assert(1 <= x._2 && x._2 <= n, s"elements not in [1, $n]")
+      )
     }
   }
 }
@@ -830,7 +909,8 @@ class FakeOutputFormat() extends OutputFormat[Integer, Integer]() {
       ignored: FileSystem,
       job: JobConf,
       name: String,
-      progress: Progressable): RecordWriter[Integer, Integer] = {
+      progress: Progressable
+  ): RecordWriter[Integer, Integer] = {
     new FakeWriter()
   }
 
@@ -864,7 +944,8 @@ class NewFakeFormat() extends NewOutputFormat[Integer, Integer]() {
   def checkOutputSpecs(p1: NewJobContext): Unit = ()
 
   def getRecordWriter(
-      p1: NewTaskAttempContext): NewRecordWriter[Integer, Integer] = {
+      p1: NewTaskAttempContext
+  ): NewRecordWriter[Integer, Integer] = {
     new NewFakeWriter()
   }
 
@@ -874,7 +955,7 @@ class NewFakeFormat() extends NewOutputFormat[Integer, Integer]() {
 }
 
 object FakeWriterWithCallback {
-  var calledBy: String = ""
+  var calledBy: String     = ""
   var exception: Throwable = _
 
   def onFailure(ctx: TaskContext, e: Throwable): Unit = {
@@ -891,9 +972,8 @@ class FakeWriterWithCallback extends FakeWriter {
 
   override def write(p1: Integer, p2: Integer): Unit = {
     FakeWriterWithCallback.calledBy += "write,"
-    TaskContext.get().addTaskFailureListener {
-      (t: TaskContext, e: Throwable) =>
-        FakeWriterWithCallback.onFailure(t, e)
+    TaskContext.get().addTaskFailureListener { (t: TaskContext, e: Throwable) =>
+      FakeWriterWithCallback.onFailure(t, e)
     }
     throw new IOException("failed to write")
   }
@@ -904,7 +984,8 @@ class FakeFormatWithCallback() extends FakeOutputFormat {
       ignored: FileSystem,
       job: JobConf,
       name: String,
-      progress: Progressable): RecordWriter[Integer, Integer] = {
+      progress: Progressable
+  ): RecordWriter[Integer, Integer] = {
     new FakeWriterWithCallback()
   }
 }
@@ -916,9 +997,8 @@ class NewFakeWriterWithCallback extends NewFakeWriter {
 
   override def write(p1: Integer, p2: Integer): Unit = {
     FakeWriterWithCallback.calledBy += "write,"
-    TaskContext.get().addTaskFailureListener {
-      (t: TaskContext, e: Throwable) =>
-        FakeWriterWithCallback.onFailure(t, e)
+    TaskContext.get().addTaskFailureListener { (t: TaskContext, e: Throwable) =>
+      FakeWriterWithCallback.onFailure(t, e)
     }
     throw new IOException("failed to write")
   }
@@ -926,7 +1006,8 @@ class NewFakeWriterWithCallback extends NewFakeWriter {
 
 class NewFakeFormatWithCallback() extends NewFakeFormat {
   override def getRecordWriter(
-      p1: NewTaskAttempContext): NewRecordWriter[Integer, Integer] = {
+      p1: NewTaskAttempContext
+  ): NewRecordWriter[Integer, Integer] = {
     new NewFakeWriterWithCallback()
   }
 }
@@ -942,7 +1023,8 @@ class ConfigTestFormat() extends NewFakeFormat() with Configurable {
   def getConf: Configuration = null
 
   override def getRecordWriter(
-      p1: NewTaskAttempContext): NewRecordWriter[Integer, Integer] = {
+      p1: NewTaskAttempContext
+  ): NewRecordWriter[Integer, Integer] = {
     assert(setConfCalled, "setConf was never called")
     super.getRecordWriter(p1)
   }

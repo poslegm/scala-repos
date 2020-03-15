@@ -30,9 +30,10 @@ object RunQueueSpec extends Specification with ExecutionSpecification {
   }
 
   def countOrderingErrors(runs: Int, queueTester: QueueTester)(
-      implicit ec: ExecutionContext): Future[Int] = {
-    val result = Promise[Int]()
-    val runCount = new AtomicInteger(0)
+      implicit ec: ExecutionContext
+  ): Future[Int] = {
+    val result         = Promise[Int]()
+    val runCount       = new AtomicInteger(0)
     val orderingErrors = new AtomicInteger(0)
 
     for (i <- 0 until runs) {
@@ -60,8 +61,10 @@ object RunQueueSpec extends Specification with ExecutionSpecification {
     "run code in order" in {
       import ExecutionContext.Implicits.global
 
-      def percentageOfRunsWithOrderingErrors(runSize: Int,
-                                             queueTester: QueueTester): Int = {
+      def percentageOfRunsWithOrderingErrors(
+          runSize: Int,
+          queueTester: QueueTester
+      ): Int = {
         val results: Seq[Future[Int]] = for (i <- 0 until 9) yield {
           countOrderingErrors(runSize, queueTester)
         }
@@ -79,13 +82,16 @@ object RunQueueSpec extends Specification with ExecutionSpecification {
       var errorPercentage = 0
       while (errorPercentage < 90 && runSize < 1000000) {
         runSize = runSize << 1
-        errorPercentage = percentageOfRunsWithOrderingErrors(
-            runSize, new NaiveQueueTester())
+        errorPercentage =
+          percentageOfRunsWithOrderingErrors(runSize, new NaiveQueueTester())
       }
       //println(s"Got $errorPercentage% ordering errors on run size of $runSize")
 
       // Now show that this run length works fine with the RunQueueTester
-      percentageOfRunsWithOrderingErrors(runSize, new RunQueueTester()) must_== 0
+      percentageOfRunsWithOrderingErrors(
+        runSize,
+        new RunQueueTester()
+      ) must_== 0
     }
 
     "use the ExecutionContext exactly once per scheduled item" in {

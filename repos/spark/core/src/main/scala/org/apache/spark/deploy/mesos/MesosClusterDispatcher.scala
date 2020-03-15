@@ -46,8 +46,9 @@ import org.apache.spark.util.{ShutdownHookManager, Utils}
  * stopped by sbin/start-mesos-dispatcher and sbin/stop-mesos-dispatcher respectively.
  */
 private[mesos] class MesosClusterDispatcher(
-    args: MesosClusterDispatcherArguments, conf: SparkConf)
-    extends Logging {
+    args: MesosClusterDispatcherArguments,
+    conf: SparkConf
+) extends Logging {
 
   private val publicAddress =
     Option(conf.getenv("SPARK_PUBLIC_DNS")).getOrElse(args.host)
@@ -56,29 +57,32 @@ private[mesos] class MesosClusterDispatcher(
   logInfo("Recovery mode in Mesos dispatcher set to: " + recoveryMode)
 
   private val engineFactory = recoveryMode match {
-    case "NONE" => new BlackHoleMesosClusterPersistenceEngineFactory
+    case "NONE"      => new BlackHoleMesosClusterPersistenceEngineFactory
     case "ZOOKEEPER" => new ZookeeperMesosClusterPersistenceEngineFactory(conf)
     case _ =>
       throw new IllegalArgumentException(
-          "Unsupported recovery mode: " + recoveryMode)
+        "Unsupported recovery mode: " + recoveryMode
+      )
   }
 
   private val scheduler = new MesosClusterScheduler(engineFactory, conf)
 
-  private val server = new MesosRestServer(
-      args.host, args.port, conf, scheduler)
-  private val webUi = new MesosClusterUI(new SecurityManager(conf),
-                                         args.webUiPort,
-                                         conf,
-                                         publicAddress,
-                                         scheduler)
+  private val server =
+    new MesosRestServer(args.host, args.port, conf, scheduler)
+  private val webUi = new MesosClusterUI(
+    new SecurityManager(conf),
+    args.webUiPort,
+    conf,
+    publicAddress,
+    scheduler
+  )
 
   private val shutdownLatch = new CountDownLatch(1)
 
   def start(): Unit = {
     webUi.bind()
-    scheduler.frameworkUrl = conf.get(
-        "spark.mesos.dispatcher.webui.url", webUi.activeWebUiUrl)
+    scheduler.frameworkUrl =
+      conf.get("spark.mesos.dispatcher.webui.url", webUi.activeWebUiUrl)
     scheduler.start()
     server.start()
   }
@@ -98,7 +102,7 @@ private[mesos] class MesosClusterDispatcher(
 private[mesos] object MesosClusterDispatcher extends Logging {
   def main(args: Array[String]) {
     Utils.initDaemon(log)
-    val conf = new SparkConf
+    val conf           = new SparkConf
     val dispatcherArgs = new MesosClusterDispatcherArguments(args, conf)
     conf.setMaster(dispatcherArgs.masterUrl)
     conf.setAppName(dispatcherArgs.name)

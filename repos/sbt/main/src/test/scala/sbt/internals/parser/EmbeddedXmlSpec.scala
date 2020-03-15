@@ -8,7 +8,7 @@ class EmbeddedXmlSpec extends CheckIfParsedSpec {
 
     "Handle last xml part" in {
       val errorLine = """<version>4.0<version>"""
-      val buildSbt = s"""|
+      val buildSbt  = s"""|
                          |
                          |name := "play-html-compressor"
                          |
@@ -34,27 +34,21 @@ class EmbeddedXmlSpec extends CheckIfParsedSpec {
           val index =
             buildSbt.lines.indexWhere(line => line.contains(errorLine)) + 1
           val numberRegex = """(\d+)""".r
-          val message = exception.getMessage
-          val list = numberRegex.findAllIn(message).toList
+          val message     = exception.getMessage
+          val list        = numberRegex.findAllIn(message).toList
           list must contain(index.toString)
       }
     }
   }
 
   protected val files = Seq(
-      ("""
+    ("""
         |val p = <a/>
-      """.stripMargin,
-       "Xml modified closing tag at end of file",
-       false,
-       true),
-      ("""
+      """.stripMargin, "Xml modified closing tag at end of file", false, true),
+    ("""
         |val p = <a></a>
-      """.stripMargin,
-       "Xml at end of file",
-       false,
-       true),
-      ("""|
+      """.stripMargin, "Xml at end of file", false, true),
+    ("""|
         |
         |name := "play-html-compressor"
         |
@@ -90,11 +84,8 @@ class EmbeddedXmlSpec extends CheckIfParsedSpec {
         |
         |val tra = "</scm>"
         |
-      """.stripMargin,
-       "Xml in string",
-       false,
-       true),
-      ("""|
+      """.stripMargin, "Xml in string", false, true),
+    ("""|
         |
         |name := "play-html-compressor"
         |
@@ -123,11 +114,8 @@ class EmbeddedXmlSpec extends CheckIfParsedSpec {
         |<aa/>
         | </a></xml:group>
         |
-        | """.stripMargin,
-       "Xml with attributes",
-       false,
-       true),
-      ("""
+        | """.stripMargin, "Xml with attributes", false, true),
+    ("""
         |scalaVersion := "2.10.2"
         |
         |libraryDependencies += "org.scala-sbt" %% "sbinary" % "0.4.1" withSources() withJavadoc()
@@ -149,9 +137,6 @@ class EmbeddedXmlSpec extends CheckIfParsedSpec {
         |
         |
         |
-      """.stripMargin,
-       "xml with blank line",
-       false,
-       true)
+      """.stripMargin, "xml with blank line", false, true)
   )
 }

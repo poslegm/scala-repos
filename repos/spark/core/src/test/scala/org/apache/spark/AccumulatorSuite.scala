@@ -32,7 +32,9 @@ import org.apache.spark.scheduler._
 import org.apache.spark.serializer.JavaSerializer
 
 class AccumulatorSuite
-    extends SparkFunSuite with Matchers with LocalSparkContext {
+    extends SparkFunSuite
+    with Matchers
+    with LocalSparkContext {
   import AccumulatorParam._
 
   override def afterEach(): Unit = {
@@ -63,16 +65,12 @@ class AccumulatorSuite
     val acc: Accumulator[Int] = sc.accumulator(0)
 
     val d = sc.parallelize(1 to 20)
-    d.foreach { x =>
-      acc += x
-    }
+    d.foreach { x => acc += x }
     acc.value should be(210)
 
     val longAcc = sc.accumulator(0L)
-    val maxInt = Integer.MAX_VALUE.toLong
-    d.foreach { x =>
-      longAcc += maxInt + x
-    }
+    val maxInt  = Integer.MAX_VALUE.toLong
+    d.foreach { x => longAcc += maxInt + x }
     longAcc.value should be(210L + maxInt * 20)
   }
 
@@ -82,9 +80,7 @@ class AccumulatorSuite
 
     val d = sc.parallelize(1 to 20)
     an[Exception] should be thrownBy {
-      d.foreach { x =>
-        acc.value = x
-      }
+      d.foreach { x => acc.value = x }
     }
   }
 
@@ -96,9 +92,7 @@ class AccumulatorSuite
       val acc: Accumulable[mutable.Set[Any], Any] =
         sc.accumulable(new mutable.HashSet[Any]())
       val d = sc.parallelize(1 to maxI)
-      d.foreach { x =>
-        acc += x
-      }
+      d.foreach { x => acc += x }
       val v = acc.value.asInstanceOf[mutable.Set[Int]]
       for (i <- 1 to maxI) {
         v should contain(i)
@@ -116,9 +110,7 @@ class AccumulatorSuite
         sc.accumulable(new mutable.HashSet[Any]())
       val d = sc.parallelize(1 to maxI)
       an[SparkException] should be thrownBy {
-        d.foreach { x =>
-          acc.value += x
-        }
+        d.foreach { x => acc.value += x }
       }
       resetSparkContext()
     }
@@ -129,10 +121,10 @@ class AccumulatorSuite
     for (nThreads <- List(1, 10)) {
       // test single & multi-threaded
       sc = new SparkContext("local[" + nThreads + "]", "test")
-      val setAcc = sc.accumulableCollection(mutable.HashSet[Int]())
+      val setAcc    = sc.accumulableCollection(mutable.HashSet[Int]())
       val bufferAcc = sc.accumulableCollection(mutable.ArrayBuffer[Int]())
-      val mapAcc = sc.accumulableCollection(mutable.HashMap[Int, String]())
-      val d = sc.parallelize((1 to maxI) ++ (1 to maxI))
+      val mapAcc    = sc.accumulableCollection(mutable.HashMap[Int, String]())
+      val d         = sc.parallelize((1 to maxI) ++ (1 to maxI))
       d.foreach { x =>
         { setAcc += x; bufferAcc += x; mapAcc += (x -> x.toString) }
       }
@@ -161,9 +153,7 @@ class AccumulatorSuite
         (20 * (x - 1) to 20 * x).toSet
       }
       val d = sc.parallelize(groupedInts)
-      d.foreach { x =>
-        acc.localValue ++= x
-      }
+      d.foreach { x => acc.localValue ++= x }
       acc.value should be((0 to maxI).toSet)
       resetSparkContext()
     }
@@ -175,7 +165,7 @@ class AccumulatorSuite
     var acc: Accumulable[mutable.Set[Any], Any] =
       sc.accumulable(new mutable.HashSet[Any]())
     val accId = acc.id
-    val ref = WeakReference(acc)
+    val ref   = WeakReference(acc)
 
     // Ensure the accumulator is present
     assert(ref.get.isDefined)
@@ -195,7 +185,7 @@ class AccumulatorSuite
     var acc =
       new Accumulable[Int, Int](0, IntAccumulatorParam, None, true, true)
     val accId = acc.id
-    val ref = WeakReference(acc)
+    val ref   = WeakReference(acc)
     assert(ref.get.isDefined)
     Accumulators.register(ref.get.get)
 
@@ -222,9 +212,13 @@ class AccumulatorSuite
 
   test("only external accums are automatically registered") {
     val accEx = new Accumulator(
-        0, IntAccumulatorParam, Some("external"), internal = false)
-    val accIn = new Accumulator(
-        0, IntAccumulatorParam, Some("internal"), internal = true)
+      0,
+      IntAccumulatorParam,
+      Some("external"),
+      internal = false
+    )
+    val accIn =
+      new Accumulator(0, IntAccumulatorParam, Some("internal"), internal = true)
     assert(!accEx.isInternal)
     assert(accIn.isInternal)
     assert(Accumulators.get(accEx.id).isDefined)
@@ -233,7 +227,12 @@ class AccumulatorSuite
 
   test("copy") {
     val acc1 = new Accumulable[Long, Long](
-        456L, LongAccumulatorParam, Some("x"), true, false)
+      456L,
+      LongAccumulatorParam,
+      Some("x"),
+      true,
+      false
+    )
     val acc2 = acc1.copy()
     assert(acc1.id === acc2.id)
     assert(acc1.value === acc2.value)
@@ -283,7 +282,10 @@ class AccumulatorSuite
 
   test("list accumulator param") {
     val acc = new Accumulator(
-        Seq.empty[Int], new ListAccumulatorParam[Int], Some("numbers"))
+      Seq.empty[Int],
+      new ListAccumulatorParam[Int],
+      Some("numbers")
+    )
     assert(acc.value === Seq.empty[Int])
     acc.add(Seq(1, 2))
     assert(acc.value === Seq(1, 2))
@@ -301,7 +303,11 @@ class AccumulatorSuite
     val acc1 =
       new Accumulator(0, IntAccumulatorParam, Some("thing"), internal = false)
     val acc2 = new Accumulator(
-        0L, LongAccumulatorParam, Some("thing2"), internal = false)
+      0L,
+      LongAccumulatorParam,
+      Some("thing2"),
+      internal = false
+    )
     val externalAccums = Seq(acc1, acc2)
     val internalAccums = InternalAccumulator.createAll()
     // Set some values; these should not be observed later on the "executors"
@@ -313,22 +319,24 @@ class AccumulatorSuite
       .asInstanceOf[Accumulator[Long]]
       .setValue(30L)
     // Simulate the task being serialized and sent to the executors.
-    val dummyTask = new DummyTask(internalAccums, externalAccums)
+    val dummyTask   = new DummyTask(internalAccums, externalAccums)
     val serInstance = new JavaSerializer(new SparkConf).newInstance()
     val taskSer = Task.serializeWithDependencies(
-        dummyTask, mutable.HashMap(), mutable.HashMap(), serInstance)
+      dummyTask,
+      mutable.HashMap(),
+      mutable.HashMap(),
+      serInstance
+    )
     // Now we're on the executors.
     // Deserialize the task and assert that its accumulators are zero'ed out.
     val (_, _, taskBytes) = Task.deserializeWithDependencies(taskSer)
     val taskDeser = serInstance.deserialize[DummyTask](
-        taskBytes, Thread.currentThread.getContextClassLoader)
+      taskBytes,
+      Thread.currentThread.getContextClassLoader
+    )
     // Assert that executors see only zeros
-    taskDeser.externalAccums.foreach { a =>
-      assert(a.localValue == a.zero)
-    }
-    taskDeser.internalAccums.foreach { a =>
-      assert(a.localValue == a.zero)
-    }
+    taskDeser.externalAccums.foreach { a => assert(a.localValue == a.zero) }
+    taskDeser.internalAccums.foreach { a => assert(a.localValue == a.zero) }
   }
 }
 
@@ -341,7 +349,8 @@ private[spark] object AccumulatorSuite {
     * accumulator is updated afterwards.
     */
   def verifyPeakExecutionMemorySet(sc: SparkContext, testName: String)(
-      testBody: => Unit): Unit = {
+      testBody: => Unit
+  ): Unit = {
     val listener = new SaveInfoListener
     sc.addSparkListener(listener)
     testBody
@@ -354,7 +363,9 @@ private[spark] object AccumulatorSuite {
     }
     if (!isSet) {
       throw new TestFailedException(
-          s"peak execution memory accumulator not set in '$testName'", 0)
+        s"peak execution memory accumulator not set in '$testName'",
+        0
+      )
     }
   }
 }
@@ -363,7 +374,7 @@ private[spark] object AccumulatorSuite {
   * A simple listener that keeps track of the TaskInfos and StageInfos of all completed jobs.
   */
 private class SaveInfoListener extends SparkListener {
-  type StageId = Int
+  type StageId        = Int
   type StageAttemptId = Int
 
   private val completedStageInfos = new ArrayBuffer[StageInfo]
@@ -373,17 +384,18 @@ private class SaveInfoListener extends SparkListener {
   // Callback to call when a job completes. Parameter is job ID.
   @GuardedBy("this")
   private var jobCompletionCallback: () => Unit = null
-  private val jobCompletionSem = new Semaphore(0)
-  private var exception: Throwable = null
+  private val jobCompletionSem                  = new Semaphore(0)
+  private var exception: Throwable              = null
 
   def getCompletedStageInfos: Seq[StageInfo] =
     completedStageInfos.toArray.toSeq
   def getCompletedTaskInfos: Seq[TaskInfo] =
     completedTaskInfos.values.flatten.toSeq
   def getCompletedTaskInfos(
-      stageId: StageId, stageAttemptId: StageAttemptId): Seq[TaskInfo] =
-    completedTaskInfos.getOrElse(
-        (stageId, stageAttemptId), Seq.empty[TaskInfo])
+      stageId: StageId,
+      stageAttemptId: StageAttemptId
+  ): Seq[TaskInfo] =
+    completedTaskInfos.getOrElse((stageId, stageAttemptId), Seq.empty[TaskInfo])
 
   /**
     * If `jobCompletionCallback` is set, block until the next call has finished.
@@ -422,22 +434,25 @@ private class SaveInfoListener extends SparkListener {
   }
 
   override def onStageCompleted(
-      stageCompleted: SparkListenerStageCompleted): Unit = {
+      stageCompleted: SparkListenerStageCompleted
+  ): Unit = {
     completedStageInfos += stageCompleted.stageInfo
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = {
     completedTaskInfos.getOrElseUpdate(
-        (taskEnd.stageId, taskEnd.stageAttemptId),
-        new ArrayBuffer[TaskInfo]) += taskEnd.taskInfo
+      (taskEnd.stageId, taskEnd.stageAttemptId),
+      new ArrayBuffer[TaskInfo]
+    ) += taskEnd.taskInfo
   }
 }
 
 /**
   * A dummy [[Task]] that contains internal and external [[Accumulator]]s.
   */
-private[spark] class DummyTask(val internalAccums: Seq[Accumulator[_]],
-                               val externalAccums: Seq[Accumulator[_]])
-    extends Task[Int](0, 0, 0, internalAccums) {
+private[spark] class DummyTask(
+    val internalAccums: Seq[Accumulator[_]],
+    val externalAccums: Seq[Accumulator[_]]
+) extends Task[Int](0, 0, 0, internalAccums) {
   override def runTask(c: TaskContext): Int = 1
 }

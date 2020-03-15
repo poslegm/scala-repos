@@ -25,13 +25,13 @@ object IndexArbitraries {
 
   def indexIntWithDups: Gen[Index[Int]] =
     for {
-      l <- Gen.choose(0, 20)
+      l   <- Gen.choose(0, 20)
       lst <- Gen.listOfN(l, Gen.chooseNum(0, l))
     } yield lst.toIndex
 
   def indexIntNoDups: Gen[Index[Int]] =
     for {
-      l <- Gen.choose(0, 20)
+      l   <- Gen.choose(0, 20)
       lst <- Gen.listOfN(l, Gen.chooseNum(0, l))
     } yield lst.toSet[Int].toSeq.toIndex
 
@@ -46,13 +46,13 @@ object IndexArbitraries {
 
   def indexTimeWithDups: Gen[Index[DateTime]] =
     for {
-      l <- Gen.choose(0, 100)
+      l   <- Gen.choose(0, 100)
       lst <- Gen.listOfN(l, getDate)
     } yield lst.toIndex
 
   def indexTimeNoDups: Gen[Index[DateTime]] =
     for {
-      l <- Gen.choose(0, 100)
+      l   <- Gen.choose(0, 100)
       lst <- Gen.listOfN(l, getDate)
     } yield lst.toSet[DateTime].toSeq.toIndex
 }

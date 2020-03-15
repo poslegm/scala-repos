@@ -4,7 +4,7 @@ import org.scalatest.{WordSpec, Matchers}
 
 class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
   // Deal with when a key appears in left but not right
-  val leftTypedPipe = TypedPipe.from(List((1, 1111)))
+  val leftTypedPipe  = TypedPipe.from(List((1, 1111)))
   val rightTypedPipe = TypedPipe.from(List((3, 3333), (4, 4444)))
 
   implicit def serialize(k: Int) = k.toString.getBytes

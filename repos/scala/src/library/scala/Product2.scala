@@ -18,8 +18,10 @@ object Product2 {
   *  @since 2.3
   */
 trait Product2[
-    @specialized(Int, Long, Double) +T1, @specialized(Int, Long, Double) +T2]
-    extends Any with Product {
+    @specialized(Int, Long, Double) +T1,
+    @specialized(Int, Long, Double) +T2
+] extends Any
+    with Product {
 
   /** The arity of this product.
     *  @return 2
@@ -34,11 +36,12 @@ trait Product2[
     *  @throws  IndexOutOfBoundsException
     */
   @throws(classOf[IndexOutOfBoundsException])
-  override def productElement(n: Int) = n match {
-    case 0 => _1
-    case 1 => _2
-    case _ => throw new IndexOutOfBoundsException(n.toString())
-  }
+  override def productElement(n: Int) =
+    n match {
+      case 0 => _1
+      case 1 => _2
+      case _ => throw new IndexOutOfBoundsException(n.toString())
+    }
 
   /** A projection of element 1 of this Product.
     *  @return   A projection of element 1.

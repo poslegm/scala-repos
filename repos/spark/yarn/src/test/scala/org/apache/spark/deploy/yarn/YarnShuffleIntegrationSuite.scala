@@ -41,15 +41,16 @@ class YarnShuffleIntegrationSuite extends BaseYarnClusterSuite {
     val yarnConfig = new YarnConfiguration()
     yarnConfig.set(YarnConfiguration.NM_AUX_SERVICES, "spark_shuffle")
     yarnConfig.set(
-        YarnConfiguration.NM_AUX_SERVICE_FMT.format("spark_shuffle"),
-        classOf[YarnShuffleService].getCanonicalName)
+      YarnConfiguration.NM_AUX_SERVICE_FMT.format("spark_shuffle"),
+      classOf[YarnShuffleService].getCanonicalName
+    )
     yarnConfig.set("spark.shuffle.service.port", "0")
     yarnConfig
   }
 
   test("external shuffle service") {
     val shuffleServicePort = YarnTestAccessor.getShuffleServicePort
-    val shuffleService = YarnTestAccessor.getShuffleServiceInstance
+    val shuffleService     = YarnTestAccessor.getShuffleServiceInstance
 
     val registeredExecFile =
       YarnTestAccessor.getRegisteredExecutorFile(shuffleService)
@@ -57,14 +58,14 @@ class YarnShuffleIntegrationSuite extends BaseYarnClusterSuite {
     logInfo("Shuffle service port = " + shuffleServicePort)
     val result = File.createTempFile("result", null, tempDir)
     val finalState = runSpark(
-        false,
-        mainClassName(YarnExternalShuffleDriver.getClass),
-        appArgs = Seq(result.getAbsolutePath(),
-                      registeredExecFile.getAbsolutePath),
-        extraConf = Map(
-              "spark.shuffle.service.enabled" -> "true",
-              "spark.shuffle.service.port" -> shuffleServicePort.toString
-          )
+      false,
+      mainClassName(YarnExternalShuffleDriver.getClass),
+      appArgs =
+        Seq(result.getAbsolutePath(), registeredExecFile.getAbsolutePath),
+      extraConf = Map(
+        "spark.shuffle.service.enabled" -> "true",
+        "spark.shuffle.service.port"    -> shuffleServicePort.toString
+      )
     )
     checkResult(finalState, result)
     assert(YarnTestAccessor.getRegisteredExecutorFile(shuffleService).exists())
@@ -88,33 +89,31 @@ private object YarnExternalShuffleDriver extends Logging with Matchers {
     }
 
     val sc = new SparkContext(
-        new SparkConf().setAppName("External Shuffle Test"))
-    val conf = sc.getConf
-    val status = new File(args(0))
+      new SparkConf().setAppName("External Shuffle Test")
+    )
+    val conf               = sc.getConf
+    val status             = new File(args(0))
     val registeredExecFile = new File(args(1))
     logInfo("shuffle service executor file = " + registeredExecFile)
-    var result = "failure"
+    var result        = "failure"
     val execStateCopy = new File(registeredExecFile.getAbsolutePath + "_dup")
     try {
       val data = sc
         .parallelize(0 until 100, 10)
-        .map { x =>
-          (x % 10) -> x
-        }
+        .map { x => (x % 10) -> x }
         .reduceByKey { _ + _ }
         .collect()
         .toSet
       sc.listenerBus.waitUntilEmpty(WAIT_TIMEOUT_MILLIS)
-      data should be((0 until 10).map { x =>
-        x -> (x * 10 + 450)
-      }.toSet)
+      data should be((0 until 10).map { x => x -> (x * 10 + 450) }.toSet)
       result = "success"
       // only one process can open a leveldb file at a time, so we copy the files
       FileUtils.copyDirectory(registeredExecFile, execStateCopy)
       assert(
-          !ShuffleTestAccessor
-            .reloadRegisteredExecutors(execStateCopy)
-            .isEmpty)
+        !ShuffleTestAccessor
+          .reloadRegisteredExecutors(execStateCopy)
+          .isEmpty
+      )
     } finally {
       sc.stop()
       FileUtils.deleteDirectory(execStateCopy)

@@ -24,8 +24,10 @@ import java.io.InputStream
   *  @param length Length in bytes in [[buffer]]
   */
 class ArrayBufferInputStream(
-    val buffer: ArrayBuffer, val offset: Int, val length: Int)
-    extends InputStream {
+    val buffer: ArrayBuffer,
+    val offset: Int,
+    val length: Int
+) extends InputStream {
 
   /** Convenience constructor. Strictly equivalent to
     *  {{new ArrayBufferInputStream(buffer, 0, buffer.byteLength)}
@@ -42,13 +44,13 @@ class ArrayBufferInputStream(
     *
     *  Use [[skip]] to update (protects from overrun and moving backwards).
     */
-  @inline def pos: Int = _pos
+  @inline def pos: Int                      = _pos
   @inline protected def pos_=(x: Int): Unit = _pos = x
-  private[this] var _pos: Int = 0
+  private[this] var _pos: Int               = 0
 
-  override def available(): Int = length - pos
+  override def available(): Int           = length - pos
   override def mark(readlimit: Int): Unit = { mark = pos }
-  override def markSupported(): Boolean = true
+  override def markSupported(): Boolean   = true
   def read(): Int = {
     if (pos < length) {
       val res = uintView(pos)
@@ -63,7 +65,7 @@ class ArrayBufferInputStream(
 
     val len = Math.min(reqLen, length - pos)
 
-    if (reqLen == 0) 0 // 0 requested, 0 returned
+    if (reqLen == 0) 0    // 0 requested, 0 returned
     else if (len == 0) -1 // nothing to read at all
     else {
       var i = 0

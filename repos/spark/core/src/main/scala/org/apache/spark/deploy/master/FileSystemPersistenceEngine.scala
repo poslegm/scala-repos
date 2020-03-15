@@ -22,7 +22,11 @@ import java.io._
 import scala.reflect.ClassTag
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.serializer.{DeserializationStream, SerializationStream, Serializer}
+import org.apache.spark.serializer.{
+  DeserializationStream,
+  SerializationStream,
+  Serializer
+}
 import org.apache.spark.util.Utils
 
 /**
@@ -33,8 +37,10 @@ import org.apache.spark.util.Utils
   * @param serializer Used to serialize our objects.
   */
 private[master] class FileSystemPersistenceEngine(
-    val dir: String, val serializer: Serializer)
-    extends PersistenceEngine with Logging {
+    val dir: String,
+    val serializer: Serializer
+) extends PersistenceEngine
+    with Logging {
 
   new File(dir).mkdir()
 
@@ -49,7 +55,7 @@ private[master] class FileSystemPersistenceEngine(
     }
   }
 
-  override def read[T : ClassTag](prefix: String): Seq[T] = {
+  override def read[T: ClassTag](prefix: String): Seq[T] = {
     val files = new File(dir).listFiles().filter(_.getName.startsWith(prefix))
     files.map(deserializeFromFile[T])
   }
@@ -59,7 +65,7 @@ private[master] class FileSystemPersistenceEngine(
     if (!created) {
       throw new IllegalStateException("Could not create file: " + file)
     }
-    val fileOut = new FileOutputStream(file)
+    val fileOut                  = new FileOutputStream(file)
     var out: SerializationStream = null
     Utils.tryWithSafeFinally {
       out = serializer.newInstance().serializeStream(fileOut)
@@ -73,7 +79,7 @@ private[master] class FileSystemPersistenceEngine(
   }
 
   private def deserializeFromFile[T](file: File)(implicit m: ClassTag[T]): T = {
-    val fileIn = new FileInputStream(file)
+    val fileIn                    = new FileInputStream(file)
     var in: DeserializationStream = null
     try {
       in = serializer.newInstance().deserializeStream(fileIn)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package shapeless.examples
 
 /**
   * Type level selection sort
-  * 
+  *
   * @author Miles Sabin
   */
 object Sorting {
@@ -33,10 +33,12 @@ object Sorting {
     * Witness that an HList of Nats is in non-decreasing order at both type and value level.
     */
   trait NonDecreasing[L <: HList]
-  implicit def hnilNonDecreasing = new NonDecreasing[HNil] {}
+  implicit def hnilNonDecreasing      = new NonDecreasing[HNil]      {}
   implicit def hlistNonDecreasing1[H] = new NonDecreasing[H :: HNil] {}
-  implicit def hlistNonDecreasing2[H1 <: Nat, H2 <: Nat, T <: HList](
-      implicit ltEq: H1 <= H2, ndt: NonDecreasing[H2 :: T]) =
+  implicit def hlistNonDecreasing2[H1 <: Nat, H2 <: Nat, T <: HList](implicit
+      ltEq: H1 <= H2,
+      ndt: NonDecreasing[H2 :: T]
+  ) =
     new NonDecreasing[H1 :: H2 :: T] {}
 
   def acceptNonDecreasing[L <: HList](l: L)(implicit ni: NonDecreasing[L]) = l
@@ -47,7 +49,7 @@ object Sorting {
 
   // Apply at the value-level
   acceptNonDecreasing(_1 :: _2 :: _3 :: HNil) // OK
-  //acceptNonDecreasing(_1 :: _3 :: _2 :: HNil)         // Does not compile  
+  //acceptNonDecreasing(_1 :: _3 :: _2 :: HNil)         // Does not compile
 
   /**
     * Type class extracting the least element from an HList of Nats at both type and value level.
@@ -66,8 +68,11 @@ object Sorting {
 
   object SelectLeast extends LowPrioritySelectLeast {
     implicit def hlistSelectLeast3[
-        H <: Nat, T <: HList, TM <: Nat, TRem <: HList](
-        implicit tsl: SelectLeast[T, TM, TRem], ev: TM < H) =
+        H <: Nat,
+        T <: HList,
+        TM <: Nat,
+        TRem <: HList
+    ](implicit tsl: SelectLeast[T, TM, TRem], ev: TM < H) =
       new SelectLeast[H :: T, TM, H :: TRem] {
         def apply(l: H :: T): (TM, H :: TRem) = {
           val (tm, rem) = tsl(l.tail)
@@ -77,7 +82,8 @@ object Sorting {
   }
 
   def selectLeast[L <: HList, M <: Nat, Rem <: HList](l: L)(
-      implicit sl: SelectLeast[L, M, Rem]) = sl(l)
+      implicit sl: SelectLeast[L, M, Rem]
+  ) = sl(l)
 
   val (l1, r1) = selectLeast(_1 :: _2 :: _3 :: HNil)
   typed[_1](l1)
@@ -88,22 +94,26 @@ object Sorting {
   typed[_3 :: _1 :: _4 :: _2 :: HNil](r2)
 
   /**
-    * Type class performing selection sort on an HList of Nats at both the type and value level. 
+    * Type class performing selection sort on an HList of Nats at both the type and value level.
     */
   trait SelectionSort[L <: HList, S <: HList] {
     def apply(l: L): S
   }
 
   trait LowPrioritySelectionSort {
-    implicit def hlistSelectionSort1[S <: HList] = new SelectionSort[S, S] {
-      def apply(l: S): S = l
-    }
+    implicit def hlistSelectionSort1[S <: HList] =
+      new SelectionSort[S, S] {
+        def apply(l: S): S = l
+      }
   }
 
   object SelectionSort extends LowPrioritySelectionSort {
     implicit def hlistSelectionSort2[
-        L <: HList, M <: Nat, Rem <: HList, ST <: HList](
-        implicit sl: SelectLeast[L, M, Rem], sr: SelectionSort[Rem, ST]) =
+        L <: HList,
+        M <: Nat,
+        Rem <: HList,
+        ST <: HList
+    ](implicit sl: SelectLeast[L, M, Rem], sr: SelectionSort[Rem, ST]) =
       new SelectionSort[L, M :: ST] {
         def apply(l: L) = {
           val (m, rem) = sl(l)
@@ -113,10 +123,11 @@ object Sorting {
   }
 
   def selectionSort[L <: HList, S <: HList](l: L)(
-      implicit sort: SelectionSort[L, S]) = sort(l)
+      implicit sort: SelectionSort[L, S]
+  ) = sort(l)
 
   /**
-    * The punchline ... 
+    * The punchline ...
     */
   val unsorted = _3 :: _1 :: _4 :: _0 :: _2 :: HNil
   typed[_3 :: _1 :: _4 :: _0 :: _2 :: HNil](unsorted)
@@ -124,5 +135,5 @@ object Sorting {
 
   val sorted = selectionSort(unsorted)
   typed[_0 :: _1 :: _2 :: _3 :: _4 :: HNil](sorted)
-  acceptNonDecreasing(sorted) // Compiles!     
+  acceptNonDecreasing(sorted) // Compiles!
 }

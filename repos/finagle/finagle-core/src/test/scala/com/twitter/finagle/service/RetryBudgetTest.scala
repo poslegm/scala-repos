@@ -40,33 +40,34 @@ class RetryBudgetTest extends FunSuite with Matchers {
       ttl: Duration = 60.seconds,
       minRetriesPerSec: Int = 0,
       percentCanRetry: Double = 0.0
-  ): Unit = withClue(s"percentCanRetry=$percentCanRetry:") {
-    // freeze time to simplify the tests
-    Time.withCurrentTimeFrozen { _ =>
-      val rb = newRetryBudget(ttl, minRetriesPerSec, percentCanRetry)
+  ): Unit =
+    withClue(s"percentCanRetry=$percentCanRetry:") {
+      // freeze time to simplify the tests
+      Time.withCurrentTimeFrozen { _ =>
+        val rb = newRetryBudget(ttl, minRetriesPerSec, percentCanRetry)
 
-      // check initial conditions
-      val minRetries = ttl.inSeconds * minRetriesPerSec
-      assert(minRetries == rb.balance)
-      if (minRetries == 0) assert(!rb.tryWithdraw())
+        // check initial conditions
+        val minRetries = ttl.inSeconds * minRetriesPerSec
+        assert(minRetries == rb.balance)
+        if (minRetries == 0) assert(!rb.tryWithdraw())
 
-      // use a decent sized number so we see less effects from fractions
-      val nReqs = 10000
-      var retried = 0
-      0.until(nReqs).foreach { i =>
-        withClue(s"request $i:") {
-          rb.deposit()
-          if (rb.tryWithdraw()) retried += 1
-          else assert(0 == rb.balance)
+        // use a decent sized number so we see less effects from fractions
+        val nReqs   = 10000
+        var retried = 0
+        0.until(nReqs).foreach { i =>
+          withClue(s"request $i:") {
+            rb.deposit()
+            if (rb.tryWithdraw()) retried += 1
+            else assert(0 == rb.balance)
+          }
         }
-      }
 
-      // because TokenRetryBudget.ScaleFactor doesn't give us
-      // perfect precision, we give ourselves a small error margin.
-      val expectedRetries = (nReqs * percentCanRetry).toInt + minRetries
-      expectedRetries should be(retried +- 1)
+        // because TokenRetryBudget.ScaleFactor doesn't give us
+        // perfect precision, we give ourselves a small error margin.
+        val expectedRetries = (nReqs * percentCanRetry).toInt + minRetries
+        expectedRetries should be(retried +- 1)
+      }
     }
-  }
 
   test("apply ttl bounds check") {
     intercept[IllegalArgumentException] {
@@ -120,16 +121,14 @@ class RetryBudgetTest extends FunSuite with Matchers {
     // Slightly simpler than `testBudgetNoMin` in that it runs all
     // the `request`s up front then checks the end-state.
     val percent = 2.0
-    val rb = newRetryBudget(maxPercentOver = percent)
+    val rb      = newRetryBudget(maxPercentOver = percent)
 
     // check initial conditions
     assert(0 == rb.balance)
     assert(!rb.tryWithdraw())
 
     val nReqs = 10000
-    0.until(nReqs).foreach { _ =>
-      rb.deposit()
-    }
+    0.until(nReqs).foreach { _ => rb.deposit() }
 
     val expectedRetries = (nReqs * percent).toInt
     assert(expectedRetries == rb.balance)

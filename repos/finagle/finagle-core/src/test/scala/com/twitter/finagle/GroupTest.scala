@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class GroupTest extends FunSuite {
   class Ctx {
-    val group = Group.mutable[Int]()
+    val group  = Group.mutable[Int]()
     var mapped = mutable.Buffer[Int]()
     val derived =
       group map { i =>
@@ -65,14 +65,14 @@ class GroupTest extends FunSuite {
   }
 
   test("convert from builder group") {
-    val bc = builder.StaticCluster(Seq(1, 2, 3, 4))
+    val bc    = builder.StaticCluster(Seq(1, 2, 3, 4))
     val group = Group.fromCluster(bc)
     assert(group() == Set(1, 2, 3, 4))
     assert(group() eq group())
   }
 
   test("convert from dynamic builder group") {
-    val bc = new builder.ClusterInt
+    val bc    = new builder.ClusterInt
     val group = Group.fromCluster(bc)
 
     assert(group().isEmpty)

@@ -39,7 +39,7 @@ object AtLeastOnceDeliveryFailureSpec {
   case class Confirm(deliveryId: Long, i: Int)
 
   sealed trait Evt
-  case class MsgSent(i: Int) extends Evt
+  case class MsgSent(i: Int)                        extends Evt
   case class MsgConfirmed(deliveryId: Long, i: Int) extends Evt
 
   trait ChaosSupport {
@@ -63,7 +63,9 @@ object AtLeastOnceDeliveryFailureSpec {
   }
 
   class ChaosSender(destination: ActorRef, val probe: ActorRef)
-      extends PersistentActor with ChaosSupport with ActorLogging
+      extends PersistentActor
+      with ChaosSupport
+      with ActorLogging
       with AtLeastOnceDelivery {
     val config =
       context.system.settings.config.getConfig("akka.persistence.sender.chaos")
@@ -103,31 +105,40 @@ object AtLeastOnceDeliveryFailureSpec {
         else log.debug(debugMessage(s"replayed event $evt"))
     }
 
-    def updateState(evt: Evt): Unit = evt match {
-      case MsgSent(i) ⇒
-        add(i)
-        deliver(destination.path)(deliveryId ⇒ Msg(deliveryId, i))
+    def updateState(evt: Evt): Unit =
+      evt match {
+        case MsgSent(i) ⇒
+          add(i)
+          deliver(destination.path)(deliveryId ⇒ Msg(deliveryId, i))
 
-      case MsgConfirmed(deliveryId, i) ⇒
-        confirmDelivery(deliveryId)
-    }
+        case MsgConfirmed(deliveryId, i) ⇒
+          confirmDelivery(deliveryId)
+      }
 
     private def debugMessage(msg: String): String =
-      s"[sender] ${msg} (mode = ${if (recoveryRunning) "replay" else "live"} snr = ${lastSequenceNr} state = ${state.sorted})"
+      s"[sender] ${msg} (mode = ${if (recoveryRunning) "replay"
+      else "live"} snr = ${lastSequenceNr} state = ${state.sorted})"
 
     override protected def onRecoveryFailure(
-        cause: Throwable, event: Option[Any]): Unit = {
+        cause: Throwable,
+        event: Option[Any]
+    ): Unit = {
       // mute logging
     }
 
     override protected def onPersistFailure(
-        cause: Throwable, event: Any, seqNr: Long): Unit = {
+        cause: Throwable,
+        event: Any,
+        seqNr: Long
+    ): Unit = {
       // mute logging
     }
   }
 
   class ChaosDestination(val probe: ActorRef)
-      extends Actor with ChaosSupport with ActorLogging {
+      extends Actor
+      with ChaosSupport
+      with ActorLogging {
     val config = context.system.settings.config
       .getConfig("akka.persistence.destination.chaos")
     val confirmFailureRate = config.getDouble("confirm-failure-rate")
@@ -153,16 +164,18 @@ object AtLeastOnceDeliveryFailureSpec {
   class ChaosApp(probe: ActorRef) extends Actor with ActorLogging {
     val destination =
       context.actorOf(Props(classOf[ChaosDestination], probe), "destination")
-    var snd = createSender()
+    var snd  = createSender()
     var acks = Set.empty[Int]
 
     def createSender(): ActorRef =
-      context.watch(context.actorOf(
-              Props(classOf[ChaosSender], destination, probe), "sender"))
+      context.watch(
+        context
+          .actorOf(Props(classOf[ChaosSender], destination, probe), "sender")
+      )
 
     def receive = {
-      case Start ⇒ 1 to numMessages foreach (snd ! _)
-      case Ack(i) ⇒ acks += i
+      case Start         ⇒ 1 to numMessages foreach (snd ! _)
+      case Ack(i)        ⇒ acks += i
       case Terminated(_) ⇒
         // snd will be stopped if recovery or persist fails
         log.debug(s"sender stopped, starting it again")
@@ -173,7 +186,8 @@ object AtLeastOnceDeliveryFailureSpec {
 }
 
 class AtLeastOnceDeliveryFailureSpec
-    extends AkkaSpec(AtLeastOnceDeliveryFailureSpec.config) with Cleanup
+    extends AkkaSpec(AtLeastOnceDeliveryFailureSpec.config)
+    with Cleanup
     with ImplicitSender {
   import AtLeastOnceDeliveryFailureSpec._
 
@@ -185,13 +199,17 @@ class AtLeastOnceDeliveryFailureSpec
       expectDone() // by sender
       expectDone() // by destination
 
-      system.actorOf(Props(classOf[ChaosApp], testActor), "chaosApp2") // recovery of new instance should have same outcome
+      system.actorOf(
+        Props(classOf[ChaosApp], testActor),
+        "chaosApp2"
+      )            // recovery of new instance should have same outcome
       expectDone() // by sender
       // destination doesn't receive messages again because all have been confirmed already
     }
   }
 
-  def expectDone() = within(numMessages.seconds) {
-    expectMsgType[Done].ints.sorted should ===(1 to numMessages toVector)
-  }
+  def expectDone() =
+    within(numMessages.seconds) {
+      expectMsgType[Done].ints.sorted should ===(1 to numMessages toVector)
+    }
 }

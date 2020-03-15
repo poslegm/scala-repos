@@ -18,13 +18,13 @@ class TypeFilter extends ElementFilter {
   def isAcceptable(element: Object, context: PsiElement): Boolean = {
     if (context.isInstanceOf[PsiComment]) return false
     val leaf = getLeafByOffset(context.getTextRange.getStartOffset, context)
-    val imp = ScalaPsiUtil.getParentOfType(leaf, classOf[ScImportStmt])
+    val imp  = ScalaPsiUtil.getParentOfType(leaf, classOf[ScImportStmt])
     if (imp != null) return false
     if (leaf != null) {
       val parent = leaf.getParent
       parent match {
         case _: ScStableCodeReferenceElement => return true
-        case _ => return false
+        case _                               => return false
       }
     }
     false

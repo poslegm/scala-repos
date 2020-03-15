@@ -38,12 +38,13 @@ trait Packet {
 
 object Packet {
   val HeaderSize = 0x04
-  val OkByte = 0x00.toByte
-  val ErrorByte = 0xFF.toByte
-  val EofByte = 0xFE.toByte
+  val OkByte     = 0x00.toByte
+  val ErrorByte  = 0xFF.toByte
+  val EofByte    = 0xFE.toByte
 
-  def apply(s: Short, b: Buffer): Packet = new Packet {
-    val seq = s
-    val body = b
-  }
+  def apply(s: Short, b: Buffer): Packet =
+    new Packet {
+      val seq  = s
+      val body = b
+    }
 }

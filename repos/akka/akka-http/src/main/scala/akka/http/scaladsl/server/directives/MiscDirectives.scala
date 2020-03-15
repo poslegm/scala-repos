@@ -55,9 +55,12 @@ trait MiscDirectives {
     * the order of the arguments is used as a tie breaker (First one wins).
     */
   def selectPreferredLanguage(
-      first: Language, more: Language*): Directive1[Language] =
+      first: Language,
+      more: Language*
+  ): Directive1[Language] =
     BasicDirectives.extractRequest.map { request ⇒
-      LanguageNegotiator(request.headers).pickLanguage(first :: List(more: _*)) getOrElse first
+      LanguageNegotiator(request.headers)
+        .pickLanguage(first :: List(more: _*)) getOrElse first
     }
 }
 
@@ -68,8 +71,10 @@ object MiscDirectives extends MiscDirectives {
   import RouteResult._
 
   private val _extractClientIP: Directive1[RemoteAddress] =
-    headerValuePF { case `X-Forwarded-For`(Seq(address, _ *)) ⇒ address } | headerValuePF {
-      case `Remote-Address`(address) ⇒ address
+    headerValuePF {
+      case `X-Forwarded-For`(Seq(address, _*)) ⇒ address
+    } | headerValuePF {
+      case `Remote-Address`(address)              ⇒ address
     } | headerValuePF { case `X-Real-Ip`(address) ⇒ address }
 
   private val _requestEntityEmpty: Directive0 =
@@ -80,6 +85,6 @@ object MiscDirectives extends MiscDirectives {
 
   private val _rejectEmptyResponse: Directive0 = mapRouteResult {
     case Complete(response) if response.entity.isKnownEmpty ⇒ Rejected(Nil)
-    case x ⇒ x
+    case x                                                  ⇒ x
   }
 }

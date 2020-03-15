@@ -16,24 +16,28 @@ import org.apache.camel.impl.DefaultCamelContext
 import akka.actor.{ExtendedActorSystem}
 
 class DefaultCamelTest
-    extends WordSpec with SharedCamelSystem with Matchers with MockitoSugar {
+    extends WordSpec
+    with SharedCamelSystem
+    with Matchers
+    with MockitoSugar {
 
   import org.mockito.Mockito.{when, verify}
-  val sys = mock[ExtendedActorSystem]
+  val sys    = mock[ExtendedActorSystem]
   val config = ConfigFactory.defaultReference()
   when(sys.dynamicAccess) thenReturn system
     .asInstanceOf[ExtendedActorSystem]
     .dynamicAccess
   when(sys.settings) thenReturn
-  (new Settings(this.getClass.getClassLoader, config, "mocksystem"))
+    (new Settings(this.getClass.getClassLoader, config, "mocksystem"))
   when(sys.name) thenReturn ("mocksystem")
 
-  def camelWithMocks = new DefaultCamel(sys) {
-    override val log = mock[LoggingAdapter]
-    override lazy val template = mock[ProducerTemplate]
-    override lazy val context = mock[DefaultCamelContext]
-    override val settings = mock[CamelSettings]
-  }
+  def camelWithMocks =
+    new DefaultCamel(sys) {
+      override val log           = mock[LoggingAdapter]
+      override lazy val template = mock[ProducerTemplate]
+      override lazy val context  = mock[DefaultCamelContext]
+      override val settings      = mock[CamelSettings]
+    }
 
   "during shutdown, when both context and template fail to shutdown" when {
     val camel = camelWithMocks

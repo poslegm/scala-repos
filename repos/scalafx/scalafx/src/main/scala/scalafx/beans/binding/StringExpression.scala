@@ -33,45 +33,46 @@ import scala.language.implicitConversions
 
 object StringExpression {
   implicit def sfxStringExpression2jfx(
-      se: StringExpression): jfxbb.StringExpression =
+      se: StringExpression
+  ): jfxbb.StringExpression =
     if (se != null) se.delegate else null
 }
 
 class StringExpression(val delegate: jfxbb.StringExpression) {
-  def ===(v: Null) = delegate.isNull
-  def ===(v: String) = delegate.isEqualTo(v)
+  def ===(v: Null)                  = delegate.isNull
+  def ===(v: String)                = delegate.isEqualTo(v)
   def ===(v: ObservableStringValue) = delegate.isEqualTo(v)
 
-  def =!=(v: Null) = delegate.isNotNull
-  def =!=(v: String) = delegate.isNotEqualTo(v)
+  def =!=(v: Null)                  = delegate.isNotNull
+  def =!=(v: String)                = delegate.isNotEqualTo(v)
   def =!=(v: ObservableStringValue) = delegate.isNotEqualTo(v)
 
-  def ==~(v: Null) = delegate.isNull
-  def ==~(v: String) = delegate.isEqualToIgnoreCase(v)
+  def ==~(v: Null)                  = delegate.isNull
+  def ==~(v: String)                = delegate.isEqualToIgnoreCase(v)
   def ==~(v: ObservableStringValue) = delegate.isEqualToIgnoreCase(v)
 
-  def !=~(v: Null) = delegate.isNotNull
-  def !=~(v: String) = delegate.isNotEqualToIgnoreCase(v)
+  def !=~(v: Null)                  = delegate.isNotNull
+  def !=~(v: String)                = delegate.isNotEqualToIgnoreCase(v)
   def !=~(v: ObservableStringValue) = delegate.isNotEqualToIgnoreCase(v)
 
-  def <(v: Null) = delegate.lessThan(v.asInstanceOf[String])
-  def <(v: String) = delegate.lessThan(v)
+  def <(v: Null)                  = delegate.lessThan(v.asInstanceOf[String])
+  def <(v: String)                = delegate.lessThan(v)
   def <(v: ObservableStringValue) = delegate.lessThan(v)
 
-  def <=(v: Null) = delegate.lessThanOrEqualTo(v.asInstanceOf[String])
-  def <=(v: String) = delegate.lessThanOrEqualTo(v)
+  def <=(v: Null)                  = delegate.lessThanOrEqualTo(v.asInstanceOf[String])
+  def <=(v: String)                = delegate.lessThanOrEqualTo(v)
   def <=(v: ObservableStringValue) = delegate.lessThanOrEqualTo(v)
 
-  def >(v: Null) = delegate.greaterThan(v.asInstanceOf[String])
-  def >(v: String) = delegate.greaterThan(v)
+  def >(v: Null)                  = delegate.greaterThan(v.asInstanceOf[String])
+  def >(v: String)                = delegate.greaterThan(v)
   def >(v: ObservableStringValue) = delegate.greaterThan(v)
 
-  def >=(v: Null) = delegate.greaterThanOrEqualTo(v.asInstanceOf[String])
-  def >=(v: String) = delegate.greaterThanOrEqualTo(v)
+  def >=(v: Null)                  = delegate.greaterThanOrEqualTo(v.asInstanceOf[String])
+  def >=(v: String)                = delegate.greaterThanOrEqualTo(v)
   def >=(v: ObservableStringValue) = delegate.greaterThanOrEqualTo(v)
 
   // Kind of an odd case that concat is not observable, but this is how it is coded in JavaFX
-  def +(v: Null) = delegate.concat(v.asInstanceOf[String])
+  def +(v: Null)                  = delegate.concat(v.asInstanceOf[String])
   def +(v: ObservableStringValue) = delegate.concat(v)
-  def +(v: Any) = delegate.concat(v)
+  def +(v: Any)                   = delegate.concat(v)
 }

@@ -13,11 +13,14 @@ import breeze.plot.Plot.Listener
   * @author dlwh, dramage
   */
 class Figure(
-    name: String, private var rows_ : Int = 1, private var cols_ : Int = 1) {
+    name: String,
+    private var rows_ : Int = 1,
+    private var cols_ : Int = 1
+) {
 
   protected val plots = ArrayBuffer[Option[Plot]]()
 
-  private var width_ = 600
+  private var width_  = 600
   private var height_ = 400
 
   /**Selects the given subplot.  */
@@ -67,7 +70,7 @@ class Figure(
 
   /** Visibility state of the plot */
   private var visible_ = true
-  def visible = visible_
+  def visible          = visible_
   def visible_=(newvis: Boolean): Unit = {
     visible_ = newvis
     frame.setVisible(visible_)
@@ -132,16 +135,21 @@ class Figure(
   }
 
   def drawPlots(g2d: Graphics2D) {
-    val plotWidth = contents.getWidth / cols
+    val plotWidth  = contents.getWidth / cols
     val plotHeight = contents.getHeight / rows
-    var px = 0; var py = 0
+    var px         = 0; var py = 0
     for (opt <- plots) {
       opt match {
         case Some(plot) =>
           plot.chart.draw(
-              g2d,
-              new java.awt.Rectangle(
-                  px * plotWidth, py * plotHeight, plotWidth, plotHeight))
+            g2d,
+            new java.awt.Rectangle(
+              px * plotWidth,
+              py * plotHeight,
+              plotWidth,
+              plotHeight
+            )
+          )
         case None => {}
       }
       px = (px + 1) % cols
@@ -154,11 +162,13 @@ class Figure(
     // make sure figure is visible or saved image will come up empty
     refresh()
 
-    ExportGraphics.writeFile(new java.io.File(filename),
-                             draw = drawPlots _,
-                             width = contents.getWidth,
-                             height = contents.getHeight,
-                             dpi = dpi)
+    ExportGraphics.writeFile(
+      new java.io.File(filename),
+      draw = drawPlots _,
+      width = contents.getWidth,
+      height = contents.getHeight,
+      dpi = dpi
+    )
   }
 
   private def selectPlot(i: Int) = {
@@ -191,7 +201,7 @@ class Figure(
 object Figure {
 
   def apply(name: String): Figure = new Figure(name)
-  def apply(): Figure = apply("Figure " + figureNumber.getAndIncrement)
+  def apply(): Figure             = apply("Figure " + figureNumber.getAndIncrement)
 
   private val figureNumber = new AtomicInteger(0)
 }

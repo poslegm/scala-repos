@@ -22,8 +22,8 @@ object ShowExamples extends App {
   import ShowSyntax._
 
   sealed trait Super
-  case class Foo(i: Int, s: String) extends Super
-  case class Bar(i: Int) extends Super
+  case class Foo(i: Int, s: String)     extends Super
+  case class Bar(i: Int)                extends Super
   case class BarRec(i: Int, rec: Super) extends Super
 
   object Super {
@@ -31,11 +31,11 @@ object ShowExamples extends App {
   }
 
   sealed trait MutualA
-  case class MutualA1(x: Int) extends MutualA
+  case class MutualA1(x: Int)     extends MutualA
   case class MutualA2(b: MutualB) extends MutualA
 
   sealed trait MutualB
-  case class MutualB1(x: Int) extends MutualB
+  case class MutualB1(x: Int)     extends MutualB
   case class MutualB2(b: MutualA) extends MutualB
 
   object MutualA {
@@ -73,18 +73,21 @@ trait Show[T] {
 }
 
 object Show extends LabelledTypeClassCompanion[Show] {
-  implicit def stringShow: Show[String] = new Show[String] {
-    def show(t: String) = t
-  }
+  implicit def stringShow: Show[String] =
+    new Show[String] {
+      def show(t: String) = t
+    }
 
-  implicit def intShow: Show[Int] = new Show[Int] {
-    def show(n: Int) = n.toString
-  }
+  implicit def intShow: Show[Int] =
+    new Show[Int] {
+      def show(n: Int) = n.toString
+    }
 
   object typeClass extends LabelledTypeClass[Show] {
-    def emptyProduct = new Show[HNil] {
-      def show(t: HNil) = ""
-    }
+    def emptyProduct =
+      new Show[HNil] {
+        def show(t: HNil) = ""
+      }
 
     def product[F, T <: HList](name: String, sh: Show[F], st: Show[T]) =
       new Show[F :: T] {
@@ -96,17 +99,23 @@ object Show extends LabelledTypeClassCompanion[Show] {
         }
       }
 
-    def emptyCoproduct = new Show[CNil] {
-      def show(t: CNil) = ""
-    }
+    def emptyCoproduct =
+      new Show[CNil] {
+        def show(t: CNil) = ""
+      }
 
     def coproduct[L, R <: Coproduct](
-        name: String, sl: => Show[L], sr: => Show[R]) = new Show[L :+: R] {
-      def show(lr: L :+: R) = lr match {
-        case Inl(l) => s"$name(${sl.show(l)})"
-        case Inr(r) => s"${sr.show(r)}"
+        name: String,
+        sl: => Show[L],
+        sr: => Show[R]
+    ) =
+      new Show[L :+: R] {
+        def show(lr: L :+: R) =
+          lr match {
+            case Inl(l) => s"$name(${sl.show(l)})"
+            case Inr(r) => s"${sr.show(r)}"
+          }
       }
-    }
 
     def project[F, G](instance: => Show[G], to: F => G, from: G => F) =
       new Show[F] {

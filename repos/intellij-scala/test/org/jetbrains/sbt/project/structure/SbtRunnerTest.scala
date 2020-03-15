@@ -45,7 +45,7 @@ class SbtRunnerTest extends UsefulTestCase {
 
   def testMockLauncherWithoutSbtBootProperties(): Unit = {
     val expectedVersion = "1.0.0"
-    val launcherFile = generateMockLauncher(expectedVersion)
+    val launcherFile    = generateMockLauncher(expectedVersion)
     assertTrue(launcherFile.exists())
     val actualVersion = SbtRunner.detectSbtVersion(tmpDirFile, launcherFile)
     assertEquals(expectedVersion, actualVersion)
@@ -63,14 +63,17 @@ class SbtRunnerTest extends UsefulTestCase {
   private def doTestSbtLauncherVersionDetection(sbtVersion: String): Unit = {
     val sbtLaunchJar = getSbtLaunchJarForVersion(sbtVersion)
     assertTrue(
-        s"$sbtLaunchJar is not found. Make sure it is downloaded by Ivy.",
-        sbtLaunchJar.exists())
+      s"$sbtLaunchJar is not found. Make sure it is downloaded by Ivy.",
+      sbtLaunchJar.exists()
+    )
     val actualVersion = SbtRunner.detectSbtVersion(tmpDirFile, sbtLaunchJar)
     assertEquals(sbtVersion, actualVersion)
   }
 
   private def getSbtLaunchJarForVersion(sbtVersion: String): File =
-    new File(TestUtils.getIvyCachePath) / "org.scala-sbt" / "sbt-launch" / "jars" / s"sbt-launch-$sbtVersion.jar"
+    new File(
+      TestUtils.getIvyCachePath
+    ) / "org.scala-sbt" / "sbt-launch" / "jars" / s"sbt-launch-$sbtVersion.jar"
 
   private def generateMockLauncher(implementationVersion: String): File = {
     val manifestContents = s"""|Manifest-Version: 1.0
@@ -84,15 +87,17 @@ class SbtRunnerTest extends UsefulTestCase {
 
   private def generateJarFileWithEntries(entries: (String, String)*): File = {
     val launcherFile = FileUtil.createTempFile("mockLauncher", ".jar", true)
-    using(new JarOutputStream(
-            new BufferedOutputStream(new FileOutputStream(launcherFile)))) {
-      out =>
-        entries.foreach {
-          case (name, contents) =>
-            out.putNextEntry(new ZipEntry(name))
-            out.write(contents.getBytes)
-            out.closeEntry()
-        }
+    using(
+      new JarOutputStream(
+        new BufferedOutputStream(new FileOutputStream(launcherFile))
+      )
+    ) { out =>
+      entries.foreach {
+        case (name, contents) =>
+          out.putNextEntry(new ZipEntry(name))
+          out.write(contents.getBytes)
+          out.closeEntry()
+      }
     }
     launcherFile
   }

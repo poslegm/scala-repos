@@ -11,13 +11,14 @@ trait Atomic[A] {
   def getAndSet(a: A): IO[A]
   def set(a: => A): IO[Unit]
 
-  def update(f: A => A): IO[A] = get flatMap { a =>
-    val b = f(a)
-    compareAndSet(a, b) flatMap { s =>
-      if (s) IO(b)
-      else update(f)
+  def update(f: A => A): IO[A] =
+    get flatMap { a =>
+      val b = f(a)
+      compareAndSet(a, b) flatMap { s =>
+        if (s) IO(b)
+        else update(f)
+      }
     }
-  }
 }
 
 object Atomic extends Atomics
@@ -29,8 +30,8 @@ trait Atomics {
 
       def compareAndSet(expected: A, newValue: A) =
         IO(value.compareAndSet(expected, newValue))
-      def get = IO(value.get)
+      def get             = IO(value.get)
       def getAndSet(a: A) = IO(value.getAndSet(a))
-      def set(a: => A) = IO(value.set(a))
+      def set(a: => A)    = IO(value.set(a))
     })
 }

@@ -31,7 +31,8 @@ object TreeSet extends MutableSortedSetFactory[TreeSet] {
 
   /** $sortedMapCanBuildFromInfo */
   implicit def canBuildFrom[A](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, A, TreeSet[A]] =
+      implicit ord: Ordering[A]
+  ): CanBuildFrom[Coll, A, TreeSet[A]] =
     new SortedSetCanBuildFrom[A]
 }
 
@@ -50,10 +51,13 @@ object TreeSet extends MutableSortedSetFactory[TreeSet] {
   */
 // Original API designed in part by Lucien Pereira
 @SerialVersionUID(-3642111301929493640L)
-sealed class TreeSet[A] private (
-    tree: RB.Tree[A, Null])(implicit val ordering: Ordering[A])
-    extends AbstractSortedSet[A] with SortedSet[A] with SetLike[A, TreeSet[A]]
-    with SortedSetLike[A, TreeSet[A]] with Serializable {
+sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(
+    implicit val ordering: Ordering[A]
+) extends AbstractSortedSet[A]
+    with SortedSet[A]
+    with SetLike[A, TreeSet[A]]
+    with SortedSetLike[A, TreeSet[A]]
+    with Serializable {
 
   if (ordering eq null)
     throw new NullPointerException("ordering must not be null")
@@ -65,7 +69,7 @@ sealed class TreeSet[A] private (
     */
   def this()(implicit ord: Ordering[A]) = this(RB.Tree.empty)(ord)
 
-  override def empty = TreeSet.empty
+  override def empty                      = TreeSet.empty
   override protected[this] def newBuilder = TreeSet.newBuilder[A]
 
   /**
@@ -85,25 +89,25 @@ sealed class TreeSet[A] private (
   def rangeImpl(from: Option[A], until: Option[A]): TreeSet[A] =
     new TreeSetView(from, until)
 
-  def -=(key: A): this.type = { RB.delete(tree, key); this }
+  def -=(key: A): this.type  = { RB.delete(tree, key); this }
   def +=(elem: A): this.type = { RB.insert(tree, elem, null); this }
 
   def contains(elem: A) = RB.contains(tree, elem)
 
-  def iterator = RB.keysIterator(tree)
-  def keysIteratorFrom(start: A) = RB.keysIterator(tree, Some(start))
+  def iterator                        = RB.keysIterator(tree)
+  def keysIteratorFrom(start: A)      = RB.keysIterator(tree, Some(start))
   override def iteratorFrom(start: A) = RB.keysIterator(tree, Some(start))
 
-  override def size = RB.size(tree)
+  override def size    = RB.size(tree)
   override def isEmpty = RB.isEmpty(tree)
 
-  override def head = RB.minKey(tree).get
+  override def head       = RB.minKey(tree).get
   override def headOption = RB.minKey(tree)
-  override def last = RB.maxKey(tree).get
+  override def last       = RB.maxKey(tree).get
   override def lastOption = RB.maxKey(tree)
 
   override def foreach[U](f: A => U): Unit = RB.foreachKey(tree, f)
-  override def clear(): Unit = RB.clear(tree)
+  override def clear(): Unit               = RB.clear(tree)
 
   override def stringPrefix = "TreeSet"
 
@@ -130,8 +134,8 @@ sealed class TreeSet[A] private (
     private[this] def pickLowerBound(newFrom: Option[A]): Option[A] =
       (from, newFrom) match {
         case (Some(fr), Some(newFr)) => Some(ordering.max(fr, newFr))
-        case (None, _) => newFrom
-        case _ => from
+        case (None, _)               => newFrom
+        case _                       => from
       }
 
     /**
@@ -140,15 +144,15 @@ sealed class TreeSet[A] private (
     private[this] def pickUpperBound(newUntil: Option[A]): Option[A] =
       (until, newUntil) match {
         case (Some(unt), Some(newUnt)) => Some(ordering.min(unt, newUnt))
-        case (None, _) => newUntil
-        case _ => until
+        case (None, _)                 => newUntil
+        case _                         => until
       }
 
     /**
       * Returns true if the argument is inside the view bounds (between `from` and `until`).
       */
     private[this] def isInsideViewBounds(key: A): Boolean = {
-      val afterFrom = from.isEmpty || ordering.compare(from.get, key) <= 0
+      val afterFrom   = from.isEmpty || ordering.compare(from.get, key) <= 0
       val beforeUntil = until.isEmpty || ordering.compare(key, until.get) < 0
       afterFrom && beforeUntil
     }
@@ -165,7 +169,7 @@ sealed class TreeSet[A] private (
     override def iteratorFrom(start: A) =
       RB.keysIterator(tree, pickLowerBound(Some(start)), until)
 
-    override def size = iterator.length
+    override def size    = iterator.length
     override def isEmpty = !iterator.hasNext
 
     override def head = headOption.get
@@ -174,7 +178,7 @@ sealed class TreeSet[A] private (
         if (from.isDefined) RB.minKeyAfter(tree, from.get) else RB.minKey(tree)
       (elem, until) match {
         case (Some(e), Some(unt)) if ordering.compare(e, unt) >= 0 => None
-        case _ => elem
+        case _                                                     => elem
       }
     }
 
@@ -185,7 +189,7 @@ sealed class TreeSet[A] private (
         else RB.maxKey(tree)
       (elem, from) match {
         case (Some(e), Some(fr)) if ordering.compare(e, fr) < 0 => None
-        case _ => elem
+        case _                                                  => elem
       }
     }
 

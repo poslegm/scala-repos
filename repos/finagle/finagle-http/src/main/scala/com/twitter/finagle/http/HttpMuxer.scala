@@ -23,8 +23,8 @@ import java.util.logging.Logger
   *  NOTE: When multiple pattern matches exist, the longest pattern wins.
   */
 class HttpMuxer(
-    protected[this] val handlers: Seq[(String, Service[Request, Response])])
-    extends Service[Request, Response] {
+    protected[this] val handlers: Seq[(String, Service[Request, Response])]
+) extends Service[Request, Response] {
 
   def this() = this(Seq[(String, Service[Request, Response])]())
 
@@ -38,11 +38,16 @@ class HttpMuxer(
     * Pattern ending with "/" indicates prefix matching; otherwise exact matching.
     */
   def withHandler(
-      pattern: String, service: Service[Request, Response]): HttpMuxer = {
+      pattern: String,
+      service: Service[Request, Response]
+  ): HttpMuxer = {
     val norm = normalize(pattern)
     new HttpMuxer(
-        handlers.filterNot { case (pat, _) => pat == norm } :+
-        ((norm, service)))
+      handlers.filterNot {
+        case (pat, _) => pat == norm
+      } :+
+        ((norm, service))
+    )
   }
 
   /**
@@ -58,12 +63,12 @@ class HttpMuxer(
         if (pattern == "") path == "/" || path == "" // special cases
         else if (pattern.endsWith("/"))
           path.startsWith(pattern) // prefix match
-        else path == pattern // exact match
+        else path == pattern       // exact match
     }
 
     matching match {
       case Some((_, service)) => service(request)
-      case None => Future.value(Response(request.version, Status.NotFound))
+      case None               => Future.value(Response(request.version, Status.NotFound))
     }
   }
 
@@ -75,7 +80,7 @@ class HttpMuxer(
     */
   private[this] def normalize(path: String) = {
     val suffix = if (path.endsWith("/")) "/" else ""
-    val p = path.split("/").filterNot(_.isEmpty).mkString("/")
+    val p      = path.split("/").filterNot(_.isEmpty).mkString("/")
     if (p == "") suffix else "/" + p + suffix
   }
 }
@@ -100,7 +105,9 @@ object HttpMuxer extends Service[Request, Response] {
     }
 
   def addRichHandler(
-      pattern: String, service: Service[Request, Response]): Unit =
+      pattern: String,
+      service: Service[Request, Response]
+  ): Unit =
     addHandler(pattern, service)
 
   def patterns: Seq[String] = underlying.patterns
@@ -108,8 +115,10 @@ object HttpMuxer extends Service[Request, Response] {
   private[this] val log = Logger.getLogger(getClass.getName)
 
   for (handler <- LoadService[HttpMuxHandler]()) {
-    log.info("HttpMuxer[%s] = %s(%s)".format(
-            handler.pattern, handler.getClass.getName, handler))
+    log.info(
+      "HttpMuxer[%s] = %s(%s)"
+        .format(handler.pattern, handler.getClass.getName, handler)
+    )
     addHandler(handler.pattern, handler)
   }
 }

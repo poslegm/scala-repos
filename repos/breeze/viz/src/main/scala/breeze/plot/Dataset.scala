@@ -28,11 +28,12 @@ import scala.collection.mutable.ArrayBuffer;
   *
   * @author dramage
   */
-class XYDataset[Item](x: Item => Number,
-                      y: Item => Number,
-                      label: Item => String,
-                      tip: Item => String)
-    extends org.jfree.data.xy.AbstractXYDataset {
+class XYDataset[Item](
+    x: Item => Number,
+    y: Item => Number,
+    label: Item => String,
+    tip: Item => String
+) extends org.jfree.data.xy.AbstractXYDataset {
   val names = ArrayBuffer[String]();
   val items = ArrayBuffer[IndexedSeq[Item]]();
 
@@ -59,12 +60,14 @@ class XYDataset[Item](x: Item => Number,
 }
 
 object XYDataset {
-  def apply[Item](name: String,
-                  items: IndexedSeq[Item],
-                  x: Item => Number,
-                  y: Item => Number,
-                  label: Item => String,
-                  tip: Item => String): XYDataset[Item] = {
+  def apply[Item](
+      name: String,
+      items: IndexedSeq[Item],
+      x: Item => Number,
+      y: Item => Number,
+      label: Item => String,
+      tip: Item => String
+  ): XYDataset[Item] = {
     val rv = new XYDataset(x, y, label, tip);
     rv.names += name;
     rv.items += items;
@@ -79,12 +82,13 @@ object XYDataset {
   *
   * @author dramage
   */
-class XYZDataset[Item](x: Item => Number,
-                       y: Item => Number,
-                       z: Item => Number,
-                       label: Item => String,
-                       tip: Item => String)
-    extends org.jfree.data.xy.AbstractXYZDataset {
+class XYZDataset[Item](
+    x: Item => Number,
+    y: Item => Number,
+    z: Item => Number,
+    label: Item => String,
+    tip: Item => String
+) extends org.jfree.data.xy.AbstractXYZDataset {
   val names = ArrayBuffer[String]();
   val items = ArrayBuffer[IndexedSeq[Item]]();
 
@@ -114,13 +118,15 @@ class XYZDataset[Item](x: Item => Number,
 }
 
 object XYZDataset {
-  def apply[Item](name: String,
-                  items: IndexedSeq[Item],
-                  x: Item => Number,
-                  y: Item => Number,
-                  z: Item => Number,
-                  label: Item => String,
-                  tip: Item => String): XYZDataset[Item] = {
+  def apply[Item](
+      name: String,
+      items: IndexedSeq[Item],
+      x: Item => Number,
+      y: Item => Number,
+      z: Item => Number,
+      label: Item => String,
+      tip: Item => String
+  ): XYZDataset[Item] = {
     val rv = new XYZDataset(x, y, z, label, tip);
     rv.names += name;
     rv.items += items;

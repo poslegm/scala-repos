@@ -38,15 +38,17 @@ import org.apache.spark.sql.util.ContinuousQueryListener._
   * [[Source]] present in the query plan. Whenever new data arrives, a [[QueryExecution]] is created
   * and the results are committed transactionally to the given [[Sink]].
   */
-class StreamExecution(val sqlContext: SQLContext,
-                      override val name: String,
-                      private[sql] val logicalPlan: LogicalPlan,
-                      val sink: Sink)
-    extends ContinuousQuery with Logging {
+class StreamExecution(
+    val sqlContext: SQLContext,
+    override val name: String,
+    private[sql] val logicalPlan: LogicalPlan,
+    val sink: Sink
+) extends ContinuousQuery
+    with Logging {
 
   /** An monitor used to wait/notify when batches complete. */
-  private val awaitBatchLock = new Object
-  private val startLatch = new CountDownLatch(1)
+  private val awaitBatchLock   = new Object
+  private val startLatch       = new CountDownLatch(1)
   private val terminationLatch = new CountDownLatch(1)
 
   /** Minimum amount of time in between the start of each batch. */
@@ -72,7 +74,8 @@ class StreamExecution(val sqlContext: SQLContext,
 
   /** The thread that runs the micro-batches of this stream. */
   private[sql] val microBatchThread = new Thread(
-      s"stream execution thread for $name") {
+    s"stream execution thread for $name"
+  ) {
     override def run(): Unit = { runBatches() }
   }
 
@@ -101,7 +104,8 @@ class StreamExecution(val sqlContext: SQLContext,
   private[sql] def start(): Unit = {
     microBatchThread.setDaemon(true)
     microBatchThread.start()
-    startLatch.await() // Wait until thread started and QueryStart event has been posted
+    startLatch
+      .await() // Wait until thread started and QueryStart event has been posted
   }
 
   /**
@@ -134,10 +138,11 @@ class StreamExecution(val sqlContext: SQLContext,
       // interrupted by stop()
       case NonFatal(e) =>
         streamDeathCause = new ContinuousQueryException(
-            this,
-            s"Query $name terminated with exception: ${e.getMessage}",
-            e,
-            Some(streamProgress.toCompositeOffset(sources)))
+          this,
+          s"Query $name terminated with exception: ${e.getMessage}",
+          e,
+          Some(streamProgress.toCompositeOffset(sources))
+        )
         logError(s"Query $name terminated with error", e)
     } finally {
       state = TERMINATED
@@ -168,7 +173,8 @@ class StreamExecution(val sqlContext: SQLContext,
       case None => // We are starting this stream for the first time.
       case _ =>
         throw new IllegalArgumentException(
-            "Expected composite offset from sink")
+          "Expected composite offset from sink"
+        )
     }
   }
 
@@ -189,18 +195,20 @@ class StreamExecution(val sqlContext: SQLContext,
       logicalPlan transform {
         case StreamingRelation(source, output) =>
           val prevOffset = streamProgress.get(source)
-          val newBatch = source.getNextBatch(prevOffset)
+          val newBatch   = source.getNextBatch(prevOffset)
 
-          newBatch.map { batch =>
-            newOffsets += ((source, batch.end))
-            val newPlan = batch.data.logicalPlan
+          newBatch
+            .map { batch =>
+              newOffsets += ((source, batch.end))
+              val newPlan = batch.data.logicalPlan
 
-            assert(output.size == newPlan.output.size)
-            replacements ++= output.zip(newPlan.output)
-            newPlan
-          }.getOrElse {
-            LocalRelation(output)
-          }
+              assert(output.size == newPlan.output.size)
+              replacements ++= output.zip(newPlan.output)
+              newPlan
+            }
+            .getOrElse {
+              LocalRelation(output)
+            }
       }
 
     // Rewire the plan to use the new attributes that were returned by the source.
@@ -267,9 +275,10 @@ class StreamExecution(val sqlContext: SQLContext,
     * least the given `Offset`. This method is indented for use primarily when writing tests.
     */
   def awaitOffset(source: Source, newOffset: Offset): Unit = {
-    def notDone = streamProgress.synchronized {
-      !streamProgress.contains(source) || streamProgress(source) < newOffset
-    }
+    def notDone =
+      streamProgress.synchronized {
+        !streamProgress.contains(source) || streamProgress(source) < newOffset
+      }
 
     while (notDone) {
       logInfo(s"Waiting until $newOffset at $source")
@@ -281,7 +290,8 @@ class StreamExecution(val sqlContext: SQLContext,
   override def awaitTermination(): Unit = {
     if (state == INITIALIZED) {
       throw new IllegalStateException(
-          "Cannot wait for termination on a query that has not started")
+        "Cannot wait for termination on a query that has not started"
+      )
     }
     terminationLatch.await()
     if (streamDeathCause != null) {
@@ -292,7 +302,8 @@ class StreamExecution(val sqlContext: SQLContext,
   override def awaitTermination(timeoutMs: Long): Boolean = {
     if (state == INITIALIZED) {
       throw new IllegalStateException(
-          "Cannot wait for termination on a query that has not started")
+        "Cannot wait for termination on a query that has not started"
+      )
     }
     require(timeoutMs > 0, "Timeout has to be positive")
     terminationLatch.await(timeoutMs, TimeUnit.MILLISECONDS)
@@ -329,8 +340,8 @@ class StreamExecution(val sqlContext: SQLContext,
 
   trait State
   case object INITIALIZED extends State
-  case object ACTIVE extends State
-  case object TERMINATED extends State
+  case object ACTIVE      extends State
+  case object TERMINATED  extends State
 }
 
 private[sql] object StreamExecution {

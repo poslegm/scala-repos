@@ -17,5 +17,5 @@ object t6161 {
   object g extends S with N1
 
   val n1: g.NameType = ???
-  val n2: g.Name = n1.encode
+  val n2: g.Name     = n1.encode
 }

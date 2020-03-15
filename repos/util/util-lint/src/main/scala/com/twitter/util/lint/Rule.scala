@@ -51,8 +51,8 @@ object Rule {
     val _cat = category
     new Rule {
       def apply(): Seq[Issue] = fn
-      def name: String = shortName
-      def category: Category = _cat
+      def name: String        = shortName
+      def category: Category  = _cat
       def description: String = desc
     }
   }

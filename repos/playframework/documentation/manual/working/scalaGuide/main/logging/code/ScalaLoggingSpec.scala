@@ -36,9 +36,9 @@ class ScalaLoggingSpec extends Specification with Mockito {
         Logger.debug(s"Result=$result")
       } catch {
         case t: Throwable => {
-            // Log error with message and Throwable.
-            Logger.error("Exception with riskyCalculation", t)
-          }
+          // Log error with message and Throwable.
+          Logger.error("Exception with riskyCalculation", t)
+        }
       }
       //#logging-default-logger
 
@@ -70,7 +70,8 @@ class ScalaLoggingSpec extends Specification with Mockito {
       //#logging-create-logger-class
 
       logger.underlyingLogger.getName must equalTo(
-          "scalaguide.logging.ScalaLoggingSpec")
+        "scalaguide.logging.ScalaLoggingSpec"
+      )
     }
 
     "allow for using multiple loggers" in {
@@ -78,7 +79,7 @@ class ScalaLoggingSpec extends Specification with Mockito {
 //      object Logger extends LoggerLike {
 //        // Mock underlying logger implementation
 //        val logger = mock[org.slf4j.Logger].smart
-//        
+//
 //        def apply[T](clazz: Class[T]): play.api.Logger = new play.api.Logger(mock[org.slf4j.Logger].smart)
 //        def apply[T](name: String): play.api.Logger = new play.api.Logger(mock[org.slf4j.Logger].smart)
 //      }
@@ -94,10 +95,13 @@ class ScalaLoggingSpec extends Specification with Mockito {
 
         object AccessLoggingAction extends ActionBuilder[Request] {
 
-          def invokeBlock[A](request: Request[A],
-                             block: (Request[A]) => Future[Result]) = {
+          def invokeBlock[A](
+              request: Request[A],
+              block: (Request[A]) => Future[Result]
+          ) = {
             accessLogger.info(
-                s"method=${request.method} uri=${request.uri} remote-address=${request.remoteAddress}")
+              s"method=${request.method} uri=${request.uri} remote-address=${request.remoteAddress}"
+            )
             block(request)
           }
         }
@@ -107,17 +111,18 @@ class ScalaLoggingSpec extends Specification with Mockito {
 
         val logger = Logger(this.getClass())
 
-        def index = AccessLoggingAction {
-          try {
-            val result = riskyCalculation
-            Ok(s"Result=$result")
-          } catch {
-            case t: Throwable => {
+        def index =
+          AccessLoggingAction {
+            try {
+              val result = riskyCalculation
+              Ok(s"Result=$result")
+            } catch {
+              case t: Throwable => {
                 logger.error("Exception with riskyCalculation", t)
                 InternalServerError("Error in calculation: " + t.getMessage())
               }
+            }
           }
-        }
       }
       //#logging-pattern-mix
 
@@ -135,22 +140,21 @@ class ScalaLoggingSpec extends Specification with Mockito {
       import play.api.mvc._
       import play.api._
 
-      class AccessLoggingFilter @Inject()(implicit val mat: Materializer)
+      class AccessLoggingFilter @Inject() (implicit val mat: Materializer)
           extends Filter {
 
         val accessLogger = Logger("access")
 
-        def apply(next: (RequestHeader) => Future[Result])(
-            request: RequestHeader): Future[Result] = {
+        def apply(
+            next: (RequestHeader) => Future[Result]
+        )(request: RequestHeader): Future[Result] = {
           val resultFuture = next(request)
 
-          resultFuture.foreach(
-              result =>
-                {
-              val msg =
-                s"method=${request.method} uri=${request.uri} remote-address=${request.remoteAddress}" +
+          resultFuture.foreach(result => {
+            val msg =
+              s"method=${request.method} uri=${request.uri} remote-address=${request.remoteAddress}" +
                 s" status=${result.header.status}";
-              accessLogger.info(msg)
+            accessLogger.info(msg)
           })
 
           resultFuture
@@ -170,7 +174,7 @@ class ScalaLoggingSpec extends Specification with Mockito {
 
       //#logging-underlying
       val underlyingLogger: org.slf4j.Logger = logger.underlyingLogger
-      val loggerName = underlyingLogger.getName()
+      val loggerName                         = underlyingLogger.getName()
       //#logging-underlying
 
       loggerName must equalTo("access")

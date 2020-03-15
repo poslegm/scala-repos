@@ -28,42 +28,46 @@ object RouterExample extends App {
   trait Router[A] { self =>
     def apply(path: String): Option[A]
 
-    def map[B](f: A => B): Router[B] = new Router[B] {
-      def apply(path: String): Option[B] = self(path).map(f)
+    def map[B](f: A => B): Router[B] =
+      new Router[B] {
+        def apply(path: String): Option[B] = self(path).map(f)
 
-      override def toString = self.toString
-    }
+        override def toString = self.toString
+      }
 
-    def orElse[B >: A](that: Router[B]): Router[B] = new Router[B] {
-      def apply(path: String): Option[B] = self(path).orElse(that(path))
+    def orElse[B >: A](that: Router[B]): Router[B] =
+      new Router[B] {
+        def apply(path: String): Option[B] = self(path).orElse(that(path))
 
-      override def toString = s"(${self.toString}|${that.toString})"
-    }
+        override def toString = s"(${self.toString}|${that.toString})"
+      }
 
-    def :+:[B](that: Router[B])(
-        implicit adjoin: Adjoin[B :+: A :+: CNil]): Router[adjoin.Out] =
+    def :+:[B](
+        that: Router[B]
+    )(implicit adjoin: Adjoin[B :+: A :+: CNil]): Router[adjoin.Out] =
       new Router[adjoin.Out] {
         def apply(path: String) =
           that(path)
             .map(b => adjoin(Inl(b)))
             .orElse(
-                self(path).map(a => adjoin(Inr(Inl(a))))
+              self(path).map(a => adjoin(Inr(Inl(a))))
             )
       }
   }
 
-  def matchString(s: String): Router[String] = new Router[String] {
-    def apply(path: String): Option[String] = if (path == s) Some(s) else None
+  def matchString(s: String): Router[String] =
+    new Router[String] {
+      def apply(path: String): Option[String] = if (path == s) Some(s) else None
 
-    override def toString = s
-  }
+      override def toString = s
+    }
 
-  val fooRouter: Router[Int] = matchString("foo").map(_ => 1)
+  val fooRouter: Router[Int]    = matchString("foo").map(_ => 1)
   val barRouter: Router[Symbol] = matchString("bar").map(_ => 'x)
   val bazRouter: Router[Double] = matchString("baz").map(_ => 0.0)
-  val quxRouter: Router[Char] = matchString("qux").map(_ => 'z')
+  val quxRouter: Router[Char]   = matchString("qux").map(_ => 'z')
 
-  val fooBarRouter: Router[Int :+: Symbol :+: CNil] = fooRouter :+: barRouter
+  val fooBarRouter: Router[Int :+: Symbol :+: CNil]  = fooRouter :+: barRouter
   val bazQuxRouter: Router[Double :+: Char :+: CNil] = bazRouter :+: quxRouter
 
   type All = Int :+: Symbol :+: Double :+: Char :+: CNil

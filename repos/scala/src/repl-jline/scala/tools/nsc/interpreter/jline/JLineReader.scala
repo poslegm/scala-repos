@@ -43,7 +43,7 @@ class InteractiveReader(completer: () => Completion)
   }
 
   private[this] var _completion: Completion = interpreter.NoCompletion
-  def completion: Completion = _completion
+  def completion: Completion                = _completion
 
   override def postInit() = {
     _completion = completer()
@@ -51,19 +51,20 @@ class InteractiveReader(completer: () => Completion)
     consoleReader.initCompletion(completion)
   }
 
-  def reset() = consoleReader.getTerminal().reset()
-  def redrawLine() = consoleReader.redrawLineAndFlush()
+  def reset()                     = consoleReader.getTerminal().reset()
+  def redrawLine()                = consoleReader.redrawLineAndFlush()
   def readOneLine(prompt: String) = consoleReader.readLine(prompt)
-  def readOneKey(prompt: String) = consoleReader.readOneKey(prompt)
+  def readOneKey(prompt: String)  = consoleReader.readOneKey(prompt)
 }
 
 // implements a jline interface
 private class JLineConsoleReader
-    extends jconsole.ConsoleReader with interpreter.VariColumnTabulator {
-  val isAcross = interpreter.`package`.isAcross
+    extends jconsole.ConsoleReader
+    with interpreter.VariColumnTabulator {
+  val isAcross   = interpreter.`package`.isAcross
   val marginSize = 3
 
-  def width = getTerminal.getWidth()
+  def width  = getTerminal.getWidth()
   def height = getTerminal.getHeight()
 
   private def morePrompt = "--More--"
@@ -72,8 +73,8 @@ private class JLineConsoleReader
     val key = readOneKey(morePrompt)
     try key match {
       case '\r' | '\n' => 1
-      case 'q' => -1
-      case _ => height - 1
+      case 'q'         => -1
+      case _           => height - 1
     } finally {
       eraseLine()
       // TODO: still not quite managing to erase --More-- and get
@@ -93,7 +94,7 @@ private class JLineConsoleReader
 
   private def printColumns_(items: List[String]): Unit =
     if (items exists (_ != "")) {
-      val grouped = tabulate(items)
+      val grouped   = tabulate(items)
       var linesLeft = if (isPaginationEnabled()) height - 1 else Int.MaxValue
       grouped foreach { xs =>
         println(xs.mkString)
@@ -125,9 +126,11 @@ private class JLineConsoleReader
     def completer =
       new Completer {
         val tc = completion
-        def complete(_buf: String,
-                     cursor: Int,
-                     candidates: JList[CharSequence]): Int = {
+        def complete(
+            _buf: String,
+            cursor: Int,
+            candidates: JList[CharSequence]
+        ): Int = {
           val buf = if (_buf == null) "" else _buf
           val Candidates(newCursor, newCandidates) =
             completion.complete(buf, cursor)
@@ -138,7 +141,7 @@ private class JLineConsoleReader
 
     completion match {
       case NoCompletion => ()
-      case _ => this addCompleter completer
+      case _            => this addCompleter completer
     }
 
     // This is a workaround for https://github.com/jline/jline2/issues/208
@@ -151,9 +154,11 @@ private class JLineConsoleReader
     ///
     val handler = getCompletionHandler
     setCompletionHandler(new CompletionHandler {
-      override def complete(consoleReader: ConsoleReader,
-                            list: JList[CharSequence],
-                            i: Int): Boolean = {
+      override def complete(
+          consoleReader: ConsoleReader,
+          list: JList[CharSequence],
+          i: Int
+      ): Boolean = {
         try {
           handler.complete(consoleReader, list, i)
         } finally if (getCursorBuffer.cursor != getCursorBuffer.length()) {

@@ -21,22 +21,24 @@ object PendingRequestFilter {
 
   private[finagle] def module[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
     new Stack.Module1[Param, ServiceFactory[Req, Rep]] {
-      val role = PendingRequestFilter.role
+      val role        = PendingRequestFilter.role
       val description = "Restrict number of pending requests"
 
       // n.b. we can't simply compose the `PendingRequestFilter` onto the `next`
       // service factory since we need a distinct filter instance to provide
       // distinct state per-session.
-      def make(_param: Param, next: ServiceFactory[Req, Rep]) = _param match {
-        case Param(Some(limit)) =>
-          next.map(new PendingRequestFilter[Req, Rep](limit).andThen(_))
+      def make(_param: Param, next: ServiceFactory[Req, Rep]) =
+        _param match {
+          case Param(Some(limit)) =>
+            next.map(new PendingRequestFilter[Req, Rep](limit).andThen(_))
 
-        case Param(None) => next
-      }
+          case Param(None) => next
+        }
     }
 
   val PendingRequestsLimitExceeded = new RejectedExecutionException(
-      "Pending request limit exceeded")
+    "Pending request limit exceeded"
+  )
 }
 
 /**
@@ -48,12 +50,11 @@ private[finagle] class PendingRequestFilter[Req, Rep](limit: Int)
 
   if (limit < 1)
     throw new IllegalArgumentException(
-        s"request limit must be greater than zero, saw $limit")
+      s"request limit must be greater than zero, saw $limit"
+    )
 
-  private[this] val pending = new AtomicInteger(0)
-  private[this] val decFn: Any => Unit = { _: Any =>
-    pending.decrementAndGet()
-  }
+  private[this] val pending            = new AtomicInteger(0)
+  private[this] val decFn: Any => Unit = { _: Any => pending.decrementAndGet() }
 
   def apply(req: Req, service: Service[Req, Rep]): Future[Rep] =
     // N.B. There's a race on the sad path of this filter when we increment and

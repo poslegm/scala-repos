@@ -23,34 +23,34 @@ object NullSafetyTest {
 
     @Test def testIteratorWrapping(): Unit = {
       val nullJIterator: ju.Iterator[AnyRef] = null
-      val iterator: Iterator[AnyRef] = nullJIterator
+      val iterator: Iterator[AnyRef]         = nullJIterator
 
       assert(iterator == null)
     }
 
     @Test def testEnumerationWrapping(): Unit = {
       val nullJEnumeration: ju.Enumeration[AnyRef] = null
-      val enumeration: Iterator[AnyRef] = nullJEnumeration
+      val enumeration: Iterator[AnyRef]            = nullJEnumeration
 
       assert(enumeration == null)
     }
 
     @Test def testIterableWrapping(): Unit = {
       val nullJIterable: jl.Iterable[AnyRef] = null
-      val iterable: Iterable[AnyRef] = nullJIterable
+      val iterable: Iterable[AnyRef]         = nullJIterable
 
       assert(iterable == null)
     }
 
     @Test def testCollectionWrapping(): Unit = {
       val nullJCollection: ju.Collection[AnyRef] = null
-      val collection: Iterable[AnyRef] = nullJCollection
+      val collection: Iterable[AnyRef]           = nullJCollection
 
       assert(collection == null)
     }
 
     @Test def testBufferWrapping(): Unit = {
-      val nullJList: ju.List[AnyRef] = null
+      val nullJList: ju.List[AnyRef]     = null
       val buffer: mutable.Buffer[AnyRef] = nullJList
 
       assert(buffer == null)
@@ -72,20 +72,20 @@ object NullSafetyTest {
 
     @Test def testConcurrentMapWrapping(): Unit = {
       val nullJConMap: juc.ConcurrentMap[AnyRef, AnyRef] = null
-      val conMap: concurrent.Map[AnyRef, AnyRef] = nullJConMap
+      val conMap: concurrent.Map[AnyRef, AnyRef]         = nullJConMap
 
       assert(conMap == null)
     }
 
     @Test def testDictionaryWrapping(): Unit = {
       val nullJDict: ju.Dictionary[AnyRef, AnyRef] = null
-      val dict: mutable.Map[AnyRef, AnyRef] = nullJDict
+      val dict: mutable.Map[AnyRef, AnyRef]        = nullJDict
 
       assert(dict == null)
     }
 
     @Test def testPropertyWrapping(): Unit = {
-      val nullJProps: ju.Properties = null
+      val nullJProps: ju.Properties          = null
       val props: mutable.Map[String, String] = nullJProps
 
       assert(props == null)
@@ -163,20 +163,20 @@ object NullSafetyTest {
 
     @Test def testEnumerationWrapping(): Unit = {
       val nullEnumeration: Iterator[AnyRef] = null
-      val enumeration: ju.Iterator[AnyRef] = nullEnumeration
+      val enumeration: ju.Iterator[AnyRef]  = nullEnumeration
 
       assert(enumeration == null)
     }
 
     @Test def testIterableWrapping(): Unit = {
       val nullIterable: Iterable[AnyRef] = null
-      val iterable: jl.Iterable[AnyRef] = asJavaIterable(nullIterable)
+      val iterable: jl.Iterable[AnyRef]  = asJavaIterable(nullIterable)
 
       assert(iterable == null)
     }
 
     @Test def testCollectionWrapping(): Unit = {
-      val nullCollection: Iterable[AnyRef] = null
+      val nullCollection: Iterable[AnyRef]  = null
       val collection: ju.Collection[AnyRef] = nullCollection
 
       assert(collection == null)
@@ -184,35 +184,35 @@ object NullSafetyTest {
 
     @Test def testBufferWrapping(): Unit = {
       val nullList: mutable.Buffer[AnyRef] = null
-      val buffer: ju.List[AnyRef] = nullList
+      val buffer: ju.List[AnyRef]          = nullList
 
       assert(buffer == null)
     }
 
     @Test def testSetWrapping(): Unit = {
       val nullSet: mutable.Set[AnyRef] = null
-      val set: ju.Set[AnyRef] = nullSet
+      val set: ju.Set[AnyRef]          = nullSet
 
       assert(set == null)
     }
 
     @Test def testMapWrapping(): Unit = {
       val nullMap: mutable.Map[AnyRef, AnyRef] = null
-      val map: ju.Map[AnyRef, AnyRef] = nullMap
+      val map: ju.Map[AnyRef, AnyRef]          = nullMap
 
       assert(map == null)
     }
 
     @Test def testConcurrentMapWrapping(): Unit = {
       val nullConMap: concurrent.Map[AnyRef, AnyRef] = null
-      val conMap: juc.ConcurrentMap[AnyRef, AnyRef] = nullConMap
+      val conMap: juc.ConcurrentMap[AnyRef, AnyRef]  = nullConMap
 
       assert(conMap == null)
     }
 
     @Test def testDictionaryWrapping(): Unit = {
       val nullDict: mutable.Map[AnyRef, AnyRef] = null
-      val dict: ju.Dictionary[AnyRef, AnyRef] = nullDict
+      val dict: ju.Dictionary[AnyRef, AnyRef]   = nullDict
 
       assert(dict == null)
     }

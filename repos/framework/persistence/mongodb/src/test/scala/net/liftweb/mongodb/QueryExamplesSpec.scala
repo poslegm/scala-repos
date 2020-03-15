@@ -27,12 +27,13 @@ import org.bson.types.ObjectId
 import org.specs2.mutable.Specification
 
 package queryexamplesfixtures {
-  case class Person(_id: ObjectId,
-                    name: String,
-                    birthDate: Date,
-                    childId: UUID,
-                    petId: Option[ObjectId])
-      extends MongoDocument[Person] {
+  case class Person(
+      _id: ObjectId,
+      name: String,
+      birthDate: Date,
+      childId: UUID,
+      petId: Option[ObjectId]
+  ) extends MongoDocument[Person] {
     def meta = Person
   }
   object Person extends MongoDocumentMeta[Person] {
@@ -65,30 +66,38 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
     val bettysBirthDate = Calendar.getInstance
     bettysBirthDate.set(1973, 8, 30, 19, 0)
 
-    val dinoId = ObjectId.get
-    val pebblesId = UUID.randomUUID
+    val dinoId     = ObjectId.get
+    val pebblesId  = UUID.randomUUID
     val bammbammId = UUID.randomUUID
 
-    val fred = Person(ObjectId.get,
-                      "Flinstone, Fred",
-                      fredsBirthDate.getTime,
-                      pebblesId,
-                      Some(dinoId))
-    val wilma = Person(ObjectId.get,
-                       "Flinstone, Wilma",
-                       wilmasBirthDate.getTime,
-                       pebblesId,
-                       Some(dinoId))
-    val barney = Person(ObjectId.get,
-                        "Rubble, Barney",
-                        barneysBirthDate.getTime,
-                        bammbammId,
-                        None)
-    val betty = Person(ObjectId.get,
-                       "Rubble, Betty",
-                       bettysBirthDate.getTime,
-                       bammbammId,
-                       None)
+    val fred = Person(
+      ObjectId.get,
+      "Flinstone, Fred",
+      fredsBirthDate.getTime,
+      pebblesId,
+      Some(dinoId)
+    )
+    val wilma = Person(
+      ObjectId.get,
+      "Flinstone, Wilma",
+      wilmasBirthDate.getTime,
+      pebblesId,
+      Some(dinoId)
+    )
+    val barney = Person(
+      ObjectId.get,
+      "Rubble, Barney",
+      barneysBirthDate.getTime,
+      bammbammId,
+      None
+    )
+    val betty = Person(
+      ObjectId.get,
+      "Rubble, Betty",
+      bettysBirthDate.getTime,
+      bammbammId,
+      None
+    )
 
     fred.save
     wilma.save
@@ -96,7 +105,7 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
     betty.save
 
     val flinstonesIds = List(fred._id, wilma._id)
-    val rubblesIds = List(barney._id, betty._id)
+    val rubblesIds    = List(barney._id, betty._id)
 
     // query for Bamm-Bamm's parents (UUID) by childId
     val pebblesParents = Person.findAll(("childId" -> bammbammId))
@@ -124,7 +133,8 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
 
     // query for the Flinstones using a Pattern
     val flinstones = Person.findAll(
-        ("name" -> Pattern.compile("^flinst", Pattern.CASE_INSENSITIVE)))
+      ("name" -> Pattern.compile("^flinst", Pattern.CASE_INSENSITIVE))
+    )
 
     flinstones.length must_== 2
     flinstones.map(_._id).filterNot(flinstonesIds.contains(_)) must_== List()
@@ -137,7 +147,7 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
 
     // query using Dates
     implicit val formats = Person.formats // this is needed for Dates
-    val qryDate = Calendar.getInstance
+    val qryDate          = Calendar.getInstance
     qryDate.set(1971, 1, 1, 19, 0)
     val people = Person.findAll(("birthDate" -> ("$gt" -> qryDate.getTime)))
 

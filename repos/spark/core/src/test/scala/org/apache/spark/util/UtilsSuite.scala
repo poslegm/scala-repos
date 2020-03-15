@@ -17,7 +17,12 @@
 
 package org.apache.spark.util
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileOutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  File,
+  FileOutputStream
+}
 import java.lang.{Double => JDouble, Float => JFloat}
 import java.net.{BindException, ServerSocket, URI}
 import java.nio.{ByteBuffer, ByteOrder}
@@ -38,8 +43,7 @@ import org.apache.spark.{SparkConf, SparkFunSuite}
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.util.ByteUnit
 
-class UtilsSuite
-    extends SparkFunSuite with ResetSystemProperties with Logging {
+class UtilsSuite extends SparkFunSuite with ResetSystemProperties with Logging {
 
   test("timeConversion") {
     // Test -1
@@ -131,13 +135,16 @@ class UtilsSuite
     // Overflow handling, 1073741824p exceeds Long.MAX_VALUE if converted straight to Bytes
     // This demonstrates that we can have e.g 1024^3 PB without overflowing.
     assert(
-        Utils.byteStringAsGb("1073741824p") === ByteUnit.PiB.toGiB(1073741824))
+      Utils.byteStringAsGb("1073741824p") === ByteUnit.PiB.toGiB(1073741824)
+    )
     assert(
-        Utils.byteStringAsMb("1073741824p") === ByteUnit.PiB.toMiB(1073741824))
+      Utils.byteStringAsMb("1073741824p") === ByteUnit.PiB.toMiB(1073741824)
+    )
 
     // Run this to confirm it doesn't throw an exception
     assert(
-        Utils.byteStringAsBytes("9223372036854775807") === 9223372036854775807L)
+      Utils.byteStringAsBytes("9223372036854775807") === 9223372036854775807L
+    )
     assert(ByteUnit.PiB.toPiB(9223372036854775807L) === 9223372036854775807L)
 
     // Test overflow exception
@@ -192,8 +199,7 @@ class UtilsSuite
     assert(Utils.bytesToString(2097152) === "2.0 MB")
     assert(Utils.bytesToString(2306867) === "2.2 MB")
     assert(Utils.bytesToString(5368709120L) === "5.0 GB")
-    assert(
-        Utils.bytesToString(5L * 1024L * 1024L * 1024L * 1024L) === "5.0 TB")
+    assert(Utils.bytesToString(5L * 1024L * 1024L * 1024L * 1024L) === "5.0 TB")
   }
 
   test("copyStream") {
@@ -239,8 +245,10 @@ class UtilsSuite
     assert(Utils.splitCommandString("a \"b c\"") === Seq("a", "b c"))
     assert(Utils.splitCommandString("a \"b c\" d") === Seq("a", "b c", "d"))
     assert(Utils.splitCommandString("\"b c\"") === Seq("b c"))
-    assert(Utils.splitCommandString("a 'b\" c' \"d' e\"") === Seq(
-            "a", "b\" c", "d' e"))
+    assert(
+      Utils
+        .splitCommandString("a 'b\" c' \"d' e\"") === Seq("a", "b\" c", "d' e")
+    )
     assert(Utils.splitCommandString("a\t'b\nc'\nd") === Seq("a", "b\nc", "d"))
     assert(Utils.splitCommandString("a \"b\\\\c\"") === Seq("a", "b\\c"))
     assert(Utils.splitCommandString("a \"b\\\"c\"") === Seq("a", "b\"c"))
@@ -254,9 +262,9 @@ class UtilsSuite
   }
 
   test("string formatting of time durations") {
-    val second = 1000
-    val minute = second * 60
-    val hour = minute * 60
+    val second                = 1000
+    val minute                = second * 60
+    val hour                  = minute * 60
     def str: (Long) => String = Utils.msDurationToString(_)
 
     val sep =
@@ -269,14 +277,16 @@ class UtilsSuite
     assert(str(minute) === "1" + sep + "0 m")
     assert(str(minute + 4 * second + 34) === "1" + sep + "1 m")
     assert(str(10 * hour + minute + 4 * second) === "10" + sep + "02 h")
-    assert(str(10 * hour + 59 * minute + 59 * second + 999) === "11" + sep +
-        "00 h")
+    assert(
+      str(10 * hour + 59 * minute + 59 * second + 999) === "11" + sep +
+        "00 h"
+    )
   }
 
   test("reading offset bytes of a file") {
     val tmpDir2 = Utils.createTempDir()
-    val f1Path = tmpDir2 + "/f1"
-    val f1 = new FileOutputStream(f1Path)
+    val f1Path  = tmpDir2 + "/f1"
+    val f1      = new FileOutputStream(f1Path)
     f1.write("1\n2\n3\n4\n5\n6\n7\n8\n9\n".getBytes(StandardCharsets.UTF_8))
     f1.close()
 
@@ -303,7 +313,7 @@ class UtilsSuite
 
   test("reading offset bytes across multiple files") {
     val tmpDir = Utils.createTempDir()
-    val files = (1 to 3).map(i => new File(tmpDir, i.toString))
+    val files  = (1 to 3).map(i => new File(tmpDir, i.toString))
     Files.write("0123456789", files(0), StandardCharsets.UTF_8)
     Files.write("abcdefghij", files(1), StandardCharsets.UTF_8)
     Files.write("ABCDEFGHIJ", files(2), StandardCharsets.UTF_8)
@@ -328,14 +338,15 @@ class UtilsSuite
 
     // Read some nonexistent bytes on both ends
     assert(
-        Utils.offsetBytes(files, -5, 35) === "0123456789abcdefghijABCDEFGHIJ")
+      Utils.offsetBytes(files, -5, 35) === "0123456789abcdefghijABCDEFGHIJ"
+    )
 
     Utils.deleteRecursively(tmpDir)
   }
 
   test("deserialize long value") {
     val testval: Long = 9730889947L
-    val bbuf = ByteBuffer.allocate(8)
+    val bbuf          = ByteBuffer.allocate(8)
     assert(bbuf.hasArray)
     bbuf.order(ByteOrder.BIG_ENDIAN)
     bbuf.putLong(testval)
@@ -389,10 +400,12 @@ class UtilsSuite
       assert(new URI(Utils.resolveURIs(after)) === new URI(after))
     }
     val rawCwd = System.getProperty("user.dir")
-    val cwd = if (Utils.isWindows) s"/$rawCwd".replace("\\", "/") else rawCwd
+    val cwd    = if (Utils.isWindows) s"/$rawCwd".replace("\\", "/") else rawCwd
     assertResolves("hdfs:/root/spark.jar", "hdfs:/root/spark.jar")
     assertResolves(
-        "hdfs:///root/spark.jar#app.jar", "hdfs:/root/spark.jar#app.jar")
+      "hdfs:///root/spark.jar#app.jar",
+      "hdfs:/root/spark.jar#app.jar"
+    )
     assertResolves("spark.jar", s"file:$cwd/spark.jar")
     assertResolves("spark.jar#app.jar", s"file:$cwd/spark.jar#app.jar")
     assertResolves("path to/file.txt", s"file:$cwd/path%20to/file.txt")
@@ -402,8 +415,7 @@ class UtilsSuite
     }
     assertResolves("file:/C:/path/to/file.txt", "file:/C:/path/to/file.txt")
     assertResolves("file:///C:/path/to/file.txt", "file:/C:/path/to/file.txt")
-    assertResolves(
-        "file:/C:/file.txt#alias.txt", "file:/C:/file.txt#alias.txt")
+    assertResolves("file:/C:/file.txt#alias.txt", "file:/C:/file.txt#alias.txt")
     assertResolves("file:foo", s"file:foo")
     assertResolves("file:foo:baby", s"file:foo:baby")
   }
@@ -420,18 +432,22 @@ class UtilsSuite
       assert(resolve(resolve(resolve(after))) === after)
     }
     val rawCwd = System.getProperty("user.dir")
-    val cwd = if (Utils.isWindows) s"/$rawCwd".replace("\\", "/") else rawCwd
+    val cwd    = if (Utils.isWindows) s"/$rawCwd".replace("\\", "/") else rawCwd
     assertResolves("jar1,jar2", s"file:$cwd/jar1,file:$cwd/jar2")
     assertResolves("file:/jar1,file:/jar2", "file:/jar1,file:/jar2")
     assertResolves(
-        "hdfs:/jar1,file:/jar2,jar3", s"hdfs:/jar1,file:/jar2,file:$cwd/jar3")
+      "hdfs:/jar1,file:/jar2,jar3",
+      s"hdfs:/jar1,file:/jar2,file:$cwd/jar3"
+    )
     assertResolves(
-        "hdfs:/jar1,file:/jar2,jar3,jar4#jar5,path to/jar6",
-        s"hdfs:/jar1,file:/jar2,file:$cwd/jar3,file:$cwd/jar4#jar5,file:$cwd/path%20to/jar6")
+      "hdfs:/jar1,file:/jar2,jar3,jar4#jar5,path to/jar6",
+      s"hdfs:/jar1,file:/jar2,file:$cwd/jar3,file:$cwd/jar4#jar5,file:$cwd/path%20to/jar6"
+    )
     if (Utils.isWindows) {
       assertResolves(
-          """hdfs:/jar1,file:/jar2,jar3,C:\pi.py#py.pi,C:\path to\jar4""",
-          s"hdfs:/jar1,file:/jar2,file:$cwd/jar3,file:/C:/pi.py#py.pi,file:/C:/path%20to/jar4")
+        """hdfs:/jar1,file:/jar2,jar3,C:\pi.py#py.pi,C:\path to\jar4""",
+        s"hdfs:/jar1,file:/jar2,file:$cwd/jar3,file:/C:/pi.py#py.pi,file:/C:/path%20to/jar4"
+      )
     }
   }
 
@@ -442,47 +458,88 @@ class UtilsSuite
     assert(Utils.nonLocalPaths("local:/spark.jar") === Array.empty)
     assert(Utils.nonLocalPaths("local:///spark.jar") === Array.empty)
     assert(Utils.nonLocalPaths("hdfs:/spark.jar") === Array("hdfs:/spark.jar"))
-    assert(Utils.nonLocalPaths("hdfs:///spark.jar") === Array(
-            "hdfs:///spark.jar"))
     assert(
-        Utils.nonLocalPaths("file:/spark.jar,local:/smart.jar,family.py") === Array.empty)
+      Utils.nonLocalPaths("hdfs:///spark.jar") === Array("hdfs:///spark.jar")
+    )
     assert(
-        Utils.nonLocalPaths("local:/spark.jar,file:/smart.jar,family.py") === Array.empty)
-    assert(Utils.nonLocalPaths("hdfs:/spark.jar,s3:/smart.jar") === Array(
-            "hdfs:/spark.jar", "s3:/smart.jar"))
+      Utils.nonLocalPaths(
+        "file:/spark.jar,local:/smart.jar,family.py"
+      ) === Array.empty
+    )
     assert(
-        Utils.nonLocalPaths("hdfs:/spark.jar,path to/a.jar,s3:/smart.jar") === Array(
-            "hdfs:/spark.jar", "s3:/smart.jar"))
-    assert(Utils.nonLocalPaths(
-            "hdfs:/spark.jar,s3:/smart.jar,local.py,file:/hello/pi.py") === Array(
-            "hdfs:/spark.jar", "s3:/smart.jar"))
-    assert(Utils.nonLocalPaths(
-            "local.py,hdfs:/spark.jar,file:/hello/pi.py,s3:/smart.jar") === Array(
-            "hdfs:/spark.jar", "s3:/smart.jar"))
+      Utils.nonLocalPaths(
+        "local:/spark.jar,file:/smart.jar,family.py"
+      ) === Array.empty
+    )
+    assert(
+      Utils.nonLocalPaths("hdfs:/spark.jar,s3:/smart.jar") === Array(
+        "hdfs:/spark.jar",
+        "s3:/smart.jar"
+      )
+    )
+    assert(
+      Utils.nonLocalPaths(
+        "hdfs:/spark.jar,path to/a.jar,s3:/smart.jar"
+      ) === Array("hdfs:/spark.jar", "s3:/smart.jar")
+    )
+    assert(
+      Utils.nonLocalPaths(
+        "hdfs:/spark.jar,s3:/smart.jar,local.py,file:/hello/pi.py"
+      ) === Array("hdfs:/spark.jar", "s3:/smart.jar")
+    )
+    assert(
+      Utils.nonLocalPaths(
+        "local.py,hdfs:/spark.jar,file:/hello/pi.py,s3:/smart.jar"
+      ) === Array("hdfs:/spark.jar", "s3:/smart.jar")
+    )
 
     // Test Windows paths
     assert(
-        Utils.nonLocalPaths("C:/some/path.jar", testWindows = true) === Array.empty)
+      Utils
+        .nonLocalPaths("C:/some/path.jar", testWindows = true) === Array.empty
+    )
     assert(
-        Utils.nonLocalPaths("file:/C:/some/path.jar", testWindows = true) === Array.empty)
+      Utils.nonLocalPaths(
+        "file:/C:/some/path.jar",
+        testWindows = true
+      ) === Array.empty
+    )
     assert(
-        Utils.nonLocalPaths("file:///C:/some/path.jar", testWindows = true) === Array.empty)
+      Utils.nonLocalPaths(
+        "file:///C:/some/path.jar",
+        testWindows = true
+      ) === Array.empty
+    )
     assert(
-        Utils.nonLocalPaths("local:/C:/some/path.jar", testWindows = true) === Array.empty)
+      Utils.nonLocalPaths(
+        "local:/C:/some/path.jar",
+        testWindows = true
+      ) === Array.empty
+    )
     assert(
-        Utils.nonLocalPaths("local:///C:/some/path.jar", testWindows = true) === Array.empty)
+      Utils.nonLocalPaths(
+        "local:///C:/some/path.jar",
+        testWindows = true
+      ) === Array.empty
+    )
     assert(
-        Utils.nonLocalPaths("hdfs:/a.jar,C:/my.jar,s3:/another.jar",
-                            testWindows = true) === Array("hdfs:/a.jar",
-                                                          "s3:/another.jar"))
+      Utils.nonLocalPaths(
+        "hdfs:/a.jar,C:/my.jar,s3:/another.jar",
+        testWindows = true
+      ) === Array("hdfs:/a.jar", "s3:/another.jar")
+    )
     assert(
-        Utils.nonLocalPaths("D:/your.jar,hdfs:/a.jar,s3:/another.jar",
-                            testWindows = true) === Array("hdfs:/a.jar",
-                                                          "s3:/another.jar"))
+      Utils.nonLocalPaths(
+        "D:/your.jar,hdfs:/a.jar,s3:/another.jar",
+        testWindows = true
+      ) === Array("hdfs:/a.jar", "s3:/another.jar")
+    )
     assert(
-        Utils.nonLocalPaths("hdfs:/a.jar,s3:/another.jar,e:/our.jar",
-                            testWindows = true) === Array("hdfs:/a.jar",
-                                                          "s3:/another.jar"))
+      Utils.nonLocalPaths(
+        "hdfs:/a.jar,s3:/another.jar,e:/our.jar",
+        testWindows = true
+      ) === Array("hdfs:/a.jar", "s3:/another.jar")
+    )
   }
 
   test("isBindCollision") {
@@ -493,7 +550,7 @@ class UtilsSuite
     assert(!Utils.isBindCollision(new Exception(new BindException)))
 
     // Positives
-    val be = new BindException("Random Message")
+    val be  = new BindException("Random Message")
     val be1 = new Exception(new BindException("Random Message"))
     val be2 = new Exception(new Exception(new BindException("Random Message")))
     assert(Utils.isBindCollision(be))
@@ -537,7 +594,7 @@ class UtilsSuite
     Utils.deleteRecursively(tempDir1)
     assert(!tempDir1.exists())
 
-    val tempDir2 = Utils.createTempDir()
+    val tempDir2    = Utils.createTempDir()
     val sourceFile1 = new File(tempDir2, "foo.txt")
     Files.touch(sourceFile1)
     assert(sourceFile1.exists())
@@ -562,9 +619,10 @@ class UtilsSuite
     try {
       System.setProperty("spark.test.fileNameLoadB", "2")
       Files.write(
-          "spark.test.fileNameLoadA true\n" + "spark.test.fileNameLoadB 1\n",
-          outFile,
-          StandardCharsets.UTF_8)
+        "spark.test.fileNameLoadA true\n" + "spark.test.fileNameLoadB 1\n",
+        outFile,
+        StandardCharsets.UTF_8
+      )
       val properties = Utils.getPropertiesFromFile(outFile.getAbsolutePath)
       properties.filter { case (k, v) => k.startsWith("spark.") }.foreach {
         case (k, v) => sys.props.getOrElseUpdate(k, v)
@@ -579,10 +637,9 @@ class UtilsSuite
 
   test("timeIt with prepare") {
     var cnt = 0
-    val prepare = () =>
-      {
-        cnt += 1
-        Thread.sleep(1000)
+    val prepare = () => {
+      cnt += 1
+      Thread.sleep(1000)
     }
     val time = Utils.timeIt(2)({}, Some(prepare))
     require(cnt === 2, "prepare should be called twice")
@@ -590,8 +647,8 @@ class UtilsSuite
   }
 
   test("fetch hcfs dir") {
-    val tempDir = Utils.createTempDir()
-    val sourceDir = new File(tempDir, "source-dir")
+    val tempDir        = Utils.createTempDir()
+    val sourceDir      = new File(tempDir, "source-dir")
     val innerSourceDir = Utils.createTempDir(root = sourceDir.getPath)
     val sourceFile =
       File.createTempFile("someprefix", "somesuffix", innerSourceDir)
@@ -605,7 +662,7 @@ class UtilsSuite
         new Path("file://" + sourceDir.getAbsolutePath)
       }
     val conf = new Configuration()
-    val fs = Utils.getHadoopFileSystem(path.toString, conf)
+    val fs   = Utils.getHadoopFileSystem(path.toString, conf)
 
     assert(!targetDir.isDirectory())
     Utils.fetchHcfsFile(path, targetDir, fs, new SparkConf(), conf, false)
@@ -629,23 +686,25 @@ class UtilsSuite
       } else {
         new Path("file://" + sourceFile.getAbsolutePath)
       }
-    val testFileDir = new File(tempDir, "test-filename")
+    val testFileDir  = new File(tempDir, "test-filename")
     val testFileName = "testFName"
-    val testFilefs = Utils.getHadoopFileSystem(filePath.toString, conf)
-    Utils.fetchHcfsFile(filePath,
-                        testFileDir,
-                        testFilefs,
-                        new SparkConf(),
-                        conf,
-                        false,
-                        Some(testFileName))
+    val testFilefs   = Utils.getHadoopFileSystem(filePath.toString, conf)
+    Utils.fetchHcfsFile(
+      filePath,
+      testFileDir,
+      testFilefs,
+      new SparkConf(),
+      conf,
+      false,
+      Some(testFileName)
+    )
     val newFileName = new File(testFileDir, testFileName)
     assert(newFileName.isFile())
   }
 
   test("shutdown hook manager") {
     val manager = new SparkShutdownHookManager()
-    val output = new ListBuffer[Int]()
+    val output  = new ListBuffer[Int]()
 
     val hook1 = manager.add(1, () => output += 1)
     manager.add(3, () => output += 3)
@@ -658,15 +717,15 @@ class UtilsSuite
   }
 
   test("isInDirectory") {
-    val tmpDir = new File(sys.props("java.io.tmpdir"))
-    val parentDir = new File(tmpDir, "parent-dir")
-    val childDir1 = new File(parentDir, "child-dir-1")
-    val childDir1b = new File(parentDir, "child-dir-1b")
-    val childFile1 = new File(parentDir, "child-file-1.txt")
-    val childDir2 = new File(childDir1, "child-dir-2")
-    val childDir2b = new File(childDir1, "child-dir-2b")
-    val childFile2 = new File(childDir1, "child-file-2.txt")
-    val childFile3 = new File(childDir2, "child-file-3.txt")
+    val tmpDir         = new File(sys.props("java.io.tmpdir"))
+    val parentDir      = new File(tmpDir, "parent-dir")
+    val childDir1      = new File(parentDir, "child-dir-1")
+    val childDir1b     = new File(parentDir, "child-dir-1b")
+    val childFile1     = new File(parentDir, "child-file-1.txt")
+    val childDir2      = new File(childDir1, "child-dir-2")
+    val childDir2b     = new File(childDir1, "child-dir-2b")
+    val childFile2     = new File(childDir1, "child-file-2.txt")
+    val childFile3     = new File(childDir2, "child-file-3.txt")
     val nullFile: File = null
     parentDir.mkdir()
     childDir1.mkdir()
@@ -707,8 +766,9 @@ class UtilsSuite
     // Non-existent files or directories should fail
     assert(!Utils.isInDirectory(parentDir, new File(parentDir, "one.txt")))
     assert(!Utils.isInDirectory(parentDir, new File(parentDir, "one/two.txt")))
-    assert(!Utils.isInDirectory(parentDir,
-                                new File(parentDir, "one/two/three.txt")))
+    assert(
+      !Utils.isInDirectory(parentDir, new File(parentDir, "one/two/three.txt"))
+    )
 
     // Siblings should fail
     assert(!Utils.isInDirectory(childDir1, childDir1b))
@@ -729,7 +789,8 @@ class UtilsSuite
 
     // scalastyle:off println
     stream.println(
-        "test circular test circular test circular test circular test circular")
+      "test circular test circular test circular test circular test circular"
+    )
     // scalastyle:on println
     assert(buffer.toString === "t circular test circular\n")
   }
@@ -744,13 +805,17 @@ class UtilsSuite
     shouldMatchDefaultOrder(Double.MinValue, Double.MaxValue)
     assert(Utils.nanSafeCompareDoubles(Double.NaN, Double.NaN) === 0)
     assert(
-        Utils.nanSafeCompareDoubles(Double.NaN, Double.PositiveInfinity) === 1)
+      Utils.nanSafeCompareDoubles(Double.NaN, Double.PositiveInfinity) === 1
+    )
     assert(
-        Utils.nanSafeCompareDoubles(Double.NaN, Double.NegativeInfinity) === 1)
+      Utils.nanSafeCompareDoubles(Double.NaN, Double.NegativeInfinity) === 1
+    )
     assert(
-        Utils.nanSafeCompareDoubles(Double.PositiveInfinity, Double.NaN) === -1)
+      Utils.nanSafeCompareDoubles(Double.PositiveInfinity, Double.NaN) === -1
+    )
     assert(
-        Utils.nanSafeCompareDoubles(Double.NegativeInfinity, Double.NaN) === -1)
+      Utils.nanSafeCompareDoubles(Double.NegativeInfinity, Double.NaN) === -1
+    )
   }
 
   test("nanSafeCompareFloats") {
@@ -764,28 +829,43 @@ class UtilsSuite
     assert(Utils.nanSafeCompareFloats(Float.NaN, Float.NaN) === 0)
     assert(Utils.nanSafeCompareFloats(Float.NaN, Float.PositiveInfinity) === 1)
     assert(Utils.nanSafeCompareFloats(Float.NaN, Float.NegativeInfinity) === 1)
-    assert(
-        Utils.nanSafeCompareFloats(Float.PositiveInfinity, Float.NaN) === -1)
-    assert(
-        Utils.nanSafeCompareFloats(Float.NegativeInfinity, Float.NaN) === -1)
+    assert(Utils.nanSafeCompareFloats(Float.PositiveInfinity, Float.NaN) === -1)
+    assert(Utils.nanSafeCompareFloats(Float.NegativeInfinity, Float.NaN) === -1)
   }
 
   test("isDynamicAllocationEnabled") {
     val conf = new SparkConf()
     conf.set("spark.master", "yarn-client")
     assert(Utils.isDynamicAllocationEnabled(conf) === false)
-    assert(Utils.isDynamicAllocationEnabled(
-            conf.set("spark.dynamicAllocation.enabled", "false")) === false)
-    assert(Utils.isDynamicAllocationEnabled(
-            conf.set("spark.dynamicAllocation.enabled", "true")) === true)
-    assert(Utils.isDynamicAllocationEnabled(
-            conf.set("spark.executor.instances", "1")) === false)
-    assert(Utils.isDynamicAllocationEnabled(
-            conf.set("spark.executor.instances", "0")) === true)
     assert(
-        Utils.isDynamicAllocationEnabled(conf.set("spark.master", "local")) === false)
-    assert(Utils.isDynamicAllocationEnabled(
-            conf.set("spark.dynamicAllocation.testing", "true")))
+      Utils.isDynamicAllocationEnabled(
+        conf.set("spark.dynamicAllocation.enabled", "false")
+      ) === false
+    )
+    assert(
+      Utils.isDynamicAllocationEnabled(
+        conf.set("spark.dynamicAllocation.enabled", "true")
+      ) === true
+    )
+    assert(
+      Utils.isDynamicAllocationEnabled(
+        conf.set("spark.executor.instances", "1")
+      ) === false
+    )
+    assert(
+      Utils.isDynamicAllocationEnabled(
+        conf.set("spark.executor.instances", "0")
+      ) === true
+    )
+    assert(
+      Utils
+        .isDynamicAllocationEnabled(conf.set("spark.master", "local")) === false
+    )
+    assert(
+      Utils.isDynamicAllocationEnabled(
+        conf.set("spark.dynamicAllocation.testing", "true")
+      )
+    )
   }
 
   test("encodeFileNameToURIRawPath") {
@@ -798,7 +878,8 @@ class UtilsSuite
     assert(Utils.decodeFileNameInURI(new URI("files:///abc/xyz")) === "xyz")
     assert(Utils.decodeFileNameInURI(new URI("files:///abc")) === "abc")
     assert(
-        Utils.decodeFileNameInURI(new URI("files:///abc%20xyz")) === "abc xyz")
+      Utils.decodeFileNameInURI(new URI("files:///abc%20xyz")) === "abc xyz"
+    )
   }
 
   test("Kill process") {
@@ -825,8 +906,8 @@ class UtilsSuite
       // Start up a process that runs 'sleep 10'. Terminate the process and assert it takes
       // less time and the process is no longer there.
       val startTimeMs = System.currentTimeMillis()
-      val process = new ProcessBuilder("sleep", "10").start()
-      val pid = getPid(process)
+      val process     = new ProcessBuilder("sleep", "10").start()
+      val pid         = getPid(process)
       try {
         assert(pidExists(pid))
         val terminated = Utils.terminateProcess(process, 5000)
@@ -849,7 +930,7 @@ class UtilsSuite
         // creating a very misbehaving process. It ignores SIGTERM and has been SIGSTOPed. On
         // older versions of java, this will *not* terminate.
         val file = File.createTempFile("temp-file-name", ".tmp")
-        val cmd = s"""
+        val cmd  = s"""
              |#!/bin/bash
              |trap "" SIGTERM
              |sleep 10
@@ -858,11 +939,11 @@ class UtilsSuite
         file.getAbsoluteFile.setExecutable(true)
 
         val process = new ProcessBuilder(file.getAbsolutePath).start()
-        val pid = getPid(process)
+        val pid     = getPid(process)
         assert(pidExists(pid))
         try {
           signal(pid, "SIGSTOP")
-          val start = System.currentTimeMillis()
+          val start      = System.currentTimeMillis()
           val terminated = Utils.terminateProcess(process, 5000)
           assert(terminated.isDefined)
           Utils.waitForProcess(process, 5000)

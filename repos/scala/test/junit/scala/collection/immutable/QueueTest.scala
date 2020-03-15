@@ -8,7 +8,7 @@ import org.junit.Test
 /* Tests for collection.immutable.Queue  */
 class QueueTest {
   val emptyQueue = Queue.empty[Int]
-  val oneAdded = emptyQueue.enqueue(1)
+  val oneAdded   = emptyQueue.enqueue(1)
   val threeAdded = emptyQueue.enqueue(1 to 3)
 
   @Test

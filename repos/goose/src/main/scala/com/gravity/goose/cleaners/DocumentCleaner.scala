@@ -68,7 +68,7 @@ trait DocumentCleaner {
     val ems: Elements = doc.getElementsByTag("em")
 
     for {
-      node <- ems
+      node            <- ems
       images: Elements = node.getElementsByTag("img") if (images.size == 0)
     } {
       val tn: TextNode = new TextNode(node.text, doc.baseUri)
@@ -125,7 +125,7 @@ trait DocumentCleaner {
   }
 
   private def cleanBadTags(doc: Document): Document = {
-    val children: Elements = doc.body.children
+    val children: Elements    = doc.body.children
     val naughtyList: Elements = children.select(queryNaughtyIDs)
     trace(naughtyList.size + " naughty ID elements found")
 
@@ -157,8 +157,9 @@ trait DocumentCleaner {
     for (node <- naughtyList5) {
 
       trace(
-          "Removing node with class: " + node.attr("class") + " id: " +
-          node.id + " name: " + node.attr("name"))
+        "Removing node with class: " + node.attr("class") + " id: " +
+          node.id + " name: " + node.attr("name")
+      )
 
       removeNode(node)
     }
@@ -175,24 +176,25 @@ trait DocumentCleaner {
       val naughtyList: Elements =
         doc.getElementsByAttributeValueMatching("id", pattern)
 
-      trace(
-          naughtyList.size + " ID elements found against pattern: " + pattern)
+      trace(naughtyList.size + " ID elements found against pattern: " + pattern)
 
       for (node <- naughtyList) {
         removeNode(node)
       }
       val naughtyList3: Elements =
         doc.getElementsByAttributeValueMatching("class", pattern)
-      trace(naughtyList3.size + " CLASS elements found against pattern: " +
-          pattern)
+      trace(
+        naughtyList3.size + " CLASS elements found against pattern: " +
+          pattern
+      )
 
       for (node <- naughtyList3) {
         removeNode(node)
       }
     } catch {
       case e: IllegalArgumentException => {
-          warn(e, e.toString)
-        }
+        warn(e, e.toString)
+      }
     }
     doc
   }
@@ -214,7 +216,9 @@ trait DocumentCleaner {
   }
 
   private def convertWantedTagsToParagraphs(
-      doc: Document, wantedTags: TagsEvaluator): Document = {
+      doc: Document,
+      wantedTags: TagsEvaluator
+  ): Document = {
 
     val selected = Collector.collect(wantedTags, doc)
 
@@ -224,14 +228,12 @@ trait DocumentCleaner {
       } else {
         val replacements = getReplacementNodes(doc, elem)
         elem.children().foreach(_.remove())
-        replacements.foreach(
-            n =>
-              {
-            try {
-              elem.appendChild(n)
-            } catch {
-              case ex: Exception => info(ex, "Failed to append cleaned child!")
-            }
+        replacements.foreach(n => {
+          try {
+            elem.appendChild(n)
+          } catch {
+            case ex: Exception => info(ex, "Failed to append cleaned child!")
+          }
         })
       }
     }
@@ -240,12 +242,14 @@ trait DocumentCleaner {
   }
 
   private def convertDivsToParagraphs(
-      doc: Document, domType: String): Document = {
+      doc: Document,
+      domType: String
+  ): Document = {
     trace("Starting to replace bad divs...")
-    var badDivs: Int = 0
+    var badDivs: Int            = 0
     var convertedTextNodes: Int = 0
-    val divs: Elements = doc.getElementsByTag(domType)
-    var divIndex = 0
+    val divs: Elements          = doc.getElementsByTag(domType)
+    var divIndex                = 0
 
     for (div <- divs) {
       try {
@@ -258,28 +262,27 @@ trait DocumentCleaner {
           val replaceNodes = getReplacementNodes(doc, div)
 
           div.children().foreach(_.remove())
-          replaceNodes.foreach(
-              node =>
-                {
+          replaceNodes.foreach(node => {
 
-              try {
-                div.appendChild(node)
-              } catch {
-                case e: Exception => info(e, e.toString)
-              }
+            try {
+              div.appendChild(node)
+            } catch {
+              case e: Exception => info(e, e.toString)
+            }
           })
         }
       } catch {
         case e: NullPointerException => {
-            logger.error(e.toString)
-          }
+          logger.error(e.toString)
+        }
       }
       divIndex += 1
     }
 
     trace(
-        "Found %d total %s with %d bad ones replaced and %d textnodes converted inside %s"
-          .format(divs.size, domType, badDivs, convertedTextNodes, domType))
+      "Found %d total %s with %d bad ones replaced and %d textnodes converted inside %s"
+        .format(divs.size, domType, badDivs, convertedTextNodes, domType)
+    )
 
     doc
   }
@@ -299,7 +302,7 @@ trait DocumentCleaner {
   def getReplacementNodes(doc: Document, div: Element) = {
 
     val replacementText: StringBuilder = new StringBuilder
-    val nodesToReturn = new ListBuffer[Node]()
+    val nodesToReturn                  = new ListBuffer[Node]()
 
     val nodesToRemove = new ListBuffer[Node]()
 
@@ -322,18 +325,19 @@ trait DocumentCleaner {
       } else if (kid.nodeName == "#text") {
 
         val kidTextNode = kid.asInstanceOf[TextNode]
-        val kidText = kidTextNode.attr("text")
+        val kidText     = kidTextNode.attr("text")
         val replaceText = tabsAndNewLinesReplacements.replaceAll(kidText)
         if (replaceText.trim().length > 1) {
 
           var prevSibNode = kidTextNode.previousSibling()
           while (prevSibNode != null && prevSibNode.nodeName() == "a" &&
-          prevSibNode.attr("grv-usedalready") != "yes") {
+                 prevSibNode.attr("grv-usedalready") != "yes") {
             replacementText.append(" " + prevSibNode.outerHtml() + " ")
             nodesToRemove += prevSibNode
             prevSibNode.attr("grv-usedalready", "yes")
-            prevSibNode = if (prevSibNode.previousSibling() == null) null
-            else prevSibNode.previousSibling()
+            prevSibNode =
+              if (prevSibNode.previousSibling() == null) null
+              else prevSibNode.previousSibling()
           }
           // add the text of the node
           replacementText.append(replaceText)
@@ -341,12 +345,13 @@ trait DocumentCleaner {
           //          check the next set of links that might be after text (see businessinsider2.txt)
           var nextSibNode = kidTextNode.nextSibling()
           while (nextSibNode != null && nextSibNode.nodeName() == "a" &&
-          nextSibNode.attr("grv-usedalready") != "yes") {
+                 nextSibNode.attr("grv-usedalready") != "yes") {
             replacementText.append(" " + nextSibNode.outerHtml() + " ")
             nodesToRemove += nextSibNode
             nextSibNode.attr("grv-usedalready", "yes")
-            nextSibNode = if (nextSibNode.nextSibling() == null) null
-            else nextSibNode.nextSibling()
+            nextSibNode =
+              if (nextSibNode.nextSibling() == null) null
+              else nextSibNode.nextSibling()
           }
         }
         nodesToRemove += kid
@@ -371,20 +376,23 @@ object DocumentCleaner extends Logging {
 
   // create negative elements
   sb.append(
-      "^side$|combx|retweet|mediaarticlerelated|menucontainer|navbar|comment|PopularQuestions|contact|foot|footer|Footer|footnote|cnn_strycaptiontxt|links|meta$|scroll|shoutbox|sponsor")
+    "^side$|combx|retweet|mediaarticlerelated|menucontainer|navbar|comment|PopularQuestions|contact|foot|footer|Footer|footnote|cnn_strycaptiontxt|links|meta$|scroll|shoutbox|sponsor"
+  )
   sb.append(
-      "|tags|socialnetworking|socialNetworking|cnnStryHghLght|cnn_stryspcvbx|^inset$|pagetools|post-attributes|welcome_form|contentTools2|the_answers|remember-tool-tip")
+    "|tags|socialnetworking|socialNetworking|cnnStryHghLght|cnn_stryspcvbx|^inset$|pagetools|post-attributes|welcome_form|contentTools2|the_answers|remember-tool-tip"
+  )
   sb.append(
-      "|communitypromo|runaroundLeft|subscribe|vcard|articleheadings|date|^print$|popup|author-dropdown|tools|socialtools|byline|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text")
+    "|communitypromo|runaroundLeft|subscribe|vcard|articleheadings|date|^print$|popup|author-dropdown|tools|socialtools|byline|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text"
+  )
 
   /**
     * this regex is used to remove undesirable nodes from our doc
     * indicate that something maybe isn't content but more of a comment, footer or some other undesirable node
     */
-  val regExRemoveNodes = sb.toString()
-  val queryNaughtyIDs = "[id~=(" + regExRemoveNodes + ")]"
+  val regExRemoveNodes    = sb.toString()
+  val queryNaughtyIDs     = "[id~=(" + regExRemoveNodes + ")]"
   val queryNaughtyClasses = "[class~=(" + regExRemoveNodes + ")]"
-  val queryNaughtyNames = "[name~=(" + regExRemoveNodes + ")]"
+  val queryNaughtyNames   = "[name~=(" + regExRemoveNodes + ")]"
   val tabsAndNewLinesReplacements =
     ReplaceSequence.create("\n", "\n\n").append("\t").append("^\\s+$")
 
@@ -395,14 +403,24 @@ object DocumentCleaner extends Logging {
     Pattern.compile("<(a|blockquote|dl|div|img|ol|p|pre|table|ul)")
 
   val blockElemementTags = TagsEvaluator(
-      "a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul")
+    "a",
+    "blockquote",
+    "dl",
+    "div",
+    "img",
+    "ol",
+    "p",
+    "pre",
+    "table",
+    "ul"
+  )
   val articleRootTags = TagsEvaluator("div", "span", "article")
 
-  val captionPattern: Pattern = Pattern.compile("^caption$")
-  val googlePattern: Pattern = Pattern.compile(" google ")
-  val entriesPattern: Pattern = Pattern.compile("^[^entry-]more.*$")
+  val captionPattern: Pattern  = Pattern.compile("^caption$")
+  val googlePattern: Pattern   = Pattern.compile(" google ")
+  val entriesPattern: Pattern  = Pattern.compile("^[^entry-]more.*$")
   val facebookPattern: Pattern = Pattern.compile("[^-]facebook")
-  val twitterPattern: Pattern = Pattern.compile("[^-]twitter")
+  val twitterPattern: Pattern  = Pattern.compile("[^-]twitter")
 
   val logPrefix = "Cleaner: "
 }

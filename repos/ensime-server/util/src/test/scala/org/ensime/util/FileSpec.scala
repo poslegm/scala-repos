@@ -65,9 +65,9 @@ class FileSpec extends FlatSpec with Matchers {
     assert(file.exists())
   }
 
-  val unix = Array[Byte](0x61, 0x0a, 0x62, 0x0a, 0x63)
+  val unix    = Array[Byte](0x61, 0x0a, 0x62, 0x0a, 0x63)
   val windows = Array[Byte](0x61, 0x0d, 0x0a, 0x62, 0x0d, 0x0a, 0x63)
-  val abc = List("a", "b", "c")
+  val abc     = List("a", "b", "c")
 
   it should "read lines from a File with UNIX line endings" in withTempFile {
     file =>

@@ -30,5 +30,5 @@ object Other {
 
 object Bop {
   def m1[A]: Super[A] = sys.error("")
-  def m2[A]: Bop2[A] = sys.error("")
+  def m2[A]: Bop2[A]  = sys.error("")
 }

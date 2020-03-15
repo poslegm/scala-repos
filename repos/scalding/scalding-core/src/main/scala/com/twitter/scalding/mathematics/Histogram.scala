@@ -19,7 +19,7 @@ class Histogram(map: Map[Double, Long], binWidth: Double) {
 
   lazy val cdf = {
     var cumulative = 0L
-    var result = Map[Double, Double]()
+    var result     = Map[Double, Double]()
     keys.foreach { bin =>
       cumulative += map(bin)
       result += (bin -> (cumulative.toDouble / size))
@@ -29,8 +29,8 @@ class Histogram(map: Map[Double, Long], binWidth: Double) {
 
   lazy val lorenz = {
     var cumulativeUnique = 0.0
-    var cumulativeTotal = 0.0
-    var result = Map[Double, Double]()
+    var cumulativeTotal  = 0.0
+    var result           = Map[Double, Double]()
     keys.foreach { bin =>
       cumulativeUnique += map(bin)
       cumulativeTotal += bin * map(bin)
@@ -40,15 +40,13 @@ class Histogram(map: Map[Double, Long], binWidth: Double) {
   }
 
   def percentile(p: Int) =
-    keys.find { bin =>
-      cdf(bin) * 100 >= p
-    }.getOrElse(-1d)
+    keys.find { bin => cdf(bin) * 100 >= p }.getOrElse(-1d)
 
   lazy val median = percentile(50)
-  lazy val q1 = percentile(25)
-  lazy val q3 = percentile(75)
+  lazy val q1     = percentile(25)
+  lazy val q3     = percentile(75)
 
-  def mean = sum / size
-  def innerQuartileRange = q3 - q1
+  def mean                    = sum / size
+  def innerQuartileRange      = q3 - q1
   def coefficientOfDispersion = innerQuartileRange / (q3 + q1)
 }

@@ -27,7 +27,7 @@ private[akka] object Collections {
       val superIterator = valuesIterator
       new Iterator[To] {
         private[this] var _next: To = _
-        private[this] var _hasNext = false
+        private[this] var _hasNext  = false
 
         @tailrec override final def hasNext: Boolean =
           if (!_hasNext && superIterator.hasNext) {
@@ -38,19 +38,22 @@ private[akka] object Collections {
               _hasNext = true
               true
             } else hasNext //Attempt to find the next
-          } else _hasNext // Return if we found one
+          } else _hasNext  // Return if we found one
 
         override final def next(): To =
           if (hasNext) {
             val ret = _next
-            _next = null.asInstanceOf[To] // Mark as consumed (nice to the GC, don't leak the last returned value)
-            _hasNext = false // Mark as consumed (we need to look for the next value)
+            _next =
+              null
+                .asInstanceOf[To] // Mark as consumed (nice to the GC, don't leak the last returned value)
+            _hasNext =
+              false // Mark as consumed (we need to look for the next value)
             ret
           } else throw new java.util.NoSuchElementException("next")
       }
     }
 
-    override lazy val size: Int = iterator.size
+    override lazy val size: Int        = iterator.size
     override def foreach[C](f: To ⇒ C) = iterator foreach f
   }
 }

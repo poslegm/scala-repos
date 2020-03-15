@@ -17,7 +17,11 @@
 
 package org.apache.spark.sql.execution.datasources.parquet
 
-import scala.collection.JavaConverters.{collectionAsScalaIterableConverter, mapAsJavaMapConverter, seqAsJavaListConverter}
+import scala.collection.JavaConverters.{
+  collectionAsScalaIterableConverter,
+  mapAsJavaMapConverter,
+  seqAsJavaListConverter
+}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{Path, PathFilter}
@@ -33,26 +37,33 @@ import org.apache.spark.sql.QueryTest
   * Helper class for testing Parquet compatibility.
   */
 private[sql] abstract class ParquetCompatibilityTest
-    extends QueryTest with ParquetTest {
+    extends QueryTest
+    with ParquetTest {
   protected def readParquetSchema(path: String): MessageType = {
-    readParquetSchema(path, { path =>
-      !path.getName.startsWith("_")
-    })
+    readParquetSchema(path, { path => !path.getName.startsWith("_") })
   }
 
   protected def readParquetSchema(
-      path: String, pathFilter: Path => Boolean): MessageType = {
+      path: String,
+      pathFilter: Path => Boolean
+  ): MessageType = {
     val fsPath = new Path(path)
-    val fs = fsPath.getFileSystem(hadoopConfiguration)
+    val fs     = fsPath.getFileSystem(hadoopConfiguration)
     val parquetFiles = fs
-      .listStatus(fsPath, new PathFilter {
-        override def accept(path: Path): Boolean = pathFilter(path)
-      })
+      .listStatus(
+        fsPath,
+        new PathFilter {
+          override def accept(path: Path): Boolean = pathFilter(path)
+        }
+      )
       .toSeq
       .asJava
 
     val footers = ParquetFileReader.readAllFootersInParallel(
-        hadoopConfiguration, parquetFiles, true)
+      hadoopConfiguration,
+      parquetFiles,
+      true
+    )
     footers.asScala.head.getParquetMetadata.getFileMetaData.getSchema
   }
 
@@ -89,8 +100,9 @@ private[sql] object ParquetCompatibilityTest {
     * records with arbitrary structures.
     */
   private class DirectWriteSupport(
-      schema: MessageType, metadata: Map[String, String])
-      extends WriteSupport[RecordConsumer => Unit] {
+      schema: MessageType,
+      metadata: Map[String, String]
+  ) extends WriteSupport[RecordConsumer => Unit] {
 
     private var recordConsumer: RecordConsumer = _
 
@@ -111,9 +123,11 @@ private[sql] object ParquetCompatibilityTest {
     * Writes arbitrary messages conforming to a given `schema` to a Parquet file located by `path`.
     * Records are produced by `recordWriters`.
     */
-  def writeDirect(path: String,
-                  schema: String,
-                  recordWriters: (RecordConsumer => Unit)*): Unit = {
+  def writeDirect(
+      path: String,
+      schema: String,
+      recordWriters: (RecordConsumer => Unit)*
+  ): Unit = {
     writeDirect(path, schema, Map.empty[String, String], recordWriters: _*)
   }
 
@@ -121,14 +135,17 @@ private[sql] object ParquetCompatibilityTest {
     * Writes arbitrary messages conforming to a given `schema` to a Parquet file located by `path`
     * with given user-defined key-value `metadata`. Records are produced by `recordWriters`.
     */
-  def writeDirect(path: String,
-                  schema: String,
-                  metadata: Map[String, String],
-                  recordWriters: (RecordConsumer => Unit)*): Unit = {
-    val messageType = MessageTypeParser.parseMessageType(schema)
+  def writeDirect(
+      path: String,
+      schema: String,
+      metadata: Map[String, String],
+      recordWriters: (RecordConsumer => Unit)*
+  ): Unit = {
+    val messageType  = MessageTypeParser.parseMessageType(schema)
     val writeSupport = new DirectWriteSupport(messageType, metadata)
     val parquetWriter =
       new ParquetWriter[RecordConsumer => Unit](new Path(path), writeSupport)
-    try recordWriters.foreach(parquetWriter.write) finally parquetWriter.close()
+    try recordWriters.foreach(parquetWriter.write)
+    finally parquetWriter.close()
   }
 }

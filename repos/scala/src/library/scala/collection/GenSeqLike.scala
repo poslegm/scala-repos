@@ -31,7 +31,9 @@ import generic._
   *  Unlike iterables, sequences always have a defined order of elements.
   */
 trait GenSeqLike[+A, +Repr]
-    extends Any with GenIterableLike[A, Repr] with Equals
+    extends Any
+    with GenIterableLike[A, Repr]
+    with Equals
     with Parallelizable[A, parallel.ParSeq[A]] {
   def seq: Seq[A]
 
@@ -223,7 +225,8 @@ trait GenSeqLike[+A, +Repr]
     *                  `f` to each element of this $coll and collecting the results in reversed order.
     */
   def reverseMap[B, That](f: A => B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That
 
   /** Tests whether this $coll starts with the given sequence.
     *
@@ -271,7 +274,8 @@ trait GenSeqLike[+A, +Repr]
     *                     by `patch`.
     */
   def patch[B >: A, That](from: Int, patch: GenSeq[B], replaced: Int)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That
 
   /** A copy of this $coll with one single replaced element.
     *  @param  index  the position of the replacement
@@ -288,7 +292,8 @@ trait GenSeqLike[+A, +Repr]
     *    @return a copy of this $coll with the element at position `index` replaced by `elem`.
     */
   def updated[B >: A, That](index: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That
 
   /** A copy of the $coll with an element prepended.
     *
@@ -344,10 +349,10 @@ trait GenSeqLike[+A, +Repr]
     *    {{{
     *       scala> val a = List(1)
     *       a: List[Int] = List(1)
-    *       
+    *
     *       scala> val b = a :+ 2
     *       b: List[Int] = List(1, 2)
-    *       
+    *
     *       scala> println(a)
     *       List(1)
     *    }}}
@@ -375,7 +380,8 @@ trait GenSeqLike[+A, +Repr]
     *            that the resulting $coll has a length of at least `len`.
     */
   def padTo[B >: A, That](len: Int, elem: B)(
-      implicit bf: CanBuildFrom[Repr, B, That]): That
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That
 
   /** Tests whether every element of this $coll relates to the
     *  corresponding element of another sequence by satisfying a test predicate.
@@ -414,7 +420,8 @@ trait GenSeqLike[+A, +Repr]
     *                  followed by all elements of `that`.
     */
   def union[B >: A, That](that: GenSeq[B])(
-      implicit bf: CanBuildFrom[Repr, B, That]): That = this ++ that
+      implicit bf: CanBuildFrom[Repr, B, That]
+  ): That = this ++ that
 
   /** Computes the multiset difference between this $coll and another sequence.
     *
@@ -480,8 +487,9 @@ trait GenSeqLike[+A, +Repr]
     *  @return   `true` if `that` is a sequence that has the same elements as
     *            this sequence in the same order, `false` otherwise
     */
-  override def equals(that: Any): Boolean = that match {
-    case that: GenSeq[_] => (that canEqual this) && (this sameElements that)
-    case _ => false
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: GenSeq[_] => (that canEqual this) && (this sameElements that)
+      case _               => false
+    }
 }

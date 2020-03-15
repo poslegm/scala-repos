@@ -8,10 +8,12 @@ import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
 
 class PerformanceSpec
-    extends TypedSpec(ConfigFactory.parseString("""
+    extends TypedSpec(
+      ConfigFactory.parseString("""
       # increase this if you do real benchmarking
       akka.typed.PerformanceSpec.iterations=100000
-      """)) {
+      """)
+    ) {
 
   object `A static behavior` {
 
@@ -24,27 +26,34 @@ class PerformanceSpec
         StepWise[Pong] { (ctx, startWith) ⇒
           startWith {
 
-            val pinger = Props(SelfAware[Ping](self ⇒
-                      Static { msg ⇒
-                if (msg.x == 0) {
-                  msg.report ! Pong(0, self, msg.report)
-                } else msg.pong ! Pong(msg.x - 1, self, msg.report)
-            })).withDispatcher(executor)
+            val pinger = Props(
+              SelfAware[Ping](self ⇒
+                Static { msg ⇒
+                  if (msg.x == 0) {
+                    msg.report ! Pong(0, self, msg.report)
+                  } else msg.pong ! Pong(msg.x - 1, self, msg.report)
+                }
+              )
+            ).withDispatcher(executor)
 
-            val ponger = Props(SelfAware[Pong](self ⇒
-                      Static { msg ⇒
-                msg.ping ! Ping(msg.x, self, msg.report)
-            })).withDispatcher(executor)
+            val ponger = Props(
+              SelfAware[Pong](self ⇒
+                Static { msg ⇒ msg.ping ! Ping(msg.x, self, msg.report) }
+              )
+            ).withDispatcher(executor)
 
-            val actors = for (i ← 1 to pairs) yield
-              (ctx.spawn(pinger, s"pinger-$i"),
-               ctx.spawn(ponger, s"ponger-$i"))
+            val actors =
+              for (i ← 1 to pairs)
+                yield (
+                  ctx.spawn(pinger, s"pinger-$i"),
+                  ctx.spawn(ponger, s"ponger-$i")
+                )
 
             val start = Deadline.now
 
             for {
               (ping, pong) ← actors
-              _ ← 1 to pings
+              _            ← 1 to pings
             } ping ! Ping(count, pong, ctx.self)
 
             start

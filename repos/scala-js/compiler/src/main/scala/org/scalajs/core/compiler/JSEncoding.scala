@@ -42,18 +42,18 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
 
   // Fresh local name generator ----------------------------------------------
 
-  private val usedLocalNames = new ScopedVar[mutable.Set[String]]
+  private val usedLocalNames   = new ScopedVar[mutable.Set[String]]
   private val localSymbolNames = new ScopedVar[mutable.Map[Symbol, String]]
-  private val isReserved = Set("arguments", "eval", ScalaJSEnvironmentName)
+  private val isReserved       = Set("arguments", "eval", ScalaJSEnvironmentName)
 
   def withNewLocalNameScope[A](body: => A): A =
     withScopedVars(
-        usedLocalNames := mutable.Set.empty,
-        localSymbolNames := mutable.Map.empty
+      usedLocalNames := mutable.Set.empty,
+      localSymbolNames := mutable.Map.empty
     )(body)
 
   private def freshName(base: String = "x"): String = {
-    var suffix = 1
+    var suffix   = 1
     var longName = base
     while (usedLocalNames(longName) || isReserved(longName)) {
       suffix += 1
@@ -81,12 +81,17 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
 
   private lazy val allRefClasses: Set[Symbol] = {
     import definitions._
-    (Set(ObjectRefClass, VolatileObjectRefClass) ++ refClass.values ++ volatileRefClass.values)
+    (Set(
+      ObjectRefClass,
+      VolatileObjectRefClass
+    ) ++ refClass.values ++ volatileRefClass.values)
   }
 
   def encodeFieldSym(sym: Symbol)(implicit pos: Position): js.Ident = {
-    require(sym.owner.isClass && sym.isTerm && !sym.isMethod && !sym.isModule,
-            "encodeFieldSym called with non-field symbol: " + sym)
+    require(
+      sym.owner.isClass && sym.isTerm && !sym.isMethod && !sym.isModule,
+      "encodeFieldSym called with non-field symbol: " + sym
+    )
 
     val name0 = encodeMemberNameInternal(sym)
     val name =
@@ -108,10 +113,13 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
   }
 
   def encodeMethodSym(sym: Symbol, reflProxy: Boolean = false)(
-      implicit pos: Position): js.Ident = {
+      implicit pos: Position
+  ): js.Ident = {
     val (encodedName, paramsString) = encodeMethodNameInternal(sym, reflProxy)
-    js.Ident(encodedName + paramsString,
-             Some(sym.unexpandedName.decoded + paramsString))
+    js.Ident(
+      encodedName + paramsString,
+      Some(sym.unexpandedName.decoded + paramsString)
+    )
   }
 
   def encodeMethodName(sym: Symbol, reflProxy: Boolean = false): String = {
@@ -124,17 +132,22 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
     *  This basically means adding an initial parameter of type
     *  java.lang.String, which is the `this` parameter.
     */
-  def encodeRTStringMethodSym(sym: Symbol)(
-      implicit pos: Position): (Symbol, js.Ident) = {
+  def encodeRTStringMethodSym(
+      sym: Symbol
+  )(implicit pos: Position): (Symbol, js.Ident) = {
     require(
-        sym.isMethod, "encodeMethodSym called with non-method symbol: " + sym)
+      sym.isMethod,
+      "encodeMethodSym called with non-method symbol: " + sym
+    )
     require(sym.owner == definitions.StringClass)
     require(!sym.isClassConstructor && !sym.isPrivate)
 
-    val (encodedName, paramsString) = encodeMethodNameInternal(
-        sym, inRTClass = true)
-    val methodIdent = js.Ident(encodedName + paramsString,
-                               Some(sym.unexpandedName.decoded + paramsString))
+    val (encodedName, paramsString) =
+      encodeMethodNameInternal(sym, inRTClass = true)
+    val methodIdent = js.Ident(
+      encodedName + paramsString,
+      Some(sym.unexpandedName.decoded + paramsString)
+    )
 
     (jsDefinitions.RuntimeStringModuleClass, methodIdent)
   }
@@ -142,9 +155,12 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
   private def encodeMethodNameInternal(
       sym: Symbol,
       reflProxy: Boolean = false,
-      inRTClass: Boolean = false): (String, String) = {
+      inRTClass: Boolean = false
+  ): (String, String) = {
     require(
-        sym.isMethod, "encodeMethodSym called with non-method symbol: " + sym)
+      sym.isMethod,
+      "encodeMethodSym called with non-method symbol: " + sym
+    )
 
     def name = encodeMemberNameInternal(sym)
 
@@ -166,11 +182,16 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
   }
 
   def encodeStaticMemberSym(sym: Symbol)(implicit pos: Position): js.Ident = {
-    require(sym.isStaticMember,
-            "encodeStaticMemberSym called with non-static symbol: " + sym)
-    js.Ident(mangleJSName(encodeMemberNameInternal(sym)) + makeParamsString(
-                 List(internalName(sym.tpe))),
-             Some(sym.unexpandedName.decoded))
+    require(
+      sym.isStaticMember,
+      "encodeStaticMemberSym called with non-static symbol: " + sym
+    )
+    js.Ident(
+      mangleJSName(encodeMemberNameInternal(sym)) + makeParamsString(
+        List(internalName(sym.tpe))
+      ),
+      Some(sym.unexpandedName.decoded)
+    )
   }
 
   def encodeLocalSym(sym: Symbol)(implicit pos: Position): js.Ident = {
@@ -181,9 +202,10 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
      * See #1440
      */
     require(
-        sym.isValueParameter ||
+      sym.isValueParameter ||
         (!sym.owner.isClass && sym.isTerm && !sym.isMethod && !sym.isModule),
-        "encodeLocalSym called with non-local symbol: " + sym)
+      "encodeLocalSym called with non-local symbol: " + sym
+    )
     js.Ident(localSymbolName(sym), Some(sym.unexpandedName.decoded))
   }
 
@@ -194,19 +216,24 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
     if (sym == definitions.ObjectClass) jstpe.AnyType
     else if (isRawJSType(sym.toTypeConstructor)) jstpe.AnyType
     else {
-      assert(sym != definitions.ArrayClass,
-             "encodeClassType() cannot be called with ArrayClass")
+      assert(
+        sym != definitions.ArrayClass,
+        "encodeClassType() cannot be called with ArrayClass"
+      )
       jstpe.ClassType(encodeClassFullName(sym))
     }
   }
 
-  def encodeClassFullNameIdent(sym: Symbol)(implicit pos: Position): js.Ident = {
+  def encodeClassFullNameIdent(
+      sym: Symbol
+  )(implicit pos: Position): js.Ident = {
     js.Ident(encodeClassFullName(sym), Some(sym.fullName))
   }
 
   def encodeClassFullName(sym: Symbol): String = {
     ir.Definitions.encodeClassName(
-        sym.fullName + (if (needsModuleClassSuffix(sym)) "$" else ""))
+      sym.fullName + (if (needsModuleClassSuffix(sym)) "$" else "")
+    )
   }
 
   def needsModuleClassSuffix(sym: Symbol): Boolean =
@@ -218,7 +245,10 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
   // Encoding of method signatures
 
   private def makeParamsString(
-      sym: Symbol, reflProxy: Boolean, inRTClass: Boolean): String = {
+      sym: Symbol,
+      reflProxy: Boolean,
+      inRTClass: Boolean
+  ): String = {
     val tpe = sym.tpe
 
     val paramTypeNames0 = tpe.params map (p => internalName(p.tpe))
@@ -243,14 +273,15 @@ trait JSEncoding extends SubComponent { self: GenJSCode =>
   /** Computes the internal name for a type. */
   private def internalName(tpe: Type): String = internalName(toTypeKind(tpe))
 
-  private def internalName(kind: TypeKind): String = kind match {
-    case VOID => "V"
-    case kind: ValueTypeKind => kind.primitiveCharCode.toString()
-    case NOTHING => ir.Definitions.RuntimeNothingClass
-    case NULL => ir.Definitions.RuntimeNullClass
-    case REFERENCE(cls) => encodeClassFullName(cls)
-    case ARRAY(elem) => "A" + internalName(elem)
-  }
+  private def internalName(kind: TypeKind): String =
+    kind match {
+      case VOID                => "V"
+      case kind: ValueTypeKind => kind.primitiveCharCode.toString()
+      case NOTHING             => ir.Definitions.RuntimeNothingClass
+      case NULL                => ir.Definitions.RuntimeNullClass
+      case REFERENCE(cls)      => encodeClassFullName(cls)
+      case ARRAY(elem)         => "A" + internalName(elem)
+    }
 
   /** mangles names that are illegal in JavaScript by prepending a $
     *  also mangles names that would collide with these mangled names

@@ -1,7 +1,9 @@
 package java.lang
 
 class StringBuilder(private var content: String)
-    extends CharSequence with Appendable with java.io.Serializable {
+    extends CharSequence
+    with Appendable
+    with java.io.Serializable {
   def this() = this("")
   def this(initialCapacity: Int) = this("")
   def this(csq: CharSequence) = this(csq.toString)
@@ -12,7 +14,7 @@ class StringBuilder(private var content: String)
   }
 
   def append(b: scala.Boolean): StringBuilder = append(b.toString())
-  def append(c: scala.Char): StringBuilder = append(c.toString())
+  def append(c: scala.Char): StringBuilder    = append(c.toString())
 
   def append(str: Array[scala.Char]): StringBuilder =
     append(str, 0, str.length)
@@ -26,11 +28,11 @@ class StringBuilder(private var content: String)
     this
   }
 
-  def append(b: scala.Byte): StringBuilder = append(b.toString())
-  def append(s: scala.Short): StringBuilder = append(s.toString())
-  def append(i: scala.Int): StringBuilder = append(i.toString())
+  def append(b: scala.Byte): StringBuilder   = append(b.toString())
+  def append(s: scala.Short): StringBuilder  = append(s.toString())
+  def append(i: scala.Int): StringBuilder    = append(i.toString())
   def append(lng: scala.Long): StringBuilder = append(lng.toString())
-  def append(f: scala.Float): StringBuilder = append(f.toString())
+  def append(f: scala.Float): StringBuilder  = append(f.toString())
   def append(d: scala.Double): StringBuilder = append(d.toString())
 
   def append(obj: AnyRef): StringBuilder = {
@@ -51,7 +53,7 @@ class StringBuilder(private var content: String)
 
   def length(): Int = content.length()
 
-  def charAt(index: Int): Char = content.charAt(index)
+  def charAt(index: Int): Char     = content.charAt(index)
   def codePointAt(index: Int): Int = content.codePointAt(index)
 
   def indexOf(str: String): Int = content.indexOf(str)
@@ -65,13 +67,13 @@ class StringBuilder(private var content: String)
     content.lastIndexOf(str, fromIndex)
 
   def subSequence(start: Int, end: Int): CharSequence = substring(start, end)
-  def substring(start: Int): String = content.substring(start)
-  def substring(start: Int, end: Int): String = content.substring(start, end)
+  def substring(start: Int): String                   = content.substring(start)
+  def substring(start: Int, end: Int): String         = content.substring(start, end)
 
   def reverse(): StringBuilder = {
     val original = content
-    var result = ""
-    var i = 0
+    var result   = ""
+    var i        = 0
     while (i < original.length) {
       val c = original.charAt(i)
       if (Character.isHighSurrogate(c) && (i + 1 < original.length)) {
@@ -95,7 +97,8 @@ class StringBuilder(private var content: String)
   def deleteCharAt(index: Int): StringBuilder = {
     if (index < 0 || index >= content.length)
       throw new StringIndexOutOfBoundsException(
-          "String index out of range: " + index)
+        "String index out of range: " + index
+      )
     content = content.substring(0, index) + content.substring(index + 1)
     this
   }
@@ -114,7 +117,8 @@ class StringBuilder(private var content: String)
     val length = content.length
     if (start < 0 || start > end || start > length) {
       throw new StringIndexOutOfBoundsException(
-          s"Illegal to replace substring at [$start - $end] in string of length $length")
+        s"Illegal to replace substring at [$start - $end] in string of length $length"
+      )
     }
 
     val realEnd = if (end > length) length else end // java api convention
@@ -124,15 +128,15 @@ class StringBuilder(private var content: String)
 
   def setCharAt(index: Int, ch: scala.Char): Unit = {
     if (index < 0 || index >= content.length)
-      throw new IndexOutOfBoundsException(
-          "String index out of range: " + index)
+      throw new IndexOutOfBoundsException("String index out of range: " + index)
     content = content.substring(0, index) + ch + content.substring(index + 1)
   }
 
   def setLength(newLength: Int): Unit = {
     if (newLength < 0)
       throw new IndexOutOfBoundsException(
-          "String index out of range: " + newLength)
+        "String index out of range: " + newLength
+      )
 
     val len = length()
     if (len == newLength) {} else if (len < newLength) {
@@ -172,16 +176,22 @@ class StringBuilder(private var content: String)
     else insert(index, ref.toString)
 
   def insert(
-      index: Int, csq: CharSequence, start: Int, end: Int): StringBuilder =
+      index: Int,
+      csq: CharSequence,
+      start: Int,
+      end: Int
+  ): StringBuilder =
     if (csq == null) insert(index, "null", start, end)
     else insert(index, csq.subSequence(start, end).toString)
 
-  def insert(index: Int,
-             arr: Array[scala.Char],
-             offset: Int,
-             len: Int): StringBuilder = {
+  def insert(
+      index: Int,
+      arr: Array[scala.Char],
+      offset: Int,
+      len: Int
+  ): StringBuilder = {
     var str = ""
-    var i = 0
+    var i   = 0
     while (i < len) {
       str += arr(i + offset)
       i += 1
@@ -196,7 +206,7 @@ class StringBuilder(private var content: String)
     else if (index == thisLength) append(str)
     else
       content = content.substring(0, index) + Option(str).getOrElse("null") +
-      content.substring(index)
+        content.substring(index)
     this
   }
 }

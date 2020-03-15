@@ -29,8 +29,8 @@ class WrappedArrayBuilder[A](tag: ClassTag[A])
   val manifest: ClassTag[A] = tag
 
   private var elems: WrappedArray[A] = _
-  private var capacity: Int = 0
-  private var size: Int = 0
+  private var capacity: Int          = 0
+  private var size: Int              = 0
 
   private def mkArray(size: Int): WrappedArray[A] = {
     val runtimeClass = arrayElementClass(tag)
@@ -64,8 +64,8 @@ class WrappedArrayBuilder[A](tag: ClassTag[A])
           .asInstanceOf[WrappedArray[A]]
       case _ =>
         new WrappedArray.ofRef[A with AnyRef](
-            tag.newArray(size).asInstanceOf[Array[A with AnyRef]])
-          .asInstanceOf[WrappedArray[A]]
+          tag.newArray(size).asInstanceOf[Array[A with AnyRef]]
+        ).asInstanceOf[WrappedArray[A]]
     }
     if (this.size > 0) Array.copy(elems.array, 0, newelems.array, 0, this.size)
     newelems

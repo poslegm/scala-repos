@@ -79,20 +79,20 @@ sealed abstract class Eval[A] extends Serializable { self =>
             new Eval.Compute[B] {
               type Start = A
               val start = () => c.run(s)
-              val run = f
-          }
+              val run   = f
+            }
         }
       case c: Eval.Call[A] =>
         new Eval.Compute[B] {
           type Start = A
           val start = c.thunk
-          val run = f
+          val run   = f
         }
       case _ =>
         new Eval.Compute[B] {
           type Start = A
           val start = () => self
-          val run = f
+          val run   = f
         }
     }
 
@@ -166,7 +166,7 @@ object Later {
   * caching must be avoided. Generally, prefer Later.
   */
 final class Always[A](f: () => A) extends Eval[A] {
-  def value: A = f()
+  def value: A         = f()
   def memoize: Eval[A] = new Later(f)
 }
 
@@ -206,11 +206,11 @@ object Eval extends EvalInstances {
     * These can be useful in cases where the same values may be needed
     * many times.
     */
-  val Unit: Eval[Unit] = Now(())
-  val True: Eval[Boolean] = Now(true)
+  val Unit: Eval[Unit]     = Now(())
+  val True: Eval[Boolean]  = Now(true)
   val False: Eval[Boolean] = Now(false)
-  val Zero: Eval[Int] = Now(0)
-  val One: Eval[Int] = Now(1)
+  val Zero: Eval[Int]      = Now(0)
+  val One: Eval[Int]       = Now(1)
 
   /**
     * Call is a type of Eval[A] that is used to defer computations
@@ -221,23 +221,24 @@ object Eval extends EvalInstances {
     */
   sealed abstract class Call[A](val thunk: () => Eval[A]) extends Eval[A] {
     def memoize: Eval[A] = new Later(() => value)
-    def value: A = Call.loop(this).value
+    def value: A         = Call.loop(this).value
   }
 
   object Call {
 
     /** Collapse the call stack for eager evaluations */
-    @tailrec private def loop[A](fa: Eval[A]): Eval[A] = fa match {
-      case call: Eval.Call[A] =>
-        loop(call.thunk())
-      case compute: Eval.Compute[A] =>
-        new Eval.Compute[A] {
-          type Start = compute.Start
-          val start: () => Eval[Start] = () => compute.start()
-          val run: Start => Eval[A] = s => loop1(compute.run(s))
-        }
-      case other => other
-    }
+    @tailrec private def loop[A](fa: Eval[A]): Eval[A] =
+      fa match {
+        case call: Eval.Call[A] =>
+          loop(call.thunk())
+        case compute: Eval.Compute[A] =>
+          new Eval.Compute[A] {
+            type Start = compute.Start
+            val start: () => Eval[Start] = () => compute.start()
+            val run: Start => Eval[A]    = s => loop1(compute.run(s))
+          }
+        case other => other
+      }
 
     /**
       * Alias for loop that can be called in a non-tail position
@@ -274,15 +275,17 @@ object Eval extends EvalInstances {
           case c: Compute[_] =>
             c.start() match {
               case cc: Compute[_] =>
-                loop(cc.start().asInstanceOf[L],
-                     cc.run.asInstanceOf[C] :: c.run.asInstanceOf[C] :: fs)
+                loop(
+                  cc.start().asInstanceOf[L],
+                  cc.run.asInstanceOf[C] :: c.run.asInstanceOf[C] :: fs
+                )
               case xx =>
                 loop(c.run(xx.value).asInstanceOf[L], fs)
             }
           case x =>
             fs match {
               case f :: fs => loop(f(x.value), fs)
-              case Nil => x.value
+              case Nil     => x.value
             }
         }
       loop(this.asInstanceOf[L], Nil).asInstanceOf[A]
@@ -293,43 +296,43 @@ object Eval extends EvalInstances {
 private[cats] trait EvalInstances extends EvalInstances0 {
 
   implicit val evalBimonad: Bimonad[Eval] = new Bimonad[Eval] {
-    override def map[A, B](fa: Eval[A])(f: A => B): Eval[B] = fa.map(f)
-    def pure[A](a: A): Eval[A] = Now(a)
-    override def pureEval[A](la: Eval[A]): Eval[A] = la
-    def flatMap[A, B](fa: Eval[A])(f: A => Eval[B]): Eval[B] = fa.flatMap(f)
-    def extract[A](la: Eval[A]): A = la.value
+    override def map[A, B](fa: Eval[A])(f: A => B): Eval[B]    = fa.map(f)
+    def pure[A](a: A): Eval[A]                                 = Now(a)
+    override def pureEval[A](la: Eval[A]): Eval[A]             = la
+    def flatMap[A, B](fa: Eval[A])(f: A => Eval[B]): Eval[B]   = fa.flatMap(f)
+    def extract[A](la: Eval[A]): A                             = la.value
     def coflatMap[A, B](fa: Eval[A])(f: Eval[A] => B): Eval[B] = Later(f(fa))
   }
 
-  implicit def evalOrder[A : Order]: Order[Eval[A]] =
+  implicit def evalOrder[A: Order]: Order[Eval[A]] =
     new Order[Eval[A]] {
       def compare(lx: Eval[A], ly: Eval[A]): Int =
         lx.value compare ly.value
     }
 
-  implicit def evalGroup[A : Group]: Group[Eval[A]] =
+  implicit def evalGroup[A: Group]: Group[Eval[A]] =
     new EvalGroup[A] { val algebra: Group[A] = Group[A] }
 }
 
 private[cats] trait EvalInstances0 extends EvalInstances1 {
-  implicit def evalPartialOrder[A : PartialOrder]: PartialOrder[Eval[A]] =
+  implicit def evalPartialOrder[A: PartialOrder]: PartialOrder[Eval[A]] =
     new PartialOrder[Eval[A]] {
       def partialCompare(lx: Eval[A], ly: Eval[A]): Double =
         lx.value partialCompare ly.value
     }
 
-  implicit def evalMonoid[A : Monoid]: Monoid[Eval[A]] =
+  implicit def evalMonoid[A: Monoid]: Monoid[Eval[A]] =
     new EvalMonoid[A] { val algebra = Monoid[A] }
 }
 
 private[cats] trait EvalInstances1 {
-  implicit def evalEq[A : Eq]: Eq[Eval[A]] =
+  implicit def evalEq[A: Eq]: Eq[Eval[A]] =
     new Eq[Eval[A]] {
       def eqv(lx: Eval[A], ly: Eval[A]): Boolean =
         lx.value === ly.value
     }
 
-  implicit def evalSemigroup[A : Semigroup]: Semigroup[Eval[A]] =
+  implicit def evalSemigroup[A: Semigroup]: Semigroup[Eval[A]] =
     new EvalSemigroup[A] { val algebra = Semigroup[A] }
 }
 

@@ -20,9 +20,10 @@ object SameElementsToEquals extends SimplificationType {
       case left `.sameElements` (right)
           if isOfSameKind(left, right) && !bothSortedSetsOrMaps(left, right) =>
         Some(
-            replace(expr)
-              .withText(s"${left.getText} == ${right.getText}")
-              .highlightRef)
+          replace(expr)
+            .withText(s"${left.getText} == ${right.getText}")
+            .highlightRef
+        )
       case _ => None
     }
 
@@ -46,9 +47,10 @@ object CorrespondsToEquals extends SimplificationType {
       case left `.corresponds` (right, binaryOperation("=="))
           if isSeq(left) && isSeq(right) =>
         Some(
-            replace(expr)
-              .withText(s"${left.getText} == ${right.getText}")
-              .highlightRef)
+          replace(expr)
+            .withText(s"${left.getText} == ${right.getText}")
+            .highlightRef
+        )
       case _ => None
     }
 }

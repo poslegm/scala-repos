@@ -10,7 +10,7 @@ import scala.util.hashing.MurmurHash3
 /** An efficient immutable array implementation which is used in the AST. Semantics are generally
   * the same as for Scala collections but for performance reasons it does not implement any
   * standard collection traits. */
-final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
+final class ConstArray[+T] private[util] (a: Array[Any], val length: Int)
     extends Product { self =>
   private def this(a: Array[Any]) = this(a, a.length)
 
@@ -33,7 +33,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
   }
 
   def map[R](f: T => R): ConstArray[R] = {
-    var i = 0
+    var i  = 0
     val ar = new Array[Any](length)
     while (i < length) {
       ar(i) = f(a(i).asInstanceOf[T])
@@ -43,7 +43,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
   }
 
   def collect[R](f: PartialFunction[T, R]): ConstArray[R] = {
-    var i, j = 0
+    var i, j    = 0
     var matched = true
     def d(x: T): R = {
       matched = false
@@ -66,7 +66,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
   def flatMap[R](f: T => ConstArray[R]): ConstArray[R] = {
     var len = 0
     val buf = new Array[ConstArray[R]](length)
-    var i = 0
+    var i   = 0
     while (i < length) {
       val r = f(a(i).asInstanceOf[T])
       buf(i) = r
@@ -91,7 +91,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
 
   def flatten[R](implicit ev: T <:< ConstArray[R]): ConstArray[R] = {
     var len = 0
-    var i = 0
+    var i   = 0
     while (i < length) {
       len += a(i).asInstanceOf[ConstArray[_]].length
       i += 1
@@ -115,9 +115,9 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
   /** Perform a mapping operation that does not change the type. If all elements remain unchanged
     * (as determined by object identity), return this ConstArray instead of building a new one. */
   def endoMap(f: T => T @uncheckedVariance): ConstArray[T] = {
-    var i = 0
+    var i       = 0
     var changed = false
-    val ar = new Array[Any](length)
+    val ar      = new Array[Any](length)
     while (i < length) {
       val n0 = a(i)
       val n1 = f(n0.asInstanceOf[T])
@@ -128,30 +128,31 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
     if (changed) new ConstArray[T](ar) else this
   }
 
-  def zipWithIndex: ConstArrayOp[(T, Int)] = new ConstArrayOp[(T, Int)] {
-    def map[R](f: ((T, Int)) => R): ConstArray[R] = {
-      var i = 0
-      self.map { v =>
-        val r = f(v, i)
-        i += 1
-        r
+  def zipWithIndex: ConstArrayOp[(T, Int)] =
+    new ConstArrayOp[(T, Int)] {
+      def map[R](f: ((T, Int)) => R): ConstArray[R] = {
+        var i = 0
+        self.map { v =>
+          val r = f(v, i)
+          i += 1
+          r
+        }
+      }
+      def foreach[R](f: ((T, Int)) => R): Unit = {
+        var i = 0
+        self.foreach { v =>
+          f(v, i)
+          i += 1
+        }
       }
     }
-    def foreach[R](f: ((T, Int)) => R): Unit = {
-      var i = 0
-      self.foreach { v =>
-        f(v, i)
-        i += 1
-      }
-    }
-  }
 
   def zip[U](u: ConstArray[U]): ConstArrayOp[(T, U)] =
     new ConstArrayOp[(T, U)] {
       def map[R](f: ((T, U)) => R): ConstArray[R] = {
-        var i = 0
+        var i   = 0
         val len = math.min(length, u.length)
-        var ar = new Array[Any](len)
+        var ar  = new Array[Any](len)
         while (i < len) {
           ar(i) = f((a(i).asInstanceOf[T], u(i)))
           i += 1
@@ -159,7 +160,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
         new ConstArray[R](ar)
       }
       def foreach[R](f: ((T, U)) => R): Unit = {
-        var i = 0
+        var i   = 0
         val len = math.min(length, u.length)
         while (i < len) {
           f((a(i).asInstanceOf[T], u(i)))
@@ -170,15 +171,16 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
 
   override def toString = a.mkString("ConstArray(", ", ", ")")
 
-  def iterator: Iterator[T] = new Iterator[T] {
-    private[this] var pos = 0
-    def hasNext: Boolean = pos < self.length
-    def next(): T = {
-      var r = a(pos)
-      pos += 1
-      r.asInstanceOf[T]
+  def iterator: Iterator[T] =
+    new Iterator[T] {
+      private[this] var pos = 0
+      def hasNext: Boolean  = pos < self.length
+      def next(): T = {
+        var r = a(pos)
+        pos += 1
+        r.asInstanceOf[T]
+      }
     }
-  }
 
   def indexWhere(f: T => Boolean): Int = {
     var i = 0
@@ -206,7 +208,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
   }
 
   def filter(p: T => Boolean): ConstArray[T] = {
-    val ar = new Array[Any](length)
+    val ar    = new Array[Any](length)
     var i, ri = 0
     while (i < length) {
       val v = a(i)
@@ -221,30 +223,31 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
     else new ConstArray[T](ar, ri)
   }
 
-  def withFilter(p: T => Boolean): ConstArrayOp[T] = new ConstArrayOp[T] {
-    def map[R](f: T => R): ConstArray[R] = {
-      val ar = new Array[Any](length)
-      var i, ri = 0
-      while (i < length) {
-        val v = a(i).asInstanceOf[T]
-        if (p(v)) {
-          ar(ri) = f(v)
-          ri += 1
+  def withFilter(p: T => Boolean): ConstArrayOp[T] =
+    new ConstArrayOp[T] {
+      def map[R](f: T => R): ConstArray[R] = {
+        val ar    = new Array[Any](length)
+        var i, ri = 0
+        while (i < length) {
+          val v = a(i).asInstanceOf[T]
+          if (p(v)) {
+            ar(ri) = f(v)
+            ri += 1
+          }
+          i += 1
         }
-        i += 1
+        if (ri == 0) ConstArray.empty
+        else new ConstArray[R](ar, ri)
       }
-      if (ri == 0) ConstArray.empty
-      else new ConstArray[R](ar, ri)
-    }
-    def foreach[R](f: T => R): Unit = {
-      var i = 0
-      while (i < length) {
-        val v = a(i).asInstanceOf[T]
-        if (p(v)) f(v)
-        i += 1
+      def foreach[R](f: T => R): Unit = {
+        var i = 0
+        while (i < length) {
+          val v = a(i).asInstanceOf[T]
+          if (p(v)) f(v)
+          i += 1
+        }
       }
     }
-  }
 
   def mkString(sep: String) = iterator.mkString(sep)
 
@@ -273,10 +276,11 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
 
   ///////////////////////////////////////////////////////// conversion
 
-  def toSeq: immutable.IndexedSeq[T] = new immutable.IndexedSeq[T] {
-    def apply(idx: Int) = self(idx)
-    def length = self.length
-  }
+  def toSeq: immutable.IndexedSeq[T] =
+    new immutable.IndexedSeq[T] {
+      def apply(idx: Int) = self(idx)
+      def length          = self.length
+    }
 
   def toSet: immutable.HashSet[T @uncheckedVariance] = {
     val b = immutable.HashSet.newBuilder[T]
@@ -298,14 +302,18 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
     b.result()
   }
 
-  def toArray[R >: T : ClassTag]: Array[R] = {
+  def toArray[R >: T: ClassTag]: Array[R] = {
     val ar = new Array[R](length)
     System.arraycopy(a, 0, ar, 0, length)
     ar
   }
 
   private[util] def copySliceTo(
-      dest: Array[Any], srcPos: Int, destPos: Int, len: Int): Unit = {
+      dest: Array[Any],
+      srcPos: Int,
+      destPos: Int,
+      len: Int
+  ): Unit = {
     if (len + srcPos > length) throw new IndexOutOfBoundsException
     System.arraycopy(a, srcPos, dest, destPos, len)
   }
@@ -329,7 +337,7 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
 
   def ++[U >: T](u: ConstArray[U]): ConstArray[U] = {
     val len2 = u.length
-    val ar = new Array[Any](length + len2)
+    val ar   = new Array[Any](length + len2)
     System.arraycopy(a, 0, ar, 0, length)
     u.copySliceTo(ar, 0, length, len2)
     new ConstArray[U](ar)
@@ -354,9 +362,10 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
       else new ConstArray(a, until)
     } else
       new ConstArray(
-          Arrays
-            .copyOfRange[AnyRef](a.asInstanceOf[Array[AnyRef]], from, until)
-            .asInstanceOf[Array[Any]])
+        Arrays
+          .copyOfRange[AnyRef](a.asInstanceOf[Array[AnyRef]], from, until)
+          .asInstanceOf[Array[Any]]
+      )
   }
 
   def tail = slice(1, length)
@@ -383,19 +392,20 @@ final class ConstArray[+T] private[util](a: Array[Any], val length: Int)
     }
   }
 
-  override def equals(o: Any): Boolean = o match {
-    case o: ConstArray[_] =>
-      if (length != o.length) false
-      else {
-        var i = 0
-        while (i < length) {
-          if (a(i) != o(i)) return false
-          i += 1
+  override def equals(o: Any): Boolean =
+    o match {
+      case o: ConstArray[_] =>
+        if (length != o.length) false
+        else {
+          var i = 0
+          while (i < length) {
+            if (a(i) != o(i)) return false
+            i += 1
+          }
+          true
         }
-        true
-      }
-    case _ => false
-  }
+      case _ => false
+    }
 
   ///////////////////////////////////////////////////////// Product
 
@@ -449,8 +459,10 @@ object ConstArray {
   //def unapplySeq[T](a: ConstArray[T]) = new ConstArrayExtract[T](a) // Requires Scala 2.11
   def unapplySeq[T](a: ConstArray[T]): Some[IndexedSeq[T]] = Some(a.toSeq)
 
-  def newBuilder[T](initialCapacity: Int = 16,
-                    growFactor: Double = 2.0): ConstArrayBuilder[T] =
+  def newBuilder[T](
+      initialCapacity: Int = 16,
+      growFactor: Double = 2.0
+  ): ConstArrayBuilder[T] =
     new ConstArrayBuilder[T](initialCapacity, growFactor)
 }
 
@@ -469,9 +481,9 @@ object ConstArrayOp {
 final class RangeConstArrayOp(val r: Range) extends ConstArrayOp[Int] {
   def map[R](f: Int => R): ConstArray[R] = {
     val len = r.length
-    val a = new Array[Any](len)
-    var i = 0
-    var v = r.start
+    val a   = new Array[Any](len)
+    var i   = 0
+    var v   = r.start
     while (i < len) {
       a(i) = f(v)
       i += 1
@@ -489,9 +501,11 @@ final class RangeConstArrayOp(val r: Range) extends ConstArrayOp[Int] {
 
 /** A mutable builder for ConstArrays. */
 final class ConstArrayBuilder[T](
-    initialCapacity: Int = 16, growFactor: Double = 2.0) { self =>
+    initialCapacity: Int = 16,
+    growFactor: Double = 2.0
+) { self =>
   private[this] var a: Array[Any] = new Array[Any](initialCapacity)
-  private[this] var len: Int = 0
+  private[this] var len: Int      = 0
 
   def length = len
 
@@ -524,13 +538,15 @@ final class ConstArrayBuilder[T](
     val total = len + i
     if (a.length < total)
       a = Arrays
-        .copyOf[Any](a.asInstanceOf[Array[AnyRef]],
-                     math.max((a.length * growFactor).toInt, total))
+        .copyOf[Any](
+          a.asInstanceOf[Array[AnyRef]],
+          math.max((a.length * growFactor).toInt, total)
+        )
         .asInstanceOf[Array[Any]]
   }
 
-  def +(v: T): this.type = { this += v; this }
-  def ++(vs: ConstArray[T]): this.type = { this ++= vs; this }
+  def +(v: T): this.type                    = { this += v; this }
+  def ++(vs: ConstArray[T]): this.type      = { this ++= vs; this }
   def ++(vs: TraversableOnce[T]): this.type = { this ++= vs; this }
-  def ++(vs: Option[T]): this.type = { this ++= vs; this }
+  def ++(vs: Option[T]): this.type          = { this ++= vs; this }
 }

@@ -4,7 +4,9 @@ import org.scalajs.core.tools.sem.Semantics
 
 /** Expresses a requirement for a given semantic to be compliant */
 final class ComplianceRequirement(
-    val semantics: String, val origins: List[Origin])
+    val semantics: String,
+    val origins: List[Origin]
+)
 
 object ComplianceRequirement {
 
@@ -12,10 +14,13 @@ object ComplianceRequirement {
     *  requirements.
     *  @throws BadComplianceException if the semantics are not compliant.
     */
-  final def checkCompliance(requirements: Traversable[ComplianceRequirement],
-                            semantics: Semantics): Unit = {
-    val unmet = requirements.filterNot(
-        compliance => semantics.isCompliant(compliance.semantics))
+  final def checkCompliance(
+      requirements: Traversable[ComplianceRequirement],
+      semantics: Semantics
+  ): Unit = {
+    val unmet = requirements.filterNot(compliance =>
+      semantics.isCompliant(compliance.semantics)
+    )
 
     if (unmet.nonEmpty) throw new BadComplianceException(unmet.toList)
   }
@@ -25,7 +30,7 @@ object ComplianceRequirement {
   ): Traversable[ComplianceRequirement] = {
 
     val flatTups = for {
-      manifest <- manifests
+      manifest  <- manifests
       semantics <- manifest.compliantSemantics
     } yield (semantics, manifest.origin)
 

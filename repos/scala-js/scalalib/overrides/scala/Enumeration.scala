@@ -8,7 +8,13 @@
 
 package scala
 
-import scala.collection.{mutable, immutable, generic, SortedSetLike, AbstractSet}
+import scala.collection.{
+  mutable,
+  immutable,
+  generic,
+  SortedSetLike,
+  AbstractSet
+}
 import java.lang.reflect.{Modifier, Method => JMethod, Field => JField}
 import scala.reflect.NameTransformer._
 import java.util.regex.Pattern
@@ -131,9 +137,10 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
       // If we have unnamed values, we issue a detailed error message
       case None if unnamed.nonEmpty =>
         throw new NoSuchElementException(
-            s"""Couldn't find enum field with name $s.
+          s"""Couldn't find enum field with name $s.
                |However, there were the following unnamed fields:
-               |${unnamed.mkString("  ", "\n  ", "")}""".stripMargin)
+               |${unnamed.mkString("  ", "\n  ", "")}""".stripMargin
+        )
       // Normal case (no unnamed Values)
       case _ => None.get
     }
@@ -182,11 +189,12 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
       if (this.id < that.id) -1
       else if (this.id == that.id) 0
       else 1
-    override def equals(other: Any) = other match {
-      case that: Enumeration#Value =>
-        (outerEnum eq that.outerEnum) && (id == that.id)
-      case _ => false
-    }
+    override def equals(other: Any) =
+      other match {
+        case that: Enumeration#Value =>
+          (outerEnum eq that.outerEnum) && (id == that.id)
+        case _ => false
+      }
     override def hashCode: Int = id.##
 
     /** Create a ValueSet which contains this value and another one */
@@ -234,21 +242,23 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     *  @param nnIds The set of ids of values (adjusted so that the lowest value does
     *    not fall below zero), organized as a `BitSet`.
     */
-  class ValueSet private[ValueSet](private[this] var nnIds: immutable.BitSet)
-      extends AbstractSet[Value] with immutable.SortedSet[Value]
-      with SortedSetLike[Value, ValueSet] with Serializable {
+  class ValueSet private[ValueSet] (private[this] var nnIds: immutable.BitSet)
+      extends AbstractSet[Value]
+      with immutable.SortedSet[Value]
+      with SortedSetLike[Value, ValueSet]
+      with Serializable {
 
     implicit def ordering: Ordering[Value] = ValueOrdering
     def rangeImpl(from: Option[Value], until: Option[Value]): ValueSet =
       new ValueSet(
-          nnIds.rangeImpl(
-              from.map(_.id - bottomId), until.map(_.id - bottomId)))
+        nnIds.rangeImpl(from.map(_.id - bottomId), until.map(_.id - bottomId))
+      )
 
-    override def empty = ValueSet.empty
+    override def empty     = ValueSet.empty
     def contains(v: Value) = nnIds contains (v.id - bottomId)
-    def +(value: Value) = new ValueSet(nnIds + (value.id - bottomId))
-    def -(value: Value) = new ValueSet(nnIds - (value.id - bottomId))
-    def iterator = nnIds.iterator map (id => thisenum.apply(bottomId + id))
+    def +(value: Value)    = new ValueSet(nnIds + (value.id - bottomId))
+    def -(value: Value)    = new ValueSet(nnIds - (value.id - bottomId))
+    def iterator           = nnIds.iterator map (id => thisenum.apply(bottomId + id))
     // This is only defined in 2.11. We change its implementation so it also
     // compiles on 2.10.
     def keysIteratorFrom(start: Value) = from(start).keySet.toIterator
@@ -279,16 +289,16 @@ abstract class Enumeration(initial: Int) extends Serializable { thisenum =>
     def newBuilder: mutable.Builder[Value, ValueSet] =
       new mutable.Builder[Value, ValueSet] {
         private[this] val b = new mutable.BitSet
-        def +=(x: Value) = { b += (x.id - bottomId); this }
-        def clear() = b.clear()
-        def result() = new ValueSet(b.toImmutable)
+        def +=(x: Value)    = { b += (x.id - bottomId); this }
+        def clear()         = b.clear()
+        def result()        = new ValueSet(b.toImmutable)
       }
 
     /** The implicit builder for value sets */
     implicit def canBuildFrom: CanBuildFrom[ValueSet, Value, ValueSet] =
       new CanBuildFrom[ValueSet, Value, ValueSet] {
         def apply(from: ValueSet) = newBuilder
-        def apply() = newBuilder
+        def apply()               = newBuilder
       }
   }
 }

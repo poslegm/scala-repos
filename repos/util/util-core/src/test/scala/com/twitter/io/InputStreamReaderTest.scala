@@ -68,7 +68,7 @@ class InputStreamReaderTest extends FunSuite {
   }
 
   test("InputStreamReader - Reader.readAll") {
-    val a = arr(0, 250)
+    val a  = arr(0, 250)
     val s1 = new ByteArrayInputStream(a)
     val s2 = new ByteArrayInputStream(a)
     val r1 = new InputStreamReader(s1, 100)

@@ -34,10 +34,10 @@ class StopwatchSuite extends SparkFunSuite with MLlibTestSparkContext {
       sw.stop()
     }
     val duration = checkStopwatch(sw)
-    val elapsed = sw.elapsed()
+    val elapsed  = sw.elapsed()
     assert(elapsed === duration)
     val duration2 = checkStopwatch(sw)
-    val elapsed2 = sw.elapsed()
+    val elapsed2  = sw.elapsed()
     assert(elapsed2 === duration + duration2)
     assert(sw.toString === s"sw: ${elapsed2}ms")
     sw.start()
@@ -58,12 +58,10 @@ class StopwatchSuite extends SparkFunSuite with MLlibTestSparkContext {
   }
 
   test("DistributedStopwatch on executors") {
-    val sw = new DistributedStopwatch(sc, "sw")
+    val sw  = new DistributedStopwatch(sc, "sw")
     val rdd = sc.parallelize(0 until 4, 4)
     val acc = sc.accumulator(0L)
-    rdd.foreach { i =>
-      acc += checkStopwatch(sw)
-    }
+    rdd.foreach { i => acc += checkStopwatch(sw) }
     assert(!sw.isRunning)
     val elapsed = sw.elapsed()
     assert(elapsed === acc.value)
@@ -79,12 +77,13 @@ class StopwatchSuite extends SparkFunSuite with MLlibTestSparkContext {
     assert(sw.toString === "{\n  local: 0ms,\n  spark: 0ms\n}")
     val localDuration = checkStopwatch(sw("local"))
     val sparkDuration = checkStopwatch(sw("spark"))
-    val localElapsed = sw("local").elapsed()
-    val sparkElapsed = sw("spark").elapsed()
+    val localElapsed  = sw("local").elapsed()
+    val sparkElapsed  = sw("spark").elapsed()
     assert(localElapsed === localDuration)
     assert(sparkElapsed === sparkDuration)
     assert(
-        sw.toString === s"{\n  local: ${localElapsed}ms,\n  spark: ${sparkElapsed}ms\n}")
+      sw.toString === s"{\n  local: ${localElapsed}ms,\n  spark: ${sparkElapsed}ms\n}"
+    )
     val rdd = sc.parallelize(0 until 4, 4)
     val acc = sc.accumulator(0L)
     rdd.foreach { i =>
@@ -111,9 +110,9 @@ private object StopwatchSuite extends SparkFunSuite {
     sw.start()
     val lbStart = now
     Thread.sleep(new Random().nextInt(10))
-    val lb = now - lbStart
+    val lb       = now - lbStart
     val duration = sw.stop()
-    val ub = now - ubStart
+    val ub       = now - ubStart
     assert(duration >= lb && duration <= ub)
     duration
   }

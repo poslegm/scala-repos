@@ -5,7 +5,11 @@ import java.util
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.extensions.childOf
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScArgumentExprList, ScExpression, ScMethodCall}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScArgumentExprList,
+  ScExpression,
+  ScMethodCall
+}
 
 import scala.annotation.tailrec
 
@@ -14,7 +18,8 @@ import scala.annotation.tailrec
   * 2014-06-26
   */
 class ScalaMethodCallArgUnwrapper
-    extends ScalaUnwrapper with ShortTextDescription {
+    extends ScalaUnwrapper
+    with ShortTextDescription {
 
   override def getDescription(e: PsiElement) = super.getDescription(e)
 
@@ -29,22 +34,26 @@ class ScalaMethodCallArgUnwrapper
   }
 
   override def collectAffectedElements(
-      e: PsiElement, toExtract: util.List[PsiElement]) = {
+      e: PsiElement,
+      toExtract: util.List[PsiElement]
+  ) = {
     forMethodCallArg[PsiElement](e) { (expr, call) =>
       super.collectAffectedElements(e, toExtract)
       call
     }(e)
   }
 
-  private def forMethodCallArg[T](e: PsiElement)(
-      ifArg: (ScExpression, ScMethodCall) => T)(ifNot: => T) = {
+  private def forMethodCallArg[T](
+      e: PsiElement
+  )(ifArg: (ScExpression, ScMethodCall) => T)(ifNot: => T) = {
     e match {
       case (expr: ScExpression) childOf ((_: ScArgumentExprList) childOf (call: ScMethodCall)) =>
         @tailrec
-        def maxCall(call: ScMethodCall): ScMethodCall = call.getParent match {
-          case parCall: ScMethodCall => maxCall(parCall)
-          case _ => call
-        }
+        def maxCall(call: ScMethodCall): ScMethodCall =
+          call.getParent match {
+            case parCall: ScMethodCall => maxCall(parCall)
+            case _                     => call
+          }
         ifArg(expr, maxCall(call))
       case _ => ifNot
     }

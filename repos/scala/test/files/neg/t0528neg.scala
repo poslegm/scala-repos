@@ -10,6 +10,6 @@ class RichStr extends Sequ[Char] {
 object Foo extends App {
   val x: RichStr = new RichStr
 
-  println(x.toArray) // call directly
+  println(x.toArray)               // call directly
   println((x: Sequ[Char]).toArray) // calling through the bridge misses unboxing
 }

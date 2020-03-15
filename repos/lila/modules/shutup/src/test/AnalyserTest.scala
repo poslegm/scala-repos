@@ -5,7 +5,7 @@ import org.specs2.specification._
 
 class DetectTest extends Specification {
 
-  private def find(t: String) = Analyser(t).badWords
+  private def find(t: String)  = Analyser(t).badWords
   private def ratio(t: String) = Analyser(t).ratio
 
   "detector" should {
@@ -21,7 +21,9 @@ class DetectTest extends Specification {
     "find no bad words" in {
       find("") must_== Nil
       find("hello there") must_== Nil
-      find("A sonnet is a poetic form which originated in Italy; Giacomo Da Lentini is credited with its invention.") must_== Nil
+      find(
+        "A sonnet is a poetic form which originated in Italy; Giacomo Da Lentini is credited with its invention."
+      ) must_== Nil
       find("computer analysis") must_== Nil
     }
     "find badly spelled words" in {

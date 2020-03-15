@@ -13,14 +13,14 @@ object SCL5030 {
     }
 
     implicit def idToField(id: MyId): MyIdField = new MyIdField(id)
-    implicit def fieldToId(f: MyIdField): MyId = f.asTagged
+    implicit def fieldToId(f: MyIdField): MyId  = f.asTagged
   }
 
   import stuff._
 
   object Tag {
     type Tagged[U] = { type Tag = U }
-    type @@[T, U] = T with Tagged[U] with Object
+    type @@[T, U]  = T with Tagged[U] with Object
     @inline def apply[A, T](a: A): A @@ T = a.asInstanceOf[A @@ T]
   }
 
@@ -33,7 +33,7 @@ object SCL5030 {
 
   class Foo {
     import Test._
-    def foo(x: MyId): Int = 1
+    def foo(x: MyId): Int      = 1
     def foo(x: String): String = x
 
     def goo(x: MyIdField): Int = 1

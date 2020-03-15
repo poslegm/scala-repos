@@ -23,7 +23,7 @@ trait XmlConversion {
   }
 
   protected def parseXml(xml: String): Element = {
-    val builder = new SAXBuilder()
+    val builder  = new SAXBuilder()
     val document = builder.build(new StringReader(xml))
     document.detachRootElement()
   }

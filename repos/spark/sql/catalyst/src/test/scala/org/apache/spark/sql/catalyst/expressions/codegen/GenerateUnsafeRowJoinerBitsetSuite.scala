@@ -90,12 +90,12 @@ class GenerateUnsafeRowJoinerBitsetSuite extends SparkFunSuite {
   }
 
   private def createUnsafeRow(numFields: Int): UnsafeRow = {
-    val row = new UnsafeRow(numFields)
+    val row         = new UnsafeRow(numFields)
     val sizeInBytes = numFields * 8 + ((numFields + 63) / 64) * 8
     // Allocate a larger buffer than needed and point the UnsafeRow to somewhere in the middle.
     // This way we can test the joiner when the input UnsafeRows are not the entire arrays.
     val offset = numFields * 8
-    val buf = new Array[Byte](sizeInBytes + offset)
+    val buf    = new Array[Byte](sizeInBytes + offset)
     row.pointTo(buf, Platform.BYTE_ARRAY_OFFSET + offset, sizeInBytes)
     row
   }
@@ -108,12 +108,10 @@ class GenerateUnsafeRowJoinerBitsetSuite extends SparkFunSuite {
 
   private def testBitsetsOnce(numFields1: Int, numFields2: Int): Unit = {
     info(s"num fields: $numFields1 and $numFields2")
-    val schema1 = StructType(
-        Seq.tabulate(numFields1) { i =>
+    val schema1 = StructType(Seq.tabulate(numFields1) { i =>
       StructField(s"a_$i", IntegerType)
     })
-    val schema2 = StructType(
-        Seq.tabulate(numFields2) { i =>
+    val schema2 = StructType(Seq.tabulate(numFields2) { i =>
       StructField(s"b_$i", IntegerType)
     })
 
@@ -132,7 +130,7 @@ class GenerateUnsafeRowJoinerBitsetSuite extends SparkFunSuite {
     }
 
     val concater = GenerateUnsafeRowJoiner.create(schema1, schema2)
-    val output = concater.join(row1, row2)
+    val output   = concater.join(row1, row2)
 
     def dumpDebug(): String = {
       val set1 = Seq.tabulate(numFields1) { i =>
@@ -158,7 +156,9 @@ class GenerateUnsafeRowJoinerBitsetSuite extends SparkFunSuite {
         assert(output.isNullAt(i) === row1.isNullAt(i), dumpDebug())
       } else {
         assert(
-            output.isNullAt(i) === row2.isNullAt(i - numFields1), dumpDebug())
+          output.isNullAt(i) === row2.isNullAt(i - numFields1),
+          dumpDebug()
+        )
       }
     }
   }

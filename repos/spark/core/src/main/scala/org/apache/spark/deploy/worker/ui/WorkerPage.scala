@@ -23,7 +23,10 @@ import scala.xml.Node
 
 import org.json4s.JValue
 
-import org.apache.spark.deploy.DeployMessages.{RequestWorkerState, WorkerStateResponse}
+import org.apache.spark.deploy.DeployMessages.{
+  RequestWorkerState,
+  WorkerStateResponse
+}
 import org.apache.spark.deploy.JsonProtocol
 import org.apache.spark.deploy.master.DriverState
 import org.apache.spark.deploy.worker.{DriverRunner, ExecutorRunner}
@@ -43,8 +46,8 @@ private[ui] class WorkerPage(parent: WorkerWebUI) extends WebUIPage("") {
     val workerState =
       workerEndpoint.askWithRetry[WorkerStateResponse](RequestWorkerState)
 
-    val executorHeaders = Seq(
-        "ExecutorID", "Cores", "State", "Memory", "Job Details", "Logs")
+    val executorHeaders =
+      Seq("ExecutorID", "Cores", "State", "Memory", "Job Details", "Logs")
     val runningExecutors = workerState.executors
     val runningExecutorTable =
       UIUtils.listingTable(executorHeaders, executorRow, runningExecutors)
@@ -52,8 +55,8 @@ private[ui] class WorkerPage(parent: WorkerWebUI) extends WebUIPage("") {
     val finishedExecutorTable =
       UIUtils.listingTable(executorHeaders, executorRow, finishedExecutors)
 
-    val driverHeaders = Seq(
-        "DriverID", "Main Class", "State", "Cores", "Memory", "Logs", "Notes")
+    val driverHeaders =
+      Seq("DriverID", "Main Class", "State", "Cores", "Memory", "Logs", "Notes")
     val runningDrivers = workerState.drivers.sortBy(_.driverId).reverse
     val runningDriverTable =
       UIUtils.listingTable(driverHeaders, driverRow, runningDrivers)
@@ -72,8 +75,12 @@ private[ui] class WorkerPage(parent: WorkerWebUI) extends WebUIPage("") {
             <li><strong>
               Master URL:</strong> {workerState.masterUrl}
             </li>
-            <li><strong>Cores:</strong> {workerState.cores} ({workerState.coresUsed} Used)</li>
-            <li><strong>Memory:</strong> {Utils.megabytesToString(workerState.memory)}
+            <li><strong>Cores:</strong> {workerState.cores} ({
+      workerState.coresUsed
+    } Used)</li>
+            <li><strong>Memory:</strong> {
+      Utils.megabytesToString(workerState.memory)
+    }
               ({Utils.megabytesToString(workerState.memoryUsed)} Used)</li>
           </ul>
           <p><a href={workerState.masterWebUiUrl}>Back to Master</a></p>
@@ -84,28 +91,29 @@ private[ui] class WorkerPage(parent: WorkerWebUI) extends WebUIPage("") {
           <h4> Running Executors ({runningExecutors.size}) </h4>
           {runningExecutorTable}
           {
-            if (runningDrivers.nonEmpty) {
-              <h4> Running Drivers ({runningDrivers.size}) </h4> ++
-              runningDriverTable
-            }
-          }
+      if (runningDrivers.nonEmpty) {
+        <h4> Running Drivers ({runningDrivers.size}) </h4> ++
+          runningDriverTable
+      }
+    }
           {
-            if (finishedExecutors.nonEmpty) {
-              <h4>Finished Executors ({finishedExecutors.size}) </h4> ++
-              finishedExecutorTable
-            }
-          }
+      if (finishedExecutors.nonEmpty) {
+        <h4>Finished Executors ({finishedExecutors.size}) </h4> ++
+          finishedExecutorTable
+      }
+    }
           {
-            if (finishedDrivers.nonEmpty) {
-              <h4> Finished Drivers ({finishedDrivers.size}) </h4> ++
-              finishedDriverTable
-            }
-          }
+      if (finishedDrivers.nonEmpty) {
+        <h4> Finished Drivers ({finishedDrivers.size}) </h4> ++
+          finishedDriverTable
+      }
+    }
         </div>
       </div>;
     UIUtils.basicSparkPage(
-        content,
-        "Spark Worker at %s:%s".format(workerState.host, workerState.port))
+      content,
+      "Spark Worker at %s:%s".format(workerState.host, workerState.port)
+    )
   }
 
   def executorRow(executor: ExecutorRunner): Seq[Node] = {
@@ -124,10 +132,14 @@ private[ui] class WorkerPage(parent: WorkerWebUI) extends WebUIPage("") {
         </ul>
       </td>
       <td>
-     <a href={"logPage?appId=%s&executorId=%s&logType=stdout"
-        .format(executor.appId, executor.execId)}>stdout</a>
-     <a href={"logPage?appId=%s&executorId=%s&logType=stderr"
-        .format(executor.appId, executor.execId)}>stderr</a>
+     <a href={
+      "logPage?appId=%s&executorId=%s&logType=stdout"
+        .format(executor.appId, executor.execId)
+    }>stdout</a>
+     <a href={
+      "logPage?appId=%s&executorId=%s&logType=stderr"
+        .format(executor.appId, executor.execId)
+    }>stderr</a>
       </td>
     </tr>
   }

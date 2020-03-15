@@ -4,10 +4,10 @@ object Error {
     val r = X()
   }
   def g = {
-    val x = 0
-    var y = 1 // no constant type
+    val x               = 0
+    var y               = 1 // no constant type
     def foo(z: Int = y) = 1
-    val z = 2
+    val z               = 2
     foo()
   }
 }

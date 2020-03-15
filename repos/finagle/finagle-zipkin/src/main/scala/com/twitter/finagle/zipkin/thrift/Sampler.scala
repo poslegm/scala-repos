@@ -14,7 +14,7 @@ object Sampler {
     */
   private val salt = new Random().nextLong()
 
-  private val SomeTrue = Some(true)
+  private val SomeTrue  = Some(true)
   private val SomeFalse = Some(false)
 }
 
@@ -33,7 +33,8 @@ class Sampler {
   def setSampleRate(sampleRate: Float) = {
     if (!validSampleRate(sampleRate)) {
       throw new IllegalArgumentException(
-          "Sample rate not within the valid range of 0-1, was " + sampleRate)
+        "Sample rate not within the valid range of 0-1, was " + sampleRate
+      )
     }
     sr = sampleRate
   }
@@ -67,7 +68,9 @@ class Sampler {
   def sampleTrace(traceId: TraceId, sampleRate: Float): Option[Boolean] = {
     traceId.sampled match {
       case None =>
-        if (math.abs(traceId.traceId.toLong ^ Sampler.salt) % 10000 < sampleRate * 10000)
+        if (math.abs(
+              traceId.traceId.toLong ^ Sampler.salt
+            ) % 10000 < sampleRate * 10000)
           Sampler.SomeTrue
         else Sampler.SomeFalse
       case sample @ Some(_) =>
@@ -84,7 +87,7 @@ class Sampler {
   def sampleRecord(record: Record): Boolean = {
     sampleTrace(record.traceId) match {
       case Some(sampled) => sampled
-      case None => false
+      case None          => false
     }
   }
 }

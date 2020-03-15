@@ -11,17 +11,17 @@ private[v2] object InfoEmbedResolver {
 
   private[this] val EmbedAppsPrefixes = Set("group.apps.", "apps.", "app.")
 
-  private[this] val EmbedTasks = "tasks"
+  private[this] val EmbedTasks       = "tasks"
   private[this] val EmbedDeployments = "deployments"
 
   /* deprecated, use lastTaskFailure, tasks, deployments instead */
   private[this] val EmbedTasksAndFailures = "failures"
-  private[this] val EmbedLastTaskFailure = "lastTaskFailure"
-  private[this] val EmbedCounts = "counts"
-  private[this] val EmbedTaskStats = "taskStats"
+  private[this] val EmbedLastTaskFailure  = "lastTaskFailure"
+  private[this] val EmbedCounts           = "counts"
+  private[this] val EmbedTaskStats        = "taskStats"
 
   private[v2] val EmbedGroups = "group.groups"
-  private[v2] val EmbedApps = "group.apps"
+  private[v2] val EmbedApps   = "group.apps"
 
   /**
     * Converts embed arguments to our internal representation.
@@ -31,20 +31,26 @@ private[v2] object InfoEmbedResolver {
     */
   def resolveApp(embed: Set[String]): Set[AppInfo.Embed] = {
     def mapEmbedStrings(
-        prefix: String, withoutPrefix: String): Set[AppInfo.Embed] =
+        prefix: String,
+        withoutPrefix: String
+    ): Set[AppInfo.Embed] =
       withoutPrefix match {
         case EmbedTasks =>
           Set(AppInfo.Embed.Tasks, /* deprecated */ AppInfo.Embed.Deployments)
         case EmbedTasksAndFailures =>
-          log.warn(s"Using deprecated embed=s$prefix$withoutPrefix. " +
-              s"Use ${prefix}tasks, ${prefix}lastTaskFailure, ${prefix}deployments instead.")
-          Set(AppInfo.Embed.Tasks,
-              AppInfo.Embed.LastTaskFailure,
-              AppInfo.Embed.Deployments)
-        case EmbedDeployments => Set(AppInfo.Embed.Deployments)
+          log.warn(
+            s"Using deprecated embed=s$prefix$withoutPrefix. " +
+              s"Use ${prefix}tasks, ${prefix}lastTaskFailure, ${prefix}deployments instead."
+          )
+          Set(
+            AppInfo.Embed.Tasks,
+            AppInfo.Embed.LastTaskFailure,
+            AppInfo.Embed.Deployments
+          )
+        case EmbedDeployments     => Set(AppInfo.Embed.Deployments)
         case EmbedLastTaskFailure => Set(AppInfo.Embed.LastTaskFailure)
-        case EmbedCounts => Set(AppInfo.Embed.Counts)
-        case EmbedTaskStats => Set(AppInfo.Embed.TaskStats)
+        case EmbedCounts          => Set(AppInfo.Embed.Counts)
+        case EmbedTaskStats       => Set(AppInfo.Embed.TaskStats)
         case unknown: String =>
           log.warn(s"unknown app embed argument: $prefix$unknown")
           Set.empty
@@ -66,7 +72,7 @@ private[v2] object InfoEmbedResolver {
   def resolveGroup(embeds: Set[String]): Set[GroupInfo.Embed] = {
     embeds.flatMap {
       case EmbedGroups => Some(GroupInfo.Embed.Groups)
-      case EmbedApps => Some(GroupInfo.Embed.Apps)
+      case EmbedApps   => Some(GroupInfo.Embed.Apps)
       case unknown: String =>
         log.warn(s"unknown group embed argument: $unknown")
         None
@@ -77,7 +83,8 @@ private[v2] object InfoEmbedResolver {
     * Resolve apps and groups embed parameter into distinct sets.
     */
   def resolveAppGroup(
-      embeds: Set[String]): (Set[AppInfo.Embed], Set[GroupInfo.Embed]) = {
+      embeds: Set[String]
+  ): (Set[AppInfo.Embed], Set[GroupInfo.Embed]) = {
     val (apps, groups) = embeds.partition(_.startsWith("group.apps."))
     (resolveApp(apps), resolveGroup(groups))
   }

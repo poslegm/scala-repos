@@ -15,17 +15,22 @@ import ResizableMultiReaderRingBuffer._
   */
 private[akka] class ResizableMultiReaderRingBuffer[T](
     initialSize: Int, // constructor param, not field
-    maxSize: Int, // constructor param, not field
-    val cursors: Cursors) {
-  require(Integer.lowestOneBit(maxSize) == maxSize && 0 < maxSize &&
-          maxSize <= Int.MaxValue / 2,
-          "maxSize must be a power of 2 that is > 0 and < Int.MaxValue/2")
-  require(Integer.lowestOneBit(initialSize) == initialSize &&
-          0 < initialSize && initialSize <= maxSize,
-          "initialSize must be a power of 2 that is > 0 and <= maxSize")
+    maxSize: Int,     // constructor param, not field
+    val cursors: Cursors
+) {
+  require(
+    Integer.lowestOneBit(maxSize) == maxSize && 0 < maxSize &&
+      maxSize <= Int.MaxValue / 2,
+    "maxSize must be a power of 2 that is > 0 and < Int.MaxValue/2"
+  )
+  require(
+    Integer.lowestOneBit(initialSize) == initialSize &&
+      0 < initialSize && initialSize <= maxSize,
+    "initialSize must be a power of 2 that is > 0 and <= maxSize"
+  )
 
   private[this] val maxSizeBit = Integer.numberOfTrailingZeros(maxSize)
-  private[this] var array = new Array[Any](initialSize)
+  private[this] var array      = new Array[Any](initialSize)
 
   /*
    * two counters counting the number of elements ever written and read; wrap-around is
@@ -85,7 +90,7 @@ private[akka] class ResizableMultiReaderRingBuffer[T](
       // if we are full but can grow we do so
       // the growing logic is quite simple: we assemble all current buffer entries in the new array
       // in their natural order (removing potential wrap around) and rebase all indices to zero
-      val r = readIx & mask
+      val r        = readIx & mask
       val newArray = new Array[Any](array.length << 1)
       System.arraycopy(array, r, newArray, 0, array.length - r)
       System.arraycopy(array, 0, newArray, array.length - r, r)

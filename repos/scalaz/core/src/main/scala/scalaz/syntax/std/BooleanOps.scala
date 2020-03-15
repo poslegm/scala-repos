@@ -221,7 +221,8 @@ final class BooleanOps(self: Boolean) {
 
   /** A version of `unlessM` that infers the type constructor `M`. */
   final def unlessMU[MA](f: => MA)(
-      implicit M: Unapply[Applicative, MA]): M.M[Unit] = b.unlessMU(self)(f)
+      implicit M: Unapply[Applicative, MA]
+  ): M.M[Unit] = b.unlessMU(self)(f)
 
   /**
     * Returns the given argument if `cond` is true`, otherwise, unit lifted into M.
@@ -230,7 +231,8 @@ final class BooleanOps(self: Boolean) {
 
   /** A version of `whenM` that infers the type constructor `M`. */
   final def whenMU[MA](f: => MA)(
-      implicit M: Unapply[Applicative, MA]): M.M[Unit] = b.whenMU(self)(f)
+      implicit M: Unapply[Applicative, MA]
+  ): M.M[Unit] = b.whenMU(self)(f)
 
   /**
     * @return `t` if true, `f` otherwise
@@ -285,15 +287,17 @@ final class BooleanOps(self: Boolean) {
     def apply[A](a: => A)(implicit M: Applicative[M], M0: PlusEmpty[M]): M[A]
   }
 
-  final def guard[M[_]] = new GuardPrevent[M] {
-    def apply[A](a: => A)(implicit M: Applicative[M], M0: PlusEmpty[M]) =
-      b.pointOrEmpty[M, A](self)(a)
-  }
+  final def guard[M[_]] =
+    new GuardPrevent[M] {
+      def apply[A](a: => A)(implicit M: Applicative[M], M0: PlusEmpty[M]) =
+        b.pointOrEmpty[M, A](self)(a)
+    }
 
-  final def prevent[M[_]] = new GuardPrevent[M] {
-    def apply[A](a: => A)(implicit M: Applicative[M], M0: PlusEmpty[M]) =
-      b.emptyOrPure[M, A](self)(a)
-  }
+  final def prevent[M[_]] =
+    new GuardPrevent[M] {
+      def apply[A](a: => A)(implicit M: Applicative[M], M0: PlusEmpty[M]) =
+        b.emptyOrPure[M, A](self)(a)
+    }
 }
 
 trait ToBooleanOps {

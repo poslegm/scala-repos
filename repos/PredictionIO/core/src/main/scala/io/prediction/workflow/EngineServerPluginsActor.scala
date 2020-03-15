@@ -21,7 +21,7 @@ import org.json4s.JValue
 
 class PluginsActor(engineVariant: String) extends Actor {
   implicit val system = context.system
-  val log = Logging(system, this)
+  val log             = Logging(system, this)
 
   val pluginContext = EngineServerPluginContext(log, engineVariant)
 
@@ -40,7 +40,8 @@ class PluginsActor(engineVariant: String) extends Actor {
       }
     case _ =>
       log.error(
-          "Unknown message sent to the Engine Server output sniffer plugin host.")
+        "Unknown message sent to the Engine Server output sniffer plugin host."
+      )
   }
 }
 

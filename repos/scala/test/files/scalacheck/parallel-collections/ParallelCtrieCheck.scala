@@ -25,7 +25,7 @@ abstract class ParallelConcurrentTrieMapCheck[K, V](tp: String)
   def tasksupport: TaskSupport
 
   def ofSize(vals: Seq[Gen[(K, V)]], sz: Int) = {
-    val ct = new concurrent.TrieMap[K, V]
+    val ct  = new concurrent.TrieMap[K, V]
     val gen = vals(rnd.nextInt(vals.size))
     for (i <- 0 until sz) ct += sample(gen)
     ct
@@ -45,40 +45,45 @@ abstract class ParallelConcurrentTrieMapCheck[K, V](tp: String)
 
 class IntIntParallelConcurrentTrieMapCheck(val tasksupport: TaskSupport)
     extends ParallelConcurrentTrieMapCheck[Int, Int]("Int, Int")
-    with PairOperators[Int, Int] with PairValues[Int, Int] {
+    with PairOperators[Int, Int]
+    with PairValues[Int, Int] {
   def intvalues = new IntValues {}
-  def kvalues = intvalues.values
-  def vvalues = intvalues.values
+  def kvalues   = intvalues.values
+  def vvalues   = intvalues.values
 
   val intoperators = new IntOperators {}
-  def voperators = intoperators
-  def koperators = intoperators
+  def voperators   = intoperators
+  def koperators   = intoperators
 
-  override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
-    case pm: ParTrieMap[k, v] =>
-      println("Mutable parallel ctrie")
-    case _ =>
-      println("could not match data structure type: " + ds.getClass)
-  }
+  override def printDataStructureDebugInfo(ds: AnyRef) =
+    ds match {
+      case pm: ParTrieMap[k, v] =>
+        println("Mutable parallel ctrie")
+      case _ =>
+        println("could not match data structure type: " + ds.getClass)
+    }
 
   override def checkDataStructureInvariants(
-      orig: Traversable[(Int, Int)], ds: AnyRef) = ds match {
-    // case pm: ParHashMap[k, v] if 1 == 0 => // disabled this to make tests faster
-    //   val invs = pm.brokenInvariants
+      orig: Traversable[(Int, Int)],
+      ds: AnyRef
+  ) =
+    ds match {
+      // case pm: ParHashMap[k, v] if 1 == 0 => // disabled this to make tests faster
+      //   val invs = pm.brokenInvariants
 
-    //   val containsall = (for ((k, v) <- orig) yield {
-    //     if (pm.asInstanceOf[ParHashMap[Int, Int]].get(k) == Some(v)) true
-    //     else {
-    //       println("Does not contain original element: " + (k, v))
-    //       false
-    //     }
-    //   }).foldLeft(true)(_ && _)
+      //   val containsall = (for ((k, v) <- orig) yield {
+      //     if (pm.asInstanceOf[ParHashMap[Int, Int]].get(k) == Some(v)) true
+      //     else {
+      //       println("Does not contain original element: " + (k, v))
+      //       false
+      //     }
+      //   }).foldLeft(true)(_ && _)
 
-    //   if (invs.isEmpty) containsall
-    //   else {
-    //     println("Invariants broken:\n" + invs.mkString("\n"))
-    //     false
-    //   }
-    case _ => true
-  }
+      //   if (invs.isEmpty) containsall
+      //   else {
+      //     println("Invariants broken:\n" + invs.mkString("\n"))
+      //     false
+      //   }
+      case _ => true
+    }
 }

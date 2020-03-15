@@ -20,7 +20,7 @@ import akka.remote.testconductor.TestConductor
 import akka.testkit.TestProbe
 
 object RemoteReDeploymentMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
 
   commonConfig(debugConfig(on = false).withFallback(ConfigFactory.parseString("""akka.remote.transport-failure-detector {
@@ -41,7 +41,7 @@ object RemoteReDeploymentMultiJvmSpec extends MultiNodeConfig {
     val monitor = context.actorSelection("/user/echo")
     def receive = {
       case (p: Props, n: String) ⇒ context.actorOf(p, n)
-      case msg ⇒ monitor ! msg
+      case msg                   ⇒ monitor ! msg
     }
   }
 
@@ -50,7 +50,7 @@ object RemoteReDeploymentMultiJvmSpec extends MultiNodeConfig {
     context.parent ! "HelloParent"
     override def preStart(): Unit = monitor ! "PreStart"
     override def postStop(): Unit = monitor ! "PostStop"
-    def receive = Actor.emptyBehavior
+    def receive                   = Actor.emptyBehavior
   }
 
   class Echo(target: ActorRef) extends Actor with ActorLogging {
@@ -97,7 +97,8 @@ abstract class RemoteReDeploymentSlowMultiJvmSpec
 }
 
 abstract class RemoteReDeploymentMultiJvmSpec
-    extends MultiNodeSpec(RemoteReDeploymentMultiJvmSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(RemoteReDeploymentMultiJvmSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   def sleepAfterKill: FiniteDuration
@@ -132,7 +133,8 @@ abstract class RemoteReDeploymentMultiJvmSpec
           within(sleepAfterKill) {
             expectMsg("PostStop")
             expectNoMsg()
-          } else expectNoMsg(sleepAfterKill)
+          }
+        else expectNoMsg(sleepAfterKill)
         awaitAssert(node(second), 10.seconds, 100.millis)
       }
 

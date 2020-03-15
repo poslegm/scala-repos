@@ -27,22 +27,18 @@ import com.twitter.util.Future
   * @author Oscar Boykin
   */
 class SideEffectStore[K, V](store: MergeableStore[K, V])(
-    sideEffectFn: K => Future[Unit])
-    extends MergeableStore[K, V] {
+    sideEffectFn: K => Future[Unit]
+) extends MergeableStore[K, V] {
 
-  override def semigroup = store.semigroup
-  override def get(k: K) = store.get(k)
+  override def semigroup                      = store.semigroup
+  override def get(k: K)                      = store.get(k)
   override def multiGet[K1 <: K](ks: Set[K1]) = store.multiGet(ks)
 
   def after[T](t: Future[T])(fn: T => Unit): Future[T] = { t.foreach(fn); t }
 
   override def put(pair: (K, Option[V])) =
-    after(store.put(pair)) { _ =>
-      sideEffectFn(pair._1)
-    }
+    after(store.put(pair)) { _ => sideEffectFn(pair._1) }
 
   override def merge(pair: (K, V)) =
-    after(store.merge(pair)) { _ =>
-      sideEffectFn(pair._1)
-    }
+    after(store.merge(pair)) { _ => sideEffectFn(pair._1) }
 }

@@ -45,15 +45,15 @@ class IntervalSetTest extends FunSuite {
 
   test("algebra") {
     val algebra = IntervalSeq.algebra[Int]
-    val a = IntervalSeq.above(1)
-    val b = IntervalSeq.below(1)
+    val a       = IntervalSeq.above(1)
+    val b       = IntervalSeq.below(1)
     assert((a ^ b) == algebra.xor(a, b))
   }
 
   test("iteratorAfterEnd") {
     intercept[NoSuchElementException] {
       val all = IntervalSeq.empty[Int]
-      val it = all.intervalIterator
+      val it  = all.intervalIterator
       it.next()
     }
     assert(true)

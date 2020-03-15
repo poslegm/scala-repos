@@ -3,7 +3,7 @@ package patmat
 abstract class BaseType
 
 case class CaseOne(x: Int, y: List[Int]) extends BaseType
-case class CaseTwo(str: String) extends BaseType
+case class CaseTwo(str: String)          extends BaseType
 
 class PatMatTests {
 

@@ -16,7 +16,7 @@ trait Quasiquotes { self: Universe =>
       def apply[A >: Any](args: A*): Tree = macro ???
       def unapply(scrutinee: Any): Any = macro ???
     }
-    object q extends api
+    object q  extends api
     object tq extends api
     object cq extends api
     object pq extends api

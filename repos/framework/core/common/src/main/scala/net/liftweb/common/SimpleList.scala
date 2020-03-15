@@ -17,7 +17,13 @@
 package net.liftweb
 package common
 
-import java.util.{List => JavaList, Iterator => JavaIterator, ArrayList, ListIterator, Collection => JavaCollection}
+import java.util.{
+  List => JavaList,
+  Iterator => JavaIterator,
+  ArrayList,
+  ListIterator,
+  Collection => JavaCollection
+}
 
 /**
   * An immutable singly linked list that uses the Scala List class as backing
@@ -49,11 +55,11 @@ final case class SimpleList[T](underlying: List[T]) extends JavaList[T] {
     */
   def prepend(item: T): SimpleList[T] = SimpleList(item :: underlying)
 
-  def take(n: Int): SimpleList[T] = SimpleList(underlying.take(n))
-  def drop(n: Int): SimpleList[T] = SimpleList(underlying.drop(n))
+  def take(n: Int): SimpleList[T]      = SimpleList(underlying.take(n))
+  def drop(n: Int): SimpleList[T]      = SimpleList(underlying.drop(n))
   def takeRight(n: Int): SimpleList[T] = SimpleList(underlying.takeRight(n))
   def dropRight(n: Int): SimpleList[T] = SimpleList(underlying.dropRight(n))
-  def reverse(): SimpleList[T] = SimpleList(underlying.reverse)
+  def reverse(): SimpleList[T]         = SimpleList(underlying.reverse)
 
   def headOption(): Option[T] = underlying.headOption
 
@@ -75,7 +81,7 @@ final case class SimpleList[T](underlying: List[T]) extends JavaList[T] {
     new JavaIterator[T] {
       def hasNext() = it.hasNext
       def next(): T = it.next()
-      def remove() = throw new UnsupportedOperationException()
+      def remove()  = throw new UnsupportedOperationException()
     }
   }
 
@@ -115,7 +121,7 @@ final case class SimpleList[T](underlying: List[T]) extends JavaList[T] {
       .asInstanceOf[Array[Object]]
 
     var pos = 0
-    var hd = underlying
+    var hd  = underlying
     while (pos < len) {
       ret(pos) = hd.head.asInstanceOf[Object]
       hd = hd.tail
@@ -133,7 +139,7 @@ final case class SimpleList[T](underlying: List[T]) extends JavaList[T] {
       .asInstanceOf[Array[X with Object]]
 
     var pos = 0
-    var hd = underlying
+    var hd  = underlying
     while (pos < len) {
       ret(pos) = clz.cast(hd.head).asInstanceOf[X with Object]
       hd = hd.tail
@@ -160,14 +166,15 @@ final case class SimpleList[T](underlying: List[T]) extends JavaList[T] {
 
     import scala.annotation._
 
-    @tailrec def check(): Boolean = it.hasNext() match {
-      case false => true
-      case _ =>
-        contains(it.next().asInstanceOf[Object]) match {
-          case false => false
-          case _ => check()
-        }
-    }
+    @tailrec def check(): Boolean =
+      it.hasNext() match {
+        case false => true
+        case _ =>
+          contains(it.next().asInstanceOf[Object]) match {
+            case false => false
+            case _     => check()
+          }
+      }
 
     check()
   }
@@ -236,7 +243,7 @@ final case class SimpleVector[T](underlying: Vector[T]) extends JavaList[T] {
     new JavaIterator[T] {
       def hasNext() = it.hasNext
       def next(): T = it.next()
-      def remove() = throw new UnsupportedOperationException()
+      def remove()  = throw new UnsupportedOperationException()
     }
   }
 
@@ -317,14 +324,15 @@ final case class SimpleVector[T](underlying: Vector[T]) extends JavaList[T] {
 
     import scala.annotation._
 
-    @tailrec def check(): Boolean = it.hasNext() match {
-      case false => true
-      case _ =>
-        contains(it.next().asInstanceOf[Object]) match {
-          case false => false
-          case _ => check()
-        }
-    }
+    @tailrec def check(): Boolean =
+      it.hasNext() match {
+        case false => true
+        case _ =>
+          contains(it.next().asInstanceOf[Object]) match {
+            case false => false
+            case _     => check()
+          }
+      }
 
     check()
   }

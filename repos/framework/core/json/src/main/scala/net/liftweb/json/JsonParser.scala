@@ -28,17 +28,17 @@ object JsonParser {
   /** Parsed tokens from low level pull parser.
     */
   sealed abstract class Token
-  case object OpenObj extends Token
-  case object CloseObj extends Token
+  case object OpenObj                 extends Token
+  case object CloseObj                extends Token
   case class FieldStart(name: String) extends Token
-  case object End extends Token
+  case object End                     extends Token
   case class StringVal(value: String) extends Token
-  case class IntVal(value: BigInt) extends Token
+  case class IntVal(value: BigInt)    extends Token
   case class DoubleVal(value: Double) extends Token
-  case class BoolVal(value: Boolean) extends Token
-  case object NullVal extends Token
-  case object OpenArr extends Token
-  case object CloseArr extends Token
+  case class BoolVal(value: Boolean)  extends Token
+  case object NullVal                 extends Token
+  case object OpenArr                 extends Token
+  case object CloseArr                extends Token
 
   /** Return parsed JSON.
     * @throws ParseException is thrown if parsing fails
@@ -55,13 +55,15 @@ object JsonParser {
   /** Return parsed JSON.
     */
   def parseOpt(s: String): Option[JValue] =
-    try { parse(s).toOpt } catch { case e: Exception => None }
+    try { parse(s).toOpt }
+    catch { case e: Exception => None }
 
   /** Return parsed JSON.
     * @param closeAutomatically true (default) if the Reader is automatically closed on EOF
     */
   def parseOpt(s: Reader, closeAutomatically: Boolean = true): Option[JValue] =
-    try { parse(s, closeAutomatically).toOpt } catch {
+    try { parse(s, closeAutomatically).toOpt }
+    catch {
       case e: Exception => None
     }
 
@@ -84,7 +86,7 @@ object JsonParser {
       astParser(new Parser(buf))
     } catch {
       case e: ParseException => throw e
-      case e: Exception => throw new ParseException("parsing failed", e)
+      case e: Exception      => throw new ParseException("parsing failed", e)
     } finally { buf.release }
   }
 
@@ -98,16 +100,16 @@ object JsonParser {
       while (c != '"') {
         if (c == '\\') {
           buf.next match {
-            case '"' => s.append('"')
+            case '"'  => s.append('"')
             case '\\' => s.append('\\')
-            case '/' => s.append('/')
-            case 'b' => s.append('\b')
-            case 'f' => s.append('\f')
-            case 'n' => s.append('\n')
-            case 'r' => s.append('\r')
-            case 't' => s.append('\t')
+            case '/'  => s.append('/')
+            case 'b'  => s.append('\b')
+            case 'f'  => s.append('\f')
+            case 'n'  => s.append('\n')
+            case 'r'  => s.append('\r')
+            case 't'  => s.append('\t')
             case 'u' =>
-              val chars = Array(buf.next, buf.next, buf.next, buf.next)
+              val chars     = Array(buf.next, buf.next, buf.next, buf.next)
               val codePoint = Integer.parseInt(new String(chars), 16)
               s.appendCodePoint(codePoint)
             case _ => s.append('\\')
@@ -133,7 +135,7 @@ object JsonParser {
     buf.substring
   }
 
-  // FIXME fail fast to prevent infinite loop, see 
+  // FIXME fail fast to prevent infinite loop, see
   // http://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
   private val BrokenDouble = BigDecimal("2.2250738585072012e-308")
   private[json] def parseDouble(s: String) = {
@@ -142,76 +144,77 @@ object JsonParser {
     else d.doubleValue
   }
 
-  private val astParser = (p: Parser) =>
-    {
-      val vals = new ValStack(p)
-      var token: Token = null
-      var root: Option[JValue] = None
+  private val astParser = (p: Parser) => {
+    val vals                 = new ValStack(p)
+    var token: Token         = null
+    var root: Option[JValue] = None
 
-      // This is a slightly faster way to correct order of fields and arrays than using 'map'.
-      def reverse(v: JValue): JValue = v match {
+    // This is a slightly faster way to correct order of fields and arrays than using 'map'.
+    def reverse(v: JValue): JValue =
+      v match {
         case JObject(l) =>
-          JObject(
-              (l.map { field =>
+          JObject((l.map { field =>
             field.copy(value = reverse(field.value))
           }).reverse)
         case JArray(l) => JArray(l.map(reverse).reverse)
-        case x => x
+        case x         => x
       }
 
-      def closeBlock(v: Any) {
-        @inline def toJValue(x: Any) = x match {
+    def closeBlock(v: Any) {
+      @inline def toJValue(x: Any) =
+        x match {
           case json: JValue => json
-          case _ => p.fail("unexpected field " + x)
+          case _            => p.fail("unexpected field " + x)
         }
 
-        vals.peekOption match {
-          case Some(JField(name: String, value)) =>
+      vals.peekOption match {
+        case Some(JField(name: String, value)) =>
+          vals.pop(classOf[JField])
+          val obj = vals.peek(classOf[JObject])
+          vals.replace(JObject(JField(name, toJValue(v)) :: obj.obj))
+        case Some(o: JObject) =>
+          vals.replace(JObject(vals.peek(classOf[JField]) :: o.obj))
+        case Some(a: JArray) => vals.replace(JArray(toJValue(v) :: a.arr))
+        case Some(x) =>
+          p.fail("expected field, array or object but got " + x)
+        case None => root = Some(reverse(toJValue(v)))
+      }
+    }
+
+    def newValue(v: JValue) {
+      if (!vals.isEmpty)
+        vals.peekAny match {
+          case JField(name, value) =>
             vals.pop(classOf[JField])
             val obj = vals.peek(classOf[JObject])
-            vals.replace(JObject(JField(name, toJValue(v)) :: obj.obj))
-          case Some(o: JObject) =>
-            vals.replace(JObject(vals.peek(classOf[JField]) :: o.obj))
-          case Some(a: JArray) => vals.replace(JArray(toJValue(v) :: a.arr))
-          case Some(x) =>
-            p.fail("expected field, array or object but got " + x)
-          case None => root = Some(reverse(toJValue(v)))
+            vals.replace(JObject(JField(name, v) :: obj.obj))
+          case a: JArray => vals.replace(JArray(v :: a.arr))
+          case other     => p.fail("expected field or array but got " + other)
         }
+      else {
+        vals.push(v)
+        root = Some(v)
       }
+    }
 
-      def newValue(v: JValue) {
-        if (!vals.isEmpty)
-          vals.peekAny match {
-            case JField(name, value) =>
-              vals.pop(classOf[JField])
-              val obj = vals.peek(classOf[JObject])
-              vals.replace(JObject(JField(name, v) :: obj.obj))
-            case a: JArray => vals.replace(JArray(v :: a.arr))
-            case other => p.fail("expected field or array but got " + other)
-          } else {
-          vals.push(v)
-          root = Some(v)
-        }
+    do {
+      token = p.nextToken
+      token match {
+        case OpenObj          => vals.push(JObject(Nil))
+        case FieldStart(name) => vals.push(JField(name, null))
+        case StringVal(x)     => newValue(JString(x))
+        case IntVal(x)        => newValue(JInt(x))
+        case DoubleVal(x)     => newValue(JDouble(x))
+        case BoolVal(x)       => newValue(JBool(x))
+        case NullVal          => newValue(JNull)
+        case CloseObj         => closeBlock(vals.popAny)
+        case OpenArr          => vals.push(JArray(Nil))
+        case CloseArr         => closeBlock(vals.pop(classOf[JArray]))
+        case End              =>
       }
+    } while (token != End)
 
-      do {
-        token = p.nextToken
-        token match {
-          case OpenObj => vals.push(JObject(Nil))
-          case FieldStart(name) => vals.push(JField(name, null))
-          case StringVal(x) => newValue(JString(x))
-          case IntVal(x) => newValue(JInt(x))
-          case DoubleVal(x) => newValue(JDouble(x))
-          case BoolVal(x) => newValue(JBool(x))
-          case NullVal => newValue(JNull)
-          case CloseObj => closeBlock(vals.popAny)
-          case OpenArr => vals.push(JArray(Nil))
-          case CloseArr => closeBlock(vals.pop(classOf[JArray]))
-          case End =>
-        }
-      } while (token != End)
-
-      root getOrElse JNothing
+    root getOrElse JNothing
   }
 
   private val EOF = (-1).asInstanceOf[Char]
@@ -220,28 +223,29 @@ object JsonParser {
     import java.util.LinkedList
     private[this] val stack = new LinkedList[Any]()
 
-    def popAny = stack.poll
-    def pop[A](expectedType: Class[A]) = convert(stack.poll, expectedType)
-    def push(v: Any) = stack.addFirst(v)
-    def peekAny = stack.peek
+    def popAny                          = stack.poll
+    def pop[A](expectedType: Class[A])  = convert(stack.poll, expectedType)
+    def push(v: Any)                    = stack.addFirst(v)
+    def peekAny                         = stack.peek
     def peek[A](expectedType: Class[A]) = convert(stack.peek, expectedType)
-    def replace[A](newTop: Any) = stack.set(0, newTop)
+    def replace[A](newTop: Any)         = stack.set(0, newTop)
 
     private def convert[A](x: Any, expectedType: Class[A]): A = {
       if (x == null) parser.fail("expected object or array")
-      try { x.asInstanceOf[A] } catch {
+      try { x.asInstanceOf[A] }
+      catch {
         case _: ClassCastException => parser.fail("unexpected " + x)
       }
     }
 
     def peekOption = if (stack.isEmpty) None else Some(stack.peek)
-    def isEmpty = stack.isEmpty
+    def isEmpty    = stack.isEmpty
   }
 
   class Parser(buf: Buffer) {
     import java.util.LinkedList
 
-    private[this] val blocks = new LinkedList[BlockMode]()
+    private[this] val blocks        = new LinkedList[BlockMode]()
     private[this] var fieldNameMode = true
 
     def fail(msg: String) =
@@ -252,20 +256,20 @@ object JsonParser {
     def nextToken: Token = {
       def isDelimiter(c: Char) =
         c == ' ' || c == '\n' || c == ',' || c == '\r' || c == '\t' ||
-        c == '}' || c == ']'
+          c == '}' || c == ']'
 
       def parseString: String =
         try {
           unquote(buf)
         } catch {
           case p: ParseException => throw p
-          case _: Exception => fail("unexpected string end")
+          case _: Exception      => fail("unexpected string end")
         }
 
       def parseValue(first: Char) = {
-        var wasInt = true
+        var wasInt    = true
         var doubleVal = false
-        val s = new StringBuilder
+        val s         = new StringBuilder
         s.append(first)
         while (wasInt) {
           val c = buf.next
@@ -275,7 +279,7 @@ object JsonParser {
             doubleVal = true
             s.append(c)
           } else if (!(Character.isDigit(c) || c == '.' || c == 'e' ||
-                         c == 'E' || c == '-' || c == '+')) {
+                       c == 'E' || c == '-' || c == '+')) {
             wasInt = false
             buf.back
           } else s.append(c)
@@ -337,7 +341,7 @@ object JsonParser {
             fieldNameMode = true
             return parseValue(c)
           case c if isDelimiter(c) =>
-          case c => fail("unknown token " + c)
+          case c                   => fail("unknown token " + c)
         }
       }
       buf.automaticClose
@@ -345,7 +349,7 @@ object JsonParser {
     }
 
     sealed abstract class BlockMode
-    case object ARRAY extends BlockMode
+    case object ARRAY  extends BlockMode
     case object OBJECT extends BlockMode
   }
 
@@ -353,14 +357,14 @@ object JsonParser {
    * Buffer is divided to one or more segments (preallocated in Segments pool).
    */
   private[json] class Buffer(in: Reader, closeAutomatically: Boolean) {
-    var offset = 0
-    var curMark = -1
-    var curMarkSegment = -1
-    var eofIsFailure = false
+    var offset                                = 0
+    var curMark                               = -1
+    var curMarkSegment                        = -1
+    var eofIsFailure                          = false
     private[this] var segments: List[Segment] = List(Segments.apply())
-    private[this] var segment: Array[Char] = segments.head.seg
-    private[this] var cur = 0 // Pointer which points current parsing location
-    private[this] var curSegmentIdx = 0 // Pointer which points current segment
+    private[this] var segment: Array[Char]    = segments.head.seg
+    private[this] var cur                     = 0 // Pointer which points current parsing location
+    private[this] var curSegmentIdx           = 0 // Pointer which points current segment
 
     def mark = { curMark = cur; curMarkSegment = curSegmentIdx }
     def back = cur = cur - 1
@@ -382,22 +386,22 @@ object JsonParser {
       else {
         // slower path for case when string is in two or more segments
         var parts: List[(Int, Int, Array[Char])] = Nil
-        var i = curSegmentIdx
+        var i                                    = curSegmentIdx
         while (i >= curMarkSegment) {
-          val s = segments(i).seg
+          val s     = segments(i).seg
           val start = if (i == curMarkSegment) curMark else 0
-          val end = if (i == curSegmentIdx) cur else s.length + 1
+          val end   = if (i == curSegmentIdx) cur else s.length + 1
           parts = (start, end, s) :: parts
           i = i - 1
         }
-        val len = parts.map(p => p._2 - p._1 - 1).foldLeft(0)(_ + _)
+        val len   = parts.map(p => p._2 - p._1 - 1).foldLeft(0)(_ + _)
         val chars = new Array[Char](len)
         i = 0
         var pos = 0
 
         while (i < parts.size) {
           val (start, end, b) = parts(i)
-          val partLen = end - start - 1
+          val partLen         = end - start - 1
           System.arraycopy(b, start, chars, pos, partLen)
           pos = pos + partLen
           i = i + 1
@@ -408,7 +412,7 @@ object JsonParser {
 
     def near = {
       val start = (cur - 20) max 0
-      val len = ((cur + 1) min Segments.segmentSize) - start
+      val len   = ((cur + 1) min Segments.segmentSize) - start
       new String(segment, start, len)
     }
 
@@ -440,9 +444,9 @@ object JsonParser {
     import java.util.concurrent.ArrayBlockingQueue
     import java.util.concurrent.atomic.AtomicInteger
 
-    private[json] var segmentSize = 1000
+    private[json] var segmentSize      = 1000
     private[this] val maxNumOfSegments = 10000
-    private[this] var segmentCount = new AtomicInteger(0)
+    private[this] var segmentCount     = new AtomicInteger(0)
     private[this] val segments =
       new ArrayBlockingQueue[Segment](maxNumOfSegments)
     private[json] def clear = segments.clear
@@ -463,15 +467,16 @@ object JsonParser {
       if (createNew) RecycledSegment(new Array(segmentSize)) else segments.poll
     }
 
-    def release(s: Segment) = s match {
-      case _: RecycledSegment => segments.offer(s)
-      case _ =>
-    }
+    def release(s: Segment) =
+      s match {
+        case _: RecycledSegment => segments.offer(s)
+        case _                  =>
+      }
   }
 
   sealed trait Segment {
     val seg: Array[Char]
   }
-  case class RecycledSegment(seg: Array[Char]) extends Segment
+  case class RecycledSegment(seg: Array[Char])   extends Segment
   case class DisposableSegment(seg: Array[Char]) extends Segment
 }

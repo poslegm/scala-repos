@@ -55,7 +55,7 @@ object RowIterator {
   def fromScala(scalaIter: Iterator[InternalRow]): RowIterator = {
     scalaIter match {
       case wrappedRowIter: RowIteratorToScala => wrappedRowIter.rowIter
-      case _ => new RowIteratorFromScala(scalaIter)
+      case _                                  => new RowIteratorFromScala(scalaIter)
     }
   }
 }
@@ -63,7 +63,7 @@ object RowIterator {
 private final class RowIteratorToScala(val rowIter: RowIterator)
     extends Iterator[InternalRow] {
   private[this] var hasNextWasCalled: Boolean = false
-  private[this] var _hasNext: Boolean = false
+  private[this] var _hasNext: Boolean         = false
   override def hasNext: Boolean = {
     // Idempotency:
     if (!hasNextWasCalled) {
@@ -91,6 +91,6 @@ private final class RowIteratorFromScala(scalaIter: Iterator[InternalRow])
       false
     }
   }
-  override def getRow: InternalRow = _next
+  override def getRow: InternalRow            = _next
   override def toScala: Iterator[InternalRow] = scalaIter
 }

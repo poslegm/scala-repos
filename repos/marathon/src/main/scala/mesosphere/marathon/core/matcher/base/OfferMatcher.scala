@@ -16,8 +16,8 @@ object OfferMatcher {
     * (e.g. by throttling logic).
     */
   case class TaskOpWithSource(source: TaskOpSource, op: TaskOp) {
-    def taskId: Task.Id = op.taskId
-    def accept(): Unit = source.taskOpAccepted(op)
+    def taskId: Task.Id              = op.taskId
+    def accept(): Unit               = source.taskOpAccepted(op)
     def reject(reason: String): Unit = source.taskOpRejected(op, reason)
   }
 
@@ -41,22 +41,27 @@ object OfferMatcher {
     * @param resendThisOffer true, if this offer could not be processed completely (e.g. timeout)
     *                        and should be resend and processed again
     */
-  case class MatchedTaskOps(offerId: Mesos.OfferID,
-                            opsWithSource: Seq[TaskOpWithSource],
-                            resendThisOffer: Boolean = false) {
+  case class MatchedTaskOps(
+      offerId: Mesos.OfferID,
+      opsWithSource: Seq[TaskOpWithSource],
+      resendThisOffer: Boolean = false
+  ) {
 
     /** all included [TaskOp] without the source information. */
     def ops: Iterable[TaskOp] = opsWithSource.view.map(_.op)
 
     /** All TaskInfos of launched tasks. */
-    def launchedTaskInfos: Iterable[Mesos.TaskInfo] = ops.view.collect {
-      case TaskOp.Launch(taskInfo, _, _, _) => taskInfo
-    }
+    def launchedTaskInfos: Iterable[Mesos.TaskInfo] =
+      ops.view.collect {
+        case TaskOp.Launch(taskInfo, _, _, _) => taskInfo
+      }
   }
 
   object MatchedTaskOps {
-    def noMatch(offerId: Mesos.OfferID,
-                resendThisOffer: Boolean = false): MatchedTaskOps =
+    def noMatch(
+        offerId: Mesos.OfferID,
+        resendThisOffer: Boolean = false
+    ): MatchedTaskOps =
       new MatchedTaskOps(offerId, Seq.empty, resendThisOffer = resendThisOffer)
   }
 
@@ -77,8 +82,10 @@ trait OfferMatcher {
     * The offer matcher can expect either a taskOpAccepted or a taskOpRejected call
     * for every returned `org.apache.mesos.Protos.TaskInfo`.
     */
-  def matchOffer(deadline: Timestamp,
-                 offer: Mesos.Offer): Future[OfferMatcher.MatchedTaskOps]
+  def matchOffer(
+      deadline: Timestamp,
+      offer: Mesos.Offer
+  ): Future[OfferMatcher.MatchedTaskOps]
 
   /**
     * We can optimize the offer routing for different offer matcher in case there are reserved resources.

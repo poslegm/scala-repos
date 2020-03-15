@@ -49,12 +49,13 @@ private[spark] class DiskStore(conf: SparkConf, diskManager: DiskBlockManager)
   def put(blockId: BlockId)(writeFunc: FileOutputStream => Unit): Unit = {
     if (contains(blockId)) {
       throw new IllegalStateException(
-          s"Block $blockId is already present in the disk store")
+        s"Block $blockId is already present in the disk store"
+      )
     }
     logDebug(s"Attempting to put block $blockId")
-    val startTime = System.currentTimeMillis
-    val file = diskManager.getFile(blockId)
-    val fileOutputStream = new FileOutputStream(file)
+    val startTime               = System.currentTimeMillis
+    val file                    = diskManager.getFile(blockId)
+    val fileOutputStream        = new FileOutputStream(file)
     var threwException: Boolean = true
     try {
       writeFunc(fileOutputStream)
@@ -70,10 +71,12 @@ private[spark] class DiskStore(conf: SparkConf, diskManager: DiskBlockManager)
     }
     val finishTime = System.currentTimeMillis
     logDebug(
-        "Block %s stored as %s file on disk in %d ms".format(
-            file.getName,
-            Utils.bytesToString(file.length()),
-            finishTime - startTime))
+      "Block %s stored as %s file on disk in %d ms".format(
+        file.getName,
+        Utils.bytesToString(file.length()),
+        finishTime - startTime
+      )
+    )
   }
 
   def putBytes(blockId: BlockId, bytes: ChunkedByteBuffer): Unit = {
@@ -88,7 +91,7 @@ private[spark] class DiskStore(conf: SparkConf, diskManager: DiskBlockManager)
   }
 
   def getBytes(blockId: BlockId): ChunkedByteBuffer = {
-    val file = diskManager.getFile(blockId.name)
+    val file    = diskManager.getFile(blockId.name)
     val channel = new RandomAccessFile(file, "r").getChannel
     Utils.tryWithSafeFinally {
       // For small files, directly read rather than memory map
@@ -97,8 +100,10 @@ private[spark] class DiskStore(conf: SparkConf, diskManager: DiskBlockManager)
         channel.position(0)
         while (buf.remaining() != 0) {
           if (channel.read(buf) == -1) {
-            throw new IOException("Reached EOF before filling buffer\n" +
-                s"offset=0\nfile=${file.getAbsolutePath}\nbuf.remaining=${buf.remaining}")
+            throw new IOException(
+              "Reached EOF before filling buffer\n" +
+                s"offset=0\nfile=${file.getAbsolutePath}\nbuf.remaining=${buf.remaining}"
+            )
           }
         }
         buf.flip()

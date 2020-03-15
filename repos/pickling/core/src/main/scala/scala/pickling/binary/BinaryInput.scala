@@ -34,19 +34,26 @@ abstract class BinaryInput {
   }
 
   private val chunkSize = 1024
-  private val chunk = Array.ofDim[Byte](chunkSize)
+  private val chunk     = Array.ofDim[Byte](chunkSize)
 
-  protected def getArrayByChunk[T <: AnyVal : ClassTag](
-      offset: Long, eltSize: Int): Array[T] = {
-    val size = getIntWithLookahead
-    val array = Array.ofDim[T](size)
-    var toCopy = size * eltSize
+  protected def getArrayByChunk[T <: AnyVal: ClassTag](
+      offset: Long,
+      eltSize: Int
+  ): Array[T] = {
+    val size       = getIntWithLookahead
+    val array      = Array.ofDim[T](size)
+    var toCopy     = size * eltSize
     var destOffset = offset
     while (toCopy > 0) {
       val byteLen = math.min(chunkSize, toCopy)
       getBytes(chunk, byteLen)
       UnsafeMemory.unsafe.copyMemory(
-          chunk, UnsafeMemory.byteArrayOffset, array, destOffset, byteLen)
+        chunk,
+        UnsafeMemory.byteArrayOffset,
+        array,
+        destOffset,
+        byteLen
+      )
       toCopy -= byteLen
       destOffset += byteLen
     }
@@ -54,7 +61,7 @@ abstract class BinaryInput {
   }
 
   def getByteArray(): Array[Byte] = {
-    val size = getIntWithLookahead
+    val size  = getIntWithLookahead
     val array = Array.ofDim[Byte](size)
     getBytes(array, size)
     array
@@ -159,7 +166,7 @@ class ByteArrayInput(data: Array[Byte]) extends BinaryInput {
     res |= (data(idx) << 24)
     res |= (data(idx + 1) << 16) & 0xFF0000
     res |= (data(idx + 2) << 8) & 0xFF00
-    res |=(data(idx + 3)) & 0xFF
+    res |= (data(idx + 3)) & 0xFF
     idx += 4
     res
   }
@@ -189,22 +196,31 @@ class ByteArrayInput(data: Array[Byte]) extends BinaryInput {
   }
 
   def getBytes(target: Array[Byte], len: Int): Unit = {
-    UnsafeMemory.unsafe.copyMemory(data,
-                                   UnsafeMemory.byteArrayOffset + idx,
-                                   target,
-                                   UnsafeMemory.byteArrayOffset,
-                                   len)
+    UnsafeMemory.unsafe.copyMemory(
+      data,
+      UnsafeMemory.byteArrayOffset + idx,
+      target,
+      UnsafeMemory.byteArrayOffset,
+      len
+    )
     idx += len
   }
 
   //override array for faster copy (get rid of ckunk)
-  override protected def getArrayByChunk[T <: AnyVal : ClassTag](
-      offset: Long, eltSize: Int): Array[T] = {
-    val size = getIntWithLookahead
-    val array = Array.ofDim[T](size)
+  override protected def getArrayByChunk[T <: AnyVal: ClassTag](
+      offset: Long,
+      eltSize: Int
+  ): Array[T] = {
+    val size   = getIntWithLookahead
+    val array  = Array.ofDim[T](size)
     var toCopy = size * eltSize
     UnsafeMemory.unsafe.copyMemory(
-        data, UnsafeMemory.byteArrayOffset + idx, array, offset, toCopy)
+      data,
+      UnsafeMemory.byteArrayOffset + idx,
+      array,
+      offset,
+      toCopy
+    )
     idx += toCopy
     array
   }
@@ -212,13 +228,13 @@ class ByteArrayInput(data: Array[Byte]) extends BinaryInput {
 
 class StreamInput(stream: java.io.InputStream) extends BinaryInput {
   //by default java, uses big-endian.
-  val ds = new java.io.DataInputStream(stream)
-  def getByte() = ds.readByte()
-  def getChar() = ds.readChar()
-  def getShort() = ds.readShort()
-  def getInt() = ds.readInt()
-  def getLong() = ds.readLong()
-  def getFloat() = ds.readFloat()
+  val ds          = new java.io.DataInputStream(stream)
+  def getByte()   = ds.readByte()
+  def getChar()   = ds.readChar()
+  def getShort()  = ds.readShort()
+  def getInt()    = ds.readInt()
+  def getLong()   = ds.readLong()
+  def getFloat()  = ds.readFloat()
   def getDouble() = ds.readDouble()
 
   def getBytes(target: Array[Byte], len: Int): Unit = {

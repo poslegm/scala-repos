@@ -45,42 +45,43 @@ case class DefaultServer[Req, Rep, In, Out](
     requestTimeout: Duration = Duration.Top,
     maxConcurrentRequests: Int = Int.MaxValue,
     cancelOnHangup: Boolean = true,
-    prepare: ServiceFactory[Req, Rep] => ServiceFactory[Req, Rep] = (sf: ServiceFactory[
-          Req, Rep]) => sf,
+    prepare: ServiceFactory[Req, Rep] => ServiceFactory[Req, Rep] =
+      (sf: ServiceFactory[Req, Rep]) => sf,
     timer: Timer = DefaultTimer.twitter,
     monitor: Monitor = DefaultMonitor,
     logger: java.util.logging.Logger = DefaultLogger,
     statsReceiver: StatsReceiver = ServerStatsReceiver,
     tracer: Tracer = DefaultTracer,
     reporter: ReporterFactory = LoadedReporterFactory,
-    newTraceInitializer: Stackable[ServiceFactory[Req, Rep]] = TraceInitializerFilter
+    newTraceInitializer: Stackable[ServiceFactory[Req, Rep]] =
+      TraceInitializerFilter
         .serverModule[Req, Rep]
-)
-    extends Server[Req, Rep] {
+) extends Server[Req, Rep] {
 
   val stack = StackServer
     .newStack[Req, Rep]
     .replace(StackServer.Role.preparer, prepare)
     .replace(TraceInitializerFilter.role, newTraceInitializer)
 
-  private type _In = In
+  private type _In  = In
   private type _Out = Out
 
   private case class Server(
       stack: Stack[ServiceFactory[Req, Rep]] = stack,
       params: Stack.Params = Stack.Params.empty
-  )
-      extends StdStackServer[Req, Rep, Server] {
+  ) extends StdStackServer[Req, Rep, Server] {
     protected def copy1(
         stack: Stack[ServiceFactory[Req, Rep]] = this.stack,
         params: Stack.Params = this.params
     ) = copy(stack, params)
 
-    protected type In = _In
+    protected type In  = _In
     protected type Out = _Out
     protected def newListener() = listener
     protected def newDispatcher(
-        transport: Transport[In, Out], service: Service[Req, Rep]) =
+        transport: Transport[In, Out],
+        service: Service[Req, Rep]
+    ) =
       serviceTransport(transport, service)
   }
 
@@ -102,7 +103,9 @@ case class DefaultServer[Req, Rep, In, Out](
     .configured(TimeoutFilter.Param(requestTimeout))
     .configured(RequestSemaphoreFilter.Param(sem))
 
-  def serve(addr: SocketAddress,
-            factory: ServiceFactory[Req, Rep]): ListeningServer =
+  def serve(
+      addr: SocketAddress,
+      factory: ServiceFactory[Req, Rep]
+  ): ListeningServer =
     configured.serve(addr, factory)
 }

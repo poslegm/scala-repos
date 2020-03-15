@@ -10,7 +10,8 @@ object CaptureLogEvents {
 
     val capturingAppender = new CapturingAppender
     capturingAppender.appendToRootLogger()
-    try block finally capturingAppender.detachFromRootLogger()
+    try block
+    finally capturingAppender.detachFromRootLogger()
     capturingAppender.getEvents
   }
 
@@ -31,11 +32,12 @@ object CaptureLogEvents {
 
     def detachFromRootLogger(): Unit = rootLogger.detachAppender(this)
 
-    def clearEvents(): Unit = synchronized { events = Vector.empty }
+    def clearEvents(): Unit              = synchronized { events = Vector.empty }
     def getEvents: Vector[ILoggingEvent] = synchronized { events }
 
-    override def append(eventObject: ILoggingEvent): Unit = synchronized {
-      events :+= eventObject
-    }
+    override def append(eventObject: ILoggingEvent): Unit =
+      synchronized {
+        events :+= eventObject
+      }
   }
 }

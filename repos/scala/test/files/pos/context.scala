@@ -6,7 +6,7 @@ class Context {
     val context: Context.this.type = Context.this
   }
   object symbols extends symwrap.Symbols;
-  object types extends typewrap.Types;
+  object types   extends typewrap.Types;
 }
 
 abstract class SymbolWrapper {

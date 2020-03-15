@@ -5,7 +5,7 @@
 // This test encodes the status quo: no deprecation.
 object Test {
   def foo(): () => String = () => ""
-  val f: () => Any = foo
+  val f: () => Any        = foo
 
   def main(args: Array[String]): Unit = {
     println(f()) // <function0>

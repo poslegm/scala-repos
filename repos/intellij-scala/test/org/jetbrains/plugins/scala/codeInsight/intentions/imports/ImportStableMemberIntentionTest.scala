@@ -12,7 +12,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   override def familyName: String = ImportStableMemberIntention.familyName
 
   def testParameterizedDef() {
-    val text = """object A {
+    val text   = """object A {
         |  scala.Option.<caret>empty[Int]
         |}
       """.stripMargin
@@ -25,7 +25,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testVal() {
-    val text = """object A {
+    val text   = """object A {
         |  math.P<caret>i
         |}
       """.stripMargin
@@ -52,7 +52,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testObject() {
-    val text = """object A {
+    val text   = """object A {
         |  BigDecimal.<caret>RoundingMode
         |}
       """.stripMargin
@@ -65,7 +65,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testMultiple() {
-    val text = """object A {
+    val text   = """object A {
         |  math.<caret>Pi * math.Pi
         |}
       """.stripMargin
@@ -78,7 +78,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testAddToExistedImport() {
-    val text = """import scala.math.Pi
+    val text   = """import scala.math.Pi
         |
         |object A {
         |  math.<caret>E
@@ -93,7 +93,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testInfixExpr() {
-    val text = """object A {
+    val text   = """object A {
         |  math <caret>floor math.Pi
         |}
       """.stripMargin
@@ -106,7 +106,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testNesting() {
-    val text = """
+    val text   = """
         |object A {
         |  math <caret>floor math.floor(math Pi)
         |}
@@ -120,7 +120,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testPostfix() {
-    val text = """object A {
+    val text   = """object A {
         |  println(math <caret>Pi)
         |}
       """.stripMargin
@@ -133,7 +133,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testJavaStaticField() {
-    val text = """object A {
+    val text   = """object A {
         |  java.util.GregorianCalendar.<caret>BC
         |}
       """.stripMargin
@@ -146,7 +146,7 @@ class ImportStableMemberIntentionTest extends ScalaIntentionTestBase {
   }
 
   def testJavaStaticMethod() {
-    val text = """object A {
+    val text   = """object A {
         |  java.util.Arrays.<caret>fill(new Array[Int](1), 1)
         |}
       """.stripMargin

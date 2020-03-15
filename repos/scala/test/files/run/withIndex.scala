@@ -1,9 +1,9 @@
 object Test {
   def main(args: Array[String]) = {
-    val ary: Array[String] = Array("a", "b", "c")
-    val lst: List[String] = List("a", "b", "c")
+    val ary: Array[String]    = Array("a", "b", "c")
+    val lst: List[String]     = List("a", "b", "c")
     val itr: Iterator[String] = lst.iterator
-    val str: Stream[String] = lst.iterator.toStream
+    val str: Stream[String]   = lst.iterator.toStream
 
     Console.println(ary.zipWithIndex.toList)
     Console.println(lst.zipWithIndex.toList)
@@ -12,13 +12,13 @@ object Test {
     assert {
       ary.zipWithIndex match {
         case _: Array[Tuple2[_, _]] => true
-        case _ => false
+        case _                      => false
       }
     }
 
-    val emptyArray = new Array[String](0)
-    val emptyList: List[String] = Nil
-    val emptyIterator = emptyList.iterator
+    val emptyArray                  = new Array[String](0)
+    val emptyList: List[String]     = Nil
+    val emptyIterator               = emptyList.iterator
     val emptyStream: Stream[String] = Stream.empty
 
     Console.println(emptyArray.zipWithIndex.toList)

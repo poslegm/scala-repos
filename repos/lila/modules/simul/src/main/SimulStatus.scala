@@ -7,21 +7,19 @@ private[simul] sealed abstract class SimulStatus(val id: Int)
 
   def name = toString
 
-  def is(s: SimulStatus): Boolean = this == s
+  def is(s: SimulStatus): Boolean                     = this == s
   def is(f: SimulStatus.type => SimulStatus): Boolean = is(f(SimulStatus))
 }
 
 private[simul] object SimulStatus {
 
-  case object Created extends SimulStatus(10)
-  case object Started extends SimulStatus(20)
+  case object Created  extends SimulStatus(10)
+  case object Started  extends SimulStatus(20)
   case object Finished extends SimulStatus(30)
 
   val all = List(Created, Started, Finished)
 
-  val byId = all map { v =>
-    (v.id, v)
-  } toMap
+  val byId = all map { v => (v.id, v) } toMap
 
   def apply(id: Int): Option[SimulStatus] = byId get id
 }

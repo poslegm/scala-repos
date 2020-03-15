@@ -22,15 +22,15 @@ import io.AbstractFile
 class SymbolTableForUnitTesting extends SymbolTable {
   // Members declared in scala.reflect.api.Trees
   override def newStrictTreeCopier: TreeCopier = new StrictTreeCopier
-  override def newLazyTreeCopier: TreeCopier = new LazyTreeCopier
+  override def newLazyTreeCopier: TreeCopier   = new LazyTreeCopier
   trait TreeCopier extends InternalTreeCopierOps
   // these should be mocks
   class StrictTreeCopier extends super.StrictTreeCopier with TreeCopier
-  class LazyTreeCopier extends super.LazyTreeCopier with TreeCopier
+  class LazyTreeCopier   extends super.LazyTreeCopier with TreeCopier
 
   override def isCompilerUniverse: Boolean = true
 
-  def classPath = platform.classPath
+  def classPath                    = platform.classPath
   def flatClassPath: FlatClassPath = platform.flatClassPath
 
   object platform extends backend.Platform {
@@ -43,23 +43,26 @@ class SymbolTableForUnitTesting extends SymbolTable {
 
     lazy val classPath: ClassPath[AbstractFile] = {
       assert(
-          settings.YclasspathImpl.value == ClassPathRepresentationType.Recursive,
-          "It's not possible to use the recursive classpath representation, when it's not the chosen classpath scanning method")
+        settings.YclasspathImpl.value == ClassPathRepresentationType.Recursive,
+        "It's not possible to use the recursive classpath representation, when it's not the chosen classpath scanning method"
+      )
       new PathResolver(settings).result
     }
 
     private[nsc] lazy val flatClassPath: FlatClassPath = {
       assert(
-          settings.YclasspathImpl.value == ClassPathRepresentationType.Flat,
-          "It's not possible to use the flat classpath representation, when it's not the chosen classpath scanning method")
+        settings.YclasspathImpl.value == ClassPathRepresentationType.Flat,
+        "It's not possible to use the flat classpath representation, when it's not the chosen classpath scanning method"
+      )
       new FlatClassPathResolver(settings).result
     }
 
-    def isMaybeBoxed(sym: Symbol): Boolean = ???
+    def isMaybeBoxed(sym: Symbol): Boolean                         = ???
     def needCompile(bin: AbstractFile, src: AbstractFile): Boolean = ???
-    def externalEquals: Symbol = ???
+    def externalEquals: Symbol                                     = ???
     def updateClassPath(
-        subst: Map[ClassPath[AbstractFile], ClassPath[AbstractFile]]): Unit =
+        subst: Map[ClassPath[AbstractFile], ClassPath[AbstractFile]]
+    ): Unit =
       ???
   }
 
@@ -71,20 +74,24 @@ class SymbolTableForUnitTesting extends SymbolTable {
       sym.info.member(name)
     protected override def compileLate(srcfile: AbstractFile): Unit =
       sys.error(
-          s"We do not expect compileLate to be called in SymbolTableTest. The srcfile passed in is $srcfile")
+        s"We do not expect compileLate to be called in SymbolTableTest. The srcfile passed in is $srcfile"
+      )
   }
 
   class GlobalMirror extends Roots(NoSymbol) {
     val universe: SymbolTableForUnitTesting.this.type =
       SymbolTableForUnitTesting.this
 
-    def rootLoader: LazyType = settings.YclasspathImpl.value match {
-      case ClassPathRepresentationType.Flat =>
-        new loaders.PackageLoaderUsingFlatClassPath(
-            FlatClassPath.RootPackage, flatClassPath)
-      case ClassPathRepresentationType.Recursive =>
-        new loaders.PackageLoader(classPath)
-    }
+    def rootLoader: LazyType =
+      settings.YclasspathImpl.value match {
+        case ClassPathRepresentationType.Flat =>
+          new loaders.PackageLoaderUsingFlatClassPath(
+            FlatClassPath.RootPackage,
+            flatClassPath
+          )
+        case ClassPathRepresentationType.Recursive =>
+          new loaders.PackageLoader(classPath)
+      }
 
     override def toString = "compiler mirror"
   }
@@ -107,11 +114,16 @@ class SymbolTableForUnitTesting extends SymbolTable {
   def erasurePhase: scala.reflect.internal.Phase = SomePhase
 
   // Members declared in scala.reflect.internal.Reporting
-  def reporter = new scala.reflect.internal.ReporterImpl {
-    protected def info0(
-        pos: Position, msg: String, severity: Severity, force: Boolean): Unit =
-      println(msg)
-  }
+  def reporter =
+    new scala.reflect.internal.ReporterImpl {
+      protected def info0(
+          pos: Position,
+          msg: String,
+          severity: Severity,
+          force: Boolean
+      ): Unit =
+        println(msg)
+    }
 
   // minimal Run to get Reporting wired
   def currentRun = new RunReporting {}
@@ -122,16 +134,14 @@ class SymbolTableForUnitTesting extends SymbolTable {
   protected def PerRunReporting = new PerRunReporting
 
   // Members declared in scala.reflect.internal.SymbolTable
-  def currentRunId: Int = 1
-  def log(msg: => AnyRef): Unit = println(msg)
+  def currentRunId: Int                     = 1
+  def log(msg: => AnyRef): Unit             = println(msg)
   def mirrorThatLoaded(sym: Symbol): Mirror = rootMirror
-  val phases: Seq[Phase] = List(NoPhase, SomePhase)
+  val phases: Seq[Phase]                    = List(NoPhase, SomePhase)
   val phaseWithId: Array[Phase] = {
-    val maxId = phases.map(_.id).max
+    val maxId       = phases.map(_.id).max
     val phasesArray = Array.ofDim[Phase](maxId + 1)
-    phases foreach { phase =>
-      phasesArray(phase.id) = phase
-    }
+    phases foreach { phase => phasesArray(phase.id) = phase }
     phasesArray
   }
   lazy val treeInfo = new scala.reflect.internal.TreeInfo {

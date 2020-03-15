@@ -7,7 +7,7 @@ object Winners {
     if (n == 0) acc
     else facsucc(n - 1, n * acc)
 
-  @tailrec def loopsucc1(x: Int): Int = loopsucc1(x - 1)
+  @tailrec def loopsucc1(x: Int): Int    = loopsucc1(x - 1)
   @tailrec def loopsucc2[T](x: Int): Int = loopsucc2[T](x - 1)
 
   def ding() {
@@ -31,11 +31,12 @@ object Winners {
 
 class Winners {
   @tailrec private def succ1(x: Int): Int = succ1(x)
-  @tailrec final def succ2(x: Int): Int = succ2(x)
-  @tailrec final def succ3[T](in: List[T], acc: List[T]): List[T] = in match {
-    case Nil => Nil
-    case x :: xs => succ3(xs, x :: acc)
-  }
+  @tailrec final def succ2(x: Int): Int   = succ2(x)
+  @tailrec final def succ3[T](in: List[T], acc: List[T]): List[T] =
+    in match {
+      case Nil     => Nil
+      case x :: xs => succ3(xs, x :: acc)
+    }
 }
 
 object Failures {
@@ -50,10 +51,11 @@ class Failures {
   @tailrec def fail1(x: Int): Int = fail1(x)
 
   // a typical between-chair-and-keyboard error
-  @tailrec final def fail2[T](xs: List[T]): List[T] = xs match {
-    case Nil => Nil
-    case x :: xs => x :: fail2[T](xs)
-  }
+  @tailrec final def fail2[T](xs: List[T]): List[T] =
+    xs match {
+      case Nil     => Nil
+      case x :: xs => x :: fail2[T](xs)
+    }
 
   // unsafe
   @tailrec final def fail3[T](x: Int): Int = fail3(x - 1)

@@ -12,7 +12,12 @@ import akka.http.javadsl.model.{RemoteAddress, HttpMethod}
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives._
-import akka.http.impl.server.{UnmarshallerImpl, ExtractingStandaloneExtractionImpl, RequestContextImpl, StandaloneExtractionImpl}
+import akka.http.impl.server.{
+  UnmarshallerImpl,
+  ExtractingStandaloneExtractionImpl,
+  RequestContextImpl,
+  StandaloneExtractionImpl
+}
 import akka.http.scaladsl.util.FastFuture
 import akka.http.impl.util.JavaMapping.Implicits._
 
@@ -49,7 +54,8 @@ object RequestVals {
     new StandaloneExtractionImpl[RequestContext] {
       def directive: Directive1[RequestContext] =
         BasicDirectives.extractRequestContext.map(
-            RequestContextImpl(_): RequestContext)
+          RequestContextImpl(_): RequestContext
+        )
     }
 
   /**
@@ -97,7 +103,9 @@ object RequestVals {
   def clientIP(): RequestVal[RemoteAddress] =
     new StandaloneExtractionImpl[RemoteAddress] {
       def directive: Directive1[RemoteAddress] =
-        MiscDirectives.extractClientIP.map(x ⇒ x: RemoteAddress) // missing covariance of Directive
+        MiscDirectives.extractClientIP.map(x ⇒
+          x: RemoteAddress
+        ) // missing covariance of Directive
     }
 
   /**
@@ -106,7 +114,10 @@ object RequestVals {
     * exist the request is rejected.
     */
   def lookupInMap[T, U](
-      key: RequestVal[T], clazz: Class[U], map: ju.Map[T, U]): RequestVal[U] =
+      key: RequestVal[T],
+      clazz: Class[U],
+      map: ju.Map[T, U]
+  ): RequestVal[U] =
     new StandaloneExtractionImpl[U]()(ClassTag(clazz)) {
       import BasicDirectives._
       import RouteDirectives._
@@ -114,7 +125,7 @@ object RequestVals {
       def directive: Directive1[U] =
         extract(ctx ⇒ key.get(RequestContextImpl(ctx))).flatMap {
           case key if map.containsKey(key) ⇒ provide(map.get(key))
-          case _ ⇒ reject()
+          case _                           ⇒ reject()
         }
     }
 }

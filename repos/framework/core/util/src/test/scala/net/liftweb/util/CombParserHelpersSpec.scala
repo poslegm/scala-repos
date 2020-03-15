@@ -58,7 +58,7 @@ object CombParserHelpersSpec extends Specification with ScalaCheck {
       val whiteSpaceParse = (s: String) =>
         whiteSpace(s) must beLike {
           case Success(x, y) => x.toString must_== "()"
-      }
+        }
       forAll(whiteSpaceParse)
     }
     "provide an acceptCI parser to parse whatever string matching another string ignoring case" in {
@@ -67,8 +67,8 @@ object CombParserHelpersSpec extends Specification with ScalaCheck {
         (s: String, s2: String) =>
           acceptCI(s).apply(s2) match {
             case Success(x, y) => s2.toUpperCase must startWith(s.toUpperCase)
-            case _ => true
-        }
+            case _             => true
+          }
       forAll(ignoreCaseStringParse)
     }
 
@@ -76,17 +76,16 @@ object CombParserHelpersSpec extends Specification with ScalaCheck {
       val isDigit: String => Boolean = (s: String) =>
         digit(s) match {
           case Success(x, y) => s must beMatching("(?s)\\p{Nd}.*")
-          case _ => true
-      }
+          case _             => true
+        }
       forAll(isDigit)
     }
     "provide an aNumber parser - returning an Int if succeeding" in {
-      val number: String => Boolean = (s: String) =>
-        {
-          aNumber(s) match {
-            case Success(x, y) => s must beMatching("(?s)\\p{Nd}+.*")
-            case _ => true
-          }
+      val number: String => Boolean = (s: String) => {
+        aNumber(s) match {
+          case Success(x, y) => s must beMatching("(?s)\\p{Nd}+.*")
+          case _             => true
+        }
       }
       forAll(number)
     }
@@ -112,10 +111,11 @@ object CombParserHelpersSpec extends Specification with ScalaCheck {
     val parserB = elem("b", (c: Char) => c == 'b')
     val parserC = elem("c", (c: Char) => c == 'c')
     val parserD = elem("d", (c: Char) => c == 'd')
-    def shouldSucceed[T](r: ParseResult[T]) = r match {
-      case Success(x, y) => true
-      case _ => false
-    }
+    def shouldSucceed[T](r: ParseResult[T]) =
+      r match {
+        case Success(x, y) => true
+        case _             => false
+      }
     "provide a permute parser succeeding if any permutation of given parsers succeeds" in {
       def permuteParsers(s: String) =
         shouldSucceed(permute(parserA, parserB, parserC, parserD)(s))
@@ -129,17 +129,19 @@ object CombParserHelpersSpec extends Specification with ScalaCheck {
       implicit def pick3Letters = AbcdStringGen.pickN(3, List("a", "b", "c"))
 
       forAll { (s: String) =>
-        (!(new scala.collection.immutable.StringOps(s)).isEmpty) ==> permuteAllParsers(
-            s)
+        (!(new scala.collection.immutable.StringOps(
+          s
+        )).isEmpty) ==> permuteAllParsers(s)
       }
     }
     "provide a repNN parser succeeding if an input can be parsed n times with a parser" in {
       def repNNParser(s: String) = shouldSucceed(repNN(3, parserA)(s))
-      implicit def pick3Letters = AbcdStringGen.pickN(3, List("a", "a", "a"))
+      implicit def pick3Letters  = AbcdStringGen.pickN(3, List("a", "a", "a"))
 
       forAll { (s: String) =>
-        (!(new scala.collection.immutable.StringOps(s)).isEmpty) ==> repNNParser(
-            s)
+        (!(new scala.collection.immutable.StringOps(
+          s
+        )).isEmpty) ==> repNNParser(s)
       }
     }
   }
@@ -147,8 +149,9 @@ object CombParserHelpersSpec extends Specification with ScalaCheck {
 
 object AbcdStringGen {
   implicit def abcdString =
-    for (len <- choose(4, 4);
-    string <- pick(len, List("a", "b", "c", "d"))) yield string.mkString("")
+    for (len    <- choose(4, 4);
+         string <- pick(len, List("a", "b", "c", "d")))
+      yield string.mkString("")
 
   def pickN(n: Int, elems: List[String]) =
     Arbitrary { for (string <- pick(n, elems)) yield string.mkString("") }
@@ -157,12 +160,15 @@ object AbcdStringGen {
 object WhiteStringGen {
   def genWhite =
     for (len <- choose(1, 4);
-    string <- listOfN(len,
-                      frequency((1, Gen.const(" ")),
-                                (1, Gen.const("\t")),
-                                (1, Gen.const("\r")),
-                                (1, Gen.const("\n"))))) yield
-      string.mkString("")
+         string <- listOfN(
+                    len,
+                    frequency(
+                      (1, Gen.const(" ")),
+                      (1, Gen.const("\t")),
+                      (1, Gen.const("\r")),
+                      (1, Gen.const("\n"))
+                    )
+                  )) yield string.mkString("")
 
   implicit def genWhiteString: Arbitrary[String] =
     Arbitrary { genWhite }
@@ -173,10 +179,14 @@ object StringWithWhiteGen {
 
   def genStringWithWhite =
     for (len <- choose(1, 4);
-    string <- listOfN(len,
-                      frequency((1, Gen.const("a")),
-                                (2, Gen.const("b")),
-                                (1, genWhite)))) yield string.mkString("")
+         string <- listOfN(
+                    len,
+                    frequency(
+                      (1, Gen.const("a")),
+                      (2, Gen.const("b")),
+                      (1, genWhite)
+                    )
+                  )) yield string.mkString("")
 
   implicit def genString: Arbitrary[String] =
     Arbitrary { genStringWithWhite }

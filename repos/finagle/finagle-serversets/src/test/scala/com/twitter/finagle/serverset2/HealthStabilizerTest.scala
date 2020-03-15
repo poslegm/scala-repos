@@ -12,13 +12,13 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(classOf[JUnitRunner])
 class HealthStabilizerTest extends FunSuite with BeforeAndAfter {
 
-  val healthy = Var.value[ClientHealth](ClientHealth.Healthy)
+  val healthy   = Var.value[ClientHealth](ClientHealth.Healthy)
   val unhealthy = Var.value[ClientHealth](ClientHealth.Unhealthy)
 
-  val timer = new MockTimer
+  val timer      = new MockTimer
   val limboEpoch = Epoch(10.seconds)(timer)
-  var closeMe = Closable.nop
-  val stats = new InMemoryStatsReceiver()
+  var closeMe    = Closable.nop
+  val stats      = new InMemoryStatsReceiver()
 
   after {
     closeMe.close()
@@ -60,11 +60,12 @@ class HealthStabilizerTest extends FunSuite with BeforeAndAfter {
   }
 
   test(
-      "Stabilizer doesn't change from healthy to unhealthy until the epoch turns") {
+    "Stabilizer doesn't change from healthy to unhealthy until the epoch turns"
+  ) {
     Time.withCurrentTimeFrozen { tc =>
-      val underlying = Event[ClientHealth]()
+      val underlying    = Event[ClientHealth]()
       val underlyingVar = Var[ClientHealth](ClientHealth.Healthy, underlying)
-      val stabilized = stabilize(underlyingVar)
+      val stabilized    = stabilize(underlyingVar)
       assert(stabilized.get() == ClientHealth.Healthy)
 
       underlying.notify(ClientHealth.Unhealthy)
@@ -81,9 +82,9 @@ class HealthStabilizerTest extends FunSuite with BeforeAndAfter {
 
   test("Stabilizer resets from limbo to healthy") {
     Time.withCurrentTimeFrozen { tc =>
-      val underlying = Event[ClientHealth]()
+      val underlying    = Event[ClientHealth]()
       val underlyingVar = Var[ClientHealth](ClientHealth.Healthy, underlying)
-      val stabilized = stabilize(underlyingVar)
+      val stabilized    = stabilize(underlyingVar)
       assert(stabilized.get() == ClientHealth.Healthy)
 
       underlying.notify(ClientHealth.Unhealthy)

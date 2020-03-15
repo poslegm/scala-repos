@@ -14,10 +14,10 @@ trait Symbol extends Flags {
 }
 
 case object NoSymbol extends Symbol {
-  def name = "<no symbol>"
-  def parent = None
+  def name                = "<no symbol>"
+  def parent              = None
   def hasFlag(flag: Long) = false
-  def children = Nil
+  def children            = Nil
 }
 
 abstract class ScalaSigSymbol extends Symbol {
@@ -35,38 +35,43 @@ abstract class ScalaSigSymbol extends Symbol {
 }
 
 case class ExternalSymbol(
-    name: String, parent: Option[Symbol], entry: ScalaSig#Entry)
-    extends ScalaSigSymbol {
-  override def toString = path
+    name: String,
+    parent: Option[Symbol],
+    entry: ScalaSig#Entry
+) extends ScalaSigSymbol {
+  override def toString   = path
   def hasFlag(flag: Long) = false
 }
 
-case class SymbolInfo(name: String,
-                      owner: Symbol,
-                      flags: Int,
-                      privateWithin: Option[AnyRef],
-                      info: Int,
-                      entry: ScalaSig#Entry) {
-  def symbolString(any: AnyRef) = any match {
-    case sym: SymbolInfoSymbol => sym.index.toString
-    case other => other.toString
-  }
+case class SymbolInfo(
+    name: String,
+    owner: Symbol,
+    flags: Int,
+    privateWithin: Option[AnyRef],
+    info: Int,
+    entry: ScalaSig#Entry
+) {
+  def symbolString(any: AnyRef) =
+    any match {
+      case sym: SymbolInfoSymbol => sym.index.toString
+      case other                 => other.toString
+    }
 
   override def toString =
     name + ", owner=" + symbolString(owner) + ", flags=" + flags.toHexString +
-    ", info=" + info +
-    (privateWithin match {
-          case Some(any) => ", privateWithin=" + symbolString(any)
-          case None => " "
-        })
+      ", info=" + info +
+      (privateWithin match {
+        case Some(any) => ", privateWithin=" + symbolString(any)
+        case None      => " "
+      })
 }
 
 abstract class SymbolInfoSymbol extends ScalaSigSymbol {
   def symbolInfo: SymbolInfo
 
-  def entry = symbolInfo.entry
-  def name = symbolInfo.name
-  def parent = Some(symbolInfo.owner)
+  def entry               = symbolInfo.entry
+  def name                = symbolInfo.name
+  def parent              = Some(symbolInfo.owner)
   def hasFlag(flag: Long) = (symbolInfo.flags & flag) != 0L
 
   lazy val infoType = applyRule(parseEntry(typeEntry)(symbolInfo.info))

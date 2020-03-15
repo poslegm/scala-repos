@@ -12,9 +12,9 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 class AkkaSupportServlet extends ScalatraServlet with FutureSupport {
-  val system = ActorSystem()
+  val system                      = ActorSystem()
   protected implicit val executor = system.dispatcher
-  override def asyncTimeout = 2 seconds
+  override def asyncTimeout       = 2 seconds
 
   private val futureEC =
     ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1))
@@ -103,8 +103,8 @@ class AkkaSupportSpec extends MutableScalatraSpec {
 
      so 16 max and 6 min -> 10 worker threads
      */
-    val threadPool = new QueuedThreadPool(16, 6)
-    val server = new Server(threadPool)
+    val threadPool                 = new QueuedThreadPool(16, 6)
+    val server                     = new Server(threadPool)
     val connector: ServerConnector = new ServerConnector(server)
     connector.setPort(port)
     server.setConnectors(Array[Connector](connector))
@@ -168,7 +168,7 @@ class AkkaSupportSpec extends MutableScalatraSpec {
     "should not leak attributes between requests" in {
       implicit val multiClentEc =
         ExecutionContext.fromExecutor(Executors.newFixedThreadPool(50))
-      val ids = (1 to 50).map(_ => scala.util.Random.nextInt())
+      val ids           = (1 to 50).map(_ => scala.util.Random.nextInt())
       val serverBaseUrl = baseUrl
       val idsToResponseFs = ids.map { id =>
         val client = new HttpComponentsClient {
@@ -183,11 +183,11 @@ class AkkaSupportSpec extends MutableScalatraSpec {
         }(multiClentEc)
       }
       val fIdsToresponses = Future.sequence(idsToResponseFs)
-      val idsToResponses = Await.result(fIdsToresponses, 60.seconds)
+      val idsToResponses  = Await.result(fIdsToresponses, 60.seconds)
       foreachWhen(idsToResponses) {
         case (expected, actual) => {
-            expected must_== actual
-          }
+          expected must_== actual
+        }
       }
     }
   }

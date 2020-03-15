@@ -17,18 +17,20 @@ class MockHealth {
 }
 
 class Context {
-  val sourceGroup = Group.mutable(1 to 10: _*)
-  val healthStatus = new MockHealth
-  val grace = 150.milliseconds
-  val statsRecv = new InMemoryStatsReceiver
-  def limboSize: Int = statsRecv.gauges(Seq("testGroup", "limbo"))().toInt
+  val sourceGroup     = Group.mutable(1 to 10: _*)
+  val healthStatus    = new MockHealth
+  val grace           = 150.milliseconds
+  val statsRecv       = new InMemoryStatsReceiver
+  def limboSize: Int  = statsRecv.gauges(Seq("testGroup", "limbo"))().toInt
   def healthStat: Int = statsRecv.gauges(Seq("testGroup", "health"))().toInt
-  val timer = new MockTimer
-  val stableGroup = StabilizingGroup(sourceGroup,
-                                     healthStatus.pulse.recv,
-                                     grace,
-                                     statsRecv.scope("testGroup"),
-                                     timer)
+  val timer           = new MockTimer
+  val stableGroup = StabilizingGroup(
+    sourceGroup,
+    healthStatus.pulse.recv,
+    grace,
+    statsRecv.scope("testGroup"),
+    timer
+  )
 }
 
 @RunWith(classOf[JUnitRunner])

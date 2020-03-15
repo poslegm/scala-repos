@@ -5,11 +5,11 @@ class C {
   val f1 = 2
   var f2 = 3
 
-  def m1 = 4
-  def m2() = 5
-  def m3[T >: String <: Int]: T = ???
+  def m1                                              = 4
+  def m2()                                            = 5
+  def m3[T >: String <: Int]: T                       = ???
   def m4[A[_], B <: A[Int]](x: A[B])(implicit y: Int) = ???
-  def m5(x: => Int, y: Int*): String = ???
+  def m5(x: => Int, y: Int*): String                  = ???
 
   class C
   object M
@@ -37,12 +37,14 @@ object Test extends App {
   println(im.reflectClass(typeOf[C].member(TypeName("C")).asClass))
   println(im.reflectModule(typeOf[C].member(TermName("M")).asModule))
 
-  val c = cm.staticClass("C")
+  val c  = cm.staticClass("C")
   val cc = typeOf[C].member(TypeName("C")).asClass
   println(
-      cm.reflectClass(c)
-        .reflectConstructor(c.info.member(termNames.CONSTRUCTOR).asMethod))
+    cm.reflectClass(c)
+      .reflectConstructor(c.info.member(termNames.CONSTRUCTOR).asMethod)
+  )
   println(
-      im.reflectClass(cc)
-        .reflectConstructor(cc.info.member(termNames.CONSTRUCTOR).asMethod))
+    im.reflectClass(cc)
+      .reflectConstructor(cc.info.member(termNames.CONSTRUCTOR).asMethod)
+  )
 }

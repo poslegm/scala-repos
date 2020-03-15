@@ -21,10 +21,16 @@ import scala.collection.Seq
   * @author AlexanderPodkhalyuzin
   */
 trait ScTypeDefinition
-    extends ScTemplateDefinition with ScMember with NavigationItem
-    with PsiClass with ScTypeParametersOwner with Iconable
-    with ScDocCommentOwner with ScAnnotationsHolder with ScCommentOwner {
-  private var synthNavElement: Option[PsiElement] = None
+    extends ScTemplateDefinition
+    with ScMember
+    with NavigationItem
+    with PsiClass
+    with ScTypeParametersOwner
+    with Iconable
+    with ScDocCommentOwner
+    with ScAnnotationsHolder
+    with ScCommentOwner {
+  private var synthNavElement: Option[PsiElement]        = None
   var syntheticContainingClass: Option[ScTypeDefinition] = None
   def setSynthetic(navElement: PsiElement) {
     synthNavElement = Some(navElement)
@@ -39,7 +45,7 @@ trait ScTypeDefinition
 
   def getPath: String = {
     val qualName = qualifiedName
-    val index = qualName.lastIndexOf('.')
+    val index    = qualName.lastIndexOf('.')
     if (index < 0) "" else qualName.substring(0, index)
   }
 
@@ -66,14 +72,16 @@ trait ScTypeDefinition
     PsiClassImplUtil.isClassEquivalentTo(this, another)
   }
 
-  def allInnerTypeDefinitions: Seq[ScTypeDefinition] = members.collect {
-    case td: ScTypeDefinition => td
-  }
+  def allInnerTypeDefinitions: Seq[ScTypeDefinition] =
+    members.collect {
+      case td: ScTypeDefinition => td
+    }
 
   override def syntheticTypeDefinitionsImpl: Seq[ScTypeDefinition] =
     SyntheticMembersInjector.injectInners(this)
 
-  override protected def syntheticMethodsWithOverrideImpl: scala.Seq[PsiMethod] =
+  override protected def syntheticMethodsWithOverrideImpl
+      : scala.Seq[PsiMethod] =
     SyntheticMembersInjector.inject(this, withOverride = true)
 
   def fakeCompanionModule: Option[ScObject] = {
@@ -102,21 +110,24 @@ trait ScTypeDefinition
             if (typeParameters.isEmpty &&
                 clazz.constructor.get.effectiveParameterClauses.length == 1) {
               val typeElementText =
-                clazz.constructor.get.effectiveParameterClauses.map { clause =>
-                  clause.effectiveParameters
-                    .map(parameter =>
-                          {
-                        val parameterText = parameter.typeElement.fold(
-                            "_root_.scala.Nothing")(_.getText)
+                clazz.constructor.get.effectiveParameterClauses
+                  .map { clause =>
+                    clause.effectiveParameters
+                      .map(parameter => {
+                        val parameterText = parameter.typeElement
+                          .fold("_root_.scala.Nothing")(_.getText)
                         if (parameter.isRepeatedParameter)
                           s"_root_.scala.Seq[$parameterText]"
                         else parameterText
-                    })
-                    .mkString("(", ", ", ")")
-                }.mkString("(", " => ", s" => $name)")
+                      })
+                      .mkString("(", ", ", ")")
+                  }
+                  .mkString("(", " => ", s" => $name)")
               val typeElement =
                 ScalaPsiElementFactory.createTypeElementFromText(
-                    typeElementText, getManager)
+                  typeElementText,
+                  getManager
+                )
               s" extends ${typeElement.getText}"
             } else {
               ""
@@ -137,14 +148,19 @@ trait ScTypeDefinition
 
     val next = ScalaPsiUtil.getNextStubOrPsiElement(this)
     val obj: ScObject = ScalaPsiElementFactory.createObjectWithContext(
-        objText, getContext, if (next != null) next else this)
+      objText,
+      getContext,
+      if (next != null) next else this
+    )
     import org.jetbrains.plugins.scala.extensions._
     val objOption: Option[ScObject] = obj.toOption
     objOption.foreach { (obj: ScObject) =>
       obj.setSyntheticObject()
       obj.members.foreach {
         case s: ScFunctionDefinition =>
-          s.setSynthetic(this) // So we find the `apply` method in ScalaPsiUtil.syntheticParamForParam
+          s.setSynthetic(
+            this
+          ) // So we find the `apply` method in ScalaPsiUtil.syntheticParamForParam
           this match {
             case clazz: ScClass if clazz.isCase =>
               s.syntheticCaseClass = Some(clazz)

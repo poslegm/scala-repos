@@ -28,7 +28,9 @@ class NotSerializableExn(val notSer: NotSerializableClass)
     extends Throwable() {}
 
 class DistributedSuite
-    extends SparkFunSuite with Matchers with LocalSparkContext {
+    extends SparkFunSuite
+    with Matchers
+    with LocalSparkContext {
 
   val clusterUrl = "local-cluster[2,1,1024]"
 
@@ -38,7 +40,7 @@ class DistributedSuite
     // and the scheduler throws a SparkException.
 
     // numSlaves must be less than numPartitions
-    val numSlaves = 3
+    val numSlaves     = 3
     val numPartitions = 10
 
     sc = new SparkContext("local-cluster[%s,1,1024]".format(numSlaves), "test")
@@ -68,7 +70,7 @@ class DistributedSuite
 
   test("simple groupByKey") {
     sc = new SparkContext(clusterUrl, "test")
-    val pairs = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (2, 1)), 5)
+    val pairs  = sc.parallelize(Array((1, 1), (1, 2), (1, 3), (2, 1)), 5)
     val groups = pairs.groupByKey(5).collect()
     assert(groups.size === 2)
     val valuesFor1 = groups.find(_._1 == 1).get._2
@@ -99,7 +101,7 @@ class DistributedSuite
   test("broadcast variables") {
     sc = new SparkContext(clusterUrl, "test")
     val array = new Array[Int](100)
-    val bv = sc.broadcast(array)
+    val bv    = sc.broadcast(array)
     array(2) = 3 // Change the array -- this should not be seen on workers
     val rdd = sc.parallelize(1 to 10, 10)
     val sum = rdd.map(x => bv.value.sum).reduce(_ + _)
@@ -127,9 +129,7 @@ class DistributedSuite
     failAfter(Span(100000, Millis)) {
       val thrown = intercept[SparkException] {
         // One of the tasks always fails.
-        sc.parallelize(1 to 10, 2).foreach { x =>
-          if (x == 1) System.exit(42)
-        }
+        sc.parallelize(1 to 10, 2).foreach { x => if (x == 1) System.exit(42) }
       }
       assert(thrown.getClass === classOf[SparkException])
       assert(thrown.getMessage.contains("failed 4 times"))
@@ -200,12 +200,12 @@ class DistributedSuite
     // from those locations.
     val blockIds =
       data.partitions.indices.map(index => RDDBlockId(data.id, index)).toArray
-    val blockId = blockIds(0)
-    val blockManager = SparkEnv.get.blockManager
+    val blockId       = blockIds(0)
+    val blockManager  = SparkEnv.get.blockManager
     val blockTransfer = SparkEnv.get.blockTransferService
     blockManager.master.getLocations(blockId).foreach { cmId =>
-      val bytes = blockTransfer.fetchBlockSync(
-          cmId.host, cmId.port, cmId.executorId, blockId.toString)
+      val bytes = blockTransfer
+        .fetchBlockSync(cmId.host, cmId.port, cmId.executorId, blockId.toString)
       val deserialized = blockManager
         .dataDeserialize(blockId, bytes.nioByteBuffer())
         .asInstanceOf[Iterator[Int]]
@@ -227,12 +227,14 @@ class DistributedSuite
     // ensure only a subset of partitions were cached
     val rddBlocks =
       sc.env.blockManager.master.getMatchingBlockIds(_.isRDD, askSlaves = true)
-    assert(rddBlocks.size === 0,
-           s"expected no RDD blocks, found ${rddBlocks.size}")
+    assert(
+      rddBlocks.size === 0,
+      s"expected no RDD blocks, found ${rddBlocks.size}"
+    )
   }
 
   test("compute when only some partitions fit in memory") {
-    val size = 10000
+    val size          = 10000
     val numPartitions = 10
     val conf = new SparkConf()
       .set("spark.storage.unrollMemoryThreshold", "1024")
@@ -248,13 +250,20 @@ class DistributedSuite
     val rddBlocks =
       sc.env.blockManager.master.getMatchingBlockIds(_.isRDD, askSlaves = true)
     assert(rddBlocks.size > 0, "no RDD blocks found")
-    assert(rddBlocks.size < numPartitions,
-           s"too many RDD blocks found, expected <$numPartitions")
+    assert(
+      rddBlocks.size < numPartitions,
+      s"too many RDD blocks found, expected <$numPartitions"
+    )
   }
 
   test("passing environment variables to cluster") {
     sc = new SparkContext(
-        clusterUrl, "test", null, Nil, Map("TEST_VAR" -> "TEST_VALUE"))
+      clusterUrl,
+      "test",
+      null,
+      Nil,
+      Map("TEST_VAR" -> "TEST_VALUE")
+    )
     val values =
       sc.parallelize(1 to 2, 2).map(x => System.getenv("TEST_VAR")).collect()
     assert(values.toSeq === Seq("TEST_VALUE", "TEST_VALUE"))
@@ -279,7 +288,8 @@ class DistributedSuite
       assert(data.count === 2)
       assert(data.map(markNodeIfIdentity).collect.size === 2)
       assert(
-          data.map(failOnMarkedIdentity).map(x => x -> x).groupByKey.count === 2)
+        data.map(failOnMarkedIdentity).map(x => x -> x).groupByKey.count === 2
+      )
     }
   }
 
@@ -296,9 +306,9 @@ class DistributedSuite
       val grouped = data
         .map(x => x -> x)
         .combineByKey(
-            x => x,
-            (x: Boolean, y: Boolean) => x,
-            (x: Boolean, y: Boolean) => failOnMarkedIdentity(x)
+          x => x,
+          (x: Boolean, y: Boolean) => x,
+          (x: Boolean, y: Boolean) => failOnMarkedIdentity(x)
         )
       assert(grouped.collect.size === 1)
     }

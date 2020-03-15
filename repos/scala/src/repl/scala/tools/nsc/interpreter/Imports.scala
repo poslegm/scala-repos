@@ -18,8 +18,8 @@ trait Imports { self: IMain =>
   private def makeWildcardImportHandler(sym: Symbol): ImportHandler = {
     val hd :: tl = sym.fullName.split('.').toList map newTermName
     val tree = Import(
-        tl.foldLeft(Ident(hd): Tree)((x, y) => Select(x, y)),
-        ImportSelector.wildList
+      tl.foldLeft(Ident(hd): Tree)((x, y) => Select(x, y)),
+      ImportSelector.wildList
     )
     tree setSymbol sym
     new ImportHandler(tree)
@@ -48,10 +48,10 @@ trait Imports { self: IMain =>
     importHandlers filter (_.importsWildcard) map (_.targetType) distinct
   }
 
-  def languageSymbols = languageWildcardSyms flatMap membersAtPickler
+  def languageSymbols        = languageWildcardSyms flatMap membersAtPickler
   def sessionImportedSymbols = importHandlers flatMap (_.importedSymbols)
-  def importedSymbols = languageSymbols ++ sessionImportedSymbols
-  def importedTermSymbols = importedSymbols collect { case x: TermSymbol => x }
+  def importedSymbols        = languageSymbols ++ sessionImportedSymbols
+  def importedTermSymbols    = importedSymbols collect { case x: TermSymbol => x }
 
   /** Tuples of (source, imported symbols) in the order they were imported.
     */
@@ -97,14 +97,20 @@ trait Imports { self: IMain =>
     * last one imported is actually usable.
     */
   case class ComputedImports(
-      header: String, prepend: String, append: String, access: String)
+      header: String,
+      prepend: String,
+      append: String,
+      access: String
+  )
 
-  protected def importsCode(wanted: Set[Name],
-                            wrapper: Request#Wrapper,
-                            definesClass: Boolean,
-                            generousImports: Boolean): ComputedImports = {
+  protected def importsCode(
+      wanted: Set[Name],
+      wrapper: Request#Wrapper,
+      definesClass: Boolean,
+      generousImports: Boolean
+  ): ComputedImports = {
     val header, code, trailingBraces, accessPath = new StringBuilder
-    val currentImps = mutable.HashSet[Name]()
+    val currentImps                              = mutable.HashSet[Name]()
     var predefEscapes =
       false // only emit predef import header if name not resolved in history, loosely
 
@@ -119,23 +125,28 @@ trait Imports { self: IMain =>
       /** Loop through a list of MemberHandlers and select which ones to keep.
         *  'wanted' is the set of names that need to be imported.
         */
-      def select(reqs: List[ReqAndHandler],
-                 wanted: Set[Name]): List[ReqAndHandler] = {
+      def select(
+          reqs: List[ReqAndHandler],
+          wanted: Set[Name]
+      ): List[ReqAndHandler] = {
         // Single symbol imports might be implicits! See bug #1752.  Rather than
         // try to finesse this, we will mimic all imports for now.
-        def keepHandler(handler: MemberHandler) = handler match {
-          // While defining classes in class based mode - implicits are not needed.
-          case h: ImportHandler if isClassBased && definesClass =>
-            h.importedNames.exists(x => wanted.contains(x))
-          case _: ImportHandler => true
-          case x if generousImports =>
-            x.definesImplicit ||
-            (x.definedNames exists (d => wanted.exists(w => d.startsWith(w))))
-          case x => x.definesImplicit || (x.definedNames exists wanted)
-        }
+        def keepHandler(handler: MemberHandler) =
+          handler match {
+            // While defining classes in class based mode - implicits are not needed.
+            case h: ImportHandler if isClassBased && definesClass =>
+              h.importedNames.exists(x => wanted.contains(x))
+            case _: ImportHandler => true
+            case x if generousImports =>
+              x.definesImplicit ||
+                (x.definedNames exists (d =>
+                  wanted.exists(w => d.startsWith(w))
+                ))
+            case x => x.definesImplicit || (x.definedNames exists wanted)
+          }
 
         reqs match {
-          case Nil => predefEscapes = wanted contains PredefModule.name; Nil
+          case Nil                                    => predefEscapes = wanted contains PredefModule.name; Nil
           case rh :: rest if !keepHandler(rh.handler) => select(rest, wanted)
           case rh :: rest =>
             import rh.handler._
@@ -146,9 +157,12 @@ trait Imports { self: IMain =>
       }
 
       /** Flatten the handlers out and pair each with the original request */
-      select(allReqAndHandlers reverseMap {
-        case (r, h) => ReqAndHandler(r, h)
-      }, wanted).reverse
+      select(
+        allReqAndHandlers reverseMap {
+          case (r, h) => ReqAndHandler(r, h)
+        },
+        wanted
+      ).reverse
     }
 
     // add code for a new object to hold some imports
@@ -164,7 +178,8 @@ trait Imports { self: IMain =>
 
     def wrapBeforeAndAfter[T](op: => T): T = {
       addWrapper()
-      try op finally addWrapper()
+      try op
+      finally addWrapper()
     }
 
     // imports from Predef are relocated to the template header to allow hiding.
@@ -195,8 +210,10 @@ trait Imports { self: IMain =>
               if (!currentImps.contains(imv)) {
                 x match {
                   case _: ClassHandler =>
-                    code.append("import " + objName + req.accessPath + ".`" +
-                        imv + "`\n")
+                    code.append(
+                      "import " + objName + req.accessPath + ".`" +
+                        imv + "`\n"
+                    )
                   case _ =>
                     val valName =
                       req.lineRep.packageName + req.lineRep.readName
@@ -225,10 +242,12 @@ trait Imports { self: IMain =>
     }
 
     val computedHeader = if (predefEscapes) header.toString else ""
-    ComputedImports(computedHeader,
-                    code.toString,
-                    trailingBraces.toString,
-                    accessPath.toString)
+    ComputedImports(
+      computedHeader,
+      code.toString,
+      trailingBraces.toString,
+      accessPath.toString
+    )
   }
 
   private def allReqAndHandlers =

@@ -24,12 +24,12 @@ class AttributeSetSuite extends SparkFunSuite {
 
   val aUpper = AttributeReference("A", IntegerType)(exprId = ExprId(1))
   val aLower = AttributeReference("a", IntegerType)(exprId = ExprId(1))
-  val fakeA = AttributeReference("a", IntegerType)(exprId = ExprId(3))
-  val aSet = AttributeSet(aLower :: Nil)
+  val fakeA  = AttributeReference("a", IntegerType)(exprId = ExprId(3))
+  val aSet   = AttributeSet(aLower :: Nil)
 
   val bUpper = AttributeReference("B", IntegerType)(exprId = ExprId(2))
   val bLower = AttributeReference("b", IntegerType)(exprId = ExprId(2))
-  val bSet = AttributeSet(bUpper :: Nil)
+  val bSet   = AttributeSet(bUpper :: Nil)
 
   val aAndBSet = AttributeSet(aUpper :: bUpper :: Nil)
 

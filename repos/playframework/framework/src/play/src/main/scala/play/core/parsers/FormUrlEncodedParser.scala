@@ -16,7 +16,9 @@ object FormUrlEncodedParser {
     * @return A ListMap of keys to the sequence of values for that key
     */
   def parseNotPreservingOrder(
-      data: String, encoding: String = "utf-8"): Map[String, Seq[String]] = {
+      data: String,
+      encoding: String = "utf-8"
+  ): Map[String, Seq[String]] = {
     // Generate the pairs of values from the string.
     parseToPairs(data, encoding)
       .groupBy(_._1)
@@ -33,7 +35,9 @@ object FormUrlEncodedParser {
     * @return A ListMap of keys to the sequence of values for that key
     */
   def parse(
-      data: String, encoding: String = "utf-8"): Map[String, Seq[String]] = {
+      data: String,
+      encoding: String = "utf-8"
+  ): Map[String, Seq[String]] = {
 
     // Generate the pairs of values from the string.
     val pairs: Seq[(String, String)] = parseToPairs(data, encoding)
@@ -50,7 +54,8 @@ object FormUrlEncodedParser {
     */
   def parseAsJava(
       data: String,
-      encoding: String): java.util.Map[String, java.util.List[String]] = {
+      encoding: String
+  ): java.util.Map[String, java.util.List[String]] = {
     import scala.collection.JavaConverters._
     parse(data, encoding).map {
       case (key, values) =>
@@ -65,7 +70,9 @@ object FormUrlEncodedParser {
     * @return A Map of keys to the sequence of array values for that key
     */
   def parseAsJavaArrayValues(
-      data: String, encoding: String): java.util.Map[String, Array[String]] = {
+      data: String,
+      encoding: String
+  ): java.util.Map[String, Array[String]] = {
     import scala.collection.JavaConverters._
     parse(data, encoding).map {
       case (key, values) =>
@@ -82,10 +89,12 @@ object FormUrlEncodedParser {
     * @return The sequence of key/value pairs
     */
   private def parseToPairs(
-      data: String, encoding: String): Seq[(String, String)] = {
+      data: String,
+      encoding: String
+  ): Seq[(String, String)] = {
     parameterDelimiter.split(data).map { param =>
       val parts = param.split("=", -1)
-      val key = URLDecoder.decode(parts(0), encoding)
+      val key   = URLDecoder.decode(parts(0), encoding)
       val value = URLDecoder.decode(parts.lift(1).getOrElse(""), encoding)
       key -> value
     }

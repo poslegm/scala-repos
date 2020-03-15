@@ -36,7 +36,7 @@ class MapWrapperTest {
 
     assertEquals(0, scalaMap.containsCounter)
     assertTrue(javaMap.containsKey("hello")) // positive test
-    assertTrue(javaMap.containsKey(null)) // positive test, null key
+    assertTrue(javaMap.containsKey(null))    // positive test, null key
 
     assertFalse(javaMap.containsKey("goodbye")) // negative test
     // Note: this case does NOT make it to scalaMap's contains() method because the runtime

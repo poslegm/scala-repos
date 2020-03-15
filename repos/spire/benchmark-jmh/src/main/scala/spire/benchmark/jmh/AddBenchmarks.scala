@@ -13,28 +13,28 @@ import spire.math._
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 class AddBenchmarks {
 
-  def addGeneric[@sp(Int, Long, Float, Double) A : Ring](data: Array[A]): A = {
+  def addGeneric[@sp(Int, Long, Float, Double) A: Ring](data: Array[A]): A = {
     var total = Ring[A].zero
-    var i = 0
-    val len = data.length
+    var i     = 0
+    val len   = data.length
     while (i < len) { total = Ring[A].plus(total, data(i)); i += 1 }
     total
   }
 
   def addFastComplexes(data: Array[Long]): Long = {
-    var total = FastComplex(0.0F, 0.0F)
-    var i = 0
-    val len = data.length
+    var total = FastComplex(0.0f, 0.0f)
+    var i     = 0
+    val len   = data.length
     while (i < len) { total = FastComplex.add(total, data(i)); i += 1 }
     total
   }
 
   @Benchmark
   def addIntsDirect(state: IntState): Int = {
-    val data = state.values
+    val data  = state.values
     var total = 0
-    var i = 0
-    val len = data.length
+    var i     = 0
+    val len   = data.length
     while (i < len) { total += data(i); i += 1 }
     total
   }
@@ -44,10 +44,10 @@ class AddBenchmarks {
 
   @Benchmark
   def addLongsDirect(state: LongState): Long = {
-    val data = state.values
+    val data  = state.values
     var total = 0L
-    var i = 0
-    val len = data.length
+    var i     = 0
+    val len   = data.length
     while (i < len) { total += data(i); i += 1 }
     total
   }
@@ -57,10 +57,10 @@ class AddBenchmarks {
 
   @Benchmark
   def addFloatsDirect(state: FloatState): Float = {
-    val data = state.values
-    var total = 0.0F
-    var i = 0
-    val len = data.length
+    val data  = state.values
+    var total = 0.0f
+    var i     = 0
+    val len   = data.length
     while (i < len) { total += data(i); i += 1 }
     total
   }
@@ -70,10 +70,10 @@ class AddBenchmarks {
 
   @Benchmark
   def addDoublesDirect(state: DoubleState): Double = {
-    val data = state.values
+    val data  = state.values
     var total = 0.0
-    var i = 0
-    val len = data.length
+    var i     = 0
+    val len   = data.length
     while (i < len) { total += data(i); i += 1 }
     total
   }
@@ -83,10 +83,10 @@ class AddBenchmarks {
 
   @Benchmark
   def addComplexesDirect(state: ComplexState): Complex[Double] = {
-    val data = state.values
+    val data  = state.values
     var total = Complex.zero[Double]
-    var i = 0
-    val len = data.length
+    var i     = 0
+    val len   = data.length
     while (i < len) { total += data(i); i += 1 }
     total
   }
@@ -97,10 +97,10 @@ class AddBenchmarks {
 
   @Benchmark
   def addFastComplexes(state: FastComplexState): Long = {
-    val data = state.values
-    var total = FastComplex(0.0F, 0.0F)
-    var i = 0
-    val len = data.length
+    val data  = state.values
+    var total = FastComplex(0.0f, 0.0f)
+    var i     = 0
+    val len   = data.length
     while (i < len) { total = FastComplex.add(total, data(i)); i += 1 }
     total
   }

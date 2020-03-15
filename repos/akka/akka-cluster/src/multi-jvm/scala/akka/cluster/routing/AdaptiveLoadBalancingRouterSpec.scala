@@ -38,16 +38,21 @@ object AdaptiveLoadBalancingRouterMultiJvmSpec extends MultiNodeConfig {
       case AllocateMemory ⇒
         val heap = ManagementFactory.getMemoryMXBean.getHeapMemoryUsage
         // getMax can be undefined (-1)
-        val max = math.max(heap.getMax, heap.getCommitted)
+        val max  = math.max(heap.getMax, heap.getCommitted)
         val used = heap.getUsed
-        log.info(
-            "used heap before: [{}] bytes, of max [{}]", used, heap.getMax)
+        log.info("used heap before: [{}] bytes, of max [{}]", used, heap.getMax)
         // allocate 70% of free space
-        val allocateBytes = (0.7 * (max - used)).toInt
+        val allocateBytes  = (0.7 * (max - used)).toInt
         val numberOfArrays = allocateBytes / 1024
-        usedMemory = Array.ofDim(numberOfArrays, 248) // each 248 element Int array will use ~ 1 kB
-        log.info("used heap after: [{}] bytes",
-                 ManagementFactory.getMemoryMXBean.getHeapMemoryUsage.getUsed)
+        usedMemory =
+          Array.ofDim(
+            numberOfArrays,
+            248
+          ) // each 248 element Int array will use ~ 1 kB
+        log.info(
+          "used heap after: [{}] bytes",
+          ManagementFactory.getMemoryMXBean.getHeapMemoryUsage.getUsed
+        )
         sender() ! "done"
     }
   }
@@ -55,13 +60,15 @@ object AdaptiveLoadBalancingRouterMultiJvmSpec extends MultiNodeConfig {
   case object AllocateMemory
   final case class Reply(address: Address)
 
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory.parseString(
+          """
       akka.failure-detector.acceptable-heartbeat-pause = 10s
       akka.cluster.metrics.collect-interval = 1s
       akka.cluster.metrics.gossip-interval = 1s
@@ -82,8 +89,11 @@ object AdaptiveLoadBalancingRouterMultiJvmSpec extends MultiNodeConfig {
           }
         }
       }
-    """))
-        .withFallback(MultiNodeClusterSpec.clusterConfig))
+    """
+        )
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 }
 
 class TestCustomMetricsSelector(config: Config) extends MetricsSelector {
@@ -100,7 +110,9 @@ class AdaptiveLoadBalancingRouterMultiJvmNode3
 
 abstract class AdaptiveLoadBalancingRouterSpec
     extends MultiNodeSpec(AdaptiveLoadBalancingRouterMultiJvmSpec)
-    with MultiNodeClusterSpec with ImplicitSender with DefaultTimeout {
+    with MultiNodeClusterSpec
+    with ImplicitSender
+    with DefaultTimeout {
   import AdaptiveLoadBalancingRouterMultiJvmSpec._
 
   def currentRoutees(router: ActorRef) =
@@ -122,26 +134,31 @@ abstract class AdaptiveLoadBalancingRouterSpec
   /**
     * Fills in self address for local ActorRef
     */
-  def fullAddress(actorRef: ActorRef): Address = actorRef.path.address match {
-    case Address(_, _, None, None) ⇒ cluster.selfAddress
-    case a ⇒ a
-  }
+  def fullAddress(actorRef: ActorRef): Address =
+    actorRef.path.address match {
+      case Address(_, _, None, None) ⇒ cluster.selfAddress
+      case a                         ⇒ a
+    }
 
   def startRouter(name: String): ActorRef = {
     val router = system.actorOf(
-        ClusterRouterPool(
-            local = AdaptiveLoadBalancingPool(HeapMetricsSelector),
-            settings = ClusterRouterPoolSettings(totalInstances = 10,
-                                                 maxInstancesPerNode = 1,
-                                                 allowLocalRoutees = true,
-                                                 useRole = None))
-          .props(Props[Echo]),
-        name)
+      ClusterRouterPool(
+        local = AdaptiveLoadBalancingPool(HeapMetricsSelector),
+        settings = ClusterRouterPoolSettings(
+          totalInstances = 10,
+          maxInstancesPerNode = 1,
+          allowLocalRoutees = true,
+          useRole = None
+        )
+      ).props(Props[Echo]),
+      name
+    )
     // it may take some time until router receives cluster member events
     awaitAssert { currentRoutees(router).size should ===(roles.size) }
     val routees = currentRoutees(router)
-    routees.map { case ActorRefRoutee(ref) ⇒ fullAddress(ref) }.toSet should ===(
-        roles.map(address).toSet)
+    routees.map {
+      case ActorRefRoutee(ref) ⇒ fullAddress(ref)
+    }.toSet should ===(roles.map(address).toSet)
     router
   }
 
@@ -195,9 +212,7 @@ abstract class AdaptiveLoadBalancingRouterSpec
         Thread.sleep(cluster.settings.MetricsInterval.toMillis * 10)
 
         val iterationCount = 3000
-        1 to iterationCount foreach { _ ⇒
-          router2 ! "hit"
-        }
+        1 to iterationCount foreach { _ ⇒ router2 ! "hit" }
 
         val replies = receiveReplies(iterationCount)
 
@@ -215,8 +230,9 @@ abstract class AdaptiveLoadBalancingRouterSpec
         // it may take some time until router receives cluster member events
         awaitAssert { currentRoutees(router3).size should ===(9) }
         val routees = currentRoutees(router3)
-        routees.map { case ActorRefRoutee(ref) ⇒ fullAddress(ref) }.toSet should ===(
-            Set(address(first)))
+        routees.map {
+          case ActorRefRoutee(ref) ⇒ fullAddress(ref)
+        }.toSet should ===(Set(address(first)))
       }
       enterBarrier("after-4")
     }
@@ -228,8 +244,9 @@ abstract class AdaptiveLoadBalancingRouterSpec
         // it may take some time until router receives cluster member events
         awaitAssert { currentRoutees(router4).size should ===(6) }
         val routees = currentRoutees(router4)
-        routees.map { case ActorRefRoutee(ref) ⇒ fullAddress(ref) }.toSet should ===(
-            Set(address(first), address(second), address(third)))
+        routees.map {
+          case ActorRefRoutee(ref) ⇒ fullAddress(ref)
+        }.toSet should ===(Set(address(first), address(second), address(third)))
       }
       enterBarrier("after-5")
     }

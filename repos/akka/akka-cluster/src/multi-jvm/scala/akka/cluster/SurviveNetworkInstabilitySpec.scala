@@ -24,22 +24,25 @@ import akka.actor.PoisonPill
 import akka.actor.Terminated
 
 object SurviveNetworkInstabilityMultiJvmSpec extends MultiNodeConfig {
-  val first = role("first")
-  val second = role("second")
-  val third = role("third")
-  val fourth = role("fourth")
-  val fifth = role("fifth")
-  val sixth = role("sixth")
+  val first   = role("first")
+  val second  = role("second")
+  val third   = role("third")
+  val fourth  = role("fourth")
+  val fifth   = role("fifth")
+  val sixth   = role("sixth")
   val seventh = role("seventh")
-  val eighth = role("eighth")
+  val eighth  = role("eighth")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory.parseString("""
       akka.remote.system-message-buffer-size=100
       akka.remote.netty.tcp.connection-timeout = 10s
-      """))
-        .withFallback(MultiNodeClusterSpec.clusterConfig))
+      """)
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 
   testTransport(on = true)
 
@@ -66,7 +69,8 @@ object SurviveNetworkInstabilityMultiJvmSpec extends MultiNodeConfig {
   }
 
   class SimulatedException
-      extends RuntimeException("Simulated") with NoStackTrace
+      extends RuntimeException("Simulated")
+      with NoStackTrace
 }
 
 class SurviveNetworkInstabilityMultiJvmNode1
@@ -88,7 +92,8 @@ class SurviveNetworkInstabilityMultiJvmNode8
 
 abstract class SurviveNetworkInstabilitySpec
     extends MultiNodeSpec(SurviveNetworkInstabilityMultiJvmSpec)
-    with MultiNodeClusterSpec with ImplicitSender {
+    with MultiNodeClusterSpec
+    with ImplicitSender {
 
   import SurviveNetworkInstabilityMultiJvmSpec._
 
@@ -100,7 +105,8 @@ abstract class SurviveNetworkInstabilitySpec
   def assertUnreachable(subjects: RoleName*): Unit = {
     val expected = subjects.toSet map address
     awaitAssert(
-        clusterView.unreachableMembers.map(_.address) should ===(expected))
+      clusterView.unreachableMembers.map(_.address) should ===(expected)
+    )
   }
 
   system.actorOf(Props[Echo], "echo")
@@ -115,7 +121,7 @@ abstract class SurviveNetworkInstabilitySpec
       for (to ← alive) {
         val sel = system.actorSelection(node(to) / "user" / "echo")
         val msg = s"ping-$to"
-        val p = TestProbe()
+        val p   = TestProbe()
         awaitAssert {
           sel.tell(msg, p.ref)
           p.expectMsg(1.second, msg)
@@ -164,7 +170,8 @@ abstract class SurviveNetworkInstabilitySpec
     }
 
     "heal after one isolated node" taggedAs LongRunningTest in within(
-        45.seconds) {
+      45.seconds
+    ) {
       val others = Vector(second, third, fourth, fifth)
       runOn(first) {
         for (other ← others) {
@@ -219,9 +226,10 @@ abstract class SurviveNetworkInstabilitySpec
     }
 
     "heal after unreachable when ring is changed" taggedAs LongRunningTest in within(
-        60.seconds) {
+      60.seconds
+    ) {
       val joining = Vector(sixth, seventh)
-      val others = Vector(second, third, fourth, fifth)
+      val others  = Vector(second, third, fourth, fifth)
       runOn(first) {
         for (role1 ← (joining :+ first); role2 ← others) {
           testConductor.blackhole(role1, role2, Direction.Both).await
@@ -265,7 +273,8 @@ abstract class SurviveNetworkInstabilitySpec
     }
 
     "down and remove quarantined node" taggedAs LongRunningTest in within(
-        60.seconds) {
+      60.seconds
+    ) {
       val others = Vector(first, third, fourth, fifth, sixth, seventh)
 
       runOn(third) {
@@ -292,9 +301,10 @@ abstract class SurviveNetworkInstabilitySpec
       enterBarrier("targets-registered")
 
       runOn(first) {
-        for (role ← others) testConductor
-          .blackhole(role, second, Direction.Both)
-          .await
+        for (role ← others)
+          testConductor
+            .blackhole(role, second, Direction.Both)
+            .await
       }
       enterBarrier("blackhole-6")
 
@@ -311,8 +321,10 @@ abstract class SurviveNetworkInstabilitySpec
 
       runOn(others: _*) {
         // second should be removed because of quarantine
-        awaitAssert(clusterView.members.map(_.address) should not contain
-            (address(second)))
+        awaitAssert(
+          clusterView.members.map(_.address) should not contain
+            (address(second))
+        )
       }
 
       enterBarrier("after-6")
@@ -320,11 +332,12 @@ abstract class SurviveNetworkInstabilitySpec
     }
 
     "continue and move Joining to Up after downing of one half" taggedAs LongRunningTest in within(
-        60.seconds) {
+      60.seconds
+    ) {
       // note that second is already removed in previous step
-      val side1 = Vector(first, third, fourth)
+      val side1          = Vector(first, third, fourth)
       val side1AfterJoin = side1 :+ eighth
-      val side2 = Vector(fifth, sixth, seventh)
+      val side2          = Vector(fifth, sixth, seventh)
       runOn(first) {
         for (role1 ← side1AfterJoin; role2 ← side2) {
           testConductor.blackhole(role1, role2, Direction.Both).await

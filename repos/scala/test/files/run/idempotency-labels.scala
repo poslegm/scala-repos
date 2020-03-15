@@ -10,7 +10,7 @@ object Test extends App {
     x
   }
   println(label.eval)
-  val tb = cm.mkToolBox()
+  val tb     = cm.mkToolBox()
   val tlabel = tb.typecheck(label.tree)
   println(tlabel)
   val rtlabel = tb.untypecheck(tlabel)

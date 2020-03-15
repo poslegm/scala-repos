@@ -44,10 +44,12 @@ trait ActionResultTestBase { self: ScalatraBase =>
       if (params.getOrElse("lcase", "false") == "true") "content-type"
       else "Content-Type"
 
-    Ok("Hello, world!",
-       headers = Map(
-             headerName -> "application/vnd.ms-excel"
-         ))
+    Ok(
+      "Hello, world!",
+      headers = Map(
+        headerName -> "application/vnd.ms-excel"
+      )
+    )
   }
 
   get("/custom-reason") {
@@ -108,7 +110,7 @@ abstract class ActionResultsSpec extends MutableScalatraSpec {
     "infer contentType for Array[Byte]" in {
       get("/bytes") {
         response.getContentType mustEqual "text/plain; charset=" +
-        java.nio.charset.Charset.defaultCharset.displayName
+          java.nio.charset.Charset.defaultCharset.displayName
       }
     }
 
@@ -137,13 +139,17 @@ abstract class ActionResultsSpec extends MutableScalatraSpec {
 
     "set the Content-Type header if it exists in the headers map" in {
       get("/contentType") {
-        header("Content-Type") mustEqual "application/vnd.ms-excel; charset=UTF-8"
+        header(
+          "Content-Type"
+        ) mustEqual "application/vnd.ms-excel; charset=UTF-8"
       }
     }
 
     "set the Content-Type header if it's in lowercase in the headers map" in {
       get("/contentType?lcase=true") {
-        header("Content-Type") mustEqual "application/vnd.ms-excel; charset=UTF-8"
+        header(
+          "Content-Type"
+        ) mustEqual "application/vnd.ms-excel; charset=UTF-8"
       }
     }
   }

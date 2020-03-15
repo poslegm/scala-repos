@@ -9,13 +9,13 @@ import org.jetbrains.plugins.scala.codeInspection.InspectionBundle
   */
 class FindIsDefinedTest extends OperationsOnCollectionInspectionTest {
   override val inspectionClass = classOf[FindEmptyCheckInspection]
-  override val hint = InspectionBundle.message("find.isDefined.hint")
+  override val hint            = InspectionBundle.message("find.isDefined.hint")
 
   def testFindIsDefined() {
     val selected = s"""val valueIsGoodEnough: (Any) => Boolean = _ => true
                  |Nil$START.find(valueIsGoodEnough).isDefined$END""".stripMargin
     check(selected)
-    val text = """val valueIsGoodEnough: (Any) => Boolean = _ => true
+    val text   = """val valueIsGoodEnough: (Any) => Boolean = _ => true
                  |Nil.find(valueIsGoodEnough).isDefined""".stripMargin
     val result = """val valueIsGoodEnough: (Any) => Boolean = _ => true
                    |Nil.exists(valueIsGoodEnough)""".stripMargin
@@ -25,7 +25,7 @@ class FindIsDefinedTest extends OperationsOnCollectionInspectionTest {
   def testInfix() {
     val selected = s"(Nil$START find (_ => true)) isDefined$END"
     check(selected)
-    val text = "(Nil find (_ => true)) isDefined"
+    val text   = "(Nil find (_ => true)) isDefined"
     val result = "Nil exists (_ => true)"
     testFix(text, result, hint)
   }
@@ -33,7 +33,7 @@ class FindIsDefinedTest extends OperationsOnCollectionInspectionTest {
   def testNotEqNoneInfix() {
     val selected = s"(Nil$START find (_ => true)) != None$END"
     check(selected)
-    val text = "(Nil find (_ => true)) != None"
+    val text   = "(Nil find (_ => true)) != None"
     val result = "Nil exists (_ => true)"
     testFix(text, result, hint)
   }
@@ -41,7 +41,7 @@ class FindIsDefinedTest extends OperationsOnCollectionInspectionTest {
   def testNotEqNone() {
     val selected = s"Nil$START.find(_ => true) != None$END"
     check(selected)
-    val text = "Nil.find(_ => true) != None"
+    val text   = "Nil.find(_ => true) != None"
     val result = "Nil.exists(_ => true)"
     testFix(text, result, hint)
   }
@@ -49,12 +49,12 @@ class FindIsDefinedTest extends OperationsOnCollectionInspectionTest {
 
 class FindIsEmptyTest extends OperationsOnCollectionInspectionTest {
   override val inspectionClass = classOf[FindEmptyCheckInspection]
-  override val hint = InspectionBundle.message("find.isEmpty.hint")
+  override val hint            = InspectionBundle.message("find.isEmpty.hint")
 
   def testEqNone() {
     val selected = s"Nil$START.find(_ => true) == None$END"
     check(selected)
-    val text = "Nil.find(_ => true) == None"
+    val text   = "Nil.find(_ => true) == None"
     val result = "!Nil.exists(_ => true)"
     testFix(text, result, hint)
   }
@@ -62,7 +62,7 @@ class FindIsEmptyTest extends OperationsOnCollectionInspectionTest {
   def testIsEmpty() {
     val selected = s"Nil$START.find(_ => true).isEmpty$END"
     check(selected)
-    val text = "Nil.find(_ => true).isEmpty"
+    val text   = "Nil.find(_ => true).isEmpty"
     val result = "!Nil.exists(_ => true)"
     testFix(text, result, hint)
   }

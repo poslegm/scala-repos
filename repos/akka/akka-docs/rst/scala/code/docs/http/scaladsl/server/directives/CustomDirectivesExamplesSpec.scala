@@ -29,7 +29,9 @@ class CustomDirectivesExamplesSpec extends RoutingSpec {
     val lengthDirective: Directive1[Int] = textParam.map(text => text.length)
 
     // tests:
-    Get("/?text=abcdefg") ~> lengthDirective(x => complete(x.toString)) ~> check {
+    Get("/?text=abcdefg") ~> lengthDirective(x =>
+      complete(x.toString)
+    ) ~> check {
       responseAs[String] === "7"
     }
   }
@@ -53,7 +55,7 @@ class CustomDirectivesExamplesSpec extends RoutingSpec {
 
     val myDirective: Directive1[Int] = intParameter.flatMap {
       case a if a > 0 => provide(2 * a)
-      case _ => reject
+      case _          => reject
     }
 
     // tests:

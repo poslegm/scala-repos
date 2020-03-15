@@ -5,36 +5,39 @@ import slick.jdbc.H2Profile.api._
 import slick.jdbc.H2Profile
 
 object CodeGenerator extends App {
-  val profile = "slick.jdbc.H2Profile"
-  val jdbcDriver = "org.h2.Driver"
-  val url = "jdbc:postgresql://localhost/test"
+  val profile      = "slick.jdbc.H2Profile"
+  val jdbcDriver   = "org.h2.Driver"
+  val url          = "jdbc:postgresql://localhost/test"
   val outputFolder = ""
-  val pkg = "demo"
-  val user = ""
-  val password = ""
+  val pkg          = "demo"
+  val user         = ""
+  val password     = ""
   if (false) {
     val db = Database.forURL(
-        "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver")
+      "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1",
+      driver = "org.h2.Driver"
+    )
     //#default-runner
     slick.codegen.SourceCodeGenerator.main(
-        Array(profile, jdbcDriver, url, outputFolder, pkg)
+      Array(profile, jdbcDriver, url, outputFolder, pkg)
     )
     //#default-runner
     //#default-runner-with-auth
     slick.codegen.SourceCodeGenerator.main(
-        Array(profile, jdbcDriver, url, outputFolder, pkg, user, password)
+      Array(profile, jdbcDriver, url, outputFolder, pkg, user, password)
     )
     //#default-runner-with-auth
     //#customization
     import slick.codegen.SourceCodeGenerator
     // fetch data model
     val modelAction =
-      H2Profile.createModel(Some(H2Profile.defaultTables)) // you can filter specific tables here
+      H2Profile.createModel(
+        Some(H2Profile.defaultTables)
+      ) // you can filter specific tables here
     val modelFuture = db.run(modelAction)
     // customize code generator
-    val codegenFuture = modelFuture.map(
-        model =>
-          new SourceCodeGenerator(model) {
+    val codegenFuture = modelFuture.map(model =>
+      new SourceCodeGenerator(model) {
         // override mapped table and class name
         override def entityName =
           dbTableName => dbTableName.dropRight(1).toLowerCase.toCamelCase
@@ -46,30 +49,34 @@ object CodeGenerator extends App {
           "import foo.{MyCustomType,MyCustomTypeMapper}" + "\n" + super.code
 
         // override table generator
-        override def Table = new Table(_) {
-          // disable entity class generation and mapping
-          override def EntityType = new EntityType {
-            override def classEnabled = false
-          }
+        override def Table =
+          new Table(_) {
+            // disable entity class generation and mapping
+            override def EntityType =
+              new EntityType {
+                override def classEnabled = false
+              }
 
-          // override contained column generator
-          override def Column = new Column(_) {
-            // use the data model member of this column to change the Scala type,
-            // e.g. to a custom enum or anything else
-            override def rawType =
-              if (model.name == "SOME_SPECIAL_COLUMN_NAME") "MyCustomType"
-              else super.rawType
+            // override contained column generator
+            override def Column =
+              new Column(_) {
+                // use the data model member of this column to change the Scala type,
+                // e.g. to a custom enum or anything else
+                override def rawType =
+                  if (model.name == "SOME_SPECIAL_COLUMN_NAME") "MyCustomType"
+                  else super.rawType
+              }
           }
-        }
-    })
+      }
+    )
     codegenFuture.onSuccess {
       case codegen =>
         codegen.writeToFile(
-            "slick.jdbc.H2Profile",
-            "some/folder/",
-            "some.packag",
-            "Tables",
-            "Tables.scala"
+          "slick.jdbc.H2Profile",
+          "some/folder/",
+          "some.packag",
+          "Tables",
+          "Tables.scala"
         )
     }
     //#customization

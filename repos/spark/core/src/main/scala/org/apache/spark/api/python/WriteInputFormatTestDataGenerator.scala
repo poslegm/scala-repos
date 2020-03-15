@@ -79,7 +79,8 @@ private[python] class TestOutputKeyConverter extends Converter[Any, Any] {
 private[python] class TestOutputValueConverter extends Converter[Any, Any] {
   override def convert(obj: Any): DoubleWritable = {
     new DoubleWritable(
-        obj.asInstanceOf[java.util.Map[Double, _]].keySet().iterator().next())
+      obj.asInstanceOf[java.util.Map[Double, _]].keySet().iterator().next()
+    )
   }
 }
 
@@ -88,26 +89,28 @@ private[python] class DoubleArrayWritable
 
 private[python] class DoubleArrayToWritableConverter
     extends Converter[Any, Writable] {
-  override def convert(obj: Any): DoubleArrayWritable = obj match {
-    case arr
-        if arr.getClass.isArray &&
-        arr.getClass.getComponentType == classOf[Double] =>
-      val daw = new DoubleArrayWritable
-      daw.set(arr.asInstanceOf[Array[Double]].map(new DoubleWritable(_)))
-      daw
-    case other =>
-      throw new SparkException(s"Data of type $other is not supported")
-  }
+  override def convert(obj: Any): DoubleArrayWritable =
+    obj match {
+      case arr
+          if arr.getClass.isArray &&
+            arr.getClass.getComponentType == classOf[Double] =>
+        val daw = new DoubleArrayWritable
+        daw.set(arr.asInstanceOf[Array[Double]].map(new DoubleWritable(_)))
+        daw
+      case other =>
+        throw new SparkException(s"Data of type $other is not supported")
+    }
 }
 
 private[python] class WritableToDoubleArrayConverter
     extends Converter[Any, Array[Double]] {
-  override def convert(obj: Any): Array[Double] = obj match {
-    case daw: DoubleArrayWritable =>
-      daw.get().map(_.asInstanceOf[DoubleWritable].get())
-    case other =>
-      throw new SparkException(s"Data of type $other is not supported")
-  }
+  override def convert(obj: Any): Array[Double] =
+    obj match {
+      case daw: DoubleArrayWritable =>
+        daw.get().map(_.asInstanceOf[DoubleWritable].get())
+      case other =>
+        throw new SparkException(s"Data of type $other is not supported")
+    }
 }
 
 /**
@@ -118,30 +121,30 @@ object WriteInputFormatTestDataGenerator {
 
   def main(args: Array[String]) {
     val path = args(0)
-    val sc = new JavaSparkContext("local[4]", "test-writables")
+    val sc   = new JavaSparkContext("local[4]", "test-writables")
     generateData(path, sc)
   }
 
   def generateData(path: String, jsc: JavaSparkContext) {
     val sc = jsc.sc
 
-    val basePath = s"$path/sftestdata/"
-    val textPath = s"$basePath/sftext/"
-    val intPath = s"$basePath/sfint/"
+    val basePath   = s"$path/sftestdata/"
+    val textPath   = s"$basePath/sftext/"
+    val intPath    = s"$basePath/sfint/"
     val doublePath = s"$basePath/sfdouble/"
-    val arrPath = s"$basePath/sfarray/"
-    val mapPath = s"$basePath/sfmap/"
-    val classPath = s"$basePath/sfclass/"
-    val bytesPath = s"$basePath/sfbytes/"
-    val boolPath = s"$basePath/sfbool/"
-    val nullPath = s"$basePath/sfnull/"
+    val arrPath    = s"$basePath/sfarray/"
+    val mapPath    = s"$basePath/sfmap/"
+    val classPath  = s"$basePath/sfclass/"
+    val bytesPath  = s"$basePath/sfbytes/"
+    val boolPath   = s"$basePath/sfbool/"
+    val nullPath   = s"$basePath/sfnull/"
 
     /*
      * Create test data for IntWritable, DoubleWritable, Text, BytesWritable,
      * BooleanWritable and NullWritable
      */
-    val intKeys = Seq(
-        (1, "aa"), (2, "bb"), (2, "aa"), (3, "cc"), (2, "bb"), (1, "aa"))
+    val intKeys =
+      Seq((1, "aa"), (2, "bb"), (2, "aa"), (3, "cc"), (2, "bb"), (1, "aa"))
     sc.parallelize(intKeys).saveAsSequenceFile(intPath)
     sc.parallelize(intKeys.map { case (k, v) => (k.toDouble, v) })
       .saveAsSequenceFile(doublePath)
@@ -151,8 +154,8 @@ object WriteInputFormatTestDataGenerator {
         case (k, v) => (k, v.getBytes(StandardCharsets.UTF_8))
       })
       .saveAsSequenceFile(bytesPath)
-    val bools = Seq(
-        (1, true), (2, true), (2, false), (3, true), (2, false), (1, false))
+    val bools =
+      Seq((1, true), (2, true), (2, false), (3, true), (2, false), (1, false))
     sc.parallelize(bools).saveAsSequenceFile(boolPath)
     sc.parallelize(intKeys)
       .map {
@@ -163,9 +166,9 @@ object WriteInputFormatTestDataGenerator {
 
     // Create test data for ArrayWritable
     val data = Seq(
-        (1, Array()),
-        (2, Array(3.0, 4.0, 5.0)),
-        (3, Array(4.0, 5.0, 6.0))
+      (1, Array()),
+      (2, Array(3.0, 4.0, 5.0)),
+      (3, Array(4.0, 5.0, 6.0))
     )
     sc.parallelize(data, numSlices = 2)
       .map {
@@ -175,15 +178,17 @@ object WriteInputFormatTestDataGenerator {
           (new IntWritable(k), va)
       }
       .saveAsNewAPIHadoopFile[SequenceFileOutputFormat[
-              IntWritable, DoubleArrayWritable]](arrPath)
+        IntWritable,
+        DoubleArrayWritable
+      ]](arrPath)
 
     // Create test data for MapWritable, with keys DoubleWritable and values Text
     val mapData = Seq(
-        (1, Map()),
-        (2, Map(1.0 -> "cc")),
-        (3, Map(2.0 -> "dd")),
-        (2, Map(1.0 -> "aa")),
-        (1, Map(3.0 -> "bb"))
+      (1, Map()),
+      (2, Map(1.0 -> "cc")),
+      (3, Map(2.0 -> "dd")),
+      (2, Map(1.0 -> "aa")),
+      (1, Map(3.0 -> "bb"))
     )
     sc.parallelize(mapData, numSlices = 2)
       .map {
@@ -199,19 +204,20 @@ object WriteInputFormatTestDataGenerator {
 
     // Create test data for arbitrary custom writable TestWritable
     val testClass = Seq(
-        ("1", TestWritable("test1", 1, 1.0)),
-        ("2", TestWritable("test2", 2, 2.3)),
-        ("3", TestWritable("test3", 3, 3.1)),
-        ("5", TestWritable("test56", 5, 5.5)),
-        ("4", TestWritable("test4", 4, 4.2))
+      ("1", TestWritable("test1", 1, 1.0)),
+      ("2", TestWritable("test2", 2, 2.3)),
+      ("3", TestWritable("test3", 3, 3.1)),
+      ("5", TestWritable("test56", 5, 5.5)),
+      ("4", TestWritable("test4", 4, 4.2))
     )
     val rdd = sc.parallelize(testClass, numSlices = 2).map {
       case (k, v) => (new Text(k), v)
     }
     rdd.saveAsNewAPIHadoopFile(
-        classPath,
-        classOf[Text],
-        classOf[TestWritable],
-        classOf[SequenceFileOutputFormat[Text, TestWritable]])
+      classPath,
+      classOf[Text],
+      classOf[TestWritable],
+      classOf[SequenceFileOutputFormat[Text, TestWritable]]
+    )
   }
 }

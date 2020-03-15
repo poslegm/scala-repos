@@ -24,9 +24,9 @@ import common._
 
 // This object holds string constants in a central place
 private[liftweb] object VarConstants {
-  val varPrefix = "_lift_sv_"
+  val varPrefix    = "_lift_sv_"
   val initedSuffix = "_inited_?"
-  val lockSuffix = "_lock_dude"
+  val lockSuffix   = "_lock_dude"
 }
 
 trait HasCalcDefaultValue[T] {
@@ -52,16 +52,17 @@ trait MemoizeVar[K, V] {
     */
   def unapply(key: K): Option[V] = get(key)
 
-  def get(key: K): Box[V] = coreVar.doSync {
-    coreVar.is.get(key) match {
-      case Full(x) => x
-      case _ => {
+  def get(key: K): Box[V] =
+    coreVar.doSync {
+      coreVar.is.get(key) match {
+        case Full(x) => x
+        case _ => {
           val ret = defaultFunction(key)
           coreVar.is.update(key, ret)
           ret
         }
+      }
     }
-  }
 
   /**
     * Override this method if there's a default way of calculating
@@ -69,21 +70,23 @@ trait MemoizeVar[K, V] {
     */
   protected def defaultFunction(key: K): Box[V] = Empty
 
-  def get(key: K, dflt: => V): V = coreVar.doSync {
-    get(key) match {
-      case Full(v) => v
-      case _ =>
-        val ret = dflt
-        set(key, ret)
-        ret
+  def get(key: K, dflt: => V): V =
+    coreVar.doSync {
+      get(key) match {
+        case Full(v) => v
+        case _ =>
+          val ret = dflt
+          set(key, ret)
+          ret
+      }
     }
-  }
 
   protected def __nameSalt: String = ""
 
-  def set(key: K, value: V): Unit = coreVar.doSync {
-    coreVar.is.update(key, Full(value))
-  }
+  def set(key: K, value: V): Unit =
+    coreVar.doSync {
+      coreVar.is.update(key, Full(value))
+    }
 
   def update(key: K, value: V): Unit = set(key, value)
 }
@@ -98,7 +101,8 @@ abstract class AnyVar[T, MyType <: AnyVar[T, MyType]](dflt: => T)
   * Abstract a request or a session scoped variable.
   */
 trait AnyVarTrait[T, MyType <: AnyVarTrait[T, MyType]]
-    extends PSettableValueHolder[T] with HasCalcDefaultValue[T] {
+    extends PSettableValueHolder[T]
+    with HasCalcDefaultValue[T] {
   self: MyType =>
   protected lazy val name =
     VarConstants.varPrefix + getClass.getName + "_" + __nameSalt
@@ -173,28 +177,30 @@ trait AnyVarTrait[T, MyType <: AnyVarTrait[T, MyType]]
   /**
     * The current value of the variable
     */
-  def is: T = doSync {
-    findFunc(name) match {
-      case Full(v) => v
-      case _ =>
-        val ret = calcDefaultValue
-        testInitialized
-        settingDefault.doWith(true) {
-          apply(ret)
-        }
-        // Use findFunc so that we clear the "unread" flag
-        findFunc(name) match {
-          case Full(v) => v
-          case _ => ret
-        }
+  def is: T =
+    doSync {
+      findFunc(name) match {
+        case Full(v) => v
+        case _ =>
+          val ret = calcDefaultValue
+          testInitialized
+          settingDefault.doWith(true) {
+            apply(ret)
+          }
+          // Use findFunc so that we clear the "unread" flag
+          findFunc(name) match {
+            case Full(v) => v
+            case _       => ret
+          }
+      }
     }
-  }
 
-  private def testInitialized: Unit = doSync {
-    if (!wasInitialized(name, initedKey)) {
-      registerCleanupFunc(_onShutdown _)
+  private def testInitialized: Unit =
+    doSync {
+      if (!wasInitialized(name, initedKey)) {
+        registerCleanupFunc(_onShutdown _)
+      }
     }
-  }
 
   /**
     * Shadow of the 'is' method
@@ -214,12 +220,13 @@ trait AnyVarTrait[T, MyType <: AnyVarTrait[T, MyType]]
   /**
     * Set the Var if it has not been calculated
     */
-  def setIfUnset(value: => T): T = doSync {
-    if (!set_?) {
-      set(value)
+  def setIfUnset(value: => T): T =
+    doSync {
+      if (!set_?) {
+        set(value)
+      }
+      this.is
     }
-    this.is
-  }
 
   /**
     * Set the session variable
@@ -278,7 +285,7 @@ trait AnyVarTrait[T, MyType <: AnyVarTrait[T, MyType]]
     } finally {
       old match {
         case Full(t) => _setFunc(name, t)
-        case _ => _clearFunc(name)
+        case _       => _clearFunc(name)
       }
     }
   }

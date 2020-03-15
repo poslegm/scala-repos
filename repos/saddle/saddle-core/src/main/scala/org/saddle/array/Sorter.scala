@@ -38,7 +38,7 @@ trait Sorter[T] {
 object Sorter {
   object boolSorter extends Sorter[Boolean] {
     def argSorted(arr: Array[Boolean]) = VecBool.argSort(arr)
-    def sorted(arr: Array[Boolean]) = VecBool.sort(arr)
+    def sorted(arr: Array[Boolean])    = VecBool.sort(arr)
   }
 
   object byteSorter extends Sorter[Byte] {
@@ -129,8 +129,7 @@ object Sorter {
   object timeSorter extends Sorter[DateTime] {
     def argSorted(arr: Array[DateTime]) = {
       val res = range(0, arr.length)
-      LongArrays.radixSortIndirect(
-          res, ScalarTagTime.time2LongArray(arr), true)
+      LongArrays.radixSortIndirect(res, ScalarTagTime.time2LongArray(arr), true)
       res
     }
 
@@ -156,7 +155,7 @@ object Sorter {
 
   private def nanToNegInf(arr: Array[Double]): Array[Double] = {
     val tmp = arr.clone()
-    var i = 0
+    var i   = 0
     while (i < tmp.length) {
       val ti = tmp(i)
       if (ti != ti) tmp(i) = Double.NegativeInfinity
@@ -167,7 +166,7 @@ object Sorter {
 
   private def nanToNegInf(arr: Array[Float]): Array[Float] = {
     val tmp = arr.clone()
-    var i = 0
+    var i   = 0
     while (i < tmp.length) {
       val ti = tmp(i)
       if (ti != ti) tmp(i) = Float.NegativeInfinity
@@ -176,16 +175,17 @@ object Sorter {
     tmp
   }
 
-  def anySorter[T : ORD] = new Sorter[T] {
-    def argSorted(arr: Array[T]) = {
-      val res = range(0, arr.length)
-      val cmp = implicitly[ORD[T]]
-      res.sortWith((a, b) => cmp.compare(arr(a), arr(b)) < 0)
-    }
+  def anySorter[T: ORD] =
+    new Sorter[T] {
+      def argSorted(arr: Array[T]) = {
+        val res = range(0, arr.length)
+        val cmp = implicitly[ORD[T]]
+        res.sortWith((a, b) => cmp.compare(arr(a), arr(b)) < 0)
+      }
 
-    def sorted(arr: Array[T]) = {
-      val res = arr.clone()
-      res.sorted
+      def sorted(arr: Array[T]) = {
+        val res = arr.clone()
+        res.sorted
+      }
     }
-  }
 }

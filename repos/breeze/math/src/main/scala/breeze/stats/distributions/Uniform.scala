@@ -7,7 +7,9 @@ import breeze.numerics._
   * @author dlwh
   */
 case class Uniform(low: Double, high: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   require(low <= high, "low <= high")
   def draw() = rand.uniform.get * (high - low) + low
@@ -20,9 +22,9 @@ case class Uniform(low: Double, high: Double)(implicit rand: RandBasis = Rand)
 
   def mode = mean
 
-  def mean = (low + high) / 2
+  def mean     = (low + high) / 2
   def variance = math.pow(high - low, 2) / 12
-  def entropy = math.log(high - low)
+  def entropy  = math.log(high - low)
 
   def cdf(x: Double) = {
     if (x <= low) 0.0

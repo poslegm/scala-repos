@@ -29,25 +29,25 @@ class CodegenExpressionCachingSuite extends SparkFunSuite {
 
   test("GenerateUnsafeProjection should initialize expressions") {
     // Use an Add to wrap two of them together in case we only initialize the top level expressions.
-    val expr = And(NondeterministicExpression(), NondeterministicExpression())
+    val expr     = And(NondeterministicExpression(), NondeterministicExpression())
     val instance = UnsafeProjection.create(Seq(expr))
     assert(instance.apply(null).getBoolean(0) === false)
   }
 
   test("GenerateMutableProjection should initialize expressions") {
-    val expr = And(NondeterministicExpression(), NondeterministicExpression())
+    val expr     = And(NondeterministicExpression(), NondeterministicExpression())
     val instance = GenerateMutableProjection.generate(Seq(expr))()
     assert(instance.apply(null).getBoolean(0) === false)
   }
 
   test("GeneratePredicate should initialize expressions") {
-    val expr = And(NondeterministicExpression(), NondeterministicExpression())
+    val expr     = And(NondeterministicExpression(), NondeterministicExpression())
     val instance = GeneratePredicate.generate(expr)
     assert(instance.apply(null) === false)
   }
 
   test("GenerateUnsafeProjection should not share expression instances") {
-    val expr1 = MutableExpression()
+    val expr1     = MutableExpression()
     val instance1 = UnsafeProjection.create(Seq(expr1))
     assert(instance1.apply(null).getBoolean(0) === false)
 
@@ -59,7 +59,7 @@ class CodegenExpressionCachingSuite extends SparkFunSuite {
   }
 
   test("GenerateMutableProjection should not share expression instances") {
-    val expr1 = MutableExpression()
+    val expr1     = MutableExpression()
     val instance1 = GenerateMutableProjection.generate(Seq(expr1))()
     assert(instance1.apply(null).getBoolean(0) === false)
 
@@ -71,7 +71,7 @@ class CodegenExpressionCachingSuite extends SparkFunSuite {
   }
 
   test("GeneratePredicate should not share expression instances") {
-    val expr1 = MutableExpression()
+    val expr1     = MutableExpression()
     val instance1 = GeneratePredicate.generate(expr1)
     assert(instance1.apply(null) === false)
 
@@ -87,20 +87,22 @@ class CodegenExpressionCachingSuite extends SparkFunSuite {
   * An expression that's non-deterministic and doesn't support codegen.
   */
 case class NondeterministicExpression()
-    extends LeafExpression with Nondeterministic with CodegenFallback {
-  override protected def initInternal(): Unit = {}
+    extends LeafExpression
+    with Nondeterministic
+    with CodegenFallback {
+  override protected def initInternal(): Unit                  = {}
   override protected def evalInternal(input: InternalRow): Any = false
-  override def nullable: Boolean = false
-  override def dataType: DataType = BooleanType
+  override def nullable: Boolean                               = false
+  override def dataType: DataType                              = BooleanType
 }
 
 /**
   * An expression with mutable state so we can change it freely in our test suite.
   */
 case class MutableExpression() extends LeafExpression with CodegenFallback {
-  var mutableState: Boolean = false
+  var mutableState: Boolean                  = false
   override def eval(input: InternalRow): Any = mutableState
 
-  override def nullable: Boolean = false
+  override def nullable: Boolean  = false
   override def dataType: DataType = BooleanType
 }

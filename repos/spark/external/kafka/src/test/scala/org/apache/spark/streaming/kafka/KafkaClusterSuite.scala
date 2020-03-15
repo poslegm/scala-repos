@@ -25,9 +25,9 @@ import org.scalatest.BeforeAndAfterAll
 import org.apache.spark.SparkFunSuite
 
 class KafkaClusterSuite extends SparkFunSuite with BeforeAndAfterAll {
-  private val topic = "kcsuitetopic" + Random.nextInt(10000)
+  private val topic             = "kcsuitetopic" + Random.nextInt(10000)
   private val topicAndPartition = TopicAndPartition(topic, 0)
-  private var kc: KafkaCluster = null
+  private var kc: KafkaCluster  = null
 
   private var kafkaTestUtils: KafkaTestUtils = _
 
@@ -38,7 +38,8 @@ class KafkaClusterSuite extends SparkFunSuite with BeforeAndAfterAll {
     kafkaTestUtils.createTopic(topic)
     kafkaTestUtils.sendMessages(topic, Map("a" -> 1))
     kc = new KafkaCluster(
-        Map("metadata.broker.list" -> kafkaTestUtils.brokerAddress))
+      Map("metadata.broker.list" -> kafkaTestUtils.brokerAddress)
+    )
   }
 
   override def afterAll() {
@@ -59,7 +60,9 @@ class KafkaClusterSuite extends SparkFunSuite with BeforeAndAfterAll {
 
     val err = kc.getPartitions(Set(topic + "BAD"))
     assert(
-        err.isLeft, "getPartitions for a nonexistant topic should be an error")
+      err.isLeft,
+      "getPartitions for a nonexistant topic should be an error"
+    )
   }
 
   test("leader offset apis") {

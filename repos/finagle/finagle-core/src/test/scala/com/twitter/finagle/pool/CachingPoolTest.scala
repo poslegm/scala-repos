@@ -12,10 +12,12 @@ import org.scalatest.{FunSuite, OneInstancePerTest}
 
 @RunWith(classOf[JUnitRunner])
 class CachingPoolTest
-    extends FunSuite with MockitoSugar with OneInstancePerTest {
+    extends FunSuite
+    with MockitoSugar
+    with OneInstancePerTest {
 
-  val timer = new MockTimer
-  val obj = mock[Object]
+  val timer      = new MockTimer
+  val obj        = mock[Object]
   val underlying = mock[ServiceFactory[Any, Any]]
   when(underlying.close(any[Time])).thenReturn(Future.Done)
   val underlyingService = mock[Service[Any, Any]]
@@ -141,9 +143,7 @@ class CachingPoolTest
 
       verify(underlying, times(3))()
 
-      ss foreach { s =>
-        when(s.status).thenReturn(Status.Open)
-      }
+      ss foreach { s => when(s.status).thenReturn(Status.Open) }
 
       fs foreach { f =>
         timeControl.advance(5.second)
@@ -151,9 +151,7 @@ class CachingPoolTest
       }
 
       assert(timer.tasks.size == 1)
-      ss foreach { s =>
-        verify(s, never()).close(any[Time])
-      }
+      ss foreach { s => verify(s, never()).close(any[Time]) }
 
       timer.tick()
 

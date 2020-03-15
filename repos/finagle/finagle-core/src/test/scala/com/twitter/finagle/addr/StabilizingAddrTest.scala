@@ -17,21 +17,21 @@ class MockHealth {
 }
 
 class Context {
-  val s1 = Address(1)
-  val s2 = Address(2)
-  val s3 = Address(3)
-  val s4 = Address(4)
-  val s5 = Address(5)
-  val s6 = Address(6)
-  val s7 = Address(7)
-  val s8 = Address(8)
-  val s9 = Address(9)
-  val s10 = Address(10)
+  val s1       = Address(1)
+  val s2       = Address(2)
+  val s3       = Address(3)
+  val s4       = Address(4)
+  val s5       = Address(5)
+  val s6       = Address(6)
+  val s7       = Address(7)
+  val s8       = Address(8)
+  val s9       = Address(9)
+  val s10      = Address(10)
   val allAddrs = Set(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10)
 
   object addrs {
-    val broker = new Broker[Addr]
-    val offer = broker.recv
+    val broker        = new Broker[Addr]
+    val offer         = broker.recv
     @volatile var set = Set.empty[Address]
 
     def apply() = set
@@ -41,18 +41,20 @@ class Context {
     }
   }
 
-  val healthStatus = new MockHealth
-  val grace = 150.milliseconds
-  val statsRecv = new InMemoryStatsReceiver
-  def limboSize: Int = statsRecv.gauges(Seq("testGroup", "limbo"))().toInt
+  val healthStatus    = new MockHealth
+  val grace           = 150.milliseconds
+  val statsRecv       = new InMemoryStatsReceiver
+  def limboSize: Int  = statsRecv.gauges(Seq("testGroup", "limbo"))().toInt
   def healthStat: Int = statsRecv.gauges(Seq("testGroup", "health"))().toInt
-  val timer = new MockTimer
+  val timer           = new MockTimer
 
-  val stabilizedAddr = StabilizingAddr(addrs.offer,
-                                       healthStatus.pulse.recv,
-                                       grace,
-                                       statsRecv.scope("testGroup"),
-                                       timer)
+  val stabilizedAddr = StabilizingAddr(
+    addrs.offer,
+    healthStatus.pulse.recv,
+    grace,
+    statsRecv.scope("testGroup"),
+    timer
+  )
 
   @volatile var stabilized: Addr = Addr.Pending
   for (addr <- stabilizedAddr) stabilized = addr

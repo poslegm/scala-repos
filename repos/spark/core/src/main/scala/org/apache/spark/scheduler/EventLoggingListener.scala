@@ -46,24 +46,30 @@ import org.apache.spark.util.{JsonProtocol, Utils}
   *   spark.eventLog.dir - Path to the directory in which events are logged.
   *   spark.eventLog.buffer.kb - Buffer size to use when writing to output streams
   */
-private[spark] class EventLoggingListener(appId: String,
-                                          appAttemptId: Option[String],
-                                          logBaseDir: URI,
-                                          sparkConf: SparkConf,
-                                          hadoopConf: Configuration)
-    extends SparkListener with Logging {
+private[spark] class EventLoggingListener(
+    appId: String,
+    appAttemptId: Option[String],
+    logBaseDir: URI,
+    sparkConf: SparkConf,
+    hadoopConf: Configuration
+) extends SparkListener
+    with Logging {
 
   import EventLoggingListener._
 
-  def this(appId: String,
-           appAttemptId: Option[String],
-           logBaseDir: URI,
-           sparkConf: SparkConf) =
-    this(appId,
-         appAttemptId,
-         logBaseDir,
-         sparkConf,
-         SparkHadoopUtil.get.newConfiguration(sparkConf))
+  def this(
+      appId: String,
+      appAttemptId: Option[String],
+      logBaseDir: URI,
+      sparkConf: SparkConf
+  ) =
+    this(
+      appId,
+      appAttemptId,
+      logBaseDir,
+      sparkConf,
+      SparkHadoopUtil.get.newConfiguration(sparkConf)
+    )
 
   private val shouldCompress =
     sparkConf.getBoolean("spark.eventLog.compress", false)
@@ -92,8 +98,8 @@ private[spark] class EventLoggingListener(appId: String,
   private[scheduler] val loggedEvents = new ArrayBuffer[JValue]
 
   // Visible for tests only.
-  private[scheduler] val logPath = getLogPath(
-      logBaseDir, appId, appAttemptId, compressionCodecName)
+  private[scheduler] val logPath =
+    getLogPath(logBaseDir, appId, appAttemptId, compressionCodecName)
 
   /**
     * Creates the log file in the configured log directory.
@@ -101,13 +107,14 @@ private[spark] class EventLoggingListener(appId: String,
   def start() {
     if (!fileSystem.getFileStatus(new Path(logBaseDir)).isDirectory) {
       throw new IllegalArgumentException(
-          s"Log directory $logBaseDir does not exist.")
+        s"Log directory $logBaseDir does not exist."
+      )
     }
 
-    val workingPath = logPath + IN_PROGRESS
-    val uri = new URI(workingPath)
-    val path = new Path(workingPath)
-    val defaultFs = FileSystem.getDefaultUri(hadoopConf).getScheme
+    val workingPath    = logPath + IN_PROGRESS
+    val uri            = new URI(workingPath)
+    val path           = new Path(workingPath)
+    val defaultFs      = FileSystem.getDefaultUri(hadoopConf).getScheme
     val isDefaultLocal = defaultFs == null || defaultFs == "file"
 
     if (shouldOverwrite && fileSystem.exists(path)) {
@@ -147,7 +154,9 @@ private[spark] class EventLoggingListener(appId: String,
 
   /** Log the event as JSON. */
   private def logEvent(
-      event: SparkListenerEvent, flushLogger: Boolean = false) {
+      event: SparkListenerEvent,
+      flushLogger: Boolean = false
+  ) {
     val eventJson = JsonProtocol.sparkEventToJson(event)
     // scalastyle:off println
     writer.foreach(_.println(compact(render(eventJson))))
@@ -169,12 +178,14 @@ private[spark] class EventLoggingListener(appId: String,
     logEvent(event)
 
   override def onTaskGettingResult(
-      event: SparkListenerTaskGettingResult): Unit = logEvent(event)
+      event: SparkListenerTaskGettingResult
+  ): Unit = logEvent(event)
 
   override def onTaskEnd(event: SparkListenerTaskEnd): Unit = logEvent(event)
 
   override def onEnvironmentUpdate(
-      event: SparkListenerEnvironmentUpdate): Unit = logEvent(event)
+      event: SparkListenerEnvironmentUpdate
+  ): Unit = logEvent(event)
 
   // Events that trigger a flush
   override def onStageCompleted(event: SparkListenerStageCompleted): Unit = {
@@ -188,12 +199,14 @@ private[spark] class EventLoggingListener(appId: String,
     logEvent(event, flushLogger = true)
 
   override def onBlockManagerAdded(
-      event: SparkListenerBlockManagerAdded): Unit = {
+      event: SparkListenerBlockManagerAdded
+  ): Unit = {
     logEvent(event, flushLogger = true)
   }
 
   override def onBlockManagerRemoved(
-      event: SparkListenerBlockManagerRemoved): Unit = {
+      event: SparkListenerBlockManagerRemoved
+  ): Unit = {
     logEvent(event, flushLogger = true)
   }
 
@@ -201,7 +214,9 @@ private[spark] class EventLoggingListener(appId: String,
     logEvent(event, flushLogger = true)
   }
 
-  override def onApplicationStart(event: SparkListenerApplicationStart): Unit = {
+  override def onApplicationStart(
+      event: SparkListenerApplicationStart
+  ): Unit = {
     logEvent(event, flushLogger = true)
   }
 
@@ -221,7 +236,8 @@ private[spark] class EventLoggingListener(appId: String,
 
   // No-op because logging every update would be overkill
   override def onExecutorMetricsUpdate(
-      event: SparkListenerExecutorMetricsUpdate): Unit = {}
+      event: SparkListenerExecutorMetricsUpdate
+  ): Unit = {}
 
   override def onOtherEvent(event: SparkListenerEvent): Unit = {
     if (event.logEvent) {
@@ -245,7 +261,8 @@ private[spark] class EventLoggingListener(appId: String,
         }
       } else {
         throw new IOException(
-            "Target log file already exists (%s)".format(logPath))
+          "Target log file already exists (%s)".format(logPath)
+        )
       }
     }
     fileSystem.rename(new Path(logPath + IN_PROGRESS), target)
@@ -261,11 +278,12 @@ private[spark] class EventLoggingListener(appId: String,
 
 private[spark] object EventLoggingListener extends Logging {
   // Suffix applied to the names of files still being written by applications.
-  val IN_PROGRESS = ".inprogress"
+  val IN_PROGRESS     = ".inprogress"
   val DEFAULT_LOG_DIR = "/tmp/spark-events"
 
   private val LOG_FILE_PERMISSIONS = new FsPermission(
-      Integer.parseInt("770", 8).toShort)
+    Integer.parseInt("770", 8).toShort
+  )
 
   // A cache for compression codecs to avoid creating the same codec many times
   private val codecMap = new mutable.HashMap[String, CompressionCodec]
@@ -277,7 +295,7 @@ private[spark] object EventLoggingListener extends Logging {
     * @param logStream Raw output stream to the event log file.
     */
   def initEventLog(logStream: OutputStream): Unit = {
-    val metadata = SparkListenerLogStart(SPARK_VERSION)
+    val metadata     = SparkListenerLogStart(SPARK_VERSION)
     val metadataJson = compact(JsonProtocol.logStartToJson(metadata)) + "\n"
     logStream.write(metadataJson.getBytes(StandardCharsets.UTF_8))
   }
@@ -301,11 +319,13 @@ private[spark] object EventLoggingListener extends Logging {
     *                             of the log, or None if compression is not enabled.
     * @return A path which consists of file-system-safe characters.
     */
-  def getLogPath(logBaseDir: URI,
-                 appId: String,
-                 appAttemptId: Option[String],
-                 compressionCodecName: Option[String] = None): String = {
-    val base = logBaseDir.toString.stripSuffix("/") + "/" + sanitize(appId)
+  def getLogPath(
+      logBaseDir: URI,
+      appId: String,
+      appAttemptId: Option[String],
+      compressionCodecName: Option[String] = None
+  ): String = {
+    val base  = logBaseDir.toString.stripSuffix("/") + "/" + sanitize(appId)
     val codec = compressionCodecName.map("." + _).getOrElse("")
     if (appAttemptId.isDefined) {
       base + "_" + sanitize(appAttemptId.get) + codec
@@ -334,11 +354,13 @@ private[spark] object EventLoggingListener extends Logging {
 
     // Compression codec is encoded as an extension, e.g. app_123.lzf
     // Since we sanitize the app ID to not include periods, it is safe to split on it
-    val logName = log.getName.stripSuffix(IN_PROGRESS)
+    val logName                   = log.getName.stripSuffix(IN_PROGRESS)
     val codecName: Option[String] = logName.split("\\.").tail.lastOption
     val codec = codecName.map { c =>
       codecMap.getOrElseUpdate(
-          c, CompressionCodec.createCodec(new SparkConf, c))
+        c,
+        CompressionCodec.createCodec(new SparkConf, c)
+      )
     }
 
     try {

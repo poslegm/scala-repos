@@ -7,10 +7,10 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class RecordSchemaTest extends FunSuite {
 
-  val schema = new RecordSchema
-  val field = schema.newField[Object]()
+  val schema           = new RecordSchema
+  val field            = schema.newField[Object]()
   val fieldWithDefault = schema.newField[Object](new Object)
-  val fields = Seq(field, fieldWithDefault)
+  val fields           = Seq(field, fieldWithDefault)
 
   test("apply should throw IllegalStateException when field is uninitialized") {
     val record = schema.newRecord()
@@ -20,14 +20,15 @@ class RecordSchemaTest extends FunSuite {
   }
 
   test(
-      "apply should compute, store and return default when field is initialized with default") {
+    "apply should compute, store and return default when field is initialized with default"
+  ) {
     val record = schema.newRecord()
     assert(record(fieldWithDefault) eq record(fieldWithDefault))
   }
 
   test("apply should return field value when field is explicitly initialized") {
     val record = schema.newRecord()
-    val value = new Object
+    val value  = new Object
 
     for (f <- fields) {
       record(f) = value
@@ -43,7 +44,8 @@ class RecordSchemaTest extends FunSuite {
   }
 
   test(
-      "lock should compute and store default when field is initialized with default") {
+    "lock should compute and store default when field is initialized with default"
+  ) {
     val record = schema.newRecord()
     record.lock(fieldWithDefault)
     assert(record(fieldWithDefault) ne null)
@@ -51,7 +53,7 @@ class RecordSchemaTest extends FunSuite {
 
   test("update should reassign when field is not locked") {
     val record = schema.newRecord()
-    val value = new Object
+    val value  = new Object
 
     for (f <- fields) {
       record(f) = new Object
@@ -62,7 +64,7 @@ class RecordSchemaTest extends FunSuite {
 
   test("update should throw IllegalStateException when field is locked") {
     val record = schema.newRecord()
-    val value = new Object
+    val value  = new Object
 
     for (f <- fields) {
       record(f) = value
@@ -75,7 +77,7 @@ class RecordSchemaTest extends FunSuite {
 
   test("updateAndLock should update and lock") {
     val record = schema.newRecord()
-    val value = new Object
+    val value  = new Object
 
     for (f <- fields) {
       record.updateAndLock(f, value)
@@ -87,7 +89,7 @@ class RecordSchemaTest extends FunSuite {
 
   test("copy should copy") {
     val record = schema.newRecord()
-    val value = new Object
+    val value  = new Object
 
     for (f <- fields) {
       record.update(f, value)
@@ -98,7 +100,7 @@ class RecordSchemaTest extends FunSuite {
 
   test("copy should not be modified when the original is updated") {
     val record = schema.newRecord()
-    val copy = record.copy
+    val copy   = record.copy
 
     for (f <- fields) {
       record.update(f, new Object)
@@ -125,7 +127,7 @@ class RecordSchemaTest extends FunSuite {
     for (f <- fields) {
       record.updateAndLock(f, new Object)
       val value = new Object
-      val copy = record.copy(f, value)
+      val copy  = record.copy(f, value)
       assert(copy(f) eq value)
     }
   }

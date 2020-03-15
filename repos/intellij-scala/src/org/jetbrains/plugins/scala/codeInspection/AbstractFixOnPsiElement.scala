@@ -10,8 +10,10 @@ import com.intellij.psi.{PsiElement, PsiFile, SmartPointerManager}
   * 2014-11-12
   */
 abstract class AbstractFixOnPsiElement[T <: PsiElement](
-    name: String, startElement: T, endElement: T)
-    extends LocalQuickFixOnPsiElement(startElement, endElement) {
+    name: String,
+    startElement: T,
+    endElement: T
+) extends LocalQuickFixOnPsiElement(startElement, endElement) {
 
   def this(name: String, element: T) = this(name, element, element)
 
@@ -29,10 +31,12 @@ abstract class AbstractFixOnPsiElement[T <: PsiElement](
     }
   }
 
-  override def invoke(project: Project,
-                      file: PsiFile,
-                      startElement: PsiElement,
-                      endElement: PsiElement): Unit = {
+  override def invoke(
+      project: Project,
+      file: PsiFile,
+      startElement: PsiElement,
+      endElement: PsiElement
+  ): Unit = {
     if (!FileModificationService.getInstance.prepareFileForWrite(file)) return
     if (getElement == null) return
     doApplyFix(project)
@@ -42,8 +46,10 @@ abstract class AbstractFixOnPsiElement[T <: PsiElement](
 }
 
 abstract class AbstractFixOnTwoPsiElements[T <: PsiElement, S <: PsiElement](
-    name: String, first: T, second: S)
-    extends LocalQuickFixOnPsiElement(first) {
+    name: String,
+    first: T,
+    second: S
+) extends LocalQuickFixOnPsiElement(first) {
 
   private val secondRef = SmartPointerManager
     .getInstance(second.getProject)
@@ -69,10 +75,12 @@ abstract class AbstractFixOnTwoPsiElements[T <: PsiElement, S <: PsiElement](
     else null.asInstanceOf[S]
   }
 
-  override def invoke(project: Project,
-                      file: PsiFile,
-                      startElement: PsiElement,
-                      endElement: PsiElement): Unit = {
+  override def invoke(
+      project: Project,
+      file: PsiFile,
+      startElement: PsiElement,
+      endElement: PsiElement
+  ): Unit = {
     if (!FileModificationService.getInstance.prepareFileForWrite(file)) return
     if (getFirstElement == null || getSecondElement == null) return
     doApplyFix(project)

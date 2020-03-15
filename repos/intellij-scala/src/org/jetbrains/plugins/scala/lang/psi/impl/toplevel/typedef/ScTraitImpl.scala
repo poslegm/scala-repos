@@ -18,7 +18,10 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef._
 import org.jetbrains.plugins.scala.lang.psi.impl.toplevel.typedef.TypeDefinitionMembers.SignatureNodes
 import org.jetbrains.plugins.scala.lang.psi.light.PsiClassWrapper
 import org.jetbrains.plugins.scala.lang.psi.stubs.ScTemplateDefinitionStub
-import org.jetbrains.plugins.scala.lang.psi.types.{PhysicalSignature, ScSubstitutor}
+import org.jetbrains.plugins.scala.lang.psi.types.{
+  PhysicalSignature,
+  ScSubstitutor
+}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -26,19 +29,24 @@ import scala.collection.mutable.ArrayBuffer
   * @author Alexander Podkhalyuzin
   * @since 20.02.2008
   */
-class ScTraitImpl private (stub: StubElement[ScTemplateDefinition],
-                           nodeType: IElementType,
-                           node: ASTNode)
-    extends ScTypeDefinitionImpl(stub, nodeType, node) with ScTrait
-    with ScTypeParametersOwner with ScTemplateDefinition {
+class ScTraitImpl private (
+    stub: StubElement[ScTemplateDefinition],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScTypeDefinitionImpl(stub, nodeType, node)
+    with ScTrait
+    with ScTypeParametersOwner
+    with ScTemplateDefinition {
   override def additionalJavaNames: Array[String] = {
-    Array(fakeCompanionClass.getName) //do not add fakeCompanionModule => will build tree from stubs everywhere
+    Array(
+      fakeCompanionClass.getName
+    ) //do not add fakeCompanionModule => will build tree from stubs everywhere
   }
 
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case visitor: ScalaElementVisitor => super.accept(visitor)
-      case _ => super.accept(visitor)
+      case _                            => super.accept(visitor)
     }
   }
 
@@ -57,18 +65,29 @@ class ScTraitImpl private (stub: StubElement[ScTemplateDefinition],
       processor: PsiScopeProcessor,
       state: ResolveState,
       lastParent: PsiElement,
-      place: PsiElement): Boolean = {
-    super [ScTypeParametersOwner].processDeclarations(
-        processor, state, lastParent, place) && super [ScTemplateDefinition]
+      place: PsiElement
+  ): Boolean = {
+    super[ScTypeParametersOwner].processDeclarations(
+      processor,
+      state,
+      lastParent,
+      place
+    ) && super[ScTemplateDefinition]
       .processDeclarationsForTemplateBody(processor, state, lastParent, place)
   }
 
-  override def processDeclarations(processor: PsiScopeProcessor,
-                                   state: ResolveState,
-                                   lastParent: PsiElement,
-                                   place: PsiElement): Boolean = {
-    super [ScTemplateDefinition].processDeclarations(
-        processor, state, lastParent, place)
+  override def processDeclarations(
+      processor: PsiScopeProcessor,
+      state: ResolveState,
+      lastParent: PsiElement,
+      place: PsiElement
+  ): Boolean = {
+    super[ScTemplateDefinition].processDeclarations(
+      processor,
+      state,
+      lastParent,
+      place
+    )
   }
 
   override def isInterface: Boolean = true
@@ -80,26 +99,30 @@ class ScTraitImpl private (stub: StubElement[ScTemplateDefinition],
     getAllMethods.filter(_.containingClass == this)
   }
 
-  override def hasModifierProperty(name: String): Boolean = name match {
-    case PsiModifier.ABSTRACT if isInterface => true
-    case _ => super.hasModifierProperty(name)
-  }
+  override def hasModifierProperty(name: String): Boolean =
+    name match {
+      case PsiModifier.ABSTRACT if isInterface => true
+      case _                                   => super.hasModifierProperty(name)
+    }
 
   override def getAllMethods: Array[PsiMethod] = {
     val res = new ArrayBuffer[PsiMethod]()
     res ++= getConstructors
     TypeDefinitionMembers.SignatureNodes.forAllSignatureNodes(this) { node =>
-      this.processPsiMethodsForNode(
-          node, isStatic = false, isInterface = true)(res += _)
+      this.processPsiMethodsForNode(node, isStatic = false, isInterface = true)(
+        res += _
+      )
     }
 
     for (synthetic <- syntheticMethodsNoOverride) {
       this.processPsiMethodsForNode(
-          new SignatureNodes.Node(new PhysicalSignature(synthetic,
-                                                        ScSubstitutor.empty),
-                                  ScSubstitutor.empty),
-          isStatic = false,
-          isInterface = isInterface)(res += _)
+        new SignatureNodes.Node(
+          new PhysicalSignature(synthetic, ScSubstitutor.empty),
+          ScSubstitutor.empty
+        ),
+        isStatic = false,
+        isInterface = isInterface
+      )(res += _)
     }
     res.toArray
   }

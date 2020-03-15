@@ -18,7 +18,7 @@ object IteratorSpec extends Spec {
       val ct = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct.put(new Wrap(i), i)
 
-      val it = ct.iterator
+      val it      = ct.iterator
       val tracker = mutable.Map[Wrap, Int]()
       for (i <- 0 until sz) {
         assert(it.hasNext == true)
@@ -83,7 +83,7 @@ object IteratorSpec extends Spec {
       val ct = new TrieMap[DumbHash, Int]
       for (i <- 0 until sz) ct.put(new DumbHash(i), i)
 
-      val it = ct.iterator
+      val it      = ct.iterator
       val tracker = mutable.Map[DumbHash, Int]()
       for (i <- 0 until sz) {
         assert(it.hasNext == true)
@@ -136,18 +136,18 @@ object IteratorSpec extends Spec {
     }
 
     "be consistent when taken with concurrent modifications" in {
-      val sz = 25000
-      val W = 15
-      val S = 5
+      val sz     = 25000
+      val W      = 15
+      val S      = 5
       val checks = 5
-      val ct = new TrieMap[Wrap, Int]
+      val ct     = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct.put(new Wrap(i), i)
 
       class Modifier extends Thread {
         override def run() {
           for (i <- 0 until sz) ct.putIfAbsent(new Wrap(i), i) match {
             case Some(_) => ct.remove(new Wrap(i))
-            case None =>
+            case None    =>
           }
         }
       }
@@ -155,7 +155,7 @@ object IteratorSpec extends Spec {
       def consistentIteration(ct: TrieMap[Wrap, Int], checks: Int) {
         class Iter extends Thread {
           override def run() {
-            val snap = ct.readOnlySnapshot()
+            val snap    = ct.readOnlySnapshot()
             val initial = mutable.Map[Wrap, Int]()
             for (kv <- snap) initial += kv
 
@@ -177,18 +177,19 @@ object IteratorSpec extends Spec {
     }
 
     "be consistent with a concurrent removal with a well defined order" in {
-      val sz = 150000
-      val sgroupsize = 10
-      val sgroupnum = 5
+      val sz              = 150000
+      val sgroupsize      = 10
+      val sgroupnum       = 5
       val removerslowdown = 50
-      val ct = new TrieMap[Wrap, Int]
+      val ct              = new TrieMap[Wrap, Int]
       for (i <- 0 until sz) ct.put(new Wrap(i), i)
 
       class Remover extends Thread {
         override def run() {
           for (i <- 0 until sz) {
             assert(ct.remove(new Wrap(i)) == Some(i))
-            for (i <- 0 until removerslowdown) ct.get(new Wrap(i)) // slow down, mate
+            for (i <- 0 until removerslowdown)
+              ct.get(new Wrap(i)) // slow down, mate
           }
           //println("done removing")
         }
@@ -210,8 +211,8 @@ object IteratorSpec extends Spec {
       val remover = new Remover
       remover.start()
       for (_ <- 0 until sgroupnum) {
-        val iters = for (_ <- 0 until sgroupsize) yield
-          consistentIteration(ct.iterator)
+        val iters =
+          for (_ <- 0 until sgroupsize) yield consistentIteration(ct.iterator)
         iters.foreach(_.start())
         iters.foreach(_.join())
       }
@@ -220,17 +221,18 @@ object IteratorSpec extends Spec {
     }
 
     "be consistent with a concurrent insertion with a well defined order" in {
-      val sz = 150000
-      val sgroupsize = 10
-      val sgroupnum = 10
+      val sz               = 150000
+      val sgroupsize       = 10
+      val sgroupnum        = 10
       val inserterslowdown = 50
-      val ct = new TrieMap[Wrap, Int]
+      val ct               = new TrieMap[Wrap, Int]
 
       class Inserter extends Thread {
         override def run() {
           for (i <- 0 until sz) {
             assert(ct.put(new Wrap(i), i) == None)
-            for (i <- 0 until inserterslowdown) ct.get(new Wrap(i)) // slow down, mate
+            for (i <- 0 until inserterslowdown)
+              ct.get(new Wrap(i)) // slow down, mate
           }
           //println("done inserting")
         }
@@ -252,8 +254,8 @@ object IteratorSpec extends Spec {
       val inserter = new Inserter
       inserter.start()
       for (_ <- 0 until sgroupnum) {
-        val iters = for (_ <- 0 until sgroupsize) yield
-          consistentIteration(ct.iterator)
+        val iters =
+          for (_ <- 0 until sgroupsize) yield consistentIteration(ct.iterator)
         iters.foreach(_.start())
         iters.foreach(_.join())
       }
@@ -267,7 +269,7 @@ object IteratorSpec extends Spec {
       for (i <- 0 until sz) ct.update(new Wrap(i), i)
 
       val snap = ct.snapshot()
-      val it = snap.iterator
+      val it   = snap.iterator
 
       while (it.hasNext) it.next()
     }

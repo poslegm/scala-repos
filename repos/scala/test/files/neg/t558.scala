@@ -9,7 +9,7 @@ abstract class NewModel {
   }
   abstract class NodeURL extends SymbolURL {
     val parent: SymbolURL;
-    final val top = parent.top;
+    final val top    = parent.top;
     final val source = top.file;
   }
   abstract class RootURL extends SymbolURL {

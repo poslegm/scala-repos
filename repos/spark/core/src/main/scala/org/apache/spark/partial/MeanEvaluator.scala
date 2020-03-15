@@ -28,7 +28,7 @@ private[spark] class MeanEvaluator(totalOutputs: Int, confidence: Double)
     extends ApproximateEvaluator[StatCounter, BoundedDouble] {
 
   var outputsMerged = 0
-  var counter = new StatCounter
+  var counter       = new StatCounter
 
   override def merge(outputId: Int, taskResult: StatCounter) {
     outputsMerged += 1
@@ -40,9 +40,13 @@ private[spark] class MeanEvaluator(totalOutputs: Int, confidence: Double)
       new BoundedDouble(counter.mean, 1.0, counter.mean, counter.mean)
     } else if (outputsMerged == 0) {
       new BoundedDouble(
-          0, 0.0, Double.NegativeInfinity, Double.PositiveInfinity)
+        0,
+        0.0,
+        Double.NegativeInfinity,
+        Double.PositiveInfinity
+      )
     } else {
-      val mean = counter.mean
+      val mean  = counter.mean
       val stdev = math.sqrt(counter.sampleVariance / counter.count)
       val confFactor = {
         if (counter.count > 100) {
@@ -54,7 +58,7 @@ private[spark] class MeanEvaluator(totalOutputs: Int, confidence: Double)
             .inverseCumulativeProbability(1 - (1 - confidence) / 2)
         }
       }
-      val low = mean - confFactor * stdev
+      val low  = mean - confFactor * stdev
       val high = mean + confFactor * stdev
       new BoundedDouble(mean, confidence, low, high)
     }

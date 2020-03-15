@@ -18,22 +18,25 @@ import scala.collection.mutable.HashMap
 import scala.language.reflectiveCalls
 
 trait MemoisableRules extends Rules {
-  def memo[In <: Memoisable, Out, A, X](key: AnyRef)(
-      toRule: => In => Result[Out, A, X]) = {
+  def memo[In <: Memoisable, Out, A, X](
+      key: AnyRef
+  )(toRule: => In => Result[Out, A, X]) = {
     lazy val rule = toRule
-    from[In] { in =>
-      in.memo(key, rule(in))
-    }
+    from[In] { in => in.memo(key, rule(in)) }
   }
 
   override def ruleWithName[In, Out, A, X](
-      name: String, f: In => rules.Result[Out, A, X]) =
-    super.ruleWithName(name,
-                       (in: In) =>
-                         in match {
-                           case s: Memoisable => s.memo(name, f(in))
-                           case _ => f(in)
-                       })
+      name: String,
+      f: In => rules.Result[Out, A, X]
+  ) =
+    super.ruleWithName(
+      name,
+      (in: In) =>
+        in match {
+          case s: Memoisable => s.memo(name, f(in))
+          case _             => f(in)
+        }
+    )
 }
 
 trait Memoisable {
@@ -51,12 +54,13 @@ trait DefaultMemoisable extends Memoisable {
     map.getOrElseUpdate(key, compute(key, a)).asInstanceOf[A]
   }
 
-  protected def compute[A](key: AnyRef, a: => A): Any = a match {
-    case success: Success[_, _] => onSuccess(key, success); success
-    case other =>
-      if (DefaultMemoisable.debug) println(key + " -> " + other)
-      other
-  }
+  protected def compute[A](key: AnyRef, a: => A): Any =
+    a match {
+      case success: Success[_, _] => onSuccess(key, success); success
+      case other =>
+        if (DefaultMemoisable.debug) println(key + " -> " + other)
+        other
+    }
 
   protected def onSuccess[S, T](key: AnyRef, result: Success[S, T]) {
     val Success(out, t) = result

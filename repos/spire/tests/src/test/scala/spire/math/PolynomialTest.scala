@@ -17,8 +17,7 @@ import Gen._
 import Arbitrary.arbitrary
 
 object PolynomialSetup {
-  implicit val arbitraryRational = Arbitrary(
-      for {
+  implicit val arbitraryRational = Arbitrary(for {
     n0 <- arbitrary[Long]
     d0 <- arbitrary[Long]
   } yield {
@@ -27,26 +26,23 @@ object PolynomialSetup {
   })
 
   // default scalacheck bigdecimals are weird
-  implicit val arbitraryBigDecimal = Arbitrary(
-      for {
+  implicit val arbitraryBigDecimal = Arbitrary(for {
     r <- arbitrary[Int]
   } yield {
     BigDecimal(r)
   })
 
-  implicit def arbitraryComplex[A : Arbitrary : Fractional : Trig] =
-    Arbitrary(
-        for {
+  implicit def arbitraryComplex[A: Arbitrary: Fractional: Trig] =
+    Arbitrary(for {
       re <- arbitrary[A]
       im <- arbitrary[A]
     } yield {
       Complex(re, im)
     })
 
-  implicit def arbitraryTerm[A : Arbitrary : Ring : Eq : ClassTag] =
-    Arbitrary(
-        for {
-      c <- arbitrary[A]
+  implicit def arbitraryTerm[A: Arbitrary: Ring: Eq: ClassTag] =
+    Arbitrary(for {
+      c  <- arbitrary[A]
       e0 <- arbitrary[Int]
     } yield {
       Term(c, (e0 % 100).abs)
@@ -54,7 +50,9 @@ object PolynomialSetup {
 }
 
 class PolynomialCheck
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
 
   import PolynomialSetup._
 
@@ -69,9 +67,8 @@ class PolynomialCheck
   // runDense[BigDecimal]("decimal")(arbitraryBigDecimal, sbd, fbd, cbd)
   // runSparse[BigDecimal]("decimal")(arbitraryBigDecimal, sbd, fbd, cbd)
 
-  def runDense[A : Arbitrary : Eq : Field : ClassTag](typ: String): Unit = {
-    implicit val arb: Arbitrary[Polynomial[A]] = Arbitrary(
-        for {
+  def runDense[A: Arbitrary: Eq: Field: ClassTag](typ: String): Unit = {
+    implicit val arb: Arbitrary[Polynomial[A]] = Arbitrary(for {
       ts <- arbitrary[List[Term[A]]]
     } yield {
       Polynomial(ts).toDense
@@ -79,9 +76,8 @@ class PolynomialCheck
     runTest[A](s"$typ/dense")
   }
 
-  def runSparse[A : Arbitrary : Eq : Field : ClassTag](typ: String): Unit = {
-    implicit val arb: Arbitrary[Polynomial[A]] = Arbitrary(
-        for {
+  def runSparse[A: Arbitrary: Eq: Field: ClassTag](typ: String): Unit = {
+    implicit val arb: Arbitrary[Polynomial[A]] = Arbitrary(for {
       ts <- arbitrary[List[Term[A]]]
     } yield {
       Polynomial(ts).toSparse
@@ -89,71 +85,52 @@ class PolynomialCheck
     runTest[A](s"$typ/sparse")
   }
 
-  def runTest[A : Eq : Field : ClassTag](name: String)(
-      implicit arb: Arbitrary[Polynomial[A]], arb2: Arbitrary[A]): Unit = {
+  def runTest[A: Eq: Field: ClassTag](
+      name: String
+  )(implicit arb: Arbitrary[Polynomial[A]], arb2: Arbitrary[A]): Unit = {
     type P = Polynomial[A]
 
     val zero = Polynomial.zero[A]
-    val one = Polynomial.one[A]
+    val one  = Polynomial.one[A]
 
     property(s"$name p = p") {
-      forAll { (p: P) =>
-        p shouldBe p
-      }
+      forAll { (p: P) => p shouldBe p }
     }
 
     property(s"$name p + 0 = p") {
-      forAll { (p: P) =>
-        p + zero shouldBe p
-      }
+      forAll { (p: P) => p + zero shouldBe p }
     }
 
     property(s"$name p + (-p) = 0") {
-      forAll { (p: P) =>
-        p + (-p) shouldBe zero
-      }
+      forAll { (p: P) => p + (-p) shouldBe zero }
     }
 
     property(s"$name p * 0 = 0") {
-      forAll { (p: P) =>
-        p * zero shouldBe zero
-      }
+      forAll { (p: P) => p * zero shouldBe zero }
     }
 
     property(s"$name p * 1 = p") {
-      forAll { (p: P) =>
-        p * one shouldBe p
-      }
+      forAll { (p: P) => p * one shouldBe p }
     }
 
     property(s"$name p /~ 1 = p") {
-      forAll { (p: P) =>
-        p /~ one shouldBe p
-      }
+      forAll { (p: P) => p /~ one shouldBe p }
     }
 
     property(s"$name p /~ p = 1") {
-      forAll { (p: P) =>
-        if (!p.isZero) p /~ p shouldBe one
-      }
+      forAll { (p: P) => if (!p.isZero) p /~ p shouldBe one }
     }
 
     property(s"$name p % p = 0") {
-      forAll { (p: P) =>
-        if (!p.isZero) p % p shouldBe zero
-      }
+      forAll { (p: P) => if (!p.isZero) p % p shouldBe zero }
     }
 
     property(s"$name x + y = y + x") {
-      forAll { (x: P, y: P) =>
-        x + y shouldBe y + x
-      }
+      forAll { (x: P, y: P) => x + y shouldBe y + x }
     }
 
     property(s"$name x * y = y * x") {
-      forAll { (x: P, y: P) =>
-        x * y shouldBe y * x
-      }
+      forAll { (x: P, y: P) => x * y shouldBe y * x }
     }
 
     property(s"$name (x /~ y) * y + (x % y) = x") {
@@ -163,9 +140,7 @@ class PolynomialCheck
     }
 
     property(s"$name p = p.reductum + p.maxTerm") {
-      forAll { (p: P) =>
-        p shouldBe p.reductum + Polynomial(p.maxTerm :: Nil)
-      }
+      forAll { (p: P) => p shouldBe p.reductum + Polynomial(p.maxTerm :: Nil) }
     }
   }
 
@@ -175,20 +150,18 @@ class PolynomialCheck
         Polynomial(rs.take(4).zipWithIndex.map { case (c, e) => Term(c, e) })
 
       val (p1, p2) = (xyz(rs1), xyz(rs2))
-      val p3 = p1 compose p2
+      val p3       = p1 compose p2
       p3(r) shouldBe p1(p2(r))
     }
   }
 
-  implicit val arbDense: Arbitrary[PolyDense[Rational]] = Arbitrary(
-      for {
+  implicit val arbDense: Arbitrary[PolyDense[Rational]] = Arbitrary(for {
     ts <- arbitrary[List[Term[Rational]]]
   } yield {
     Polynomial(ts).toDense
   })
 
-  implicit val arbSparse: Arbitrary[PolySparse[Rational]] = Arbitrary(
-      for {
+  implicit val arbSparse: Arbitrary[PolySparse[Rational]] = Arbitrary(for {
     ts <- arbitrary[List[Term[Rational]]]
   } yield {
     Polynomial(ts).toSparse
@@ -226,15 +199,11 @@ class PolynomialCheck
   }
 
   property("p.toSparse.toDense = p") {
-    forAll { (p: PolyDense[Rational]) =>
-      p.toSparse.toDense shouldBe p
-    }
+    forAll { (p: PolyDense[Rational]) => p.toSparse.toDense shouldBe p }
   }
 
   property("p.toDense.toSparse = p") {
-    forAll { (p: PolySparse[Rational]) =>
-      p.toDense.toSparse shouldBe p
-    }
+    forAll { (p: PolySparse[Rational]) => p.toDense.toSparse shouldBe p }
   }
 
   property("apply(p.toString).toDense = p") {
@@ -244,9 +213,7 @@ class PolynomialCheck
   }
 
   property("apply(p.toString) = p") {
-    forAll { (p: PolyDense[Rational]) =>
-      Polynomial(p.toString) shouldBe p
-    }
+    forAll { (p: PolyDense[Rational]) => Polynomial(p.toString) shouldBe p }
   }
 
   property("apply(r, 0) = r") {
@@ -274,17 +241,15 @@ class PolynomialCheck
   }
 
   property("x % gcd(x, y) == 0 && y % gcd(x, y) == 0") {
-    implicit val arbPolynomial: Arbitrary[Polynomial[Rational]] = Arbitrary(
-        for {
-      ts <- Gen.listOf(for {
-        c <- arbitrary[Rational]
-        e <- arbitrary[Int] map { n =>
-          (n % 10).abs
-        }
-      } yield (e, c))
-    } yield {
-      Polynomial(ts.toMap).toDense
-    })
+    implicit val arbPolynomial: Arbitrary[Polynomial[Rational]] =
+      Arbitrary(for {
+        ts <- Gen.listOf(for {
+               c <- arbitrary[Rational]
+               e <- arbitrary[Int] map { n => (n % 10).abs }
+             } yield (e, c))
+      } yield {
+        Polynomial(ts.toMap).toDense
+      })
 
     forAll { (x: Polynomial[Rational], y: Polynomial[Rational]) =>
       gcdTest(x, y)
@@ -306,7 +271,8 @@ class PolynomialTest extends FunSuite {
   test("polynomial construction") {
     val p = Polynomial(Array(Term(r"1/2", 0), Term(r"1/4", 2), Term(r"2", 1)))
     assert(
-        p.terms.toSet === Set(Term(r"1/2", 0), Term(r"1/4", 2), Term(r"2", 1)))
+      p.terms.toSet === Set(Term(r"1/2", 0), Term(r"1/4", 2), Term(r"2", 1))
+    )
     assert(p === Polynomial("1/4x^2 + 2x + 1/2"))
     assert(p === Polynomial("1/4x² + 2x + 1/2"))
     assert(p === Polynomial("1/4x² + x + x + 1/2"))
@@ -334,8 +300,10 @@ class PolynomialTest extends FunSuite {
     assert(p.toDense.isZero === false)
     assert(p.toDense.monic === Polynomial.dense(Array(r"2/1", r"8/1", r"1/1")))
     assert(p.toDense.derivative === Polynomial.dense(Array(r"2/1", r"1/2")))
-    assert(p.toDense.integral === Polynomial.dense(
-            Array(r"0", r"1/2", r"1/1", r"1/12")))
+    assert(
+      p.toDense.integral === Polynomial
+        .dense(Array(r"0", r"1/2", r"1/1", r"1/12"))
+    )
   }
 
   test("polynomial arithmetic") {
@@ -347,15 +315,24 @@ class PolynomialTest extends FunSuite {
 
     assert(p1 + p2 === Polynomial("1/2x^2 + 5x + 1"))
     assert(
-        legSparse(2) * legSparse(3) === Polynomial("15/4x^5 - 7/2x^3 + 3/4x"))
+      legSparse(2) * legSparse(3) === Polynomial("15/4x^5 - 7/2x^3 + 3/4x")
+    )
     assert(p1 % p2 === Polynomial("-x"))
     assert(p1 /~ p2 === Polynomial("1"))
 
     val legDense = legSparse.map(_.toDense)
 
     assert(p1 + p2 === Polynomial.dense(Array(r"1/1", r"5/1", r"1/2")))
-    assert((legDense(2) * legDense(3)).coeffsArray === Array(
-            r"0", r"3/4", r"0", r"-7/2", r"0", r"15/4"))
+    assert(
+      (legDense(2) * legDense(3)).coeffsArray === Array(
+        r"0",
+        r"3/4",
+        r"0",
+        r"-7/2",
+        r"0",
+        r"15/4"
+      )
+    )
     assert(p1 % p2 === Polynomial("-x"))
     assert(p1 /~ p2 === Polynomial("1"))
   }

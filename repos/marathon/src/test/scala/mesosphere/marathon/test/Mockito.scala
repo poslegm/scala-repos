@@ -11,17 +11,17 @@ import org.scalatest.mock.MockitoSugar
   */
 trait Mockito extends MockitoSugar {
 
-  def eq[T](t: T) = org.mockito.Matchers.eq(t)
-  def any[T] = org.mockito.Matchers.any[T]
-  def anyBoolean = org.mockito.Matchers.anyBoolean
-  def anyString = org.mockito.Matchers.anyString
+  def eq[T](t: T)                                        = org.mockito.Matchers.eq(t)
+  def any[T]                                             = org.mockito.Matchers.any[T]
+  def anyBoolean                                         = org.mockito.Matchers.anyBoolean
+  def anyString                                          = org.mockito.Matchers.anyString
   def verify[T](t: T, mode: VerificationMode = times(1)) = M.verify(t, mode)
-  def times(num: Int) = M.times(num)
-  def timeout(millis: Int) = M.timeout(millis)
-  def atLeastOnce = M.atLeastOnce()
-  def atLeast(num: Int) = M.atLeast(num)
-  def atMost(num: Int) = M.atMost(num)
-  def never = M.never()
+  def times(num: Int)                                    = M.times(num)
+  def timeout(millis: Int)                               = M.timeout(millis)
+  def atLeastOnce                                        = M.atLeastOnce()
+  def atLeast(num: Int)                                  = M.atLeast(num)
+  def atMost(num: Int)                                   = M.atMost(num)
+  def never                                              = M.never()
 
   def inOrder(mocks: AnyRef*) = M.inOrder(mocks: _*)
 
@@ -52,7 +52,8 @@ trait Mockito extends MockitoSugar {
     def throws[E <: Throwable](e: E*): OngoingStubbing[T] = {
       if (e.isEmpty)
         throw new java.lang.IllegalArgumentException(
-            "The parameter passed to throws must not be empty")
+          "The parameter passed to throws must not be empty"
+        )
       e.drop(1).foldLeft(M.when(c).thenThrow(e.head)) { (res, cur) =>
         res.thenThrow(cur)
       }

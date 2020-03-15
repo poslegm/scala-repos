@@ -17,7 +17,7 @@ private final class KamonPusher(countUsers: () => Int) extends Actor {
   }
 
   private val threadStats = ManagementFactory.getThreadMXBean
-  private val app = lila.common.PlayApp
+  private val app         = lila.common.PlayApp
 
   private def scheduleTick =
     context.system.scheduler.scheduleOnce(1 second, self, Tick)
@@ -56,8 +56,7 @@ class KeepDotsMetricKeyGenerator(config: Config)
   override def createNormalizer(strategy: String): Normalizer =
     strategy match {
       case "keep-dots" =>
-        (s: String) ⇒
-          s.replace(": ", "-").replace(" ", "_").replace("/", ".")
-        case _ => super.createNormalizer(strategy)
+        (s: String) ⇒ s.replace(": ", "-").replace(" ", "_").replace("/", ".")
+      case _ => super.createNormalizer(strategy)
     }
 }

@@ -37,34 +37,38 @@ import org.apache.spark.util.Utils
   * This is intended to be used in Mesos cluster mode only.
   * For more details about the REST submission please refer to [[RestSubmissionServer]] javadocs.
   */
-private[spark] class MesosRestServer(host: String,
-                                     requestedPort: Int,
-                                     masterConf: SparkConf,
-                                     scheduler: MesosClusterScheduler)
-    extends RestSubmissionServer(host, requestedPort, masterConf) {
+private[spark] class MesosRestServer(
+    host: String,
+    requestedPort: Int,
+    masterConf: SparkConf,
+    scheduler: MesosClusterScheduler
+) extends RestSubmissionServer(host, requestedPort, masterConf) {
 
-  protected override val submitRequestServlet = new MesosSubmitRequestServlet(
-      scheduler, masterConf)
-  protected override val killRequestServlet = new MesosKillRequestServlet(
-      scheduler, masterConf)
-  protected override val statusRequestServlet = new MesosStatusRequestServlet(
-      scheduler, masterConf)
+  protected override val submitRequestServlet =
+    new MesosSubmitRequestServlet(scheduler, masterConf)
+  protected override val killRequestServlet =
+    new MesosKillRequestServlet(scheduler, masterConf)
+  protected override val statusRequestServlet =
+    new MesosStatusRequestServlet(scheduler, masterConf)
 }
 
 private[mesos] class MesosSubmitRequestServlet(
-    scheduler: MesosClusterScheduler, conf: SparkConf)
-    extends SubmitRequestServlet {
+    scheduler: MesosClusterScheduler,
+    conf: SparkConf
+) extends SubmitRequestServlet {
 
   private val DEFAULT_SUPERVISE = false
-  private val DEFAULT_MEMORY = Utils.DEFAULT_DRIVER_MEM_MB // mb
-  private val DEFAULT_CORES = 1.0
+  private val DEFAULT_MEMORY    = Utils.DEFAULT_DRIVER_MEM_MB // mb
+  private val DEFAULT_CORES     = 1.0
 
   private val nextDriverNumber = new AtomicLong(0)
   private def createDateFormat =
     new SimpleDateFormat("yyyyMMddHHmmss") // For application IDs
   private def newDriverId(submitDate: Date): String = {
-    "driver-%s-%04d".format(createDateFormat.format(submitDate),
-                            nextDriverNumber.incrementAndGet())
+    "driver-%s-%04d".format(
+      createDateFormat.format(submitDate),
+      nextDriverNumber.incrementAndGet()
+    )
   }
 
   /**
@@ -75,7 +79,8 @@ private[mesos] class MesosSubmitRequestServlet(
     * is not supported in mesos cluster mode yet.
     */
   private def buildDriverDescription(
-      request: CreateSubmissionRequest): MesosDriverDescription = {
+      request: CreateSubmissionRequest
+  ): MesosDriverDescription = {
     // Required fields, including the main class because python is not yet supported
     val appResource = Option(request.appResource).getOrElse {
       throw new SubmitRestMissingFieldException("Application jar is missing.")
@@ -92,12 +97,12 @@ private[mesos] class MesosSubmitRequestServlet(
       sparkProperties.get("spark.driver.extraClassPath")
     val driverExtraLibraryPath =
       sparkProperties.get("spark.driver.extraLibraryPath")
-    val superviseDriver = sparkProperties.get("spark.driver.supervise")
-    val driverMemory = sparkProperties.get("spark.driver.memory")
-    val driverCores = sparkProperties.get("spark.driver.cores")
-    val appArgs = request.appArgs
+    val superviseDriver      = sparkProperties.get("spark.driver.supervise")
+    val driverMemory         = sparkProperties.get("spark.driver.memory")
+    val driverCores          = sparkProperties.get("spark.driver.cores")
+    val appArgs              = request.appArgs
     val environmentVariables = request.environmentVariables
-    val name = request.sparkProperties.getOrElse("spark.app.name", mainClass)
+    val name                 = request.sparkProperties.getOrElse("spark.app.name", mainClass)
 
     // Construct driver description
     val conf = new SparkConf(false).setAll(sparkProperties)
@@ -108,44 +113,49 @@ private[mesos] class MesosSubmitRequestServlet(
     val extraJavaOpts =
       driverExtraJavaOptions.map(Utils.splitCommandString).getOrElse(Seq.empty)
     val sparkJavaOpts = Utils.sparkJavaOpts(conf)
-    val javaOpts = sparkJavaOpts ++ extraJavaOpts
-    val command = new Command(mainClass,
-                              appArgs,
-                              environmentVariables,
-                              extraClassPath,
-                              extraLibraryPath,
-                              javaOpts)
+    val javaOpts      = sparkJavaOpts ++ extraJavaOpts
+    val command = new Command(
+      mainClass,
+      appArgs,
+      environmentVariables,
+      extraClassPath,
+      extraLibraryPath,
+      javaOpts
+    )
     val actualSuperviseDriver =
       superviseDriver.map(_.toBoolean).getOrElse(DEFAULT_SUPERVISE)
     val actualDriverMemory =
       driverMemory.map(Utils.memoryStringToMb).getOrElse(DEFAULT_MEMORY)
     val actualDriverCores =
       driverCores.map(_.toDouble).getOrElse(DEFAULT_CORES)
-    val submitDate = new Date()
+    val submitDate   = new Date()
     val submissionId = newDriverId(submitDate)
 
-    new MesosDriverDescription(name,
-                               appResource,
-                               actualDriverMemory,
-                               actualDriverCores,
-                               actualSuperviseDriver,
-                               command,
-                               request.sparkProperties,
-                               submissionId,
-                               submitDate)
+    new MesosDriverDescription(
+      name,
+      appResource,
+      actualDriverMemory,
+      actualDriverCores,
+      actualSuperviseDriver,
+      command,
+      request.sparkProperties,
+      submissionId,
+      submitDate
+    )
   }
 
   protected override def handleSubmit(
       requestMessageJson: String,
       requestMessage: SubmitRestProtocolMessage,
-      responseServlet: HttpServletResponse): SubmitRestProtocolResponse = {
+      responseServlet: HttpServletResponse
+  ): SubmitRestProtocolResponse = {
     requestMessage match {
       case submitRequest: CreateSubmissionRequest =>
         val driverDescription = buildDriverDescription(submitRequest)
-        val s = scheduler.submitDriver(driverDescription)
+        val s                 = scheduler.submitDriver(driverDescription)
         s.serverSparkVersion = sparkVersion
-        val unknownFields = findUnknownFields(
-            requestMessageJson, requestMessage)
+        val unknownFields =
+          findUnknownFields(requestMessageJson, requestMessage)
         if (unknownFields.nonEmpty) {
           // If there are fields that the server does not know about, warn the client
           s.unknownFields = unknownFields
@@ -154,16 +164,19 @@ private[mesos] class MesosSubmitRequestServlet(
       case unexpected =>
         responseServlet.setStatus(HttpServletResponse.SC_BAD_REQUEST)
         handleError(
-            s"Received message of unexpected type ${unexpected.messageType}.")
+          s"Received message of unexpected type ${unexpected.messageType}."
+        )
     }
   }
 }
 
 private[mesos] class MesosKillRequestServlet(
-    scheduler: MesosClusterScheduler, conf: SparkConf)
-    extends KillRequestServlet {
+    scheduler: MesosClusterScheduler,
+    conf: SparkConf
+) extends KillRequestServlet {
   protected override def handleKill(
-      submissionId: String): KillSubmissionResponse = {
+      submissionId: String
+  ): KillSubmissionResponse = {
     val k = scheduler.killDriver(submissionId)
     k.serverSparkVersion = sparkVersion
     k
@@ -171,10 +184,12 @@ private[mesos] class MesosKillRequestServlet(
 }
 
 private[mesos] class MesosStatusRequestServlet(
-    scheduler: MesosClusterScheduler, conf: SparkConf)
-    extends StatusRequestServlet {
+    scheduler: MesosClusterScheduler,
+    conf: SparkConf
+) extends StatusRequestServlet {
   protected override def handleStatus(
-      submissionId: String): SubmissionStatusResponse = {
+      submissionId: String
+  ): SubmissionStatusResponse = {
     val d = scheduler.getDriverStatus(submissionId)
     d.serverSparkVersion = sparkVersion
     d

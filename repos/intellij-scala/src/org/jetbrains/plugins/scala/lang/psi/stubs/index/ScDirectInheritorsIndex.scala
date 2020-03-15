@@ -15,12 +15,12 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScExtendsBloc
   * User: Alexander Podkhalyuzin
   * Date: 24.10.2008
   */
-class ScDirectInheritorsIndex
-    extends StringStubIndexExtension[ScExtendsBlock] {
+class ScDirectInheritorsIndex extends StringStubIndexExtension[ScExtendsBlock] {
   override def get(
       int: String,
       project: Project,
-      scope: GlobalSearchScope): java.util.Collection[ScExtendsBlock] =
+      scope: GlobalSearchScope
+  ): java.util.Collection[ScExtendsBlock] =
     super.get(int, project, new ScalaSourceFilterScope(scope, project))
 
   def getKey = ScDirectInheritorsIndex.KEY
@@ -35,7 +35,8 @@ class ScSelfTypeInheritorsIndex
   override def get(
       int: String,
       project: Project,
-      scope: GlobalSearchScope): java.util.Collection[ScSelfTypeElement] =
+      scope: GlobalSearchScope
+  ): java.util.Collection[ScSelfTypeElement] =
     super.get(int, project, new ScalaSourceFilterScope(scope, project))
 
   def getKey = ScSelfTypeInheritorsIndex.KEY

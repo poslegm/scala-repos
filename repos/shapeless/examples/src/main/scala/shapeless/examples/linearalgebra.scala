@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-14 Miles Sabin 
+ * Copyright (c) 2012-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package shapeless.examples
 
 /*
  * Proof of concept implementation of typesafe vectors of arbitrary dimension.
- * 
+ *
  * @author Miles Sabin
  */
 object LinearAlgebraExamples extends App {
@@ -38,9 +38,10 @@ object LinearAlgebraExamples extends App {
   object VectorOps {
     type HomPair[T] = (T, T)
     object sum extends Poly1 {
-      implicit def caseDouble = at[Double :: Double :: HNil] {
-        case a :: b :: HNil => a + b
-      }
+      implicit def caseDouble =
+        at[Double :: Double :: HNil] {
+          case a :: b :: HNil => a + b
+        }
     }
 
     implicit def pointOps1(p: Tuple1[Double]): VectorOps[_1, Tuple1[Double]] =
@@ -49,27 +50,33 @@ object LinearAlgebraExamples extends App {
       }
 
     implicit def pointOpsN[N <: Nat, LN <: HList, PN <: Product, ZLN <: HList](
-        implicit gen: Generic.Aux[PN, LN],
+        implicit
+        gen: Generic.Aux[PN, LN],
         zipper: Transposer.Aux[LN :: LN :: HNil, ZLN],
-        mapper: Mapper.Aux[sum.type, ZLN, LN]): PN => VectorOps[N, PN] =
+        mapper: Mapper.Aux[sum.type, ZLN, LN]
+    ): PN => VectorOps[N, PN] =
       (p: PN) =>
         new VectorOps[N, PN](p) {
           def +(other: Self): Self =
             newtype(
-                gen.from((gen.to(p) :: gen.to(other.tupled) :: HNil).transpose
-                      .map(sum)))
-      }
+              gen.from(
+                (gen.to(p) :: gen.to(other.tupled) :: HNil).transpose
+                  .map(sum)
+              )
+            )
+        }
   }
 
   def Vector(p: Double) =
     newtype[Tuple1[Double], VectorOps[_1, Tuple1[Double]]](Tuple1(p))
   def Vector[P <: Product, N <: Nat](p: P)(
-      implicit ar: ProductLength.Aux[P, N]) = newtype[P, VectorOps[N, P]](p)
+      implicit ar: ProductLength.Aux[P, N]
+  ) = newtype[P, VectorOps[N, P]](p)
 
   type V1 = Newtype[Tuple1[Double], VectorOps[_1, Tuple1[Double]]]
   type V2 = Newtype[(Double, Double), VectorOps[_2, (Double, Double)]]
-  type V3 = Newtype[
-      (Double, Double, Double), VectorOps[_3, (Double, Double, Double)]]
+  type V3 =
+    Newtype[(Double, Double, Double), VectorOps[_3, (Double, Double, Double)]]
 
   val v1 = Vector(1.0)
   typed[V1](v1)

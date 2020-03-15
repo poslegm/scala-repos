@@ -24,8 +24,8 @@ trait PathFun {
 
   def fileName(url: URL): String = getName(url.getFile)
 
-  def contentPath(url: URL): Future[String] = contentHeader(url).map {
-    header =>
+  def contentPath(url: URL): Future[String] =
+    contentHeader(url).map { header =>
       //filter only strong eTags and make sure, it can be used as path
       val eTag: Option[String] = header
         .get("ETag")
@@ -33,17 +33,18 @@ trait PathFun {
         .map(_.replaceAll("[^A-z0-9\\-]", ""))
       val contentPart = eTag.getOrElse(IO.mdSum(url.openStream()))
       s"$contentPart/${fileName(url)}"
-  }
+    }
 
-  def contentHeader(url: URL): Future[Map[String, List[String]]] = Future {
-    val connection = url.openConnection() match {
-      case http: HttpURLConnection =>
-        http.setRequestMethod("HEAD")
-        http
-      case other: URLConnection => other
+  def contentHeader(url: URL): Future[Map[String, List[String]]] =
+    Future {
+      val connection = url.openConnection() match {
+        case http: HttpURLConnection =>
+          http.setRequestMethod("HEAD")
+          http
+        case other: URLConnection => other
+      }
+      scala.concurrent.blocking(connection.getHeaderFields).asScala.toMap.map {
+        case (key, list) => (key, list.asScala.toList)
+      }
     }
-    scala.concurrent.blocking(connection.getHeaderFields).asScala.toMap.map {
-      case (key, list) => (key, list.asScala.toList)
-    }
-  }
 }

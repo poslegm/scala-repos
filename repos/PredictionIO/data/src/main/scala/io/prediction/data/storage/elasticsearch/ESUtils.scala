@@ -25,11 +25,12 @@ import scala.collection.mutable.ArrayBuffer
 object ESUtils {
   val scrollLife = new TimeValue(60000)
 
-  def getAll[T : Manifest](client: Client, builder: SearchRequestBuilder)(
-      implicit formats: Formats): Seq[T] = {
-    val results = ArrayBuffer[T]()
+  def getAll[T: Manifest](client: Client, builder: SearchRequestBuilder)(
+      implicit formats: Formats
+  ): Seq[T] = {
+    val results  = ArrayBuffer[T]()
     var response = builder.setScroll(scrollLife).get
-    var hits = response.getHits().hits()
+    var hits     = response.getHits().hits()
     results ++= hits.map(h => read[T](h.getSourceAsString))
     while (hits.size > 0) {
       response = client

@@ -31,24 +31,27 @@ import org.apache.spark.util.Utils
   * to the Python partitioning function so that its id() is not reused.
   */
 private[spark] class PythonPartitioner(
-    override val numPartitions: Int, val pyPartitionFunctionId: Long)
-    extends Partitioner {
+    override val numPartitions: Int,
+    val pyPartitionFunctionId: Long
+) extends Partitioner {
 
-  override def getPartition(key: Any): Int = key match {
-    case null => 0
-    // we don't trust the Python partition function to return valid partition ID's so
-    // let's do a modulo numPartitions in any case
-    case key: Long => Utils.nonNegativeMod(key.toInt, numPartitions)
-    case _ => Utils.nonNegativeMod(key.hashCode(), numPartitions)
-  }
+  override def getPartition(key: Any): Int =
+    key match {
+      case null => 0
+      // we don't trust the Python partition function to return valid partition ID's so
+      // let's do a modulo numPartitions in any case
+      case key: Long => Utils.nonNegativeMod(key.toInt, numPartitions)
+      case _         => Utils.nonNegativeMod(key.hashCode(), numPartitions)
+    }
 
-  override def equals(other: Any): Boolean = other match {
-    case h: PythonPartitioner =>
-      h.numPartitions == numPartitions &&
-      h.pyPartitionFunctionId == pyPartitionFunctionId
-    case _ =>
-      false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case h: PythonPartitioner =>
+        h.numPartitions == numPartitions &&
+          h.pyPartitionFunctionId == pyPartitionFunctionId
+      case _ =>
+        false
+    }
 
   override def hashCode: Int =
     31 * numPartitions + pyPartitionFunctionId.hashCode

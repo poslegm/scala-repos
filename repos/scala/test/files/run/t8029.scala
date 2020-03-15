@@ -39,7 +39,7 @@ package object p4 {
     val global = newCompiler()
     import global._
     def typecheck(code: String): Unit = {
-      val r = new Run
+      val r          = new Run
       val sourceFile = newSources(code).head
       global.reporter.reset()
       r.compileSources(sourceFile :: Nil)

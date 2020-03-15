@@ -29,7 +29,7 @@ class ObjectTest {
   @Test def equals(): Unit = {
     case class XY(x: Int, y: Int)
 
-    val l = List(XY(1, 2), XY(2, 1))
+    val l    = List(XY(1, 2), XY(2, 1))
     val xy12 = XY(1, 2)
 
     assertTrue(l.contains(xy12))

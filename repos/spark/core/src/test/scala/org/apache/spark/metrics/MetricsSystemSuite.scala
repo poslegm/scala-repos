@@ -27,9 +27,11 @@ import org.apache.spark.deploy.master.MasterSource
 import org.apache.spark.metrics.source.Source
 
 class MetricsSystemSuite
-    extends SparkFunSuite with BeforeAndAfter with PrivateMethodTester {
-  var filePath: String = _
-  var conf: SparkConf = null
+    extends SparkFunSuite
+    with BeforeAndAfter
+    with PrivateMethodTester {
+  var filePath: String             = _
+  var conf: SparkConf              = null
   var securityMgr: SecurityManager = null
 
   before {
@@ -45,7 +47,7 @@ class MetricsSystemSuite
       MetricsSystem.createMetricsSystem("default", conf, securityMgr)
     metricsSystem.start()
     val sources = PrivateMethod[ArrayBuffer[Source]]('sources)
-    val sinks = PrivateMethod[ArrayBuffer[Source]]('sinks)
+    val sinks   = PrivateMethod[ArrayBuffer[Source]]('sinks)
 
     assert(metricsSystem.invokePrivate(sources()).length === 0)
     assert(metricsSystem.invokePrivate(sinks()).length === 0)
@@ -57,7 +59,7 @@ class MetricsSystemSuite
       MetricsSystem.createMetricsSystem("test", conf, securityMgr)
     metricsSystem.start()
     val sources = PrivateMethod[ArrayBuffer[Source]]('sources)
-    val sinks = PrivateMethod[ArrayBuffer[Source]]('sinks)
+    val sinks   = PrivateMethod[ArrayBuffer[Source]]('sinks)
 
     assert(metricsSystem.invokePrivate(sources()).length === 0)
     assert(metricsSystem.invokePrivate(sinks()).length === 1)
@@ -70,11 +72,11 @@ class MetricsSystemSuite
 
   test("MetricsSystem with Driver instance") {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
-    val appId = "testId"
+    val appId      = "testId"
     val executorId = "driver"
     conf.set("spark.app.id", appId)
     conf.set("spark.executor.id", executorId)
@@ -89,7 +91,7 @@ class MetricsSystemSuite
 
   test("MetricsSystem with Driver instance and spark.app.id is not set") {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
@@ -106,7 +108,7 @@ class MetricsSystemSuite
 
   test("MetricsSystem with Driver instance and spark.executor.id is not set") {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
@@ -123,11 +125,11 @@ class MetricsSystemSuite
 
   test("MetricsSystem with Executor instance") {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
-    val appId = "testId"
+    val appId      = "testId"
     val executorId = "1"
     conf.set("spark.app.id", appId)
     conf.set("spark.executor.id", executorId)
@@ -142,7 +144,7 @@ class MetricsSystemSuite
 
   test("MetricsSystem with Executor instance and spark.app.id is not set") {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
@@ -157,9 +159,11 @@ class MetricsSystemSuite
     assert(metricName === source.sourceName)
   }
 
-  test("MetricsSystem with Executor instance and spark.executor.id is not set") {
+  test(
+    "MetricsSystem with Executor instance and spark.executor.id is not set"
+  ) {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
@@ -176,11 +180,11 @@ class MetricsSystemSuite
 
   test("MetricsSystem with instance which is neither Driver nor Executor") {
     val source = new Source {
-      override val sourceName = "dummySource"
+      override val sourceName     = "dummySource"
       override val metricRegistry = new MetricRegistry()
     }
 
-    val appId = "testId"
+    val appId      = "testId"
     val executorId = "dummyExecutorId"
     conf.set("spark.app.id", appId)
     conf.set("spark.executor.id", executorId)

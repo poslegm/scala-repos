@@ -28,7 +28,8 @@ trait Compose[=>:[_, _]] { self =>
 
     /** `compose` is associative. */
     def associative[A, B, C, D](ab: (A =>: B), bc: (B =>: C), cd: (C =>: D))(
-        implicit E: Equal[A =>: D]): Boolean = {
+        implicit E: Equal[A =>: D]
+    ): Boolean = {
       val ad1 = compose(cd, compose(bc, ab))
       val ad2 = compose(compose(cd, bc), ab)
       E.equal(ad1, ad2)

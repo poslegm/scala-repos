@@ -25,14 +25,16 @@ import scala.annotation.tailrec
 import org.apache.spark.internal.Logging
 
 private[streaming] class RateLimitedOutputStream(
-    out: OutputStream, desiredBytesPerSec: Int)
-    extends OutputStream with Logging {
+    out: OutputStream,
+    desiredBytesPerSec: Int
+) extends OutputStream
+    with Logging {
 
   require(desiredBytesPerSec > 0)
 
-  private val SYNC_INTERVAL = NANOSECONDS.convert(10, SECONDS)
-  private val CHUNK_SIZE = 8192
-  private var lastSyncTime = System.nanoTime
+  private val SYNC_INTERVAL         = NANOSECONDS.convert(10, SECONDS)
+  private val CHUNK_SIZE            = 8192
+  private var lastSyncTime          = System.nanoTime
   private var bytesWrittenSinceSync = 0L
 
   override def write(b: Int) {
@@ -64,9 +66,9 @@ private[streaming] class RateLimitedOutputStream(
 
   @tailrec
   private def waitToWrite(numBytes: Int) {
-    val now = System.nanoTime
+    val now             = System.nanoTime
     val elapsedNanosecs = math.max(now - lastSyncTime, 1)
-    val rate = bytesWrittenSinceSync.toDouble * 1000000000 / elapsedNanosecs
+    val rate            = bytesWrittenSinceSync.toDouble * 1000000000 / elapsedNanosecs
     if (rate < desiredBytesPerSec) {
       // It's okay to write; just update some variables and return
       bytesWrittenSinceSync += numBytes
@@ -80,12 +82,13 @@ private[streaming] class RateLimitedOutputStream(
       val targetTimeInMillis =
         bytesWrittenSinceSync * 1000 / desiredBytesPerSec
       val elapsedTimeInMillis = elapsedNanosecs / 1000000
-      val sleepTimeInMillis = targetTimeInMillis - elapsedTimeInMillis
+      val sleepTimeInMillis   = targetTimeInMillis - elapsedTimeInMillis
       if (sleepTimeInMillis > 0) {
         logTrace(
-            "Natural rate is " + rate + " per second but desired rate is " +
+          "Natural rate is " + rate + " per second but desired rate is " +
             desiredBytesPerSec + ", sleeping for " + sleepTimeInMillis +
-            " ms to compensate.")
+            " ms to compensate."
+        )
         Thread.sleep(sleepTimeInMillis)
       }
       waitToWrite(numBytes)

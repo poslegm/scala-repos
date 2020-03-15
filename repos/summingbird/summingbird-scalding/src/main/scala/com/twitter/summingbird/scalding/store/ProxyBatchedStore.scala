@@ -27,14 +27,16 @@ import com.twitter.scalding.{Mode, TypedPipe}
   */
 abstract class ProxyBatchedStore[K, V] extends batch.BatchedStore[K, V] {
   def proxy: batch.BatchedStore[K, V]
-  override def batcher = proxy.batcher
-  override def ordering = proxy.ordering
+  override def batcher                  = proxy.batcher
+  override def ordering                 = proxy.ordering
   override def select(b: List[BatchID]) = proxy.select(b)
-  override def pruning = proxy.pruning
+  override def pruning                  = proxy.pruning
   override def readLast(exclusiveUB: BatchID, mode: Mode) =
     proxy.readLast(exclusiveUB, mode)
-  override def writeLast(batchID: BatchID, lastVals: TypedPipe[(K, V)])(
-      implicit flowDef: FlowDef, mode: Mode): Unit =
+  override def writeLast(
+      batchID: BatchID,
+      lastVals: TypedPipe[(K, V)]
+  )(implicit flowDef: FlowDef, mode: Mode): Unit =
     proxy.writeLast(batchID, lastVals)(flowDef, mode)
 
   override def toString =

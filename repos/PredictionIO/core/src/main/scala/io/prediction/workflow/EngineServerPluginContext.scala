@@ -35,7 +35,8 @@ import scala.collection.mutable
 class EngineServerPluginContext(
     val plugins: mutable.Map[String, mutable.Map[String, EngineServerPlugin]],
     val pluginParams: mutable.Map[String, JValue],
-    val log: LoggingAdapter) {
+    val log: LoggingAdapter
+) {
   def outputBlockers: Map[String, EngineServerPlugin] =
     plugins.getOrElse(EngineServerPlugin.outputBlocker, Map()).toMap
   def outputSniffers: Map[String, EngineServerPlugin] =
@@ -45,14 +46,17 @@ class EngineServerPluginContext(
 object EngineServerPluginContext extends Logging {
   implicit val formats: Formats = DefaultFormats
 
-  def apply(log: LoggingAdapter,
-            engineVariant: String): EngineServerPluginContext = {
+  def apply(
+      log: LoggingAdapter,
+      engineVariant: String
+  ): EngineServerPluginContext = {
     val plugins = mutable.Map[String, mutable.Map[String, EngineServerPlugin]](
-        EngineServerPlugin.outputBlocker -> mutable.Map(),
-        EngineServerPlugin.outputSniffer -> mutable.Map())
-    val pluginParams = mutable.Map[String, JValue]()
+      EngineServerPlugin.outputBlocker -> mutable.Map(),
+      EngineServerPlugin.outputSniffer -> mutable.Map()
+    )
+    val pluginParams  = mutable.Map[String, JValue]()
     val serviceLoader = ServiceLoader.load(classOf[EngineServerPlugin])
-    val variantJson = parse(stringFromFile(engineVariant))
+    val variantJson   = parse(stringFromFile(engineVariant))
     (variantJson \ "plugins").extractOpt[JObject].foreach { pluginDefs =>
       pluginDefs.obj.foreach { pluginParams += _ }
     }
@@ -74,7 +78,7 @@ object EngineServerPluginContext extends Logging {
   private def stringFromFile(filePath: String): String = {
     try {
       val uri = new URI(filePath)
-      val fs = FileSystem.get(uri, new Configuration())
+      val fs  = FileSystem.get(uri, new Configuration())
       new String(ByteStreams.toByteArray(fs.open(new Path(uri))).map(_.toChar))
     } catch {
       case e: java.io.IOException =>

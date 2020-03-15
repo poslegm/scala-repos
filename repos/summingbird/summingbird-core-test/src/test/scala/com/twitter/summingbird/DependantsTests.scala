@@ -32,7 +32,7 @@ object DependantsTest extends Properties("Dependants") {
   implicit def testStore: Memory#Store[Int, Int] = MMap[Int, Int]()
   implicit def testService: Memory#Service[Int, Int] =
     new MHashMap[Int, Int]() with MemoryService[Int, Int]
-  implicit def sink1: Memory#Sink[Int] = ((_) => Unit)
+  implicit def sink1: Memory#Sink[Int]        = ((_) => Unit)
   implicit def sink2: Memory#Sink[(Int, Int)] = ((_) => Unit)
 
   implicit def genProducer: Arbitrary[Producer[Memory, _]] =
@@ -43,22 +43,22 @@ object DependantsTest extends Properties("Dependants") {
       val deps = Producer
         .dependenciesOf(prod)
         .toSet
-        (Producer.transitiveDependenciesOf(prod).toSet & deps) == deps
+      (Producer.transitiveDependenciesOf(prod).toSet & deps) == deps
   }
   property("we don't depend on ourself") = forAll {
     (prod: Producer[Memory, _]) =>
-      !(
-      (Producer.dependenciesOf(prod) ++ Producer.transitiveDependenciesOf(
-              prod)).toSet.contains(prod))
+      !((Producer.dependenciesOf(prod) ++ Producer.transitiveDependenciesOf(
+        prod
+      )).toSet.contains(prod))
   }
 
-  property("if transitive deps == non-transitive, then parents are sources") = forAll {
-    (prod: Producer[Memory, _]) =>
+  property("if transitive deps == non-transitive, then parents are sources") =
+    forAll { (prod: Producer[Memory, _]) =>
       val deps = Producer.dependenciesOf(prod)
       (Producer.transitiveDependenciesOf(prod) == deps) ==> {
         deps.forall { case s @ Source(_) => true; case _ => false }
       }
-  }
+    }
   def implies(a: Boolean, b: => Boolean): Boolean = if (a) b else true
 
   property("Sources all the only things of depth == 0") = forAll {
@@ -67,12 +67,15 @@ object DependantsTest extends Properties("Dependants") {
       deps.nodes.forall { t =>
         val tdepth = deps.depth(t).get
         implies(tdepth == 0, t.isInstanceOf[Source[_, _]]) && implies(
-            tdepth > 0,
-            (Producer.dependenciesOf(t).map { deps.depth(_).get }.max) < tdepth) &&
-        implies(tdepth > 0,
-                Producer
-                  .dependenciesOf(t)
-                  .exists { deps.depth(_) == Some(tdepth - 1) })
+          tdepth > 0,
+          (Producer.dependenciesOf(t).map { deps.depth(_).get }.max) < tdepth
+        ) &&
+        implies(
+          tdepth > 0,
+          Producer
+            .dependenciesOf(t)
+            .exists { deps.depth(_) == Some(tdepth - 1) }
+        )
       }
   }
 
@@ -109,15 +112,15 @@ object DependantsTest extends Properties("Dependants") {
   }
 
   property(
-      "tails have no dependencies, and nodes with no dependencies are tails") = forAll {
-    (prod: Producer[Memory, _]) =>
-      val dependants = Dependants(prod)
-      import dependants._
+    "tails have no dependencies, and nodes with no dependencies are tails"
+  ) = forAll { (prod: Producer[Memory, _]) =>
+    val dependants = Dependants(prod)
+    import dependants._
 
-      val tails = allTails.toSet
-      tails.map { dependantsOf(_) }.forall { _.get.isEmpty } && {
-        nodes.filter { dependantsOf(_) == Some(Nil) }.forall(tails)
-      }
+    val tails = allTails.toSet
+    tails.map { dependantsOf(_) }.forall { _.get.isEmpty } && {
+      nodes.filter { dependantsOf(_) == Some(Nil) }.forall(tails)
+    }
   }
 
   property("finding all nodes and tails works") = forAll {
@@ -131,8 +134,8 @@ object DependantsTest extends Properties("Dependants") {
         if (newSet == acc) acc
         else fix(newSet)(fn)
       }
-      val alln = fix[Producer[Memory, Any]](Set(prod))(allParents _)
-      val deps = Dependants(prod)
+      val alln  = fix[Producer[Memory, Any]](Set(prod))(allParents _)
+      val deps  = Dependants(prod)
       val tails = alln.filter(deps.fanOut(_).get == 0)
       (tails == deps.allTails.toSet) && (tails.size == deps.allTails.size) &&
       (deps.nodes.toSet == alln) && (deps.nodes.size == alln.size)
@@ -152,8 +155,8 @@ object DependantsTest extends Properties("Dependants") {
 
   property("Sources + transitive dependants are all the nodes") = forAll {
     (prod: Producer[Memory, _]) =>
-      val allNodes = Producer.entireGraphOf(prod)
-      val sources = allNodes.collect { case s @ Source(_) => s }.toSet
+      val allNodes   = Producer.entireGraphOf(prod)
+      val sources    = allNodes.collect { case s @ Source(_) => s }.toSet
       val dependants = Dependants(prod)
       val sAndDown =
         (sources ++ sources.flatMap { dependants.transitiveDependantsOf(_) })
@@ -161,116 +164,128 @@ object DependantsTest extends Properties("Dependants") {
   }
 
   property(
-      "transitiveDependantsTillOutput finds outputs as a subset of dependants") = forAll {
-    (prod: Producer[Memory, _]) =>
-      val dependants = Dependants(prod)
-      dependants.nodes.forall { n =>
-        val output = dependants
-          .transitiveDependantsTillOutput(n)
-          .collect {
-            case t: TailProducer[_, _] => t
-          }
-          .toSet[Producer[Memory, Any]]
+    "transitiveDependantsTillOutput finds outputs as a subset of dependants"
+  ) = forAll { (prod: Producer[Memory, _]) =>
+    val dependants = Dependants(prod)
+    dependants.nodes.forall { n =>
+      val output = dependants
+        .transitiveDependantsTillOutput(n)
+        .collect {
+          case t: TailProducer[_, _] => t
+        }
+        .toSet[Producer[Memory, Any]]
 
-          (dependants.transitiveDependantsOf(n).toSet intersect output) == output
-      }
+      (dependants.transitiveDependantsOf(n).toSet intersect output) == output
+    }
   }
 
   property(
-      "transitiveDependantsTillOutput is a subset of writers dependencies") = forAll {
-    (prod: Producer[Memory, _]) =>
-      val dependants = Dependants(prod)
-      dependants.nodes.forall { n =>
-        val depTillWrite = dependants.transitiveDependantsTillOutput(n)
-        val writerDependencies = depTillWrite.collect {
+    "transitiveDependantsTillOutput is a subset of writers dependencies"
+  ) = forAll { (prod: Producer[Memory, _]) =>
+    val dependants = Dependants(prod)
+    dependants.nodes.forall { n =>
+      val depTillWrite = dependants.transitiveDependantsTillOutput(n)
+      val writerDependencies = depTillWrite
+        .collect {
           case t: TailProducer[_, _] => t
-        }.flatMap { n =>
-          n :: Producer.transitiveDependenciesOf(n)
-        }.toSet
+        }
+        .flatMap { n => n :: Producer.transitiveDependenciesOf(n) }
+        .toSet
 
-        depTillWrite.collectFirst { case MergedProducer(_, _) => true }
-          .getOrElse(false) || writerDependencies.isEmpty ||
-        ((depTillWrite.toSet intersect writerDependencies) == depTillWrite.toSet)
-      }
+      depTillWrite
+        .collectFirst { case MergedProducer(_, _) => true }
+        .getOrElse(false) || writerDependencies.isEmpty ||
+      ((depTillWrite.toSet intersect writerDependencies) == depTillWrite.toSet)
+    }
   }
 
-  property("transitiveDependantsTillOutput finds no children of outputs") = forAll {
-    (prod: Producer[Memory, _]) =>
+  property("transitiveDependantsTillOutput finds no children of outputs") =
+    forAll { (prod: Producer[Memory, _]) =>
       val dependants = Dependants(prod)
       dependants.nodes.forall { n =>
         val tillWrite = dependants.transitiveDependantsTillOutput(n)
-        val outputChildren = tillWrite.collect {
-          case s @ Summer(_, _, _) => s
-          case w @ WrittenProducer(_, _) => w
-        }.flatMap { dependants.transitiveDependantsOf(_) }
-          .toSet[Producer[Memory, Any]]
-        tillWrite.collectFirst { case MergedProducer(_, _) => true }
-          .getOrElse(false) || (tillWrite.toSet & outputChildren.toSet).size == 0
-      }
-  }
-
-  property("dependantsAfterMerge never returns MergedProducer or AlsoProducer") = forAll {
-    (prod: Producer[Memory, _]) =>
-      val dependants = Dependants(prod)
-      dependants.nodes.forall { n =>
-        dependants
-          .dependantsAfterMerge(n)
-          .collectFirst {
-            case m @ MergedProducer(_, _) => m
-            case a @ AlsoProducer(_, _) => a
+        val outputChildren = tillWrite
+          .collect {
+            case s @ Summer(_, _, _)       => s
+            case w @ WrittenProducer(_, _) => w
           }
-          .isEmpty
+          .flatMap { dependants.transitiveDependantsOf(_) }
+          .toSet[Producer[Memory, Any]]
+        tillWrite
+          .collectFirst { case MergedProducer(_, _) => true }
+          .getOrElse(
+            false
+          ) || (tillWrite.toSet & outputChildren.toSet).size == 0
       }
+    }
+
+  property(
+    "dependantsAfterMerge never returns MergedProducer or AlsoProducer"
+  ) = forAll { (prod: Producer[Memory, _]) =>
+    val dependants = Dependants(prod)
+    dependants.nodes.forall { n =>
+      dependants
+        .dependantsAfterMerge(n)
+        .collectFirst {
+          case m @ MergedProducer(_, _) => m
+          case a @ AlsoProducer(_, _)   => a
+        }
+        .isEmpty
+    }
   }
   /*
    * It is easy to look up the graph, so we look up to all non-MergedProducer dependencies.
    * Then, the dependantsAfterMerge of those nodes should be a superset of the original node
    */
-  property("dependantsAfterMerge not inconsistent with nonMergeDependencies") = forAll {
-    (prod: Producer[Memory, _]) =>
+  property("dependantsAfterMerge not inconsistent with nonMergeDependencies") =
+    forAll { (prod: Producer[Memory, _]) =>
       val dependants = Dependants(prod)
       def nonMergeDependencies(
-          n: Producer[Memory, Any]): Set[Producer[Memory, Any]] =
+          n: Producer[Memory, Any]
+      ): Set[Producer[Memory, Any]] =
         Producer.dependenciesOf(n).toSet[Producer[Memory, Any]].flatMap {
           case m @ MergedProducer(_, _) => nonMergeDependencies(m)
-          case a @ AlsoProducer(_, _) => nonMergeDependencies(a)
-          case other => Set(other)
+          case a @ AlsoProducer(_, _)   => nonMergeDependencies(a)
+          case other                    => Set(other)
         }
 
       val cache = collection.mutable
         .Map[Producer[Memory, Any], Set[Producer[Memory, Any]]]()
 
-      dependants.nodes.filterNot {
-        case MergedProducer(_, _) => true
-        case AlsoProducer(_, _) => true
-        case _ => false
-      } // for all non-merged/also nodes
-      .forall { n =>
-        val nonMergeDeps = nonMergeDependencies(n)
-        nonMergeDeps.forall { parent =>
-          val parentTargets = cache.getOrElseUpdate(
-              parent, dependants.dependantsAfterMerge(parent).toSet)
-          parentTargets(n)
+      dependants.nodes
+        .filterNot {
+          case MergedProducer(_, _) => true
+          case AlsoProducer(_, _)   => true
+          case _                    => false
+        } // for all non-merged/also nodes
+        .forall { n =>
+          val nonMergeDeps = nonMergeDependencies(n)
+          nonMergeDeps.forall { parent =>
+            val parentTargets = cache.getOrElseUpdate(
+              parent,
+              dependants.dependantsAfterMerge(parent).toSet
+            )
+            parentTargets(n)
+          }
         }
-      }
-  }
+    }
   /*
    * dependencies of the results of dependantsAfterMerge are MergedProducer, AlsoProducer or the
    * argument.
    */
   property(
-      "dependantsAfterMerge(x).flatMap(dependenciesOf) is x, Also or Merged") = forAll {
-    (prod: Producer[Memory, _]) =>
-      val dependants = Dependants(prod)
-      import dependants._
+    "dependantsAfterMerge(x).flatMap(dependenciesOf) is x, Also or Merged"
+  ) = forAll { (prod: Producer[Memory, _]) =>
+    val dependants = Dependants(prod)
+    import dependants._
 
-      nodes.forall { n =>
-        dependantsAfterMerge(n).flatMap(Producer.dependenciesOf).forall {
-          case node if node == n => true
-          case AlsoProducer(_, _) => true
-          case MergedProducer(_, _) => true
-          case _ => false
-        }
+    nodes.forall { n =>
+      dependantsAfterMerge(n).flatMap(Producer.dependenciesOf).forall {
+        case node if node == n    => true
+        case AlsoProducer(_, _)   => true
+        case MergedProducer(_, _) => true
+        case _                    => false
       }
+    }
   }
 }

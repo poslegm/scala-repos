@@ -22,8 +22,8 @@ class IdeClientSbt(
     context: CompileContext,
     modules: Seq[String],
     consumer: OutputConsumer,
-    sourceToTarget: File => Option[BuildTarget[_ <: BuildRootDescriptor]])
-    extends IdeClient(compilerName, context, modules, consumer) {
+    sourceToTarget: File => Option[BuildTarget[_ <: BuildRootDescriptor]]
+) extends IdeClient(compilerName, context, modules, consumer) {
 
   def generated(source: File, outputFile: File, name: String) {
     invalidateBoundForms(source)
@@ -37,14 +37,15 @@ class IdeClientSbt(
   def processed(source: File): Unit = {}
 
   // TODO Expect JPS compiler in UI-designer to take generated class events into account
-  private val FormsToCompileKey = catching(
-      classOf[ClassNotFoundException], classOf[NoSuchFieldException]).opt {
-    val field = Class
-      .forName("org.jetbrains.jps.uiDesigner.compiler.FormsBuilder")
-      .getDeclaredField("FORMS_TO_COMPILE")
-    field.setAccessible(true)
-    field.get(null).asInstanceOf[Key[util.Map[File, util.Collection[File]]]]
-  }
+  private val FormsToCompileKey =
+    catching(classOf[ClassNotFoundException], classOf[NoSuchFieldException])
+      .opt {
+        val field = Class
+          .forName("org.jetbrains.jps.uiDesigner.compiler.FormsBuilder")
+          .getDeclaredField("FORMS_TO_COMPILE")
+        field.setAccessible(true)
+        field.get(null).asInstanceOf[Key[util.Map[File, util.Collection[File]]]]
+      }
 
   private def invalidateBoundForms(source: File) {
     FormsToCompileKey.foreach { key =>

@@ -22,13 +22,13 @@ import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.util.{IntParam, MemoryParam}
 
 class ApplicationMasterArguments(val args: Array[String]) {
-  var userJar: String = null
-  var userClass: String = null
-  var primaryPyFile: String = null
-  var primaryRFile: String = null
-  var userArgs: Seq[String] = Nil
-  var executorMemory = 1024
-  var executorCores = 1
+  var userJar: String        = null
+  var userClass: String      = null
+  var primaryPyFile: String  = null
+  var primaryRFile: String   = null
+  var userArgs: Seq[String]  = Nil
+  var executorMemory         = 1024
+  var executorCores          = 1
   var propertiesFile: String = null
 
   parseArgs(args.toList)
@@ -62,11 +62,15 @@ class ApplicationMasterArguments(val args: Array[String]) {
           userArgsBuffer += value
           args = tail
 
-        case ("--worker-memory" | "--executor-memory") :: MemoryParam(value) :: tail =>
+        case ("--worker-memory" | "--executor-memory") :: MemoryParam(
+              value
+            ) :: tail =>
           executorMemory = value
           args = tail
 
-        case ("--worker-cores" | "--executor-cores") :: IntParam(value) :: tail =>
+        case ("--worker-cores" | "--executor-cores") :: IntParam(
+              value
+            ) :: tail =>
           executorCores = value
           args = tail
 
@@ -82,7 +86,8 @@ class ApplicationMasterArguments(val args: Array[String]) {
     if (primaryPyFile != null && primaryRFile != null) {
       // scalastyle:off println
       System.err.println(
-          "Cannot have primary-py-file and primary-r-file at the same time")
+        "Cannot have primary-py-file and primary-r-file at the same time"
+      )
       // scalastyle:on println
       System.exit(-1)
     }
@@ -95,7 +100,8 @@ class ApplicationMasterArguments(val args: Array[String]) {
     if (unknownParam != null) {
       System.err.println("Unknown/unsupported param " + unknownParam)
     }
-    System.err.println("""
+    System.err.println(
+      """
       |Usage: org.apache.spark.deploy.yarn.ApplicationMaster [options]
       |Options:
       |  --jar JAR_PATH       Path to your application's JAR file
@@ -109,7 +115,8 @@ class ApplicationMasterArguments(val args: Array[String]) {
       |  --executor-cores NUM   Number of cores for the executors (Default: 1)
       |  --executor-memory MEM  Memory per executor (e.g. 1000M, 2G) (Default: 1G)
       |  --properties-file FILE Path to a custom Spark properties file.
-      """.stripMargin)
+      """.stripMargin
+    )
     // scalastyle:on println
     System.exit(exitCode)
   }

@@ -63,7 +63,7 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
   }
 
   test("EventLoop: onError") {
-    val e = new RuntimeException("Oops")
+    val e                                  = new RuntimeException("Oops")
     @volatile var receivedError: Throwable = null
     val eventLoop = new EventLoop[Int]("test") {
 
@@ -84,8 +84,9 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
   }
 
   test(
-      "EventLoop: error thrown from onError should not crash the event thread") {
-    val e = new RuntimeException("Oops")
+    "EventLoop: error thrown from onError should not crash the event thread"
+  ) {
+    val e                                  = new RuntimeException("Oops")
     @volatile var receivedError: Throwable = null
     val eventLoop = new EventLoop[Int]("test") {
 
@@ -141,7 +142,7 @@ class EventLoopSuite extends SparkFunSuite with Timeouts {
     }
     eventLoop.start()
 
-    val threadNum = 5
+    val threadNum            = 5
     val eventsFromEachThread = 100
     (1 to threadNum).foreach { _ =>
       new Thread() {

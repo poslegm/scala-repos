@@ -106,7 +106,7 @@ package object mat {
     if (n <= 0) Mat.empty[Double]
     else {
       val tmp = Array.ofDim[Double](n * n)
-      var i = 0
+      var i   = 0
       while (i < n) {
         tmp(n * i + i) = 1
         i += 1
@@ -140,8 +140,11 @@ package object mat {
     * @param asRows if true, returns row-tiling; default is column-tiling
     * @tparam T type of elements in array
     */
-  def repeat[@spec(Boolean, Int, Long, Double) T : ST](
-      v: Array[T], n: Int, asRows: Boolean = false): Mat[T] = {
+  def repeat[@spec(Boolean, Int, Long, Double) T: ST](
+      v: Array[T],
+      n: Int,
+      asRows: Boolean = false
+  ): Mat[T] = {
 
     if (asRows) {
       val tmp = array.flatten(for (i <- 1 to n) yield v)

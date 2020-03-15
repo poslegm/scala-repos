@@ -24,10 +24,12 @@ import org.scalajs.core.tools.linker.analyzer.SymbolRequirement
   *  You probably want to use an instance of [[linker.Linker]], rather than this
   *  low-level class.
   */
-abstract class LinkerBackend(val semantics: Semantics,
-                             val esLevel: ESLevel,
-                             val withSourceMap: Boolean,
-                             protected val config: LinkerBackend.Config) {
+abstract class LinkerBackend(
+    val semantics: Semantics,
+    val esLevel: ESLevel,
+    val withSourceMap: Boolean,
+    protected val config: LinkerBackend.Config
+) {
 
   /** Symbols this backend needs to be present in the linking unit. */
   val symbolRequirements: SymbolRequirement
@@ -39,7 +41,10 @@ abstract class LinkerBackend(val semantics: Semantics,
     *  @param logger Logger to use
     */
   def emit(
-      unit: LinkingUnit, output: WritableVirtualJSFile, logger: Logger): Unit
+      unit: LinkingUnit,
+      output: WritableVirtualJSFile,
+      logger: Logger
+  ): Unit
 
   /** Verify that a [[LinkingUnit]] corresponds to this [[LinkerBackend]]'s
     *  [[org.scalajs.core.tools.sem.Semantics Semantics]] and
@@ -48,10 +53,14 @@ abstract class LinkerBackend(val semantics: Semantics,
     *  @throws java.lang.IllegalArgumentException if there is a mismatch
     */
   protected def verifyUnit(unit: LinkingUnit): Unit = {
-    require(unit.semantics == semantics,
-            "LinkingUnit and LinkerBackend must agree on semantics")
-    require(unit.esLevel == esLevel,
-            "LinkingUnit and LinkerBackend must agree on esLevel")
+    require(
+      unit.semantics == semantics,
+      "LinkingUnit and LinkerBackend must agree on semantics"
+    )
+    require(
+      unit.esLevel == esLevel,
+      "LinkingUnit and LinkerBackend must agree on esLevel"
+    )
   }
 }
 
@@ -67,11 +76,11 @@ object LinkerBackend {
       val prettyPrint: Boolean = false
   ) {
     def withRelativizeSourceMapBase(
-        relativizeSourceMapBase: Option[URI]): Config =
+        relativizeSourceMapBase: Option[URI]
+    ): Config =
       copy(relativizeSourceMapBase = relativizeSourceMapBase)
 
-    def withCustomOutputWrapper(
-        customOutputWrapper: (String, String)): Config =
+    def withCustomOutputWrapper(customOutputWrapper: (String, String)): Config =
       copy(customOutputWrapper = customOutputWrapper)
 
     def withPrettyPrint(prettyPrint: Boolean): Config =
@@ -80,7 +89,8 @@ object LinkerBackend {
     private def copy(
         relativizeSourceMapBase: Option[URI] = relativizeSourceMapBase,
         customOutputWrapper: (String, String) = customOutputWrapper,
-        prettyPrint: Boolean = prettyPrint): Config = {
+        prettyPrint: Boolean = prettyPrint
+    ): Config = {
       new Config(relativizeSourceMapBase, customOutputWrapper, prettyPrint)
     }
   }

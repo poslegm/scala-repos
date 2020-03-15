@@ -30,14 +30,16 @@ import org.saddle.array
   */
 private[saddle] object JoinHelper {
 
-  def apply(leftLabels: Array[Int],
-            rightLabels: Array[Int],
-            max_groups: Int,
-            how: JoinType): JoinResult = {
+  def apply(
+      leftLabels: Array[Int],
+      rightLabels: Array[Int],
+      max_groups: Int,
+      how: JoinType
+  ): JoinResult = {
     val (marker, counter) = how match {
       case InnerJoin => (ijMarker, ijCounter)
       case OuterJoin => (ojMarker, ojCounter)
-      case LeftJoin => (ljMarker, ljCounter)
+      case LeftJoin  => (ljMarker, ljCounter)
       case RightJoin => sys.error("Cannot call directly with RightJoin")
     }
 
@@ -79,7 +81,9 @@ private[saddle] object JoinHelper {
     }
 
     JoinResult(
-        applyUnsorter(lUnsorter, lLabels), applyUnsorter(rUnsorter, rLabels))
+      applyUnsorter(lUnsorter, lLabels),
+      applyUnsorter(rUnsorter, rLabels)
+    )
   }
 
   // Calculates mapping of factor label to count seen in labels array
@@ -88,7 +92,7 @@ private[saddle] object JoinHelper {
 
     // Create vector of factor counts seen in labels array, saving location 0 for N/A
     val counts = Array.ofDim[Int](numFactors + 1)
-    var i = 0
+    var i      = 0
     while (i < n) {
       counts(labels(i) + 1) += 1
       i += 1
@@ -100,14 +104,17 @@ private[saddle] object JoinHelper {
   // Calculate permutation from sorted(labels) -> labels, so we can recover an array of factor labels
   // in the originally provided order.
   private def unsorter(
-      labels: Array[Int], counts: Array[Int], numFactors: Int): Array[Int] = {
+      labels: Array[Int],
+      counts: Array[Int],
+      numFactors: Int
+  ): Array[Int] = {
     val n = labels.length
 
     // calculate running sum of label counts
     // - acts as a map from factor label to first offset within hypothetically sorted
     //   label array (in factor-ascending order)
     val where = Array.ofDim[Int](numFactors + 1)
-    var i = 1
+    var i     = 1
     while (i < numFactors + 1) {
       where(i) = where(i - 1) + counts(i - 1)
       i += 1
@@ -128,12 +135,14 @@ private[saddle] object JoinHelper {
   }
 
   private def applyUnsorter(
-      unsorter: Array[Int], labels: Array[Int]): Array[Int] = {
+      unsorter: Array[Int],
+      labels: Array[Int]
+  ): Array[Int] = {
     if (unsorter.length > 0) array.take(unsorter, labels, -1)
     else {
       val ll = labels.length
       val ar = Array.ofDim[Int](ll)
-      var i = 0
+      var i  = 0
       while (i < ll) {
         ar(i) = -1
         i += 1
@@ -148,13 +157,15 @@ private[saddle] object JoinHelper {
   // Output: new join position
   // Effect: updates label arrays
   private trait LabelMarker {
-    def apply(lLabels: Array[Int],
-              rLabels: Array[Int],
-              lc: Int,
-              rc: Int,
-              lpos: Int,
-              rpos: Int,
-              pos: Int): Int
+    def apply(
+        lLabels: Array[Int],
+        rLabels: Array[Int],
+        lc: Int,
+        rc: Int,
+        lpos: Int,
+        rpos: Int,
+        pos: Int
+    ): Int
   }
 
   // Input:  L/R count of current label
@@ -179,18 +190,20 @@ private[saddle] object JoinHelper {
   }
 
   private object ijMarker extends LabelMarker {
-    def apply(lLabels: Array[Int],
-              rLabels: Array[Int],
-              lc: Int,
-              rc: Int,
-              lpos: Int,
-              rpos: Int,
-              pos: Int): Int = {
+    def apply(
+        lLabels: Array[Int],
+        rLabels: Array[Int],
+        lc: Int,
+        rc: Int,
+        lpos: Int,
+        rpos: Int,
+        pos: Int
+    ): Int = {
       if (rc > 0 && lc > 0) {
         var j = 0
         while (j < lc) {
           val offset = pos + j * rc
-          var k = 0
+          var k      = 0
           while (k < rc) {
             lLabels(offset + k) = lpos + j
             rLabels(offset + k) = rpos + k
@@ -204,13 +217,15 @@ private[saddle] object JoinHelper {
   }
 
   private object ojMarker extends LabelMarker {
-    def apply(lLabels: Array[Int],
-              rLabels: Array[Int],
-              lc: Int,
-              rc: Int,
-              lpos: Int,
-              rpos: Int,
-              pos: Int): Int = {
+    def apply(
+        lLabels: Array[Int],
+        rLabels: Array[Int],
+        lc: Int,
+        rc: Int,
+        lpos: Int,
+        rpos: Int,
+        pos: Int
+    ): Int = {
       if (rc == 0) {
         var j = 0
         while (j < lc) {
@@ -231,7 +246,7 @@ private[saddle] object JoinHelper {
         var j = 0
         while (j < lc) {
           val offset = pos + j * rc
-          var k = 0
+          var k      = 0
           while (k < rc) {
             lLabels(offset + k) = lpos + j
             rLabels(offset + k) = rpos + k
@@ -245,13 +260,15 @@ private[saddle] object JoinHelper {
   }
 
   private object ljMarker extends LabelMarker {
-    def apply(lLabels: Array[Int],
-              rLabels: Array[Int],
-              lc: Int,
-              rc: Int,
-              lpos: Int,
-              rpos: Int,
-              pos: Int): Int = {
+    def apply(
+        lLabels: Array[Int],
+        rLabels: Array[Int],
+        lc: Int,
+        rc: Int,
+        lpos: Int,
+        rpos: Int,
+        pos: Int
+    ): Int = {
       if (rc == 0) {
         var j = 0
         while (j < lc) {
@@ -264,7 +281,7 @@ private[saddle] object JoinHelper {
         var j = 0
         while (j < lc) {
           val offset = pos + j * rc
-          var k = 0
+          var k      = 0
           while (k < rc) {
             lLabels(offset + k) = lpos + j
             rLabels(offset + k) = rpos + k

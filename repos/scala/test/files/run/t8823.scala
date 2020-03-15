@@ -1,7 +1,7 @@
 class Tuple2Int(val encoding: Long) extends AnyVal with Product2[Int, Int] {
   def canEqual(that: Any) = false
-  def _1: Int = 1
-  def _2: Int = 2
+  def _1: Int             = 1
+  def _2: Int             = 2
 }
 
 object Test extends App {

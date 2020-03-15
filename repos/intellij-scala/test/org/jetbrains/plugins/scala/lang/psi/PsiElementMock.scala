@@ -9,11 +9,11 @@ import scala.util.parsing.combinator._
   */
 class PsiElementMock(val name: String, children: PsiElementMock*)
     extends AbstractPsiElementMock {
-  private var parent: PsiElement = _
+  private var parent: PsiElement      = _
   private var prevSibling: PsiElement = _
   private var nextSibling: PsiElement = _
-  private var firstChild: PsiElement = children.headOption.orNull
-  private var lastChild: PsiElement = children.lastOption.orNull
+  private var firstChild: PsiElement  = children.headOption.orNull
+  private var lastChild: PsiElement   = children.lastOption.orNull
 
   for (child <- children) { child.parent = this }
 
@@ -52,9 +52,10 @@ object PsiElementMock extends JavaTokenParsers {
 
   def parse(s: String): PsiElementMock = parse(element, s).get
 
-  private def element: Parser[PsiElementMock] = identifier ~ opt(elements) ^^ {
-    case name ~ children => PsiElementMock(name, children.getOrElse(Nil): _*)
-  }
+  private def element: Parser[PsiElementMock] =
+    identifier ~ opt(elements) ^^ {
+      case name ~ children => PsiElementMock(name, children.getOrElse(Nil): _*)
+    }
 
   private def identifier: Parser[String] = """[^,() ]+""".r
 

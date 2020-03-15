@@ -38,6 +38,7 @@ object LAverageServing {
 
   /** Returns an instance of [[LAverageServing]]. */
   def apply[Q](
-      a: Class[_ <: BaseAlgorithm[_, _, Q, _]]): Class[LAverageServing[Q]] =
+      a: Class[_ <: BaseAlgorithm[_, _, Q, _]]
+  ): Class[LAverageServing[Q]] =
     classOf[LAverageServing[Q]]
 }

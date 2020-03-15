@@ -12,8 +12,8 @@ import scala.util.Try
 
 abstract class ExternalJSEnv(
     final protected val additionalArgs: Seq[String],
-    final protected val additionalEnv: Map[String, String])
-    extends AsyncJSEnv {
+    final protected val additionalEnv: Map[String, String]
+) extends AsyncJSEnv {
 
   import ExternalJSEnv._
 
@@ -30,12 +30,13 @@ abstract class ExternalJSEnv(
 
   protected class AbstractExtRunner(
       protected val libs: Seq[ResolvedJSDependency],
-      protected val code: VirtualJSFile) {
+      protected val code: VirtualJSFile
+  ) {
 
-    private[this] var _logger: Logger = _
+    private[this] var _logger: Logger     = _
     private[this] var _console: JSConsole = _
 
-    protected def logger: Logger = _logger
+    protected def logger: Logger     = _logger
     protected def console: JSConsole = _console
 
     protected def setupLoggerAndConsole(logger: Logger, console: JSConsole) = {
@@ -85,14 +86,16 @@ abstract class ExternalJSEnv(
     final protected def pipeVMData(vmInst: Process): Unit = {
       // Send stdin to VM.
       val out = vmInst.getOutputStream()
-      try { sendVMStdin(out) } finally { out.close() }
+      try { sendVMStdin(out) }
+      finally { out.close() }
 
       // Pipe stdout to console
       pipeToConsole(vmInst.getInputStream(), console)
 
       // We are probably done (stdin is closed). Report any errors
       val errSrc = Source.fromInputStream(vmInst.getErrorStream(), "UTF-8")
-      try { errSrc.getLines.foreach(err => logger.error(err)) } finally {
+      try { errSrc.getLines.foreach(err => logger.error(err)) }
+      finally {
         errSrc.close
       }
     }
@@ -112,9 +115,9 @@ abstract class ExternalJSEnv(
 
     protected def startVM(): Process = {
       val vmArgs = getVMArgs()
-      val vmEnv = getVMEnv()
+      val vmEnv  = getVMEnv()
 
-      val allArgs = executable +: vmArgs
+      val allArgs  = executable +: vmArgs
       val pBuilder = new ProcessBuilder(allArgs: _*)
 
       pBuilder.environment().clear()
@@ -127,9 +130,12 @@ abstract class ExternalJSEnv(
 
     /** send a bunch of JS files to an output stream */
     final protected def sendJS(
-        files: Seq[VirtualJSFile], out: OutputStream): Unit = {
+        files: Seq[VirtualJSFile],
+        out: OutputStream
+    ): Unit = {
       val writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))
-      try sendJS(files, writer) finally writer.close()
+      try sendJS(files, writer)
+      finally writer.close()
     }
 
     /** send a bunch of JS files to a writer */
@@ -139,13 +145,16 @@ abstract class ExternalJSEnv(
     /** pipe lines from input stream to JSConsole */
     final protected def pipeToConsole(in: InputStream, console: JSConsole) = {
       val source = Source.fromInputStream(in, "UTF-8")
-      try { source.getLines.foreach(console.log _) } finally { source.close() }
+      try { source.getLines.foreach(console.log _) }
+      finally { source.close() }
     }
   }
 
   protected class ExtRunner(
-      libs: Seq[ResolvedJSDependency], code: VirtualJSFile)
-      extends AbstractExtRunner(libs, code) with JSRunner {
+      libs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ) extends AbstractExtRunner(libs, code)
+      with JSRunner {
 
     def run(logger: Logger, console: JSConsole): Unit = {
       setupLoggerAndConsole(logger, console)
@@ -158,12 +167,14 @@ abstract class ExternalJSEnv(
   }
 
   protected class AsyncExtRunner(
-      libs: Seq[ResolvedJSDependency], code: VirtualJSFile)
-      extends AbstractExtRunner(libs, code) with AsyncJSRunner {
+      libs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ) extends AbstractExtRunner(libs, code)
+      with AsyncJSRunner {
 
-    private[this] var vmInst: Process = null
+    private[this] var vmInst: Process       = null
     private[this] var ioThreadEx: Throwable = null
-    private[this] val promise = Promise[Unit]
+    private[this] val promise               = Promise[Unit]
 
     private[this] val thread = new Thread {
       override def run(): Unit = {

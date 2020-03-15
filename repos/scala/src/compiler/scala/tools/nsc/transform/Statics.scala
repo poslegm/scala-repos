@@ -9,8 +9,10 @@ abstract class Statics extends Transform with ast.TreeDSL {
     /** generate a static constructor with symbol fields inits, or an augmented existing static ctor
       */
     def staticConstructor(
-        body: List[Tree], localTyper: analyzer.Typer, pos: Position)(
-        newStaticInits: List[Tree]): Tree =
+        body: List[Tree],
+        localTyper: analyzer.Typer,
+        pos: Position
+    )(newStaticInits: List[Tree]): Tree =
       body.collectFirst {
         // If there already was a static ctor - augment existing one
         // currently, however, static ctors aren't being generated anywhere else (!!!)
@@ -28,7 +30,7 @@ abstract class Statics extends Transform with ast.TreeDSL {
       } getOrElse {
         // create new static ctor
         val staticCtorSym = currentClass.newStaticConstructor(pos)
-        val rhs = Block(newStaticInits, Literal(Constant(())))
+        val rhs           = Block(newStaticInits, Literal(Constant(())))
 
         localTyper.typedPos(pos)(DefDef(staticCtorSym, rhs))
       }

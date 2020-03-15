@@ -13,21 +13,24 @@ object ActivatorDist {
 
   val activatorDistDirectory = SettingKey[File]("activator-dist-directory")
   val activatorDist = TaskKey[File](
-      "activator-dist",
-      "Create a zipped distribution of each activator sample.")
+    "activator-dist",
+    "Create a zipped distribution of each activator sample."
+  )
 
   lazy val settings: Seq[Setting[_]] = Seq(
-      activatorDistDirectory <<= crossTarget / "activator-dist",
-      activatorDist <<= activatorDistTask
+    activatorDistDirectory <<= crossTarget / "activator-dist",
+    activatorDist <<= activatorDistTask
   )
 
   def activatorDistTask: Initialize[Task[File]] = {
-    (thisProjectRef,
-     baseDirectory,
-     activatorDistDirectory,
-     version,
-     buildStructure,
-     streams) map {
+    (
+      thisProjectRef,
+      baseDirectory,
+      activatorDistDirectory,
+      version,
+      buildStructure,
+      streams
+    ) map {
       (project, projectBase, activatorDistDirectory, version, structure, s) =>
         {
           val directories = projectBase
@@ -43,10 +46,14 @@ object ActivatorDist {
               (".gitignore" :: localGitignoreLines ::: rootGitignoreLines)
                 .foldLeft[FileFilter](NothingFilter)((acc, x) => acc || x)
             val filteredPathFinder =
-              PathFinder(dir) descendantsExcept ("*", gitignoreFileFilter) filter
-              (_.isFile)
+              PathFinder(
+                dir
+              ) descendantsExcept ("*", gitignoreFileFilter) filter
+                (_.isFile)
             filteredPathFinder pair Path.rebase(
-                dir, activatorDistDirectory / dir.name) map {
+              dir,
+              activatorDistDirectory / dir.name
+            ) map {
               case (source, target) =>
                 s.log.info(s"copying: $source -> $target")
                 IO.copyFile(source, target, preserveLastModified = true)

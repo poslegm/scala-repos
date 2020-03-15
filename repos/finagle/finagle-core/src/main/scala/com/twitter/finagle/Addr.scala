@@ -24,7 +24,7 @@ object Addr {
   type Metadata = Map[String, Any]
   object Metadata {
     def apply(pairs: (String, Any)*): Metadata = Map(pairs: _*)
-    val empty: Metadata = Map.empty
+    val empty: Metadata                        = Map.empty
   }
 
   /**
@@ -42,8 +42,7 @@ object Addr {
   case class Bound(
       addrs: immutable.Set[Address],
       metadata: Metadata
-  )
-      extends Addr
+  ) extends Addr
 
   /**
     * The address is failed: binding failed with
@@ -98,7 +97,9 @@ object Addrs {
     * @see com.twitter.finagle.Addr.Bound
     */
   def newBoundAddr(
-      addrs: JCollection[Address], metadata: JMap[String, Any]): Addr =
+      addrs: JCollection[Address],
+      metadata: JMap[String, Any]
+  ): Addr =
     Addr.Bound(addrs.asScala.toSet, metadata.asScala.toMap)
 
   /**

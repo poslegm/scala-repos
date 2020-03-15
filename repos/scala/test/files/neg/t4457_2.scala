@@ -12,7 +12,7 @@ object ImplicitConvAmbiguity2 {
   implicit def conv3(op: AA[java.util.TooManyListenersException]) =
     new N[java.util.TooManyListenersException]
   implicit def conv4(op: AA[Float]) = new N[Float]
-  implicit def conv7(i: Float) = new NZ[Float]
+  implicit def conv7(i: Float)      = new NZ[Float]
   implicit def conv5(e: BB[java.util.GregorianCalendar]) =
     new N[java.util.GregorianCalendar]
 
@@ -26,10 +26,10 @@ object ImplicitConvAmbiguity2 {
   def bFunc[T](e1: N[T]) = {}
 
   def typeMe2 {
-    val x = aFunc(4F)
+    val x = aFunc(4f)
     bFunc(x)
   }
   def typeMe1 {
-    bFunc(aFunc(4F))
+    bFunc(aFunc(4f))
   }
 }

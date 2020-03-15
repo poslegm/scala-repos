@@ -35,15 +35,15 @@ object Field {
   /** Not a field, but whatever. */
   @SerialVersionUID(1L)
   implicit object fieldInt extends Field[Int] with Serializable {
-    def zero = 0
-    def one = 1
-    def ==(a: Int, b: Int) = a == b
-    def !=(a: Int, b: Int) = a != b
-    def +(a: Int, b: Int) = a + b
-    def -(a: Int, b: Int) = a - b
-    def *(a: Int, b: Int) = a * b
-    def /(a: Int, b: Int) = a / b
-    def %(a: Int, b: Int) = a % b
+    def zero                = 0
+    def one                 = 1
+    def ==(a: Int, b: Int)  = a == b
+    def !=(a: Int, b: Int)  = a != b
+    def +(a: Int, b: Int)   = a + b
+    def -(a: Int, b: Int)   = a - b
+    def *(a: Int, b: Int)   = a * b
+    def /(a: Int, b: Int)   = a / b
+    def %(a: Int, b: Int)   = a % b
     def pow(a: Int, b: Int) = Math.pow(a, b).toInt
 
     implicit val normImpl: norm.Impl[Int, Double] =
@@ -55,15 +55,15 @@ object Field {
   /** Not a field, but whatever. */
   @SerialVersionUID(1L)
   implicit object fieldShort extends Field[Short] with Serializable {
-    def zero = 0.asInstanceOf[Short]
-    def one = 1.asInstanceOf[Short]
-    def ==(a: Short, b: Short) = a == b
-    def !=(a: Short, b: Short) = a != b
-    def +(a: Short, b: Short) = (a + b).asInstanceOf[Short]
-    def -(a: Short, b: Short) = (a - b).asInstanceOf[Short]
-    def *(a: Short, b: Short) = (a * b).asInstanceOf[Short]
-    def /(a: Short, b: Short) = (a / b).asInstanceOf[Short]
-    def %(a: Short, b: Short) = (a % b).asInstanceOf[Short]
+    def zero                    = 0.asInstanceOf[Short]
+    def one                     = 1.asInstanceOf[Short]
+    def ==(a: Short, b: Short)  = a == b
+    def !=(a: Short, b: Short)  = a != b
+    def +(a: Short, b: Short)   = (a + b).asInstanceOf[Short]
+    def -(a: Short, b: Short)   = (a - b).asInstanceOf[Short]
+    def *(a: Short, b: Short)   = (a * b).asInstanceOf[Short]
+    def /(a: Short, b: Short)   = (a / b).asInstanceOf[Short]
+    def %(a: Short, b: Short)   = (a % b).asInstanceOf[Short]
     def pow(a: Short, b: Short) = Math.pow(a, b).toShort
 
     implicit val normImpl: norm.Impl[Short, Double] =
@@ -75,15 +75,15 @@ object Field {
   /** Not a field, but whatever. */
   @SerialVersionUID(1L)
   implicit object fieldLong extends Field[Long] with Serializable {
-    def zero = 0l
-    def one = 1l
-    def ==(a: Long, b: Long) = a == b
-    def !=(a: Long, b: Long) = a != b
-    def +(a: Long, b: Long) = a + b
-    def -(a: Long, b: Long) = a - b
-    def *(a: Long, b: Long) = a * b
-    def /(a: Long, b: Long) = a / b
-    def %(a: Long, b: Long) = a % b.toLong
+    def zero                  = 0L
+    def one                   = 1L
+    def ==(a: Long, b: Long)  = a == b
+    def !=(a: Long, b: Long)  = a != b
+    def +(a: Long, b: Long)   = a + b
+    def -(a: Long, b: Long)   = a - b
+    def *(a: Long, b: Long)   = a * b
+    def /(a: Long, b: Long)   = a / b
+    def %(a: Long, b: Long)   = a % b.toLong
     def pow(a: Long, b: Long) = Math.pow(a, b).toLong
 
     implicit val normImpl: norm.Impl[Long, Double] =
@@ -95,15 +95,15 @@ object Field {
   /** Not a field, but whatever. */
   @SerialVersionUID(1L)
   implicit object fieldBigInt extends Field[BigInt] with Serializable {
-    def zero = 0l
-    def one = 1l
-    def ==(a: BigInt, b: BigInt) = a == b
-    def !=(a: BigInt, b: BigInt) = a != b
-    def +(a: BigInt, b: BigInt) = a + b
-    def -(a: BigInt, b: BigInt) = a - b
-    def *(a: BigInt, b: BigInt) = a * b
-    def /(a: BigInt, b: BigInt) = a / b
-    def %(a: BigInt, b: BigInt) = a % b
+    def zero                              = 0L
+    def one                               = 1L
+    def ==(a: BigInt, b: BigInt)          = a == b
+    def !=(a: BigInt, b: BigInt)          = a != b
+    def +(a: BigInt, b: BigInt)           = a + b
+    def -(a: BigInt, b: BigInt)           = a - b
+    def *(a: BigInt, b: BigInt)           = a * b
+    def /(a: BigInt, b: BigInt)           = a / b
+    def %(a: BigInt, b: BigInt)           = a % b
     def pow(a: BigInt, b: BigInt): BigInt = a.pow(b.toInt)
 
     implicit val normImpl: norm.Impl[BigInt, Double] =
@@ -114,19 +114,22 @@ object Field {
 
   @SerialVersionUID(1L)
   implicit object fieldBigDecimal extends Field[BigDecimal] with Serializable {
-    def zero = 0l
-    def one = 1l
-    def ==(a: BigDecimal, b: BigDecimal) = a == b
-    def !=(a: BigDecimal, b: BigDecimal) = a != b
-    def +(a: BigDecimal, b: BigDecimal) = a + b
-    def -(a: BigDecimal, b: BigDecimal) = a - b
-    def *(a: BigDecimal, b: BigDecimal) = a * b
-    def /(a: BigDecimal, b: BigDecimal) = a / b
-    def %(a: BigDecimal, b: BigDecimal) = a % b
+    def zero                                          = 0L
+    def one                                           = 1L
+    def ==(a: BigDecimal, b: BigDecimal)              = a == b
+    def !=(a: BigDecimal, b: BigDecimal)              = a != b
+    def +(a: BigDecimal, b: BigDecimal)               = a + b
+    def -(a: BigDecimal, b: BigDecimal)               = a - b
+    def *(a: BigDecimal, b: BigDecimal)               = a * b
+    def /(a: BigDecimal, b: BigDecimal)               = a / b
+    def %(a: BigDecimal, b: BigDecimal)               = a % b
     def pow(a: BigDecimal, b: BigDecimal): BigDecimal = a.pow(b.toInt)
 
     override def close(
-        a: BigDecimal, b: BigDecimal, tolerance: Double): Boolean = {
+        a: BigDecimal,
+        b: BigDecimal,
+        tolerance: Double
+    ): Boolean = {
       (a - b).abs <= tolerance * (a.abs max b.abs)
     }
 
@@ -138,15 +141,15 @@ object Field {
 
   @SerialVersionUID(1L)
   implicit object fieldFloat extends Field[Float] with Serializable {
-    def zero = 0.0f
-    def one = 1.0f
-    def ==(a: Float, b: Float) = a == b
-    def !=(a: Float, b: Float) = a != b
-    def +(a: Float, b: Float) = a + b
-    def -(a: Float, b: Float) = a - b
-    def *(a: Float, b: Float) = a * b
-    def /(a: Float, b: Float) = a / b
-    def %(a: Float, b: Float) = a % b
+    def zero                    = 0.0f
+    def one                     = 1.0f
+    def ==(a: Float, b: Float)  = a == b
+    def !=(a: Float, b: Float)  = a != b
+    def +(a: Float, b: Float)   = a + b
+    def -(a: Float, b: Float)   = a - b
+    def *(a: Float, b: Float)   = a * b
+    def /(a: Float, b: Float)   = a / b
+    def %(a: Float, b: Float)   = a % b
     def pow(a: Float, b: Float) = numerics.pow(a, b)
 
     override def close(a: Float, b: Float, tolerance: Double) =
@@ -160,15 +163,15 @@ object Field {
 
   @SerialVersionUID(-5955467582882664220L)
   implicit object fieldDouble extends Field[Double] with Serializable {
-    def zero = 0.0
-    def one = 1.0
-    def ==(a: Double, b: Double) = a == b
-    def !=(a: Double, b: Double) = a != b
-    def +(a: Double, b: Double) = a + b
-    def -(a: Double, b: Double) = a - b
-    def *(a: Double, b: Double) = a * b
-    def /(a: Double, b: Double) = a / b
-    def %(a: Double, b: Double): Double = a % b
+    def zero                              = 0.0
+    def one                               = 1.0
+    def ==(a: Double, b: Double)          = a == b
+    def !=(a: Double, b: Double)          = a != b
+    def +(a: Double, b: Double)           = a + b
+    def -(a: Double, b: Double)           = a - b
+    def *(a: Double, b: Double)           = a * b
+    def /(a: Double, b: Double)           = a / b
+    def %(a: Double, b: Double): Double   = a % b
     def pow(a: Double, b: Double): Double = Math.pow(a, b)
 
     override def close(a: Double, b: Double, tolerance: Double) =

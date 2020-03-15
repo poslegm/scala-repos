@@ -33,7 +33,7 @@ class InterpretedOrdering(ordering: Seq[SortOrder])
     var i = 0
     while (i < ordering.size) {
       val order = ordering(i)
-      val left = order.child.eval(a)
+      val left  = order.child.eval(a)
       val right = order.child.eval(b)
 
       if (left == null && right == null) {
@@ -71,7 +71,8 @@ class InterpretedOrdering(ordering: Seq[SortOrder])
               .compare(left, right)
           case other =>
             throw new IllegalArgumentException(
-                s"Type $other does not support ordered operations")
+              s"Type $other does not support ordered operations"
+            )
         }
         if (comparison != 0) {
           return comparison
@@ -89,8 +90,7 @@ object InterpretedOrdering {
     * Creates a [[InterpretedOrdering]] for the given schema, in natural ascending order.
     */
   def forSchema(dataTypes: Seq[DataType]): InterpretedOrdering = {
-    new InterpretedOrdering(
-        dataTypes.zipWithIndex.map {
+    new InterpretedOrdering(dataTypes.zipWithIndex.map {
       case (dt, index) =>
         new SortOrder(BoundReference(index, dt, nullable = true), Ascending)
     })
@@ -102,15 +102,16 @@ object RowOrdering {
   /**
     * Returns true iff the data type can be ordered (i.e. can be sorted).
     */
-  def isOrderable(dataType: DataType): Boolean = dataType match {
-    case NullType => true
-    case dt: AtomicType => true
-    case struct: StructType =>
-      struct.fields.forall(f => isOrderable(f.dataType))
-    case array: ArrayType => isOrderable(array.elementType)
-    case udt: UserDefinedType[_] => isOrderable(udt.sqlType)
-    case _ => false
-  }
+  def isOrderable(dataType: DataType): Boolean =
+    dataType match {
+      case NullType       => true
+      case dt: AtomicType => true
+      case struct: StructType =>
+        struct.fields.forall(f => isOrderable(f.dataType))
+      case array: ArrayType        => isOrderable(array.elementType)
+      case udt: UserDefinedType[_] => isOrderable(udt.sqlType)
+      case _                       => false
+    }
 
   /**
     * Returns true iff outputs from the expressions can be ordered.

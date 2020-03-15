@@ -24,7 +24,7 @@ import akka.stream.IOResult
 @BenchmarkMode(Array(Mode.AverageTime))
 class FileSourcesBenchmark {
 
-  implicit val system = ActorSystem("file-sources-benchmark")
+  implicit val system       = ActorSystem("file-sources-benchmark")
   implicit val materializer = ActorMaterializer()
 
   val file: File = {
@@ -45,15 +45,15 @@ class FileSourcesBenchmark {
   @Param(Array("2048"))
   var bufSize = 0
 
-  var fileChannelSource: Source[ByteString, Future[IOResult]] = _
+  var fileChannelSource: Source[ByteString, Future[IOResult]]     = _
   var fileInputStreamSource: Source[ByteString, Future[IOResult]] = _
-  var ioSourceLinesIterator: Source[ByteString, NotUsed] = _
+  var ioSourceLinesIterator: Source[ByteString, NotUsed]          = _
 
   @Setup
   def setup(): Unit = {
     fileChannelSource = FileIO.fromFile(file, bufSize)
-    fileInputStreamSource = StreamConverters.fromInputStream(
-        () ⇒ new FileInputStream(file), bufSize)
+    fileInputStreamSource =
+      StreamConverters.fromInputStream(() ⇒ new FileInputStream(file), bufSize)
     ioSourceLinesIterator = Source
       .fromIterator(() ⇒ scala.io.Source.fromFile(file).getLines())
       .map(ByteString(_))

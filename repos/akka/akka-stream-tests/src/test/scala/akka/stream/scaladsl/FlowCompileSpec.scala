@@ -21,7 +21,8 @@ class FlowCompileSpec extends AkkaSpec {
   import scala.concurrent.ExecutionContext.Implicits.global
   val intFut = Source.fromFuture(Future { 3 })
   implicit val materializer = ActorMaterializer(
-      ActorMaterializerSettings(system))
+    ActorMaterializerSettings(system)
+  )
 
   "Flow" should {
     "not run" in {
@@ -37,7 +38,7 @@ class FlowCompileSpec extends AkkaSpec {
     "append Flow" in {
       val open1: Flow[Int, String, _] = Flow[Int].map(_.toString)
       val open2: Flow[String, Int, _] = Flow[String].map(_.hashCode)
-      val open3: Flow[Int, Int, _] = open1.via(open2)
+      val open3: Flow[Int, Int, _]    = open1.via(open2)
       "open3.run()" shouldNot compile
 
       val closedSource: Source[Int, _] = intSeq.via(open3)
@@ -117,9 +118,9 @@ class FlowCompileSpec extends AkkaSpec {
     "be extensible" in {
       val f: FlowOps[Int, NotUsed] { type Closed = Sink[Int, NotUsed] } =
         Flow[Int]
-      val fm = f.map(identity)
+      val fm                        = f.map(identity)
       val f2: FlowOps[Int, NotUsed] = fm
-      val s: Sink[Int, NotUsed] = fm.to(Sink.ignore)
+      val s: Sink[Int, NotUsed]     = fm.to(Sink.ignore)
     }
 
     "be extensible (with MaterializedValue)" in {
@@ -129,7 +130,7 @@ class FlowCompileSpec extends AkkaSpec {
       // this asserts only the FlowOpsMat part of the signature, but fm also carries the
       // CloseMat type without which `.to(sink)` does not work
       val f2: FlowOpsMat[Int, (NotUsed, NotUsed)] = fm
-      val s: Sink[Int, (NotUsed, NotUsed)] = fm.to(Sink.ignore)
+      val s: Sink[Int, (NotUsed, NotUsed)]        = fm.to(Sink.ignore)
     }
   }
 }

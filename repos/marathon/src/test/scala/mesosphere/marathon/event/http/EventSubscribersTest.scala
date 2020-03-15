@@ -5,7 +5,7 @@ import mesosphere.marathon.{MarathonSpec, Protos}
 class EventSubscribersTest extends MarathonSpec {
 
   test("ToProtoEmpty") {
-    val v = new EventSubscribers
+    val v     = new EventSubscribers
     val proto = v.toProto
 
     assert(proto.getCallbackUrlsCount == 0)
@@ -13,7 +13,7 @@ class EventSubscribersTest extends MarathonSpec {
   }
 
   test("ToProtoNotEmpty") {
-    val v = new EventSubscribers(Set("http://localhost:9090/callback"))
+    val v     = new EventSubscribers(Set("http://localhost:9090/callback"))
     val proto = v.toProto
 
     assert(proto.getCallbackUrlsCount == 1)
@@ -22,7 +22,7 @@ class EventSubscribersTest extends MarathonSpec {
   }
 
   test("mergeFromProtoEmpty") {
-    val proto = Protos.EventSubscribers.newBuilder().build()
+    val proto       = Protos.EventSubscribers.newBuilder().build()
     val subscribers = EventSubscribers()
     val mergeResult = subscribers.mergeFromProto(proto)
 

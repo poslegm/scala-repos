@@ -9,7 +9,7 @@ class DynamicCluster[U](initial: Seq[U]) extends Cluster[U] {
   def this() = this(Seq[U]())
 
   var set = initial.toSet
-  var s = new Promise[Spool[Cluster.Change[U]]]
+  var s   = new Promise[Spool[Cluster.Change[U]]]
 
   def add(f: U) = {
     set += f
@@ -21,11 +21,12 @@ class DynamicCluster[U](initial: Seq[U]) extends Cluster[U] {
     performChange(Cluster.Rem(f))
   }
 
-  private[this] def performChange(change: Cluster.Change[U]) = synchronized {
-    val newTail = new Promise[Spool[Cluster.Change[U]]]
-    s() = Return(change *:: newTail)
-    s = newTail
-  }
+  private[this] def performChange(change: Cluster.Change[U]) =
+    synchronized {
+      val newTail = new Promise[Spool[Cluster.Change[U]]]
+      s() = Return(change *:: newTail)
+      s = newTail
+    }
 
   def snap = (set.toSeq, s)
 }

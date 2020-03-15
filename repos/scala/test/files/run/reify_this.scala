@@ -11,7 +11,7 @@ object Test extends App with Transvaal {
   eval(reify { println((new Object).toString == (new Object).toString) })
 
   // select a type from package
-  eval(reify { val x: Any = 2; println(x) })
+  eval(reify { val x: Any    = 2; println(x) })
   eval(reify { val x: Object = "bar"; println(x) })
 
   // select a value from module

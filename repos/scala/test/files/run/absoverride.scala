@@ -13,8 +13,8 @@ trait RichIterator extends AbsIterator {
 class StringIterator(s: String) extends AbsIterator {
   type T = Char
   private var i = 0
-  def hasNext = i < s.length()
-  def next = { val x = s.charAt(i); i += 1; println("next: " + x); x }
+  def hasNext   = i < s.length()
+  def next      = { val x = s.charAt(i); i += 1; println("next: " + x); x }
 }
 
 trait SyncIterator extends AbsIterator {
@@ -31,11 +31,15 @@ trait LoggedIterator extends AbsIterator {
   }
 }
 class Iter2(s: String)
-    extends StringIterator(s) with SyncIterator with LoggedIterator;
+    extends StringIterator(s)
+    with SyncIterator
+    with LoggedIterator;
 object Test {
   def main(args: Array[String]) {
     class Iter
-        extends StringIterator(args(0)) with RichIterator with SyncIterator
+        extends StringIterator(args(0))
+        with RichIterator
+        with SyncIterator
         with LoggedIterator
     val iter = new Iter
     iter foreach Console.println

@@ -26,8 +26,8 @@ import json.JsonDSL._
 object MockHttpRequestSpec extends Specification {
   "MockHttpRequest Specification".title
 
-  val IF_MODIFIED_HEADER = "If-Modified-Since"
-  val TEST_URL = "https://foo.com/test/this/page?a=b&b=a&a=c"
+  val IF_MODIFIED_HEADER       = "If-Modified-Since"
+  val TEST_URL                 = "https://foo.com/test/this/page?a=b&b=a&a=c"
   val TEST_URL_BLANK_PARAMETER = "https://foo.com/test/this/page?a=b&b=a&c=&d"
   val TEST_URL_BLANK_PARAMETER_SERIALIZED =
     "https://foo.com/test/this/page?a=b&b=a&c=&d="
@@ -79,22 +79,25 @@ object MockHttpRequestSpec extends Specification {
       testRequest.headers +=
         IF_MODIFIED_HEADER -> List("this is not a valid date")
 
-      testRequest.getDateHeader(IF_MODIFIED_HEADER) must throwA[
-          IllegalArgumentException]
+      testRequest
+        .getDateHeader(IF_MODIFIED_HEADER) must throwA[IllegalArgumentException]
     }
 
     "throw an IllegalArgumentException for an invalid context path" in {
       (new MockHttpServletRequest(TEST_URL, "foo")) must throwA[
-          IllegalArgumentException]
+        IllegalArgumentException
+      ]
       (new MockHttpServletRequest(TEST_URL, "/foo/")) must throwA[
-          IllegalArgumentException]
+        IllegalArgumentException
+      ]
     }
 
     "throw an IllegalArgumentException for an invalid query string" in {
       val testRequest = new MockHttpServletRequest(TEST_URL, "/test")
 
       (testRequest.queryString = "this=a&&that=b") must throwA[
-          IllegalArgumentException]
+        IllegalArgumentException
+      ]
     }
 
     "properly set a default content type for JSON" in {

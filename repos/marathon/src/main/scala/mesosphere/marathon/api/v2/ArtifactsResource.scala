@@ -15,17 +15,20 @@ import mesosphere.marathon.api.{MarathonMediaType, RestResource}
 import mesosphere.marathon.io.storage.StorageProvider
 
 @Path("v2/artifacts")
-class ArtifactsResource @Inject()(
-    val config: MarathonConf, val storage: StorageProvider)
-    extends RestResource {
+class ArtifactsResource @Inject() (
+    val config: MarathonConf,
+    val storage: StorageProvider
+) extends RestResource {
 
   /**
     * Upload to root artifact store.
     */
   @POST
   @Consumes(Array(MediaType.MULTIPART_FORM_DATA))
-  def uploadFile(@FormParam("file") upload: InputStream,
-                 @FormParam("file") info: FormInfo): Response =
+  def uploadFile(
+      @FormParam("file") upload: InputStream,
+      @FormParam("file") info: FormInfo
+  ): Response =
     storeFile(info.getFileName, upload)
 
   /**
@@ -34,22 +37,26 @@ class ArtifactsResource @Inject()(
   @PUT
   @Path("{path:.+}")
   @Consumes(Array(MediaType.MULTIPART_FORM_DATA))
-  def uploadFilePut(@PathParam("path") path: String,
-                    @FormParam("file") upload: InputStream): Response =
+  def uploadFilePut(
+      @PathParam("path") path: String,
+      @FormParam("file") upload: InputStream
+  ): Response =
     storeFile(path, upload)
 
   @POST
   @Path("{path:.+}")
   @Consumes(Array(MediaType.MULTIPART_FORM_DATA))
-  def uploadFilePost(@PathParam("path") path: String,
-                     @FormParam("file") upload: InputStream): Response =
+  def uploadFilePost(
+      @PathParam("path") path: String,
+      @FormParam("file") upload: InputStream
+  ): Response =
     storeFile(path, upload)
 
   private def storeFile(path: String, upload: InputStream) = {
     //scalastyle:off null
     require(upload != null, "Please use 'file' as form parameter name!")
     //scalastyle:on
-    val item = storage.item(path)
+    val item   = storage.item(path)
     val exists = item.exists
     item.store(upload)
     if (exists) ok() else created(item.url)

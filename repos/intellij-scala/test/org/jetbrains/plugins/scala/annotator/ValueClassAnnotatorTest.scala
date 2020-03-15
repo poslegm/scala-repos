@@ -19,7 +19,9 @@ class ValueClassAnnotatorTest extends SimpleTestCase {
       """.stripMargin
     assertMatches(messages(code)) {
       case Error("s: Int", NonPrivateValParameter()) :: Error(
-          "Blargle2", OnlyOneParameter()) :: Nil =>
+            "Blargle2",
+            OnlyOneParameter()
+          ) :: Nil =>
     }
   }
 
@@ -56,7 +58,9 @@ class ValueClassAnnotatorTest extends SimpleTestCase {
       """.stripMargin
     assertMatches(messages(code)) {
       case Error("equals", RedefineEqualsHashCode()) :: Error(
-          "hashCode", RedefineEqualsHashCode()) :: Nil =>
+            "hashCode",
+            RedefineEqualsHashCode()
+          ) :: Nil =>
     }
   }
 
@@ -76,22 +80,28 @@ class ValueClassAnnotatorTest extends SimpleTestCase {
     val file: ScalaFile = code.parse
 
     val annotator = new ScalaAnnotator() {}
-    val mock = new AnnotatorHolderMock
+    val mock      = new AnnotatorHolderMock
 
     file.depthFirst.foreach(annotator.annotate(_, mock))
     mock.errorAnnotations
   }
 
   val NonPrivateValParameter = ContainsPattern(
-      "Value classes can have only one non-private val parameter")
+    "Value classes can have only one non-private val parameter"
+  )
   val OnlyOneParameter = ContainsPattern(
-      "Value classes can have only one parameter")
+    "Value classes can have only one parameter"
+  )
   val SecondaryConstructor = ContainsPattern(
-      "Secondary constructors are not allowed in value classes")
+    "Secondary constructors are not allowed in value classes"
+  )
   val InnerObjects = ContainsPattern(
-      "Value classes cannot have nested classes, objects or traits")
+    "Value classes cannot have nested classes, objects or traits"
+  )
   val RedefineEqualsHashCode = ContainsPattern(
-      "Value classes cannot redefine equals and hashCode")
+    "Value classes cannot redefine equals and hashCode"
+  )
   val ValueClassCanNotHaveFields = ContainsPattern(
-      "Field definitions are not allowed in value classes")
+    "Field definitions are not allowed in value classes"
+  )
 }

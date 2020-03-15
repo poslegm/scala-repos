@@ -10,5 +10,5 @@ class Foo {
 	 * existentials causes change of `foo` method API.
 	 */
   private def abc: Box[_] = null
-  def foo: Box[_] = null
+  def foo: Box[_]         = null
 }

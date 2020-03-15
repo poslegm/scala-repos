@@ -27,7 +27,8 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
 object ViewPredicates {
   def getStartTimePredicate(
-      startTimeOpt: Option[DateTime]): (Event => Boolean) = {
+      startTimeOpt: Option[DateTime]
+  ): (Event => Boolean) = {
     startTimeOpt.map(getStartTimePredicate).getOrElse(_ => true)
   }
 
@@ -36,7 +37,8 @@ object ViewPredicates {
   }
 
   def getUntilTimePredicate(
-      untilTimeOpt: Option[DateTime]): (Event => Boolean) = {
+      untilTimeOpt: Option[DateTime]
+  ): (Event => Boolean) = {
     untilTimeOpt.map(getUntilTimePredicate).getOrElse(_ => true)
   }
 
@@ -45,7 +47,8 @@ object ViewPredicates {
   }
 
   def getEntityTypePredicate(
-      entityTypeOpt: Option[String]): (Event => Boolean) = {
+      entityTypeOpt: Option[String]
+  ): (Event => Boolean) = {
     entityTypeOpt.map(getEntityTypePredicate).getOrElse(_ => true)
   }
 
@@ -69,21 +72,21 @@ object ViewAggregators {
       {
         e.event match {
           case "$set" => {
-              if (p == None) {
-                Some(e.properties)
-              } else {
-                p.map(_ ++ e.properties)
-              }
+            if (p == None) {
+              Some(e.properties)
+            } else {
+              p.map(_ ++ e.properties)
             }
+          }
           case "$unset" => {
-              if (p == None) {
-                None
-              } else {
-                p.map(_ -- e.properties.keySet)
-              }
+            if (p == None) {
+              None
+            } else {
+              p.map(_ -- e.properties.keySet)
             }
+          }
           case "$delete" => None
-          case _ => p // do nothing for others
+          case _         => p // do nothing for others
         }
       }
   }
@@ -96,15 +99,17 @@ object EventSeq {
   // to enable implicit conversion. Only import in the code where this is
   // necessary to avoid confusion.
   implicit def eventSeqToList(es: EventSeq): List[Event] = es.events
-  implicit def listToEventSeq(l: List[Event]): EventSeq = new EventSeq(l)
+  implicit def listToEventSeq(l: List[Event]): EventSeq  = new EventSeq(l)
 }
 
 @deprecated("Use LEvents instead.", "0.9.2")
 class EventSeq(val events: List[Event]) {
-  def filter(eventOpt: Option[String] = None,
-             entityTypeOpt: Option[String] = None,
-             startTimeOpt: Option[DateTime] = None,
-             untilTimeOpt: Option[DateTime] = None): EventSeq = {
+  def filter(
+      eventOpt: Option[String] = None,
+      entityTypeOpt: Option[String] = None,
+      startTimeOpt: Option[DateTime] = None,
+      untilTimeOpt: Option[DateTime] = None
+  ): EventSeq = {
 
     events
       .filter(ViewPredicates.getEventPredicate(eventOpt))
@@ -116,7 +121,9 @@ class EventSeq(val events: List[Event]) {
   def filter(p: (Event => Boolean)): EventSeq = events.filter(p)
 
   def aggregateByEntityOrdered[T](
-      init: T, op: (T, Event) => T): Map[String, T] = {
+      init: T,
+      op: (T, Event) => T
+  ): Map[String, T] = {
     events
       .groupBy(_.entityId)
       .mapValues(_.sortBy(_.eventTime.getMillis).foldLeft[T](init)(op))
@@ -125,9 +132,11 @@ class EventSeq(val events: List[Event]) {
 }
 
 @deprecated("Use LEventStore instead.", "0.9.2")
-class LBatchView(val appId: Int,
-                 val startTime: Option[DateTime],
-                 val untilTime: Option[DateTime]) {
+class LBatchView(
+    val appId: Int,
+    val startTime: Option[DateTime],
+    val untilTime: Option[DateTime]
+) {
 
   @transient lazy val eventsDb = Storage.getLEvents()
 
@@ -154,8 +163,10 @@ class LBatchView(val appId: Int,
     events
       .filter(entityTypeOpt = Some(entityType))
       .filter(e => EventValidation.isSpecialEvents(e.event))
-      .aggregateByEntityOrdered(init = None,
-                                op = ViewAggregators.getDataMapAggregator())
+      .aggregateByEntityOrdered(
+        init = None,
+        op = ViewAggregators.getDataMapAggregator()
+      )
       .filter { case (k, v) => (v != None) }
       .mapValues(_.get)
   }

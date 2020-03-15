@@ -36,14 +36,14 @@ class SyslogHandlerTest extends WordSpec {
     "write syslog entries" in {
       // start up new syslog listener
       val serverSocket = new DatagramSocket
-      val serverPort = serverSocket.getLocalPort
+      val serverPort   = serverSocket.getLocalPort
 
       var syslog = SyslogHandler(
-          port = serverPort,
-          formatter = new SyslogFormatter(
-                timezone = Some("UTC"),
-                hostname = "raccoon.local"
-            )
+        port = serverPort,
+        formatter = new SyslogFormatter(
+          timezone = Some("UTC"),
+          hostname = "raccoon.local"
+        )
       ).apply()
       syslog.publish(record1)
       syslog.publish(record2)
@@ -52,24 +52,34 @@ class SyslogHandlerTest extends WordSpec {
       val p = new DatagramPacket(new Array[Byte](1024), 1024)
       serverSocket.receive(p)
       assert(
-          new String(p.getData, 0, p.getLength) == "<9>2008-03-29T05:53:16 raccoon.local whiskey: fatal message!")
+        new String(
+          p.getData,
+          0,
+          p.getLength
+        ) == "<9>2008-03-29T05:53:16 raccoon.local whiskey: fatal message!"
+      )
       serverSocket.receive(p)
       assert(
-          new String(p.getData, 0, p.getLength) == "<11>2008-03-29T05:53:16 raccoon.local whiskey: error message!")
+        new String(
+          p.getData,
+          0,
+          p.getLength
+        ) == "<11>2008-03-29T05:53:16 raccoon.local whiskey: error message!"
+      )
     }
 
     "with server name" in {
       // start up new syslog listener
       val serverSocket = new DatagramSocket
-      val serverPort = serverSocket.getLocalPort
+      val serverPort   = serverSocket.getLocalPort
 
       var syslog = SyslogHandler(
-          port = serverPort,
-          formatter = new SyslogFormatter(
-                serverName = Some("pingd"),
-                timezone = Some("UTC"),
-                hostname = "raccoon.local"
-            )
+        port = serverPort,
+        formatter = new SyslogFormatter(
+          serverName = Some("pingd"),
+          timezone = Some("UTC"),
+          hostname = "raccoon.local"
+        )
       ).apply()
       syslog.publish(record1)
 
@@ -77,21 +87,26 @@ class SyslogHandlerTest extends WordSpec {
       val p = new DatagramPacket(new Array[Byte](1024), 1024)
       serverSocket.receive(p)
       assert(
-          new String(p.getData, 0, p.getLength) == "<9>2008-03-29T05:53:16 raccoon.local [pingd] whiskey: fatal message!")
+        new String(
+          p.getData,
+          0,
+          p.getLength
+        ) == "<9>2008-03-29T05:53:16 raccoon.local [pingd] whiskey: fatal message!"
+      )
     }
 
     "with BSD time format" in {
       // start up new syslog listener
       val serverSocket = new DatagramSocket
-      val serverPort = serverSocket.getLocalPort
+      val serverPort   = serverSocket.getLocalPort
 
       var syslog = SyslogHandler(
-          port = serverPort,
-          formatter = new SyslogFormatter(
-                useIsoDateFormat = false,
-                timezone = Some("UTC"),
-                hostname = "raccoon.local"
-            )
+        port = serverPort,
+        formatter = new SyslogFormatter(
+          useIsoDateFormat = false,
+          timezone = Some("UTC"),
+          hostname = "raccoon.local"
+        )
       ).apply()
       syslog.publish(record1)
 
@@ -99,7 +114,12 @@ class SyslogHandlerTest extends WordSpec {
       val p = new DatagramPacket(new Array[Byte](1024), 1024)
       serverSocket.receive(p)
       assert(
-          new String(p.getData, 0, p.getLength) == "<9>Mar 29 05:53:16 raccoon.local whiskey: fatal message!")
+        new String(
+          p.getData,
+          0,
+          p.getLength
+        ) == "<9>Mar 29 05:53:16 raccoon.local whiskey: fatal message!"
+      )
     }
   }
 }

@@ -46,7 +46,7 @@ sealed trait Stack[T] {
   def transform(fn: Stack[T] => Stack[T]): Stack[T] =
     fn(this) match {
       case Node(head, mk, next) => Node(head, mk, next.transform(fn))
-      case leaf @ Leaf(_, _) => leaf
+      case leaf @ Leaf(_, _)    => leaf
     }
 
   /**
@@ -70,7 +70,8 @@ sealed trait Stack[T] {
     * typeclass [[CanStackFrom]].
     */
   def insertBefore[U](target: Role, insertion: U)(
-      implicit csf: CanStackFrom[U, T]): Stack[T] =
+      implicit csf: CanStackFrom[U, T]
+  ): Stack[T] =
     insertBefore(target, csf.toStackable(target, insertion))
 
   /**
@@ -92,7 +93,8 @@ sealed trait Stack[T] {
     * typeclass [[CanStackFrom]].
     */
   def insertAfter[U](target: Role, insertion: U)(
-      implicit csf: CanStackFrom[U, T]): Stack[T] =
+      implicit csf: CanStackFrom[U, T]
+  ): Stack[T] =
     insertAfter(target, csf.toStackable(target, insertion))
 
   /**
@@ -112,11 +114,12 @@ sealed trait Stack[T] {
     * given [[Stackable]]. If no elements match the role, then an
     * unmodified stack is returned.
     */
-  def replace(target: Role, replacement: Stackable[T]): Stack[T] = transform {
-    case n @ Node(head, _, next) if head.role == target =>
-      replacement +: next
-    case stk => stk
-  }
+  def replace(target: Role, replacement: Stackable[T]): Stack[T] =
+    transform {
+      case n @ Node(head, _, next) if head.role == target =>
+        replacement +: next
+      case stk => stk
+    }
 
   /**
     * Replace any stack elements matching the argument role with a
@@ -125,7 +128,8 @@ sealed trait Stack[T] {
     * typeclass [[CanStackFrom]].
     */
   def replace[U](target: Role, replacement: U)(
-      implicit csf: CanStackFrom[U, T]): Stack[T] =
+      implicit csf: CanStackFrom[U, T]
+  ): Stack[T] =
     replace(target, csf.toStackable(target, replacement))
 
   /**
@@ -136,7 +140,7 @@ sealed trait Stack[T] {
     fn(this)
     this match {
       case Node(_, _, next) => next.foreach(fn)
-      case Leaf(_, _) =>
+      case Leaf(_, _)       =>
     }
   }
 
@@ -145,11 +149,12 @@ sealed trait Stack[T] {
     * If `pred` finds an element, return true, otherwise, false.
     */
   @tailrec
-  final def exists(pred: Stack[T] => Boolean): Boolean = this match {
-    case _ if pred(this) => true
-    case Node(_, _, next) => next.exists(pred)
-    case Leaf(_, _) => false
-  }
+  final def exists(pred: Stack[T] => Boolean): Boolean =
+    this match {
+      case _ if pred(this)  => true
+      case Node(_, _, next) => next.exists(pred)
+      case Leaf(_, _)       => false
+    }
 
   /**
     * Returns whether the stack contains a given role or not.
@@ -180,10 +185,11 @@ sealed trait Stack[T] {
     * with `right`. Note that this replaces the terminating element of
     * `this`.
     */
-  def ++(right: Stack[T]): Stack[T] = this match {
-    case Node(head, mk, left) => Node(head, mk, left ++ right)
-    case Leaf(_, _) => right
-  }
+  def ++(right: Stack[T]): Stack[T] =
+    this match {
+      case Node(head, mk, left) => Node(head, mk, left ++ right)
+      case Leaf(_, _)           => right
+    }
 
   /**
     * A copy of this Stack with `stk` prepended.
@@ -227,7 +233,7 @@ object Stack {
   case class Role(name: String) {
     // Override `toString` to return the flat, lowercase object name for use in stats.
     private[this] lazy val _toString = name.toLowerCase
-    override def toString = _toString
+    override def toString            = _toString
   }
 
   /**
@@ -258,8 +264,10 @@ object Stack {
     * some way.
     */
   case class Node[T](
-      head: Stack.Head, mk: (Params, Stack[T]) => Stack[T], next: Stack[T])
-      extends Stack[T] {
+      head: Stack.Head,
+      mk: (Params, Stack[T]) => Stack[T],
+      next: Stack[T]
+  ) extends Stack[T] {
     def make(params: Params) = mk(params, next).make(params)
   }
 
@@ -287,9 +295,9 @@ object Stack {
       */
     def apply[T](_role: Stack.Role, t: T): Leaf[T] = {
       val head = new Stack.Head {
-        val role = _role
+        val role        = _role
         val description = _role.toString
-        val parameters = Nil
+        val parameters  = Nil
       }
       Leaf(head, t)
     }
@@ -318,11 +326,12 @@ object Stack {
     def default: P
   }
   object Param {
-    def apply[T](t: => T): Param[T] = new Param[T] {
-      // Note, this is lazy to avoid potential failures during
-      // static initialization.
-      lazy val default = t
-    }
+    def apply[T](t: => T): Param[T] =
+      new Param[T] {
+        // Note, this is lazy to avoid potential failures during
+        // static initialization.
+        lazy val default = t
+      }
   }
 
   /**
@@ -333,13 +342,13 @@ object Stack {
     /**
       * Get the current value of the P-typed parameter.
       */
-    def apply[P : Param]: P
+    def apply[P: Param]: P
 
     /**
       * Returns true if there is a non-default value for
       * the P-typed parameter.
       */
-    def contains[P : Param]: Boolean
+    def contains[P: Param]: Boolean
 
     /**
       * Iterator of all `Param`s and their associated values.
@@ -350,7 +359,7 @@ object Stack {
       * Produce a new parameter map, overriding any previous
       * `P`-typed value.
       */
-    def +[P : Param](p: P): Params
+    def +[P: Param](p: P): Params
 
     /**
       * Alias for [[addAll(Params)]].
@@ -370,7 +379,7 @@ object Stack {
       def apply[P](implicit param: Param[P]): P =
         map.get(param) match {
           case Some(v) => v.asInstanceOf[P]
-          case None => param.default
+          case None    => param.default
         }
 
       def contains[P](implicit param: Param[P]): Boolean =
@@ -398,7 +407,7 @@ object Stack {
   trait Parameterized[+T] {
     def params: Stack.Params
 
-    def configured[P : Stack.Param](p: P): T =
+    def configured[P: Stack.Param](p: P): T =
       withParams(params + p)
 
     def configured[P](psp: (P, Stack.Param[P])): T = {
@@ -416,8 +425,9 @@ object Stack {
     * indifferent to these types in order to typecheck.
     */
   trait Transformer {
-    def apply[Req, Rep](stack: Stack[ServiceFactory[Req, Rep]])
-      : Stack[ServiceFactory[Req, Rep]]
+    def apply[Req, Rep](
+        stack: Stack[ServiceFactory[Req, Rep]]
+    ): Stack[ServiceFactory[Req, Rep]]
   }
 
   trait Transformable[+T] {
@@ -469,110 +479,140 @@ object Stack {
   }
 
   /** A module of 1 parameter. */
-  abstract class Module1[P1 : Param, T] extends Stackable[T] {
+  abstract class Module1[P1: Param, T] extends Stackable[T] {
     final val parameters: Seq[Stack.Param[_]] = Seq(implicitly[Param[P1]])
     def make(p1: P1, next: T): T
     def toStack(next: Stack[T]): Stack[T] =
-      Node(this,
-           (prms, next) => Leaf(this, make(prms[P1], next.make(prms))),
-           next)
+      Node(
+        this,
+        (prms, next) => Leaf(this, make(prms[P1], next.make(prms))),
+        next
+      )
   }
 
   /** A module of 2 parameters. */
-  abstract class Module2[P1 : Param, P2 : Param, T] extends Stackable[T] {
-    final val parameters: Seq[Stack.Param[_]] = Seq(
-        implicitly[Param[P1]], implicitly[Param[P2]])
+  abstract class Module2[P1: Param, P2: Param, T] extends Stackable[T] {
+    final val parameters: Seq[Stack.Param[_]] =
+      Seq(implicitly[Param[P1]], implicitly[Param[P2]])
     def make(p1: P1, p2: P2, next: T): T
     def toStack(next: Stack[T]) =
-      Node(this,
-           (prms,
-           next) => Leaf(this, make(prms[P1], prms[P2], next.make(prms))),
-           next)
+      Node(
+        this,
+        (prms, next) => Leaf(this, make(prms[P1], prms[P2], next.make(prms))),
+        next
+      )
   }
 
   /** A module of 3 parameters. */
-  abstract class Module3[P1 : Param, P2 : Param, P3 : Param, T]
+  abstract class Module3[P1: Param, P2: Param, P3: Param, T]
       extends Stackable[T] {
-    final val parameters: Seq[Stack.Param[_]] = Seq(implicitly[Param[P1]],
-                                                    implicitly[Param[P2]],
-                                                    implicitly[Param[P3]])
+    final val parameters: Seq[Stack.Param[_]] =
+      Seq(implicitly[Param[P1]], implicitly[Param[P2]], implicitly[Param[P3]])
     def make(p1: P1, p2: P2, p3: P3, next: T): T
     def toStack(next: Stack[T]): Stack[T] =
-      Node(this,
-           (prms, next) =>
-             Leaf(this, make(prms[P1], prms[P2], prms[P3], next.make(prms))),
-           next)
+      Node(
+        this,
+        (prms, next) =>
+          Leaf(this, make(prms[P1], prms[P2], prms[P3], next.make(prms))),
+        next
+      )
   }
 
   /** A module of 4 parameters. */
-  abstract class Module4[P1 : Param, P2 : Param, P3 : Param, P4 : Param, T]
+  abstract class Module4[P1: Param, P2: Param, P3: Param, P4: Param, T]
       extends Stackable[T] {
-    final val parameters: Seq[Stack.Param[_]] = Seq(implicitly[Param[P1]],
-                                                    implicitly[Param[P2]],
-                                                    implicitly[Param[P3]],
-                                                    implicitly[Param[P4]])
+    final val parameters: Seq[Stack.Param[_]] = Seq(
+      implicitly[Param[P1]],
+      implicitly[Param[P2]],
+      implicitly[Param[P3]],
+      implicitly[Param[P4]]
+    )
     def make(p1: P1, p2: P2, p3: P3, p4: P4, next: T): T
     def toStack(next: Stack[T]): Stack[T] =
       Node(
-          this,
-          (prms, next) =>
-            Leaf(
-                this,
-                make(prms[P1], prms[P2], prms[P3], prms[P4], next.make(prms))),
-          next)
+        this,
+        (prms, next) =>
+          Leaf(
+            this,
+            make(prms[P1], prms[P2], prms[P3], prms[P4], next.make(prms))
+          ),
+        next
+      )
   }
 
   /** A module of 5 parameters. */
   abstract class Module5[
-      P1 : Param, P2 : Param, P3 : Param, P4 : Param, P5 : Param, T]
-      extends Stackable[T] {
-    final val parameters: Seq[Stack.Param[_]] = Seq(implicitly[Param[P1]],
-                                                    implicitly[Param[P2]],
-                                                    implicitly[Param[P3]],
-                                                    implicitly[Param[P4]],
-                                                    implicitly[Param[P5]])
+      P1: Param,
+      P2: Param,
+      P3: Param,
+      P4: Param,
+      P5: Param,
+      T
+  ] extends Stackable[T] {
+    final val parameters: Seq[Stack.Param[_]] = Seq(
+      implicitly[Param[P1]],
+      implicitly[Param[P2]],
+      implicitly[Param[P3]],
+      implicitly[Param[P4]],
+      implicitly[Param[P5]]
+    )
     def make(p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, next: T): T
     def toStack(next: Stack[T]): Stack[T] =
-      Node(this,
-           (prms, next) =>
-             Leaf(this,
-                  make(prms[P1],
-                       prms[P2],
-                       prms[P3],
-                       prms[P4],
-                       prms[P5],
-                       next.make(prms))),
-           next)
+      Node(
+        this,
+        (prms, next) =>
+          Leaf(
+            this,
+            make(
+              prms[P1],
+              prms[P2],
+              prms[P3],
+              prms[P4],
+              prms[P5],
+              next.make(prms)
+            )
+          ),
+        next
+      )
   }
 
   /** A module of 6 parameters. */
-  abstract class Module6[P1 : Param,
-                         P2 : Param,
-                         P3 : Param,
-                         P4 : Param,
-                         P5 : Param,
-                         P6 : Param,
-                         T]
-      extends Stackable[T] {
-    final val parameters: Seq[Stack.Param[_]] = Seq(implicitly[Param[P1]],
-                                                    implicitly[Param[P2]],
-                                                    implicitly[Param[P3]],
-                                                    implicitly[Param[P4]],
-                                                    implicitly[Param[P5]],
-                                                    implicitly[Param[P6]])
+  abstract class Module6[
+      P1: Param,
+      P2: Param,
+      P3: Param,
+      P4: Param,
+      P5: Param,
+      P6: Param,
+      T
+  ] extends Stackable[T] {
+    final val parameters: Seq[Stack.Param[_]] = Seq(
+      implicitly[Param[P1]],
+      implicitly[Param[P2]],
+      implicitly[Param[P3]],
+      implicitly[Param[P4]],
+      implicitly[Param[P5]],
+      implicitly[Param[P6]]
+    )
     def make(p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, next: T): T
     def toStack(next: Stack[T]): Stack[T] =
-      Node(this,
-           (prms, next) =>
-             Leaf(this,
-                  make(prms[P1],
-                       prms[P2],
-                       prms[P3],
-                       prms[P4],
-                       prms[P5],
-                       prms[P6],
-                       next.make(prms))),
-           next)
+      Node(
+        this,
+        (prms, next) =>
+          Leaf(
+            this,
+            make(
+              prms[P1],
+              prms[P2],
+              prms[P3],
+              prms[P4],
+              prms[P5],
+              prms[P6],
+              next.make(prms)
+            )
+          ),
+        next
+      )
   }
 }
 
@@ -598,8 +638,8 @@ object CanStackFrom {
     new CanStackFrom[T => T, T] {
       def toStackable(r: Stack.Role, fn: T => T): Stackable[T] = {
         new Stack.Module0[T] {
-          val role = r
-          val description = r.name
+          val role          = r
+          val description   = r.name
           def make(next: T) = fn(next)
         }
       }
@@ -624,7 +664,8 @@ class StackBuilder[T](init: Stack[T]) {
     * typeclass [[CanStackFrom]].
     */
   def push[U](role: Stack.Role, el: U)(
-      implicit csf: CanStackFrom[U, T]): this.type = {
+      implicit csf: CanStackFrom[U, T]
+  ): this.type = {
     stack = csf.toStackable(role, el) +: stack
     this
   }

@@ -9,7 +9,7 @@ object SCL7901 {
     def foo(i: I)(s: String) = 2
   }
 
-  val b = new B
+  val b      = new B
   val i: Int = /*start*/ b.foo(new J) /*end*/
 }
 //Int

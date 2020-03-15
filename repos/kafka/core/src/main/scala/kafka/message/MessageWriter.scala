@@ -27,11 +27,13 @@ class MessageWriter(segmentSize: Int)
 
   import Message._
 
-  def write(key: Array[Byte] = null,
-            codec: CompressionCodec,
-            timestamp: Long,
-            timestampType: TimestampType,
-            magicValue: Byte)(writePayload: OutputStream => Unit): Unit = {
+  def write(
+      key: Array[Byte] = null,
+      codec: CompressionCodec,
+      timestamp: Long,
+      timestampType: TimestampType,
+      magicValue: Byte
+  )(writePayload: OutputStream => Unit): Unit = {
     withCrc32Prefix {
       // write magic value
       write(magicValue)
@@ -87,7 +89,7 @@ class MessageWriter(segmentSize: Int)
     // get a writer for CRC value
     val crcWriter = reserve(CrcLength)
     // save current position
-    var seg = currentSegment
+    var seg    = currentSegment
     val offset = currentSegment.written
     // write data
     writeData
@@ -127,9 +129,9 @@ class MessageWriter(segmentSize: Int)
 class BufferingOutputStream(segmentSize: Int) extends OutputStream {
 
   protected final class Segment(size: Int) {
-    val bytes = new Array[Byte](size)
-    var written = 0
-    var next: Segment = null
+    val bytes          = new Array[Byte](size)
+    var written        = 0
+    var next: Segment  = null
     def freeSpace: Int = bytes.length - written
   }
 
@@ -151,9 +153,9 @@ class BufferingOutputStream(segmentSize: Int) extends OutputStream {
     }
   }
 
-  protected var currentSegment = new Segment(segmentSize)
+  protected var currentSegment  = new Segment(segmentSize)
   private[this] val headSegment = currentSegment
-  private[this] var filled = 0
+  private[this] var filled      = 0
 
   def size(): Int = filled + currentSegment.written
 
@@ -166,13 +168,18 @@ class BufferingOutputStream(segmentSize: Int) extends OutputStream {
   override def write(b: Array[Byte], off: Int, len: Int) {
     if (off >= 0 && off <= b.length && len >= 0 && off + len <= b.length) {
       var remaining = len
-      var offset = off
+      var offset    = off
       while (remaining > 0) {
         if (currentSegment.freeSpace <= 0) addSegment()
 
         val amount = math.min(currentSegment.freeSpace, remaining)
         System.arraycopy(
-            b, offset, currentSegment.bytes, currentSegment.written, amount)
+          b,
+          offset,
+          currentSegment.bytes,
+          currentSegment.written,
+          amount
+        )
         currentSegment.written += amount
         offset += amount
         remaining -= amount
@@ -187,9 +194,11 @@ class BufferingOutputStream(segmentSize: Int) extends OutputStream {
     while (amount >= 0) {
       currentSegment.written += amount
       if (currentSegment.freeSpace <= 0) addSegment()
-      amount = in.read(currentSegment.bytes,
-                       currentSegment.written,
-                       currentSegment.freeSpace)
+      amount = in.read(
+        currentSegment.bytes,
+        currentSegment.written,
+        currentSegment.freeSpace
+      )
     }
   }
 

@@ -1,7 +1,10 @@
 package com.twitter.finagle.http.filter
 
 import com.twitter.finagle.{Service, SimpleFilter}
-import com.twitter.finagle.filter.{LogFormatter => CoreLogFormatter, LoggingFilter => CoreLoggingFilter}
+import com.twitter.finagle.filter.{
+  LogFormatter => CoreLogFormatter,
+  LoggingFilter => CoreLoggingFilter
+}
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.logging.Logger
 import com.twitter.util.{Duration, Future, Return, Throw, Time, Stopwatch}
@@ -18,7 +21,7 @@ object LogFormatter {
   /** Escape string for logging (compatible with Apache's ap_escape_logitem()) */
   def escape(s: String): String = {
     var builder: StringBuilder = null // only create if escaping is needed
-    var index = 0
+    var index                  = 0
     s.foreach { c =>
       val i = c.toInt
       if (i >= 0x20 && i <= 0x7E && i != 0x22 && i != 0x5C) {
@@ -32,13 +35,13 @@ object LogFormatter {
           builder = new StringBuilder(s.substring(0, index))
         }
         c match {
-          case '\b' => builder.append("\\b")
-          case '\n' => builder.append("\\n")
-          case '\r' => builder.append("\\r")
-          case '\t' => builder.append("\\t")
+          case '\b'       => builder.append("\\b")
+          case '\n'       => builder.append("\\n")
+          case '\r'       => builder.append("\\r")
+          case '\t'       => builder.append("\\t")
           case BackslashV => builder.append("\\v")
-          case '\\' => builder.append("\\\\")
-          case '"' => builder.append("\\\"")
+          case '\\'       => builder.append("\\\\")
+          case '"'        => builder.append("\\\"")
           case _ =>
             c.toString().getBytes("UTF-8").foreach { byte =>
               builder.append("\\x")
@@ -75,7 +78,9 @@ class CommonLogFormatter extends LogFormatter {
    *   "%{User-Agent}i": user agent
    */
   val DateFormat = FastDateFormat.getInstance(
-      "dd/MMM/yyyy:HH:mm:ss Z", TimeZone.getTimeZone("GMT"))
+    "dd/MMM/yyyy:HH:mm:ss Z",
+    TimeZone.getTimeZone("GMT")
+  )
   def format(request: Request, response: Response, responseTime: Duration) = {
     val remoteAddr = request.remoteAddress.getHostAddress
 
@@ -109,9 +114,13 @@ class CommonLogFormatter extends LogFormatter {
   }
 
   def formatException(
-      request: Request, throwable: Throwable, responseTime: Duration): String =
+      request: Request,
+      throwable: Throwable,
+      responseTime: Duration
+  ): String =
     throw new UnsupportedOperationException(
-        "Log throwables as empty 500s instead")
+      "Log throwables as empty 500s instead"
+    )
 
   def formattedDate(): String =
     DateFormat.format(Time.now.toDate)
@@ -127,21 +136,26 @@ class CommonLogFormatter extends LogFormatter {
 class LoggingFilter[REQUEST <: Request](
     val log: Logger,
     val formatter: CoreLogFormatter[REQUEST, Response]
-)
-    extends CoreLoggingFilter[REQUEST, Response] {
+) extends CoreLoggingFilter[REQUEST, Response] {
 
   // Treat exceptions as empty 500 errors
   override protected def logException(
-      duration: Duration, request: REQUEST, throwable: Throwable) {
+      duration: Duration,
+      request: REQUEST,
+      throwable: Throwable
+  ) {
     val response = Response(request.version, Status.InternalServerError)
-    val line = formatter.format(request, response, duration)
+    val line     = formatter.format(request, response, duration)
     log.info(line)
   }
 }
 
 object LoggingFilter
-    extends LoggingFilter[Request]({
-      val log = Logger("access")
-      log.setUseParentHandlers(false)
-      log
-    }, new CommonLogFormatter)
+    extends LoggingFilter[Request](
+      {
+        val log = Logger("access")
+        log.setUseParentHandlers(false)
+        log
+      },
+      new CommonLogFormatter
+    )

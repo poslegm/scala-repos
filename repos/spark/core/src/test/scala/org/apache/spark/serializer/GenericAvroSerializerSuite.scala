@@ -26,8 +26,7 @@ import org.apache.avro.generic.GenericData.Record
 
 import org.apache.spark.{SharedSparkContext, SparkFunSuite}
 
-class GenericAvroSerializerSuite
-    extends SparkFunSuite with SharedSparkContext {
+class GenericAvroSerializerSuite extends SparkFunSuite with SharedSparkContext {
   conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
 
   val schema: Schema = SchemaBuilder
@@ -40,15 +39,17 @@ class GenericAvroSerializerSuite
 
   test("schema compression and decompression") {
     val genericSer = new GenericAvroSerializer(conf.getAvroSchema)
-    assert(schema === genericSer.decompress(
-            ByteBuffer.wrap(genericSer.compress(schema))))
+    assert(
+      schema === genericSer
+        .decompress(ByteBuffer.wrap(genericSer.compress(schema)))
+    )
   }
 
   test("record serialization and deserialization") {
     val genericSer = new GenericAvroSerializer(conf.getAvroSchema)
 
     val outputStream = new ByteArrayOutputStream()
-    val output = new Output(outputStream)
+    val output       = new Output(outputStream)
     genericSer.serializeDatum(record, output)
     output.flush()
     output.close()
@@ -68,7 +69,7 @@ class GenericAvroSerializerSuite
     val normalLength = output.total - beginningNormalPosition
 
     conf.registerAvroSchemas(schema)
-    val genericSerFinger = new GenericAvroSerializer(conf.getAvroSchema)
+    val genericSerFinger             = new GenericAvroSerializer(conf.getAvroSchema)
     val beginningFingerprintPosition = output.total()
     genericSerFinger.serializeDatum(record, output)
     val fingerprintLength = output.total - beginningFingerprintPosition
@@ -77,13 +78,15 @@ class GenericAvroSerializerSuite
   }
 
   test("caches previously seen schemas") {
-    val genericSer = new GenericAvroSerializer(conf.getAvroSchema)
+    val genericSer       = new GenericAvroSerializer(conf.getAvroSchema)
     val compressedSchema = genericSer.compress(schema)
     val decompressedSchema =
       genericSer.decompress(ByteBuffer.wrap(compressedSchema))
 
     assert(compressedSchema.eq(genericSer.compress(schema)))
-    assert(decompressedSchema.eq(
-            genericSer.decompress(ByteBuffer.wrap(compressedSchema))))
+    assert(
+      decompressedSchema
+        .eq(genericSer.decompress(ByteBuffer.wrap(compressedSchema)))
+    )
   }
 }

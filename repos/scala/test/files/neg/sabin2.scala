@@ -4,12 +4,12 @@ object Test extends App {
     var x: T = _
     class Inner {
       def set(y: T) = x = y
-      def get() = x
-      def print() = println("Hello world")
+      def get()     = x
+      def print()   = println("Hello world")
     }
   }
 
-  object IntBase extends Base { type T = Int }
+  object IntBase    extends Base { type T = Int    }
   object StringBase extends Base { type T = String }
 
   val a: Base#Inner = new IntBase.Inner

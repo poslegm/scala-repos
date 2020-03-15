@@ -27,22 +27,28 @@ object XmlExamples extends Specification {
 
   "Basic conversion example" in {
     val json = toJson(users1)
-    compactRender(json) mustEqual """{"users":{"count":"2","user":[{"disabled":"true","id":"1","name":"Harry"},{"id":"2","name":"David","nickname":"Dave"}]}}"""
+    compactRender(
+      json
+    ) mustEqual """{"users":{"count":"2","user":[{"disabled":"true","id":"1","name":"Harry"},{"id":"2","name":"David","nickname":"Dave"}]}}"""
   }
 
   "Conversion transformation example 1" in {
     val json = toJson(users1).transformField {
       case JField("id", JString(s)) => JField("id", JInt(s.toInt))
     }
-    compactRender(json) mustEqual """{"users":{"count":"2","user":[{"disabled":"true","id":1,"name":"Harry"},{"id":2,"name":"David","nickname":"Dave"}]}}"""
+    compactRender(
+      json
+    ) mustEqual """{"users":{"count":"2","user":[{"disabled":"true","id":1,"name":"Harry"},{"id":2,"name":"David","nickname":"Dave"}]}}"""
   }
 
   "Conversion transformation example 2" in {
     val json = toJson(users2).transformField {
-      case JField("id", JString(s)) => JField("id", JInt(s.toInt))
+      case JField("id", JString(s))   => JField("id", JInt(s.toInt))
       case JField("user", x: JObject) => JField("user", JArray(x :: Nil))
     }
-    compactRender(json) mustEqual """{"users":{"user":[{"id":1,"name":"Harry"}]}}"""
+    compactRender(
+      json
+    ) mustEqual """{"users":{"user":[{"id":1,"name":"Harry"}]}}"""
   }
 
   "Primitive array example" in {
@@ -54,10 +60,9 @@ object XmlExamples extends Specification {
     def flattenArray(nums: List[JValue]) =
       JString(nums.map(_.values).mkString(","))
 
-    val printer = new scala.xml.PrettyPrinter(100, 2)
+    val printer        = new scala.xml.PrettyPrinter(100, 2)
     val lotto: JObject = LottoExample.json
-    val xml = toXml(
-        lotto.transformField {
+    val xml = toXml(lotto.transformField {
       case JField("winning-numbers", JArray(nums)) =>
         JField("winning-numbers", flattenArray(nums))
       case JField("numbers", JArray(nums)) =>
@@ -116,7 +121,9 @@ object XmlExamples extends Specification {
 
   "Grouped text example" in {
     val json = toJson(groupedText)
-    compactRender(json) mustEqual """{"g":{"group":"foobar","url":"http://example.com/test"}}"""
+    compactRender(
+      json
+    ) mustEqual """{"g":{"group":"foobar","url":"http://example.com/test"}}"""
   }
 
   val users1 = <users count="2">
@@ -137,10 +144,10 @@ object XmlExamples extends Specification {
       </user>
     </users>
 
-  val url = "test"
+  val url         = "test"
   val groupedText = <g>
-      <group>{ Group(List(Text("foo"), Text("bar"))) }</group>
-      <url>http://example.com/{ url }</url>
+      <group>{Group(List(Text("foo"), Text("bar")))}</group>
+      <url>http://example.com/{url}</url>
     </g>
 
   // Examples by Jonathan Ferguson. See http://groups.google.com/group/liftweb/browse_thread/thread/f3bdfcaf1c21c615/c311a91e44f9c178?show_docid=c311a91e44f9c178
@@ -149,7 +156,8 @@ object XmlExamples extends Specification {
   // { ..., "fieldName": "", "attrName":"someValue", ...}      ->
   // { ..., "fieldName": { "attrName": f("someValue") }, ... }
   def attrToObject(fieldName: String, attrName: String, f: JString => JValue)(
-      json: JValue) =
+      json: JValue
+  ) =
     json.transformField {
       case JField(n, v: JString) if n == attrName =>
         JField(fieldName, JObject(JField(n, f(v)) :: Nil))
@@ -159,8 +167,8 @@ object XmlExamples extends Specification {
     }
 
   "Example with multiple attributes, multiple nested elements " in {
-    val a1 = attrToObject("stats", "count", s => JInt(s.s.toInt)) _
-    val a2 = attrToObject("messages", "href", identity) _
+    val a1   = attrToObject("stats", "count", s => JInt(s.s.toInt)) _
+    val a2   = attrToObject("messages", "href", identity) _
     val json = a1(a2(toJson(messageXml1)))
     (json diff parse(expected1)) mustEqual Diff(JNothing, JNothing, JNothing)
   }

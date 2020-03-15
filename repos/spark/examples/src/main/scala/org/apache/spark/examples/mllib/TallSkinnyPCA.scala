@@ -42,7 +42,7 @@ object TallSkinnyPCA {
     }
 
     val conf = new SparkConf().setAppName("TallSkinnyPCA")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     // Load and parse the data file.
     val rows = sc.textFile(args(0)).map { line =>

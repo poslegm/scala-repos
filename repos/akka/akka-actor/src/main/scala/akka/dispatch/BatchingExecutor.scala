@@ -49,11 +49,14 @@ private[akka] trait BatchingExecutor extends Executor {
   private[this] val _tasksLocal = new ThreadLocal[AbstractBatch]()
 
   private[this] abstract class AbstractBatch
-      extends ArrayDeque[Runnable](4) with Runnable {
+      extends ArrayDeque[Runnable](4)
+      with Runnable {
     @tailrec final def processBatch(batch: AbstractBatch): Unit =
       if ((batch eq this) && !batch.isEmpty) {
         batch.poll().run()
-        processBatch(_tasksLocal.get) // If this is null, then we have been using managed blocking, so bail out
+        processBatch(
+          _tasksLocal.get
+        ) // If this is null, then we have been using managed blocking, so bail out
       }
 
     protected final def resubmitUnbatched(): Boolean = {
@@ -71,7 +74,8 @@ private[akka] trait BatchingExecutor extends Executor {
     override final def run: Unit = {
       require(_tasksLocal.get eq null)
       _tasksLocal set this // Install ourselves as the current batch
-      try processBatch(this) catch {
+      try processBatch(this)
+      catch {
         case t: Throwable ⇒
           resubmitUnbatched()
           throw t
@@ -82,7 +86,8 @@ private[akka] trait BatchingExecutor extends Executor {
   private[this] val _blockContext = new ThreadLocal[BlockContext]()
 
   private[this] final class BlockableBatch
-      extends AbstractBatch with BlockContext {
+      extends AbstractBatch
+      with BlockContext {
     // this method runs in the delegate ExecutionContext's thread
     override final def run(): Unit = {
       require(_tasksLocal.get eq null)
@@ -90,7 +95,8 @@ private[akka] trait BatchingExecutor extends Executor {
       val firstInvocation = _blockContext.get eq null
       if (firstInvocation) _blockContext.set(BlockContext.current)
       BlockContext.withBlockContext(this) {
-        try processBatch(this) catch {
+        try processBatch(this)
+        catch {
           case t: Throwable ⇒
             resubmitUnbatched()
             throw t
@@ -121,18 +127,25 @@ private[akka] trait BatchingExecutor extends Executor {
           val newBatch: AbstractBatch =
             if (resubmitOnBlock) new BlockableBatch() else new Batch()
           newBatch.add(runnable)
-          unbatchedExecute(newBatch) // If we aren't in batching mode yet, enqueue batch
+          unbatchedExecute(
+            newBatch
+          ) // If we aren't in batching mode yet, enqueue batch
         case batch ⇒
-          batch.add(runnable) // If we are already in batching mode, add to batch
+          batch.add(
+            runnable
+          ) // If we are already in batching mode, add to batch
       }
     } else
-      unbatchedExecute(runnable) // If not batchable, just delegate to underlying
+      unbatchedExecute(
+        runnable
+      ) // If not batchable, just delegate to underlying
   }
 
   /** Override this to define which runnables will be batched. */
-  def batchable(runnable: Runnable): Boolean = runnable match {
-    case b: Batchable ⇒ b.isBatchable
-    case _: scala.concurrent.OnCompleteRunnable ⇒ true
-    case _ ⇒ false
-  }
+  def batchable(runnable: Runnable): Boolean =
+    runnable match {
+      case b: Batchable                           ⇒ b.isBatchable
+      case _: scala.concurrent.OnCompleteRunnable ⇒ true
+      case _                                      ⇒ false
+    }
 }

@@ -2,7 +2,7 @@ import java.util.ArrayList
 
 object Convert1 {
   implicit def convert[T](p: ArrayList[T]) = new ArrayList[Int](3)
-  implicit def convert[T](p: T) = new String
+  implicit def convert[T](p: T)            = new String
 
   def m1(p: ArrayList[Int]) {}
   def m1(p: Int) {}

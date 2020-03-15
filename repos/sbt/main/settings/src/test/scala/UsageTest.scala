@@ -29,18 +29,18 @@ object Assign {
   val ck = settingKey[File]("c")
   val sk = taskKey[Set[_]]("s")
 
-  val ik = inputKey[Int]("i")
-  val isk = inputKey[String]("is")
-  val mk = settingKey[Int]("m")
-  val tk = taskKey[Int]("t")
-  val name = settingKey[String]("name")
-  val dummyt = taskKey[complete.Parser[String]]("dummyt")
-  val dummys = settingKey[complete.Parser[String]]("dummys")
-  val dummy3 = settingKey[complete.Parser[(String, Int)]]("dummy3")
+  val ik                                 = inputKey[Int]("i")
+  val isk                                = inputKey[String]("is")
+  val mk                                 = settingKey[Int]("m")
+  val tk                                 = taskKey[Int]("t")
+  val name                               = settingKey[String]("name")
+  val dummyt                             = taskKey[complete.Parser[String]]("dummyt")
+  val dummys                             = settingKey[complete.Parser[String]]("dummys")
+  val dummy3                             = settingKey[complete.Parser[(String, Int)]]("dummy3")
   val tsk: complete.Parser[Task[String]] = ???
-  val itsk: Initialize[InputTask[Int]] = ???
-  val seqSetting = settingKey[Seq[String]]("seqSetting")
-  val listSetting = settingKey[List[String]]("listSetting")
+  val itsk: Initialize[InputTask[Int]]   = ???
+  val seqSetting                         = settingKey[Seq[String]]("seqSetting")
+  val listSetting                        = settingKey[List[String]]("listSetting")
 
   /*	def azy = sk.value
 
@@ -55,17 +55,17 @@ object Assign {
 
   val zz = Def.task {
     mk.value + tk.value + mk.value + tk.value + mk.value + tk.value +
-    mk.value + tk.value + mk.value + tk.value + mk.value + tk.value
+      mk.value + tk.value + mk.value + tk.value + mk.value + tk.value
   }
 
   import DefaultParsers._
   val p = Def.setting { name.value ~> Space ~> ID }
   val is = Seq(
-      mk := 3,
-      name := "asdf",
-      tk := (math.random * 1000).toInt,
-      isk := dummys.value.parsed // should not compile: cannot use a task to define the parser
-      //		ik := { if( tsk.parsed.value == "blue") tk.value else mk.value }
+    mk := 3,
+    name := "asdf",
+    tk := (math.random * 1000).toInt,
+    isk := dummys.value.parsed // should not compile: cannot use a task to define the parser
+    //		ik := { if( tsk.parsed.value == "blue") tk.value else mk.value }
   )
 
   val it1 = Def.inputTask {
@@ -88,8 +88,8 @@ object Assign {
   }
   val it6 = Def.inputTaskDyn {
     val d3 = dummy3.parsed
-    val x = d3._1
-    val i = d3._2
+    val x  = d3._1
+    val i  = d3._2
     Def.task { tk.value + i }
   }
 
@@ -98,14 +98,16 @@ object Assign {
   }
 
   def bool: Initialize[Boolean] = Def.setting { true }
-  def enabledOnly[T](key: Initialize[T]): Initialize[Seq[T]] = Def.setting {
-    val keys: Seq[T] = forallIn(key).value
-    val enabled: Seq[Boolean] = forallIn(bool).value
-    (keys zip enabled) collect { case (a, true) => a }
-  }
-  def forallIn[T](key: Initialize[T]): Initialize[Seq[T]] = Def.setting {
-    key.value :: Nil
-  }
+  def enabledOnly[T](key: Initialize[T]): Initialize[Seq[T]] =
+    Def.setting {
+      val keys: Seq[T]          = forallIn(key).value
+      val enabled: Seq[Boolean] = forallIn(bool).value
+      (keys zip enabled) collect { case (a, true) => a }
+    }
+  def forallIn[T](key: Initialize[T]): Initialize[Seq[T]] =
+    Def.setting {
+      key.value :: Nil
+    }
 
   // Test that Append.Sequence instances for Seq/List work and don't mess up with each other
   seqSetting := Seq("test1")

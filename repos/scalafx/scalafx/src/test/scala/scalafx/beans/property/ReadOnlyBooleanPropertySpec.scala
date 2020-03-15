@@ -43,14 +43,14 @@ import scalafx.Includes._
   */
 @RunWith(classOf[JUnitRunner])
 class ReadOnlyBooleanPropertySpec extends FlatSpec with BeforeAndAfterEach {
-  val bean = new Object()
+  val bean                                                   = new Object()
   var readOnlyBooleanProperty: jfxbp.ReadOnlyBooleanProperty = null
-  var booleanProperty1: jfxbp.BooleanProperty = null
-  var booleanProperty2: jfxbp.BooleanProperty = null
+  var booleanProperty1: jfxbp.BooleanProperty                = null
+  var booleanProperty2: jfxbp.BooleanProperty                = null
 
   override def beforeEach() {
-    readOnlyBooleanProperty = new ReadOnlyBooleanProperty(
-        bean, "Test Read-only Boolean", true)
+    readOnlyBooleanProperty =
+      new ReadOnlyBooleanProperty(bean, "Test Read-only Boolean", true)
     booleanProperty1 = new BooleanProperty(bean, "Test Boolean 2")
     booleanProperty2 = new BooleanProperty(bean, "Test Boolean 3")
   }
@@ -123,8 +123,8 @@ class ReadOnlyBooleanPropertySpec extends FlatSpec with BeforeAndAfterEach {
 
   it should "support invalidate/change triggers on binding expressions" in {
     var invalidateCount = 0
-    var changeCount = 0
-    val binding = booleanProperty1 || booleanProperty2
+    var changeCount     = 0
+    val binding         = booleanProperty1 || booleanProperty2
     binding onInvalidate {
       invalidateCount += 1
     }

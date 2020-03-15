@@ -12,8 +12,10 @@ import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
 
 class VersionVectorSpec
-    extends TestKit(ActorSystem("VersionVectorSpec")) with WordSpecLike
-    with Matchers with BeforeAndAfterAll {
+    extends TestKit(ActorSystem("VersionVectorSpec"))
+    with WordSpecLike
+    with Matchers
+    with BeforeAndAfterAll {
 
   val node1 = UniqueAddress(Address("akka.tcp", "Sys", "localhost", 2551), 1)
   val node2 = UniqueAddress(node1.address.copy(port = Some(2552)), 2)
@@ -251,7 +253,7 @@ class VersionVectorSpec
       val b1 = b + node2
 
       var a2 = a1 + node1
-      var c = a2.merge(b1)
+      var c  = a2.merge(b1)
       var c1 = c + node3
 
       (c1 > a2) should be(true)

@@ -17,10 +17,14 @@ object ThrottlingTaskStatusUpdateProcessor {
   final val dependencyTag = "ThrottlingTaskStatusUpdateProcessor"
 }
 
-private[core] class ThrottlingTaskStatusUpdateProcessor @Inject()(
-    @Named(ThrottlingTaskStatusUpdateProcessor.dependencyTag) serializePublish: CapConcurrentExecutions,
-    @Named(ThrottlingTaskStatusUpdateProcessor.dependencyTag) wrapped: TaskStatusUpdateProcessor)
-    extends TaskStatusUpdateProcessor {
+private[core] class ThrottlingTaskStatusUpdateProcessor @Inject() (
+    @Named(
+      ThrottlingTaskStatusUpdateProcessor.dependencyTag
+    ) serializePublish: CapConcurrentExecutions,
+    @Named(
+      ThrottlingTaskStatusUpdateProcessor.dependencyTag
+    ) wrapped: TaskStatusUpdateProcessor
+) extends TaskStatusUpdateProcessor {
   override def publish(status: TaskStatus): Future[Unit] =
     serializePublish(wrapped.publish(status))
 }

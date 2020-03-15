@@ -69,8 +69,8 @@ trait ManyToMany extends BaseKeyedMapper {
       thisField: MappedForeignKey[K, O, _ <: KeyedMapper[_, _]],
       val otherField: MappedForeignKey[K2, O, T2],
       val otherMeta: MetaMapper[T2],
-      val qp: QueryParam[O]*)
-      extends scala.collection.mutable.Buffer[T2] {
+      val qp: QueryParam[O]*
+  ) extends scala.collection.mutable.Buffer[T2] {
 
     def otherFK[A](join: O)(f: MappedForeignKey[K2, O, T2] => A): A =
       otherField.actualField(join) match {
@@ -84,7 +84,7 @@ trait ManyToMany extends BaseKeyedMapper {
     /**
       * Get the list of instances of joinMeta
       */
-    def joins = _joins // read only to the public
+    def joins                           = _joins // read only to the public
     protected var removedJoins: List[O] = Nil
 
     refresh
@@ -143,15 +143,15 @@ trait ManyToMany extends BaseKeyedMapper {
     def iterator = children.iterator
 
     protected def childAt(n: Int) = children(n)
-    def apply(n: Int) = childAt(n)
+    def apply(n: Int)             = childAt(n)
     def indexOf(e: T2) =
       children.indexWhere(e.eq)
 
     def insertAll(n: Int, traversable: Traversable[T2]) {
       val ownedJoins = traversable map own
-      val n2 = joins.indexWhere(isJoinForChild(children(n)))
-      val before = joins.take(n2)
-      val after = joins.drop(n2)
+      val n2         = joins.indexWhere(isJoinForChild(children(n)))
+      val before     = joins.take(n2)
+      val after      = joins.drop(n2)
 
       _joins = before ++ ownedJoins ++ after
     }
@@ -169,7 +169,7 @@ trait ManyToMany extends BaseKeyedMapper {
     def update(n: Int, newelem: T2) {
       unown(childAt(n)) match {
         case Some(join) =>
-          val n2 = joins.indexOf(join)
+          val n2              = joins.indexOf(join)
           val (before, after) = (joins.take(n2), joins.drop(n2 + 1))
           _joins = before ++ List(own(newelem)) ++ after
         case None =>
@@ -196,11 +196,12 @@ trait ManyToMany extends BaseKeyedMapper {
       */
     def refresh = {
       val by = new Cmp[O, TheKeyType](
-          thisField,
-          OprEnum.Eql,
-          Full(primaryKeyField.get.asInstanceOf[K]),
-          Empty,
-          Empty)
+        thisField,
+        OprEnum.Eql,
+        Full(primaryKeyField.get.asInstanceOf[K]),
+        Empty,
+        Empty
+      )
 
       _joins = joinMeta.findAll((by :: qp.toList): _*)
       all
@@ -223,14 +224,19 @@ trait ManyToMany extends BaseKeyedMapper {
       _joins foreach {
         thisField
           .actualField(_)
-          .asInstanceOf[
-              MappedForeignKey[K, O, X] forSome { type X <: KeyedMapper[K, X] }] set ManyToMany.this.primaryKeyField.get
+          .asInstanceOf[MappedForeignKey[
+            K,
+            O,
+            X
+          ] forSome { type X <: KeyedMapper[K, X] }] set ManyToMany.this.primaryKeyField.get
           .asInstanceOf[K]
       }
 
-      removedJoins.forall { _.delete_! } &
-      (// continue saving even if deleting fails
-          children.forall(_.save) && joins.forall(_.save))
+      removedJoins.forall {
+        _.delete_!
+      } &
+        (// continue saving even if deleting fails
+        children.forall(_.save) && joins.forall(_.save))
     }
 
     /**

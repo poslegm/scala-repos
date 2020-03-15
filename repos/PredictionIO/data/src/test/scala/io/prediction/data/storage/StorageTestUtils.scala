@@ -19,13 +19,13 @@ import scalikejdbc._
 
 object StorageTestUtils {
   val hbaseSourceName = "HBASE"
-  val jdbcSourceName = "PGSQL"
+  val jdbcSourceName  = "PGSQL"
 
   def dropHBaseNamespace(namespace: String): Unit = {
     val eventDb = Storage
       .getDataObject[LEvents](hbaseSourceName, namespace)
       .asInstanceOf[HBLEvents]
-    val admin = eventDb.client.admin
+    val admin      = eventDb.client.admin
     val tableNames = admin.listTableNamesByNamespace(namespace)
     tableNames.foreach { name =>
       admin.disableTable(name)
@@ -36,7 +36,6 @@ object StorageTestUtils {
     admin.deleteNamespace(namespace)
   }
 
-  def dropJDBCTable(table: String): Unit = DB autoCommit { implicit s =>
-    SQL(s"drop table $table").execute().apply()
-  }
+  def dropJDBCTable(table: String): Unit =
+    DB autoCommit { implicit s => SQL(s"drop table $table").execute().apply() }
 }

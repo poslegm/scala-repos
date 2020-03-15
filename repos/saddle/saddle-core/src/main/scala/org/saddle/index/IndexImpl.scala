@@ -25,18 +25,20 @@ import locator.Locator
 private[saddle] object IndexImpl {
   case class IndexProperties(
       contiguous: Boolean, // if there are duplicates, are they all in the same place?
-      monotonic: Boolean) // are the elements ordered (ascending)?
+      monotonic: Boolean
+  ) // are the elements ordered (ascending)?
 
   def sentinelErr =
     throw new ArrayIndexOutOfBoundsException("Cannot access index position -1")
 
-  def keys2map[@spec(Boolean, Int, Long, Double) T : ST : ORD](
-      keys: Index[T]): (Locator[T], IndexProperties) = {
-    val map = Locator[T](keys.length)
-    val sc = keys.scalarTag
-    var i = 0
+  def keys2map[@spec(Boolean, Int, Long, Double) T: ST: ORD](
+      keys: Index[T]
+  ): (Locator[T], IndexProperties) = {
+    val map        = Locator[T](keys.length)
+    val sc         = keys.scalarTag
+    var i          = 0
     var contiguous = true
-    var monotonic = true
+    var monotonic  = true
     while (i < keys.length) {
       val k = keys.raw(i)
       if (map.inc(k) == 0) {

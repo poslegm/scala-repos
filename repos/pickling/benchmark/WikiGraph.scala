@@ -8,7 +8,12 @@ import scala.io.Source
 import scala.util.Random
 
 // for Java Serialization:
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream, ObjectInputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  ObjectOutputStream,
+  ObjectInputStream
+}
 
 import scala.pickling._
 import scala.pickling.Defaults._
@@ -30,10 +35,10 @@ final class Vertex(val label: String, var neighbors: List[Vertex])
   def sameAs(other: Vertex): Boolean = {
     (this ne other) && this.label == other.label &&
     (this.neighbors.length == other.neighbors.length && this.neighbors
-          .zip(other.neighbors)
-          .forall {
-            case (thisv, otherv) => thisv.label == otherv.label
-          })
+      .zip(other.neighbors)
+      .forall {
+        case (thisv, otherv) => thisv.label == otherv.label
+      })
   }
 
   override def toString = "Vertex(" + label + ")"
@@ -59,7 +64,7 @@ final class Graph extends Serializable {
 object GraphReader extends RegexParsers {
   override def skipWhitespace = false
 
-  lazy val token: Parser[String] = """\S+""".r
+  lazy val token: Parser[String]          = """\S+""".r
   lazy val edgeline: Parser[List[String]] = repsep(token, whiteSpace)
 
   val vertices: Map[String, Vertex] = new HashMap[String, Vertex]
@@ -69,20 +74,22 @@ object GraphReader extends RegexParsers {
 
   def tokenize(line: String, onError: String => Unit): List[String] =
     parse(edgeline, line.trim) match {
-      case Success(args, _) => args
+      case Success(args, _)     => args
       case NoSuccess(msg, rest) => onError(msg); List()
     }
 
-  def readChunk(lines: Iterator[String],
-                names: Map[String, String],
-                size: Int): Graph = {
+  def readChunk(
+      lines: Iterator[String],
+      names: Map[String, String],
+      size: Int
+  ): Graph = {
     val graph = new Graph
 
     for (line <- lines) {
       val labels = tokenize(line)
       //println("read labels " + labels)
 
-      val firstLabel = labels.head.substring(0, labels.head.length - 1)
+      val firstLabel     = labels.head.substring(0, labels.head.length - 1)
       val firstVertexOpt = vertices.get(firstLabel)
       val firstVertex =
         if (firstVertexOpt.isEmpty)
@@ -123,7 +130,7 @@ object GraphReader extends RegexParsers {
 
 object WikiGraph {
   val titlesPath = "benchmark/data/titles-sorted.txt"
-  val linksPath = "benchmark/data/links-sorted.txt"
+  val linksPath  = "benchmark/data/links-sorted.txt"
 
   implicit val codec = Codec("UTF-8")
   codec.onMalformedInput(CodingErrorAction.REPLACE)
@@ -140,7 +147,7 @@ object WikiGraph {
   for ((title, i) <- titles.zipWithIndex) names.put("" + i, title)
 
   // println("Reading wikipedia graph from file... " + linksPath)
-  val lines: Iterator[String] = Source.fromFile(linksPath).getLines()
+  val lines: Iterator[String]     = Source.fromFile(linksPath).getLines()
   def readChunk(size: Int): Graph = GraphReader.readChunk(lines, names, size)
 
   //GraphReader.printGraph(wikigraph)
@@ -158,7 +165,7 @@ trait WikiGraphBenchmark extends PicklingBenchmark {
 
 object WikiGraphPicklingBench extends WikiGraphBenchmark {
   implicit val VertexTag = FastTypeTag.materializeFastTypeTag[Vertex]
-  implicit val GraphTag = FastTypeTag.materializeFastTypeTag[Graph]
+  implicit val GraphTag  = FastTypeTag.materializeFastTypeTag[Graph]
   implicit val StringTag = FastTypeTag.materializeFastTypeTag[String]
   implicit val ColonColonVertexTag =
     FastTypeTag.materializeFastTypeTag[::[Vertex]]
@@ -168,9 +175,9 @@ object WikiGraphPicklingBench extends WikiGraphBenchmark {
   implicit val VectorVertexTag =
     FastTypeTag.materializeFastTypeTag[Vector[Vertex]]
   implicit val ListVertexTag = FastTypeTag.materializeFastTypeTag[List[Vertex]]
-  implicit val NilTag = FastTypeTag.materializeFastTypeTag[Nil.type]
+  implicit val NilTag        = FastTypeTag.materializeFastTypeTag[Nil.type]
   // TODO - why does this no longer compile?
-  implicit val picklerNil = Pickler.generate[Nil.type]
+  implicit val picklerNil   = Pickler.generate[Nil.type]
   implicit val unpicklerNil = implicitly[Unpickler[Nil.type]]
   implicit lazy val picklerVertex: Pickler[Vertex] = {
     val picklerVertex = "boom!"
@@ -225,16 +232,17 @@ object WikiGraphPicklingBench extends WikiGraphBenchmark {
   //     }
   //   }
   // }
-  implicit lazy val picklerUnpicklerColonColonVertex: Pickler[::[Vertex]] with Unpickler[
-      ::[Vertex]] = implicitly
-  implicit lazy val picklerUnpicklerVectorVertex: Pickler[Vector[Vertex]] with Unpickler[
-      Vector[Vertex]] = Defaults.vectorPickler[Vertex]
-  implicit val picklerGraph = implicitly[Pickler[Graph]]
+  implicit lazy val picklerUnpicklerColonColonVertex
+      : Pickler[::[Vertex]] with Unpickler[::[Vertex]] = implicitly
+  implicit lazy val picklerUnpicklerVectorVertex
+      : Pickler[Vector[Vertex]] with Unpickler[Vector[Vertex]] =
+    Defaults.vectorPickler[Vertex]
+  implicit val picklerGraph   = implicitly[Pickler[Graph]]
   implicit val unpicklerGraph = implicitly[Unpickler[Graph]]
 
   override def run(): Unit = {
     val pickle = data.pickle
-    val res = pickle.unpickle[Graph]
+    val res    = pickle.unpickle[Graph]
   }
 }
 
@@ -246,7 +254,7 @@ object WikiGraphJavaBench extends WikiGraphBenchmark {
     val ba = bos.toByteArray()
     // println("Bytes: " + ba.length)
     val bis = new ByteArrayInputStream(ba)
-    val in = new ObjectInputStream(bis)
+    val in  = new ObjectInputStream(bis)
     val res = in.readObject.asInstanceOf[Graph]
   }
 }
@@ -260,7 +268,7 @@ object WikiGraphKryoBench extends WikiGraphBenchmark {
 
   override def run() {
     val rnd: Int = Random.nextInt(10)
-    val arr = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
+    val arr      = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
     ser = new KryoSerializer
 
     val pickled = ser.toBytes(data, arr)

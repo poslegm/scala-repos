@@ -7,8 +7,8 @@ private[nio] final class HeapByteBufferDoubleView private (
     _initialPosition: Int,
     _initialLimit: Int,
     _readOnly: Boolean,
-    override private[nio] val isBigEndian: Boolean)
-    extends DoubleBuffer(_capacity, null, -1) {
+    override private[nio] val isBigEndian: Boolean
+) extends DoubleBuffer(_capacity, null, -1) {
 
   position(_initialPosition)
   limit(_initialLimit)
@@ -49,13 +49,11 @@ private[nio] final class HeapByteBufferDoubleView private (
     GenBuffer(this).generic_put(index, c)
 
   @noinline
-  override def get(
-      dst: Array[Double], offset: Int, length: Int): DoubleBuffer =
+  override def get(dst: Array[Double], offset: Int, length: Int): DoubleBuffer =
     GenBuffer(this).generic_get(dst, offset, length)
 
   @noinline
-  override def put(
-      src: Array[Double], offset: Int, length: Int): DoubleBuffer =
+  override def put(src: Array[Double], offset: Int, length: Int): DoubleBuffer =
     GenBuffer(this).generic_put(src, offset, length)
 
   @noinline
@@ -82,25 +80,30 @@ private[nio] object HeapByteBufferDoubleView {
       extends GenHeapBufferView.NewHeapBufferView[DoubleBuffer] {
     def bytesPerElem: Int = 8
 
-    def apply(capacity: Int,
-              byteArray: Array[Byte],
-              byteArrayOffset: Int,
-              initialPosition: Int,
-              initialLimit: Int,
-              readOnly: Boolean,
-              isBigEndian: Boolean): DoubleBuffer = {
-      new HeapByteBufferDoubleView(capacity,
-                                   byteArray,
-                                   byteArrayOffset,
-                                   initialPosition,
-                                   initialLimit,
-                                   readOnly,
-                                   isBigEndian)
+    def apply(
+        capacity: Int,
+        byteArray: Array[Byte],
+        byteArrayOffset: Int,
+        initialPosition: Int,
+        initialLimit: Int,
+        readOnly: Boolean,
+        isBigEndian: Boolean
+    ): DoubleBuffer = {
+      new HeapByteBufferDoubleView(
+        capacity,
+        byteArray,
+        byteArrayOffset,
+        initialPosition,
+        initialLimit,
+        readOnly,
+        isBigEndian
+      )
     }
   }
 
   @inline
   private[nio] def fromHeapByteBuffer(
-      byteBuffer: HeapByteBuffer): DoubleBuffer =
+      byteBuffer: HeapByteBuffer
+  ): DoubleBuffer =
     GenHeapBufferView.generic_fromHeapByteBuffer(byteBuffer)
 }

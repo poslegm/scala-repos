@@ -37,13 +37,14 @@ import scalafx.delegate.SFXDelegate
 
 object DirectoryChooser {
   implicit def sfxDirectoryChooser2jfx(
-      dc: DirectoryChooser): jfxs.DirectoryChooser =
+      dc: DirectoryChooser
+  ): jfxs.DirectoryChooser =
     if (dc != null) dc.delegate else null
 }
 
 class DirectoryChooser(
-    override val delegate: jfxs.DirectoryChooser = new jfxs.DirectoryChooser)
-    extends SFXDelegate[jfxs.DirectoryChooser] {
+    override val delegate: jfxs.DirectoryChooser = new jfxs.DirectoryChooser
+) extends SFXDelegate[jfxs.DirectoryChooser] {
 
   /**
     * The initial directory for the displayed dialog.

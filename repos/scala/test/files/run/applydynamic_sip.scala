@@ -14,11 +14,14 @@ object Test extends App {
   class MyDynamic extends Dynamic {
     def applyDynamic[T](n: String)(as: Any*) = {
       println(
-          "qual.applyDynamic(" + n + ")" + as.toList.mkString("(", ", ", ")")); stub
+        "qual.applyDynamic(" + n + ")" + as.toList.mkString("(", ", ", ")")
+      ); stub
     }
     def applyDynamicNamed[T](n: String)(as: (String, Any)*) = {
-      println("qual.applyDynamicNamed(" + n + ")" +
-          as.toList.mkString("(", ", ", ")")); stub
+      println(
+        "qual.applyDynamicNamed(" + n + ")" +
+          as.toList.mkString("(", ", ", ")")
+      ); stub
     }
     def selectDynamic[T](n: String) = {
       println("qual.selectDynamic(" + n + ")"); stub
@@ -29,8 +32,8 @@ object Test extends App {
   }
   val qual = new MyDynamic
   val expr = "expr"
-  val a = "a"
-  val a2 = "a2"
+  val a    = "a"
+  val a2   = "a2"
   type T = String
 
   // If qual.sel is followed by a potential type argument list [Ts] and an argument list (arg1, …, argn) where none of the arguments argi are named:
@@ -65,7 +68,7 @@ object Test extends App {
   qual.sel[T]
 
   qual.sel(1) = expr // parser turns this into qual.sel.update(1, expr)
-  qual.sel() = expr // parser turns this into qual.sel.update(expr)
+  qual.sel() = expr  // parser turns this into qual.sel.update(expr)
   qual.sel.apply(1)
   qual.sel.apply(1) = 1
 

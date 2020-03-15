@@ -26,7 +26,7 @@ import kafka.message.Message
   *
   * Note that the ID we initialize for each version is important.
   * We consider a version newer than another, if it has a higher ID (to avoid depending on lexicographic order)
-  * 
+  *
   * Since the api protocol may change more than once within the same release and to facilitate people deploying code from
   * trunk, we have the concept of internal versions (first introduced during the 0.10.0 development cycle). For example,
   * the first time we introduce a version change in a release, say 0.10.0, we will add a config value "0.10.0-IV0" and a
@@ -44,21 +44,23 @@ object ApiVersion {
     Ordering.by(_.id)
 
   private val versionNameMap = Map(
-      "0.8.0" -> KAFKA_0_8_0,
-      "0.8.1" -> KAFKA_0_8_1,
-      "0.8.2" -> KAFKA_0_8_2,
-      "0.9.0" -> KAFKA_0_9_0,
-      "0.10.0-IV0" -> KAFKA_0_10_0_IV0,
-      "0.10.0" -> KAFKA_0_10_0_IV0
+    "0.8.0"      -> KAFKA_0_8_0,
+    "0.8.1"      -> KAFKA_0_8_1,
+    "0.8.2"      -> KAFKA_0_8_2,
+    "0.9.0"      -> KAFKA_0_9_0,
+    "0.10.0-IV0" -> KAFKA_0_10_0_IV0,
+    "0.10.0"     -> KAFKA_0_10_0_IV0
   )
 
   private val versionPattern = "\\.".r
 
   def apply(version: String): ApiVersion =
     versionNameMap.getOrElse(
-        versionPattern.split(version).slice(0, 3).mkString("."),
-        throw new IllegalArgumentException(
-            s"Version `$version` is not a valid version"))
+      versionPattern.split(version).slice(0, 3).mkString("."),
+      throw new IllegalArgumentException(
+        s"Version `$version` is not a valid version"
+      )
+    )
 
   def latestVersion = versionNameMap.values.max
 }
@@ -76,31 +78,31 @@ sealed trait ApiVersion extends Ordered[ApiVersion] {
 
 // Keep the IDs in order of versions
 case object KAFKA_0_8_0 extends ApiVersion {
-  val version: String = "0.8.0.X"
+  val version: String            = "0.8.0.X"
   val messageFormatVersion: Byte = Message.MagicValue_V0
-  val id: Int = 0
+  val id: Int                    = 0
 }
 
 case object KAFKA_0_8_1 extends ApiVersion {
-  val version: String = "0.8.1.X"
+  val version: String            = "0.8.1.X"
   val messageFormatVersion: Byte = Message.MagicValue_V0
-  val id: Int = 1
+  val id: Int                    = 1
 }
 
 case object KAFKA_0_8_2 extends ApiVersion {
-  val version: String = "0.8.2.X"
+  val version: String            = "0.8.2.X"
   val messageFormatVersion: Byte = Message.MagicValue_V0
-  val id: Int = 2
+  val id: Int                    = 2
 }
 
 case object KAFKA_0_9_0 extends ApiVersion {
-  val version: String = "0.9.0.X"
+  val version: String            = "0.9.0.X"
   val messageFormatVersion: Byte = Message.MagicValue_V0
-  val id: Int = 3
+  val id: Int                    = 3
 }
 
 case object KAFKA_0_10_0_IV0 extends ApiVersion {
-  val version: String = "0.10.0-IV0"
+  val version: String            = "0.10.0-IV0"
   val messageFormatVersion: Byte = Message.MagicValue_V1
-  val id: Int = 4
+  val id: Int                    = 4
 }

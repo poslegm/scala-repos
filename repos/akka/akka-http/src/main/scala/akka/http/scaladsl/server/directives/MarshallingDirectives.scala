@@ -34,11 +34,17 @@ trait MarshallingDirectives {
         case Failure(x: IllegalArgumentException) ⇒
           reject(ValidationRejection(x.getMessage.nullAsEmpty, Some(x)))
         case Failure(x) ⇒
-          reject(MalformedRequestContentRejection(x.getMessage.nullAsEmpty,
-                                                  Option(x.getCause)))
+          reject(
+            MalformedRequestContentRejection(
+              x.getMessage.nullAsEmpty,
+              Option(x.getCause)
+            )
+          )
       }
-    } & cancelRejections(RequestEntityExpectedRejection.getClass,
-                         classOf[UnsupportedRequestContentTypeRejection])
+    } & cancelRejections(
+      RequestEntityExpectedRejection.getClass,
+      classOf[UnsupportedRequestContentTypeRejection]
+    )
 
   /**
     * Returns the in-scope [[FromRequestUnmarshaller]] for the given type.
@@ -49,8 +55,9 @@ trait MarshallingDirectives {
     * Uses the marshaller for the given type to produce a completion function that is passed to its inner function.
     * You can use it do decouple marshaller resolution from request completion.
     */
-  def completeWith[T](marshaller: ToResponseMarshaller[T])(
-      inner: (T ⇒ Unit) ⇒ Unit): Route =
+  def completeWith[T](
+      marshaller: ToResponseMarshaller[T]
+  )(inner: (T ⇒ Unit) ⇒ Unit): Route =
     extractRequestContext { ctx ⇒
       implicit val m = marshaller
       complete {
@@ -64,17 +71,18 @@ trait MarshallingDirectives {
     * Returns the in-scope Marshaller for the given type.
     */
   def instanceOf[T](
-      implicit m: ToResponseMarshaller[T]): ToResponseMarshaller[T] = m
+      implicit m: ToResponseMarshaller[T]
+  ): ToResponseMarshaller[T] = m
 
   /**
     * Completes the request using the given function. The input to the function is produced with the in-scope
     * entity unmarshaller and the result value of the function is marshalled with the in-scope marshaller.
     */
-  def handleWith[A, B](f: A ⇒ B)(implicit um: FromRequestUnmarshaller[A],
-                                 m: ToResponseMarshaller[B]): Route =
-    entity(um) { a ⇒
-      complete(f(a))
-    }
+  def handleWith[A, B](f: A ⇒ B)(implicit
+      um: FromRequestUnmarshaller[A],
+      m: ToResponseMarshaller[B]
+  ): Route =
+    entity(um) { a ⇒ complete(f(a)) }
 }
 
 object MarshallingDirectives extends MarshallingDirectives

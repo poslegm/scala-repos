@@ -44,9 +44,9 @@ class InputInfoTrackerSuite extends SparkFunSuite with BeforeAndAfter {
   test("test report and get InputInfo from InputInfoTracker") {
     val inputInfoTracker = new InputInfoTracker(ssc)
 
-    val streamId1 = 0
-    val streamId2 = 1
-    val time = Time(0L)
+    val streamId1  = 0
+    val streamId2  = 1
+    val time       = Time(0L)
     val inputInfo1 = StreamInputInfo(streamId1, 100L)
     val inputInfo2 = StreamInputInfo(streamId2, 300L)
     inputInfoTracker.reportInfo(time, inputInfo1)
@@ -63,7 +63,7 @@ class InputInfoTrackerSuite extends SparkFunSuite with BeforeAndAfter {
   test("test cleanup InputInfo from InputInfoTracker") {
     val inputInfoTracker = new InputInfoTracker(ssc)
 
-    val streamId1 = 0
+    val streamId1  = 0
     val inputInfo1 = StreamInputInfo(streamId1, 100L)
     val inputInfo2 = StreamInputInfo(streamId1, 300L)
     inputInfoTracker.reportInfo(Time(0), inputInfo1)

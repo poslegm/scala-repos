@@ -53,10 +53,11 @@ trait ServletFilterProvider extends Filter with HTTPProvider {
   private def handleLoanWrappers[T](f: => T): T = {
     val wrappers = LiftRules.allAround.toList
 
-    def handleLoan(lst: List[LoanWrapper]): T = lst match {
-      case Nil => f
-      case x :: xs => x(handleLoan(xs))
-    }
+    def handleLoan(lst: List[LoanWrapper]): T =
+      lst match {
+        case Nil     => f
+        case x :: xs => x(handleLoan(xs))
+      }
 
     handleLoan(wrappers)
   }
@@ -64,22 +65,34 @@ trait ServletFilterProvider extends Filter with HTTPProvider {
   /**
     * Executes the Lift filter component.
     */
-  def doFilter(req: ServletRequest, res: ServletResponse, chain: FilterChain) = {
+  def doFilter(
+      req: ServletRequest,
+      res: ServletResponse,
+      chain: FilterChain
+  ) = {
     if (LiftRules.ending) chain.doFilter(req, res)
     else {
       LiftRules.reqCnt.incrementAndGet()
       try {
         TransientRequestVarHandler(
-            Empty, RequestVarHandler(Empty, (req, res) match {
-          case (httpReq: HttpServletRequest, httpRes: HttpServletResponse) =>
-            val httpRequest = new HTTPRequestServlet(httpReq, this)
-            val httpResponse = new HTTPResponseServlet(httpRes)
+          Empty,
+          RequestVarHandler(
+            Empty,
+            (req, res) match {
+              case (
+                    httpReq: HttpServletRequest,
+                    httpRes: HttpServletResponse
+                  ) =>
+                val httpRequest  = new HTTPRequestServlet(httpReq, this)
+                val httpResponse = new HTTPResponseServlet(httpRes)
 
-            handleLoanWrappers(service(httpRequest, httpResponse) {
-              chain.doFilter(req, res)
-            })
-          case _ => chain.doFilter(req, res)
-        }))
+                handleLoanWrappers(service(httpRequest, httpResponse) {
+                  chain.doFilter(req, res)
+                })
+              case _ => chain.doFilter(req, res)
+            }
+          )
+        )
       } finally { LiftRules.reqCnt.decrementAndGet() }
     }
   }

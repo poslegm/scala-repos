@@ -18,7 +18,7 @@ import org.scalajs.testsuite.utils.AssertThrows._
 
 /** Tests for our implementation of java.io._ reader classes */
 class StringReaderTest {
-  val str = "asdf"
+  val str                     = "asdf"
   def newReader: StringReader = new StringReader(str)
 
   @Test def should_provide_read()(): Unit = {
@@ -32,17 +32,19 @@ class StringReaderTest {
   }
 
   @Test def should_provide_read_from_buffer_with_offset_and_length(): Unit = {
-    val r = newReader
+    val r   = newReader
     val buf = new Array[Char](10)
 
     assertEquals(4, r.read(buf, 2, 8))
     assertArrayEquals(
-        buf.map(_.toInt), Array[Int](0, 0, 'a', 's', 'd', 'f', 0, 0, 0, 0))
+      buf.map(_.toInt),
+      Array[Int](0, 0, 'a', 's', 'd', 'f', 0, 0, 0, 0)
+    )
     assertEquals(-1, r.read(buf, 2, 8)) // #1560
   }
 
   @Test def should_provide_read_from_CharBuffer(): Unit = {
-    val r = newReader
+    val r    = newReader
     val buf0 = java.nio.CharBuffer.allocate(25)
     buf0.position(3)
     val buf = buf0.slice()
@@ -52,8 +54,10 @@ class StringReaderTest {
     assertEquals(4, r.read(buf))
     assertEquals(8, buf.position())
     buf.flip()
-    assertArrayEquals(buf.toString().map(_.toInt).toArray,
-                      Array[Int](0, 0, 0, 0, 'a', 's', 'd', 'f'))
+    assertArrayEquals(
+      buf.toString().map(_.toInt).toArray,
+      Array[Int](0, 0, 0, 0, 'a', 's', 'd', 'f')
+    )
   }
 
   @Test def should_provide_ready(): Unit = {
@@ -112,7 +116,7 @@ class StringReaderTest {
 
 class BufferedReaderTest {
 
-  val str = "line1\nline2\r\n\nline4\rline5"
+  val str                       = "line1\nline2\r\n\nline4\rline5"
   def newReader: BufferedReader = new BufferedReader(new StringReader(str), 3)
 
   @Test def should_provide_read()(): Unit = {
@@ -126,8 +130,8 @@ class BufferedReaderTest {
 
   @Test def should_provide_read_from_buffer(): Unit = {
     var read = 0
-    val r = newReader
-    val buf = new Array[Char](15)
+    val r    = newReader
+    val buf  = new Array[Char](15)
 
     // twice to force filling internal buffer
     for (_ <- 0 to 1) {
@@ -142,8 +146,8 @@ class BufferedReaderTest {
 
   @Test def should_provide_read_frombuffer_with_offset(): Unit = {
     var read = 0
-    val r = newReader
-    val buf = new Array[Char](15)
+    val r    = newReader
+    val buf  = new Array[Char](15)
 
     // twice to force filling internal buffer
     for (_ <- 0 to 1) {
@@ -209,63 +213,11 @@ class InputStreamReaderTest {
 
   @Test def should_read_UTF8(): Unit = {
 
-    val buf = Array[Byte](72,
-                          101,
-                          108,
-                          108,
-                          111,
-                          32,
-                          87,
-                          111,
-                          114,
-                          108,
-                          100,
-                          46,
-                          -29,
-                          -127,
-                          -109,
-                          -29,
-                          -126,
-                          -109,
-                          -29,
-                          -127,
-                          -85,
-                          -29,
-                          -127,
-                          -95,
-                          -29,
-                          -127,
-                          -81,
-                          -26,
-                          -105,
-                          -91,
-                          -26,
-                          -100,
-                          -84,
-                          -24,
-                          -86,
-                          -98,
-                          -29,
-                          -126,
-                          -110,
-                          -24,
-                          -86,
-                          -83,
-                          -29,
-                          -126,
-                          -127,
-                          -29,
-                          -127,
-                          -66,
-                          -29,
-                          -127,
-                          -103,
-                          -29,
-                          -127,
-                          -117,
-                          -29,
-                          -128,
-                          -126)
+    val buf = Array[Byte](72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100,
+      46, -29, -127, -109, -29, -126, -109, -29, -127, -85, -29, -127, -95, -29,
+      -127, -81, -26, -105, -91, -26, -100, -84, -24, -86, -98, -29, -126, -110,
+      -24, -86, -83, -29, -126, -127, -29, -127, -66, -29, -127, -103, -29,
+      -127, -117, -29, -128, -126)
 
     val r = new InputStreamReader(new ByteArrayInputStream(buf))
 
@@ -291,16 +243,18 @@ class InputStreamReaderTest {
   }
 
   @Test def should_comply_with_read_after_eof_behaviour(): Unit = {
-    val data = "Lorem ipsum".getBytes()
+    val data         = "Lorem ipsum".getBytes()
     val streamReader = new InputStreamReader(new ByteArrayInputStream(data))
-    val bytes = new Array[Char](11)
+    val bytes        = new Array[Char](11)
 
     assertEquals(11, streamReader.read(bytes))
     // Do it twice to check for a regression where this used to throw
     assertEquals(-1, streamReader.read(bytes))
     assertEquals(-1, streamReader.read(bytes))
     expectThrows(
-        classOf[IndexOutOfBoundsException], streamReader.read(bytes, 10, 3))
+      classOf[IndexOutOfBoundsException],
+      streamReader.read(bytes, 10, 3)
+    )
     assertEquals(0, streamReader.read(new Array[Char](0)))
   }
 }

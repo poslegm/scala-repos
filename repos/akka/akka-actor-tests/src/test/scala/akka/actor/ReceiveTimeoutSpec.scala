@@ -24,8 +24,7 @@ class ReceiveTimeoutSpec extends AkkaSpec {
     "get timeout" in {
       val timeoutLatch = TestLatch()
 
-      val timeoutActor = system.actorOf(
-          Props(new Actor {
+      val timeoutActor = system.actorOf(Props(new Actor {
         context.setReceiveTimeout(500 milliseconds)
 
         def receive = {
@@ -40,12 +39,11 @@ class ReceiveTimeoutSpec extends AkkaSpec {
     "reschedule timeout after regular receive" in {
       val timeoutLatch = TestLatch()
 
-      val timeoutActor = system.actorOf(
-          Props(new Actor {
+      val timeoutActor = system.actorOf(Props(new Actor {
         context.setReceiveTimeout(500 milliseconds)
 
         def receive = {
-          case Tick ⇒ ()
+          case Tick           ⇒ ()
           case ReceiveTimeout ⇒ timeoutLatch.open
         }
       }))
@@ -57,7 +55,7 @@ class ReceiveTimeoutSpec extends AkkaSpec {
     }
 
     "be able to turn off timeout if desired" in {
-      val count = new AtomicInteger(0)
+      val count        = new AtomicInteger(0)
       val timeoutLatch = TestLatch()
 
       val timeoutActor = system.actorOf(Props(new Actor {
@@ -82,8 +80,7 @@ class ReceiveTimeoutSpec extends AkkaSpec {
     "not receive timeout message when not specified" in {
       val timeoutLatch = TestLatch()
 
-      val timeoutActor = system.actorOf(
-          Props(new Actor {
+      val timeoutActor = system.actorOf(Props(new Actor {
         def receive = {
           case ReceiveTimeout ⇒ timeoutLatch.open
         }
@@ -96,20 +93,21 @@ class ReceiveTimeoutSpec extends AkkaSpec {
     "get timeout while receiving NotInfluenceReceiveTimeout messages" in {
       val timeoutLatch = TestLatch()
 
-      val timeoutActor = system.actorOf(
-          Props(new Actor {
+      val timeoutActor = system.actorOf(Props(new Actor {
         context.setReceiveTimeout(1 second)
 
         def receive = {
-          case ReceiveTimeout ⇒ timeoutLatch.open
+          case ReceiveTimeout  ⇒ timeoutLatch.open
           case TransperentTick ⇒
         }
       }))
 
-      val ticks = system.scheduler.schedule(100.millis,
-                                            100.millis,
-                                            timeoutActor,
-                                            TransperentTick)(system.dispatcher)
+      val ticks = system.scheduler.schedule(
+        100.millis,
+        100.millis,
+        timeoutActor,
+        TransperentTick
+      )(system.dispatcher)
 
       Await.ready(timeoutLatch, TestLatch.DefaultTimeout)
       ticks.cancel()

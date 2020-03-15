@@ -19,8 +19,10 @@ class BufInputStreamTest extends FunSuite {
 
   test("available") {
     val is = new BufInputStream(fileBuf)
-    assert(is.available() == fileString.length(),
-           "Returned incorrect number of available bytes")
+    assert(
+      is.available() == fileString.length(),
+      "Returned incorrect number of available bytes"
+    )
   }
 
   test("close") {
@@ -72,15 +74,16 @@ class BufInputStreamTest extends FunSuite {
 
   test("read one") {
     val is = new BufInputStream(fileBuf)
-    val c = is.read()
+    val c  = is.read()
     is.reset()
     assert(
-        c == fileString.charAt(0),
-        "read returned incorrect char %s %s".format(c, fileString.charAt(0)))
+      c == fileString.charAt(0),
+      "read returned incorrect char %s %s".format(c, fileString.charAt(0))
+    )
   }
 
   test("read") {
-    val is = new BufInputStream(fileBuf)
+    val is    = new BufInputStream(fileBuf)
     val array = new Array[Byte](20)
     is.skip(50)
     is.mark(100)
@@ -100,7 +103,7 @@ class BufInputStreamTest extends FunSuite {
   }
 
   test("read into offset < 0") {
-    val is = new BufInputStream(fileBuf)
+    val is    = new BufInputStream(fileBuf)
     val array = new Array[Byte](20)
 
     intercept[IndexOutOfBoundsException] {
@@ -110,7 +113,7 @@ class BufInputStreamTest extends FunSuite {
   }
 
   test("read negative len bytes") {
-    val is = new BufInputStream(fileBuf)
+    val is    = new BufInputStream(fileBuf)
     val array = new Array[Byte](20)
 
     intercept[IllegalArgumentException] {
@@ -120,7 +123,7 @@ class BufInputStreamTest extends FunSuite {
   }
 
   test("read beyond end of array") {
-    val is = new BufInputStream(fileBuf)
+    val is    = new BufInputStream(fileBuf)
     val array = new Array[Byte](20)
 
     intercept[IndexOutOfBoundsException] {
@@ -151,7 +154,7 @@ class BufInputStreamTest extends FunSuite {
   }
 
   test("skip") {
-    val is = new BufInputStream(fileBuf)
+    val is     = new BufInputStream(fileBuf)
     val array1 = new Array[Byte](10)
     is.skip(100)
     is.read(array1, 0, array1.length)
@@ -161,18 +164,20 @@ class BufInputStreamTest extends FunSuite {
   }
 
   test("read len=0 from non-empty stream should return 0") {
-    val is = new BufInputStream(fileBuf)
+    val is    = new BufInputStream(fileBuf)
     val array = new Array[Byte](1)
     assert(is.read(array, 0, 0) == 0)
   }
 
   test("read len >= 0 from exhausted stream should return -1") {
-    val is = new BufInputStream(fileBuf)
+    val is    = new BufInputStream(fileBuf)
     val array = new Array[Byte](10000)
-    val c = is.read(array, 0, array.length)
+    val c     = is.read(array, 0, array.length)
     assert(c == fileBuf.length, "Stream should have been exhausted")
     assert(is.read(array, c, 0) == -1, "Stream should have repored exhaustion")
-    assert(is.read(array, c, array.length - c) == -1,
-           "Stream should have repored exhaustion")
+    assert(
+      is.read(array, c, array.length - c) == -1,
+      "Stream should have repored exhaustion"
+    )
   }
 }

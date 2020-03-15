@@ -23,7 +23,7 @@ class LzoGenericSourceSpec extends WordSpec with Matchers {
   "LzoGenericScheme" should {
     "be serializable" in {
       val scheme = LzoGenericScheme[Array[Byte]](IdentityBinaryConverter)
-      val inj = JavaSerializationInjection[LzoGenericScheme[Array[Byte]]]
+      val inj    = JavaSerializationInjection[LzoGenericScheme[Array[Byte]]]
       inj.invert(inj.apply(scheme)) shouldBe Success(scheme)
     }
   }

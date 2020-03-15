@@ -1,6 +1,6 @@
 class ForSomeVsUnapply {
   def test {
-    def makeWrap: Wrap = ???
+    def makeWrap: Wrap            = ???
     def useRep[e](rep: (e, X[e])) = ()
 
     val repUnapply = Wrap.unapply(makeWrap).get

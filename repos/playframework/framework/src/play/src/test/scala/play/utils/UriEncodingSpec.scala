@@ -13,14 +13,15 @@ object UriEncodingSpec extends Specification {
 
   sealed trait EncodingResult
   // Good behaviour
-  case object NotEncoded extends EncodingResult
+  case object NotEncoded                     extends EncodingResult
   case class PercentEncoded(encoded: String) extends EncodingResult
   // Bad behaviour
   case class NotEncodedButDecodeDifferent(decodedEncoded: String)
       extends EncodingResult
   case class PercentEncodedButDecodeDifferent(
-      encoded: String, decodedEncoded: String)
-      extends EncodingResult
+      encoded: String,
+      decodedEncoded: String
+  ) extends EncodingResult
   case class PercentEncodedButDecodedInvalid(encoded: String)
       extends EncodingResult
 
@@ -37,7 +38,9 @@ object UriEncodingSpec extends Specification {
         return PercentEncodedButDecodeDifferent(encoded, decodedEncoded)
       try {
         decodePathSegment(in, inCharset)
-        return PercentEncodedButDecodedInvalid(encoded) // Decoding should have failed
+        return PercentEncodedButDecodedInvalid(
+          encoded
+        ) // Decoding should have failed
       } catch {
         case _: InvalidUriEncodingException => () // This is expected behaviour
       }
@@ -170,7 +173,7 @@ RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax
    differ only in the case of hexadecimal digits used in percent-encoded
    octets, they are equivalent.  For consistency, URI producers and
    normalizers should use uppercase hexadecimal digits for all percent-
-   encodings.    
+   encodings.
      */
     "percent-encode to triplets with upper-case hex" in {
       encodingFor("\u0000", "ISO-8859-1") must_== PercentEncoded("%00")
@@ -200,9 +203,16 @@ RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax
     // "application/x-www-form-urlencoded". One difference is the encoding
     // of the "+" and space characters.
     "percent-encode spaces, but not + characters" in {
-      encodingFor(" ", "US-ASCII") must_== PercentEncoded("%20") // vs "+" for query strings
-      encodingFor("+", "US-ASCII") must_== NotEncoded // vs "%2B" for query strings
-      encodingFor(" +", "US-ASCII") must_== PercentEncoded("%20+") // vs "+%2B" for query strings
+      encodingFor(" ", "US-ASCII") must_== PercentEncoded(
+        "%20"
+      ) // vs "+" for query strings
+      encodingFor(
+        "+",
+        "US-ASCII"
+      ) must_== NotEncoded // vs "%2B" for query strings
+      encodingFor(" +", "US-ASCII") must_== PercentEncoded(
+        "%20+"
+      ) // vs "+%2B" for query strings
       encodingFor("1+2=3", "US-ASCII") must_== NotEncoded
       encodingFor("1 + 2 = 3", "US-ASCII") must_==
         PercentEncoded("1%20+%202%20=%203")
@@ -250,7 +260,8 @@ RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax
     "not decode badly encoded paths" in {
       decodePath("/a|b/", "utf-8") must throwA[InvalidUriEncodingException]
       decodePath("/hello world", "utf-8") must throwA[
-          InvalidUriEncodingException]
+        InvalidUriEncodingException
+      ]
     }
 
     "not perform normalization of dot-segments" in {
@@ -265,8 +276,14 @@ RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax
     }
 
     "decode complex UTF-8 octets" in {
-      decodePath("/path/%C2%ABk%C3%BC%C3%9F%C3%AE%C2%BB", "UTF-8") must_== "/path/«küßî»"
-      decodePath("/path/%E2%80%9C%D0%8C%CF%8D%D0%91%D0%87%E2%80%9D", "UTF-8") must_== "/path/“ЌύБЇ”"
+      decodePath(
+        "/path/%C2%ABk%C3%BC%C3%9F%C3%AE%C2%BB",
+        "UTF-8"
+      ) must_== "/path/«küßî»"
+      decodePath(
+        "/path/%E2%80%9C%D0%8C%CF%8D%D0%91%D0%87%E2%80%9D",
+        "UTF-8"
+      ) must_== "/path/“ЌύБЇ”"
     }
   }
 

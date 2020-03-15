@@ -26,7 +26,7 @@ class SQLExecutionSuite extends SparkFunSuite {
 
   test("concurrent query execution (SPARK-10548)") {
     // Try to reproduce the issue with the old SparkContext
-    val conf = new SparkConf().setMaster("local[*]").setAppName("test")
+    val conf            = new SparkConf().setMaster("local[*]").setAppName("test")
     val badSparkContext = new BadSparkContext(conf)
     try {
       testConcurrentQueryExecution(badSparkContext)
@@ -48,16 +48,14 @@ class SQLExecutionSuite extends SparkFunSuite {
   }
 
   test("concurrent query execution with fork-join pool (SPARK-13747)") {
-    val sc = new SparkContext("local[*]", "test")
+    val sc         = new SparkContext("local[*]", "test")
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
     try {
       // Should not throw IllegalArgumentException
       (1 to 100).par.foreach { _ =>
         sc.parallelize(1 to 5)
-          .map { i =>
-            (i, i)
-          }
+          .map { i => (i, i) }
           .toDF("a", "b")
           .count()
       }
@@ -84,9 +82,7 @@ class SQLExecutionSuite extends SparkFunSuite {
       override def run(): Unit = {
         try {
           sc.parallelize(1 to 100)
-            .map { i =>
-              (i, i)
-            }
+            .map { i => (i, i) }
             .toDF("a", "b")
             .collect()
         } catch {

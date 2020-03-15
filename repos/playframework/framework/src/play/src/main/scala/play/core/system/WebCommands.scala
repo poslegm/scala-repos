@@ -23,7 +23,10 @@ trait WebCommands {
     * @return the result from the first Some-returning handler
     */
   def handleWebCommand(
-      request: RequestHeader, buildLink: BuildLink, path: File): Option[Result]
+      request: RequestHeader,
+      buildLink: BuildLink,
+      path: File
+  ): Option[Result]
 }
 
 /**
@@ -33,15 +36,19 @@ trait WebCommands {
 class DefaultWebCommands extends WebCommands {
   private[this] val handlers = ArrayBuffer.empty[HandleWebCommandSupport]
 
-  def addHandler(handler: HandleWebCommandSupport): Unit = synchronized {
-    handlers += handler
-  }
+  def addHandler(handler: HandleWebCommandSupport): Unit =
+    synchronized {
+      handlers += handler
+    }
 
-  def handleWebCommand(request: RequestHeader,
-                       buildLink: BuildLink,
-                       path: File): Option[Result] = synchronized {
-    (handlers.toStream flatMap {
-          _.handleWebCommand(request, buildLink, path).toSeq
-        }).headOption
-  }
+  def handleWebCommand(
+      request: RequestHeader,
+      buildLink: BuildLink,
+      path: File
+  ): Option[Result] =
+    synchronized {
+      (handlers.toStream flatMap {
+        _.handleWebCommand(request, buildLink, path).toSeq
+      }).headOption
+    }
 }

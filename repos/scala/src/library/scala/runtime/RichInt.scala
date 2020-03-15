@@ -14,16 +14,18 @@ import scala.collection.immutable.Range
 // Note that this does not implement IntegralProxy[Int] so that it can return
 // the Int-specific Range class from until/to.
 final class RichInt(val self: Int)
-    extends AnyVal with ScalaNumberProxy[Int] with RangedProxy[Int] {
+    extends AnyVal
+    with ScalaNumberProxy[Int]
+    with RangedProxy[Int] {
   protected def num = scala.math.Numeric.IntIsIntegral
   protected def ord = scala.math.Ordering.Int
 
   override def doubleValue() = self.toDouble
-  override def floatValue() = self.toFloat
-  override def longValue() = self.toLong
-  override def intValue() = self
-  override def byteValue() = self.toByte
-  override def shortValue() = self.toShort
+  override def floatValue()  = self.toFloat
+  override def longValue()   = self.toLong
+  override def intValue()    = self
+  override def byteValue()   = self.toByte
+  override def shortValue()  = self.toShort
 
   /** Returns `'''true'''` if this number has no decimal component.
     * Always `'''true'''` for `RichInt`.
@@ -31,22 +33,23 @@ final class RichInt(val self: Int)
   def isWhole() = true
 
   override def isValidInt = true
-  def isValidLong = true
+  def isValidLong         = true
 
-  override def abs: Int = math.abs(self)
+  override def abs: Int            = math.abs(self)
   override def max(that: Int): Int = math.max(self, that)
   override def min(that: Int): Int = math.min(self, that)
-  override def signum: Int = math.signum(self)
+  override def signum: Int         = math.signum(self)
 
   /** There is no reason to round an `Int`, but this method is provided to avoid accidental loss of precision from a detour through `Float`. */
   @deprecated(
-      "This is an integer type; there is no reason to round it.  Perhaps you meant to call this on a floating-point value?",
-      "2.11.0")
+    "This is an integer type; there is no reason to round it.  Perhaps you meant to call this on a floating-point value?",
+    "2.11.0"
+  )
   def round: Int = self
 
   def toBinaryString: String = java.lang.Integer.toBinaryString(self)
-  def toHexString: String = java.lang.Integer.toHexString(self)
-  def toOctalString: String = java.lang.Integer.toOctalString(self)
+  def toHexString: String    = java.lang.Integer.toHexString(self)
+  def toOctalString: String  = java.lang.Integer.toOctalString(self)
 
   type ResultWithoutStep = Range
 

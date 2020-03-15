@@ -47,7 +47,7 @@ class LikeSimplificationSuite extends PlanTest {
   test("simplify Like into EndsWith") {
     val originalQuery = testRelation.where('a like "%xyz")
 
-    val optimized = Optimize.execute(originalQuery.analyze)
+    val optimized     = Optimize.execute(originalQuery.analyze)
     val correctAnswer = testRelation.where(EndsWith('a, "xyz")).analyze
 
     comparePlans(optimized, correctAnswer)

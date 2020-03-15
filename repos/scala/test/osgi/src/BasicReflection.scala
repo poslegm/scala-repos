@@ -20,11 +20,11 @@ class C {
   val f1 = 2
   var f2 = 3
 
-  def m1 = 4
-  def m2() = 5
-  def m3[T >: String <: Int]: T = ???
+  def m1                                              = 4
+  def m2()                                            = 5
+  def m3[T >: String <: Int]: T                       = ???
   def m4[A[_], B <: A[Int]](x: A[B])(implicit y: Int) = ???
-  def m5(x: => Int, y: Int*): String = ???
+  def m5(x: => Int, y: Int*): String                  = ???
 
   class C
   object M
@@ -53,13 +53,15 @@ class BasicReflectionTest extends ScalaOsgiHelper {
     import scala.reflect.runtime.universe._
     val cm = runtimeMirror(classOf[C].getClassLoader)
     val im = cm.reflect(new C)
-    assertEquals("Unable to reflect field name!",
-                 "value f1",
-                 im.reflectField(typeOf[C].member(TermName("f1")).asTerm)
-                   .symbol
-                   .toString)
-    assertEquals("Unable to reflect value!",
-                 2,
-                 im.reflectField(typeOf[C].member(TermName("f1")).asTerm).get)
+    assertEquals(
+      "Unable to reflect field name!",
+      "value f1",
+      im.reflectField(typeOf[C].member(TermName("f1")).asTerm).symbol.toString
+    )
+    assertEquals(
+      "Unable to reflect value!",
+      2,
+      im.reflectField(typeOf[C].member(TermName("f1")).asTerm).get
+    )
   }
 }

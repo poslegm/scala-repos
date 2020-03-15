@@ -34,8 +34,14 @@ object ActorPool {
   */
 trait ActorPool {
   def instance(): ActorRef //Question, Instance of what?
-  def capacity(delegates: Seq[ActorRef]): Int //Question, What is the semantics of this return value?
-  def select(delegates: Seq[ActorRef]): Tuple2[Iterator[ActorRef], Int] //Question, Why does select return this instead of an ordered Set?
+  def capacity(
+      delegates: Seq[ActorRef]
+  ): Int //Question, What is the semantics of this return value?
+  def select(
+      delegates: Seq[ActorRef]
+  ): Tuple2[Iterator[
+    ActorRef
+  ], Int] //Question, Why does select return this instead of an ordered Set?
 }
 
 /**
@@ -49,15 +55,16 @@ trait DefaultActorPool extends ActorPool {
   import collection.mutable.LinkedList
   import akka.actor.MaximumNumberOfRestartsWithinTimeRangeReached
 
-  protected var _delegates = Vector[ActorRef]()
+  protected var _delegates        = Vector[ActorRef]()
   private var _lastCapacityChange = 0
-  private var _lastSelectorCount = 0
+  private var _lastSelectorCount  = 0
 
-  override def postStop() = _delegates foreach { delegate =>
-    try {
-      delegate ! PoisonPill
-    } catch { case e: Exception => } //Ignore any exceptions here
-  }
+  override def postStop() =
+    _delegates foreach { delegate =>
+      try {
+        delegate ! PoisonPill
+      } catch { case e: Exception => } //Ignore any exceptions here
+    }
 
   protected def _route(): Receive = {
     // for testing...
@@ -71,7 +78,9 @@ trait DefaultActorPool extends ActorPool {
       select(_delegates) match {
         case (selectedDelegates, count) =>
           _lastSelectorCount = count
-          selectedDelegates foreach { _ forward msg } //Should we really send the same message to several actors?
+          selectedDelegates foreach {
+            _ forward msg
+          } //Should we really send the same message to several actors?
       }
   }
 
@@ -118,7 +127,11 @@ trait SmallestMailboxSelector {
       else selectionCount
 
     while (take > 0) {
-      set = delegates.sortWith(_.mailboxSize < _.mailboxSize).take(take) ++ set //Question, doesn't this risk selecting the same actor multiple times?
+      set = delegates
+        .sortWith(_.mailboxSize < _.mailboxSize)
+        .take(
+          take
+        ) ++ set //Question, doesn't this risk selecting the same actor multiple times?
       take -= set.size
     }
 
@@ -170,8 +183,8 @@ trait BoundedCapacitor {
   def upperBound: Int
 
   def capacity(delegates: Seq[ActorRef]): Int = {
-    val current = delegates length
-    val delta = _eval(delegates)
+    val current  = delegates length
+    val delta    = _eval(delegates)
     val proposed = current + delta
 
     if (proposed < lowerBound) delta + (lowerBound - proposed)
@@ -211,7 +224,7 @@ trait CapacityStrategy {
     filter(pressure(delegates), delegates.size)
 }
 
-trait FixedCapacityStrategy extends FixedSizeCapacitor
+trait FixedCapacityStrategy   extends FixedSizeCapacitor
 trait BoundedCapacityStrategy extends CapacityStrategy with BoundedCapacitor
 
 /**
@@ -260,7 +273,8 @@ trait BasicBackoff {
 
   def backoff(pressure: Int, capacity: Int): Int =
     if (capacity > 0 && pressure / capacity < backoffThreshold)
-      math.ceil(-1.0 * backoffRate * capacity) toInt else 0
+      math.ceil(-1.0 * backoffRate * capacity) toInt
+    else 0
 }
 
 /**

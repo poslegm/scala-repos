@@ -18,7 +18,8 @@ object Charset {
     else if (isBinary(charset)) JCharset.forName("US-ASCII")
     else
       throw new IllegalArgumentException(
-          "Charset %d is not supported.".format(charset))
+        "Charset %d is not supported.".format(charset)
+      )
 
   /**
     * SELECT id,collation_name FROM information_schema.collations
@@ -36,11 +37,11 @@ object Charset {
     * Some useful charset constants
     */
   val Utf8_general_ci = 33.toShort
-  val Binary = 63.toShort
+  val Binary          = 63.toShort
 
-  private[this] val CompatibleSet = Latin1Set ++ Utf8Set + Binary
+  private[this] val CompatibleSet        = Latin1Set ++ Utf8Set + Binary
   def isCompatible(code: Short): Boolean = CompatibleSet(code)
-  def isUtf8(code: Short): Boolean = Utf8Set(code)
-  def isLatin1(code: Short): Boolean = Latin1Set(code)
-  def isBinary(code: Short): Boolean = code == Binary
+  def isUtf8(code: Short): Boolean       = Utf8Set(code)
+  def isLatin1(code: Short): Boolean     = Latin1Set(code)
+  def isBinary(code: Short): Boolean     = code == Binary
 }

@@ -1,9 +1,19 @@
 package com.twitter.finagle
 
 import com.twitter.finagle.client.{StdStackClient, StackClient, Transporter}
-import com.twitter.finagle.dispatch.{GenSerialClientDispatcher, SerialClientDispatcher, SerialServerDispatcher}
+import com.twitter.finagle.dispatch.{
+  GenSerialClientDispatcher,
+  SerialClientDispatcher,
+  SerialServerDispatcher
+}
 import com.twitter.finagle.netty3.{Netty3Transporter, Netty3Listener}
-import com.twitter.finagle.param.{Monitor => _, ResponseClassifier => _, ExceptionStatsHandler => _, Tracer => _, _}
+import com.twitter.finagle.param.{
+  Monitor => _,
+  ResponseClassifier => _,
+  ExceptionStatsHandler => _,
+  Tracer => _,
+  _
+}
 import com.twitter.finagle.server.{StdStackServer, StackServer, Listener}
 import com.twitter.finagle.service.{ResponseClassifier, RetryBudget}
 import com.twitter.finagle.stats.{ExceptionStatsHandler, StatsReceiver}
@@ -58,8 +68,10 @@ import org.apache.thrift.protocol.TProtocolFactory
   * @define serverExampleObject Thrift
   */
 object Thrift
-    extends Client[ThriftClientRequest, Array[Byte]] with ThriftRichClient
-    with Server[Array[Byte], Array[Byte]] with ThriftRichServer {
+    extends Client[ThriftClientRequest, Array[Byte]]
+    with ThriftRichClient
+    with Server[Array[Byte], Array[Byte]]
+    with ThriftRichServer {
 
   val protocolFactory: TProtocolFactory = Protocols.binaryFactory()
 
@@ -98,8 +110,8 @@ object Thrift
       * @param maxReusableBufferSize Max buffer size in bytes.
       */
     case class MaxReusableBufferSize(maxReusableBufferSize: Int)
-    implicit object MaxReusableBufferSize
-        extends Stack.Param[MaxReusableBufferSize] {
+    implicit
+    object MaxReusableBufferSize extends Stack.Param[MaxReusableBufferSize] {
       val default = MaxReusableBufferSize(maxThriftBufferSize)
     }
 
@@ -108,30 +120,30 @@ object Thrift
       * @see The [[https://twitter.github.io/finagle/guide/Protocols.html?highlight=Twitter-upgraded#thrift user guide]] for details on Twitter-upgrade Thrift.
       */
     case class AttemptTTwitterUpgrade(upgrade: Boolean)
-    implicit object AttemptTTwitterUpgrade
-        extends Stack.Param[AttemptTTwitterUpgrade] {
+    implicit
+    object AttemptTTwitterUpgrade extends Stack.Param[AttemptTTwitterUpgrade] {
       val default = AttemptTTwitterUpgrade(true)
     }
   }
 
   object Client {
-    private val preparer: Stackable[ServiceFactory[
-            ThriftClientRequest, Array[Byte]]] = new Stack.ModuleParams[
-        ServiceFactory[ThriftClientRequest, Array[Byte]]] {
-      override def parameters: Seq[Stack.Param[_]] = Nil
-      override val role = StackClient.Role.prepConn
-      override val description = "Prepare TTwitter thrift connection"
-      def make(
-          params: Stack.Params,
-          next: ServiceFactory[ThriftClientRequest, Array[Byte]]
-      ) = {
-        val Label(label) = params[Label]
-        val param.ClientId(clientId) = params[param.ClientId]
-        val param.ProtocolFactory(pf) = params[param.ProtocolFactory]
-        val preparer = new ThriftClientPreparer(pf, label, clientId)
-        preparer.prepare(next, params)
+    private val preparer
+        : Stackable[ServiceFactory[ThriftClientRequest, Array[Byte]]] =
+      new Stack.ModuleParams[ServiceFactory[ThriftClientRequest, Array[Byte]]] {
+        override def parameters: Seq[Stack.Param[_]] = Nil
+        override val role                            = StackClient.Role.prepConn
+        override val description                     = "Prepare TTwitter thrift connection"
+        def make(
+            params: Stack.Params,
+            next: ServiceFactory[ThriftClientRequest, Array[Byte]]
+        ) = {
+          val Label(label)              = params[Label]
+          val param.ClientId(clientId)  = params[param.ClientId]
+          val param.ProtocolFactory(pf) = params[param.ProtocolFactory]
+          val preparer                  = new ThriftClientPreparer(pf, label, clientId)
+          preparer.prepare(next, params)
+        }
       }
-    }
 
     // We must do 'preparation' this way in order to let Finagle set up tracing & so on.
     val stack: Stack[ServiceFactory[ThriftClientRequest, Array[Byte]]] =
@@ -139,22 +151,24 @@ object Thrift
   }
 
   case class Client(
-      stack: Stack[ServiceFactory[ThriftClientRequest, Array[Byte]]] = Client.stack,
-      params: Stack.Params = StackClient.defaultParams + ProtocolLibrary(
-            "thrift")
-  )
-      extends StdStackClient[ThriftClientRequest, Array[Byte], Client]
-      with WithSessionPool[Client] with WithDefaultLoadBalancer[Client]
+      stack: Stack[ServiceFactory[ThriftClientRequest, Array[Byte]]] =
+        Client.stack,
+      params: Stack.Params =
+        StackClient.defaultParams + ProtocolLibrary("thrift")
+  ) extends StdStackClient[ThriftClientRequest, Array[Byte], Client]
+      with WithSessionPool[Client]
+      with WithDefaultLoadBalancer[Client]
       with ThriftRichClient {
 
     protected def copy1(
-        stack: Stack[ServiceFactory[ThriftClientRequest, Array[Byte]]] = this.stack,
+        stack: Stack[ServiceFactory[ThriftClientRequest, Array[Byte]]] =
+          this.stack,
         params: Stack.Params = this.params
     ): Client = copy(stack, params)
 
     protected lazy val Label(defaultClientName) = params[Label]
 
-    protected type In = ThriftClientRequest
+    protected type In  = ThriftClientRequest
     protected type Out = Array[Byte]
 
     val param.Framed(framed) = params[param.Framed]
@@ -173,9 +187,9 @@ object Thrift
         transport: Transport[ThriftClientRequest, Array[Byte]]
     ): Service[ThriftClientRequest, Array[Byte]] =
       new SerialClientDispatcher(
-          transport,
-          params[Stats].statsReceiver
-            .scope(GenSerialClientDispatcher.StatsScope)
+        transport,
+        params[Stats].statsReceiver
+          .scope(GenSerialClientDispatcher.StatsScope)
       )
 
     def withProtocolFactory(protocolFactory: TProtocolFactory): Client =
@@ -203,7 +217,9 @@ object Thrift
       val classifier =
         if (params.contains[com.twitter.finagle.param.ResponseClassifier]) {
           ThriftResponseClassifier.usingDeserializeCtx(
-              params[com.twitter.finagle.param.ResponseClassifier].responseClassifier
+            params[
+              com.twitter.finagle.param.ResponseClassifier
+            ].responseClassifier
           )
         } else {
           ThriftResponseClassifier.DeserializeCtxOnly
@@ -241,12 +257,14 @@ object Thrift
       super.withMonitor(monitor)
     override def withTracer(tracer: Tracer): Client = super.withTracer(tracer)
     override def withExceptionStatsHandler(
-        exceptionStatsHandler: ExceptionStatsHandler): Client =
+        exceptionStatsHandler: ExceptionStatsHandler
+    ): Client =
       super.withExceptionStatsHandler(exceptionStatsHandler)
     override def withRequestTimeout(timeout: Duration): Client =
       super.withRequestTimeout(timeout)
     override def withResponseClassifier(
-        responseClassifier: ResponseClassifier): Client =
+        responseClassifier: ResponseClassifier
+    ): Client =
       super.withResponseClassifier(responseClassifier)
     override def withRetryBudget(budget: RetryBudget): Client =
       super.withRetryBudget(budget)
@@ -256,10 +274,10 @@ object Thrift
     override def configured[P](psp: (P, Stack.Param[P])): Client =
       super.configured(psp)
     override def filtered(
-        filter: Filter[ThriftClientRequest,
-                       Array[Byte],
-                       ThriftClientRequest,
-                       Array[Byte]]): Client =
+        filter: Filter[ThriftClientRequest, Array[
+          Byte
+        ], ThriftClientRequest, Array[Byte]]
+    ): Client =
       super.filtered(filter)
   }
 
@@ -289,13 +307,15 @@ object Thrift
     private val preparer =
       new Stack.ModuleParams[ServiceFactory[Array[Byte], Array[Byte]]] {
         override def parameters: Seq[Stack.Param[_]] = Nil
-        override val role = StackClient.Role.prepConn
-        override val description = "Prepare TTwitter thrift connection"
-        def make(params: Stack.Params,
-                 next: ServiceFactory[Array[Byte], Array[Byte]]) = {
-          val Label(label) = params[Label]
+        override val role                            = StackClient.Role.prepConn
+        override val description                     = "Prepare TTwitter thrift connection"
+        def make(
+            params: Stack.Params,
+            next: ServiceFactory[Array[Byte], Array[Byte]]
+        ) = {
+          val Label(label)              = params[Label]
           val param.ProtocolFactory(pf) = params[param.ProtocolFactory]
-          val preparer = new thrift.ThriftServerPreparer(pf, label)
+          val preparer                  = new thrift.ThriftServerPreparer(pf, label)
           preparer.prepare(next, params)
         }
       }
@@ -306,17 +326,16 @@ object Thrift
 
   case class Server(
       stack: Stack[ServiceFactory[Array[Byte], Array[Byte]]] = Server.stack,
-      params: Stack.Params = StackServer.defaultParams + ProtocolLibrary(
-            "thrift")
-  )
-      extends StdStackServer[Array[Byte], Array[Byte], Server]
+      params: Stack.Params =
+        StackServer.defaultParams + ProtocolLibrary("thrift")
+  ) extends StdStackServer[Array[Byte], Array[Byte], Server]
       with ThriftRichServer {
     protected def copy1(
         stack: Stack[ServiceFactory[Array[Byte], Array[Byte]]] = this.stack,
         params: Stack.Params = this.params
     ): Server = copy(stack, params)
 
-    protected type In = Array[Byte]
+    protected type In  = Array[Byte]
     protected type Out = Array[Byte]
 
     val param.Framed(framed) = params[param.Framed]
@@ -328,9 +347,11 @@ object Thrift
         if (framed) thrift.ThriftServerFramedPipelineFactory
         else thrift.ThriftServerBufferedPipelineFactory(protocolFactory)
 
-      Netty3Listener(pipeline,
-                     if (params.contains[Label]) params
-                     else params + Label("thrift"))
+      Netty3Listener(
+        pipeline,
+        if (params.contains[Label]) params
+        else params + Label("thrift")
+      )
     }
 
     protected def newDispatcher(
@@ -359,7 +380,8 @@ object Thrift
       super.withMonitor(monitor)
     override def withTracer(tracer: Tracer): Server = super.withTracer(tracer)
     override def withExceptionStatsHandler(
-        exceptionStatsHandler: ExceptionStatsHandler): Server =
+        exceptionStatsHandler: ExceptionStatsHandler
+    ): Server =
       super.withExceptionStatsHandler(exceptionStatsHandler)
     override def withRequestTimeout(timeout: Duration): Server =
       super.withRequestTimeout(timeout)

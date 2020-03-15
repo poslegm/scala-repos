@@ -7,11 +7,10 @@ class StateTracker(
     statsReceiver: StatsReceiver,
     samplePeriod: Duration,
     timer: Timer
-)
-    extends Closable {
+) extends Closable {
 
   private[this] var currState: Option[SessionState] = None
-  private[this] var lastSample: Time = Time.now
+  private[this] var lastSample: Time                = Time.now
 
   private[this] val timerTask =
     timer.schedule(Time.now + samplePeriod, samplePeriod) {
@@ -22,19 +21,21 @@ class StateTracker(
     timerTask.close(deadline)
   }
 
-  def transition(newState: SessionState): Unit = synchronized {
-    sample()
-    currState = Some(newState)
-  }
-
-  private[this] def sample(): Unit = synchronized {
-    val now = Time.now
-    val delta = now - lastSample
-    lastSample = now
-    currState foreach { state =>
-      statsReceiver
-        .counter(s"${state.name}_duration_ms")
-        .incr(delta.inMilliseconds.toInt)
+  def transition(newState: SessionState): Unit =
+    synchronized {
+      sample()
+      currState = Some(newState)
     }
-  }
+
+  private[this] def sample(): Unit =
+    synchronized {
+      val now   = Time.now
+      val delta = now - lastSample
+      lastSample = now
+      currState foreach { state =>
+        statsReceiver
+          .counter(s"${state.name}_duration_ms")
+          .incr(delta.inMilliseconds.toInt)
+      }
+    }
 }

@@ -14,7 +14,7 @@ import java.util.jar.Attributes.{Name => AttributeName}
 
 /** Loads `library.properties` from the jar. */
 object Properties extends PropertiesTrait {
-  protected def propCategory = "library"
+  protected def propCategory   = "library"
   protected def pickJarBasedOn = classOf[Option[_]]
 
   /** Scala manifest attributes.
@@ -24,14 +24,15 @@ object Properties extends PropertiesTrait {
 
 private[scala] trait PropertiesTrait {
   protected def propCategory: String // specializes the remainder of the values
-  protected def pickJarBasedOn: Class[_] // props file comes from jar containing this
+  protected def pickJarBasedOn
+      : Class[_] // props file comes from jar containing this
 
   /** The name of the properties file */
   protected val propFilename = "/" + propCategory + ".properties"
 
   /** The loaded properties */
   protected lazy val scalaProps: java.util.Properties = {
-    val props = new java.util.Properties
+    val props  = new java.util.Properties
     val stream = pickJarBasedOn getResourceAsStream propFilename
     if (stream ne null) quietlyDispose(props load stream, stream.close)
 
@@ -39,21 +40,23 @@ private[scala] trait PropertiesTrait {
   }
 
   private def quietlyDispose(action: => Unit, disposal: => Unit) =
-    try { action } finally {
-      try { disposal } catch { case _: IOException => }
+    try { action }
+    finally {
+      try { disposal }
+      catch { case _: IOException => }
     }
 
-  def propIsSet(name: String) = System.getProperty(name) != null
+  def propIsSet(name: String)                  = System.getProperty(name) != null
   def propIsSetTo(name: String, value: String) = propOrNull(name) == value
-  def propOrElse(name: String, alt: String) = System.getProperty(name, alt)
-  def propOrEmpty(name: String) = propOrElse(name, "")
-  def propOrNull(name: String) = propOrElse(name, null)
-  def propOrNone(name: String) = Option(propOrNull(name))
+  def propOrElse(name: String, alt: String)    = System.getProperty(name, alt)
+  def propOrEmpty(name: String)                = propOrElse(name, "")
+  def propOrNull(name: String)                 = propOrElse(name, null)
+  def propOrNone(name: String)                 = Option(propOrNull(name))
   def propOrFalse(name: String) =
     propOrNone(name) exists
-    (x => List("yes", "on", "true") contains x.toLowerCase)
+      (x => List("yes", "on", "true") contains x.toLowerCase)
   def setProp(name: String, value: String) = System.setProperty(name, value)
-  def clearProp(name: String) = System.clearProperty(name)
+  def clearProp(name: String)              = System.clearProperty(name)
 
   def envOrElse(name: String, alt: String) =
     Option(System getenv name) getOrElse alt
@@ -89,7 +92,7 @@ private[scala] trait PropertiesTrait {
     *  is a final release or the version cannot be read.
     */
   val developmentVersion = for {
-    v <- scalaPropOrNone("maven.version.number") if v endsWith "-SNAPSHOT"
+    v  <- scalaPropOrNone("maven.version.number") if v endsWith "-SNAPSHOT"
     ov <- scalaPropOrNone("version.number")
   } yield ov
 
@@ -103,8 +106,8 @@ private[scala] trait PropertiesTrait {
     */
   val versionString =
     "version " + scalaPropOrElse("version.number", "(unknown)")
-  val copyrightString = scalaPropOrElse(
-      "copyright.string", "Copyright 2002-2016, LAMP/EPFL")
+  val copyrightString =
+    scalaPropOrElse("copyright.string", "Copyright 2002-2016, LAMP/EPFL")
 
   /** This is the encoding to use reading in source files, overridden with -encoding.
     *  Note that it uses "prop" i.e. looks in the scala jar, not the system properties.
@@ -123,23 +126,23 @@ private[scala] trait PropertiesTrait {
   def lineSeparator = propOrElse("line.separator", "\n")
 
   /* Various well-known properties. */
-  def javaClassPath = propOrEmpty("java.class.path")
-  def javaHome = propOrEmpty("java.home")
-  def javaVendor = propOrEmpty("java.vendor")
-  def javaVersion = propOrEmpty("java.version")
-  def javaVmInfo = propOrEmpty("java.vm.info")
-  def javaVmName = propOrEmpty("java.vm.name")
-  def javaVmVendor = propOrEmpty("java.vm.vendor")
-  def javaVmVersion = propOrEmpty("java.vm.version")
+  def javaClassPath   = propOrEmpty("java.class.path")
+  def javaHome        = propOrEmpty("java.home")
+  def javaVendor      = propOrEmpty("java.vendor")
+  def javaVersion     = propOrEmpty("java.version")
+  def javaVmInfo      = propOrEmpty("java.vm.info")
+  def javaVmName      = propOrEmpty("java.vm.name")
+  def javaVmVendor    = propOrEmpty("java.vm.vendor")
+  def javaVmVersion   = propOrEmpty("java.vm.version")
   def javaSpecVersion = propOrEmpty("java.specification.version")
-  def javaSpecVendor = propOrEmpty("java.specification.vendor")
-  def javaSpecName = propOrEmpty("java.specification.name")
-  def osName = propOrEmpty("os.name")
-  def scalaHome = propOrEmpty("scala.home")
-  def tmpDir = propOrEmpty("java.io.tmpdir")
-  def userDir = propOrEmpty("user.dir")
-  def userHome = propOrEmpty("user.home")
-  def userName = propOrEmpty("user.name")
+  def javaSpecVendor  = propOrEmpty("java.specification.vendor")
+  def javaSpecName    = propOrEmpty("java.specification.name")
+  def osName          = propOrEmpty("os.name")
+  def scalaHome       = propOrEmpty("scala.home")
+  def tmpDir          = propOrEmpty("java.io.tmpdir")
+  def userDir         = propOrEmpty("user.dir")
+  def userHome        = propOrEmpty("user.home")
+  def userName        = propOrEmpty("user.name")
 
   /* Some derived values. */
   /** Returns `true` iff the underlying operating system is a version of Microsoft Windows. */
@@ -165,8 +168,8 @@ private[scala] trait PropertiesTrait {
     f"Scala $command $versionString -- $copyrightString"
 
   def versionMsg = versionFor(propCategory)
-  def scalaCmd = if (isWin) "scala.bat" else "scala"
-  def scalacCmd = if (isWin) "scalac.bat" else "scalac"
+  def scalaCmd   = if (isWin) "scala.bat" else "scala"
+  def scalacCmd  = if (isWin) "scalac.bat" else "scalac"
 
   /** Compares the given specification version to the specification version of the platform.
     *

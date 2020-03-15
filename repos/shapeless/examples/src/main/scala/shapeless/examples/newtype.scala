@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Miles Sabin 
+ * Copyright (c) 2011 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ object NewtypeExampes extends App {
   import shapeless._
   import newtype._
 
-  // MyString is a new type with String as its underlying representation and with its operations 
+  // MyString is a new type with String as its underlying representation and with its operations
   // provided by MyStringOps
   type MyString = Newtype[String, MyStringOps]
 
@@ -41,7 +41,7 @@ object NewtypeExampes extends App {
   //ms.size                    // Does not compile
   assert(ms.mySize == 3) // Compiles. Assertion satisfied.
 
-  val s2 = "bar"
+  val s2  = "bar"
   val ms2 = MyString(s2)
 
   // Verify that this is an unboxed representation

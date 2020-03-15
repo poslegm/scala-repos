@@ -11,7 +11,7 @@ object Test {
   def testConversions() {
     import collection.JavaConversions._
     val skiplist = new java.util.concurrent.ConcurrentSkipListMap[Int, Int]
-    val ctrie = new collection.concurrent.TrieMap[Int, Int]
+    val ctrie    = new collection.concurrent.TrieMap[Int, Int]
 
     needPackageConcurrentMap(skiplist)
     needJavaConcurrent(ctrie)
@@ -20,7 +20,7 @@ object Test {
   def testConverters() {
     import collection.JavaConverters._
     val skiplist = new java.util.concurrent.ConcurrentSkipListMap[Int, Int]
-    val ctrie = new collection.concurrent.TrieMap[Int, Int]
+    val ctrie    = new collection.concurrent.TrieMap[Int, Int]
 
     needPackageConcurrentMap(skiplist.asScala)
     needJavaConcurrent(ctrie.asJava)

@@ -3,7 +3,17 @@ package random
 
 import spire.algebra._
 import spire.syntax.all._
-import spire.math.{Complex, Interval, Natural, Rational, SafeLong, UByte, UShort, UInt, ULong}
+import spire.math.{
+  Complex,
+  Interval,
+  Natural,
+  Rational,
+  SafeLong,
+  UByte,
+  UShort,
+  UInt,
+  ULong
+}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.SeqLike
@@ -61,7 +71,7 @@ trait Dist[@sp A] extends Any { self =>
   def pack(n: Int)(implicit ct: ClassTag[A]): Dist[Array[A]] =
     new Dist[Array[A]] {
       def apply(gen: Generator): Array[A] = {
-        var i = 0
+        var i   = 0
         val arr = new Array[A](n)
         while (i < arr.length) {
           arr(i) = self(gen)
@@ -72,7 +82,8 @@ trait Dist[@sp A] extends Any { self =>
     }
 
   def repeat[CC[X] <: Seq[X]](
-      n: Int)(implicit cbf: CanBuildFrom[Nothing, A, CC[A]]): Dist[CC[A]] =
+      n: Int
+  )(implicit cbf: CanBuildFrom[Nothing, A, CC[A]]): Dist[CC[A]] =
     new Dist[CC[A]] {
       def apply(gen: Generator): CC[A] = {
         val builder = cbf()
@@ -111,8 +122,9 @@ trait Dist[@sp A] extends Any { self =>
 
   import scala.collection.generic.CanBuildFrom
 
-  def sample[CC[X] <: Iterable[X]](n: Int)(
-      implicit gen: Generator, cbf: CanBuildFrom[CC[A], A, CC[A]]): CC[A] = {
+  def sample[CC[X] <: Iterable[X]](
+      n: Int
+  )(implicit gen: Generator, cbf: CanBuildFrom[CC[A], A, CC[A]]): CC[A] = {
     val b = cbf()
     b.sizeHint(n)
     var i = 0
@@ -151,10 +163,9 @@ trait Dist[@sp A] extends Any { self =>
     }
 }
 
-final class DistIterator[A](next: Dist[A], gen: Generator)
-    extends Iterator[A] {
+final class DistIterator[A](next: Dist[A], gen: Generator) extends Iterator[A] {
   final def hasNext: Boolean = true
-  final def next(): A = next(gen)
+  final def next(): A        = next(gen)
 }
 
 class DistFromGen[@sp A](f: Generator => A) extends Dist[A] {
@@ -163,7 +174,7 @@ class DistFromGen[@sp A](f: Generator => A) extends Dist[A] {
 
 trait DistSemiring[A] extends Semiring[Dist[A]] {
   implicit def alg: Semiring[A]
-  def zero: Dist[A] = Dist.constant(alg.zero)
+  def zero: Dist[A]                         = Dist.constant(alg.zero)
   def plus(x: Dist[A], y: Dist[A]): Dist[A] = new DistFromGen(g => x(g) + y(g))
   def times(x: Dist[A], y: Dist[A]): Dist[A] =
     new DistFromGen(g => x(g) * y(g))
@@ -205,10 +216,10 @@ trait DistField[A] extends Field[Dist[A]] with DistEuclideanRing[A] {
 trait DistModule[V, K] extends Module[Dist[V], Dist[K]] {
   implicit def alg: Module[V, K]
 
-  def scalar: Rng[Dist[K]] = Dist.rng(alg.scalar)
-  def zero: Dist[V] = Dist.constant(alg.zero)
+  def scalar: Rng[Dist[K]]                  = Dist.rng(alg.scalar)
+  def zero: Dist[V]                         = Dist.constant(alg.zero)
   def plus(x: Dist[V], y: Dist[V]): Dist[V] = new DistFromGen(g => x(g) + y(g))
-  def negate(x: Dist[V]): Dist[V] = new DistFromGen(g => -x(g))
+  def negate(x: Dist[V]): Dist[V]           = new DistFromGen(g => -x(g))
   override def minus(x: Dist[V], y: Dist[V]): Dist[V] =
     new DistFromGen(g => x(g) - y(g))
   def timesl(k: Dist[K], v: Dist[V]): Dist[V] =
@@ -218,7 +229,8 @@ trait DistModule[V, K] extends Module[Dist[V], Dist[K]] {
 }
 
 trait DistVectorSpace[V, K]
-    extends DistModule[V, K] with VectorSpace[Dist[V], Dist[K]] {
+    extends DistModule[V, K]
+    with VectorSpace[Dist[V], Dist[K]] {
   implicit def alg: VectorSpace[V, K]
 
   override def scalar: Field[Dist[K]] = Dist.field(alg.scalar)
@@ -228,14 +240,16 @@ trait DistVectorSpace[V, K]
 }
 
 trait DistNormedVectorSpace[V, K]
-    extends DistVectorSpace[V, K] with NormedVectorSpace[Dist[V], Dist[K]] {
+    extends DistVectorSpace[V, K]
+    with NormedVectorSpace[Dist[V], Dist[K]] {
   implicit def alg: NormedVectorSpace[V, K]
 
   def norm(v: Dist[V]): Dist[K] = v map alg.norm
 }
 
 trait DistInnerProductSpace[V, K]
-    extends DistVectorSpace[V, K] with InnerProductSpace[Dist[V], Dist[K]] {
+    extends DistVectorSpace[V, K]
+    with InnerProductSpace[Dist[V], Dist[K]] {
   implicit def alg: InnerProductSpace[V, K]
 
   def dot(v: Dist[V], w: Dist[V]): Dist[K] =
@@ -248,21 +262,22 @@ object Dist extends DistInstances8 {
   final def apply[A, B](f: A => B)(implicit na: Dist[A]): Dist[B] =
     na.map(f)
 
-  final def apply[A, B, C](f: (A, B) => C)(
-      implicit na: Dist[A], nb: Dist[B]): Dist[C] =
+  final def apply[A, B, C](
+      f: (A, B) => C
+  )(implicit na: Dist[A], nb: Dist[B]): Dist[C] =
     na.zipWith(nb)(f)
 
   final def gen[A](f: Generator => A): Dist[A] =
     new DistFromGen(g => f(g))
 
-  def uniform[A : Uniform](low: A, high: A): Dist[A] =
+  def uniform[A: Uniform](low: A, high: A): Dist[A] =
     Uniform[A].apply(low, high)
 
-  def gaussian[A : Gaussian](mean: A, stdDev: A): Dist[A] =
+  def gaussian[A: Gaussian](mean: A, stdDev: A): Dist[A] =
     Gaussian[A].apply(mean, stdDev)
 
   def reduce[A](ns: Dist[A]*)(f: (A, A) => A): Dist[A] =
-    new DistFromGen(g => ns.map(_ (g)).reduceLeft(f))
+    new DistFromGen(g => ns.map(_(g)).reduceLeft(f))
 
   def fromBytes[A](n: Int)(f: Array[Byte] => A): Dist[A] =
     new DistFromGen(g => f(g.generateBytes(n)))
@@ -277,9 +292,9 @@ object Dist extends DistInstances8 {
     Dist.oneOf(ds: _*).flatMap(identity)
 
   def weightedMix[A](tpls: (Double, Dist[A])*): Dist[A] = {
-    val ds = new Array[Dist[A]](tpls.length)
-    val ws = new Array[Double](tpls.length)
-    var i = 0
+    val ds    = new Array[Dist[A]](tpls.length)
+    val ws    = new Array[Double](tpls.length)
+    var i     = 0
     var total = 0.0
     tpls.foreach {
       case (w, d) =>
@@ -297,15 +312,15 @@ object Dist extends DistInstances8 {
     })
   }
 
-  implicit val unit: Dist[Unit] = new DistFromGen[Unit](g => ())
+  implicit val unit: Dist[Unit]       = new DistFromGen[Unit](g => ())
   implicit val boolean: Dist[Boolean] = new DistFromGen[Boolean](_.nextBoolean)
-  implicit val byte: Dist[Byte] = new DistFromGen[Byte](_.nextInt.toByte)
-  implicit val short: Dist[Short] = new DistFromGen[Short](_.nextInt.toShort)
-  implicit val char: Dist[Char] = new DistFromGen[Char](_.nextInt.toChar)
-  implicit val int: Dist[Int] = new DistFromGen[Int](_.nextInt)
-  implicit val float: Dist[Float] = new DistFromGen[Float](_.nextFloat)
-  implicit val long: Dist[Long] = new DistFromGen[Long](_.nextLong)
-  implicit val double: Dist[Double] = new DistFromGen[Double](_.nextDouble)
+  implicit val byte: Dist[Byte]       = new DistFromGen[Byte](_.nextInt.toByte)
+  implicit val short: Dist[Short]     = new DistFromGen[Short](_.nextInt.toShort)
+  implicit val char: Dist[Char]       = new DistFromGen[Char](_.nextInt.toChar)
+  implicit val int: Dist[Int]         = new DistFromGen[Int](_.nextInt)
+  implicit val float: Dist[Float]     = new DistFromGen[Float](_.nextFloat)
+  implicit val long: Dist[Long]       = new DistFromGen[Long](_.nextLong)
+  implicit val double: Dist[Double]   = new DistFromGen[Double](_.nextDouble)
 
   implicit val ubyte: Dist[UByte] =
     new DistFromGen[UByte](g => UByte(g.nextInt))
@@ -315,27 +330,30 @@ object Dist extends DistInstances8 {
   implicit val ulong: Dist[ULong] =
     new DistFromGen[ULong](g => ULong(g.nextLong))
 
-  implicit def complex[
-      A : Fractional : Trig : IsReal : Dist]: Dist[Complex[A]] =
+  implicit def complex[A: Fractional: Trig: IsReal: Dist]: Dist[Complex[A]] =
     Dist(Complex(_: A, _: A))
 
-  implicit def interval[A](implicit na: Dist[A],
-                           order: Order[A],
-                           r: AdditiveMonoid[A]): Dist[Interval[A]] =
-    Dist(
-        (x: A, y: A) => if (order.lt(x, y)) Interval(x, y) else Interval(y, x))
+  implicit def interval[A](implicit
+      na: Dist[A],
+      order: Order[A],
+      r: AdditiveMonoid[A]
+  ): Dist[Interval[A]] =
+    Dist((x: A, y: A) => if (order.lt(x, y)) Interval(x, y) else Interval(y, x))
 
-  implicit def option[A](
-      implicit no: Dist[Boolean], na: Dist[A]): Dist[Option[A]] =
+  implicit def option[A](implicit
+      no: Dist[Boolean],
+      na: Dist[A]
+  ): Dist[Option[A]] =
     new DistFromGen(g => if (no(g)) Some(na(g)) else None)
 
-  implicit def either[A, B](implicit no: Dist[Boolean],
-                            na: Dist[A],
-                            nb: Dist[B]): Dist[Either[A, B]] =
-    new DistFromGen[Either[A, B]](
-        g => if (no(g)) Right(nb(g)) else Left(na(g)))
+  implicit def either[A, B](implicit
+      no: Dist[Boolean],
+      na: Dist[A],
+      nb: Dist[B]
+  ): Dist[Either[A, B]] =
+    new DistFromGen[Either[A, B]](g => if (no(g)) Right(nb(g)) else Left(na(g)))
 
-  implicit def tuple2[A : Dist, B : Dist]: Dist[(A, B)] =
+  implicit def tuple2[A: Dist, B: Dist]: Dist[(A, B)] =
     Dist((_: A, _: B))
 
   def intrange(from: Int, to: Int): Dist[Int] = {
@@ -343,19 +361,22 @@ object Dist extends DistInstances8 {
     new DistFromGen(_.nextInt(d) + from)
   }
 
-  def natural(maxDigits: Int): Dist[Natural] = new Dist[Natural] {
-    @tailrec
-    private def loop(g: Generator, i: Int, size: Int, n: Natural): Natural =
-      if (i < size) loop(g, i + 1, size, Natural.Digit(g.next[UInt], n)) else n
+  def natural(maxDigits: Int): Dist[Natural] =
+    new Dist[Natural] {
+      @tailrec
+      private def loop(g: Generator, i: Int, size: Int, n: Natural): Natural =
+        if (i < size) loop(g, i + 1, size, Natural.Digit(g.next[UInt], n))
+        else n
 
-    def apply(gen: Generator): Natural =
-      loop(gen, 1, gen.nextInt(maxDigits) + 1, Natural.End(gen.next[UInt]))
-  }
+      def apply(gen: Generator): Natural =
+        loop(gen, 1, gen.nextInt(maxDigits) + 1, Natural.End(gen.next[UInt]))
+    }
 
   def safelong(maxBytes: Int): Dist[SafeLong] =
     if (maxBytes <= 0) {
       throw new IllegalArgumentException(
-          "need positive maxBytes, got %s" format maxBytes)
+        "need positive maxBytes, got %s" format maxBytes
+      )
     } else if (maxBytes < 8) {
       val n = (8 - maxBytes) * 8
       new DistFromGen(g => SafeLong(g.nextLong >>> n))
@@ -365,10 +386,11 @@ object Dist extends DistInstances8 {
       bigint(maxBytes).map(SafeLong(_))
     }
 
-  def bigint(maxBytes: Int): Dist[BigInt] = new Dist[BigInt] {
-    def apply(gen: Generator): BigInt =
-      BigInt(gen.generateBytes(gen.nextInt(maxBytes) + 1))
-  }
+  def bigint(maxBytes: Int): Dist[BigInt] =
+    new Dist[BigInt] {
+      def apply(gen: Generator): BigInt =
+        BigInt(gen.generateBytes(gen.nextInt(maxBytes) + 1))
+    }
 
   def bigdecimal(maxBytes: Int, maxScale: Int): Dist[BigDecimal] =
     new Dist[BigDecimal] {
@@ -387,17 +409,19 @@ object Dist extends DistInstances8 {
     rational(bigint(maxBytes))
 
   def constant[A](a: A): Dist[A] = new DistFromGen[A](g => a)
-  def always[A](a: A): Dist[A] = new DistFromGen[A](g => a)
+  def always[A](a: A): Dist[A]   = new DistFromGen[A](g => a)
 
-  implicit def array[A : Dist : ClassTag](
-      minSize: Int, maxSize: Int): Dist[Array[A]] =
+  implicit def array[A: Dist: ClassTag](
+      minSize: Int,
+      maxSize: Int
+  ): Dist[Array[A]] =
     new Dist[Array[A]] {
       private val d = maxSize - minSize + 1
       def apply(gen: Generator): Array[A] =
         gen.generateArray[A](gen.nextInt(d) + minSize)
     }
 
-  implicit def list[A : Dist](minSize: Int, maxSize: Int): Dist[List[A]] =
+  implicit def list[A: Dist](minSize: Int, maxSize: Int): Dist[List[A]] =
     new Dist[List[A]] {
       private val d = maxSize - minSize + 1
       private def loop(g: Generator, n: Int, sofar: List[A]): List[A] =
@@ -407,29 +431,33 @@ object Dist extends DistInstances8 {
         loop(gen, gen.nextInt(d) + minSize, Nil)
     }
 
-  implicit def set[A : Dist](minInputs: Int, maxInputs: Int): Dist[Set[A]] =
+  implicit def set[A: Dist](minInputs: Int, maxInputs: Int): Dist[Set[A]] =
     list[A](minInputs, maxInputs).map(_.toSet)
 
-  implicit def map[A : Dist, B : Dist](
-      minInputs: Int, maxInputs: Int): Dist[Map[A, B]] =
+  implicit def map[A: Dist, B: Dist](
+      minInputs: Int,
+      maxInputs: Int
+  ): Dist[Map[A, B]] =
     list[(A, B)](minInputs, maxInputs).map(_.toMap)
 
-  def oneOf[A : ClassTag](as: A*): Dist[A] = new Dist[A] {
-    private val arr = as.toArray
-    def apply(gen: Generator): A = arr(gen.nextInt(arr.length))
-  }
-
-  def cycleOf[A : ClassTag](as: A*): Dist[A] = new Dist[A] {
-    private val arr = as.toArray
-    private var i = 0
-    def apply(gen: Generator): A = {
-      val a = arr(i)
-      i = (i + 1) % arr.length
-      a
+  def oneOf[A: ClassTag](as: A*): Dist[A] =
+    new Dist[A] {
+      private val arr              = as.toArray
+      def apply(gen: Generator): A = arr(gen.nextInt(arr.length))
     }
-  }
 
-  def gaussianFromDouble[A : Field]: DistFromGen[A] =
+  def cycleOf[A: ClassTag](as: A*): Dist[A] =
+    new Dist[A] {
+      private val arr = as.toArray
+      private var i   = 0
+      def apply(gen: Generator): A = {
+        val a = arr(i)
+        i = (i + 1) % arr.length
+        a
+      }
+    }
+
+  def gaussianFromDouble[A: Field]: DistFromGen[A] =
     new DistFromGen[A](g => Field[A].fromDouble(g.nextGaussian))
 }
 
@@ -453,7 +481,8 @@ trait DistInstances2 extends DistInstances1 {
 
 trait DistInstances3 extends DistInstances2 {
   implicit def euclideanRing[A](
-      implicit ev: EuclideanRing[A]): EuclideanRing[Dist[A]] =
+      implicit ev: EuclideanRing[A]
+  ): EuclideanRing[Dist[A]] =
     new DistEuclideanRing[A] { def alg = ev }
 }
 
@@ -464,24 +493,28 @@ trait DistInstances4 extends DistInstances3 {
 
 trait DistInstances5 extends DistInstances4 {
   implicit def module[V, K](
-      implicit ev: Module[V, K]): Module[Dist[V], Dist[K]] =
+      implicit ev: Module[V, K]
+  ): Module[Dist[V], Dist[K]] =
     new DistModule[V, K] { def alg = ev }
 }
 
 trait DistInstances6 extends DistInstances5 {
   implicit def vectorSpace[V, K](
-      implicit ev: VectorSpace[V, K]): VectorSpace[Dist[V], Dist[K]] =
+      implicit ev: VectorSpace[V, K]
+  ): VectorSpace[Dist[V], Dist[K]] =
     new DistVectorSpace[V, K] { def alg = ev }
 }
 
 trait DistInstances7 extends DistInstances6 {
-  implicit def NormedVectorSpace[V, K](implicit ev: NormedVectorSpace[V, K])
-    : NormedVectorSpace[Dist[V], Dist[K]] =
+  implicit def NormedVectorSpace[V, K](
+      implicit ev: NormedVectorSpace[V, K]
+  ): NormedVectorSpace[Dist[V], Dist[K]] =
     new DistNormedVectorSpace[V, K] { def alg = ev }
 }
 
 trait DistInstances8 extends DistInstances7 {
-  implicit def InnerProductSpace[V, K](implicit ev: InnerProductSpace[V, K])
-    : InnerProductSpace[Dist[V], Dist[K]] =
+  implicit def InnerProductSpace[V, K](
+      implicit ev: InnerProductSpace[V, K]
+  ): InnerProductSpace[Dist[V], Dist[K]] =
     new DistInnerProductSpace[V, K] { def alg = ev }
 }

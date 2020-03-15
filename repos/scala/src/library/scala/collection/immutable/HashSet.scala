@@ -30,12 +30,16 @@ import scala.annotation.tailrec
   */
 @SerialVersionUID(2L)
 @deprecatedInheritance(
-    "The implementation details of immutable hash sets make inheriting from them unwise.",
-    "2.11.0")
+  "The implementation details of immutable hash sets make inheriting from them unwise.",
+  "2.11.0"
+)
 class HashSet[A]
-    extends AbstractSet[A] with Set[A]
-    with GenericSetTemplate[A, HashSet] with SetLike[A, HashSet[A]]
-    with CustomParallelizable[A, ParHashSet[A]] with Serializable {
+    extends AbstractSet[A]
+    with Set[A]
+    with GenericSetTemplate[A, HashSet]
+    with SetLike[A, HashSet[A]]
+    with CustomParallelizable[A, ParHashSet[A]]
+    with Serializable {
   import HashSet.{nullToEmpty, bufferSize, LeafHashSet}
 
   override def companion: GenericCompanion[HashSet] = HashSet
@@ -54,14 +58,15 @@ class HashSet[A]
 
   def contains(e: A): Boolean = get0(e, computeHash(e), 0)
 
-  override def subsetOf(that: GenSet[A]) = that match {
-    case that: HashSet[A] =>
-      // call the specialized implementation with a level of 0 since both this and that are top-level hash sets
-      subsetOf0(that, 0)
-    case _ =>
-      // call the generic implementation
-      super.subsetOf(that)
-  }
+  override def subsetOf(that: GenSet[A]) =
+    that match {
+      case that: HashSet[A] =>
+        // call the specialized implementation with a level of 0 since both this and that are top-level hash sets
+        subsetOf0(that, 0)
+      case _ =>
+        // call the generic implementation
+        super.subsetOf(that)
+    }
 
   /**
     * A specialized implementation of subsetOf for when both this and that are HashSet[A] and we can take advantage
@@ -83,26 +88,29 @@ class HashSet[A]
   override def +(elem1: A, elem2: A, elems: A*): HashSet[A] =
     this + elem1 + elem2 ++ elems
 
-  override def union(that: GenSet[A]): HashSet[A] = that match {
-    case that: HashSet[A] =>
-      val buffer = new Array[HashSet[A]](bufferSize(this.size + that.size))
-      nullToEmpty(union0(that, 0, buffer, 0))
-    case _ => super.union(that)
-  }
+  override def union(that: GenSet[A]): HashSet[A] =
+    that match {
+      case that: HashSet[A] =>
+        val buffer = new Array[HashSet[A]](bufferSize(this.size + that.size))
+        nullToEmpty(union0(that, 0, buffer, 0))
+      case _ => super.union(that)
+    }
 
-  override def intersect(that: GenSet[A]): HashSet[A] = that match {
-    case that: HashSet[A] =>
-      val buffer = new Array[HashSet[A]](bufferSize(this.size min that.size))
-      nullToEmpty(intersect0(that, 0, buffer, 0))
-    case _ => super.intersect(that)
-  }
+  override def intersect(that: GenSet[A]): HashSet[A] =
+    that match {
+      case that: HashSet[A] =>
+        val buffer = new Array[HashSet[A]](bufferSize(this.size min that.size))
+        nullToEmpty(intersect0(that, 0, buffer, 0))
+      case _ => super.intersect(that)
+    }
 
-  override def diff(that: GenSet[A]): HashSet[A] = that match {
-    case that: HashSet[A] =>
-      val buffer = new Array[HashSet[A]](bufferSize(this.size))
-      nullToEmpty(diff0(that, 0, buffer, 0))
-    case _ => super.diff(that)
-  }
+  override def diff(that: GenSet[A]): HashSet[A] =
+    that match {
+      case that: HashSet[A] =>
+        val buffer = new Array[HashSet[A]](bufferSize(this.size))
+        nullToEmpty(diff0(that, 0, buffer, 0))
+      case _ => super.diff(that)
+    }
 
   /**
     * Union with a leaf HashSet at a given level.
@@ -111,7 +119,10 @@ class HashSet[A]
     * @return The union of this and that at the given level. Unless level is zero, the result is not a self-contained
     *         HashSet but needs to be stored at the correct depth
     */
-  private[immutable] def union0(that: LeafHashSet[A], level: Int): HashSet[A] = {
+  private[immutable] def union0(
+      that: LeafHashSet[A],
+      level: Int
+  ): HashSet[A] = {
     // the default implementation is for the empty set, so we just return that
     that
   }
@@ -125,10 +136,12 @@ class HashSet[A]
     * @return The union of this and that at the given level. Unless level is zero, the result is not a self-contained
     *         HashSet but needs to be stored at the correct depth
     */
-  private[immutable] def union0(that: HashSet[A],
-                                level: Int,
-                                buffer: Array[HashSet[A]],
-                                offset0: Int): HashSet[A] = {
+  private[immutable] def union0(
+      that: HashSet[A],
+      level: Int,
+      buffer: Array[HashSet[A]],
+      offset0: Int
+  ): HashSet[A] = {
     // the default implementation is for the empty set, so we just return that
     that
   }
@@ -141,10 +154,12 @@ class HashSet[A]
     * @return The intersection of this and that at the given level. Unless level is zero, the result is not a
     *         self-contained HashSet but needs to be stored at the correct depth
     */
-  private[immutable] def intersect0(that: HashSet[A],
-                                    level: Int,
-                                    buffer: Array[HashSet[A]],
-                                    offset0: Int): HashSet[A] = {
+  private[immutable] def intersect0(
+      that: HashSet[A],
+      level: Int,
+      buffer: Array[HashSet[A]],
+      offset0: Int
+  ): HashSet[A] = {
     // the default implementation is for the empty set, so we just return the empty set
     null
   }
@@ -157,10 +172,12 @@ class HashSet[A]
     * @return The diff of this and that at the given level. Unless level is zero, the result is not a
     *         self-contained HashSet but needs to be stored at the correct depth
     */
-  private[immutable] def diff0(that: HashSet[A],
-                               level: Int,
-                               buffer: Array[HashSet[A]],
-                               offset0: Int): HashSet[A] = {
+  private[immutable] def diff0(
+      that: HashSet[A],
+      level: Int,
+      buffer: Array[HashSet[A]],
+      offset0: Int
+  ): HashSet[A] = {
     // the default implementation is for the empty set, so we just return the empty set
     null
   }
@@ -180,11 +197,13 @@ class HashSet[A]
     nullToEmpty(filter0(p, true, 0, buffer, 0))
   }
 
-  protected def filter0(p: A => Boolean,
-                        negate: Boolean,
-                        level: Int,
-                        buffer: Array[HashSet[A]],
-                        offset0: Int): HashSet[A] = null
+  protected def filter0(
+      p: A => Boolean,
+      negate: Boolean,
+      level: Int,
+      buffer: Array[HashSet[A]],
+      offset0: Int
+  ): HashSet[A] = null
 
   protected def elemHashCode(key: A) = key.##
 
@@ -234,16 +253,18 @@ object HashSet extends ImmutableSetFactory[HashSet] {
   private[collection] def emptyInstance: HashSet[Any] = EmptyHashSet
 
   // utility method to create a HashTrieSet from two leaf HashSets (HashSet1 or HashSetCollision1) with non-colliding hash code)
-  private def makeHashTrieSet[A](hash0: Int,
-                                 elem0: HashSet[A],
-                                 hash1: Int,
-                                 elem1: HashSet[A],
-                                 level: Int): HashTrieSet[A] = {
+  private def makeHashTrieSet[A](
+      hash0: Int,
+      elem0: HashSet[A],
+      hash1: Int,
+      elem1: HashSet[A],
+      level: Int
+  ): HashTrieSet[A] = {
     val index0 = (hash0 >>> level) & 0x1f
     val index1 = (hash1 >>> level) & 0x1f
     if (index0 != index1) {
       val bitmap = (1 << index0) | (1 << index1)
-      val elems = new Array[HashSet[A]](2)
+      val elems  = new Array[HashSet[A]](2)
       if (index0 < index1) {
         elems(0) = elem0
         elems(1) = elem1
@@ -253,9 +274,9 @@ object HashSet extends ImmutableSetFactory[HashSet] {
       }
       new HashTrieSet[A](bitmap, elems, elem0.size + elem1.size)
     } else {
-      val elems = new Array[HashSet[A]](1)
+      val elems  = new Array[HashSet[A]](1)
       val bitmap = (1 << index0)
-      val child = makeHashTrieSet(hash0, elem0, hash1, elem1, level + 5)
+      val child  = makeHashTrieSet(hash0, elem0, hash1, elem1, level + 5)
       elems(0) = child
       new HashTrieSet[A](bitmap, elems, child.size)
     }
@@ -268,8 +289,7 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     private[HashSet] def hash: Int
   }
 
-  class HashSet1[A](
-      private[HashSet] val key: A, private[HashSet] val hash: Int)
+  class HashSet1[A](private[HashSet] val key: A, private[HashSet] val hash: Int)
       extends LeafHashSet[A] {
     override def size = 1
 
@@ -285,12 +305,14 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     }
 
     override private[collection] def updated0(
-        key: A, hash: Int, level: Int): HashSet[A] =
+        key: A,
+        hash: Int,
+        level: Int
+    ): HashSet[A] =
       if (hash == this.hash && key == this.key) this
       else {
         if (hash != this.hash) {
-          makeHashTrieSet(
-              this.hash, this, hash, new HashSet1(key, hash), level)
+          makeHashTrieSet(this.hash, this, hash, new HashSet1(key, hash), level)
         } else {
           // 32-bit hash collision (rare, but not impossible)
           new HashSetCollision1(hash, ListSet.empty + this.key + key)
@@ -298,67 +320,78 @@ object HashSet extends ImmutableSetFactory[HashSet] {
       }
 
     override private[immutable] def union0(
-        that: LeafHashSet[A], level: Int): HashSet[A] = that match {
-      case that if that.hash != this.hash =>
-        // different hash code, so there is no need to investigate further.
-        // Just create a branch node containing the two.
-        makeHashTrieSet(this.hash, this, that.hash, that, level)
-      case that: HashSet1[A] =>
-        if (this.key == that.key) {
-          this
-        } else {
-          // 32-bit hash collision (rare, but not impossible)
-          new HashSetCollision1[A](hash, ListSet.empty + this.key + that.key)
-        }
-      case that: HashSetCollision1[A] =>
-        val ks1 = that.ks + key
-        // Could use eq check (faster) if ListSet was guaranteed to return itself
-        if (ks1.size == that.ks.size) {
-          that
-        } else {
-          new HashSetCollision1[A](hash, ks1)
-        }
-    }
+        that: LeafHashSet[A],
+        level: Int
+    ): HashSet[A] =
+      that match {
+        case that if that.hash != this.hash =>
+          // different hash code, so there is no need to investigate further.
+          // Just create a branch node containing the two.
+          makeHashTrieSet(this.hash, this, that.hash, that, level)
+        case that: HashSet1[A] =>
+          if (this.key == that.key) {
+            this
+          } else {
+            // 32-bit hash collision (rare, but not impossible)
+            new HashSetCollision1[A](hash, ListSet.empty + this.key + that.key)
+          }
+        case that: HashSetCollision1[A] =>
+          val ks1 = that.ks + key
+          // Could use eq check (faster) if ListSet was guaranteed to return itself
+          if (ks1.size == that.ks.size) {
+            that
+          } else {
+            new HashSetCollision1[A](hash, ks1)
+          }
+      }
 
-    override private[immutable] def union0(that: HashSet[A],
-                                           level: Int,
-                                           buffer: Array[HashSet[A]],
-                                           offset0: Int) = {
+    override private[immutable] def union0(
+        that: HashSet[A],
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ) = {
       // switch to the Leaf version of union
       // we can exchange the arguments because union is symmetrical
       that.union0(this, level)
     }
 
-    override private[immutable] def intersect0(that: HashSet[A],
-                                               level: Int,
-                                               buffer: Array[HashSet[A]],
-                                               offset0: Int): HashSet[A] =
+    override private[immutable] def intersect0(
+        that: HashSet[A],
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] =
       if (that.get0(key, hash, level)) this else null
 
-    override private[immutable] def diff0(that: HashSet[A],
-                                          level: Int,
-                                          buffer: Array[HashSet[A]],
-                                          offset0: Int): HashSet[A] =
+    override private[immutable] def diff0(
+        that: HashSet[A],
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] =
       if (that.get0(key, hash, level)) null else this
 
-    override protected def removed0(
-        key: A, hash: Int, level: Int): HashSet[A] =
+    override protected def removed0(key: A, hash: Int, level: Int): HashSet[A] =
       if (hash == this.hash && key == this.key) null else this
 
-    override protected def filter0(p: A => Boolean,
-                                   negate: Boolean,
-                                   level: Int,
-                                   buffer: Array[HashSet[A]],
-                                   offset0: Int): HashSet[A] =
+    override protected def filter0(
+        p: A => Boolean,
+        negate: Boolean,
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] =
       if (negate ^ p(key)) this else null
 
-    override def iterator: Iterator[A] = Iterator(key)
+    override def iterator: Iterator[A]       = Iterator(key)
     override def foreach[U](f: A => U): Unit = f(key)
   }
 
   private[immutable] class HashSetCollision1[A](
-      private[HashSet] val hash: Int, val ks: ListSet[A])
-      extends LeafHashSet[A] {
+      private[HashSet] val hash: Int,
+      val ks: ListSet[A]
+  ) extends LeafHashSet[A] {
 
     override def size = ks.size
 
@@ -374,64 +407,74 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     }
 
     override private[collection] def updated0(
-        key: A, hash: Int, level: Int): HashSet[A] =
+        key: A,
+        hash: Int,
+        level: Int
+    ): HashSet[A] =
       if (hash == this.hash) new HashSetCollision1(hash, ks + key)
       else
         makeHashTrieSet(this.hash, this, hash, new HashSet1(key, hash), level)
 
     override private[immutable] def union0(
-        that: LeafHashSet[A], level: Int): HashSet[A] = that match {
-      case that if that.hash != this.hash =>
-        // different hash code, so there is no need to investigate further.
-        // Just create a branch node containing the two.
-        makeHashTrieSet(this.hash, this, that.hash, that, level)
-      case that: HashSet1[A] =>
-        val ks1 = ks + that.key
-        // Could use eq check (faster) if ListSet was guaranteed to return itself
-        if (ks1.size == ks.size) {
-          this
-        } else {
-          // create a new HashSetCollision with the existing hash
-          // we don't have to check for size=1 because union is never going to remove elements
-          new HashSetCollision1[A](hash, ks1)
-        }
-      case that: HashSetCollision1[A] =>
-        val ks1 = this.ks ++ that.ks
-        ks1.size match {
-          case size if size == this.ks.size =>
-            // could this check be made faster by doing an eq check?
-            // I am not sure we can rely on ListSet returning itself when all elements are already in the set,
-            // so it seems unwise to rely on it.
+        that: LeafHashSet[A],
+        level: Int
+    ): HashSet[A] =
+      that match {
+        case that if that.hash != this.hash =>
+          // different hash code, so there is no need to investigate further.
+          // Just create a branch node containing the two.
+          makeHashTrieSet(this.hash, this, that.hash, that, level)
+        case that: HashSet1[A] =>
+          val ks1 = ks + that.key
+          // Could use eq check (faster) if ListSet was guaranteed to return itself
+          if (ks1.size == ks.size) {
             this
-          case size if size == that.ks.size =>
-            // we have to check this as well, since we don't want to create a new instance if this is a subset of that
-            that
-          case _ =>
+          } else {
             // create a new HashSetCollision with the existing hash
             // we don't have to check for size=1 because union is never going to remove elements
             new HashSetCollision1[A](hash, ks1)
-        }
-    }
+          }
+        case that: HashSetCollision1[A] =>
+          val ks1 = this.ks ++ that.ks
+          ks1.size match {
+            case size if size == this.ks.size =>
+              // could this check be made faster by doing an eq check?
+              // I am not sure we can rely on ListSet returning itself when all elements are already in the set,
+              // so it seems unwise to rely on it.
+              this
+            case size if size == that.ks.size =>
+              // we have to check this as well, since we don't want to create a new instance if this is a subset of that
+              that
+            case _ =>
+              // create a new HashSetCollision with the existing hash
+              // we don't have to check for size=1 because union is never going to remove elements
+              new HashSetCollision1[A](hash, ks1)
+          }
+      }
 
     override private[immutable] def union0(
         that: HashSet[A],
         level: Int,
         buffer: Array[HashSet[A]],
-        offset0: Int): HashSet[A] = that match {
-      case that: LeafHashSet[A] =>
-        // switch to the simpler Tree/Leaf implementation
-        this.union0(that, level)
-      case that: HashTrieSet[A] =>
-        // switch to the simpler Tree/Leaf implementation
-        // we can swap this and that because union is symmetrical
-        that.union0(this, level)
-      case _ => this
-    }
+        offset0: Int
+    ): HashSet[A] =
+      that match {
+        case that: LeafHashSet[A] =>
+          // switch to the simpler Tree/Leaf implementation
+          this.union0(that, level)
+        case that: HashTrieSet[A] =>
+          // switch to the simpler Tree/Leaf implementation
+          // we can swap this and that because union is symmetrical
+          that.union0(this, level)
+        case _ => this
+      }
 
-    override private[immutable] def intersect0(that: HashSet[A],
-                                               level: Int,
-                                               buffer: Array[HashSet[A]],
-                                               offset0: Int): HashSet[A] = {
+    override private[immutable] def intersect0(
+        that: HashSet[A],
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] = {
       // filter the keys, taking advantage of the fact that we know their hash code
       val ks1 = ks.filter(that.get0(_, hash, level))
       ks1.size match {
@@ -457,10 +500,12 @@ object HashSet extends ImmutableSetFactory[HashSet] {
       }
     }
 
-    override private[immutable] def diff0(that: HashSet[A],
-                                          level: Int,
-                                          buffer: Array[HashSet[A]],
-                                          offset0: Int): HashSet[A] = {
+    override private[immutable] def diff0(
+        that: HashSet[A],
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] = {
       val ks1 = ks.filterNot(that.get0(_, hash, level))
       ks1.size match {
         case 0 =>
@@ -480,8 +525,7 @@ object HashSet extends ImmutableSetFactory[HashSet] {
       }
     }
 
-    override protected def removed0(
-        key: A, hash: Int, level: Int): HashSet[A] =
+    override protected def removed0(key: A, hash: Int, level: Int): HashSet[A] =
       if (hash == this.hash) {
         val ks1 = ks - key
         ks1.size match {
@@ -500,11 +544,13 @@ object HashSet extends ImmutableSetFactory[HashSet] {
         }
       } else this
 
-    override protected def filter0(p: A => Boolean,
-                                   negate: Boolean,
-                                   level: Int,
-                                   buffer: Array[HashSet[A]],
-                                   offset0: Int): HashSet[A] = {
+    override protected def filter0(
+        p: A => Boolean,
+        negate: Boolean,
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] = {
       val ks1 = if (negate) ks.filterNot(p) else ks.filter(p)
       ks1.size match {
         case 0 =>
@@ -518,7 +564,7 @@ object HashSet extends ImmutableSetFactory[HashSet] {
       }
     }
 
-    override def iterator: Iterator[A] = ks.iterator
+    override def iterator: Iterator[A]       = ks.iterator
     override def foreach[U](f: A => U): Unit = ks.foreach(f)
 
     private def writeObject(out: java.io.ObjectOutputStream) {
@@ -527,13 +573,15 @@ object HashSet extends ImmutableSetFactory[HashSet] {
       // because no references to this class are ever handed out to client code
       // and HashTrieSet serialization takes care of the situation
       sys.error(
-          "cannot serialize an immutable.HashSet where all items have the same 32-bit hash code")
+        "cannot serialize an immutable.HashSet where all items have the same 32-bit hash code"
+      )
       //out.writeObject(kvs)
     }
 
     private def readObject(in: java.io.ObjectInputStream) {
       sys.error(
-          "cannot deserialize an immutable.HashSet where all items have the same 32-bit hash code")
+        "cannot deserialize an immutable.HashSet where all items have the same 32-bit hash code"
+      )
       //kvs = in.readObject().asInstanceOf[ListSet[A]]
       //hash = computeHash(kvs.)
     }
@@ -575,10 +623,11 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     * elems: [a,b]
     * children:        ---b----------------a-----------
     */
-  class HashTrieSet[A](private val bitmap: Int,
-                       private[collection] val elems: Array[HashSet[A]],
-                       private val size0: Int)
-      extends HashSet[A] {
+  class HashTrieSet[A](
+      private val bitmap: Int,
+      private[collection] val elems: Array[HashSet[A]],
+      private val size0: Int
+  ) extends HashSet[A] {
     assert(Integer.bitCount(bitmap) == elems.length)
     // assertion has to remain disabled until SI-6197 is solved
     // assert(elems.length > 1 || (elems.length == 1 && elems(0).isInstanceOf[HashTrieSet[_]]))
@@ -587,7 +636,7 @@ object HashSet extends ImmutableSetFactory[HashSet] {
 
     override protected def get0(key: A, hash: Int, level: Int): Boolean = {
       val index = (hash >>> level) & 0x1f
-      val mask = (1 << index)
+      val mask  = (1 << index)
       if (bitmap == -1) {
         elems(index & 0x1f).get0(key, hash, level + 5)
       } else if ((bitmap & mask) != 0) {
@@ -597,12 +646,15 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     }
 
     override private[collection] def updated0(
-        key: A, hash: Int, level: Int): HashSet[A] = {
-      val index = (hash >>> level) & 0x1f
-      val mask = (1 << index)
+        key: A,
+        hash: Int,
+        level: Int
+    ): HashSet[A] = {
+      val index  = (hash >>> level) & 0x1f
+      val mask   = (1 << index)
       val offset = Integer.bitCount(bitmap & (mask - 1))
       if ((bitmap & mask) != 0) {
-        val sub = elems(offset)
+        val sub    = elems(offset)
         val subNew = sub.updated0(key, hash, level + 5)
         if (sub eq subNew) this
         else {
@@ -622,12 +674,14 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     }
 
     override private[immutable] def union0(
-        that: LeafHashSet[A], level: Int): HashSet[A] = {
-      val index = (that.hash >>> level) & 0x1f
-      val mask = (1 << index)
+        that: LeafHashSet[A],
+        level: Int
+    ): HashSet[A] = {
+      val index  = (that.hash >>> level) & 0x1f
+      val mask   = (1 << index)
       val offset = Integer.bitCount(bitmap & (mask - 1))
       if ((bitmap & mask) != 0) {
-        val sub = elems(offset)
+        val sub  = elems(offset)
         val sub1 = sub.union0(that, level + 5)
         if (sub eq sub1) this
         else {
@@ -650,274 +704,283 @@ object HashSet extends ImmutableSetFactory[HashSet] {
         that: HashSet[A],
         level: Int,
         buffer: Array[HashSet[A]],
-        offset0: Int): HashSet[A] = that match {
-      case that if that eq this =>
-        // shortcut for when that is this
-        // this happens often for nodes deeper in the tree, especially when that and this share a common "heritage"
-        // e.g. you have a large set A and do some small operations (adding and removing elements) to it to create B
-        // then A and B will have the vast majority of nodes in common, and this eq check will allow not even looking
-        // at these nodes.
-        this
-      case that: LeafHashSet[A] =>
-        // when that is a leaf, we can switch to the simpler Tree/Leaf implementation
-        this.union0(that, level)
-      case that: HashTrieSet[A] =>
-        val a = this.elems
-        var abm = this.bitmap
-        var ai = 0
-
-        val b = that.elems
-        var bbm = that.bitmap
-        var bi = 0
-
-        // fetch a new temporary array that is guaranteed to be big enough (32 elements)
-        var offset = offset0
-        var rs = 0
-
-        // loop as long as there are bits left in either abm or bbm
-        while ( (abm | bbm) != 0) {
-          // lowest remaining bit in abm
-          val alsb = abm ^ (abm & (abm - 1))
-          // lowest remaining bit in bbm
-          val blsb = bbm ^ (bbm & (bbm - 1))
-          if (alsb == blsb) {
-            val sub1 = a(ai).union0(b(bi), level + 5, buffer, offset)
-            rs += sub1.size
-            buffer(offset) = sub1
-            offset += 1
-            // clear lowest remaining one bit in abm and increase the a index
-            abm &= ~alsb
-            ai += 1
-            // clear lowest remaining one bit in bbm and increase the b index
-            bbm &= ~blsb
-            bi += 1
-          } else if (unsignedCompare(alsb - 1, blsb - 1)) {
-            // alsb is smaller than blsb, or alsb is set and blsb is 0
-            // in any case, alsb is guaranteed to be set here!
-            val sub1 = a(ai)
-            rs += sub1.size
-            buffer(offset) = sub1
-            offset += 1
-            // clear lowest remaining one bit in abm and increase the a index
-            abm &= ~alsb
-            ai += 1
-          } else {
-            // blsb is smaller than alsb, or blsb is set and alsb is 0
-            // in any case, blsb is guaranteed to be set here!
-            val sub1 = b(bi)
-            rs += sub1.size
-            buffer(offset) = sub1
-            offset += 1
-            // clear lowest remaining one bit in bbm and increase the b index
-            bbm &= ~blsb
-            bi += 1
-          }
-        }
-        if (rs == this.size) {
-          // if the result would be identical to this, we might as well return this
+        offset0: Int
+    ): HashSet[A] =
+      that match {
+        case that if that eq this =>
+          // shortcut for when that is this
+          // this happens often for nodes deeper in the tree, especially when that and this share a common "heritage"
+          // e.g. you have a large set A and do some small operations (adding and removing elements) to it to create B
+          // then A and B will have the vast majority of nodes in common, and this eq check will allow not even looking
+          // at these nodes.
           this
-        } else if (rs == that.size) {
-          // if the result would be identical to that, we might as well return that
-          that
-        } else {
-          // we don't have to check whether the result is a leaf, since union will only make the set larger
-          // and this is not a leaf to begin with.
-          val length = offset - offset0
-          val elems = new Array[HashSet[A]](length)
-          System.arraycopy(buffer, offset0, elems, 0, length)
-          new HashTrieSet(this.bitmap | that.bitmap, elems, rs)
-        }
-      case _ => this
-    }
+        case that: LeafHashSet[A] =>
+          // when that is a leaf, we can switch to the simpler Tree/Leaf implementation
+          this.union0(that, level)
+        case that: HashTrieSet[A] =>
+          val a   = this.elems
+          var abm = this.bitmap
+          var ai  = 0
+
+          val b   = that.elems
+          var bbm = that.bitmap
+          var bi  = 0
+
+          // fetch a new temporary array that is guaranteed to be big enough (32 elements)
+          var offset = offset0
+          var rs     = 0
+
+          // loop as long as there are bits left in either abm or bbm
+          while ((abm | bbm) != 0) {
+            // lowest remaining bit in abm
+            val alsb = abm ^ (abm & (abm - 1))
+            // lowest remaining bit in bbm
+            val blsb = bbm ^ (bbm & (bbm - 1))
+            if (alsb == blsb) {
+              val sub1 = a(ai).union0(b(bi), level + 5, buffer, offset)
+              rs += sub1.size
+              buffer(offset) = sub1
+              offset += 1
+              // clear lowest remaining one bit in abm and increase the a index
+              abm &= ~alsb
+              ai += 1
+              // clear lowest remaining one bit in bbm and increase the b index
+              bbm &= ~blsb
+              bi += 1
+            } else if (unsignedCompare(alsb - 1, blsb - 1)) {
+              // alsb is smaller than blsb, or alsb is set and blsb is 0
+              // in any case, alsb is guaranteed to be set here!
+              val sub1 = a(ai)
+              rs += sub1.size
+              buffer(offset) = sub1
+              offset += 1
+              // clear lowest remaining one bit in abm and increase the a index
+              abm &= ~alsb
+              ai += 1
+            } else {
+              // blsb is smaller than alsb, or blsb is set and alsb is 0
+              // in any case, blsb is guaranteed to be set here!
+              val sub1 = b(bi)
+              rs += sub1.size
+              buffer(offset) = sub1
+              offset += 1
+              // clear lowest remaining one bit in bbm and increase the b index
+              bbm &= ~blsb
+              bi += 1
+            }
+          }
+          if (rs == this.size) {
+            // if the result would be identical to this, we might as well return this
+            this
+          } else if (rs == that.size) {
+            // if the result would be identical to that, we might as well return that
+            that
+          } else {
+            // we don't have to check whether the result is a leaf, since union will only make the set larger
+            // and this is not a leaf to begin with.
+            val length = offset - offset0
+            val elems  = new Array[HashSet[A]](length)
+            System.arraycopy(buffer, offset0, elems, 0, length)
+            new HashTrieSet(this.bitmap | that.bitmap, elems, rs)
+          }
+        case _ => this
+      }
 
     override private[immutable] def intersect0(
         that: HashSet[A],
         level: Int,
         buffer: Array[HashSet[A]],
-        offset0: Int): HashSet[A] = that match {
-      case that if that eq this =>
-        // shortcut for when that is this
-        // this happens often for nodes deeper in the tree, especially when that and this share a common "heritage"
-        // e.g. you have a large set A and do some small operations (adding and removing elements) to it to create B
-        // then A and B will have the vast majority of nodes in common, and this eq check will allow not even looking
-        // at these nodes!
-        this
-      case that: LeafHashSet[A] =>
-        // when that is a leaf, we can switch to the simpler Tree/Leaf implementation
-        // it is OK to swap the arguments because intersect is symmetric
-        // (we can't do this in case of diff, which is not symmetric)
-        that.intersect0(this, level, buffer, offset0)
-      case that: HashTrieSet[A] =>
-        val a = this.elems
-        var abm = this.bitmap
-        var ai = 0
-
-        val b = that.elems
-        var bbm = that.bitmap
-        var bi = 0
-
-        // if the bitmasks do not overlap, the result is definitely empty so we can abort here
-        if ((abm & bbm) == 0) return null
-
-        // fetch a new temporary array that is guaranteed to be big enough (32 elements)
-        var offset = offset0
-        var rs = 0
-        var rbm = 0
-
-        // loop as long as there are bits left that are set in both abm and bbm
-        while ( (abm & bbm) != 0) {
-          // highest remaining bit in abm
-          val alsb = abm ^ (abm & (abm - 1))
-          // highest remaining bit in bbm
-          val blsb = bbm ^ (bbm & (bbm - 1))
-          if (alsb == blsb) {
-            val sub1 = a(ai).intersect0(b(bi), level + 5, buffer, offset)
-            if (sub1 ne null) {
-              rs += sub1.size
-              rbm |= alsb
-              buffer(offset) = sub1
-              offset += 1
-            }
-            // clear lowest remaining one bit in abm and increase the a index
-            abm &= ~alsb;
-            ai += 1
-            // clear lowest remaining one bit in bbm and increase the b index
-            bbm &= ~blsb;
-            bi += 1
-          } else if (unsignedCompare(alsb - 1, blsb - 1)) {
-            // alsb is smaller than blsb, or alsb is set and blsb is 0
-            // in any case, alsb is guaranteed to be set here!
-            // clear lowest remaining one bit in abm and increase the a index
-            abm &= ~alsb;
-            ai += 1
-          } else {
-            // blsb is smaller than alsb, or blsb is set and alsb is 0
-            // in any case, blsb is guaranteed to be set here!
-            // clear lowest remaining one bit in bbm and increase the b index
-            bbm &= ~blsb;
-            bi += 1
-          }
-        }
-
-        if (rbm == 0) {
-          // if the result bitmap is empty, the result is the empty set
-          null
-        } else if (rs == size0) {
-          // if the result has the same number of elements as this, it must be identical to this,
-          // so we might as well return this
+        offset0: Int
+    ): HashSet[A] =
+      that match {
+        case that if that eq this =>
+          // shortcut for when that is this
+          // this happens often for nodes deeper in the tree, especially when that and this share a common "heritage"
+          // e.g. you have a large set A and do some small operations (adding and removing elements) to it to create B
+          // then A and B will have the vast majority of nodes in common, and this eq check will allow not even looking
+          // at these nodes!
           this
-        } else if (rs == that.size0) {
-          // if the result has the same number of elements as that, it must be identical to that,
-          // so we might as well return that
-          that
-        } else {
-          val length = offset - offset0
-          if (length == 1 && !buffer(offset0).isInstanceOf[HashTrieSet[A]])
-            buffer(offset0)
-          else {
-            val elems = new Array[HashSet[A]](length)
-            System.arraycopy(buffer, offset0, elems, 0, length)
-            new HashTrieSet[A](rbm, elems, rs)
+        case that: LeafHashSet[A] =>
+          // when that is a leaf, we can switch to the simpler Tree/Leaf implementation
+          // it is OK to swap the arguments because intersect is symmetric
+          // (we can't do this in case of diff, which is not symmetric)
+          that.intersect0(this, level, buffer, offset0)
+        case that: HashTrieSet[A] =>
+          val a   = this.elems
+          var abm = this.bitmap
+          var ai  = 0
+
+          val b   = that.elems
+          var bbm = that.bitmap
+          var bi  = 0
+
+          // if the bitmasks do not overlap, the result is definitely empty so we can abort here
+          if ((abm & bbm) == 0) return null
+
+          // fetch a new temporary array that is guaranteed to be big enough (32 elements)
+          var offset = offset0
+          var rs     = 0
+          var rbm    = 0
+
+          // loop as long as there are bits left that are set in both abm and bbm
+          while ((abm & bbm) != 0) {
+            // highest remaining bit in abm
+            val alsb = abm ^ (abm & (abm - 1))
+            // highest remaining bit in bbm
+            val blsb = bbm ^ (bbm & (bbm - 1))
+            if (alsb == blsb) {
+              val sub1 = a(ai).intersect0(b(bi), level + 5, buffer, offset)
+              if (sub1 ne null) {
+                rs += sub1.size
+                rbm |= alsb
+                buffer(offset) = sub1
+                offset += 1
+              }
+              // clear lowest remaining one bit in abm and increase the a index
+              abm &= ~alsb;
+              ai += 1
+              // clear lowest remaining one bit in bbm and increase the b index
+              bbm &= ~blsb;
+              bi += 1
+            } else if (unsignedCompare(alsb - 1, blsb - 1)) {
+              // alsb is smaller than blsb, or alsb is set and blsb is 0
+              // in any case, alsb is guaranteed to be set here!
+              // clear lowest remaining one bit in abm and increase the a index
+              abm &= ~alsb;
+              ai += 1
+            } else {
+              // blsb is smaller than alsb, or blsb is set and alsb is 0
+              // in any case, blsb is guaranteed to be set here!
+              // clear lowest remaining one bit in bbm and increase the b index
+              bbm &= ~blsb;
+              bi += 1
+            }
           }
-        }
-      case _ => null
-    }
+
+          if (rbm == 0) {
+            // if the result bitmap is empty, the result is the empty set
+            null
+          } else if (rs == size0) {
+            // if the result has the same number of elements as this, it must be identical to this,
+            // so we might as well return this
+            this
+          } else if (rs == that.size0) {
+            // if the result has the same number of elements as that, it must be identical to that,
+            // so we might as well return that
+            that
+          } else {
+            val length = offset - offset0
+            if (length == 1 && !buffer(offset0).isInstanceOf[HashTrieSet[A]])
+              buffer(offset0)
+            else {
+              val elems = new Array[HashSet[A]](length)
+              System.arraycopy(buffer, offset0, elems, 0, length)
+              new HashTrieSet[A](rbm, elems, rs)
+            }
+          }
+        case _ => null
+      }
 
     override private[immutable] def diff0(
         that: HashSet[A],
         level: Int,
         buffer: Array[HashSet[A]],
-        offset0: Int): HashSet[A] = that match {
-      case that if that eq this =>
-        // shortcut for when that is this
-        // this happens often for nodes deeper in the tree, especially when that and this share a common "heritage"
-        // e.g. you have a large set A and do some small operations (adding and removing elements) to it to create B
-        // then A and B will have the vast majority of nodes in common, and this eq check will allow not even looking
-        // at these nodes!
-        null
-      case that: HashSet1[A] =>
-        removed0(that.key, that.hash, level)
-      case that: HashTrieSet[A] =>
-        val a = this.elems
-        var abm = this.bitmap
-        var ai = 0
+        offset0: Int
+    ): HashSet[A] =
+      that match {
+        case that if that eq this =>
+          // shortcut for when that is this
+          // this happens often for nodes deeper in the tree, especially when that and this share a common "heritage"
+          // e.g. you have a large set A and do some small operations (adding and removing elements) to it to create B
+          // then A and B will have the vast majority of nodes in common, and this eq check will allow not even looking
+          // at these nodes!
+          null
+        case that: HashSet1[A] =>
+          removed0(that.key, that.hash, level)
+        case that: HashTrieSet[A] =>
+          val a   = this.elems
+          var abm = this.bitmap
+          var ai  = 0
 
-        val b = that.elems
-        var bbm = that.bitmap
-        var bi = 0
+          val b   = that.elems
+          var bbm = that.bitmap
+          var bi  = 0
 
-        // fetch a new temporary array that is guaranteed to be big enough (32 elements)
-        var offset = offset0
-        var rs = 0
-        var rbm = 0
+          // fetch a new temporary array that is guaranteed to be big enough (32 elements)
+          var offset = offset0
+          var rs     = 0
+          var rbm    = 0
 
-        // loop until there are no more bits in abm
-        while (abm != 0) {
-          // highest remaining bit in abm
-          val alsb = abm ^ (abm & (abm - 1))
-          // highest remaining bit in bbm
-          val blsb = bbm ^ (bbm & (bbm - 1))
-          if (alsb == blsb) {
-            val sub1 = a(ai).diff0(b(bi), level + 5, buffer, offset)
-            if (sub1 ne null) {
+          // loop until there are no more bits in abm
+          while (abm != 0) {
+            // highest remaining bit in abm
+            val alsb = abm ^ (abm & (abm - 1))
+            // highest remaining bit in bbm
+            val blsb = bbm ^ (bbm & (bbm - 1))
+            if (alsb == blsb) {
+              val sub1 = a(ai).diff0(b(bi), level + 5, buffer, offset)
+              if (sub1 ne null) {
+                rs += sub1.size
+                rbm |= alsb
+                buffer(offset) = sub1
+                offset += 1
+              }
+              // clear lowest remaining one bit in abm and increase the a index
+              abm &= ~alsb; ai += 1
+              // clear lowest remaining one bit in bbm and increase the b index
+              bbm &= ~blsb; bi += 1
+            } else if (unsignedCompare(alsb - 1, blsb - 1)) {
+              // alsb is smaller than blsb, or alsb is set and blsb is 0
+              // in any case, alsb is guaranteed to be set here!
+              val sub1 = a(ai)
               rs += sub1.size
               rbm |= alsb
-              buffer(offset) = sub1
-              offset += 1
+              buffer(offset) = sub1; offset += 1
+              // clear lowest remaining one bit in abm and increase the a index
+              abm &= ~alsb; ai += 1
+            } else {
+              // blsb is smaller than alsb, or blsb is set and alsb is 0
+              // in any case, blsb is guaranteed to be set here!
+              // clear lowest remaining one bit in bbm and increase the b index
+              bbm &= ~blsb; bi += 1
             }
-            // clear lowest remaining one bit in abm and increase the a index
-            abm &= ~alsb; ai += 1
-            // clear lowest remaining one bit in bbm and increase the b index
-            bbm &= ~blsb; bi += 1
-          } else if (unsignedCompare(alsb - 1, blsb - 1)) {
-            // alsb is smaller than blsb, or alsb is set and blsb is 0
-            // in any case, alsb is guaranteed to be set here!
-            val sub1 = a(ai)
-            rs += sub1.size
-            rbm |= alsb
-            buffer(offset) = sub1; offset += 1
-            // clear lowest remaining one bit in abm and increase the a index
-            abm &= ~alsb; ai += 1
+          }
+          if (rbm == 0) {
+            null
+          } else if (rs == this.size0) {
+            // if the result has the same number of elements as this, it must be identical to this,
+            // so we might as well return this
+            this
           } else {
-            // blsb is smaller than alsb, or blsb is set and alsb is 0
-            // in any case, blsb is guaranteed to be set here!
-            // clear lowest remaining one bit in bbm and increase the b index
-            bbm &= ~blsb; bi += 1
+            val length = offset - offset0
+            if (length == 1 && !buffer(offset0).isInstanceOf[HashTrieSet[A]])
+              buffer(offset0)
+            else {
+              val elems = new Array[HashSet[A]](length)
+              System.arraycopy(buffer, offset0, elems, 0, length)
+              new HashTrieSet[A](rbm, elems, rs)
+            }
           }
-        }
-        if (rbm == 0) {
-          null
-        } else if (rs == this.size0) {
-          // if the result has the same number of elements as this, it must be identical to this,
-          // so we might as well return this
-          this
-        } else {
-          val length = offset - offset0
-          if (length == 1 && !buffer(offset0).isInstanceOf[HashTrieSet[A]])
-            buffer(offset0)
-          else {
-            val elems = new Array[HashSet[A]](length)
-            System.arraycopy(buffer, offset0, elems, 0, length)
-            new HashTrieSet[A](rbm, elems, rs)
-          }
-        }
-      case that: HashSetCollision1[A] =>
-        // we remove the elements using removed0 so we can use the fact that we know the hash of all elements
-        // to be removed
-        @tailrec def removeAll(s: HashSet[A], r: ListSet[A]): HashSet[A] =
-          if (r.isEmpty || (s eq null)) s
-          else removeAll(s.removed0(r.head, that.hash, level), r.tail)
-        removeAll(this, that.ks)
-      case _ => this
-    }
+        case that: HashSetCollision1[A] =>
+          // we remove the elements using removed0 so we can use the fact that we know the hash of all elements
+          // to be removed
+          @tailrec def removeAll(s: HashSet[A], r: ListSet[A]): HashSet[A] =
+            if (r.isEmpty || (s eq null)) s
+            else removeAll(s.removed0(r.head, that.hash, level), r.tail)
+          removeAll(this, that.ks)
+        case _ => this
+      }
 
     override protected def removed0(
-        key: A, hash: Int, level: Int): HashSet[A] = {
-      val index = (hash >>> level) & 0x1f
-      val mask = (1 << index)
+        key: A,
+        hash: Int,
+        level: Int
+    ): HashSet[A] = {
+      val index  = (hash >>> level) & 0x1f
+      val mask   = (1 << index)
       val offset = Integer.bitCount(bitmap & (mask - 1))
       if ((bitmap & mask) != 0) {
-        val sub = elems(offset)
+        val sub    = elems(offset)
         val subNew = sub.removed0(key, hash, level + 5)
         if (sub eq subNew) this
         else if (subNew eq null) {
@@ -926,7 +989,12 @@ object HashSet extends ImmutableSetFactory[HashSet] {
             val elemsNew = new Array[HashSet[A]](elems.length - 1)
             Array.copy(elems, 0, elemsNew, 0, offset)
             Array.copy(
-                elems, offset + 1, elemsNew, offset, elems.length - offset - 1)
+              elems,
+              offset + 1,
+              elemsNew,
+              offset,
+              elems.length - offset - 1
+            )
             val sizeNew = size - sub.size
             // if we have only one child, which is not a HashTrieSet but a self-contained set like
             // HashSet1 or HashSetCollision1, return the child instead
@@ -955,11 +1023,11 @@ object HashSet extends ImmutableSetFactory[HashSet] {
           case that: HashTrieSet[A] if this.size0 <= that.size0 =>
             // create local mutable copies of members
             var abm = this.bitmap
-            val a = this.elems
-            var ai = 0
-            val b = that.elems
+            val a   = this.elems
+            var ai  = 0
+            val b   = that.elems
             var bbm = that.bitmap
-            var bi = 0
+            var bi  = 0
             if ((abm & bbm) == abm) {
               // I tried rewriting this using tail recursion, but the generated java byte code was less than optimal
               while (abm != 0) {
@@ -993,11 +1061,13 @@ object HashSet extends ImmutableSetFactory[HashSet] {
             false
         }
 
-    override protected def filter0(p: A => Boolean,
-                                   negate: Boolean,
-                                   level: Int,
-                                   buffer: Array[HashSet[A]],
-                                   offset0: Int): HashSet[A] = {
+    override protected def filter0(
+        p: A => Boolean,
+        negate: Boolean,
+        level: Int,
+        buffer: Array[HashSet[A]],
+        offset0: Int
+    ): HashSet[A] = {
       // current offset
       var offset = offset0
       // result size
@@ -1087,9 +1157,9 @@ object HashSet extends ImmutableSetFactory[HashSet] {
     * @return the original bitmap with all bits where keep is not 1 set to 0
     */
   private def keepBits(bitmap: Int, keep: Int): Int = {
-    var result = 0
+    var result  = 0
     var current = bitmap
-    var kept = keep
+    var kept    = keep
     while (kept != 0) {
       // lowest remaining bit in current
       val lsb = current ^ (current & (current - 1))
@@ -1111,8 +1181,8 @@ object HashSet extends ImmutableSetFactory[HashSet] {
 
   @SerialVersionUID(2L)
   private class SerializationProxy[A, B](
-      @transient private var orig: HashSet[A])
-      extends Serializable {
+      @transient private var orig: HashSet[A]
+  ) extends Serializable {
     private def writeObject(out: java.io.ObjectOutputStream) {
       val s = orig.size
       out.writeInt(s)

@@ -52,19 +52,20 @@ object VersionedStore {
   def apply[K, V](
       rootPath: String,
       versionsToKeep: Int = VersionedKeyValSource.defaultVersionsToKeep,
-      prunedSpace: PrunedSpace[(K, V)] = PrunedSpace.neverPruned)(
-      implicit injection: Injection[
-          (K, (BatchID, V)), (Array[Byte], Array[Byte])],
+      prunedSpace: PrunedSpace[(K, V)] = PrunedSpace.neverPruned
+  )(implicit
+      injection: Injection[(K, (BatchID, V)), (Array[Byte], Array[Byte])],
       batcher: Batcher,
-      ord: Ordering[K]): VersionedBatchStore[K, V, K, (BatchID, V)] =
+      ord: Ordering[K]
+  ): VersionedBatchStore[K, V, K, (BatchID, V)] =
     new VersionedBatchStore[K, V, K, (BatchID, V)](
-        rootPath,
-        versionsToKeep,
-        batcher
+      rootPath,
+      versionsToKeep,
+      batcher
     )({ case (batchID, (k, v)) => (k, (batchID.next, v)) })({
-      case (k, (_, v)) => (k, v)
+      case (k, (_, v))         => (k, v)
     }) {
       override def select(b: List[BatchID]) = List(b.last)
-      override def pruning = prunedSpace
+      override def pruning                  = prunedSpace
     }
 }

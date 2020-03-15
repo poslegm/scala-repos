@@ -18,9 +18,9 @@ import scala.concurrent.duration._
   * asynchronous code.
   */
 @Singleton
-class AsyncController @Inject()(
-    actorSystem: ActorSystem)(implicit exec: ExecutionContext)
-    extends Controller {
+class AsyncController @Inject() (actorSystem: ActorSystem)(
+    implicit exec: ExecutionContext
+) extends Controller {
 
   /**
     * Create an Action that returns a plain text message after a delay
@@ -30,11 +30,10 @@ class AsyncController @Inject()(
     * will be called when the application receives a `GET` request with
     * a path of `/message`.
     */
-  def message = Action.async {
-    getFutureMessage(1.second).map { msg =>
-      Ok(msg)
+  def message =
+    Action.async {
+      getFutureMessage(1.second).map { msg => Ok(msg) }
     }
-  }
 
   private def getFutureMessage(delayTime: FiniteDuration): Future[String] = {
     val promise: Promise[String] = Promise[String]()

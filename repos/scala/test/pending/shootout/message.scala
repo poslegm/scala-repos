@@ -7,8 +7,8 @@ import scala.concurrent._
 
 object message {
   def main(args: Array[String]) = {
-    val n = Integer.parseInt(args(0))
-    val nActors = 500
+    val n        = Integer.parseInt(args(0))
+    val nActors  = 500
     val finalSum = n * nActors
 
     case class Message(value: Int)
@@ -41,6 +41,6 @@ object message {
       if (i > 0) actorChain(i - 1, new Incrementor(a).pid) else a
 
     val firstActor = actorChain(nActors, null)
-    var i = n; while (i > 0) { firstActor ! Message(0); i = i - 1 }
+    var i          = n; while (i > 0) { firstActor ! Message(0); i = i - 1 }
   }
 }

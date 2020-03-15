@@ -5,36 +5,36 @@ object Test extends App {
   import scala.reflect.ClassTag
   import compat._
 
-  val tree: Tree = ???
-  val ttree: TypeTree = ???
-  val stree: SymTree = ???
-  val trees: List[Tree] = ???
-  val mods: Modifiers = ???
-  val impl: Template = ???
+  val tree: Tree                   = ???
+  val ttree: TypeTree              = ???
+  val stree: SymTree               = ???
+  val trees: List[Tree]            = ???
+  val mods: Modifiers              = ???
+  val impl: Template               = ???
   val vparamss: List[List[ValDef]] = ???
-  val rhs: Tree = ???
-  val sym: Symbol = ???
-  val tsym: TypeSymbol = ???
-  val syms: List[Symbol] = ???
-  val params: List[Symbol] = ???
-  val tparams: List[Symbol] = ???
-  val tpe: Type = ???
-  val tpes: List[Type] = ???
-  val manifest: Manifest[Int] = ???
-  val tag: TypeTag[Int] = ???
-  val mirror: Mirror = ???
-  val decls: Scope = ???
-  val pos: Position = ???
-  val ann: Annotation = ???
-  val anns: List[Annotation] = ???
-  val const: Constant = ???
-  val name: Name = ???
-  val tyname: TypeName = ???
-  val tename: TermName = ???
-  val flags: FlagSet = ???
-  val str: String = ???
-  val i: Int = ???
-  val b: Boolean = ???
+  val rhs: Tree                    = ???
+  val sym: Symbol                  = ???
+  val tsym: TypeSymbol             = ???
+  val syms: List[Symbol]           = ???
+  val params: List[Symbol]         = ???
+  val tparams: List[Symbol]        = ???
+  val tpe: Type                    = ???
+  val tpes: List[Type]             = ???
+  val manifest: Manifest[Int]      = ???
+  val tag: TypeTag[Int]            = ???
+  val mirror: Mirror               = ???
+  val decls: Scope                 = ???
+  val pos: Position                = ???
+  val ann: Annotation              = ???
+  val anns: List[Annotation]       = ???
+  val const: Constant              = ???
+  val name: Name                   = ???
+  val tyname: TypeName             = ???
+  val tename: TermName             = ???
+  val flags: FlagSet               = ???
+  val str: String                  = ???
+  val i: Int                       = ???
+  val b: Boolean                   = ???
 
   // abstract class BuildApi
   // abstract class ReferenceToBoxedExtractor
@@ -76,7 +76,7 @@ object Test extends App {
   locally(ConstantType(const): ConstantType)
   locally(sym.asFreeTerm: FreeTermSymbol)
   locally(sym.asFreeType: FreeTypeSymbol)
-  locally(sym.attachments: Attachments { type Pos = Position })
+  locally(sym.attachments: Attachments { type Pos  = Position })
   locally(tree.attachments: Attachments { type Pos = Position })
   locally(captureVariable(sym): Unit)
   locally(capturedVariableType(sym): Type)
@@ -94,8 +94,8 @@ object Test extends App {
   locally(sym.isOverride: Boolean)
   locally(tsym.isSkolem: Boolean)
   locally(
-      manifestToTypeTag(mirror, manifest): scala.reflect.api.Universe#TypeTag[
-          Int])
+    manifestToTypeTag(mirror, manifest): scala.reflect.api.Universe#TypeTag[Int]
+  )
   locally(treeBuild.mkAttributedIdent(sym): RefTree)
   locally(treeBuild.mkAttributedQualifier(tpe): Tree)
   locally(treeBuild.mkAttributedQualifier(tpe, sym): Tree)
@@ -103,8 +103,7 @@ object Test extends App {
   locally(treeBuild.mkAttributedRef(sym): RefTree)
   locally(treeBuild.mkAttributedSelect(tree, sym): RefTree)
   locally(treeBuild.mkAttributedThis(sym): This)
-  locally(
-      mkImporter(scala.reflect.runtime.universe): Importer {
+  locally(mkImporter(scala.reflect.runtime.universe): Importer {
     val from: scala.reflect.runtime.universe.type
   })
   locally(treeBuild.mkMethodCall(sym, trees): Tree)
@@ -121,8 +120,8 @@ object Test extends App {
   locally(sym.newClassSymbol(tyname, pos, flags): ClassSymbol)
   locally(sym.newMethodSymbol(tename, pos, flags): MethodSymbol)
   locally(
-      sym.newModuleAndClassSymbol(name, pos, flags): (ModuleSymbol,
-      ClassSymbol))
+    sym.newModuleAndClassSymbol(name, pos, flags): (ModuleSymbol, ClassSymbol)
+  )
   locally(newScopeWith(sym, sym, sym): Scope)
   locally(sym.newTermSymbol(tename, pos, flags): TermSymbol)
   locally(sym.newTypeSymbol(tyname, pos, flags): TypeSymbol)

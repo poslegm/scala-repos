@@ -14,9 +14,10 @@ object Implicits {
     def apply(t: T, v: V): R
   }
   object Sequencer extends LowPriSequencer {
-    def apply[T, V, R](f: (T, V) => R) = new Sequencer[T, V, R] {
-      def apply(t: T, v: V): R = f(t, v)
-    }
+    def apply[T, V, R](f: (T, V) => R) =
+      new Sequencer[T, V, R] {
+        def apply(t: T, v: V): R = f(t, v)
+      }
     implicit def SingleSequencer[T]: Sequencer[Unit, T, T] =
       Sequencer((_, t) => t)
   }
@@ -36,18 +37,18 @@ object Implicits {
   object Repeater extends LowPriRepeater {
     implicit object UnitRepeater extends Repeater[Unit, Unit] {
       type Acc = Unit
-      def initial = ()
+      def initial                        = ()
       def accumulate(t: Unit, acc: Unit) = acc
-      def result(acc: Unit) = ()
+      def result(acc: Unit)              = ()
     }
   }
   trait LowPriRepeater {
     implicit def GenericRepeaterImplicit[T] = GenericRepeater[T]()
     case class GenericRepeater[T]() extends Repeater[T, Seq[T]] {
       type Acc = mutable.Buffer[T]
-      def initial = mutable.Buffer.empty[T]
+      def initial                                  = mutable.Buffer.empty[T]
       def accumulate(t: T, acc: mutable.Buffer[T]) = acc += t
-      def result(acc: mutable.Buffer[T]) = acc
+      def result(acc: mutable.Buffer[T])           = acc
     }
   }
 
@@ -58,14 +59,14 @@ object Implicits {
 
   object Optioner extends LowPriOptioner {
     implicit object UnitOptioner extends Optioner[Unit, Unit] {
-      def none = ()
+      def none              = ()
       def some(value: Unit) = ()
     }
   }
   trait LowPriOptioner {
     implicit def GenericOptionerImplicit[T] = GenericOptioner[T]()
     case class GenericOptioner[T]() extends Optioner[T, Option[T]] {
-      def none = None
+      def none           = None
       def some(value: T) = Some(value)
     }
   }

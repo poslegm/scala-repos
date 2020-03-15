@@ -19,10 +19,11 @@ trait EtaExpansion { self: Analyzer =>
   import global._
 
   object etaExpansion {
-    private def isMatch(vparam: ValDef, arg: Tree) = arg match {
-      case Ident(name) => vparam.name == name
-      case _ => false
-    }
+    private def isMatch(vparam: ValDef, arg: Tree) =
+      arg match {
+        case Ident(name) => vparam.name == name
+        case _           => false
+      }
 
     def unapply(tree: Tree): Option[(List[ValDef], Tree, List[Tree])] =
       tree match {
@@ -71,7 +72,10 @@ trait EtaExpansion { self: Analyzer =>
             val rhs =
               if (byName) {
                 val res = typer.typed(Function(List(), tree))
-                new ChangeOwnerTraverser(typer.context.owner, res.symbol) traverse tree // SI-6274
+                new ChangeOwnerTraverser(
+                  typer.context.owner,
+                  res.symbol
+                ) traverse tree // SI-6274
                 res
               } else tree
             ValDef(Modifiers(SYNTHETIC), vname.toTermName, TypeTree(), rhs)
@@ -103,7 +107,9 @@ trait EtaExpansion { self: Analyzer =>
           treeCopy.TypeApply(tree, liftoutPrefix(fn), args).clearType()
         case Select(qual, name) =>
           val name = tree.symbol.name // account for renamed imports, SI-7233
-          treeCopy.Select(tree, liftout(qual, byName = false), name).clearType() setSymbol NoSymbol
+          treeCopy
+            .Select(tree, liftout(qual, byName = false), name)
+            .clearType() setSymbol NoSymbol
         case Ident(name) =>
           tree
       }
@@ -112,31 +118,34 @@ trait EtaExpansion { self: Analyzer =>
     }
 
     /* Eta-expand lifted tree. */
-    def expand(tree: Tree, tpe: Type): Tree = tpe match {
-      case mt @ MethodType(paramSyms, restpe) if !mt.isImplicit =>
-        val params: List[(ValDef, Boolean)] = paramSyms.map { sym =>
-          val origTpe = sym.tpe
-          val isRepeated = definitions.isRepeatedParamType(origTpe)
-          // SI-4176 Don't leak A* in eta-expanded function types. See t4176b.scala
-          val droppedStarTpe =
-            if (settings.etaExpandKeepsStar) origTpe
-            else dropIllegalStarTypes(origTpe)
-          val valDef = ValDef(Modifiers(SYNTHETIC | PARAM),
-                              sym.name.toTermName,
-                              TypeTree(droppedStarTpe),
-                              EmptyTree)
-          (valDef, isRepeated)
-        }
-        atPos(tree.pos.makeTransparent) {
-          val args = params.map {
-            case (valDef, isRepeated) =>
-              gen.paramToArg(Ident(valDef.name), isRepeated)
+    def expand(tree: Tree, tpe: Type): Tree =
+      tpe match {
+        case mt @ MethodType(paramSyms, restpe) if !mt.isImplicit =>
+          val params: List[(ValDef, Boolean)] = paramSyms.map { sym =>
+            val origTpe    = sym.tpe
+            val isRepeated = definitions.isRepeatedParamType(origTpe)
+            // SI-4176 Don't leak A* in eta-expanded function types. See t4176b.scala
+            val droppedStarTpe =
+              if (settings.etaExpandKeepsStar) origTpe
+              else dropIllegalStarTypes(origTpe)
+            val valDef = ValDef(
+              Modifiers(SYNTHETIC | PARAM),
+              sym.name.toTermName,
+              TypeTree(droppedStarTpe),
+              EmptyTree
+            )
+            (valDef, isRepeated)
           }
-          Function(params.map(_._1), expand(Apply(tree, args), restpe))
-        }
-      case _ =>
-        tree
-    }
+          atPos(tree.pos.makeTransparent) {
+            val args = params.map {
+              case (valDef, isRepeated) =>
+                gen.paramToArg(Ident(valDef.name), isRepeated)
+            }
+            Function(params.map(_._1), expand(Apply(tree, args), restpe))
+          }
+        case _ =>
+          tree
+      }
 
     val tree1 = liftoutPrefix(tree)
     atPos(tree.pos)(Block(defs.toList, expand(tree1, tpe)))

@@ -79,8 +79,9 @@ class NatMacros(val c: whitebox.Context) extends NatMacroDefns {
       case NatLiteral(n) => mkNatValue(n)
       case _ =>
         c.abort(
-            c.enclosingPosition,
-            s"Expression $i does not evaluate to a non-negative Int literal")
+          c.enclosingPosition,
+          s"Expression $i does not evaluate to a non-negative Int literal"
+        )
     }
 }
 
@@ -93,13 +94,13 @@ trait NatMacroDefns {
     def unapply(i: Tree): Option[Int] =
       i match {
         case Literal(Constant(n: Int)) if n >= 0 => Some(n)
-        case _ => None
+        case _                                   => None
       }
   }
 
   def mkNatTpt(i: Int): Tree = {
     val succSym = typeOf[Succ[_]].typeConstructor.typeSymbol
-    val _0Sym = typeOf[_0].typeSymbol
+    val _0Sym   = typeOf[_0].typeSymbol
 
     @tailrec
     def loop(i: Int, acc: Tree): Tree = {
@@ -112,7 +113,7 @@ trait NatMacroDefns {
 
   def mkNatTpe(i: Int): Type = {
     val succTpe = typeOf[Succ[_]].typeConstructor
-    val _0Tpe = typeOf[_0]
+    val _0Tpe   = typeOf[_0]
 
     @tailrec
     def loop(i: Int, acc: Type): Type = {

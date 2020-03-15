@@ -20,11 +20,13 @@ import akka.stream.testkit.scaladsl.TestSource
 import akka.testkit.AkkaSpec
 
 class FlowStageSpec
-    extends AkkaSpec(ConfigFactory.parseString(
-            "akka.actor.debug.receive=off\nakka.loglevel=INFO")) {
+    extends AkkaSpec(
+      ConfigFactory
+        .parseString("akka.actor.debug.receive=off\nakka.loglevel=INFO")
+    ) {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 2)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 2)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -34,13 +36,14 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new PushStage[Int, Int] {
+          new PushStage[Int, Int] {
             var tot = 0
             override def onPush(elem: Int, ctx: Context[Int]) = {
               tot += elem
               ctx.push(tot)
             }
-        })
+          }
+        )
         .runWith(Sink.asPublisher(false))
       val subscriber = TestSubscriber.manualProbe[Int]()
       p2.subscribe(subscriber)
@@ -59,7 +62,7 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
+          new StatefulStage[Int, Int] {
             var tot = 0
 
             lazy val waitForNext = new State {
@@ -72,11 +75,13 @@ class FlowStageSpec
             override def initial = waitForNext
 
             override def onUpstreamFinish(
-                ctx: Context[Int]): TerminationDirective = {
+                ctx: Context[Int]
+            ): TerminationDirective = {
               if (current eq waitForNext) ctx.finish()
               else ctx.absorbTermination()
             }
-        })
+          }
+        )
         .runWith(Sink.asPublisher(false))
       val subscriber = TestSubscriber.manualProbe[Int]()
       p2.subscribe(subscriber)
@@ -96,7 +101,7 @@ class FlowStageSpec
     "produce one-to-several transformation with state change" in {
       val p = Source(List(3, 2, 1, 0, 1, 12))
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
+          new StatefulStage[Int, Int] {
             // a transformer that
             //  - for the first element, returns n times 42
             //  - echos the remaining elements (can be reset to the duplication state by getting `0`)
@@ -114,7 +119,8 @@ class FlowStageSpec
                   ctx.pull()
                 } else ctx.push(elem)
             }
-        })
+          }
+        )
         .runWith(Sink.asPublisher(false))
 
       val subscriber = TestSubscriber.manualProbe[Int]()
@@ -145,14 +151,15 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new PushStage[Int, Int] {
+          new PushStage[Int, Int] {
             var tot = 0
             override def onPush(elem: Int, ctx: Context[Int]) = {
               tot += elem
               if (elem % 2 == 0) ctx.pull()
               else ctx.push(tot)
             }
-        })
+          }
+        )
         .runWith(Sink.asPublisher(false))
       val subscriber = TestSubscriber.manualProbe[Int]()
       p2.subscribe(subscriber)
@@ -171,26 +178,28 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new PushStage[String, Int] {
+          new PushStage[String, Int] {
             var concat = ""
             override def onPush(elem: String, ctx: Context[Int]) = {
               concat += elem
               ctx.push(concat.length)
             }
-        })
+          }
+        )
         .transform(() ⇒
-              new PushStage[Int, Int] {
+          new PushStage[Int, Int] {
             var tot = 0
             override def onPush(length: Int, ctx: Context[Int]) = {
               tot += length
               ctx.push(tot)
             }
-        })
+          }
+        )
         .runWith(Sink.asPublisher(true))
       val c1 = TestSubscriber.manualProbe[Int]()
       p2.subscribe(c1)
       val sub1 = c1.expectSubscription()
-      val c2 = TestSubscriber.manualProbe[Int]()
+      val c2   = TestSubscriber.manualProbe[Int]()
       p2.subscribe(c2)
       val sub2 = c2.expectSubscription()
       sub1.request(1)
@@ -213,17 +222,19 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new StatefulStage[String, String] {
+          new StatefulStage[String, String] {
             var s = ""
-            override def initial = new State {
-              override def onPush(element: String, ctx: Context[String]) = {
-                s += element
-                ctx.pull()
+            override def initial =
+              new State {
+                override def onPush(element: String, ctx: Context[String]) = {
+                  s += element
+                  ctx.pull()
+                }
               }
-            }
             override def onUpstreamFinish(ctx: Context[String]) =
               terminationEmit(Iterator.single(s + "B"), ctx)
-        })
+          }
+        )
         .runWith(Sink.asPublisher(false))
       val c = TestSubscriber.manualProbe[String]()
       p2.subscribe(c)
@@ -237,14 +248,15 @@ class FlowStageSpec
       val (p1, p2) = TestSource
         .probe[Int]
         .transform(() ⇒
-              new PushStage[Int, Int] {
+          new PushStage[Int, Int] {
             var s = ""
             override def onPush(element: Int, ctx: Context[Int]) = {
               s += element
               if (s == "1") ctx.pushAndFinish(element)
               else ctx.push(element)
             }
-        })
+          }
+        )
         .toMat(TestSink.probe[Int])(Keep.both)
         .run
       p2.request(10)
@@ -258,21 +270,26 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
-            override def initial = new State {
-              override def onPush(elem: Int, ctx: Context[Int]) = {
-                if (elem == 2) {
-                  throw new IllegalArgumentException("two not allowed")
-                } else {
-                  emit(Iterator(elem, elem), ctx)
+          new StatefulStage[Int, Int] {
+            override def initial =
+              new State {
+                override def onPush(elem: Int, ctx: Context[Int]) = {
+                  if (elem == 2) {
+                    throw new IllegalArgumentException("two not allowed")
+                  } else {
+                    emit(Iterator(elem, elem), ctx)
+                  }
                 }
               }
-            }
-        })
+          }
+        )
         .runWith(TestSink.probe[Int])
       EventFilter[IllegalArgumentException]("two not allowed") intercept {
-        p2.request(100).expectNext(1).expectNext(1).expectError().getMessage should be(
-            "two not allowed")
+        p2.request(100)
+          .expectNext(1)
+          .expectNext(1)
+          .expectError()
+          .getMessage should be("two not allowed")
         p2.expectNoMsg(200.millis)
       }
     }
@@ -282,21 +299,26 @@ class FlowStageSpec
       val p2 = Source
         .fromPublisher(p)
         .map(elem ⇒
-              if (elem == 2)
-                throw new IllegalArgumentException("two not allowed")
-              else elem)
+          if (elem == 2)
+            throw new IllegalArgumentException("two not allowed")
+          else elem
+        )
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
-            override def initial = new State {
-              override def onPush(elem: Int, ctx: Context[Int]) =
-                ctx.push(elem)
-            }
+          new StatefulStage[Int, Int] {
+            override def initial =
+              new State {
+                override def onPush(elem: Int, ctx: Context[Int]) =
+                  ctx.push(elem)
+              }
 
-            override def onUpstreamFailure(cause: Throwable,
-                                           ctx: Context[Int]) = {
+            override def onUpstreamFailure(
+                cause: Throwable,
+                ctx: Context[Int]
+            ) = {
               terminationEmit(Iterator(100, 101), ctx)
             }
-        })
+          }
+        )
         .filter(elem ⇒ elem != 1)
         . // it's undefined if element 1 got through before the error or not
         runWith(TestSink.probe[Int])
@@ -314,12 +336,14 @@ class FlowStageSpec
       val received = Source
         .fromPublisher(p)
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
-            override def initial = new State {
-              override def onPush(elem: Int, ctx: Context[Int]) =
-                emit(Iterator(elem, elem), ctx)
-            }
-        })
+          new StatefulStage[Int, Int] {
+            override def initial =
+              new State {
+                override def onPush(elem: Int, ctx: Context[Int]) =
+                  emit(Iterator(elem, elem), ctx)
+              }
+          }
+        )
         .runWith(TestSink.probe[Int])
         .request(1000)
         .expectNext(1)
@@ -339,13 +363,15 @@ class FlowStageSpec
       Source
         .fromPublisher(p)
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
-            override def initial = new State {
-              override def onPush(elem: Int, ctx: Context[Int]) = ctx.pull()
-            }
+          new StatefulStage[Int, Int] {
+            override def initial =
+              new State {
+                override def onPush(elem: Int, ctx: Context[Int]) = ctx.pull()
+              }
             override def onUpstreamFinish(ctx: Context[Int]) =
               terminationEmit(Iterator(1, 2, 3), ctx)
-        })
+          }
+        )
         .runWith(TestSink.probe[Int])
         .request(4)
         .expectNext(1)
@@ -357,9 +383,9 @@ class FlowStageSpec
     "support converting onComplete into onError" in {
       Source(List(5, 1, 2, 3))
         .transform(() ⇒
-              new PushStage[Int, Int] {
+          new PushStage[Int, Int] {
             var expectedNumberOfElements: Option[Int] = None
-            var count = 0
+            var count                                 = 0
             override def onPush(elem: Int, ctx: Context[Int]) =
               if (expectedNumberOfElements.isEmpty) {
                 expectedNumberOfElements = Some(elem)
@@ -373,10 +399,11 @@ class FlowStageSpec
               expectedNumberOfElements match {
                 case Some(expected) if count != expected ⇒
                   throw new RuntimeException(s"Expected $expected, got $count")
-                  with NoStackTrace
+                    with NoStackTrace
                 case _ ⇒ ctx.finish()
               }
-        })
+          }
+        )
         .runWith(TestSink.probe[Int])
         .request(10)
         .expectNext(1)
@@ -387,16 +414,16 @@ class FlowStageSpec
     }
 
     "be safe to reuse" in {
-      val flow = Source(1 to 3).transform(
-          () ⇒
-            new PushStage[Int, Int] {
+      val flow = Source(1 to 3).transform(() ⇒
+        new PushStage[Int, Int] {
           var count = 0
 
           override def onPush(elem: Int, ctx: Context[Int]) = {
             count += 1
             ctx.push(count)
           }
-      })
+        }
+      )
 
       flow
         .runWith(TestSink.probe[Int])
@@ -413,19 +440,21 @@ class FlowStageSpec
 
     "handle early cancelation" in assertAllStagesStopped {
       val onDownstreamFinishProbe = TestProbe()
-      val down = TestSubscriber.manualProbe[Int]()
+      val down                    = TestSubscriber.manualProbe[Int]()
       val s = Source
         .asSubscriber[Int]
         .transform(() ⇒
-              new PushStage[Int, Int] {
+          new PushStage[Int, Int] {
             override def onPush(elem: Int, ctx: Context[Int]) =
               ctx.push(elem)
             override def onDownstreamFinish(
-                ctx: Context[Int]): TerminationDirective = {
+                ctx: Context[Int]
+            ): TerminationDirective = {
               onDownstreamFinishProbe.ref ! "onDownstreamFinish"
               ctx.finish()
             }
-        })
+          }
+        )
         .to(Sink.fromSubscriber(down))
         .run()
 
@@ -444,16 +473,19 @@ class FlowStageSpec
       val flow = Source
         .fromPublisher(in)
         .transform(() ⇒
-              new StatefulStage[Int, Int] {
+          new StatefulStage[Int, Int] {
 
-            def initial: StageState[Int, Int] = new State {
-              override def onPush(element: Int, ctx: Context[Int]) =
-                ctx.pushAndFinish(element)
-            }
+            def initial: StageState[Int, Int] =
+              new State {
+                override def onPush(element: Int, ctx: Context[Int]) =
+                  ctx.pushAndFinish(element)
+              }
             override def onUpstreamFinish(
-                ctx: Context[Int]): TerminationDirective =
+                ctx: Context[Int]
+            ): TerminationDirective =
               terminationEmit(Iterator(42), ctx)
-        })
+          }
+        )
         .runWith(Sink.asPublisher(false))
 
       val inSub = in.expectSubscription()
@@ -465,7 +497,9 @@ class FlowStageSpec
       inSub.sendNext(23)
       inSub.sendComplete()
 
-      outSub.request(1) // it depends on this line, i.e. generating backpressure between buffer and stage execution
+      outSub.request(
+        1
+      ) // it depends on this line, i.e. generating backpressure between buffer and stage execution
 
       out.expectNext(23)
       out.expectComplete()
@@ -475,15 +509,17 @@ class FlowStageSpec
       Source
         .single("hi")
         .transform(() ⇒
-              new StatefulStage[String, String] {
-            override def initial = new State {
-              override def onPush(elem: String, ctx: Context[String]) =
-                emit(Iterator(elem + "1", elem + "2"), ctx)
-            }
+          new StatefulStage[String, String] {
+            override def initial =
+              new State {
+                override def onPush(elem: String, ctx: Context[String]) =
+                  emit(Iterator(elem + "1", elem + "2"), ctx)
+              }
             override def onUpstreamFinish(ctx: Context[String]) = {
               terminationEmit(Iterator("byebye"), ctx)
             }
-        })
+          }
+        )
         .runWith(TestSink.probe[String])
         .request(1)
         .expectNext("hi1")

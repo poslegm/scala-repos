@@ -26,8 +26,8 @@ import org.apache.spark.sql.SQLContext
 
 object MinMaxScalerExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("MinMaxScalerExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("MinMaxScalerExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$

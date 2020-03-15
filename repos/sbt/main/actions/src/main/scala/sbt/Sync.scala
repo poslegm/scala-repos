@@ -22,36 +22,36 @@ import sbt.io.IO
   * It is safe to use for its intended purpose: copying resources to a class output directory.
   */
 object Sync {
-  def apply(cacheFile: File,
-            inStyle: FileInfo.Style = FileInfo.lastModified,
-            outStyle: FileInfo.Style = FileInfo.exists)
-    : Traversable[(File, File)] => Relation[File, File] =
-    mappings =>
-      {
-        val relation = Relation.empty ++ mappings
-        noDuplicateTargets(relation)
-        val currentInfo = relation._1s.map(s => (s, inStyle(s))).toMap
+  def apply(
+      cacheFile: File,
+      inStyle: FileInfo.Style = FileInfo.lastModified,
+      outStyle: FileInfo.Style = FileInfo.exists
+  ): Traversable[(File, File)] => Relation[File, File] =
+    mappings => {
+      val relation = Relation.empty ++ mappings
+      noDuplicateTargets(relation)
+      val currentInfo = relation._1s.map(s => (s, inStyle(s))).toMap
 
-        val (previousRelation, previousInfo) =
-          readInfo(cacheFile)(inStyle.format)
-        val removeTargets = previousRelation._2s -- relation._2s
+      val (previousRelation, previousInfo) =
+        readInfo(cacheFile)(inStyle.format)
+      val removeTargets = previousRelation._2s -- relation._2s
 
-        def outofdate(source: File, target: File): Boolean =
-          !previousRelation.contains(source, target) ||
+      def outofdate(source: File, target: File): Boolean =
+        !previousRelation.contains(source, target) ||
           (previousInfo get source) != (currentInfo get source) ||
           !target.exists || target.isDirectory != source.isDirectory
 
-        val updates = relation filter outofdate
+      val updates = relation filter outofdate
 
-        val (cleanDirs, cleanFiles) =
-          (updates._2s ++ removeTargets).partition(_.isDirectory)
+      val (cleanDirs, cleanFiles) =
+        (updates._2s ++ removeTargets).partition(_.isDirectory)
 
-        IO.delete(cleanFiles)
-        IO.deleteIfEmpty(cleanDirs)
-        updates.all.foreach((copy _).tupled)
+      IO.delete(cleanFiles)
+      IO.deleteIfEmpty(cleanDirs)
+      updates.all.foreach((copy _).tupled)
 
-        writeInfo(cacheFile, relation, currentInfo)(inStyle.format)
-        relation
+      writeInfo(cacheFile, relation, currentInfo)(inStyle.format)
+      relation
     }
 
   def copy(source: File, target: File): Unit =
@@ -81,30 +81,33 @@ object Sync {
   //import sbt.inc.AnalysisFormats.{ fileFormat, relationFormat }
   implicit def fileFormat: Format[File] =
     wrap[File, String](_.getAbsolutePath, s => new File(s))
-  implicit def relationFormat[A, B](
-      implicit af: Format[Map[A, Set[B]]],
-      bf: Format[Map[B, Set[A]]]): Format[Relation[A, B]] =
-    asProduct2[Relation[A, B], Map[A, Set[B]], Map[B, Set[A]]](
-        Relation.make _)(r => (r.forwardMap, r.reverseMap))(af, bf)
+  implicit def relationFormat[A, B](implicit
+      af: Format[Map[A, Set[B]]],
+      bf: Format[Map[B, Set[A]]]
+  ): Format[Relation[A, B]] =
+    asProduct2[Relation[A, B], Map[A, Set[B]], Map[B, Set[A]]](Relation.make _)(
+      r => (r.forwardMap, r.reverseMap)
+    )(af, bf)
 
   def writeInfo[F <: FileInfo](
-      file: File, relation: Relation[File, File], info: Map[File, F])(
-      implicit infoFormat: Format[F]): Unit =
-    IO.gzipFileOut(file) { out =>
-      write(out, (relation, info))
-    }
+      file: File,
+      relation: Relation[File, File],
+      info: Map[File, F]
+  )(implicit infoFormat: Format[F]): Unit =
+    IO.gzipFileOut(file) { out => write(out, (relation, info)) }
 
   type RelationInfo[F] = (Relation[File, File], Map[File, F])
 
   def readInfo[F <: FileInfo](
-      file: File)(implicit infoFormat: Format[F]): RelationInfo[F] =
-    try { readUncaught(file)(infoFormat) } catch {
+      file: File
+  )(implicit infoFormat: Format[F]): RelationInfo[F] =
+    try { readUncaught(file)(infoFormat) }
+    catch {
       case e: IOException => (Relation.empty, Map.empty)
     }
 
-  def readUncaught[F <: FileInfo](file: File)(
-      implicit infoFormat: Format[F]): RelationInfo[F] =
-    IO.gzipFileIn(file) { in =>
-      read[RelationInfo[F]](in)
-    }
+  def readUncaught[F <: FileInfo](
+      file: File
+  )(implicit infoFormat: Format[F]): RelationInfo[F] =
+    IO.gzipFileIn(file) { in => read[RelationInfo[F]](in) }
 }

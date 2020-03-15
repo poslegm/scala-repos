@@ -7,7 +7,7 @@ package kafka.api
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -21,7 +21,7 @@ import kafka.network.RequestChannel
 import kafka.utils.Logging
 
 object Request {
-  val OrdinaryConsumerId: Int = -1
+  val OrdinaryConsumerId: Int  = -1
   val DebuggingConsumerId: Int = -2
 
   // Broker ids are non-negative int.
@@ -35,9 +35,11 @@ abstract class RequestOrResponse(val requestId: Option[Short] = None)
 
   def writeTo(buffer: ByteBuffer): Unit
 
-  def handleError(e: Throwable,
-                  requestChannel: RequestChannel,
-                  request: RequestChannel.Request): Unit = {}
+  def handleError(
+      e: Throwable,
+      requestChannel: RequestChannel,
+      request: RequestChannel.Request
+  ): Unit = {}
 
   /* The purpose of this API is to return a string description of the Request mainly for the purpose of request logging.
    *  This API has no meaning for a Response object.

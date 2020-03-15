@@ -39,9 +39,9 @@ object RemoteRoundRobinMultiJvmSpec extends MultiNodeConfig {
     override def resize(currentRoutees: immutable.IndexedSeq[Routee]): Int = 1
   }
 
-  val first = role("first")
+  val first  = role("first")
   val second = role("second")
-  val third = role("third")
+  val third  = role("third")
   val fourth = role("fourth")
 
   commonConfig(debugConfig(on = false))
@@ -74,8 +74,10 @@ class RemoteRoundRobinMultiJvmNode3 extends RemoteRoundRobinSpec
 class RemoteRoundRobinMultiJvmNode4 extends RemoteRoundRobinSpec
 
 class RemoteRoundRobinSpec
-    extends MultiNodeSpec(RemoteRoundRobinMultiJvmSpec) with STMultiNodeSpec
-    with ImplicitSender with DefaultTimeout {
+    extends MultiNodeSpec(RemoteRoundRobinMultiJvmSpec)
+    with STMultiNodeSpec
+    with ImplicitSender
+    with DefaultTimeout {
   import RemoteRoundRobinMultiJvmSpec._
 
   def initialParticipants = roles.size
@@ -90,23 +92,30 @@ class RemoteRoundRobinSpec
       runOn(fourth) {
         enterBarrier("start")
         val actor = system.actorOf(
-            RoundRobinPool(nrOfInstances = 0).props(Props[SomeActor]),
-            "service-hello")
+          RoundRobinPool(nrOfInstances = 0).props(Props[SomeActor]),
+          "service-hello"
+        )
         actor.isInstanceOf[RoutedActorRef] should ===(true)
 
         val connectionCount = 3
-        val iterationCount = 10
+        val iterationCount  = 10
 
         for (i ← 0 until iterationCount; k ← 0 until connectionCount) {
           actor ! "hit"
         }
 
         val replies: Map[Address, Int] = (receiveWhile(
-            5 seconds, messages = connectionCount * iterationCount) {
+          5 seconds,
+          messages = connectionCount * iterationCount
+        ) {
           case ref: ActorRef ⇒ ref.path.address
-        }).foldLeft(Map(node(first).address -> 0,
-                        node(second).address -> 0,
-                        node(third).address -> 0)) {
+        }).foldLeft(
+          Map(
+            node(first).address  -> 0,
+            node(second).address -> 0,
+            node(third).address  -> 0
+          )
+        ) {
           case (replyMap, address) ⇒
             replyMap + (address -> (replyMap(address) + 1))
         }
@@ -129,7 +138,8 @@ class RemoteRoundRobinSpec
 
   "A remote round robin pool with resizer" must {
     "be locally instantiated on a remote node after several resize rounds" in within(
-        5 seconds) {
+      5 seconds
+    ) {
 
       runOn(first, second, third) {
         enterBarrier("start", "broadcast-end", "end")
@@ -138,10 +148,11 @@ class RemoteRoundRobinSpec
       runOn(fourth) {
         enterBarrier("start")
         val actor =
-          system.actorOf(RoundRobinPool(nrOfInstances = 1,
-                                        resizer = Some(new TestResizer))
-                           .props(Props[SomeActor]),
-                         "service-hello2")
+          system.actorOf(
+            RoundRobinPool(nrOfInstances = 1, resizer = Some(new TestResizer))
+              .props(Props[SomeActor]),
+            "service-hello2"
+          )
         actor.isInstanceOf[RoutedActorRef] should ===(true)
 
         actor ! GetRoutees
@@ -166,7 +177,8 @@ class RemoteRoundRobinSpec
         repliesFrom.size should ===(7)
         val repliesFromAddresses = repliesFrom.map(_.path.address)
         repliesFromAddresses should ===(
-            Set(node(first), node(second), node(third)).map(_.address))
+          Set(node(first), node(second), node(third)).map(_.address)
+        )
 
         // shut down the actor before we let the other node(s) shut down so we don't try to send
         // "Terminate" to a shut down node
@@ -191,18 +203,24 @@ class RemoteRoundRobinSpec
         actor.isInstanceOf[RoutedActorRef] should ===(true)
 
         val connectionCount = 3
-        val iterationCount = 10
+        val iterationCount  = 10
 
         for (i ← 0 until iterationCount; k ← 0 until connectionCount) {
           actor ! "hit"
         }
 
         val replies: Map[Address, Int] = (receiveWhile(
-            5 seconds, messages = connectionCount * iterationCount) {
+          5 seconds,
+          messages = connectionCount * iterationCount
+        ) {
           case ref: ActorRef ⇒ ref.path.address
-        }).foldLeft(Map(node(first).address -> 0,
-                        node(second).address -> 0,
-                        node(third).address -> 0)) {
+        }).foldLeft(
+          Map(
+            node(first).address  -> 0,
+            node(second).address -> 0,
+            node(third).address  -> 0
+          )
+        ) {
           case (replyMap, address) ⇒
             replyMap + (address -> (replyMap(address) + 1))
         }

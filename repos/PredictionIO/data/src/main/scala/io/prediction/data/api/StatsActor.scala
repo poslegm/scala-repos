@@ -31,7 +31,7 @@ case class GetStats(val appId: Int)
 
 class StatsActor extends Actor {
   implicit val system = context.system
-  val log = Logging(system, this)
+  val log             = Logging(system, this)
 
   def getCurrent: DateTime = {
     DateTime.now
@@ -41,7 +41,7 @@ class StatsActor extends Actor {
   }
 
   var longLiveStats = new Stats(DateTime.now)
-  var hourlyStats = new Stats(getCurrent)
+  var hourlyStats   = new Stats(getCurrent)
 
   var prevHourlyStats = new Stats(getCurrent.minusHours(1))
   prevHourlyStats.cutoff(hourlyStats.startTime)
@@ -64,10 +64,12 @@ class StatsActor extends Actor {
     case Bookkeeping(appId, statusCode, event) =>
       bookkeeping(appId, statusCode, event)
     case GetStats(appId) =>
-      sender() ! Map("time" -> DateTime.now,
-                     "currentHour" -> hourlyStats.get(appId),
-                     "prevHour" -> prevHourlyStats.get(appId),
-                     "longLive" -> longLiveStats.get(appId))
+      sender() ! Map(
+        "time"        -> DateTime.now,
+        "currentHour" -> hourlyStats.get(appId),
+        "prevHour"    -> prevHourlyStats.get(appId),
+        "longLive"    -> longLiveStats.get(appId)
+      )
     case _ => log.error("Unknown message.")
   }
 }

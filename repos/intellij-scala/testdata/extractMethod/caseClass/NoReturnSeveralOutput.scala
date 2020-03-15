@@ -3,9 +3,9 @@ class NoReturnSeveralOutput {
   def foo(i: Int) {
     /*start*/
 
-    val x = 0
-    val y = "a"
-    val z = 1
+    val x  = 0
+    val y  = "a"
+    val z  = 1
     val zz = "1"
     /*end*/
     println(x + y + z + zz)

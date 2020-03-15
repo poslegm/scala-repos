@@ -3,12 +3,13 @@ package breeze.optimize
 import breeze.util.SerializableLogging
 
 abstract class CubicLineSearch
-    extends SerializableLogging with MinimizingLineSearch {
+    extends SerializableLogging
+    with MinimizingLineSearch {
   import scala.math._
 
   case class Bracket(
-      t: Double, // 1d line search parameter
-      dd: Double, // Directional Derivative at t
+      t: Double,   // 1d line search parameter
+      dd: Double,  // Directional Derivative at t
       fval: Double // Function value at t
   )
 
@@ -25,10 +26,10 @@ abstract class CubicLineSearch
    */
   def interp(l: Bracket, r: Bracket) = {
     // See N&W p57 actual for an explanation of the math
-    val d1 = l.dd + r.dd - 3 * (l.fval - r.fval) / (l.t - r.t)
-    val d2 = sqrt(d1 * d1 - l.dd * r.dd)
+    val d1        = l.dd + r.dd - 3 * (l.fval - r.fval) / (l.t - r.t)
+    val d2        = sqrt(d1 * d1 - l.dd * r.dd)
     val multipler = r.t - l.t
-    val t = r.t - multipler * (r.dd + d2 - d1) / (r.dd - l.dd + 2 * d2)
+    val t         = r.t - multipler * (r.dd + d2 - d1) / (r.dd - l.dd + 2 * d2)
 
     // If t is too close to either end bracket, move it closer to the middle
 
@@ -72,14 +73,15 @@ class StrongWolfeLineSearch(maxZoomIter: Int, maxLineSearchIter: Int)
       Bracket(t = t, dd = pdd, fval = pval)
     }
 
-    var t = init // Search's current multiple of pk
-    var low = phi(0.0)
+    var t    = init // Search's current multiple of pk
+    var low  = phi(0.0)
     val fval = low.fval
-    val dd = low.dd
+    val dd   = low.dd
 
     if (dd > 0) {
       throw new FirstOrderException(
-          "Line search invoked with non-descent direction: " + dd)
+        "Line search invoked with non-descent direction: " + dd
+      )
     }
 
     /**
@@ -96,7 +98,7 @@ class StrongWolfeLineSearch(maxZoomIter: Int, maxLineSearchIter: Int)
     def zoom(linit: Bracket, rinit: Bracket): Double = {
 
       var low = linit
-      var hi = rinit
+      var hi  = rinit
 
       for (i <- 0 until maxZoomIter) {
         // Interp assumes left less than right in t value, so flip if needed
@@ -105,8 +107,10 @@ class StrongWolfeLineSearch(maxZoomIter: Int, maxLineSearchIter: Int)
         // Evaluate objective at t, and build bracket
         val c = phi(t)
         //logger.debug("ZOOM:\n c: " + c + " \n l: " + low + " \nr: " + hi)
-        logger.info("Line search t: " + t + " fval: " + c.fval + " rhs: " +
-            (fval + c1 * c.t * dd) + " cdd: " + c.dd)
+        logger.info(
+          "Line search t: " + t + " fval: " + c.fval + " rhs: " +
+            (fval + c1 * c.t * dd) + " cdd: " + c.dd
+        )
 
         ///////////////
         /// Update left or right bracket, or both
@@ -150,14 +154,16 @@ class StrongWolfeLineSearch(maxZoomIter: Int, maxLineSearchIter: Int)
           java.lang.Double.isNaN(c.fval)) {
         t /= 2.0
         logger.error(
-            "Encountered bad values in function evaluation. Decreasing step size to " +
-            t)
+          "Encountered bad values in function evaluation. Decreasing step size to " +
+            t
+        )
       } else {
 
         // Zoom if "sufficient decrease" condition is not satisfied
         if ((c.fval > fval + c1 * t * dd) || (c.fval >= low.fval && i > 0)) {
           logger.debug(
-              "Line search t: " + t + " fval: " + c.fval + " cdd: " + c.dd)
+            "Line search t: " + t + " fval: " + c.fval + " cdd: " + c.dd
+          )
           return zoom(low, c)
         }
 
@@ -171,16 +177,19 @@ class StrongWolfeLineSearch(maxZoomIter: Int, maxLineSearchIter: Int)
         // Occurs if we skipped over the nearest local minimum
         // over to the next one.
         if (c.dd >= 0) {
-          logger.debug("Line search t: " + t + " fval: " + c.fval + " rhs: " +
-              (fval + c1 * t * dd) + " cdd: " + c.dd)
+          logger.debug(
+            "Line search t: " + t + " fval: " + c.fval + " rhs: " +
+              (fval + c1 * t * dd) + " cdd: " + c.dd
+          )
           return zoom(c, low)
         }
 
         low = c
         t *= 1.5
         logger.debug(
-            "Sufficent Decrease condition but not curvature condition satisfied. Increased t to: " +
-            t)
+          "Sufficent Decrease condition but not curvature condition satisfied. Increased t to: " +
+            t
+        )
       }
     }
 

@@ -49,7 +49,7 @@ class PromiseTest extends FunSuite {
   }
 
   test("Detached promises are no longer connected: Success") {
-    val p = Promise[Unit]()
+    val p   = Promise[Unit]()
     val att = Promise.attached(p)
     att.detach()
     val e = new Exception()
@@ -60,7 +60,7 @@ class PromiseTest extends FunSuite {
   }
 
   test("Detached promises are no longer connected: Failure") {
-    val p = Promise[Unit]()
+    val p   = Promise[Unit]()
     val att = Promise.attached(p)
     att.detach()
     val e = new Exception()
@@ -72,7 +72,7 @@ class PromiseTest extends FunSuite {
 
   test("become not allowed when already satisfied") {
     val value = "hellohello"
-    val p = new Promise[String]()
+    val p     = new Promise[String]()
     p.setValue(value)
 
     val ex = intercept[IllegalStateException] {
@@ -82,8 +82,8 @@ class PromiseTest extends FunSuite {
   }
 
   test("Updating a Promise more than once should fail") {
-    val p = new Promise[Int]()
-    val first = Return(1)
+    val p      = new Promise[Int]()
+    val first  = Return(1)
     val second = Return(2)
 
     p.update(first)
@@ -120,8 +120,8 @@ class PromiseTest extends FunSuite {
   }
 
   test("Promise.respond should monitor fatal exceptions") {
-    val p = new Promise[Int]
-    val m = new HandledMonitor()
+    val p   = new Promise[Int]
+    val m   = new HandledMonitor()
     val exc = new NoSuchMethodException
 
     Monitor.using(m) {
@@ -134,9 +134,9 @@ class PromiseTest extends FunSuite {
   }
 
   test("Promise.transform should monitor fatal exceptions") {
-    val m = new HandledMonitor()
+    val m   = new HandledMonitor()
     val exc = new NoSuchMethodException
-    val p = new Promise[Int]
+    val p   = new Promise[Int]
 
     Monitor.using(m) {
       p transform { case _ => throw exc }

@@ -14,11 +14,12 @@ class MissingRequirementError private (msg: String) extends FatalError(msg) {
 }
 
 object MissingRequirementError {
-  private val suffix = " not found."
-  def signal(msg: String): Nothing = throw new MissingRequirementError(msg)
+  private val suffix                 = " not found."
+  def signal(msg: String): Nothing   = throw new MissingRequirementError(msg)
   def notFound(req: String): Nothing = signal(req + suffix)
-  def unapply(x: Throwable): Option[String] = x match {
-    case x: MissingRequirementError => Some(x.req)
-    case _ => None
-  }
+  def unapply(x: Throwable): Option[String] =
+    x match {
+      case x: MissingRequirementError => Some(x.req)
+      case _                          => None
+    }
 }

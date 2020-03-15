@@ -2,9 +2,9 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Split` */
-final class SplitOps[F[_, _], A, B] private[syntax](val self: F[A, B])(
-    implicit val F: Split[F])
-    extends Ops[F[A, B]] {
+final class SplitOps[F[_, _], A, B] private[syntax] (val self: F[A, B])(
+    implicit val F: Split[F]
+) extends Ops[F[A, B]] {
   ////
   final def -*-[C, D](k: F[C, D]): F[(A, C), (B, D)] =
     F.split(self, k)
@@ -22,7 +22,8 @@ trait ToSplitOps extends ToSplitOps0 with ToComposeOps {
     new SplitOps[F, A, B](v)
 
   implicit def ToSplitVFromKleisliLike[G[_], F[G[_], _, _], A, B](
-      v: F[G, A, B])(implicit F0: Split[F[G, ?, ?]]) =
+      v: F[G, A, B]
+  )(implicit F0: Split[F[G, ?, ?]]) =
     new SplitOps[F[G, ?, ?], A, B](v)(F0)
 
   ////

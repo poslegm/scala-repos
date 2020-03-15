@@ -14,8 +14,10 @@ import org.ensime.util.file._
   * (which also tests the file watchers).
   */
 class CompileTimingTest
-    extends EnsimeSpec with IsolatedEnsimeConfigFixture
-    with IsolatedTestKitFixture with IsolatedProjectFixture {
+    extends EnsimeSpec
+    with IsolatedEnsimeConfigFixture
+    with IsolatedTestKitFixture
+    with IsolatedProjectFixture {
 
   val original = EnsimeConfigFixture.TimingTestProject
 
@@ -29,11 +31,11 @@ class CompileTimingTest
 
           val example = sourceRoot / "p1/Example.scala"
 
-          val target = (mainTarget / "..").canon
+          val target    = (mainTarget / "..").canon
           val targetBak = (target / "../scala-classes.bak").canon
 
           val exampleDiskInfo = SourceFileInfo(example, None, None)
-          val exampleMemory = SourceFileInfo(example, None, Some(example))
+          val exampleMemory   = SourceFileInfo(example, None, Some(example))
 
           FileUtils.copyDirectory(target, targetBak)
 
@@ -42,10 +44,12 @@ class CompileTimingTest
           asyncHelper.expectMsg(FullTypeCheckCompleteEvent)
 
           // GUI usually responds to each typecheck by requesting symbols
-          project ! SymbolDesignationsReq(Right(exampleDiskInfo),
-                                          0,
-                                          70,
-                                          SourceSymbol.allSymbols)
+          project ! SymbolDesignationsReq(
+            Right(exampleDiskInfo),
+            0,
+            70,
+            SourceSymbol.allSymbols
+          )
           expectMsgType[SymbolDesignations]
 
           // typecheck an in-memory version of the file
@@ -53,40 +57,46 @@ class CompileTimingTest
           expectMsg(VoidResponse)
 
           asyncHelper.expectMsg(FullTypeCheckCompleteEvent)
-          project ! SymbolDesignationsReq(Right(exampleMemory),
-                                          0,
-                                          70,
-                                          SourceSymbol.allSymbols)
+          project ! SymbolDesignationsReq(
+            Right(exampleMemory),
+            0,
+            70,
+            SourceSymbol.allSymbols
+          )
           expectMsgType[SymbolDesignations]
 
           // simulate sbt clean https://github.com/sbt/sbt/issues/106
           FileUtils.deleteDirectory(target)
 
           asyncHelper.receiveN(2) should contain theSameElementsAs
-          (Seq(
-                  FullTypeCheckCompleteEvent,
-                  CompilerRestartedEvent
-              ))
+            (Seq(
+              FullTypeCheckCompleteEvent,
+              CompilerRestartedEvent
+            ))
 
-          project ! SymbolDesignationsReq(Right(exampleDiskInfo),
-                                          0,
-                                          70,
-                                          SourceSymbol.allSymbols)
+          project ! SymbolDesignationsReq(
+            Right(exampleDiskInfo),
+            0,
+            70,
+            SourceSymbol.allSymbols
+          )
           expectMsgType[SymbolDesignations]
 
           // simulate sbt compile
           FileUtils.copyDirectory(targetBak, target)
 
           asyncHelper.receiveN(2) should contain theSameElementsAs
-          (Seq(
-                  FullTypeCheckCompleteEvent,
-                  CompilerRestartedEvent
-              ))
+            (Seq(
+              FullTypeCheckCompleteEvent,
+              CompilerRestartedEvent
+            ))
 
-          project ! SymbolDesignationsReq(Right(exampleDiskInfo),
-                                          0,
-                                          70,
-                                          SourceSymbol.allSymbols)
+          project ! SymbolDesignationsReq(
+            Right(exampleDiskInfo),
+            0,
+            70,
+            SourceSymbol.allSymbols
+          )
           expectMsgType[SymbolDesignations]
         }
       }

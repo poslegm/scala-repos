@@ -56,7 +56,8 @@ trait PsiMethodFake extends PsiMethod {
   def getReturnTypeElement: PsiTypeElement = null
 
   def findSuperMethodSignaturesIncludingStatic(
-      checkAccess: Boolean): List[MethodSignatureBackedByPsiMethod] =
+      checkAccess: Boolean
+  ): List[MethodSignatureBackedByPsiMethod] =
     new ArrayList[MethodSignatureBackedByPsiMethod]()
 
   def findSuperMethods: Array[PsiMethod] = PsiMethod.EMPTY_ARRAY

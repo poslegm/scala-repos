@@ -49,7 +49,8 @@ object HttpServer {
         continue(request)
       } else {
         Future.exception(
-            new IllegalArgumentException("You don't know the secret"))
+          new IllegalArgumentException("You don't know the secret")
+        )
       }
     }
   }
@@ -67,8 +68,8 @@ object HttpServer {
 
   def main(args: Array[String]) {
     val handleExceptions = new HandleExceptions
-    val authorize = new Authorize
-    val respond = new Respond
+    val authorize        = new Authorize
+    val respond          = new Respond
 
     // compose the Filters and Service together:
     val myService: Service[Request, Response] =

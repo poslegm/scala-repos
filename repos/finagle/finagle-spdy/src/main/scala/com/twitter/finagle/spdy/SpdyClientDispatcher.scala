@@ -19,7 +19,7 @@ class SpdyClientDispatcher(trans: Transport[HttpRequest, HttpResponse])
   private[this] def readLoop(): Future[_] = {
     trans.read() flatMap { resp =>
       val streamId = SpdyHttpHeaders.getStreamId(resp)
-      val promise = promiseMap.remove(streamId)
+      val promise  = promiseMap.remove(streamId)
       if (promise != null) {
         promise.updateIfEmpty(Return(resp))
       }
@@ -38,7 +38,7 @@ class SpdyClientDispatcher(trans: Transport[HttpRequest, HttpResponse])
   }
 
   def apply(req: HttpRequest): Future[HttpResponse] = {
-    val p = new Promise[HttpResponse]
+    val p        = new Promise[HttpResponse]
     val streamId = SpdyHttpHeaders.getStreamId(req)
 
     readFailure.synchronized {
@@ -64,6 +64,6 @@ class SpdyClientDispatcher(trans: Transport[HttpRequest, HttpResponse])
     p
   }
 
-  override def status = trans.status
+  override def status                = trans.status
   override def close(deadline: Time) = trans.close()
 }

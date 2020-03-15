@@ -7,12 +7,26 @@ import java.util.concurrent.{ConcurrentHashMap, ConcurrentLinkedQueue}
 
 import com.typesafe.config.Config
 
-import akka.actor.{ActorContext, ActorRef, ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider}
-import akka.dispatch.{Envelope, MailboxType, MessageQueue, UnboundedQueueBasedMessageQueue}
+import akka.actor.{
+  ActorContext,
+  ActorRef,
+  ActorSystem,
+  ExtendedActorSystem,
+  Extension,
+  ExtensionId,
+  ExtensionIdProvider
+}
+import akka.dispatch.{
+  Envelope,
+  MailboxType,
+  MessageQueue,
+  UnboundedQueueBasedMessageQueue
+}
 
 object PeekMailboxExtension
-    extends ExtensionId[PeekMailboxExtension] with ExtensionIdProvider {
-  def lookup = this
+    extends ExtensionId[PeekMailboxExtension]
+    with ExtensionIdProvider {
+  def lookup                                  = this
   def createExtension(s: ExtendedActorSystem) = new PeekMailboxExtension(s)
 
   def ack()(implicit context: ActorContext): Unit =
@@ -31,7 +45,8 @@ class PeekMailboxExtension(val system: ExtendedActorSystem) extends Extension {
     mailboxes.get(context.self) match {
       case null ⇒
         throw new IllegalArgumentException(
-            "Mailbox not registered for: " + context.self)
+          "Mailbox not registered for: " + context.self
+        )
       case mailbox ⇒ mailbox.ack()
     }
 }
@@ -52,7 +67,8 @@ class PeekMailboxType(settings: ActorSystem.Settings, config: Config)
         val retries = config.getInt("max-retries")
         if (retries < 1)
           throw new akka.ConfigurationException(
-              "max-retries must be at least 1")
+            "max-retries must be at least 1"
+          )
         val mailbox = new PeekMailbox(o, s, retries)
         PeekMailboxExtension(s).register(o, mailbox)
         mailbox
@@ -76,24 +92,25 @@ class PeekMailbox(owner: ActorRef, system: ActorSystem, maxRetries: Int)
    *  -1            during cleanUp (in order to disable the ack() requirement)
    */
   // the mutable state is only ever accessed by the actor (i.e. dequeue() side)
-  var tries = 0
+  var tries  = 0
   val Marker = maxRetries + 1
 
   // this logic does not work if maxRetries==0, but then you could also use a normal mailbox
-  override def dequeue(): Envelope = tries match {
-    case -1 ⇒
-      queue.poll()
-    case 0 | Marker ⇒
-      val e = queue.peek()
-      tries = if (e eq null) 0 else 1
-      e
-    case `maxRetries` ⇒
-      tries = Marker
-      queue.poll()
-    case n ⇒
-      tries = n + 1
-      queue.peek()
-  }
+  override def dequeue(): Envelope =
+    tries match {
+      case -1 ⇒
+        queue.poll()
+      case 0 | Marker ⇒
+        val e = queue.peek()
+        tries = if (e eq null) 0 else 1
+        e
+      case `maxRetries` ⇒
+        tries = Marker
+        queue.poll()
+      case n ⇒
+        tries = n + 1
+        queue.peek()
+    }
 
   def ack(): Unit = {
     // do not dequeue for real if double-ack() or ack() on last try

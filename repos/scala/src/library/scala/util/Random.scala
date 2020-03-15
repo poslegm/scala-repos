@@ -83,7 +83,7 @@ class Random(val self: java.util.Random) extends AnyRef with Serializable {
   def nextString(length: Int) = {
     def safeChar() = {
       val surrogateStart: Int = 0xD800
-      val res = nextInt(surrogateStart - 1) + 1
+      val res                 = nextInt(surrogateStart - 1) + 1
       res.toChar
     }
 
@@ -94,7 +94,7 @@ class Random(val self: java.util.Random) extends AnyRef with Serializable {
     *  from the ASCII range 33-126.
     */
   def nextPrintableChar(): Char = {
-    val low = 33
+    val low  = 33
     val high = 127
     (self.nextInt(high - low) + low).toChar
   }
@@ -105,8 +105,9 @@ class Random(val self: java.util.Random) extends AnyRef with Serializable {
     *
     *  @return         the shuffled collection
     */
-  def shuffle[T, CC[X] <: TraversableOnce[X]](xs: CC[T])(
-      implicit bf: CanBuildFrom[CC[T], T, CC[T]]): CC[T] = {
+  def shuffle[T, CC[X] <: TraversableOnce[X]](
+      xs: CC[T]
+  )(implicit bf: CanBuildFrom[CC[T], T, CC[T]]): CC[T] = {
     val buf = new ArrayBuffer[T] ++= xs
 
     def swap(i1: Int, i2: Int) {
@@ -124,8 +125,9 @@ class Random(val self: java.util.Random) extends AnyRef with Serializable {
   }
 
   @deprecated(
-      "Preserved for backwards binary compatibility. To remove in 2.12.x.",
-      "2.11.6")
+    "Preserved for backwards binary compatibility. To remove in 2.12.x.",
+    "2.11.6"
+  )
   final def `scala$util$Random$$isAlphaNum$1`(c: Char) =
     (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
 

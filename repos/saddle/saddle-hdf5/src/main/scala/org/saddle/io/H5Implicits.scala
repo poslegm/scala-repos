@@ -22,17 +22,19 @@ object H5Implicits {
   /**
     * Provides enrichment on Frame object for writing to an HDF5 file.
     */
-  implicit def frame2H5Writer[RX : ST : ORD, CX : ST : ORD, T : ST](
-      frame: Frame[RX, CX, T]) = new {
+  implicit def frame2H5Writer[RX: ST: ORD, CX: ST: ORD, T: ST](
+      frame: Frame[RX, CX, T]
+  ) =
+    new {
 
-    /**
-      * Write a frame in HDF5 format to a file at the path provided
-      *
-      * @param path File to write
-      * @param id Name of the HDF group in which to store frame data
-      */
-    def writeHdfFile(path: String, id: String) {
-      H5Store.writeFrame(path, id, frame)
-    }
-  } // end new
+      /**
+        * Write a frame in HDF5 format to a file at the path provided
+        *
+        * @param path File to write
+        * @param id Name of the HDF group in which to store frame data
+        */
+      def writeHdfFile(path: String, id: String) {
+        H5Store.writeFrame(path, id, frame)
+      }
+    } // end new
 }

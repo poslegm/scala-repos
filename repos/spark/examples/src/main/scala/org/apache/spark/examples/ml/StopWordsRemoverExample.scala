@@ -26,8 +26,8 @@ import org.apache.spark.sql.SQLContext
 
 object StopWordsRemoverExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("StopWordsRemoverExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("StopWordsRemoverExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // $example on$
@@ -35,10 +35,12 @@ object StopWordsRemoverExample {
       new StopWordsRemover().setInputCol("raw").setOutputCol("filtered")
 
     val dataSet = sqlContext
-      .createDataFrame(Seq(
-              (0, Seq("I", "saw", "the", "red", "baloon")),
-              (1, Seq("Mary", "had", "a", "little", "lamb"))
-          ))
+      .createDataFrame(
+        Seq(
+          (0, Seq("I", "saw", "the", "red", "baloon")),
+          (1, Seq("Mary", "had", "a", "little", "lamb"))
+        )
+      )
       .toDF("id", "raw")
 
     remover.transform(dataSet).show()

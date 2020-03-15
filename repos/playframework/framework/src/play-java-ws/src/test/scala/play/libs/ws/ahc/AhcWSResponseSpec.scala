@@ -23,7 +23,7 @@ object AhcWSResponseSpec extends Specification with Mockito {
 
     "return the underlying response" in {
       val srcResponse = mock[Response]
-      val response = new AhcWSResponse(srcResponse)
+      val response    = new AhcWSResponse(srcResponse)
       response.getUnderlying must_== (srcResponse)
     }
   }
@@ -38,7 +38,7 @@ object AhcWSResponseSpec extends Specification with Mockito {
         .add("Bar", "baz")
       srcResponse.getHeaders returns srcHeaders
       val response = new AhcWSResponse(srcResponse)
-      val headers = response.getAllHeaders
+      val headers  = response.getAllHeaders
       headers.get("foo").asScala must_== Seq("a", "b", "b")
       headers.get("BAR").asScala must_== Seq("baz")
     }
@@ -48,7 +48,7 @@ object AhcWSResponseSpec extends Specification with Mockito {
 
     "get the body as UTF-8 by default when no content type" in {
       val ahcResponse = mock[Response]
-      val response = new AhcWSResponse(ahcResponse)
+      val response    = new AhcWSResponse(ahcResponse)
       ahcResponse.getContentType returns null
       ahcResponse.getResponseBody(any) returns "body"
 
@@ -59,7 +59,7 @@ object AhcWSResponseSpec extends Specification with Mockito {
 
     "get the body as ISO_8859_1 by default when content type text/plain without charset" in {
       val ahcResponse = mock[Response]
-      val response = new AhcWSResponse(ahcResponse)
+      val response    = new AhcWSResponse(ahcResponse)
       ahcResponse.getContentType returns "text/plain"
       ahcResponse.getResponseBody(any) returns "body"
 
@@ -70,7 +70,7 @@ object AhcWSResponseSpec extends Specification with Mockito {
 
     "get the body as given charset when content type has explicit charset" in {
       val ahcResponse = mock[Response]
-      val response = new AhcWSResponse(ahcResponse)
+      val response    = new AhcWSResponse(ahcResponse)
       ahcResponse.getContentType returns "text/plain; charset=UTF-16"
       ahcResponse.getResponseBody(any) returns "body"
 

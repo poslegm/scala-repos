@@ -39,13 +39,13 @@ abstract class SymbolPairs {
     private implicit def symbolToType(sym: Symbol): Type =
       prefix memberType sym
 
-    def erasureOf(sym: Symbol): Type = erasure.erasure(sym)(sym: Type)
+    def erasureOf(sym: Symbol): Type   = erasure.erasure(sym)(sym: Type)
     def signature(sym: Symbol): String = sym defStringSeenAs (sym: Type)
     def erasedSignature(sym: Symbol): String =
       sym defStringSeenAs erasureOf(sym)
 
-    def isSameType(sym1: Symbol, sym2: Symbol): Boolean = sym1 =:= sym2
-    def isSubType(sym1: Symbol, sym2: Symbol): Boolean = sym1 <:< sym2
+    def isSameType(sym1: Symbol, sym2: Symbol): Boolean  = sym1 =:= sym2
+    def isSubType(sym1: Symbol, sym2: Symbol): Boolean   = sym1 <:< sym2
     def isSuperType(sym1: Symbol, sym2: Symbol): Boolean = sym2 <:< sym1
     def isSameErasure(sym1: Symbol, sym2: Symbol): Boolean =
       erasureOf(sym1) =:= erasureOf(sym2)
@@ -65,21 +65,22 @@ abstract class SymbolPairs {
   case class SymbolPair(base: Symbol, low: Symbol, high: Symbol) {
     def pos =
       if (low.owner == base) low.pos
-      else if (high.owner == base) high.pos else base.pos
-    def self: Type = base.thisType
+      else if (high.owner == base) high.pos
+      else base.pos
+    def self: Type     = base.thisType
     def rootType: Type = base.thisType
 
-    def lowType: Type = self memberType low
-    def lowErased: Type = erasure.specialErasure(base)(low.tpe)
+    def lowType: Type       = self memberType low
+    def lowErased: Type     = erasure.specialErasure(base)(low.tpe)
     def lowClassBound: Type = classBoundAsSeen(low.tpe.typeSymbol)
 
-    def highType: Type = self memberType high
-    def highInfo: Type = self memberInfo high
-    def highErased: Type = erasure.specialErasure(base)(high.tpe)
+    def highType: Type       = self memberType high
+    def highInfo: Type       = self memberInfo high
+    def highErased: Type     = erasure.specialErasure(base)(high.tpe)
     def highClassBound: Type = classBoundAsSeen(high.tpe.typeSymbol)
 
     def isErroneous = low.tpe.isErroneous || high.tpe.isErroneous
-    def sameKind = sameLength(low.typeParams, high.typeParams)
+    def sameKind    = sameLength(low.typeParams, high.typeParams)
 
     private def classBoundAsSeen(tsym: Symbol) =
       tsym.classBound.asSeenFrom(rootType, tsym.owner)
@@ -97,7 +98,7 @@ abstract class SymbolPairs {
     private def whereString(sym: Symbol) =
       if (sym.owner == base) " at line " + sym.pos.line else sym.locationString
 
-    def lowString = memberDefString(low, where = true)
+    def lowString  = memberDefString(low, where = true)
     def highString = memberDefString(high, where = true)
 
     override def toString = sm"""
@@ -175,11 +176,11 @@ abstract class SymbolPairs {
     init()
 
     // The current low and high symbols; the high may be null.
-    private[this] var lowSymbol: Symbol = _
+    private[this] var lowSymbol: Symbol  = _
     private[this] var highSymbol: Symbol = _
 
     // The current entry candidates for low and high symbol.
-    private[this] var curEntry = decls.elems
+    private[this] var curEntry  = decls.elems
     private[this] var nextEntry = curEntry
 
     // These fields are initially populated with a call to next().
@@ -221,17 +222,20 @@ abstract class SymbolPairs {
 
     private def include(bs: BitSet, n: Int) {
       val nshifted = n >> 5
-      val nmask = 1 << (n & 31)
+      val nmask    = 1 << (n & 31)
       bs(nshifted) |= nmask
     }
 
     /** Implements `bs1 * bs2 * {0..n} != 0`.
       *  Used in hasCommonParentAsSubclass */
     private def intersectionContainsElementLeq(
-        bs1: BitSet, bs2: BitSet, n: Int): Boolean = {
+        bs1: BitSet,
+        bs2: BitSet,
+        n: Int
+    ): Boolean = {
       val nshifted = n >> 5
-      val nmask = 1 << (n & 31)
-      var i = 0
+      val nmask    = 1 << (n & 31)
+      var i        = 0
       while (i < nshifted) {
         if ((bs1(i) & bs2(i)) != 0) return true
         i += 1
@@ -248,7 +252,10 @@ abstract class SymbolPairs {
         val index2 = index(sym2.owner)
         (index2 >= 0) && {
           intersectionContainsElementLeq(
-              subParents(index1), subParents(index2), index1 min index2)
+            subParents(index1),
+            subParents(index2),
+            index1 min index2
+          )
         }
       }
     }
@@ -259,7 +266,9 @@ abstract class SymbolPairs {
         if (nextEntry ne null) {
           val high = nextEntry.sym
           val isMatch =
-            matches(lowSymbol, high) && { visited addEntry nextEntry; true } // side-effect visited on all matches
+            matches(lowSymbol, high) && {
+              visited addEntry nextEntry; true
+            } // side-effect visited on all matches
 
           // skip nextEntry if a class in `parents` is a subclass of the
           // owners of both low and high.
@@ -282,15 +291,18 @@ abstract class SymbolPairs {
     /** The `low` and `high` symbol.  In the context of overriding pairs,
       *  low == overriding and high == overridden.
       */
-    def low = lowSymbol
+    def low  = lowSymbol
     def high = highSymbol
 
-    def hasNext = curEntry ne null
+    def hasNext     = curEntry ne null
     def currentPair = new SymbolPair(base, low, high)
-    def iterator = new Iterator[SymbolPair] {
-      def hasNext = cursor.hasNext
-      def next() = try cursor.currentPair finally cursor.next()
-    }
+    def iterator =
+      new Iterator[SymbolPair] {
+        def hasNext = cursor.hasNext
+        def next() =
+          try cursor.currentPair
+          finally cursor.next()
+      }
 
     // Note that next is called once during object initialization to
     // populate the fields tracking the current symbol pair.

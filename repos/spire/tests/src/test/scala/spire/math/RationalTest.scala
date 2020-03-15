@@ -31,7 +31,7 @@ class RationalTest extends FunSuite {
 
   test("RationalIsFractional implicit exists") {
     import spire.implicits._
-    def doStuff[NT : Fractional](a: NT, b: NT): NT = a / b
+    def doStuff[NT: Fractional](a: NT, b: NT): NT = a / b
 
     assertResult(Rational(1, 2)) {
       doStuff(Rational(1), Rational(2))
@@ -280,7 +280,7 @@ class RationalTest extends FunSuite {
     assert(Rational(6, 5) === Rational(23, 19).limitDenominatorTo(10))
     //assert(Rational(-6, 5) === Rational(-23, 19).limitDenominatorTo(10))
 
-    val rng = new Random(9281)
+    val rng       = new Random(9281)
     val rationals = List.fill(100)(Rational(rng.nextInt, rng.nextInt.abs + 1))
     rationals foreach { a =>
       //assert(a.limitDenominatorTo(255) === bruteForceLimitDen(a, 255), {
@@ -305,8 +305,9 @@ class RationalTest extends FunSuite {
     rationals foreach { a =>
       val b = a.limitToInt
       assert(
-          b.numerator.isValidInt && b.denominator.isValidInt,
-          "%s (from %s) doesn't fit in Ints" format (b.toString, a.toString))
+        b.numerator.isValidInt && b.denominator.isValidInt,
+        "%s (from %s) doesn't fit in Ints" format (b.toString, a.toString)
+      )
     }
   }
 
@@ -333,7 +334,7 @@ class RationalTest extends FunSuite {
   }
 
   test("Rational(0D) is Zero") {
-    assert(Rational(0D) === Rational.zero)
+    assert(Rational(0d) === Rational.zero)
   }
 
   test("compareToOne") {
@@ -363,13 +364,15 @@ class RationalTest extends FunSuite {
     }
   }
   test("isValidFlags") {
-    def check(x: Rational,
-              whole: Boolean,
-              char: Boolean,
-              byte: Boolean,
-              short: Boolean,
-              int: Boolean,
-              long: Boolean): Unit = {
+    def check(
+        x: Rational,
+        whole: Boolean,
+        char: Boolean,
+        byte: Boolean,
+        short: Boolean,
+        int: Boolean,
+        long: Boolean
+    ): Unit = {
       assert(x.isWhole == whole)
       assert(x.isValidChar == char)
       assert(x.isValidByte == byte)

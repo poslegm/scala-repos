@@ -1,10 +1,10 @@
 package lila.teamSearch
 
 private[teamSearch] object Fields {
-  val name = "na"
+  val name        = "na"
   val description = "de"
-  val location = "lo"
-  val nbMembers = "nbm"
+  val location    = "lo"
+  val nbMembers   = "nbm"
 }
 // import fields._
 // import ElasticSearch.Mapping._

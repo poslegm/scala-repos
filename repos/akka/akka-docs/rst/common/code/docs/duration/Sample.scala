@@ -9,9 +9,9 @@ object Scala {
   //#dsl
   import scala.concurrent.duration._
 
-  val fivesec = 5.seconds
+  val fivesec     = 5.seconds
   val threemillis = 3.millis
-  val diff = fivesec - threemillis
+  val diff        = fivesec - threemillis
   assert(diff < fivesec)
   val fourmillis =
     threemillis * 4 / 3 // you cannot write it the other way around

@@ -26,13 +26,15 @@ trait LeftPartialAction[P, G] extends Any {
 
 object LeftPartialAction {
   @inline final def apply[P, G](
-      implicit G: LeftPartialAction[P, G]): LeftPartialAction[P, G] = G
+      implicit G: LeftPartialAction[P, G]
+  ): LeftPartialAction[P, G] = G
 
   implicit def fromLeftAction[P, G](
-      implicit G: LeftAction[P, G]): LeftPartialAction[P, G] =
+      implicit G: LeftAction[P, G]
+  ): LeftPartialAction[P, G] =
     new LeftPartialAction[P, G] {
       override def actlIsDefined(g: G, p: P): Boolean = true
-      def partialActl(g: G, p: P): Opt[P] = Opt(G.actl(g, p))
+      def partialActl(g: G, p: P): Opt[P]             = Opt(G.actl(g, p))
     }
 }
 
@@ -58,13 +60,15 @@ trait RightPartialAction[P, G] extends Any {
 
 object RightPartialAction {
   @inline final def apply[P, G](
-      implicit G: RightPartialAction[P, G]): RightPartialAction[P, G] = G
+      implicit G: RightPartialAction[P, G]
+  ): RightPartialAction[P, G] = G
 
   implicit def fromRightAction[P, G](
-      implicit G: RightAction[P, G]): RightPartialAction[P, G] =
+      implicit G: RightAction[P, G]
+  ): RightPartialAction[P, G] =
     new RightPartialAction[P, G] {
       override def actrIsDefined(p: P, g: G): Boolean = true
-      def partialActr(p: P, g: G): Opt[P] = Opt(G.actr(p, g))
+      def partialActr(p: P, g: G): Opt[P]             = Opt(G.actr(p, g))
     }
 }
 
@@ -101,18 +105,20 @@ object RightPartialAction {
   *
   */
 trait PartialAction[P, G]
-    extends Any with LeftPartialAction[P, G] with RightPartialAction[P, G]
+    extends Any
+    with LeftPartialAction[P, G]
+    with RightPartialAction[P, G]
 
 object PartialAction {
   @inline final def apply[P, G](
-      implicit G: PartialAction[P, G]): PartialAction[P, G] = G
+      implicit G: PartialAction[P, G]
+  ): PartialAction[P, G] = G
 
-  implicit def fromAction[P, G](
-      implicit G: Action[P, G]): PartialAction[P, G] =
+  implicit def fromAction[P, G](implicit G: Action[P, G]): PartialAction[P, G] =
     new PartialAction[P, G] {
       override def actlIsDefined(g: G, p: P): Boolean = true
-      def partialActl(g: G, p: P): Opt[P] = Opt(G.actl(g, p))
+      def partialActl(g: G, p: P): Opt[P]             = Opt(G.actl(g, p))
       override def actrIsDefined(p: P, g: G): Boolean = true
-      def partialActr(p: P, g: G): Opt[P] = Opt(G.actr(p, g))
+      def partialActr(p: P, g: G): Opt[P]             = Opt(G.actr(p, g))
     }
 }

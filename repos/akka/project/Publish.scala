@@ -14,17 +14,15 @@ object Publish extends AutoPlugin {
   override def trigger = allRequirements
 
   override lazy val projectSettings = Seq(
-      crossPaths := false,
-      pomExtra := akkaPomExtra,
-      publishTo := akkaPublishTo.value,
-      credentials ++= akkaCredentials,
-      organizationName := "Lightbend Inc.",
-      organizationHomepage := Some(url("http://www.lightbend.com")),
-      publishMavenStyle := true,
-      pomIncludeRepository := { x =>
-        false
-      },
-      defaultPublishTo := crossTarget.value / "repository"
+    crossPaths := false,
+    pomExtra := akkaPomExtra,
+    publishTo := akkaPublishTo.value,
+    credentials ++= akkaCredentials,
+    organizationName := "Lightbend Inc.",
+    organizationHomepage := Some(url("http://www.lightbend.com")),
+    publishMavenStyle := true,
+    pomIncludeRepository := { x => false },
+    defaultPublishTo := crossTarget.value / "repository"
   )
 
   def akkaPomExtra = {
@@ -43,17 +41,19 @@ object Publish extends AutoPlugin {
     </developers>
   }
 
-  private def akkaPublishTo = Def.setting {
-    sonatypeRepo(version.value) orElse localRepo(defaultPublishTo.value)
-  }
+  private def akkaPublishTo =
+    Def.setting {
+      sonatypeRepo(version.value) orElse localRepo(defaultPublishTo.value)
+    }
 
   private def sonatypeRepo(version: String): Option[Resolver] =
-    Option(sys.props("publish.maven.central")) filter (_.toLowerCase == "true") map {
-      _ =>
-        val nexus = "https://oss.sonatype.org/"
-        if (version endsWith "-SNAPSHOT")
-          "snapshots" at nexus + "content/repositories/snapshots"
-        else "releases" at nexus + "service/local/staging/deploy/maven2"
+    Option(
+      sys.props("publish.maven.central")
+    ) filter (_.toLowerCase == "true") map { _ =>
+      val nexus = "https://oss.sonatype.org/"
+      if (version endsWith "-SNAPSHOT")
+        "snapshots" at nexus + "content/repositories/snapshots"
+      else "releases" at nexus + "service/local/staging/deploy/maven2"
     }
 
   private def localRepo(repository: File) =

@@ -8,7 +8,7 @@ object CompositionTest extends SpecLite {
   type OptionList[α] = Option[List[α]]
 
   implicit val optionListApplicative = ApplicativePlus[Option].compose[List]
-  implicit val optionListTraverse = Traverse[Option].compose[List]
+  implicit val optionListTraverse    = Traverse[Option].compose[List]
   implicit val oneAndOptNelTraverse =
     Traverse1[OneAnd[Option, ?]].compose[NonEmptyList]
 

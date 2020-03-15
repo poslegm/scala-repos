@@ -11,7 +11,7 @@ package object cmd {
 
   // make some language features in this package compile without warning
   implicit def implicitConversions = scala.language.implicitConversions
-  implicit def postfixOps = scala.language.postfixOps
+  implicit def postfixOps          = scala.language.postfixOps
 
   private[cmd] def debug(msg: String): Unit = println(msg)
 
@@ -20,9 +20,9 @@ package object cmd {
     sys.exit(0)
   }
 
-  def toOpt(s: String): String = if (s startsWith "--") s else "--" + s
-  def fromOpt(s: String): String = s stripPrefix "--"
-  def toArgs(line: String): List[String] = CommandLineParser tokenize line
+  def toOpt(s: String): String             = if (s startsWith "--") s else "--" + s
+  def fromOpt(s: String): String           = s stripPrefix "--"
+  def toArgs(line: String): List[String]   = CommandLineParser tokenize line
   def fromArgs(args: List[String]): String = args mkString " "
 
   def stripQuotes(s: String): String = {

@@ -10,7 +10,9 @@ import prop._
 import spire.util.Opt
 
 class SafeLongCheck
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+    extends PropSpec
+    with Matchers
+    with GeneratorDrivenPropertyChecks {
 
   import SafeLong.zero
 
@@ -19,7 +21,7 @@ class SafeLongCheck
 
   def invariant(z: SafeLong): SafeLong = {
     z match {
-      case SafeLongLong(_) => ()
+      case SafeLongLong(_)       => ()
       case SafeLongBigInteger(n) => BigInt(n).isValidLong shouldBe false
     }
     z
@@ -68,7 +70,7 @@ class SafeLongCheck
     forAll { (x: BigInt, y: BigInt) =>
       if (y != 0) {
         invariant(SafeLong(x) % SafeLong(y)) shouldBe x % y
-        invariant(SafeLong(x) % y) shouldBe x % y
+        invariant(SafeLong(x) % y) shouldBe x           % y
       }
     }
 
@@ -200,8 +202,8 @@ class SafeLongCheck
 
   property("mixed size tests") {
     forAll { (ex: Either[Long, BigInt], ey: Either[Long, BigInt]) =>
-      val x = ex.fold(BigInt(_), identity)
-      val y = ey.fold(BigInt(_), identity)
+      val x  = ex.fold(BigInt(_), identity)
+      val y  = ey.fold(BigInt(_), identity)
       val sx = ex.fold(SafeLong(_), SafeLong(_))
       val sy = ey.fold(SafeLong(_), SafeLong(_))
 

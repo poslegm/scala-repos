@@ -12,8 +12,10 @@ import org.ensime.util.file._
   * which might be caused by https://github.com/scala/scala/pull/4777
   */
 class ImplicitsWildcardImports
-    extends EnsimeSpec with IsolatedEnsimeConfigFixture
-    with IsolatedTestKitFixture with IsolatedProjectFixture {
+    extends EnsimeSpec
+    with IsolatedEnsimeConfigFixture
+    with IsolatedTestKitFixture
+    with IsolatedProjectFixture {
 
   val original = EnsimeConfigFixture.ImplicitsTestProject
 
@@ -23,7 +25,7 @@ class ImplicitsWildcardImports
         withProject { (project, asyncHelper) =>
           import testkit._
 
-          val sourceRoot = scalaMain(config)
+          val sourceRoot  = scalaMain(config)
           val exampleFile = sourceRoot / "org/example/Example.scala"
 
           log.info("Getting type the first time")

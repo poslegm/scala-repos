@@ -3,7 +3,7 @@ object SCL6730B {
 
   class O {
     def foo(x: Int => Any) = 1
-    def foo(x: Any) = "text"
+    def foo(x: Any)        = "text"
 
     /*start*/
     foo(A) /*end*/

@@ -27,8 +27,10 @@ import scala.language.implicitConversions
   *  @tparam Coll the type of the underlying collection containing the elements.
   */
 trait IndexedSeqView[A, +Coll]
-    extends IndexedSeq[A] with IndexedSeqOptimized[A, IndexedSeqView[A, Coll]]
-    with SeqView[A, Coll] with SeqViewLike[A, Coll, IndexedSeqView[A, Coll]] {
+    extends IndexedSeq[A]
+    with IndexedSeqOptimized[A, IndexedSeqView[A, Coll]]
+    with SeqView[A, Coll]
+    with SeqViewLike[A, Coll, IndexedSeqView[A, Coll]] {
   self =>
 
   private[this] type This = IndexedSeqView[A, Coll]
@@ -36,14 +38,16 @@ trait IndexedSeqView[A, +Coll]
   def update(idx: Int, elem: A): Unit
 
   trait Transformed[B]
-      extends IndexedSeqView[B, Coll] with super.Transformed[B] {
+      extends IndexedSeqView[B, Coll]
+      with super.Transformed[B] {
     def update(idx: Int, elem: B): Unit
     override def toString = viewToString
   }
 
   /** Explicit instantiation of the `Transformed` trait to reduce class file size in subclasses. */
   private[collection] abstract class AbstractTransformed[B]
-      extends super.AbstractTransformed[B] with Transformed[B]
+      extends super.AbstractTransformed[B]
+      with Transformed[B]
 
   // pre: until <= self.length
   trait Sliced extends super.Sliced with Transformed[A] {
@@ -88,8 +92,8 @@ trait IndexedSeqView[A, +Coll]
     new AbstractTransformed[A] with Reversed
 
   override def filter(p: A => Boolean): This = newFiltered(p)
-  override def init: This = newSliced(SliceInterval(0, self.length - 1))
-  override def drop(n: Int): This = newSliced(SliceInterval(n, self.length))
+  override def init: This                    = newSliced(SliceInterval(0, self.length - 1))
+  override def drop(n: Int): This            = newSliced(SliceInterval(n, self.length))
   override def take(n: Int): This =
     newSliced(SliceInterval(0, n min self.length))
   override def slice(from: Int, until: Int): This =
@@ -99,7 +103,7 @@ trait IndexedSeqView[A, +Coll]
   override def span(p: A => Boolean): (This, This) =
     (newTakenWhile(p), newDroppedWhile(p))
   override def splitAt(n: Int): (This, This) = (take(n), drop(n)) // !!!
-  override def reverse: This = newReversed
+  override def reverse: This                 = newReversed
   override def tail: IndexedSeqView[A, Coll] =
     if (isEmpty) super.tail else slice(1, length)
 }
@@ -117,12 +121,12 @@ object IndexedSeqView {
   implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, SeqView[A, Seq[_]]] =
     new CanBuildFrom[Coll, A, SeqView[A, Seq[_]]] {
       def apply(from: Coll) = new NoBuilder
-      def apply() = new NoBuilder
+      def apply()           = new NoBuilder
     }
-  implicit def arrCanBuildFrom[A]: CanBuildFrom[
-      TraversableView[_, Array[_]], A, SeqView[A, Array[A]]] =
+  implicit def arrCanBuildFrom[A]
+      : CanBuildFrom[TraversableView[_, Array[_]], A, SeqView[A, Array[A]]] =
     new CanBuildFrom[TraversableView[_, Array[_]], A, SeqView[A, Array[A]]] {
       def apply(from: TraversableView[_, Array[_]]) = new NoBuilder
-      def apply() = new NoBuilder
+      def apply()                                   = new NoBuilder
     }
 }

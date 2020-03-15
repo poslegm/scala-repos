@@ -20,21 +20,21 @@ object NonEmptyListTest extends SpecLite {
 
   "scanLeft1" ! forAll { fa: NonEmptyList[List[Int]] =>
     def f[A]: (List[A], List[A]) => List[A] = _ ::: _
-    val a = Foldable1[NonEmptyList].scanLeft1(fa)(f)
+    val a                                   = Foldable1[NonEmptyList].scanLeft1(fa)(f)
     a.list must_=== fa.tail.scanLeft(fa.head)(f)
     a.size must_=== fa.size
   }
 
   "scanRight1" ! forAll { fa: NonEmptyList[List[Int]] =>
     def f[A]: (List[A], List[A]) => List[A] = _ ::: _
-    val a = Foldable1[NonEmptyList].scanRight1(fa)(f)
+    val a                                   = Foldable1[NonEmptyList].scanRight1(fa)(f)
     a.list must_=== fa.init.scanRight(fa.last)(f)
     a.size must_=== fa.size
   }
 
   "findLeft/findRight" in {
     val a = NonEmptyList(1, 2, 3, 4, 5)
-    Foldable[NonEmptyList].findLeft(a)(_ % 2 == 0) must_=== Some(2)
+    Foldable[NonEmptyList].findLeft(a)(_  % 2 == 0) must_=== Some(2)
     Foldable[NonEmptyList].findRight(a)(_ % 2 == 0) must_=== Some(4)
   }
 
@@ -62,13 +62,13 @@ object NonEmptyListTest extends SpecLite {
   "foldl1 is reduceLeft" ! forAll { (rnge: NonEmptyList[IList[Int]]) =>
     val F = Foldable1[NonEmptyList]
     rnge.list.toList.reduceLeft(_ ++ _) must_===
-    (F.foldl1(rnge)(a => b => a ++ b))
+      (F.foldl1(rnge)(a => b => a ++ b))
   }
 
   "foldr1 is reduceRight" ! forAll { (rnge: NonEmptyList[IList[Int]]) =>
     val F = Foldable1[NonEmptyList]
     rnge.list.toList.reduceRight(_ ++ _) must_===
-    (F.foldr1(rnge)(a => b => a ++ b))
+      (F.foldr1(rnge)(a => b => a ++ b))
   }
   "foldRight1 is reduceRight" ! forAll { xs: NonEmptyList[IList[Int]] =>
     val F = Foldable1[NonEmptyList]
@@ -82,10 +82,13 @@ object NonEmptyListTest extends SpecLite {
   }
   "correctness of tails" ! forAll { xs: NonEmptyList[Int] =>
     import NonEmptyList._
-    xs.tails must_=== nel(xs, xs.tail match {
-      case INil() => INil()
-      case ICons(h, t) => nel(h, t).tails.list
-    })
+    xs.tails must_=== nel(
+      xs,
+      xs.tail match {
+        case INil()      => INil()
+        case ICons(h, t) => nel(h, t).tails.list
+      }
+    )
   }
   "toNel is self" ! forAll { xs: NonEmptyList[Int] =>
     Foldable1[NonEmptyList].toNel(xs) must_=== xs

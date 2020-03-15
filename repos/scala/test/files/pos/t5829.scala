@@ -13,6 +13,6 @@ object Test extends App {
   val universe: Universe = null
   import universe._
   def select: Select = ???
-  def ident: Ident = ???
+  def ident: Ident   = ???
   List(select, ident)
 }

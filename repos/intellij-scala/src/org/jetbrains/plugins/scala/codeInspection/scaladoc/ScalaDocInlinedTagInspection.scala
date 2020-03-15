@@ -20,18 +20,22 @@ class ScalaDocInlinedTagInspection extends LocalInspectionTool {
   override def getDisplayName: String = "Inlined Tag"
 
   override def buildVisitor(
-      holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor = {
+      holder: ProblemsHolder,
+      isOnTheFly: Boolean
+  ): PsiElementVisitor = {
     new ScalaElementVisitor {
       override def visitInlinedTag(s: ScDocInlinedTag) {
         holder.registerProblem(
-            holder.getManager.createProblemDescriptor(
-                s,
-                getDisplayName,
-                true,
-                ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-                isOnTheFly,
-                new ScalaDocInlinedTagDeleteQuickFix(s),
-                new ScalaDocInlinedTagReplaceQuickFix(s)))
+          holder.getManager.createProblemDescriptor(
+            s,
+            getDisplayName,
+            true,
+            ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+            isOnTheFly,
+            new ScalaDocInlinedTagDeleteQuickFix(s),
+            new ScalaDocInlinedTagReplaceQuickFix(s)
+          )
+        )
       }
     }
   }
@@ -39,7 +43,9 @@ class ScalaDocInlinedTagInspection extends LocalInspectionTool {
 
 class ScalaDocInlinedTagDeleteQuickFix(inlinedTag: ScDocInlinedTag)
     extends AbstractFixOnPsiElement(
-        ScalaBundle.message("delete.inlined.tag"), inlinedTag) {
+      ScalaBundle.message("delete.inlined.tag"),
+      inlinedTag
+    ) {
   override def getFamilyName: String = InspectionsUtil.SCALADOC
 
   def doApplyFix(project: Project) {
@@ -51,7 +57,9 @@ class ScalaDocInlinedTagDeleteQuickFix(inlinedTag: ScDocInlinedTag)
 
 class ScalaDocInlinedTagReplaceQuickFix(inlinedTag: ScDocInlinedTag)
     extends AbstractFixOnPsiElement(
-        ScalaBundle.message("replace.with.wiki.syntax"), inlinedTag) {
+      ScalaBundle.message("replace.with.wiki.syntax"),
+      inlinedTag
+    ) {
   override def getFamilyName: String = InspectionsUtil.SCALADOC
 
   def doApplyFix(project: Project) {
@@ -59,13 +67,16 @@ class ScalaDocInlinedTagReplaceQuickFix(inlinedTag: ScDocInlinedTag)
     if (!tag.isValid) return
 
     if (tag.getValueElement == null) {
-      tag.replace(ScalaPsiElementFactory.createMonospaceSyntaxFromText(
-              "", tag.getManager))
+      tag.replace(
+        ScalaPsiElementFactory.createMonospaceSyntaxFromText("", tag.getManager)
+      )
     } else {
       val tagText = tag.getValueElement.getText
         .replace("`", MyScaladocParsing.escapeSequencesForWiki.get("`").get)
-      tag.replace(ScalaPsiElementFactory.createMonospaceSyntaxFromText(
-              tagText, tag.getManager))
+      tag.replace(
+        ScalaPsiElementFactory
+          .createMonospaceSyntaxFromText(tagText, tag.getManager)
+      )
     }
   }
 }

@@ -31,12 +31,13 @@ object StreamingLinearRegressionExample {
   def main(args: Array[String]): Unit = {
     if (args.length != 2) {
       System.err.println(
-          "Usage: StreamingLinearRegressionExample <trainingDir> <testDir>")
+        "Usage: StreamingLinearRegressionExample <trainingDir> <testDir>"
+      )
       System.exit(1)
     }
 
     val conf = new SparkConf().setAppName("StreamingLinearRegressionExample")
-    val ssc = new StreamingContext(conf, Seconds(1))
+    val ssc  = new StreamingContext(conf, Seconds(1))
 
     // $example on$
     val trainingData =

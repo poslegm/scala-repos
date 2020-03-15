@@ -7,7 +7,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class RequestProxyTest extends FunSuite {
   test("request.ctx") {
-    val field = Request.Schema.newField[Int]
+    val field    = Request.Schema.newField[Int]
     val request1 = Request()
     request1.ctx(field) = 42
     val request2 = new RequestProxy {

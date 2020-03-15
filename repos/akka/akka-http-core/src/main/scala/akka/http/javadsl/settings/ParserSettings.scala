@@ -18,7 +18,7 @@ import com.typesafe.config.Config
 /**
   * Public API but not intended for subclassing
   */
-abstract class ParserSettings private[akka]() extends BodyPartParser.Settings {
+abstract class ParserSettings private[akka] () extends BodyPartParser.Settings {
   self: ParserSettingsImpl ⇒
   def getMaxUriLength: Int
   def getMaxMethodLength: Int
@@ -36,10 +36,10 @@ abstract class ParserSettings private[akka]() extends BodyPartParser.Settings {
   def getHeaderValueCacheLimits: ju.Map[String, Int]
   def getIncludeTlsSessionInfoHeader: Boolean
   def headerValueCacheLimits: Map[String, Int]
-  def getCustomMethods: java.util.function.Function[
-      String, Optional[HttpMethod]]
-  def getCustomStatusCodes: java.util.function.Function[
-      Int, Optional[StatusCode]]
+  def getCustomMethods
+      : java.util.function.Function[String, Optional[HttpMethod]]
+  def getCustomStatusCodes
+      : java.util.function.Function[Int, Optional[StatusCode]]
 
   // ---
 
@@ -64,15 +64,18 @@ abstract class ParserSettings private[akka]() extends BodyPartParser.Settings {
   def withUriParsingMode(newValue: Uri.ParsingMode): ParserSettings =
     self.copy(uriParsingMode = newValue.asScala)
   def withCookieParsingMode(
-      newValue: ParserSettings.CookieParsingMode): ParserSettings =
+      newValue: ParserSettings.CookieParsingMode
+  ): ParserSettings =
     self.copy(cookieParsingMode = newValue.asScala)
   def withIllegalHeaderWarnings(newValue: Boolean): ParserSettings =
     self.copy(illegalHeaderWarnings = newValue)
   def withErrorLoggingVerbosity(
-      newValue: ParserSettings.ErrorLoggingVerbosity): ParserSettings =
+      newValue: ParserSettings.ErrorLoggingVerbosity
+  ): ParserSettings =
     self.copy(errorLoggingVerbosity = newValue.asScala)
   def withHeaderValueCacheLimits(
-      newValue: ju.Map[String, Int]): ParserSettings =
+      newValue: ju.Map[String, Int]
+  ): ParserSettings =
     self.copy(headerValueCacheLimits = newValue.asScala.toMap)
   def withIncludeTlsSessionInfoHeader(newValue: Boolean): ParserSettings =
     self.copy(includeTlsSessionInfoHeader = newValue)

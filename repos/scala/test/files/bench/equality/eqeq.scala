@@ -17,7 +17,7 @@ object eqeq extends testing.Benchmark {
       Array.tabulate[AnyRef](n)(i => creator(i % 2).asInstanceOf[AnyRef])
 
     var sum = 0
-    var i = 0
+    var i   = 0
     while (i < n) {
       var j = 0
       while (j < n) {

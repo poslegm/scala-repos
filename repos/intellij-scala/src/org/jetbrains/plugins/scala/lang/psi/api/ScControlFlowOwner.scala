@@ -3,8 +3,14 @@ package org.jetbrains.plugins.scala.lang.psi.api
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValueProvider.Result
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiElement
-import org.jetbrains.plugins.scala.lang.psi.controlFlow.impl.{AllVariablesControlFlowPolicy, ScalaControlFlowBuilder}
-import org.jetbrains.plugins.scala.lang.psi.controlFlow.{Instruction, ScControlFlowPolicy}
+import org.jetbrains.plugins.scala.lang.psi.controlFlow.impl.{
+  AllVariablesControlFlowPolicy,
+  ScalaControlFlowBuilder
+}
+import org.jetbrains.plugins.scala.lang.psi.controlFlow.{
+  Instruction,
+  ScControlFlowPolicy
+}
 
 import scala.collection.mutable
 
@@ -18,19 +24,22 @@ trait ScControlFlowOwner extends ScalaPsiElement {
     mutable.Map[ScControlFlowPolicy, ControlFlowCacheProvider]()
 
   private def buildControlFlow(
-      policy: ScControlFlowPolicy = AllVariablesControlFlowPolicy) = {
+      policy: ScControlFlowPolicy = AllVariablesControlFlowPolicy
+  ) = {
     val builder = new ScalaControlFlowBuilder(null, null, policy)
     controlFlowScope match {
       case Some(elem) => builder.buildControlflow(elem)
-      case None => Seq.empty
+      case None       => Seq.empty
     }
   }
 
   def getControlFlow(
-      policy: ScControlFlowPolicy = AllVariablesControlFlowPolicy)
-    : Seq[Instruction] = {
+      policy: ScControlFlowPolicy = AllVariablesControlFlowPolicy
+  ): Seq[Instruction] = {
     val provider = myControlFlowCache.getOrElseUpdate(
-        policy, new ControlFlowCacheProvider(policy))
+      policy,
+      new ControlFlowCacheProvider(policy)
+    )
     provider.compute().getValue
   }
 

@@ -6,7 +6,7 @@ object Test extends App {
   Console.println(xyz)
   xyz match {
     case (1, "abc", true) => Console.println("OK")
-    case _ => ???
+    case _                => ???
   }
   def func(x: Int, y: String, z: Double) {
     Console.println("x = " + x + "; y = " + y + "; z = " + z);
@@ -14,8 +14,8 @@ object Test extends App {
 
   def params = (2, "xxx", 3.14159) // (*****)
 
-  tupled(func _)(params) // call the function with all the params at once
-  func(2, "xxx", 3.14159) // the same call
+  tupled(func _)(params)            // call the function with all the params at once
+  func(2, "xxx", 3.14159)           // the same call
   (func _).apply(2, "xxx", 3.14159) // the same call
 
   // Composing a tuple

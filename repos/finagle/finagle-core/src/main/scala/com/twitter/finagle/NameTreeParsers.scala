@@ -16,7 +16,7 @@ private class NameTreeParsers private (str: String) {
   private[this] val EOI = Char.MaxValue
 
   private[this] val size = str.size
-  private[this] var idx = 0
+  private[this] var idx  = 0
 
   private[this] def stringOfChar(char: Char) =
     if (char == EOI) "end of input"
@@ -27,7 +27,8 @@ private class NameTreeParsers private (str: String) {
       if (atEnd) s"$str[]"
       else s"${str.take(idx)}[${str(idx)}]${str.drop(idx + 1)}"
     throw new IllegalArgumentException(
-        s"$expected expected but $found found at '$displayStr'")
+      s"$expected expected but $found found at '$displayStr'"
+    )
   }
 
   private[this] def illegal(expected: Char, found: String): Nothing =
@@ -111,7 +112,7 @@ private class NameTreeParsers private (str: String) {
   private[this] def isNumberChar(c: Char) = c.isDigit || c == '.'
 
   private[this] def parseNumber(): Double = {
-    val sb = new StringBuilder
+    val sb      = new StringBuilder
     var seenDot = false
 
     while (isNumberChar(peek)) {

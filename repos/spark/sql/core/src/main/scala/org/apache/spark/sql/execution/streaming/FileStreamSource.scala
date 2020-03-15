@@ -31,13 +31,15 @@ import org.apache.spark.util.collection.OpenHashSet
   *
   * TODO Clean up the metadata files periodically
   */
-class FileStreamSource(sqlContext: SQLContext,
-                       metadataPath: String,
-                       path: String,
-                       dataSchema: Option[StructType],
-                       providerName: String,
-                       dataFrameBuilder: Array[String] => DataFrame)
-    extends Source with Logging {
+class FileStreamSource(
+    sqlContext: SQLContext,
+    metadataPath: String,
+    path: String,
+    dataSchema: Option[StructType],
+    providerName: String,
+    dataFrameBuilder: Array[String] => DataFrame
+) extends Source
+    with Logging {
 
   private val fs = FileSystem.get(sqlContext.sparkContext.hadoopConfiguration)
   private val metadataLog =
@@ -74,47 +76,50 @@ class FileStreamSource(sqlContext: SQLContext,
     * `synchronized` on this method is for solving race conditions in tests. In the normal usage,
     * there is no race here, so the cost of `synchronized` should be rare.
     */
-  private def fetchMaxOffset(): LongOffset = synchronized {
-    val filesPresent = fetchAllFiles()
-    val newFiles = new ArrayBuffer[String]()
-    filesPresent.foreach { file =>
-      if (!seenFiles.contains(file)) {
-        logDebug(s"new file: $file")
-        newFiles.append(file)
-        seenFiles.add(file)
-      } else {
-        logDebug(s"old file: $file")
+  private def fetchMaxOffset(): LongOffset =
+    synchronized {
+      val filesPresent = fetchAllFiles()
+      val newFiles     = new ArrayBuffer[String]()
+      filesPresent.foreach { file =>
+        if (!seenFiles.contains(file)) {
+          logDebug(s"new file: $file")
+          newFiles.append(file)
+          seenFiles.add(file)
+        } else {
+          logDebug(s"old file: $file")
+        }
       }
-    }
 
-    if (newFiles.nonEmpty) {
-      maxBatchId += 1
-      metadataLog.add(maxBatchId, newFiles)
-    }
+      if (newFiles.nonEmpty) {
+        maxBatchId += 1
+        metadataLog.add(maxBatchId, newFiles)
+      }
 
-    new LongOffset(maxBatchId)
-  }
+      new LongOffset(maxBatchId)
+    }
 
   /**
     * For test only. Run `func` with the internal lock to make sure when `func` is running,
     * the current offset won't be changed and no new batch will be emitted.
     */
-  def withBatchingLocked[T](func: => T): T = synchronized {
-    func
-  }
+  def withBatchingLocked[T](func: => T): T =
+    synchronized {
+      func
+    }
 
   /** Return the latest offset in the source */
-  def currentOffset: LongOffset = synchronized {
-    new LongOffset(maxBatchId)
-  }
+  def currentOffset: LongOffset =
+    synchronized {
+      new LongOffset(maxBatchId)
+    }
 
   /**
     * Returns the next batch of data that is available after `start`, if any is available.
     */
   override def getNextBatch(start: Option[Offset]): Option[Batch] = {
     val startId = start.map(_.asInstanceOf[LongOffset].offset).getOrElse(-1L)
-    val end = fetchMaxOffset()
-    val endId = end.offset
+    val end     = fetchMaxOffset()
+    val endId   = end.offset
 
     if (startId + 1 <= endId) {
       val files = metadataLog.get(Some(startId + 1), endId).map(_._2).flatten

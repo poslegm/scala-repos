@@ -33,9 +33,11 @@ private class P2CBalancer[Req, Rep](
     protected val maxEffort: Int,
     protected val rng: Rng,
     protected val statsReceiver: StatsReceiver,
-    protected val emptyException: NoBrokersAvailableException)
-    extends Balancer[Req, Rep] with LeastLoaded[Req, Rep]
-    with P2C[Req, Rep] with Updating[Req, Rep] {
+    protected val emptyException: NoBrokersAvailableException
+) extends Balancer[Req, Rep]
+    with LeastLoaded[Req, Rep]
+    with P2C[Req, Rep]
+    with Updating[Req, Rep] {
 
   protected[this] val maxEffortExhausted =
     statsReceiver.counter("max_effort_exhausted")
@@ -74,9 +76,11 @@ private class P2CBalancerPeakEwma[Req, Rep](
     protected val maxEffort: Int,
     protected val rng: Rng,
     protected val statsReceiver: StatsReceiver,
-    protected val emptyException: NoBrokersAvailableException)
-    extends Balancer[Req, Rep] with PeakEwma[Req, Rep]
-    with P2C[Req, Rep] with Updating[Req, Rep] {
+    protected val emptyException: NoBrokersAvailableException
+) extends Balancer[Req, Rep]
+    with PeakEwma[Req, Rep]
+    with P2C[Req, Rep]
+    with Updating[Req, Rep] {
 
   protected[this] val maxEffortExhausted =
     statsReceiver.counter("max_effort_exhausted")
@@ -91,7 +95,7 @@ private trait PeakEwma[Req, Rep] { self: Balancer[Req, Rep] =>
   protected def nanoTime(): Long = System.nanoTime()
 
   protected class Metric(sr: StatsReceiver, name: String) {
-    private[this] val epoch = nanoTime()
+    private[this] val epoch           = nanoTime()
     private[this] val Penalty: Double = Long.MaxValue >> 16
     // The mean lifetime of `cost`, it reaches its half-life after Tau*ln(2).
     private[this] val Tau: Double = decayTime.inNanoseconds.toDouble
@@ -100,7 +104,7 @@ private trait PeakEwma[Req, Rep] { self: Balancer[Req, Rep] =>
     // these are all guarded by synchronization on `this`
     private[this] var stamp: Long =
       epoch // last timestamp in nanos we observed an rtt
-    private[this] var pending: Int = 0 // instantaneous rate
+    private[this] var pending: Int = 0   // instantaneous rate
     private[this] var cost: Double = 0.0 // ewma of rtt, sensitive to peaks.
 
     def rate(): Int = synchronized { pending }
@@ -113,40 +117,46 @@ private trait PeakEwma[Req, Rep] { self: Balancer[Req, Rep] =>
     // observations when calculating our weight.
     // [1] http://www.eckner.com/papers/ts_alg.pdf
     private[this] def observe(rtt: Double): Unit = {
-      val t = nanoTime()
+      val t  = nanoTime()
       val td = math.max(t - stamp, 0)
-      val w = math.exp(-td / Tau)
+      val w  = math.exp(-td / Tau)
       if (rtt > cost) cost = rtt
       else cost = cost * w + rtt * (1.0 - w)
       stamp = t
     }
 
-    def get(): Double = synchronized {
-      // update our view of the decay on `cost`
-      observe(0.0)
+    def get(): Double =
+      synchronized {
+        // update our view of the decay on `cost`
+        observe(0.0)
 
-      // If we don't have any latency history, we penalize the host on
-      // the first probe. Otherwise, we factor in our current rate
-      // assuming we were to schedule an additional request.
-      if (cost == 0.0 && pending != 0) Penalty + pending
-      else cost * (pending + 1)
-    }
+        // If we don't have any latency history, we penalize the host on
+        // the first probe. Otherwise, we factor in our current rate
+        // assuming we were to schedule an additional request.
+        if (cost == 0.0 && pending != 0) Penalty + pending
+        else cost * (pending + 1)
+      }
 
-    def start(): Long = synchronized {
-      pending += 1
-      nanoTime()
-    }
+    def start(): Long =
+      synchronized {
+        pending += 1
+        nanoTime()
+      }
 
-    def end(ts: Long): Unit = synchronized {
-      val rtt = math.max(nanoTime() - ts, 0)
-      pending -= 1
-      observe(rtt)
-    }
+    def end(ts: Long): Unit =
+      synchronized {
+        val rtt = math.max(nanoTime() - ts, 0)
+        pending -= 1
+        observe(rtt)
+      }
   }
 
   protected case class Node(
-      factory: ServiceFactory[Req, Rep], metric: Metric, token: Int)
-      extends ServiceFactoryProxy[Req, Rep](factory) with NodeT[Req, Rep] {
+      factory: ServiceFactory[Req, Rep],
+      metric: Metric,
+      token: Int
+  ) extends ServiceFactoryProxy[Req, Rep](factory)
+      with NodeT[Req, Rep] {
     type This = Node
 
     def load: Double = metric.get()
@@ -156,8 +166,7 @@ private trait PeakEwma[Req, Rep] { self: Balancer[Req, Rep] =>
       val ts = metric.start()
       super.apply(conn).transform {
         case Return(svc) =>
-          Future.value(
-              new ServiceProxy(svc) {
+          Future.value(new ServiceProxy(svc) {
             override def close(deadline: Time) =
               super.close(deadline).ensure {
                 metric.end(ts)
@@ -172,12 +181,15 @@ private trait PeakEwma[Req, Rep] { self: Balancer[Req, Rep] =>
   }
 
   protected def newNode(
-      factory: ServiceFactory[Req, Rep], statsReceiver: StatsReceiver): Node =
+      factory: ServiceFactory[Req, Rep],
+      statsReceiver: StatsReceiver
+  ): Node =
     Node(factory, new Metric(statsReceiver, factory.toString), rng.nextInt())
 
-  protected def failingNode(cause: Throwable) = Node(
+  protected def failingNode(cause: Throwable) =
+    Node(
       new FailingFactory(cause),
       new Metric(NullStatsReceiver, "failing"),
       0
-  )
+    )
 }

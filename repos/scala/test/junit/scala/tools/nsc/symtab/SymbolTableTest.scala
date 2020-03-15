@@ -20,7 +20,7 @@ class SymbolTableTest {
   def basicSubTypeCheck = {
     symbolTable.definitions.init()
     val listClassTpe = symbolTable.definitions.ListClass.tpe
-    val seqClassTpe = symbolTable.definitions.SeqClass.tpe
+    val seqClassTpe  = symbolTable.definitions.SeqClass.tpe
     assertTrue("List should be subclass of Seq", listClassTpe <:< seqClassTpe)
   }
 
@@ -34,16 +34,17 @@ class SymbolTableTest {
     symbolTable.definitions.init()
     val rootClass = symbolTable.rootMirror.RootClass
     val fooSymbol = rootClass.newClassSymbol(TypeName("Foo"), NoPosition, 0)
-    val fooType = new ClassInfoType(Nil, EmptyScope, fooSymbol)
+    val fooType   = new ClassInfoType(Nil, EmptyScope, fooSymbol)
     fooSymbol.info = fooType
-    val barSymbol = rootClass.newClassSymbol(TypeName("Bar"), NoPosition, 0)
+    val barSymbol  = rootClass.newClassSymbol(TypeName("Bar"), NoPosition, 0)
     val fooTypeRef = TypeRef(fooSymbol.owner.tpe, fooSymbol, Nil)
-    val barType = new ClassInfoType(List(fooTypeRef), EmptyScope, barSymbol)
+    val barType    = new ClassInfoType(List(fooTypeRef), EmptyScope, barSymbol)
     barSymbol.info = barType
-    assertTrue(
-        "Bar should be subclass of Foo", barSymbol.tpe <:< fooSymbol.tpe)
+    assertTrue("Bar should be subclass of Foo", barSymbol.tpe <:< fooSymbol.tpe)
     assertFalse(
-        "Foo should be a superclass of Foo", fooSymbol.tpe <:< barSymbol.tpe)
+      "Foo should be a superclass of Foo",
+      fooSymbol.tpe <:< barSymbol.tpe
+    )
   }
 
   @Test

@@ -29,8 +29,9 @@ sealed abstract class UndefOrLowPrioImplicits {
     *
     *  This needs evidence that `A <: B1 | B2`.
     */
-  implicit def any2undefOrUnion[A, B1, B2](a: A)(
-      implicit ev: Evidence[A, B1 | B2]): UndefOr[B1 | B2] = {
+  implicit def any2undefOrUnion[A, B1, B2](
+      a: A
+  )(implicit ev: Evidence[A, B1 | B2]): UndefOr[B1 | B2] = {
     a.asInstanceOf[UndefOr[B1 | B2]]
   }
 }
@@ -42,8 +43,7 @@ object UndefOr extends UndefOrLowPrioImplicits {
   implicit def undefOr2ops[A](value: UndefOr[A]): UndefOrOps[A] =
     new UndefOrOps(value)
 
-  implicit def undefOr2jsAny[A](value: UndefOr[A])(
-      implicit ev: A => Any): Any =
+  implicit def undefOr2jsAny[A](value: UndefOr[A])(implicit ev: A => Any): Any =
     value.map(ev).asInstanceOf[Any]
 }
 
@@ -257,9 +257,9 @@ object UndefOrOps {
     *  collection with max size 1.
     */
   class WithFilter[A](self: UndefOr[A], p: A => Boolean) {
-    def map[B](f: A => B): UndefOr[B] = self filter p map f
+    def map[B](f: A => B): UndefOr[B]              = self filter p map f
     def flatMap[B](f: A => UndefOr[B]): UndefOr[B] = self filter p flatMap f
-    def foreach[U](f: A => U): Unit = self filter p foreach f
+    def foreach[U](f: A => U): Unit                = self filter p foreach f
     def withFilter(q: A => Boolean): WithFilter[A] =
       new WithFilter[A](self, x => p(x) && q(x))
   }

@@ -16,7 +16,7 @@ abstract class dynamicAbstractClass extends Dynamic {
 
 trait dynamicTrait extends Dynamic {
   def applyDynamic(m: String)(args: Any*) = println("trait: " + m);
-  def two = 2
+  def two                                 = 2
   this.mili(1, 2, 3)
   two
 }

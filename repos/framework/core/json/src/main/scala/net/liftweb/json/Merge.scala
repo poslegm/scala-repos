@@ -17,7 +17,7 @@
 package net.liftweb
 package json
 
-/** Use fundep encoding to improve return type of merge function 
+/** Use fundep encoding to improve return type of merge function
   *  (see: http://www.chuusai.com/2011/07/16/fundeps-in-scala/)
   *
   *  JObject merge JObject = JObject
@@ -29,18 +29,19 @@ private[json] trait MergeDep[A <: JValue, B <: JValue, R <: JValue] {
 }
 
 private[json] trait LowPriorityMergeDep {
-  implicit def jjj[A <: JValue, B <: JValue] = new MergeDep[A, B, JValue] {
-    def apply(val1: A, val2: B): JValue = merge(val1, val2)
+  implicit def jjj[A <: JValue, B <: JValue] =
+    new MergeDep[A, B, JValue] {
+      def apply(val1: A, val2: B): JValue = merge(val1, val2)
 
-    private def merge(val1: JValue, val2: JValue): JValue =
-      (val1, val2) match {
-        case (JObject(xs), JObject(ys)) => JObject(Merge.mergeFields(xs, ys))
-        case (JArray(xs), JArray(ys)) => JArray(Merge.mergeVals(xs, ys))
-        case (JNothing, x) => x
-        case (x, JNothing) => x
-        case (_, y) => y
-      }
-  }
+      private def merge(val1: JValue, val2: JValue): JValue =
+        (val1, val2) match {
+          case (JObject(xs), JObject(ys)) => JObject(Merge.mergeFields(xs, ys))
+          case (JArray(xs), JArray(ys))   => JArray(Merge.mergeVals(xs, ys))
+          case (JNothing, x)              => x
+          case (x, JNothing)              => x
+          case (_, y)                     => y
+        }
+    }
 }
 
 private[json] trait MergeDeps extends LowPriorityMergeDep {
@@ -67,10 +68,13 @@ object Merge {
     * </pre>
     */
   def merge[A <: JValue, B <: JValue, R <: JValue](val1: A, val2: B)(
-      implicit instance: MergeDep[A, B, R]): R = instance(val1, val2)
+      implicit instance: MergeDep[A, B, R]
+  ): R = instance(val1, val2)
 
   private[json] def mergeFields(
-      vs1: List[JField], vs2: List[JField]): List[JField] = {
+      vs1: List[JField],
+      vs2: List[JField]
+  ): List[JField] = {
     def mergeRec(xleft: List[JField], yleft: List[JField]): List[JField] =
       xleft match {
         case Nil => yleft
@@ -78,7 +82,9 @@ object Merge {
           yleft find (_.name == xn) match {
             case Some(y @ JField(yn, yv)) =>
               JField(xn, merge(xv, yv)) :: mergeRec(
-                  xs, yleft filterNot (_ == y))
+                xs,
+                yleft filterNot (_ == y)
+              )
             case None => JField(xn, xv) :: mergeRec(xs, yleft)
           }
       }
@@ -87,7 +93,9 @@ object Merge {
   }
 
   private[json] def mergeVals(
-      vs1: List[JValue], vs2: List[JValue]): List[JValue] = {
+      vs1: List[JValue],
+      vs2: List[JValue]
+  ): List[JValue] = {
     def mergeRec(xleft: List[JValue], yleft: List[JValue]): List[JValue] =
       xleft match {
         case Nil => yleft
@@ -108,8 +116,9 @@ object Merge {
       /** Return merged JSON.
         * @see net.liftweb.json.Merge#merge
         */
-      def merge[B <: JValue, R <: JValue](other: B)(
-          implicit instance: MergeDep[A, B, R]): R =
+      def merge[B <: JValue, R <: JValue](
+          other: B
+      )(implicit instance: MergeDep[A, B, R]): R =
         Merge.merge(json, other)(instance)
     }
   }

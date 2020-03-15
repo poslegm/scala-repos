@@ -13,11 +13,12 @@ import com.twitter.util.Future
   * @Param forwardAfterService forward the dark request after the service has processed the request
   *        instead of concurrently.
   */
-class DarkTrafficFilter[Req, Rep](darkService: Service[Req, Rep],
-                                  enableSampling: Req => Boolean,
-                                  statsReceiver: StatsReceiver,
-                                  forwardAfterService: Boolean)
-    extends SimpleFilter[Req, Rep] {
+class DarkTrafficFilter[Req, Rep](
+    darkService: Service[Req, Rep],
+    enableSampling: Req => Boolean,
+    statsReceiver: StatsReceiver,
+    forwardAfterService: Boolean
+) extends SimpleFilter[Req, Rep] {
 
   def this(
       darkService: Service[Req, Rep],
@@ -32,7 +33,7 @@ class DarkTrafficFilter[Req, Rep](darkService: Service[Req, Rep],
   private[this] val requestsSkippedCounter =
     scopedStatsReceiver.counter("skipped")
   private[this] val failedCounter = scopedStatsReceiver.counter("failed")
-  private[this] val log = Logger.get("DarkTrafficFilter")
+  private[this] val log           = Logger.get("DarkTrafficFilter")
 
   override def apply(request: Req, service: Service[Req, Rep]): Future[Rep] = {
     if (forwardAfterService) {

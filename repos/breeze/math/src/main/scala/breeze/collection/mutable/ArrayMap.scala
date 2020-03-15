@@ -2,18 +2,18 @@ package breeze.collection.mutable
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License")
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
  */
 
 import scala.collection.mutable.ArrayBuffer
@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 
 /**
   * Wraps an ArrayBuffer with a Map. Note the odd behavior for -=
-  * 
+  *
   * The key must be nonnegative
   *
   * Chances are you want to change defValue, which is used to
@@ -35,7 +35,8 @@ import scala.reflect.ClassTag
 @SerialVersionUID(1)
 class ArrayMap[@specialized V](defValue: => V, private val arr: ArrayBuffer[V])
     extends scala.collection.mutable.Map[Int, V]
-    with MapLike[Int, V, ArrayMap[V]] with Serializable {
+    with MapLike[Int, V, ArrayMap[V]]
+    with Serializable {
   def this(defValue: => V = ArrayMap.error) =
     this(defValue, new ArrayBuffer[V]())
   override def default(i: Int): V = defValue
@@ -47,9 +48,9 @@ class ArrayMap[@specialized V](defValue: => V, private val arr: ArrayBuffer[V])
       arr(i)
     }
   }
-  override def get(i: Int) = if (i < arr.length) Some(arr(i)) else None
+  override def get(i: Int)                = if (i < arr.length) Some(arr(i)) else None
   override def +=(k: (Int, V)): this.type = { update(k._1, k._2); this }
-  override def clear = arr.clear()
+  override def clear                      = arr.clear()
 
   override def getOrElseUpdate(i: Int, v: => V) = {
     if (i >= arr.length) {
@@ -73,18 +74,19 @@ class ArrayMap[@specialized V](defValue: => V, private val arr: ArrayBuffer[V])
     * Note that removing an element in the array simply replaces it with the default(i)
     */
   def -=(i: Int): this.type = { arr(i) = default(i); this }
-  override def size = arr.size
-  def iterator = keysIterator zip valuesIterator
+  override def size         = arr.size
+  def iterator              = keysIterator zip valuesIterator
   override def keysIterator = (0 until arr.length).iterator
-  override def keys: Set[Int] = new Set[Int] {
-    def iterator = keysIterator
+  override def keys: Set[Int] =
+    new Set[Int] {
+      def iterator = keysIterator
 
-    def -(elem: Int) = if (!contains(elem)) this else Set.empty ++ keys - elem
+      def -(elem: Int) = if (!contains(elem)) this else Set.empty ++ keys - elem
 
-    def +(elem: Int) = if (contains(elem)) this else Set.empty ++ keys + elem
+      def +(elem: Int) = if (contains(elem)) this else Set.empty ++ keys + elem
 
-    def contains(i: Int) = i < arr.length && i > 0
-  }
+      def contains(i: Int) = i < arr.length && i > 0
+    }
   override def valuesIterator = arr.iterator
 
   /**

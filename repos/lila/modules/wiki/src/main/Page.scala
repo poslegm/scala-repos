@@ -3,12 +3,14 @@ package lila.wiki
 import java.text.Normalizer
 import java.util.regex.Matcher.quoteReplacement
 
-case class Page(id: String,
-                slug: String,
-                number: Int,
-                lang: String,
-                title: String,
-                body: String) {
+case class Page(
+    id: String,
+    slug: String,
+    number: Int,
+    lang: String,
+    title: String,
+    body: String
+) {
 
   def isDefaultLang = lang == Page.DefaultLang
 }
@@ -16,21 +18,24 @@ case class Page(id: String,
 object Page {
 
   val DefaultLang = "en"
-  val NameRegex = """^(\w{2,3})_(\d+)_(.+)$""".r
+  val NameRegex   = """^(\w{2,3})_(\d+)_(.+)$""".r
 
   // name = en_1_Some Title
-  def make(name: String, body: String): Option[Page] = name match {
-    case NameRegex(lang, numberStr, title) =>
-      parseIntOption(numberStr) map { number =>
-        Page(id = name,
-             number = number,
-             slug = slugify(title),
-             lang = lang,
-             title = title.replace("-", " "),
-             body = body)
-      }
-    case _ => none
-  }
+  def make(name: String, body: String): Option[Page] =
+    name match {
+      case NameRegex(lang, numberStr, title) =>
+        parseIntOption(numberStr) map { number =>
+          Page(
+            id = name,
+            number = number,
+            slug = slugify(title),
+            lang = lang,
+            title = title.replace("-", " "),
+            body = body
+          )
+        }
+      case _ => none
+    }
 
   import lila.db.JsTube
   import play.api.libs.json._
@@ -40,7 +45,7 @@ object Page {
   // does not lowercase
   private def slugify(input: String) = {
     val nowhitespace = input.replace(" ", "_")
-    val normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD)
+    val normalized   = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD)
     """[^\w-]""".r.replaceAllIn(normalized, "")
   }
 

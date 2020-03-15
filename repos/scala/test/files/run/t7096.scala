@@ -21,7 +21,7 @@ abstract class CompilerTest extends DirectTest {
   def show() = (sources, units).zipped foreach check
 
   // Override at least one of these...
-  def code = ""
+  def code                  = ""
   def sources: List[String] = List(code)
 
   // Utility functions
@@ -42,13 +42,13 @@ abstract class CompilerTest extends DirectTest {
   }
 
   class SymsInPackage(pkgName: String) {
-    def pkg = rootMirror.getPackage(TermName(pkgName))
+    def pkg     = rootMirror.getPackage(TermName(pkgName))
     def classes = allMembers(pkg) filter (_.isClass)
     def modules = allMembers(pkg) filter (_.isModule)
     def symbols = classes ++ terms filterNot (_ eq NoSymbol)
-    def terms = allMembers(pkg) filter (s => s.isTerm && !s.isConstructor)
+    def terms   = allMembers(pkg) filter (s => s.isTerm && !s.isConstructor)
     def tparams = classes flatMap (_.info.typeParams)
-    def tpes = symbols map (_.tpe) distinct
+    def tpes    = symbols map (_.tpe) distinct
   }
 }
 
@@ -77,14 +77,14 @@ class Sub extends Base {
     exitingTyper {
       terms
         .filter(_.name.toString == "foo")
-        .foreach(sym =>
-              {
-            val xParam = sym.tpe.paramss.flatten.head
-            val annot = sym.tpe.finalResultType.annotations.head
-            val xRefs = annot.args.head.filter(t => t.symbol == xParam)
-            println(
-                s"testing symbol ${sym.ownerChain}, param $xParam, xRefs $xRefs")
-            assert(xRefs.length == 1, xRefs)
+        .foreach(sym => {
+          val xParam = sym.tpe.paramss.flatten.head
+          val annot  = sym.tpe.finalResultType.annotations.head
+          val xRefs  = annot.args.head.filter(t => t.symbol == xParam)
+          println(
+            s"testing symbol ${sym.ownerChain}, param $xParam, xRefs $xRefs"
+          )
+          assert(xRefs.length == 1, xRefs)
         })
     }
   }

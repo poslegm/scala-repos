@@ -5,7 +5,12 @@ import scala.pickling._
 import scala.pickling.Defaults._
 import scala.pickling.binary._
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutputStream, ObjectInputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  ObjectOutputStream,
+  ObjectInputStream
+}
 
 object TraversableIntBenchSize
     extends scala.pickling.testing.PicklingBenchmark {
@@ -39,7 +44,7 @@ object TraversableKryoIntBenchSize
   override val enableOutput = false
 
   var ser: KryoSerializer = _
-  val coll = (1 to size).toVector
+  val coll                = (1 to size).toVector
 
   override def tearDown() {
     ser = null
@@ -47,7 +52,7 @@ object TraversableKryoIntBenchSize
 
   override def run() {
     val rnd: Int = Random.nextInt(10)
-    val arr = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
+    val arr      = Array.ofDim[Byte](32 * 2048 * 2048 + rnd)
     ser = new KryoSerializer
 
     val pickled = ser.toBytes(coll, arr)

@@ -8,7 +8,7 @@ import com.twitter.util.{NonFatal, Time}
 
 private[http] object HttpContext {
 
-  private[this] val Prefix = "Finagle-Ctx-"
+  private[this] val Prefix            = "Finagle-Ctx-"
   private[this] val DeadlineHeaderKey = Prefix + Deadline.id
 
   private val log = Logger(getClass.getName)
@@ -18,15 +18,18 @@ private[http] object HttpContext {
 
   private[this] def unmarshalDeadline(header: String): Option[Deadline] =
     try {
-      val values = header.split(' ')
+      val values    = header.split(' ')
       val timestamp = values(0).toLong
-      val deadline = values(1).toLong
-      Some(Deadline(
-              Time.fromNanoseconds(timestamp), Time.fromNanoseconds(deadline)))
+      val deadline  = values(1).toLong
+      Some(
+        Deadline(
+          Time.fromNanoseconds(timestamp),
+          Time.fromNanoseconds(deadline)
+        )
+      )
     } catch {
       case NonFatal(exc) =>
-        log.debug(
-            s"Could not unmarshall Deadline from header value: ${header}")
+        log.debug(s"Could not unmarshall Deadline from header value: ${header}")
         None
     }
 
@@ -40,7 +43,7 @@ private[http] object HttpContext {
       case Some(str) =>
         unmarshalDeadline(str) match {
           case Some(deadline) => Contexts.broadcast.let(Deadline, deadline)(fn)
-          case None => fn
+          case None           => fn
         }
       case None =>
         fn

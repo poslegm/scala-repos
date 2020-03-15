@@ -30,8 +30,8 @@ trait Offset extends Serializable {
     */
   def compareTo(other: Offset): Int
 
-  def >(other: Offset): Boolean = compareTo(other) > 0
-  def <(other: Offset): Boolean = compareTo(other) < 0
+  def >(other: Offset): Boolean  = compareTo(other) > 0
+  def <(other: Offset): Boolean  = compareTo(other) < 0
   def <=(other: Offset): Boolean = compareTo(other) <= 0
   def >=(other: Offset): Boolean = compareTo(other) >= 0
 }

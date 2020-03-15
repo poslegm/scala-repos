@@ -36,7 +36,8 @@ import scalafx.event.EventType
 
 object InputMethodEvent {
   implicit def sfxInputMethodEvent2jfx(
-      ime: InputMethodEvent): jfxsi.InputMethodEvent =
+      ime: InputMethodEvent
+  ): jfxsi.InputMethodEvent =
     if (ime != null) ime.delegate else null
 
   val InputMethodTextChanged: EventType[jfxsi.InputMethodEvent] =
@@ -44,7 +45,8 @@ object InputMethodEvent {
 }
 
 class InputMethodEvent(override val delegate: jfxsi.InputMethodEvent)
-    extends InputEvent(delegate) with SFXDelegate[jfxsi.InputMethodEvent] {
+    extends InputEvent(delegate)
+    with SFXDelegate[jfxsi.InputMethodEvent] {
 
   /**
     * The input method caret position within the composed text.

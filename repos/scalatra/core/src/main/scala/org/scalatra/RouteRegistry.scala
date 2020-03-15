@@ -15,7 +15,7 @@ class RouteRegistry {
     new ConcurrentHashMap[Int, Route].asScala
 
   private[this] var _beforeFilters: Seq[Route] = Vector.empty
-  private[this] var _afterFilters: Seq[Route] = Vector.empty
+  private[this] var _afterFilters: Seq[Route]  = Vector.empty
 
   /**
     * Returns the sequence of routes registered for the specified method.
@@ -27,7 +27,9 @@ class RouteRegistry {
     method match {
       case Head =>
         _methodRoutes.getOrElse(
-            Head, _methodRoutes.getOrElse(Get, Vector.empty))
+          Head,
+          _methodRoutes.getOrElse(Get, Vector.empty)
+        )
       case m => _methodRoutes.getOrElse(m, Vector.empty)
     }
 
@@ -44,9 +46,7 @@ class RouteRegistry {
     * HEAD must be identical to GET without a body, so GET implies HEAD.
     */
   def matchingMethods(requestPath: String): Set[HttpMethod] =
-    matchingMethodsExcept(requestPath) { _ =>
-      false
-    }
+    matchingMethodsExcept(requestPath) { _ => false }
 
   /**
     * Returns a set of methods with a matching route minus a specified
@@ -57,23 +57,24 @@ class RouteRegistry {
     * - filtering one filters the other
     */
   def matchingMethodsExcept(
-      method: HttpMethod, requestPath: String): Set[HttpMethod] = {
+      method: HttpMethod,
+      requestPath: String
+  ): Set[HttpMethod] = {
     val p: HttpMethod => Boolean = method match {
-      case Get | Head => { m =>
-          m == Get || m == Head
-        }
-      case _ => { _ == method }
+      case Get | Head => { m => m == Get || m == Head }
+      case _          => { _ == method }
     }
     matchingMethodsExcept(requestPath)(p)
   }
 
-  private def matchingMethodsExcept(requestPath: String)(
-      p: HttpMethod => Boolean) = {
+  private def matchingMethodsExcept(
+      requestPath: String
+  )(p: HttpMethod => Boolean) = {
     var methods = (_methodRoutes filter { kv =>
-          val method = kv._1
-          val routes = kv._2
-          !p(method) && (routes exists (_.apply(requestPath).isDefined))
-        }).keys.toSet
+      val method = kv._1
+      val routes = kv._2
+      !p(method) && (routes exists (_.apply(requestPath).isDefined))
+    }).keys.toSet
     if (methods.contains(Get)) methods += Head
     methods
   }
@@ -81,9 +82,8 @@ class RouteRegistry {
   /**
     * Add a route that explicitly matches one or more response codes.
     */
-  def addStatusRoute(codes: Range, route: Route) = codes.foreach { code =>
-    _statusRoutes.put(code, route)
-  }
+  def addStatusRoute(codes: Range, route: Route) =
+    codes.foreach { code => _statusRoutes.put(code, route) }
 
   /**
     * Prepends a route to the method's route sequence.
@@ -118,7 +118,9 @@ class RouteRegistry {
   def appendAfterFilter(route: Route): Unit = _afterFilters :+= route
 
   @tailrec private def modifyRoutes(
-      method: HttpMethod, f: (Seq[Route] => Seq[Route])): Unit = {
+      method: HttpMethod,
+      f: (Seq[Route] => Seq[Route])
+  ): Unit = {
     if (_methodRoutes.putIfAbsent(method, f(Vector.empty)).isDefined) {
       val oldRoutes = _methodRoutes(method)
       if (!_methodRoutes.replace(method, oldRoutes, f(oldRoutes)))
@@ -132,7 +134,7 @@ class RouteRegistry {
   def entryPoints: Seq[String] =
     (for {
       (method, routes) <- _methodRoutes
-      route <- routes
+      route            <- routes
     } yield method + " " + route).toSeq sortWith (_ < _)
 
   def methodRoutes: Map[HttpMethod, Seq[Route]] = _methodRoutes.clone().toMap

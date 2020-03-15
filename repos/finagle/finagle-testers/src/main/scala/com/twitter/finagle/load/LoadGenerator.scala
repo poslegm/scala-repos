@@ -1,7 +1,15 @@
 package com.twitter.finagle.load
 
 import com.twitter.finagle.{Service, SimpleFilter}
-import com.twitter.util.{Duration, Future, MockTimer, Promise, Time, TimeControl, Try}
+import com.twitter.util.{
+  Duration,
+  Future,
+  MockTimer,
+  Promise,
+  Time,
+  TimeControl,
+  Try
+}
 import com.twitter.conversions.time.intToTimeableNumber
 import scala.collection.immutable.SortedSet
 
@@ -34,7 +42,7 @@ class LoadGenerator[Req, Rep](
     * Every time a request is made, it is recorded with the latency and passed to recorder.
     */
   def execute(): Unit = {
-    var cur = Time.fromMilliseconds(0)
+    var cur      = Time.fromMilliseconds(0)
     var endTimes = SortedSet[Time]()
 
     // sets time to one nanosecond before the end of the next request
@@ -74,9 +82,11 @@ class LoadGenerator[Req, Rep](
 
 object LoadGenerator {
   def mkHistory[Req, Rep](
-      event: () => Event[Req, Rep], num: Int): Iterator[Event[Req, Rep]] =
+      event: () => Event[Req, Rep],
+      num: Int
+  ): Iterator[Event[Req, Rep]] =
     new Iterator[Event[Req, Rep]] {
-      def hasNext: Boolean = true
+      def hasNext: Boolean        = true
       def next(): Event[Req, Rep] = event()
     }.take(num)
 
@@ -94,16 +104,19 @@ object LoadGenerator {
       groupSize: Int,
       num: Int
   ): Iterator[Event[Req, Rep]] = {
-    var cur = start
+    var cur          = start
     var curGroupSize = 0
-    mkHistory({ () =>
-      val evt = mkEvent(cur)
-      curGroupSize += 1
-      if (curGroupSize == groupSize) {
-        curGroupSize = 0
-        cur += interval
-      }
-      evt
-    }, num)
+    mkHistory(
+      { () =>
+        val evt = mkEvent(cur)
+        curGroupSize += 1
+        if (curGroupSize == groupSize) {
+          curGroupSize = 0
+          cur += interval
+        }
+        evt
+      },
+      num
+    )
   }
 }

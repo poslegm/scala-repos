@@ -17,17 +17,19 @@ final class DataSet[V, @sp(Double) F, @sp(Double) K](
     val name: String,
     val variables: List[Variable[F]],
     val space: CoordinateSpace[V, F],
-    val data: List[(V, K)]) {
+    val data: List[(V, K)]
+) {
 
   def describe: String = {
     import Variable._
 
-    def varType(v: Variable[F]): String = v match {
-      case Ignored(_) => "ignored"
-      case Continuous(_, _) => "continuous"
-      case Categorical(_) => "categorical"
-      case Missing(v0, _) => s"${varType(v0)} with missing values"
-    }
+    def varType(v: Variable[F]): String =
+      v match {
+        case Ignored(_)       => "ignored"
+        case Continuous(_, _) => "continuous"
+        case Categorical(_)   => "categorical"
+        case Missing(v0, _)   => s"${varType(v0)} with missing values"
+      }
 
     val vars =
       variables.zipWithIndex map {
@@ -42,24 +44,25 @@ final class DataSet[V, @sp(Double) F, @sp(Double) K](
 
 object DataSet {
   private def withResource[A](path: String)(f: BufferedReader => A): A = {
-    val in = getClass.getResourceAsStream(path)
+    val in     = getClass.getResourceAsStream(path)
     val reader = new BufferedReader(new InputStreamReader(in))
     val result = f(reader)
     reader.close()
     result
   }
 
-  private def readDataSet(path: String): List[String] = withResource(path) {
-    reader =>
+  private def readDataSet(path: String): List[String] =
+    withResource(path) { reader =>
       Stream.continually(reader.readLine()).takeWhile(_ != null).toList
-  }
+    }
 
   type Output[+K] = (Int, String => K)
 
   protected def fromLines[CC[_], F, K](
-      lines: List[List[String]], variables: List[Variable[F]], out: Output[K])(
-      implicit cbf: CanBuildFrom[Nothing, F, CC[F]])
-    : (Int, List[(CC[F], K)]) = {
+      lines: List[List[String]],
+      variables: List[Variable[F]],
+      out: Output[K]
+  )(implicit cbf: CanBuildFrom[Nothing, F, CC[F]]): (Int, List[(CC[F], K)]) = {
 
     // Perform our first pass, building the conversion functions.
     val builders = variables map (_.apply())
@@ -93,8 +96,10 @@ object DataSet {
       res: String,
       sep: Char,
       variables: List[Variable[F]],
-      out: Output[K])(cs: Int => CoordinateSpace[CC[F], F])(
-      implicit cbf: CanBuildFrom[Nothing, F, CC[F]]): DataSet[CC[F], F, K] = {
+      out: Output[K]
+  )(
+      cs: Int => CoordinateSpace[CC[F], F]
+  )(implicit cbf: CanBuildFrom[Nothing, F, CC[F]]): DataSet[CC[F], F, K] = {
 
     val lines = readDataSet(res)
     val (dimensions, data) =
@@ -107,48 +112,64 @@ object DataSet {
   import Variable._
 
   private val IrisVars = List[Variable[Rational]](
-      Continuous("Sepal Length", Rational(_)),
-      Continuous("Sepal Width", Rational(_)),
-      Continuous("Petal Length", Rational(_)),
-      Continuous("Petal Width", Rational(_)),
-      Ignored("Species"))
+    Continuous("Sepal Length", Rational(_)),
+    Continuous("Sepal Width", Rational(_)),
+    Continuous("Petal Length", Rational(_)),
+    Continuous("Petal Width", Rational(_)),
+    Ignored("Species")
+  )
 
   def Iris =
     fromResource[Vector, Rational, String](
-        "Iris", "/datasets/iris.data", ',', IrisVars, (4, identity))(
-        CoordinateSpace.seq)
+      "Iris",
+      "/datasets/iris.data",
+      ',',
+      IrisVars,
+      (4, identity)
+    )(CoordinateSpace.seq)
 
-  private val YeastVars = List[Variable[Double]](Ignored("Protein"),
-                                                 Continuous("mcg", _.toDouble),
-                                                 Continuous("gvh", _.toDouble),
-                                                 Continuous("alm", _.toDouble),
-                                                 Continuous("mit", _.toDouble),
-                                                 Continuous("erl", _.toDouble),
-                                                 Continuous("pox", _.toDouble),
-                                                 Continuous("vac", _.toDouble),
-                                                 Continuous("nuc", _.toDouble),
-                                                 Ignored("Location"))
+  private val YeastVars = List[Variable[Double]](
+    Ignored("Protein"),
+    Continuous("mcg", _.toDouble),
+    Continuous("gvh", _.toDouble),
+    Continuous("alm", _.toDouble),
+    Continuous("mit", _.toDouble),
+    Continuous("erl", _.toDouble),
+    Continuous("pox", _.toDouble),
+    Continuous("vac", _.toDouble),
+    Continuous("nuc", _.toDouble),
+    Ignored("Location")
+  )
 
   def Yeast =
     fromResource[Array, Double, String](
-        "Yeast", "/datasets/yeast.data", ',', YeastVars, (9, identity))(
-        CoordinateSpace.array)
+      "Yeast",
+      "/datasets/yeast.data",
+      ',',
+      YeastVars,
+      (9, identity)
+    )(CoordinateSpace.array)
 
   private val MpgVars = List[Variable[Double]](
-      Ignored("MPG"),
-      Categorical[Double]("# of Cylinders"),
-      Continuous("Displacement", _.toDouble),
-      Continuous("Horsepower", _.toDouble).missing("?"),
-      Continuous("Weight", _.toDouble),
-      Continuous("Acceleration", _.toDouble),
-      Continuous("Model Year", _.toDouble),
-      Categorical[Double]("Country of Origin"),
-      Ignored("Model Name"))
+    Ignored("MPG"),
+    Categorical[Double]("# of Cylinders"),
+    Continuous("Displacement", _.toDouble),
+    Continuous("Horsepower", _.toDouble).missing("?"),
+    Continuous("Weight", _.toDouble),
+    Continuous("Acceleration", _.toDouble),
+    Continuous("Model Year", _.toDouble),
+    Categorical[Double]("Country of Origin"),
+    Ignored("Model Name")
+  )
 
   def MPG =
     fromResource[Array, Double, Double](
-        "MPG", "/datasets/auto-mpg.data", ',', MpgVars, (0, _.toDouble))(
-        CoordinateSpace.array)
+      "MPG",
+      "/datasets/auto-mpg.data",
+      ',',
+      MpgVars,
+      (0, _.toDouble)
+    )(CoordinateSpace.array)
 }
 
 sealed trait Variable[+F]
@@ -164,76 +185,77 @@ object Variable {
   protected val Unlabeled = "unnamed variable"
 
   case class Ignored(label: String = Unlabeled) extends Variable[Nothing] {
-    def apply() = new Builder[String, String => List[Nothing]] {
-      def +=(s: String) = this
-      def clear(): Unit = ()
-      def result() = s => Nil
-    }
+    def apply() =
+      new Builder[String, String => List[Nothing]] {
+        def +=(s: String) = this
+        def clear(): Unit = ()
+        def result()      = s => Nil
+      }
   }
 
   case class Continuous[+F](label: String = Unlabeled, f: String => F)
       extends Variable[F] {
-    def apply() = new Builder[String, String => List[F]] {
-      def +=(s: String) = this
-      def clear(): Unit = ()
-      def result() = { s =>
-        f(s) :: Nil
+    def apply() =
+      new Builder[String, String => List[F]] {
+        def +=(s: String) = this
+        def clear(): Unit = ()
+        def result()      = { s => f(s) :: Nil }
       }
-    }
   }
 
-  case class Categorical[+F : Ring](label: String = Unlabeled)
+  case class Categorical[+F: Ring](label: String = Unlabeled)
       extends Variable[F] {
-    def apply() = new Builder[String, String => List[F]] {
-      var categories: Set[String] = Set.empty
+    def apply() =
+      new Builder[String, String => List[F]] {
+        var categories: Set[String] = Set.empty
 
-      def +=(s: String) = {
-        categories += s
-        this
-      }
-      def clear(): Unit = { categories = Set.empty }
-      def result() = {
-        val orderedCategories = categories.toList
+        def +=(s: String) = {
+          categories += s
+          this
+        }
+        def clear(): Unit = { categories = Set.empty }
+        def result() = {
+          val orderedCategories = categories.toList
 
-        { s =>
-          orderedCategories map
-          (cat => if (cat == s) Ring[F].one else Ring[F].zero)
+          { s =>
+            orderedCategories map
+              (cat => if (cat == s) Ring[F].one else Ring[F].zero)
+          }
         }
       }
-    }
   }
 
   case class Missing[+F](default: Variable[F], sentinel: String)
       extends Variable[F] {
     def label = default.label
 
-    def apply() = new Builder[String, String => List[F]] {
-      val defaultBuilder = default.apply()
-      val values: ListBuffer[String] = new ListBuffer[String]
+    def apply() =
+      new Builder[String, String => List[F]] {
+        val defaultBuilder             = default.apply()
+        val values: ListBuffer[String] = new ListBuffer[String]
 
-      def +=(s: String) = {
-        if (s != sentinel) {
-          defaultBuilder += s
-          values += s
-        }
-        this
-      }
-      def clear(): Unit = { values.clear(); defaultBuilder.clear() }
-      def result() = {
-        val real = defaultBuilder.result()
-        val occurences = values.foldLeft(Map.empty[List[F], Int]) { (acc, v) =>
-          val k = real(v)
-          acc + (k -> (acc.getOrElse(k, 0) + 1))
-        }
-        val mostCommon = occurences
-          .maxBy(_._2)
-          ._1
-
-          { s =>
-            if (s == sentinel) mostCommon else real(s)
+        def +=(s: String) = {
+          if (s != sentinel) {
+            defaultBuilder += s
+            values += s
           }
+          this
+        }
+        def clear(): Unit = { values.clear(); defaultBuilder.clear() }
+        def result() = {
+          val real = defaultBuilder.result()
+          val occurences = values.foldLeft(Map.empty[List[F], Int]) {
+            (acc, v) =>
+              val k = real(v)
+              acc + (k -> (acc.getOrElse(k, 0) + 1))
+          }
+          val mostCommon = occurences
+            .maxBy(_._2)
+            ._1
+
+          { s => if (s == sentinel) mostCommon else real(s) }
+        }
       }
-    }
   }
 }
 
@@ -245,9 +267,11 @@ object CrossValidation {
     * predictor results.
     */
   def crossValidate[V, @sp(Double) F, K](
-      dataset: DataSet[V, F, K], k: Int = 10)(
-      train: CoordinateSpace[V, F] => List[(V, K)] => (V => K))(
-      score: List[Result[V, K]] => F): F = {
+      dataset: DataSet[V, F, K],
+      k: Int = 10
+  )(
+      train: CoordinateSpace[V, F] => List[(V, K)] => (V => K)
+  )(score: List[Result[V, K]] => F): F = {
     implicit val field = dataset.space.scalar
 
     @tailrec
@@ -255,9 +279,9 @@ object CrossValidation {
       if (n <= 0) {
         sum / k
       } else {
-        val len = (right0.size + n - 1) / n
+        val len              = (right0.size + n - 1) / n
         val (removed, right) = right0.splitAt(len)
-        val predict = train(dataset.space)(left ++ right)
+        val predict          = train(dataset.space)(left ++ right)
         val results =
           removed map {
             case (in, out) =>
@@ -275,8 +299,9 @@ object CrossValidation {
     * predictor.
     */
   def crossValidateClassification[V, @sp(Double) F, K](
-      dataset: DataSet[V, F, K], k: Int = 10)(
-      train: CoordinateSpace[V, F] => List[(V, K)] => (V => K)): F = {
+      dataset: DataSet[V, F, K],
+      k: Int = 10
+  )(train: CoordinateSpace[V, F] => List[(V, K)] => (V => K)): F = {
     implicit val field = dataset.space.scalar
 
     def accuracy(results: List[Result[V, K]]): F = {
@@ -293,8 +318,9 @@ object CrossValidation {
     * For cross-validating regression, we use the R^2 to score the predictor.
     */
   def crossValidateRegression[V, @sp(Double) F](
-      dataset: DataSet[V, F, F], k: Int = 10)(
-      train: CoordinateSpace[V, F] => List[(V, F)] => (V => F)): F = {
+      dataset: DataSet[V, F, F],
+      k: Int = 10
+  )(train: CoordinateSpace[V, F] => List[(V, F)] => (V => F)): F = {
     implicit val field = dataset.space.scalar
 
     def rSquared(results: List[Result[V, F]]): F = {

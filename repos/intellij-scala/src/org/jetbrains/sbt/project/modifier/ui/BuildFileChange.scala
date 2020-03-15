@@ -7,11 +7,15 @@ import com.intellij.openapi.vcs.changes.{ContentRevision, Change}
   * @author Roman.Shein
   * @since 23.03.2015.
   */
-class BuildFileChange(val beforeRevision: ContentRevision,
-                      val afterRevision: ContentRevision,
-                      val buildFileStatus: BuildFileModifiedStatus)
-    extends Change(
-        beforeRevision, afterRevision, buildFileStatus.getChangeStatus) {
+class BuildFileChange(
+    val beforeRevision: ContentRevision,
+    val afterRevision: ContentRevision,
+    val buildFileStatus: BuildFileModifiedStatus
+) extends Change(
+      beforeRevision,
+      afterRevision,
+      buildFileStatus.getChangeStatus
+    ) {
 
   override def getOriginText(project: Project) = buildFileStatus.getOriginText
 }
@@ -25,5 +29,8 @@ object BuildFileChange {
     */
   def swap(change: BuildFileChange) =
     new BuildFileChange(
-        change.afterRevision, change.beforeRevision, change.buildFileStatus)
+      change.afterRevision,
+      change.beforeRevision,
+      change.buildFileStatus
+    )
 }

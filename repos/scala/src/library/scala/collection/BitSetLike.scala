@@ -74,10 +74,10 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
   implicit def ordering: Ordering[Int] = Ordering.Int
 
   def rangeImpl(from: Option[Int], until: Option[Int]): This = {
-    val a = toBitMask
+    val a   = toBitMask
     val len = a.length
     if (from.isDefined) {
-      var f = from.get
+      var f   = from.get
       var pos = 0
       while (f >= 64 && pos < len) {
         f -= 64
@@ -87,9 +87,9 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
       if (f > 0 && pos < len) a(pos) &= ~((1L << f) - 1)
     }
     if (until.isDefined) {
-      val u = until.get
-      val w = u / 64
-      val b = u % 64
+      val u      = until.get
+      val w      = u / 64
+      val b      = u % 64
       var clearw = w + 1
       while (clearw < len) {
         a(clearw) = 0
@@ -102,17 +102,19 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
 
   def iterator: Iterator[Int] = iteratorFrom(0)
 
-  override def keysIteratorFrom(start: Int) = new AbstractIterator[Int] {
-    private var current = start
-    private val end = nwords * WordLength
-    def hasNext: Boolean = {
-      while (current != end && !self.contains(current)) current += 1
-      current != end
+  override def keysIteratorFrom(start: Int) =
+    new AbstractIterator[Int] {
+      private var current = start
+      private val end     = nwords * WordLength
+      def hasNext: Boolean = {
+        while (current != end && !self.contains(current)) current += 1
+        current != end
+      }
+      def next(): Int =
+        if (hasNext) { val r = current; current += 1; r }
+        else
+          Iterator.empty.next()
     }
-    def next(): Int =
-      if (hasNext) { val r = current; current += 1; r } else
-        Iterator.empty.next()
-  }
 
   override def foreach[U](f: Int => U) {
     /* NOTE: while loops are significantly faster as of 2.11 and
@@ -140,7 +142,7 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
     *           bitset or in the given bitset `other`.
     */
   def |(other: BitSet): This = {
-    val len = this.nwords max other.nwords
+    val len   = this.nwords max other.nwords
     val words = new Array[Long](len)
     for (idx <- 0 until len) words(idx) = this.word(idx) | other.word(idx)
     fromBitMaskNoCopy(words)
@@ -153,7 +155,7 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
     *  bitset and in the given bitset `other`.
     */
   def &(other: BitSet): This = {
-    val len = this.nwords min other.nwords
+    val len   = this.nwords min other.nwords
     val words = new Array[Long](len)
     for (idx <- 0 until len) words(idx) = this.word(idx) & other.word(idx)
     fromBitMaskNoCopy(words)
@@ -167,7 +169,7 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
     *              bitset that are not also contained in the given bitset `other`.
     */
   def &~(other: BitSet): This = {
-    val len = this.nwords
+    val len   = this.nwords
     val words = new Array[Long](len)
     for (idx <- 0 until len) words(idx) = this.word(idx) & ~other.word(idx)
     fromBitMaskNoCopy(words)
@@ -181,7 +183,7 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
     *              bitset or the other bitset that are not contained in both bitsets.
     */
   def ^(other: BitSet): This = {
-    val len = this.nwords max other.nwords
+    val len   = this.nwords max other.nwords
     val words = new Array[Long](len)
     for (idx <- 0 until len) words(idx) = this.word(idx) ^ other.word(idx)
     fromBitMaskNoCopy(words)
@@ -223,11 +225,15 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
   }
 
   override def addString(
-      sb: StringBuilder, start: String, sep: String, end: String) = {
+      sb: StringBuilder,
+      start: String,
+      sep: String,
+      end: String
+  ) = {
     sb append start
     var pre = ""
     val max = nwords * WordLength
-    var i = 0
+    var i   = 0
     while (i != max) {
       if (contains(i)) {
         sb append pre append i
@@ -244,14 +250,18 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
 /** Companion object for BitSets. Contains private data only */
 object BitSetLike {
   /* Final vals can sometimes be inlined as constants (faster) */
-  private[collection] final val LogWL = 6
-  private final val WordLength = 64
+  private[collection] final val LogWL   = 6
+  private final val WordLength          = 64
   private[collection] final val MaxSize = (Int.MaxValue >> LogWL) + 1
 
   private[collection] def updateArray(
-      elems: Array[Long], idx: Int, w: Long): Array[Long] = {
+      elems: Array[Long],
+      idx: Int,
+      w: Long
+  ): Array[Long] = {
     var len = elems.length
-    while (len > 0 && (elems(len - 1) == 0L || w == 0L && idx == len - 1)) len -= 1
+    while (len > 0 && (elems(len - 1) == 0L || w == 0L && idx == len - 1))
+      len -= 1
     var newlen = len
     if (idx >= newlen && w != 0L) newlen = idx + 1
     val newelems = new Array[Long](newlen)

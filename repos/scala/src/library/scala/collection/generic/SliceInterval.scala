@@ -14,7 +14,10 @@ package generic
   *  The constructor is private to enforce the invariants:
   *  from >= 0, until >= 0, from <= until.
   */
-private[collection] class SliceInterval private (val from: Int, val until: Int) {
+private[collection] class SliceInterval private (
+    val from: Int,
+    val until: Int
+) {
   // The width of this slice from end to end.  This is the
   // maximum size of the collection slice, but the collection
   // need not have this many (or any) elements.  Since
@@ -32,7 +35,7 @@ private[collection] class SliceInterval private (val from: Int, val until: Int) 
     *  }}}
     */
   def recalculate(_from: Int, _until: Int): SliceInterval = {
-    val lo = _from max 0
+    val lo    = _from max 0
     val elems = scala.math.min(_until - lo, width)
     val start = from + lo
 

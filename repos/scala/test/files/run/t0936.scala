@@ -7,7 +7,7 @@ object Test extends App {
     }
 
     trait MouseHandler {
-      def mouseClicked() = handleEvent(Clicked);
+      def mouseClicked()                 = handleEvent(Clicked);
       def handleEvent(t: MouseEventType) = t.x
     }
     (new MouseHandler {}).handleEvent(Clicked)

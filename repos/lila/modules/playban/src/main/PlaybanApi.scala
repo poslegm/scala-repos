@@ -21,7 +21,7 @@ final class PlaybanApi(coll: Coll, isRematch: String => Boolean) {
         Outcome(bsonInt.value) err s"No such playban outcome: ${bsonInt.value}"
       def write(x: Outcome) = BSONInteger(x.id)
     }
-  private implicit val banBSONHandler = Macros.handler[TempBan]
+  private implicit val banBSONHandler        = Macros.handler[TempBan]
   private implicit val UserRecordBSONHandler = Macros.handler[UserRecord]
 
   private case class Blame(player: Player, outcome: Outcome)
@@ -32,27 +32,29 @@ final class PlaybanApi(coll: Coll, isRematch: String => Boolean) {
   def abort(pov: Pov): Funit =
     blameable(pov.game) ?? {
       if (pov.game olderThan 45)
-        pov.game.playerWhoDidNotMove map { Blame(_, Outcome.NoPlay) } else if (pov.game olderThan 15)
+        pov.game.playerWhoDidNotMove map { Blame(_, Outcome.NoPlay) }
+      else if (pov.game olderThan 15)
         none
       else pov.player.some map { Blame(_, Outcome.Abort) }
     } ?? {
       case Blame(player, outcome) => player.userId.??(save(outcome))
     }
 
-  def rageQuit(game: Game, quitterColor: Color): Funit = blameable(game) ?? {
-    game.player(quitterColor).userId ?? save(Outcome.RageQuit)
-  }
+  def rageQuit(game: Game, quitterColor: Color): Funit =
+    blameable(game) ?? {
+      game.player(quitterColor).userId ?? save(Outcome.RageQuit)
+    }
 
-  def goodFinish(game: Game): Funit = blameable(game) ?? {
-    game.userIds.map(save(Outcome.Good)).sequenceFu.void
-  }
+  def goodFinish(game: Game): Funit =
+    blameable(game) ?? {
+      game.userIds.map(save(Outcome.Good)).sequenceFu.void
+    }
 
   def currentBan(userId: String): Fu[Option[TempBan]] =
     coll
       .find(
-          BSONDocument("_id" -> userId,
-                       "b.0" -> BSONDocument("$exists" -> true)),
-          BSONDocument("_id" -> false, "b" -> BSONDocument("$slice" -> -1))
+        BSONDocument("_id" -> userId, "b.0" -> BSONDocument("$exists" -> true)),
+        BSONDocument("_id" -> false, "b"    -> BSONDocument("$slice"  -> -1))
       )
       .one[BSONDocument]
       .map {
@@ -62,9 +64,8 @@ final class PlaybanApi(coll: Coll, isRematch: String => Boolean) {
   def bans(userId: String): Fu[List[TempBan]] =
     coll
       .find(
-          BSONDocument(
-              "_id" -> userId, "b.0" -> BSONDocument("$exists" -> true)),
-          BSONDocument("_id" -> false, "b" -> true)
+        BSONDocument("_id" -> userId, "b.0" -> BSONDocument("$exists" -> true)),
+        BSONDocument("_id" -> false, "b"    -> true)
       )
       .one[BSONDocument]
       .map {
@@ -74,8 +75,8 @@ final class PlaybanApi(coll: Coll, isRematch: String => Boolean) {
   def bans(userIds: List[String]): Fu[Map[String, Int]] =
     coll
       .find(
-          BSONDocument("_id" -> BSONDocument("$in" -> userIds)),
-          BSONDocument("b" -> true)
+        BSONDocument("_id" -> BSONDocument("$in" -> userIds)),
+        BSONDocument("b"   -> true)
       )
       .cursor[BSONDocument]()
       .collect[List]()
@@ -92,30 +93,33 @@ final class PlaybanApi(coll: Coll, isRematch: String => Boolean) {
       {
         coll
           .findAndUpdate(
-              selector = BSONDocument("_id" -> userId),
-              update = BSONDocument("$push" -> BSONDocument(
-                        "o" -> BSONDocument("$each" -> List(outcome),
-                                            "$slice" -> -20)
-                    )),
-              fetchNewObject = true,
-              upsert = true)
+            selector = BSONDocument("_id" -> userId),
+            update = BSONDocument(
+              "$push" -> BSONDocument(
+                "o" -> BSONDocument("$each" -> List(outcome), "$slice" -> -20)
+              )
+            ),
+            fetchNewObject = true,
+            upsert = true
+          )
           .map(_.value)
       } map2 UserRecordBSONHandler.read flatMap {
-        case None => fufail(s"can't find record for user $userId")
+        case None         => fufail(s"can't find record for user $userId")
         case Some(record) => legiferate(record)
       } logFailure lila.log("playban")
 
-  private def legiferate(record: UserRecord): Funit = record.newBan ?? { ban =>
-    coll
-      .update(
+  private def legiferate(record: UserRecord): Funit =
+    record.newBan ?? { ban =>
+      coll
+        .update(
           BSONDocument("_id" -> record.userId),
           BSONDocument(
-              "$unset" -> BSONDocument("o" -> true),
-              "$push" -> BSONDocument(
-                  "b" -> BSONDocument("$each" -> List(ban), "$slice" -> -30)
-              )
+            "$unset" -> BSONDocument("o" -> true),
+            "$push" -> BSONDocument(
+              "b" -> BSONDocument("$each" -> List(ban), "$slice" -> -30)
+            )
           )
-      )
-      .void
-  }
+        )
+        .void
+    }
 }

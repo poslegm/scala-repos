@@ -25,7 +25,8 @@ class HtmlFactory(val universe: doc.Universe, val reporter: ScalaDocReporter) {
 
   def siteRoot: JFile = new JFile(universe.settings.outdir.value)
 
-  def libResources = List(
+  def libResources =
+    List(
       "class.svg",
       "object.svg",
       "trait.svg",
@@ -72,7 +73,7 @@ class HtmlFactory(val universe: doc.Universe, val reporter: ScalaDocReporter) {
       "ownderbg2.gif",
       "ownerbg.gif",
       "ownerbg2.gif"
-  )
+    )
 
   /** Generates the Scaladoc site for a model into the site root.
     * A scaladoc site is a set of HTML and related files
@@ -82,14 +83,15 @@ class HtmlFactory(val universe: doc.Universe, val reporter: ScalaDocReporter) {
 
     def copyResource(subPath: String) {
       val bytes = new Streamable.Bytes {
-        val p = "/scala/tools/nsc/doc/html/resource/" + subPath
+        val p           = "/scala/tools/nsc/doc/html/resource/" + subPath
         val inputStream = getClass.getResourceAsStream(p)
         assert(inputStream != null, p)
       }.toByteArray()
       val dest = Directory(siteRoot) / subPath
       dest.parent.createDirectory()
       val out = dest.toFile.bufferedOutput()
-      try out.write(bytes, 0, bytes.length) finally out.close()
+      try out.write(bytes, 0, bytes.length)
+      finally out.close()
     }
 
     libResources foreach (s => copyResource("lib/" + s))
@@ -109,12 +111,13 @@ class HtmlFactory(val universe: doc.Universe, val reporter: ScalaDocReporter) {
 
     def writeTemplate(tpl: DocTemplateEntity) {
       if (!(written contains tpl)) {
-        val diagramGenerator: DiagramGenerator = new DotDiagramGenerator(
-            universe.settings, universe.dotRunner)
-        writeForThis(
-            page.EntityPage(universe, diagramGenerator, tpl, reporter))
+        val diagramGenerator: DiagramGenerator =
+          new DotDiagramGenerator(universe.settings, universe.dotRunner)
+        writeForThis(page.EntityPage(universe, diagramGenerator, tpl, reporter))
         written += tpl
-        tpl.templates collect { case d: DocTemplateEntity => d } map writeTemplate
+        tpl.templates collect {
+          case d: DocTemplateEntity => d
+        } map writeTemplate
       }
     }
 

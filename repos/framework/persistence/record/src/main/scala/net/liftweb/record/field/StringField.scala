@@ -34,28 +34,31 @@ trait StringTypedField extends TypedField[String] with StringValidators {
 
   def maxLen = maxLength
 
-  def setFromAny(in: Any): Box[String] = in match {
-    case seq: Seq[_] if !seq.isEmpty => setFromAny(seq.head)
-    case _ => genericSetFromAny(in)
-  }
+  def setFromAny(in: Any): Box[String] =
+    in match {
+      case seq: Seq[_] if !seq.isEmpty => setFromAny(seq.head)
+      case _                           => genericSetFromAny(in)
+    }
 
-  def setFromString(s: String): Box[String] = s match {
-    case null | "" if optional_? => setBox(Empty)
-    case null | "" => setBox(Failure(notOptionalErrorMessage))
-    case _ => setBox(Full(s))
-  }
+  def setFromString(s: String): Box[String] =
+    s match {
+      case null | "" if optional_? => setBox(Empty)
+      case null | ""               => setBox(Failure(notOptionalErrorMessage))
+      case _                       => setBox(Full(s))
+    }
 
-  private def elem = S.fmapFunc(SFuncHolder(this.setFromAny(_))) { funcName =>
-    <input type={formInputType} maxlength={maxLength.toString}
+  private def elem =
+    S.fmapFunc(SFuncHolder(this.setFromAny(_))) { funcName =>
+      <input type={formInputType} maxlength={maxLength.toString}
       name={funcName}
       value={valueBox openOr ""}
       tabindex={tabIndex.toString}/>
-  }
+    }
 
   def toForm: Box[NodeSeq] =
     uniqueFieldId match {
       case Full(id) => Full(elem % ("id" -> id))
-      case _ => Full(elem)
+      case _        => Full(elem)
     }
 
   def defaultValue = ""
@@ -64,16 +67,19 @@ trait StringTypedField extends TypedField[String] with StringValidators {
 
   def asJValue: JValue =
     valueBox.map(v => JString(v)) openOr (JNothing: JValue)
-  def setFromJValue(jvalue: JValue): Box[MyType] = jvalue match {
-    case JNothing | JNull if optional_? => setBox(Empty)
-    case JString(s) => setFromString(s)
-    case other => setBox(FieldHelpers.expectedA("JString", other))
-  }
+  def setFromJValue(jvalue: JValue): Box[MyType] =
+    jvalue match {
+      case JNothing | JNull if optional_? => setBox(Empty)
+      case JString(s)                     => setFromString(s)
+      case other                          => setBox(FieldHelpers.expectedA("JString", other))
+    }
 }
 
 class StringField[OwnerType <: Record[OwnerType]](
-    rec: OwnerType, val maxLength: Int)
-    extends Field[String, OwnerType] with MandatoryTypedField[String]
+    rec: OwnerType,
+    val maxLength: Int
+) extends Field[String, OwnerType]
+    with MandatoryTypedField[String]
     with StringTypedField {
 
   def this(rec: OwnerType, maxLength: Int, value: String) = {
@@ -94,16 +100,19 @@ class StringField[OwnerType <: Record[OwnerType]](
 }
 
 abstract class UniqueIdField[OwnerType <: Record[OwnerType]](
-    rec: OwnerType, override val maxLength: Int)
-    extends StringField[OwnerType](rec, maxLength) {
+    rec: OwnerType,
+    override val maxLength: Int
+) extends StringField[OwnerType](rec, maxLength) {
   override lazy val defaultValue = randomString(maxLen)
 
   def reset(): OwnerType = this(randomString(maxLen))
 }
 
 class OptionalStringField[OwnerType <: Record[OwnerType]](
-    rec: OwnerType, val maxLength: Int)
-    extends Field[String, OwnerType] with OptionalTypedField[String]
+    rec: OwnerType,
+    val maxLength: Int
+) extends Field[String, OwnerType]
+    with OptionalTypedField[String]
     with StringTypedField {
 
   def this(rec: OwnerType, maxLength: Int, value: Box[String]) = {

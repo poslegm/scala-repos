@@ -12,7 +12,9 @@ import org.scalatest.junit.{AssertionsForJUnit, JUnitRunner}
 
 @RunWith(classOf[JUnitRunner])
 class ThresholdFailureDetectorTest
-    extends FunSuite with AssertionsForJUnit with Eventually
+    extends FunSuite
+    with AssertionsForJUnit
+    with Eventually
     with IntegrationPatience {
   def testt(desc: String)(f: TimeControl => Unit): Unit =
     test(desc) {
@@ -20,7 +22,7 @@ class ThresholdFailureDetectorTest
     }
 
   private class Ctx(closeTimeout: Duration = 1000.milliseconds) {
-    val n = new AtomicInteger(0)
+    val n     = new AtomicInteger(0)
     val latch = new Latch
 
     def ping() = {
@@ -29,18 +31,18 @@ class ThresholdFailureDetectorTest
     }
 
     def nanoTime() = Time.now.inNanoseconds
-    val sr = new InMemoryStatsReceiver
+    val sr         = new InMemoryStatsReceiver
 
     val timer = new MockTimer
     val d = new ThresholdFailureDetector(
-        ping,
-        minPeriod = 10.milliseconds,
-        threshold = 2,
-        windowSize = 5,
-        closeTimeout = closeTimeout,
-        nanoTime = nanoTime,
-        statsReceiver = sr,
-        timer = timer
+      ping,
+      minPeriod = 10.milliseconds,
+      threshold = 2,
+      windowSize = 5,
+      closeTimeout = closeTimeout,
+      nanoTime = nanoTime,
+      statsReceiver = sr,
+      timer = timer
     )
   }
 
@@ -168,10 +170,10 @@ class ThresholdFailureDetectorTest
 
   testt("close if ping throws exceptions") { tc =>
     def nanoTime() = Time.now.inNanoseconds
-    val timer = new MockTimer
-    val sr = new InMemoryStatsReceiver
-    val n = new AtomicInteger(0)
-    val failAfter = 5
+    val timer      = new MockTimer
+    val sr         = new InMemoryStatsReceiver
+    val n          = new AtomicInteger(0)
+    val failAfter  = 5
 
     def ping() = {
       if (n.incrementAndGet() >= failAfter)
@@ -180,14 +182,14 @@ class ThresholdFailureDetectorTest
     }
 
     val d = new ThresholdFailureDetector(
-        ping,
-        minPeriod = 10.milliseconds,
-        threshold = 2,
-        windowSize = 5,
-        closeTimeout = Duration.Top,
-        nanoTime = nanoTime,
-        timer = timer,
-        statsReceiver = sr
+      ping,
+      minPeriod = 10.milliseconds,
+      threshold = 2,
+      windowSize = 5,
+      closeTimeout = Duration.Top,
+      nanoTime = nanoTime,
+      timer = timer,
+      statsReceiver = sr
     )
 
     for (i <- 1 until failAfter) {

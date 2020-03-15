@@ -24,7 +24,7 @@ class ArrayTest {
   @Test
   def should_provide_implicit_conversion_from_js_Array_to_ArrayOps_String(
       ): Unit = {
-    var propCount = 0
+    var propCount  = 0
     var propString = ""
 
     for (item <- js.Array("Sc", "ala", ".", "js")) {
@@ -40,7 +40,7 @@ class ArrayTest {
   @Test
   def should_provide_implicit_conversion_from_js_Array_to_ArrayOps_Int(
       ): Unit = {
-    var propCount = 0
+    var propCount  = 0
     var propString = ""
 
     for (item <- js.Array(7, 3, 5, 7)) {
@@ -56,7 +56,7 @@ class ArrayTest {
   @Test
   def should_provide_implicit_conversion_from_js_Array_to_ArrayOps_Char(
       ): Unit = {
-    var propCount = 0
+    var propCount  = 0
     var propString = ""
 
     for (item <- js.Array('S', 'c', 'a', 'l', 'a')) {
@@ -72,7 +72,7 @@ class ArrayTest {
   @Test
   def should_provide_implicit_conversion_from_js_Array_to_ArrayOps_value_class(
       ): Unit = {
-    var propCount = 0
+    var propCount  = 0
     var propString = ""
 
     for (item <- js.Array(new VC(5), new VC(-4))) {
@@ -91,8 +91,7 @@ class ArrayTest {
     import js.JSConverters._
     assertJSArrayEquals(js.Array("foo", "bar"), List("foo", "bar").toJSArray)
     assertJSArrayEquals(js.Array(1, 2, 3), Iterator(1, 2, 3).toJSArray)
-    assertJSArrayEquals(
-        js.Array(0.3, 7.3, 8.9), Array(0.3, 7.3, 8.9).toJSArray)
+    assertJSArrayEquals(js.Array(0.3, 7.3, 8.9), Array(0.3, 7.3, 8.9).toJSArray)
     assertJSArrayEquals(js.Array(), None.toJSArray)
     // The following fails on 2.10.x
     //assertJSArrayEquals(js.Array("Hello World"), Some("Hello World").toJSArray)

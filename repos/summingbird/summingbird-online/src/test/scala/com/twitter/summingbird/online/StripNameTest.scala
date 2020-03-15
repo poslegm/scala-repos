@@ -2,7 +2,14 @@ package com.twitter.summingbird.online
 
 import com.twitter.summingbird.memory.Memory
 import com.twitter.summingbird.planner.StripNamedNode
-import com.twitter.summingbird.{Dependants, Producer, OptionMappedProducer, NamedProducer, Source, Summer}
+import com.twitter.summingbird.{
+  Dependants,
+  Producer,
+  OptionMappedProducer,
+  NamedProducer,
+  Source,
+  Summer
+}
 import org.scalatest.FunSuite
 import scala.collection.mutable.{Map => MMap}
 
@@ -14,27 +21,26 @@ class StripNameTest extends FunSuite {
      */
     val store = MMap[Int, Int]()
     val input = List(1, 2, 4)
-    val fn = { k: Int =>
-      Some((k % 2, k * k))
-    }
+    val fn    = { k: Int => Some((k % 2, k * k)) }
 
-    val src = Producer.source[Memory, Int](input)
+    val src    = Producer.source[Memory, Int](input)
     val mapped = src.name("source").optionMap(fn)
     val summed = mapped.name("map").sumByKey(store)
-    val graph = summed.name("sumByKey")
+    val graph  = summed.name("sumByKey")
 
     val deps = Dependants(graph)
     assert(
-        deps.namesOf(src).map(_.id).toSet == Set("source", "map", "sumByKey"))
+      deps.namesOf(src).map(_.id).toSet == Set("source", "map", "sumByKey")
+    )
     assert(deps.namesOf(mapped).map(_.id).toSet == Set("map", "sumByKey"))
     assert(deps.namesOf(summed).map(_.id).toSet == Set("sumByKey"))
 
     val (nameMap, stripped) = StripNamedNode(graph)
-    val strippedDeps = Dependants(stripped)
+    val strippedDeps        = Dependants(stripped)
 
     def assertName(names: Set[String])(
-        p: PartialFunction[Producer[Memory, Any], Producer[Memory, Any]])
-      : Unit = {
+        p: PartialFunction[Producer[Memory, Any], Producer[Memory, Any]]
+    ): Unit = {
       val nodes = strippedDeps.nodes.collect(p)
       assert(nodes.size == 1) // Only one node
       assert(nameMap(nodes(0)).toSet == names, s"checking ${names}")
@@ -51,33 +57,30 @@ class StripNameTest extends FunSuite {
     }
 
     // The final stripped has no names:
-    assert(
-        strippedDeps.nodes.collect { case NamedProducer(_, _) => 1 }.sum == 0)
+    assert(strippedDeps.nodes.collect {
+      case NamedProducer(_, _) => 1
+    }.sum == 0)
   }
   test("merge name test") {
     /*
      * Here are the irreducible items
      */
-    val store = MMap[Int, Int]()
+    val store  = MMap[Int, Int]()
     val input0 = List(1, 2, 4)
     val input1 = List("100", "200", "400")
-    val fn0 = { k: Int =>
-      Some((k % 2, k * k))
-    }
-    val fn1 = { kstr: String =>
-      val k = kstr.toInt; Some((k % 2, k * k))
-    }
+    val fn0    = { k: Int => Some((k % 2, k * k)) }
+    val fn1    = { kstr: String => val k = kstr.toInt; Some((k % 2, k * k)) }
 
-    val src0 = Producer.source[Memory, Int](input0)
+    val src0    = Producer.source[Memory, Int](input0)
     val mapped0 = src0.name("source0").optionMap(fn0)
-    val named0 = mapped0.name("map0")
+    val named0  = mapped0.name("map0")
 
-    val src1 = Producer.source[Memory, String](input1)
+    val src1    = Producer.source[Memory, String](input1)
     val mapped1 = src1.name("source1").optionMap(fn1)
-    val named1 = mapped1.name("map1")
+    val named1  = mapped1.name("map1")
 
     val summed = (named0 ++ named1).sumByKey(store)
-    val graph = summed.name("sumByKey")
+    val graph  = summed.name("sumByKey")
 
     val deps = Dependants(graph)
     def assertInitName(n: Producer[Memory, Any], s: List[String]) =
@@ -90,11 +93,11 @@ class StripNameTest extends FunSuite {
     assertInitName(summed, List("sumByKey"))
 
     val (nameMap, stripped) = StripNamedNode(graph)
-    val strippedDeps = Dependants(stripped)
+    val strippedDeps        = Dependants(stripped)
 
     def assertName(names: List[String])(
-        p: PartialFunction[Producer[Memory, Any], Producer[Memory, Any]])
-      : Unit = {
+        p: PartialFunction[Producer[Memory, Any], Producer[Memory, Any]]
+    ): Unit = {
       val nodes = strippedDeps.nodes.collect(p)
       assert(nodes.size == 1) // Only one node
       assert(nameMap(nodes(0)) == names, s"checking ${names}")
@@ -117,8 +120,9 @@ class StripNameTest extends FunSuite {
     }
 
     // The final stripped has no names:
-    assert(
-        strippedDeps.nodes.collect { case NamedProducer(_, _) => 1 }.sum == 0)
+    assert(strippedDeps.nodes.collect {
+      case NamedProducer(_, _) => 1
+    }.sum == 0)
   }
 
   test("Fan-out name test") {
@@ -127,15 +131,11 @@ class StripNameTest extends FunSuite {
      */
     val store0 = MMap[Int, Int]()
     val store1 = MMap[Int, Int]()
-    val input = List(1, 2, 4)
-    val fn0 = { k: Int =>
-      Some((k % 2, k * k))
-    }
-    val fn1 = { k: Int =>
-      Some((k % 3, k * k * k))
-    }
+    val input  = List(1, 2, 4)
+    val fn0    = { k: Int => Some((k % 2, k * k)) }
+    val fn1    = { k: Int => Some((k % 3, k * k * k)) }
     // Here is the graph
-    val src = Producer.source[Memory, Int](input)
+    val src     = Producer.source[Memory, Int](input)
     val nameSrc = src.name("source")
     // branch1
     val mapped0 = nameSrc.optionMap(fn0)
@@ -143,9 +143,9 @@ class StripNameTest extends FunSuite {
     // branch2
     val mapped1 = nameSrc.optionMap(fn1)
     val summed1 = mapped1.name("map1").name("map1.1").sumByKey(store1)
-    val graph = summed0.name("sumByKey0").also(summed1.name("sumByKey1"))
-    val namedG = graph.name("also")
-    val deps = Dependants(namedG)
+    val graph   = summed0.name("sumByKey0").also(summed1.name("sumByKey1"))
+    val namedG  = graph.name("also")
+    val deps    = Dependants(namedG)
     /*
      * With fan-out, a total order on the lists is not defined.
      * so we check that the given list is in sorted order where
@@ -153,7 +153,7 @@ class StripNameTest extends FunSuite {
      */
     def assertInitName(n: Producer[Memory, Any], s: List[String]) = {
       val ordering = deps.namesOf(n).map(_.id).zipWithIndex.toMap
-      val order = Ordering.by(ordering)
+      val order    = Ordering.by(ordering)
       assert(s.sorted(order) == s, s"not sorted: $s != ${s.sorted(order)}")
     }
 
@@ -170,17 +170,19 @@ class StripNameTest extends FunSuite {
     assertInitName(graph, List("also"))
 
     val (nameMap, stripped) = StripNamedNode(namedG)
-    val strippedDeps = Dependants(stripped)
+    val strippedDeps        = Dependants(stripped)
 
     def assertName(names: List[String])(
-        p: PartialFunction[Producer[Memory, Any], Producer[Memory, Any]])
-      : Unit = {
+        p: PartialFunction[Producer[Memory, Any], Producer[Memory, Any]]
+    ): Unit = {
       val nodes = strippedDeps.nodes.collect(p)
       assert(nodes.size == 1) // Only one node
       val ordering = nameMap(nodes(0)).zipWithIndex.toMap
-      val order = Ordering.by(ordering)
-      assert(names.sorted(order) == names,
-             s"not sorted: $names != ${names.sorted(order)}")
+      val order    = Ordering.by(ordering)
+      assert(
+        names.sorted(order) == names,
+        s"not sorted: $names != ${names.sorted(order)}"
+      )
     }
     assertName(List("source", "map0", "sumByKey0")) {
       case p @ Source(l) if l == input => p
@@ -201,7 +203,8 @@ class StripNameTest extends FunSuite {
       case p @ Summer(_, str, _) if str eq store1 => p
     }
     // The final stripped has no names:
-    assert(
-        strippedDeps.nodes.collect { case NamedProducer(_, _) => 1 }.sum == 0)
+    assert(strippedDeps.nodes.collect {
+      case NamedProducer(_, _) => 1
+    }.sum == 0)
   }
 }

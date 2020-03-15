@@ -160,8 +160,8 @@ trait NumericOps[+This] { repr: This =>
     * @tparam B type of the other operand
     * @tparam That result type of operation
     */
-  def >>>[B, That](other: B)(
-      implicit op: BinOp[BitUShr, This, B, That]): That = op(repr, other)
+  def >>>[B, That](other: B)(implicit op: BinOp[BitUShr, This, B, That]): That =
+    op(repr, other)
 
   // boolean-result ops
 
@@ -267,7 +267,8 @@ trait NumericOps[+This] { repr: This =>
     * @tparam That result type of operation
     */
   def dot[B, That](other: B)(
-      implicit op: BinOp[InnerProd, This, B, That]): That = op(repr, other)
+      implicit op: BinOp[InnerProd, This, B, That]
+  ): That = op(repr, other)
 
   /**
     * Outer product
@@ -277,5 +278,6 @@ trait NumericOps[+This] { repr: This =>
     * @tparam That result type of operation
     */
   def outer[B, That](other: B)(
-      implicit op: BinOp[OuterProd, This, B, That]): That = op(repr, other)
+      implicit op: BinOp[OuterProd, This, B, That]
+  ): That = op(repr, other)
 }

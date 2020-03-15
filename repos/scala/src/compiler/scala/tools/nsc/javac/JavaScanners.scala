@@ -65,7 +65,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
     def next: AbstractJavaTokenData
     def intVal(negated: Boolean): Long
     def floatVal(negated: Boolean): Double
-    def intVal: Long = intVal(negated = false)
+    def intVal: Long     = intVal(negated = false)
     def floatVal: Double = floatVal(negated = false)
     def currentPos: Position
   }
@@ -74,56 +74,56 @@ trait JavaScanners extends ast.parser.ScannersCommon {
 //  Keywords -----------------------------------------------------------------
 
     private val allKeywords = List[(Name, Int)](
-        javanme.ABSTRACTkw -> ABSTRACT,
-        javanme.ASSERTkw -> ASSERT,
-        javanme.BOOLEANkw -> BOOLEAN,
-        javanme.BREAKkw -> BREAK,
-        javanme.BYTEkw -> BYTE,
-        javanme.CASEkw -> CASE,
-        javanme.CATCHkw -> CATCH,
-        javanme.CHARkw -> CHAR,
-        javanme.CLASSkw -> CLASS,
-        javanme.CONSTkw -> CONST,
-        javanme.CONTINUEkw -> CONTINUE,
-        javanme.DEFAULTkw -> DEFAULT,
-        javanme.DOkw -> DO,
-        javanme.DOUBLEkw -> DOUBLE,
-        javanme.ELSEkw -> ELSE,
-        javanme.ENUMkw -> ENUM,
-        javanme.EXTENDSkw -> EXTENDS,
-        javanme.FINALkw -> FINAL,
-        javanme.FINALLYkw -> FINALLY,
-        javanme.FLOATkw -> FLOAT,
-        javanme.FORkw -> FOR,
-        javanme.IFkw -> IF,
-        javanme.GOTOkw -> GOTO,
-        javanme.IMPLEMENTSkw -> IMPLEMENTS,
-        javanme.IMPORTkw -> IMPORT,
-        javanme.INSTANCEOFkw -> INSTANCEOF,
-        javanme.INTkw -> INT,
-        javanme.INTERFACEkw -> INTERFACE,
-        javanme.LONGkw -> LONG,
-        javanme.NATIVEkw -> NATIVE,
-        javanme.NEWkw -> NEW,
-        javanme.PACKAGEkw -> PACKAGE,
-        javanme.PRIVATEkw -> PRIVATE,
-        javanme.PROTECTEDkw -> PROTECTED,
-        javanme.PUBLICkw -> PUBLIC,
-        javanme.RETURNkw -> RETURN,
-        javanme.SHORTkw -> SHORT,
-        javanme.STATICkw -> STATIC,
-        javanme.STRICTFPkw -> STRICTFP,
-        javanme.SUPERkw -> SUPER,
-        javanme.SWITCHkw -> SWITCH,
-        javanme.SYNCHRONIZEDkw -> SYNCHRONIZED,
-        javanme.THISkw -> THIS,
-        javanme.THROWkw -> THROW,
-        javanme.THROWSkw -> THROWS,
-        javanme.TRANSIENTkw -> TRANSIENT,
-        javanme.TRYkw -> TRY,
-        javanme.VOIDkw -> VOID,
-        javanme.VOLATILEkw -> VOLATILE,
-        javanme.WHILEkw -> WHILE
+      javanme.ABSTRACTkw     -> ABSTRACT,
+      javanme.ASSERTkw       -> ASSERT,
+      javanme.BOOLEANkw      -> BOOLEAN,
+      javanme.BREAKkw        -> BREAK,
+      javanme.BYTEkw         -> BYTE,
+      javanme.CASEkw         -> CASE,
+      javanme.CATCHkw        -> CATCH,
+      javanme.CHARkw         -> CHAR,
+      javanme.CLASSkw        -> CLASS,
+      javanme.CONSTkw        -> CONST,
+      javanme.CONTINUEkw     -> CONTINUE,
+      javanme.DEFAULTkw      -> DEFAULT,
+      javanme.DOkw           -> DO,
+      javanme.DOUBLEkw       -> DOUBLE,
+      javanme.ELSEkw         -> ELSE,
+      javanme.ENUMkw         -> ENUM,
+      javanme.EXTENDSkw      -> EXTENDS,
+      javanme.FINALkw        -> FINAL,
+      javanme.FINALLYkw      -> FINALLY,
+      javanme.FLOATkw        -> FLOAT,
+      javanme.FORkw          -> FOR,
+      javanme.IFkw           -> IF,
+      javanme.GOTOkw         -> GOTO,
+      javanme.IMPLEMENTSkw   -> IMPLEMENTS,
+      javanme.IMPORTkw       -> IMPORT,
+      javanme.INSTANCEOFkw   -> INSTANCEOF,
+      javanme.INTkw          -> INT,
+      javanme.INTERFACEkw    -> INTERFACE,
+      javanme.LONGkw         -> LONG,
+      javanme.NATIVEkw       -> NATIVE,
+      javanme.NEWkw          -> NEW,
+      javanme.PACKAGEkw      -> PACKAGE,
+      javanme.PRIVATEkw      -> PRIVATE,
+      javanme.PROTECTEDkw    -> PROTECTED,
+      javanme.PUBLICkw       -> PUBLIC,
+      javanme.RETURNkw       -> RETURN,
+      javanme.SHORTkw        -> SHORT,
+      javanme.STATICkw       -> STATIC,
+      javanme.STRICTFPkw     -> STRICTFP,
+      javanme.SUPERkw        -> SUPER,
+      javanme.SWITCHkw       -> SWITCH,
+      javanme.SYNCHRONIZEDkw -> SYNCHRONIZED,
+      javanme.THISkw         -> THIS,
+      javanme.THROWkw        -> THROW,
+      javanme.THROWSkw       -> THROWS,
+      javanme.TRANSIENTkw    -> TRANSIENT,
+      javanme.TRYkw          -> TRY,
+      javanme.VOIDkw         -> VOID,
+      javanme.VOLATILEkw     -> VOLATILE,
+      javanme.WHILEkw        -> WHILE
     )
 
     private var kwOffset = -1
@@ -144,72 +144,74 @@ trait JavaScanners extends ast.parser.ScannersCommon {
     }
 
     /** Returns the string representation of given token. */
-    def token2string(token: Int): String = token match {
-      case IDENTIFIER => "identifier"
-      case CHARLIT => "character literal"
-      case DOUBLELIT => "double literal"
-      case FLOATLIT => "float literal"
-      case INTLIT => "integer literal"
-      case LONGLIT => "long literal"
-      case STRINGLIT => "string literal"
-      case EOF => "eof"
-      case ERROR => "something"
-      case AMP => "`&'"
-      case AMPAMP => "`&&'"
-      case AMPEQ => "`&='"
-      case ASTERISK => "`*'"
-      case ASTERISKEQ => "`*='"
-      case AT => "`@'"
-      case BANG => "`!'"
-      case BANGEQ => "`!='"
-      case BAR => "`|'"
-      case BARBAR => "`||'"
-      case BAREQ => "`|='"
-      case COLON => "`:'"
-      case COMMA => "`,'"
-      case DOT => "`.'"
-      case DOTDOTDOT => "`...'"
-      case EQEQ => "`=='"
-      case EQUALS => "`='"
-      case GT => "`>'"
-      case GTEQ => "`>='"
-      case GTGT => "`>>'"
-      case GTGTEQ => "`>>='"
-      case GTGTGT => "`>>>'"
-      case GTGTGTEQ => "`>>>='"
-      case HAT => "`^'"
-      case HATEQ => "`^='"
-      case LBRACE => "`{'"
-      case LBRACKET => "`['"
-      case LPAREN => "`('"
-      case LT => "`<'"
-      case LTEQ => "`<='"
-      case LTLT => "`<<'"
-      case LTLTEQ => "`<<='"
-      case MINUS => "`-'"
-      case MINUSEQ => "`-='"
-      case MINUSMINUS => "`--'"
-      case PERCENT => "`%'"
-      case PERCENTEQ => "`%='"
-      case PLUS => "`+'"
-      case PLUSEQ => "`+='"
-      case PLUSPLUS => "`++'"
-      case QMARK => "`?'"
-      case RBRACE => "`}'"
-      case RBRACKET => "`]'"
-      case RPAREN => "`)'"
-      case SEMI => "`;'"
-      case SLASH => "`/'"
-      case SLASHEQ => "`/='"
-      case TILDE => "`~'"
-      case _ =>
-        try ("`" + tokenName(token) + "'") catch {
-          case _: ArrayIndexOutOfBoundsException =>
-            "`<" + token + ">'"
-          case _: NullPointerException =>
-            "`<(" + token + ")>'"
-        }
-    }
+    def token2string(token: Int): String =
+      token match {
+        case IDENTIFIER => "identifier"
+        case CHARLIT    => "character literal"
+        case DOUBLELIT  => "double literal"
+        case FLOATLIT   => "float literal"
+        case INTLIT     => "integer literal"
+        case LONGLIT    => "long literal"
+        case STRINGLIT  => "string literal"
+        case EOF        => "eof"
+        case ERROR      => "something"
+        case AMP        => "`&'"
+        case AMPAMP     => "`&&'"
+        case AMPEQ      => "`&='"
+        case ASTERISK   => "`*'"
+        case ASTERISKEQ => "`*='"
+        case AT         => "`@'"
+        case BANG       => "`!'"
+        case BANGEQ     => "`!='"
+        case BAR        => "`|'"
+        case BARBAR     => "`||'"
+        case BAREQ      => "`|='"
+        case COLON      => "`:'"
+        case COMMA      => "`,'"
+        case DOT        => "`.'"
+        case DOTDOTDOT  => "`...'"
+        case EQEQ       => "`=='"
+        case EQUALS     => "`='"
+        case GT         => "`>'"
+        case GTEQ       => "`>='"
+        case GTGT       => "`>>'"
+        case GTGTEQ     => "`>>='"
+        case GTGTGT     => "`>>>'"
+        case GTGTGTEQ   => "`>>>='"
+        case HAT        => "`^'"
+        case HATEQ      => "`^='"
+        case LBRACE     => "`{'"
+        case LBRACKET   => "`['"
+        case LPAREN     => "`('"
+        case LT         => "`<'"
+        case LTEQ       => "`<='"
+        case LTLT       => "`<<'"
+        case LTLTEQ     => "`<<='"
+        case MINUS      => "`-'"
+        case MINUSEQ    => "`-='"
+        case MINUSMINUS => "`--'"
+        case PERCENT    => "`%'"
+        case PERCENTEQ  => "`%='"
+        case PLUS       => "`+'"
+        case PLUSEQ     => "`+='"
+        case PLUSPLUS   => "`++'"
+        case QMARK      => "`?'"
+        case RBRACE     => "`}'"
+        case RBRACKET   => "`]'"
+        case RPAREN     => "`)'"
+        case SEMI       => "`;'"
+        case SLASH      => "`/'"
+        case SLASHEQ    => "`/='"
+        case TILDE      => "`~'"
+        case _ =>
+          try ("`" + tokenName(token) + "'")
+          catch {
+            case _: ArrayIndexOutOfBoundsException =>
+              "`<" + token + ">'"
+            case _: NullPointerException =>
+              "`<(" + token + ")>'"
+          }
+      }
   }
 
   /** A scanner for Java.
@@ -217,11 +219,13 @@ trait JavaScanners extends ast.parser.ScannersCommon {
     *  @author     Martin Odersky
     */
   abstract class JavaScanner
-      extends AbstractJavaScanner with JavaTokenData with Cloneable
+      extends AbstractJavaScanner
+      with JavaTokenData
+      with Cloneable
       with ScannerCommon {
-    override def intVal = super.intVal // todo: needed?
-    override def floatVal = super.floatVal
-    def currentPos: Position = g2p(pos - 1)
+    override def intVal         = super.intVal // todo: needed?
+    override def floatVal       = super.floatVal
+    def currentPos: Position    = g2p(pos - 1)
     var in: JavaCharArrayReader = _
 
     /** character buffer for literals
@@ -308,7 +312,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
               case '\"' =>
                 in.next()
                 while (in.ch != '\"' &&
-                (in.isUnicode || in.ch != CR && in.ch != LF && in.ch != SU)) {
+                       (in.isUnicode || in.ch != CR && in.ch != LF && in.ch != SU)) {
                   getlitch()
                 }
                 if (in.ch == '\"') {
@@ -574,19 +578,21 @@ trait JavaScanners extends ast.parser.ScannersCommon {
     }
 
     protected def skipComment(): Boolean = {
-      @tailrec def skipLineComment(): Unit = in.ch match {
-        case CR | LF | SU =>
-        case _ => in.next; skipLineComment()
-      }
-      @tailrec def skipJavaComment(): Unit = in.ch match {
-        case SU => incompleteInputError("unclosed comment")
-        case '*' => in.next; if (in.ch == '/') in.next else skipJavaComment()
-        case _ => in.next; skipJavaComment()
-      }
+      @tailrec def skipLineComment(): Unit =
+        in.ch match {
+          case CR | LF | SU =>
+          case _            => in.next; skipLineComment()
+        }
+      @tailrec def skipJavaComment(): Unit =
+        in.ch match {
+          case SU  => incompleteInputError("unclosed comment")
+          case '*' => in.next; if (in.ch == '/') in.next else skipJavaComment()
+          case _   => in.next; skipJavaComment()
+        }
       in.ch match {
         case '/' => in.next; skipLineComment(); true
         case '*' => in.next; skipJavaComment(); true
-        case _ => false
+        case _   => false
       }
     }
 
@@ -595,12 +601,12 @@ trait JavaScanners extends ast.parser.ScannersCommon {
     private def getIdentRest() {
       while (true) {
         (in.ch: @switch) match {
-          case 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' |
-              'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' |
-              'V' | 'W' | 'X' | 'Y' | 'Z' | '$' | 'a' | 'b' | 'c' | 'd' | 'e' |
-              'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' |
-              'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '0' |
-              '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
+          case 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' |
+              'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' |
+              'W' | 'X' | 'Y' | 'Z' | '$' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' |
+              'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' |
+              'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '0' | '1' |
+              '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
             putChar(in.ch)
             in.next()
 
@@ -635,7 +641,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
         in.next()
         if ('0' <= in.ch && in.ch <= '7') {
           val leadch: Char = in.ch
-          var oct: Int = digit2int(in.ch, 8)
+          var oct: Int     = digit2int(in.ch, 8)
           in.next()
           if ('0' <= in.ch && in.ch <= '7') {
             oct = oct * 8 + digit2int(in.ch, 8)
@@ -648,11 +654,11 @@ trait JavaScanners extends ast.parser.ScannersCommon {
           putChar(oct.asInstanceOf[Char])
         } else {
           in.ch match {
-            case 'b' => putChar('\b')
-            case 't' => putChar('\t')
-            case 'n' => putChar('\n')
-            case 'f' => putChar('\f')
-            case 'r' => putChar('\r')
+            case 'b'  => putChar('\b')
+            case 't'  => putChar('\t')
+            case 'n'  => putChar('\n')
+            case 'f'  => putChar('\f')
+            case 'r'  => putChar('\r')
             case '\"' => putChar('\"')
             case '\'' => putChar('\'')
             case '\\' => putChar('\\')
@@ -715,10 +721,10 @@ trait JavaScanners extends ast.parser.ScannersCommon {
         if (name.length > 0) name.charAt(0).toLong else 0
       } else {
         var value: Long = 0
-        val divider = if (base == 10) 1 else 2
+        val divider     = if (base == 10) 1 else 2
         val limit: Long = if (token == LONGLIT) Long.MaxValue else Int.MaxValue
-        var i = 0
-        val len = name.length
+        var i           = 0
+        val len         = name.length
         while (i < len) {
           val d = digit2int(name.charAt(i), base)
           if (d < 0) {
@@ -767,8 +773,8 @@ trait JavaScanners extends ast.parser.ScannersCommon {
         val lookahead = in.copy
         lookahead.next()
         lookahead.ch match {
-          case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
-              'd' | 'D' | 'e' | 'E' | 'f' | 'F' =>
+          case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'd' |
+              'D' | 'e' | 'E' | 'f' | 'F' =>
             putChar(in.ch)
             in.next()
             return getFraction()
@@ -782,7 +788,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
       }
       if (base <= 10 &&
           (in.ch == 'e' || in.ch == 'E' || in.ch == 'f' || in.ch == 'F' ||
-              in.ch == 'd' || in.ch == 'D')) {
+          in.ch == 'd' || in.ch == 'D')) {
         return getFraction()
       }
       setName()
@@ -811,28 +817,29 @@ trait JavaScanners extends ast.parser.ScannersCommon {
       token = EOF
     }
 
-    override def toString() = token match {
-      case IDENTIFIER =>
-        "id(" + name + ")"
-      case CHARLIT =>
-        "char(" + intVal + ")"
-      case INTLIT =>
-        "int(" + intVal + ")"
-      case LONGLIT =>
-        "long(" + intVal + ")"
-      case FLOATLIT =>
-        "float(" + floatVal + ")"
-      case DOUBLELIT =>
-        "double(" + floatVal + ")"
-      case STRINGLIT =>
-        "string(" + name + ")"
-      case SEMI =>
-        ";"
-      case COMMA =>
-        ","
-      case _ =>
-        JavaScannerConfiguration.token2string(token)
-    }
+    override def toString() =
+      token match {
+        case IDENTIFIER =>
+          "id(" + name + ")"
+        case CHARLIT =>
+          "char(" + intVal + ")"
+        case INTLIT =>
+          "int(" + intVal + ")"
+        case LONGLIT =>
+          "long(" + intVal + ")"
+        case FLOATLIT =>
+          "float(" + floatVal + ")"
+        case DOUBLELIT =>
+          "double(" + floatVal + ")"
+        case STRINGLIT =>
+          "string(" + name + ")"
+        case SEMI =>
+          ";"
+        case COMMA =>
+          ","
+        case _ =>
+          JavaScannerConfiguration.token2string(token)
+      }
 
     /** INIT: read lookahead character and token.
       */
@@ -844,7 +851,10 @@ trait JavaScanners extends ast.parser.ScannersCommon {
 
   class JavaUnitScanner(unit: CompilationUnit) extends JavaScanner {
     in = new JavaCharArrayReader(
-        unit.source.content, !settings.nouescape.value, syntaxError)
+      unit.source.content,
+      !settings.nouescape.value,
+      syntaxError
+    )
     init()
     def error(pos: Int, msg: String) = reporter.error(pos, msg)
     def incompleteInputError(pos: Int, msg: String) =

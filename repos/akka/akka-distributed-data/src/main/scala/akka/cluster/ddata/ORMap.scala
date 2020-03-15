@@ -9,8 +9,8 @@ import akka.util.HashCode
 
 object ORMap {
   private val _empty: ORMap[ReplicatedData] = new ORMap(ORSet.empty, Map.empty)
-  def empty[A <: ReplicatedData]: ORMap[A] = _empty.asInstanceOf[ORMap[A]]
-  def apply(): ORMap[ReplicatedData] = _empty
+  def empty[A <: ReplicatedData]: ORMap[A]  = _empty.asInstanceOf[ORMap[A]]
+  def apply(): ORMap[ReplicatedData]        = _empty
 
   /**
     * Java API
@@ -33,10 +33,11 @@ object ORMap {
   * This class is immutable, i.e. "modifying" methods return a new instance.
   */
 @SerialVersionUID(1L)
-final class ORMap[A <: ReplicatedData] private[akka](
+final class ORMap[A <: ReplicatedData] private[akka] (
     private[akka] val keys: ORSet[String],
-    private[akka] val values: Map[String, A])
-    extends ReplicatedData with ReplicatedDataSerialization
+    private[akka] val values: Map[String, A]
+) extends ReplicatedData
+    with ReplicatedDataSerialization
     with RemovedNodePruning {
 
   type T = ORMap[A]
@@ -99,9 +100,10 @@ final class ORMap[A <: ReplicatedData] private[akka](
   private[akka] def put(node: UniqueAddress, key: String, value: A): ORMap[A] =
     if (value.isInstanceOf[ORSet[_]] && values.contains(key))
       throw new IllegalArgumentException(
-          "`ORMap.put` must not be used to replace an existing `ORSet` " +
+        "`ORMap.put` must not be used to replace an existing `ORSet` " +
           "value, because important history can be lost when replacing the `ORSet` and " +
-          "undesired effects of merging will occur. Use `ORMultiMap` or `ORMap.updated` instead.")
+          "undesired effects of merging will occur. Use `ORMultiMap` or `ORMap.updated` instead."
+      )
     else new ORMap(keys.add(node, key), values.updated(key, value))
 
   /**
@@ -110,8 +112,7 @@ final class ORMap[A <: ReplicatedData] private[akka](
     * If there is no current value for the `key` the `initial` value will be
     * passed to the `modify` function.
     */
-  def updated(node: Cluster, key: String, initial: A)(
-      modify: A ⇒ A): ORMap[A] =
+  def updated(node: Cluster, key: String, initial: A)(modify: A ⇒ A): ORMap[A] =
     updated(node.selfUniqueAddress, key, initial)(modify)
 
   /**
@@ -120,20 +121,23 @@ final class ORMap[A <: ReplicatedData] private[akka](
     * If there is no current value for the `key` the `initial` value will be
     * passed to the `modify` function.
     */
-  def updated(node: Cluster,
-              key: String,
-              initial: A,
-              modify: java.util.function.Function[A, A]): ORMap[A] =
+  def updated(
+      node: Cluster,
+      key: String,
+      initial: A,
+      modify: java.util.function.Function[A, A]
+  ): ORMap[A] =
     updated(node, key, initial)(value ⇒ modify.apply(value))
 
   /**
     * INTERNAL API
     */
   private[akka] def updated(node: UniqueAddress, key: String, initial: A)(
-      modify: A ⇒ A): ORMap[A] = {
+      modify: A ⇒ A
+  ): ORMap[A] = {
     val newValue = values.get(key) match {
       case Some(old) ⇒ modify(old)
-      case _ ⇒ modify(initial)
+      case _         ⇒ modify(initial)
     }
     new ORMap(keys.add(node, key), values.updated(key, newValue))
   }
@@ -161,7 +165,7 @@ final class ORMap[A <: ReplicatedData] private[akka](
   }
 
   override def merge(that: ORMap[A]): ORMap[A] = {
-    val mergedKeys = keys.merge(that.keys)
+    val mergedKeys   = keys.merge(that.keys)
     var mergedValues = Map.empty[String, A]
     mergedKeys.elementsMap.keysIterator.foreach { key ⇒
       (this.values.get(key), that.values.get(key)) match {
@@ -169,7 +173,7 @@ final class ORMap[A <: ReplicatedData] private[akka](
           if (thisValue.getClass != thatValue.getClass) {
             val errMsg =
               s"Wrong type for merging [$key] in [${getClass.getName}], existing type " +
-              s"[${thisValue.getClass.getName}], got [${thatValue.getClass.getName}]"
+                s"[${thisValue.getClass.getName}], got [${thatValue.getClass.getName}]"
             throw new IllegalArgumentException(errMsg)
           }
           // TODO can we get rid of these (safe) casts?
@@ -192,12 +196,14 @@ final class ORMap[A <: ReplicatedData] private[akka](
   override def needPruningFrom(removedNode: UniqueAddress): Boolean = {
     keys.needPruningFrom(removedNode) || values.exists {
       case (_, data: RemovedNodePruning) ⇒ data.needPruningFrom(removedNode)
-      case _ ⇒ false
+      case _                             ⇒ false
     }
   }
 
   override def prune(
-      removedNode: UniqueAddress, collapseInto: UniqueAddress): ORMap[A] = {
+      removedNode: UniqueAddress,
+      collapseInto: UniqueAddress
+  ): ORMap[A] = {
     val prunedKeys = keys.prune(removedNode, collapseInto)
     val prunedValues = values.foldLeft(values) {
       case (acc, (key, data: RemovedNodePruning))
@@ -223,10 +229,11 @@ final class ORMap[A <: ReplicatedData] private[akka](
 
   override def toString: String = s"OR$entries"
 
-  override def equals(o: Any): Boolean = o match {
-    case other: ORMap[_] ⇒ keys == other.keys && values == other.values
-    case _ ⇒ false
-  }
+  override def equals(o: Any): Boolean =
+    o match {
+      case other: ORMap[_] ⇒ keys == other.keys && values == other.values
+      case _               ⇒ false
+    }
 
   override def hashCode: Int = {
     var result = HashCode.SEED
@@ -242,4 +249,5 @@ object ORMapKey {
 
 @SerialVersionUID(1L)
 final case class ORMapKey[A <: ReplicatedData](_id: String)
-    extends Key[ORMap[A]](_id) with ReplicatedDataSerialization
+    extends Key[ORMap[A]](_id)
+    with ReplicatedDataSerialization

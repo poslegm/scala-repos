@@ -3,7 +3,7 @@ package foo
 package object Test {
   object Bar {
     def apply(s: String): String = s
-    def apply(l: Long): Long = l
+    def apply(l: Long): Long     = l
   }
 }
 

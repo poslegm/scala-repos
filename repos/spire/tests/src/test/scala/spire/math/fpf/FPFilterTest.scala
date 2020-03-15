@@ -23,34 +23,33 @@ class FpFilterTest extends FunSuite with Checkers {
   // operations are always performed with Doubles only and never fall back to
   // the exact case, since it'll fail with an Evaluated excetion.
   sealed trait Bad
-  implicit object BadField
-      extends Field[Bad] with IsReal[Bad] with NRoot[Bad] {
-    def zero: Bad = evaluated
-    def one: Bad = evaluated
-    def negate(a: Bad): Bad = evaluated
-    def plus(a: Bad, b: Bad): Bad = evaluated
-    def quot(a: Bad, b: Bad) = evaluated
-    def mod(a: Bad, b: Bad) = evaluated
-    def gcd(a: Bad, b: Bad): Bad = evaluated
+  implicit object BadField extends Field[Bad] with IsReal[Bad] with NRoot[Bad] {
+    def zero: Bad                           = evaluated
+    def one: Bad                            = evaluated
+    def negate(a: Bad): Bad                 = evaluated
+    def plus(a: Bad, b: Bad): Bad           = evaluated
+    def quot(a: Bad, b: Bad)                = evaluated
+    def mod(a: Bad, b: Bad)                 = evaluated
+    def gcd(a: Bad, b: Bad): Bad            = evaluated
     override def fromDouble(n: Double): Bad = evaluated
-    def times(x: Bad, b: Bad): Bad = evaluated
-    def div(a: Bad, b: Bad): Bad = evaluated
-    def nroot(a: Bad, k: Int): Bad = evaluated
-    def fpow(a: Bad, b: Bad) = evaluated
-    def compare(x: Bad, y: Bad) = evaluated
-    def signum(a: Bad): Int = evaluated
-    def abs(a: Bad): Bad = evaluated
-    def toDouble(x: Bad): Double = evaluated
-    def toReal(x: Bad): Real = evaluated
-    def ceil(a: Bad): Bad = evaluated
-    def floor(a: Bad): Bad = evaluated
-    def round(a: Bad): Bad = evaluated
-    def isWhole(a: Bad): Boolean = evaluated
+    def times(x: Bad, b: Bad): Bad          = evaluated
+    def div(a: Bad, b: Bad): Bad            = evaluated
+    def nroot(a: Bad, k: Int): Bad          = evaluated
+    def fpow(a: Bad, b: Bad)                = evaluated
+    def compare(x: Bad, y: Bad)             = evaluated
+    def signum(a: Bad): Int                 = evaluated
+    def abs(a: Bad): Bad                    = evaluated
+    def toDouble(x: Bad): Double            = evaluated
+    def toReal(x: Bad): Real                = evaluated
+    def ceil(a: Bad): Bad                   = evaluated
+    def floor(a: Bad): Bad                  = evaluated
+    def round(a: Bad): Bad                  = evaluated
+    def isWhole(a: Bad): Boolean            = evaluated
   }
 
   test("FpFilter doesn't evaluated for easy problems") {
-    val x = FpFilter.exact[Bad](1D)
-    val y = FpFilter.exact[Bad](1.2D)
+    val x = FpFilter.exact[Bad](1d)
+    val y = FpFilter.exact[Bad](1.2d)
     assert((x + y).signum == 1)
     assert((x - y).signum == -1)
     assert((x * y).signum == 1)
@@ -115,14 +114,14 @@ class FpFilterTest extends FunSuite with Checkers {
 
   def genDegenerateSimplex: Gen[Simplex] =
     for {
-      p <- genPoint
-      q <- genPoint
+      p  <- genPoint
+      q  <- genPoint
       ex <- genEpsilon
       ey <- genEpsilon
     } yield {
       val dx = q.x - p.x
       val dy = q.y - p.y
-      val r = Point(q.x + dx + ex, q.y + dy + ey)
+      val r  = Point(q.x + dx + ex, q.y + dy + ey)
       Simplex(p, q, r)
     }
 
@@ -158,8 +157,8 @@ class FpFilterTest extends FunSuite with Checkers {
     Sign(signExact(s)) == Sign(signFpFilter(s))
   }))
 
-  test("Orientation test for degenerate case")(
-      check(forAll { (s: Degenerate[Simplex]) =>
-    Sign(signExact(s.value)) == Sign(signFpFilter(s.value))
+  test("Orientation test for degenerate case")(check(forAll {
+    (s: Degenerate[Simplex]) =>
+      Sign(signExact(s.value)) == Sign(signFpFilter(s.value))
   }))
 }

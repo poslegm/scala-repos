@@ -7,6 +7,6 @@ trait EI extends PIn[Int, Nothing]
 trait NI extends PIn[Int, Nothing]
 
 object Test {
-  val lub = if (true) ??? : EI else ??? : NI
+  val lub                    = if (true) ??? : EI else ??? : NI
   val pin: PIn[Int, Nothing] = lub
 }

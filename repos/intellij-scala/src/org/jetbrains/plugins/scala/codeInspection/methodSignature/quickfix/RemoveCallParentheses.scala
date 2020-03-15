@@ -12,7 +12,7 @@ class RemoveCallParentheses(call: ScMethodCall)
     extends AbstractFixOnPsiElement("Remove call parentheses", call) {
   def doApplyFix(project: Project) {
     val mCall = getElement
-    val text = mCall.getInvokedExpr.getText
+    val text  = mCall.getInvokedExpr.getText
     val exp =
       ScalaPsiElementFactory.createExpressionFromText(text, mCall.getManager)
     mCall.replace(exp)

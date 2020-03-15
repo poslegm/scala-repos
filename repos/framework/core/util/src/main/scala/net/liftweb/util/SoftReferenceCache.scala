@@ -52,8 +52,7 @@ object SoftReferenceCache {
   def initialize = {
     // A daemon thread is more approapriate here then an Actor as
     // we'll do blocking reads from the reference queue
-    val thread = new Thread(
-        new Runnable() {
+    val thread = new Thread(new Runnable() {
       def run() {
         processQueue
       }
@@ -94,14 +93,15 @@ class SoftReferenceCache[K, V](cacheSize: Int) {
 
   val cache = new LinkedHashMap[K, SoftValue[K, V]]() {
     override def removeEldestEntry(
-        eldest: Entry[K, SoftValue[K, V]]): Boolean = {
+        eldest: Entry[K, SoftValue[K, V]]
+    ): Boolean = {
       return size() > cacheSize;
     }
   }
 
   val rwl = new ReentrantReadWriteLock();
 
-  val readLock = rwl.readLock
+  val readLock  = rwl.readLock
   val writeLock = rwl.writeLock
 
   private def lock[T](l: Lock)(block: => T): T = {
@@ -154,8 +154,9 @@ class SoftReferenceCache[K, V](cacheSize: Int) {
     lock(writeLock) {
       for (t <- tuple) yield {
         cache.put(
-            t._1,
-            new SoftValue(t._1, t._2, this, SoftReferenceCache.refQueue));
+          t._1,
+          new SoftValue(t._1, t._2, this, SoftReferenceCache.refQueue)
+        );
       }
     }
     this
@@ -169,7 +170,7 @@ class SoftReferenceCache[K, V](cacheSize: Int) {
   def remove(key: Any): Box[V] = {
     lock(writeLock) {
       for {
-        value <- Box.!!(cache.remove(key).asInstanceOf[SoftValue[K, V]])
+        value     <- Box.!!(cache.remove(key).asInstanceOf[SoftValue[K, V]])
         realValue <- Box.!!(value.get)
       } yield realValue
     }
@@ -178,11 +179,12 @@ class SoftReferenceCache[K, V](cacheSize: Int) {
   def keys = cache.keySet
 }
 
-class SoftValue[K, V](k: K,
-                      v: V,
-                      lruCache: SoftReferenceCache[K, V],
-                      queue: ReferenceQueue[Any])
-    extends SoftReference[V](v, queue) {
+class SoftValue[K, V](
+    k: K,
+    v: V,
+    lruCache: SoftReferenceCache[K, V],
+    queue: ReferenceQueue[Any]
+) extends SoftReference[V](v, queue) {
   def key: K = k
 
   def cache: SoftReferenceCache[K, V] = lruCache

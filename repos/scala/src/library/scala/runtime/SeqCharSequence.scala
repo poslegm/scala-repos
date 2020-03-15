@@ -12,7 +12,7 @@ package runtime
 @deprecated("Use Predef.SeqCharSequence", "2.11.0")
 final class SeqCharSequence(val xs: scala.collection.IndexedSeq[Char])
     extends CharSequence {
-  def length: Int = xs.length
+  def length: Int              = xs.length
   def charAt(index: Int): Char = xs(index)
   def subSequence(start: Int, end: Int): CharSequence =
     new SeqCharSequence(xs.slice(start, end))
@@ -46,7 +46,7 @@ final class ArrayCharSequence(val xs: Array[Char], start: Int, end: Int)
   }
   override def toString = {
     val start = math.max(this.start, 0)
-    val end = math.min(xs.length, start + length)
+    val end   = math.min(xs.length, start + length)
 
     if (start >= end) "" else new String(xs, start, end - start)
   }

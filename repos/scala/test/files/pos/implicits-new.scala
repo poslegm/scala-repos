@@ -4,8 +4,8 @@ import scala.reflect.{ClassTag, classTag}
 // #1435
 object t1435 {
   implicit def a(s: String): String = sys.error("")
-  implicit def a(i: Int): String = sys.error("")
-  implicit def b(i: Int): String = sys.error("")
+  implicit def a(i: Int): String    = sys.error("")
+  implicit def b(i: Int): String    = sys.error("")
 }
 
 class C1435 {
@@ -23,9 +23,7 @@ class C1492 {
   def foo(x: X => X) {}
 
   foo(implicit x => implicitly[X])
-  foo { implicit x =>
-    implicitly[X]
-  }
+  foo { implicit x => implicitly[X] }
 }
 
 // #1579
@@ -34,7 +32,7 @@ object Test1579 {
   class Query[E](val value: E)
   class Invoker(q: Any) { val foo = null }
 
-  implicit def unwrap[C](q: Query[C]) = q.value
+  implicit def unwrap[C](q: Query[C])    = q.value
   implicit def invoker(q: Query[Column]) = new Invoker(q)
 
   val q = new Query(new Column)
@@ -62,15 +60,16 @@ object Test1625 {
 }
 
 object Test2188 {
-  implicit def toJavaList[A : ClassTag](
-      t: collection.Seq[A]): java.util.List[A] =
+  implicit def toJavaList[A: ClassTag](
+      t: collection.Seq[A]
+  ): java.util.List[A] =
     java.util.Arrays.asList(t.toArray: _*)
 
   val x: java.util.List[String] = List("foo")
 }
 
 object TestNumericWidening {
-  val y = 1
+  val y                 = 1
   val x: java.lang.Long = y
 }
 

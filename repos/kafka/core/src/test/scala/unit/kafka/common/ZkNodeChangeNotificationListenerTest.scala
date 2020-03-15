@@ -29,7 +29,7 @@ class ZkNodeChangeNotificationListenerTest extends KafkaServerTestHarness {
   @Test
   def testProcessNotification() {
     @volatile var notification: String = null
-    @volatile var invocationCount = 0
+    @volatile var invocationCount      = 0
     val notificationHandler = new NotificationHandler {
       override def processNotification(notificationMessage: String): Unit = {
         notification = notificationMessage
@@ -37,26 +37,28 @@ class ZkNodeChangeNotificationListenerTest extends KafkaServerTestHarness {
       }
     }
 
-    val seqNodeRoot = "/root"
-    val seqNodePrefix = "prefix"
-    val seqNodePath = seqNodeRoot + "/" + seqNodePrefix
+    val seqNodeRoot          = "/root"
+    val seqNodePrefix        = "prefix"
+    val seqNodePath          = seqNodeRoot + "/" + seqNodePrefix
     val notificationMessage1 = "message1"
     val notificationMessage2 = "message2"
-    val changeExpirationMs = 100
+    val changeExpirationMs   = 100
 
     val notificationListener = new ZkNodeChangeNotificationListener(
-        zkUtils,
-        seqNodeRoot,
-        seqNodePrefix,
-        notificationHandler,
-        changeExpirationMs)
+      zkUtils,
+      seqNodeRoot,
+      seqNodePrefix,
+      notificationHandler,
+      changeExpirationMs
+    )
     notificationListener.init()
 
     zkUtils.createSequentialPersistentPath(seqNodePath, notificationMessage1)
 
     TestUtils.waitUntilTrue(
-        () => invocationCount == 1 && notification == notificationMessage1,
-        "failed to send/process notification message in the timeout period.")
+      () => invocationCount == 1 && notification == notificationMessage1,
+      "failed to send/process notification message in the timeout period."
+    )
 
     /*There is no easy way to test that purging. Even if we mock kafka time with MockTime, the purging compares kafka time with the time stored in zookeeper stat and the
     embeded zookeeper server does not provide a way to mock time. so to test purging we will have to use SystemTime.sleep(changeExpirationMs + 1) issue a write and check
@@ -65,7 +67,8 @@ class ZkNodeChangeNotificationListenerTest extends KafkaServerTestHarness {
 
     zkUtils.createSequentialPersistentPath(seqNodePath, notificationMessage2)
     TestUtils.waitUntilTrue(
-        () => invocationCount == 2 && notification == notificationMessage2,
-        "failed to send/process notification message in the timeout period.")
+      () => invocationCount == 2 && notification == notificationMessage2,
+      "failed to send/process notification message in the timeout period."
+    )
   }
 }

@@ -10,7 +10,7 @@ class MyClass[T <: SomeClass](val myValue: T)
 class Flooz[A >: Null <: SomeClass, T >: Null <: A](var value: T)
 
 class A {
-  def f1(i: MyClass[_]) = i.myValue.intValue
+  def f1(i: MyClass[_])              = i.myValue.intValue
   def f2(i: MyClass[_ <: SomeClass]) = i.myValue.intValue
   // def f3[T](i: MyClass[T])                   = i.myValue.intValue
   def f4[T <: SomeClass](i: MyClass[T]) = i.myValue.intValue

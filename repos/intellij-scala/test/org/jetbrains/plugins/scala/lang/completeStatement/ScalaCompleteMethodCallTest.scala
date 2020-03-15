@@ -7,7 +7,7 @@ package lang.completeStatement
   */
 class ScalaCompleteMethodCallTest extends ScalaCompleteStatementTestBase {
   def testMethodCall() {
-    val fileText = """
+    val fileText   = """
         |class B {
         |  def method() {}
         |

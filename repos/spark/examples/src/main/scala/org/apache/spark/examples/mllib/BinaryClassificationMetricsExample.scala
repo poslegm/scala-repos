@@ -31,11 +31,13 @@ object BinaryClassificationMetricsExample {
   def main(args: Array[String]): Unit = {
 
     val conf = new SparkConf().setAppName("BinaryClassificationMetricsExample")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
     // $example on$
     // Load training data in LIBSVM format
     val data = MLUtils.loadLibSVMFile(
-        sc, "data/mllib/sample_binary_classification_data.txt")
+      sc,
+      "data/mllib/sample_binary_classification_data.txt"
+    )
 
     // Split data into training (60%) and test (40%)
     val Array(training, test) = data.randomSplit(Array(0.6, 0.4), seed = 11L)
@@ -82,7 +84,7 @@ object BinaryClassificationMetricsExample {
         println(s"Threshold: $t, F-score: $f, Beta = 1")
     }
 
-    val beta = 0.5
+    val beta   = 0.5
     val fScore = metrics.fMeasureByThreshold(beta)
     f1Score.foreach {
       case (t, f) =>

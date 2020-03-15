@@ -25,11 +25,10 @@ trait MomentsTestBase[T] extends FunSuite with Checkers {
   def numFailures: Int = 2
 
   test("mean") {
-    check(
-        Prop.forAll { (distr: Distr) =>
+    check(Prop.forAll { (distr: Distr) =>
       val sample = distr.sample(numSamples).map(asDouble _)
-      val m = mean(sample)
-      if ((m - distr.mean).abs / (m.abs max 1) > 1E-1) {
+      val m      = mean(sample)
+      if ((m - distr.mean).abs / (m.abs max 1) > 1e-1) {
         println("MExpected " + distr.mean + " but got " + m)
         false
       } else {
@@ -38,14 +37,14 @@ trait MomentsTestBase[T] extends FunSuite with Checkers {
     })
   }
 
-  val VARIANCE_TOLERANCE = 5E-2
+  val VARIANCE_TOLERANCE = 5e-2
   test("variance") {
     check(Prop.forAll { (distr: Distr) =>
       // try twice, and only fail if both fail.
       // just a little more robustness...
       Iterator.range(0, numFailures).exists { _ =>
         val sample = distr.sample(numSamples).map(asDouble _)
-        val vari = variance(sample)
+        val vari   = variance(sample)
 
         if ((vari - distr.variance).abs / (vari max 1) > VARIANCE_TOLERANCE) {
           println("Expected " + distr.variance + " but got " + vari)
@@ -56,16 +55,16 @@ trait MomentsTestBase[T] extends FunSuite with Checkers {
   }
 
   test("mode") {
-    check(
-        Prop.forAll { (distr: Distr) =>
-      val sample = distr.sample(40)
+    check(Prop.forAll { (distr: Distr) =>
+      val sample   = distr.sample(40)
       val probMode = distr(fromDouble(distr.mode))
 //      if(distr.isInstanceOf[Poisson])
 //        println(distr,probMode,sample.map{ distr },sample)
-      sample.find(x => probMode < distr(x) - 1E-4) match {
+      sample.find(x => probMode < distr(x) - 1e-4) match {
         case Some(x) =>
           println(
-              s"$x has higher prob (${distr(x)}) than mode ${distr.mode} ($probMode)"); false
+            s"$x has higher prob (${distr(x)}) than mode ${distr.mode} ($probMode)"
+          ); false
         case None => true
       }
     })

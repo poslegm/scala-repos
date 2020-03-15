@@ -21,23 +21,30 @@ import akka.actor._
   * http://jaxenter.com/tutorial-asynchronous-programming-with-akka-actors-46220.html
   */
 sealed trait AccountType
-case object Checking extends AccountType
-case object Savings extends AccountType
+case object Checking    extends AccountType
+case object Savings     extends AccountType
 case object MoneyMarket extends AccountType
 
 final case class GetCustomerAccountBalances(
-    id: Long, accountTypes: Set[AccountType])
+    id: Long,
+    accountTypes: Set[AccountType]
+)
 final case class GetAccountBalances(id: Long)
 
-final case class AccountBalances(accountType: AccountType,
-                                 balance: Option[List[(Long, BigDecimal)]])
+final case class AccountBalances(
+    accountType: AccountType,
+    balance: Option[List[(Long, BigDecimal)]]
+)
 
 final case class CheckingAccountBalances(
-    balances: Option[List[(Long, BigDecimal)]])
+    balances: Option[List[(Long, BigDecimal)]]
+)
 final case class SavingsAccountBalances(
-    balances: Option[List[(Long, BigDecimal)]])
+    balances: Option[List[(Long, BigDecimal)]]
+)
 final case class MoneyMarketAccountBalances(
-    balances: Option[List[(Long, BigDecimal)]])
+    balances: Option[List[(Long, BigDecimal)]]
+)
 
 case object TimedOut
 case object CantUnderstand
@@ -75,19 +82,22 @@ class AccountBalanceRetriever extends Actor with Aggregator {
   }
   //#initial-expect
 
-  class AccountAggregator(originalSender: ActorRef,
-                          id: Long,
-                          types: Set[AccountType]) {
+  class AccountAggregator(
+      originalSender: ActorRef,
+      id: Long,
+      types: Set[AccountType]
+  ) {
 
     val results = mutable.ArrayBuffer
       .empty[(AccountType, Option[List[(Long, BigDecimal)]])]
 
     if (types.size > 0)
       types foreach {
-        case Checking ⇒ fetchCheckingAccountsBalance()
-        case Savings ⇒ fetchSavingsAccountsBalance()
+        case Checking    ⇒ fetchCheckingAccountsBalance()
+        case Savings     ⇒ fetchSavingsAccountsBalance()
         case MoneyMarket ⇒ fetchMoneyMarketAccountsBalance()
-      } else collectBalances() // Empty type list yields empty response
+      }
+    else collectBalances() // Empty type list yields empty response
 
     context.system.scheduler.scheduleOnce(1.second, self, TimedOut)
     //#expect-timeout
@@ -192,12 +202,16 @@ class ChainingSample extends Actor with Aggregator {
 //#chain-sample
 
 class AggregatorSpec
-    extends TestKit(ActorSystem("test")) with ImplicitSender with FunSuiteLike
+    extends TestKit(ActorSystem("test"))
+    with ImplicitSender
+    with FunSuiteLike
     with Matchers {
 
   test("Test request 1 account type") {
     system.actorOf(Props[AccountBalanceRetriever]) ! GetCustomerAccountBalances(
-        1, Set(Savings))
+      1,
+      Set(Savings)
+    )
     receiveOne(10.seconds) match {
       case result: List[_] ⇒
         result should have size 1
@@ -208,7 +222,9 @@ class AggregatorSpec
 
   test("Test request 3 account types") {
     system.actorOf(Props[AccountBalanceRetriever]) ! GetCustomerAccountBalances(
-        1, Set(Checking, Savings, MoneyMarket))
+      1,
+      Set(Checking, Savings, MoneyMarket)
+    )
     receiveOne(10.seconds) match {
       case result: List[_] ⇒
         result should have size 3
@@ -222,7 +238,7 @@ final case class TestEntry(id: Int)
 
 class WorkListSpec extends FunSuiteLike {
 
-  val workList = WorkList.empty[TestEntry]
+  val workList          = WorkList.empty[TestEntry]
   var entry2: TestEntry = null
   var entry4: TestEntry = null
 
@@ -231,7 +247,7 @@ class WorkListSpec extends FunSuiteLike {
     val processed =
       workList process {
         case TestEntry(9) ⇒ true
-        case _ ⇒ false
+        case _            ⇒ false
       }
     assert(!processed)
   }
@@ -267,24 +283,21 @@ class WorkListSpec extends FunSuiteLike {
   test("Process temp entries") {
 
     // ProcessAndRemove something in the middle
-    assert(
-        workList process {
+    assert(workList process {
       case TestEntry(2) ⇒ true
-      case _ ⇒ false
+      case _            ⇒ false
     })
 
     // ProcessAndRemove the head
-    assert(
-        workList process {
+    assert(workList process {
       case TestEntry(0) ⇒ true
-      case _ ⇒ false
+      case _            ⇒ false
     })
 
     // ProcessAndRemove the tail
-    assert(
-        workList process {
+    assert(workList process {
       case TestEntry(3) ⇒ true
-      case _ ⇒ false
+      case _            ⇒ false
     })
   }
 
@@ -296,10 +309,9 @@ class WorkListSpec extends FunSuiteLike {
   }
 
   test("Process permanent entry") {
-    assert(
-        workList process {
+    assert(workList process {
       case TestEntry(4) ⇒ true
-      case _ ⇒ false
+      case _            ⇒ false
     })
   }
 
@@ -318,7 +330,7 @@ class WorkListSpec extends FunSuiteLike {
     val processed =
       workList process {
         case TestEntry(2) ⇒ true
-        case _ ⇒ false
+        case _            ⇒ false
       }
 
     assert(!processed)
@@ -326,7 +338,7 @@ class WorkListSpec extends FunSuiteLike {
     val processed2 =
       workList process {
         case TestEntry(5) ⇒ true
-        case _ ⇒ false
+        case _            ⇒ false
       }
 
     assert(!processed2)
@@ -334,14 +346,10 @@ class WorkListSpec extends FunSuiteLike {
 
   test("Append two lists") {
     workList.removeAll()
-    0 to 4 foreach { id ⇒
-      workList.add(TestEntry(id), permanent = false)
-    }
+    0 to 4 foreach { id ⇒ workList.add(TestEntry(id), permanent = false) }
 
     val l2 = new WorkList[TestEntry]
-    5 to 9 foreach { id ⇒
-      l2.add(TestEntry(id), permanent = true)
-    }
+    5 to 9 foreach { id ⇒ l2.add(TestEntry(id), permanent = true) }
 
     workList addAll l2
 

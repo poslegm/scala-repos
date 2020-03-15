@@ -31,7 +31,7 @@ abstract class Request extends Message with HttpRequestProxy {
     * associated context explicit.
     */
   def ctx: Request.Schema.Record = _ctx
-  private[this] val _ctx = Request.Schema.newRecord()
+  private[this] val _ctx         = Request.Schema.newRecord()
 
   def isRequest = true
 
@@ -39,7 +39,7 @@ abstract class Request extends Message with HttpRequestProxy {
     * Returns a [[ParamMap]] instance, which maintains query string and url-encoded
     * params associated with this request.
     */
-  def params: ParamMap = _params
+  def params: ParamMap                     = _params
   private[this] lazy val _params: ParamMap = new RequestParamMap(this)
 
   /**
@@ -84,7 +84,7 @@ abstract class Request extends Message with HttpRequestProxy {
     val u = uri
     u.indexOf('?') match {
       case -1 => u
-      case n => u.substring(0, n)
+      case n  => u.substring(0, n)
     }
   }
 
@@ -94,11 +94,11 @@ abstract class Request extends Message with HttpRequestProxy {
     val p = path
     val leaf = p.lastIndexOf('/') match {
       case -1 => p
-      case n => p.substring(n + 1)
+      case n  => p.substring(n + 1)
     }
     leaf.lastIndexOf('.') match {
       case -1 => ""
-      case n => leaf.substring(n + 1).toLowerCase
+      case n  => leaf.substring(n + 1).toLowerCase
     }
   }
 
@@ -201,7 +201,7 @@ abstract class Request extends Message with HttpRequestProxy {
     val encoder = new EncoderEmbedder[ChannelBuffer](new HttpRequestEncoder)
     encoder.offer(from[Request, HttpRequest](this))
     val buffer = encoder.poll()
-    val bytes = new Array[Byte](buffer.readableBytes())
+    val bytes  = new Array[Byte](buffer.readableBytes())
     buffer.readBytes(bytes)
     bytes
   }
@@ -227,12 +227,13 @@ object Request {
   /** Decode a Request from Array[Byte] */
   def decodeBytes(b: Array[Byte]): Request = {
     val decoder = new DecoderEmbedder(
-        new HttpRequestDecoder(Int.MaxValue, Int.MaxValue, Int.MaxValue))
+      new HttpRequestDecoder(Int.MaxValue, Int.MaxValue, Int.MaxValue)
+    )
     decoder.offer(ChannelBuffers.wrappedBuffer(b))
     val req = decoder.poll().asInstanceOf[HttpRequest]
     assert(req ne null)
     new Request {
-      val httpRequest = req
+      val httpRequest              = req
       lazy val remoteSocketAddress = new InetSocketAddress(0)
     }
   }
@@ -278,7 +279,7 @@ object Request {
   def apply(version: Version, method: Method, uri: String): Request = {
     val reqIn = new DefaultHttpRequest(from(version), from(method), uri)
     new Request {
-      val httpRequest = reqIn
+      val httpRequest              = reqIn
       lazy val remoteSocketAddress = new InetSocketAddress(0)
     }
   }
@@ -316,15 +317,18 @@ object Request {
       reqIn: HttpRequest,
       readerIn: Reader,
       remoteAddr: InetSocketAddress
-  ): Request = new Request {
-    override val reader = readerIn
-    val httpRequest = reqIn
-    lazy val remoteSocketAddress = remoteAddr
-  }
+  ): Request =
+    new Request {
+      override val reader          = readerIn
+      val httpRequest              = reqIn
+      lazy val remoteSocketAddress = remoteAddr
+    }
 
   /** Create Request from HttpRequest and Channel.  Used by Codec. */
   private[finagle] def apply(
-      httpRequestArg: HttpRequest, channel: Channel): Request =
+      httpRequestArg: HttpRequest,
+      channel: Channel
+  ): Request =
     new Request {
       val httpRequest = httpRequestArg
       lazy val remoteSocketAddress =

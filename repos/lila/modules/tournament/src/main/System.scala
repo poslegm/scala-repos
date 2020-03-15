@@ -12,25 +12,25 @@ object System {
   case object Arena extends System(id = 1) {
     val pairingSystem = arena.PairingSystem
     val scoringSystem = arena.ScoringSystem
-    val berserkable = true
+    val berserkable   = true
   }
 
   val default = Arena
 
   val all = List(Arena)
 
-  val byId = all map { s =>
-    (s.id -> s)
-  } toMap
+  val byId = all map { s => (s.id -> s) } toMap
 
   def apply(id: Int): Option[System] = byId get id
-  def orDefault(id: Int): System = apply(id) getOrElse default
+  def orDefault(id: Int): System     = apply(id) getOrElse default
 }
 
 trait PairingSystem {
-  def createPairings(tournament: Tournament,
-                     users: WaitingUsers,
-                     ranking: Ranking): Fu[Pairings]
+  def createPairings(
+      tournament: Tournament,
+      users: WaitingUsers,
+      ranking: Ranking
+  ): Fu[Pairings]
 }
 
 trait Score {

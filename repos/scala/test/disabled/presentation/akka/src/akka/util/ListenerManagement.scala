@@ -51,7 +51,7 @@ trait ListenerManagement {
 
   protected[akka] def notifyListeners(message: => Any) {
     if (hasListeners) {
-      val msg = message
+      val msg      = message
       val iterator = listeners.iterator
       while (iterator.hasNext) {
         val listener = iterator.next

@@ -8,6 +8,9 @@ import org.jetbrains.plugins.scala.lang.refactoring.ui.ScalaMemberSelectionTable
 class ScalaMemberSelectionTable(
     memberInfos: java.util.Collection[ScalaMemberInfo],
     memberInfoModel: MemberInfoModel[ScNamedElement, ScalaMemberInfo],
-    abstractColumnHeader: String)
-    extends ScalaMemberSelectionTableBase[ScNamedElement, ScalaMemberInfo](
-        memberInfos, memberInfoModel, abstractColumnHeader)
+    abstractColumnHeader: String
+) extends ScalaMemberSelectionTableBase[ScNamedElement, ScalaMemberInfo](
+      memberInfos,
+      memberInfoModel,
+      abstractColumnHeader
+    )

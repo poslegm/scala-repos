@@ -49,22 +49,22 @@ object Test {
   // public java.lang.String Test$bar5$.g(java.lang.Object) <bridge> <synthetic>
   object bar5 extends Foo1[String] with Foo2[String] {
     override def f(x: String): String = { print(x.length); x }
-    def g(x: String): String = { print(x.length); x }
+    def g(x: String): String          = { print(x.length); x }
   }
 
-  final def m1[T, R](x: Base[T, R], y: T) = { x.f(y); x.g(y); x.h(y) }
+  final def m1[T, R](x: Base[T, R], y: T)   = { x.f(y); x.g(y); x.h(y) }
   final def m2[T](x: Base[T, String], y: T) = { x.f(y); x.g(y); x.h(y) }
-  final def m3[R](x: Base[String, R]) = { x.f(""); x.g(""); x.h("") }
-  final def m4(x: Base[String, String]) = { x.f(""); x.g(""); x.h("") }
+  final def m3[R](x: Base[String, R])       = { x.f(""); x.g(""); x.h("") }
+  final def m4(x: Base[String, String])     = { x.f(""); x.g(""); x.h("") }
 
   final def m11[T](x: Foo1[T], y: T) = { x.f(y); x.g(y); x.h(y) }
-  final def m12(x: Foo1[String]) = { x.f(""); x.g(""); x.h("") }
+  final def m12(x: Foo1[String])     = { x.f(""); x.g(""); x.h("") }
   final def m21[T](x: Foo2[T], y: T) = { x.f(""); x.g(""); x.h("") }
-  final def m22(x: Foo2[String]) = { x.f(""); x.g(""); x.h("") }
+  final def m22(x: Foo2[String])     = { x.f(""); x.g(""); x.h("") }
   final def m31[T](x: Foo3[T], y: T) = { x.f(y); x.g(y); x.h(y) }
-  final def m32(x: Foo3[String]) = { x.f(""); x.g(""); x.h("") }
+  final def m32(x: Foo3[String])     = { x.f(""); x.g(""); x.h("") }
   final def m41[T](x: Foo4[T], y: T) = { x.f(""); x.g(""); x.h("") }
-  final def m42(x: Foo4[String]) = { x.f(""); x.g(""); x.h("") }
+  final def m42(x: Foo4[String])     = { x.f(""); x.g(""); x.h("") }
 
   def go = {
     m1(bar1, ""); m2(bar1, ""); m3(bar1); m4(bar1)
@@ -82,8 +82,8 @@ object Test {
   def flagsString(m: java.lang.reflect.Method) = {
     val str =
       List(
-          if (m.isBridge) "<bridge>" else "",
-          if (m.isSynthetic) "<synthetic>" else ""
+        if (m.isBridge) "<bridge>" else "",
+        if (m.isSynthetic) "<synthetic>" else ""
       ) filterNot (_ == "") mkString " "
 
     if (str == "") "" else " " + str
@@ -95,7 +95,7 @@ object Test {
   def show(clazz: Class[_]) {
     print(clazz + " {")
     clazz.getMethods.sortBy(x => (x.getName, x.isBridge, x.toString)) filter
-    (_.getName.length == 1) foreach { m =>
+      (_.getName.length == 1) foreach { m =>
       print("\n  " + m + flagsString(m))
       if ("" + m != "" + m.toGenericString) {
         print("\n    generic: " + m.toGenericString)

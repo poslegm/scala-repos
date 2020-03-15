@@ -1,6 +1,6 @@
 class C {
   private val a = 0
-  def getA = a
+  def getA      = a
 }
 
 class D(c: C) {
@@ -12,5 +12,5 @@ object Test {
 
   val c = new C
   (c: D).a // works
-  c.a // error
+  c.a      // error
 }

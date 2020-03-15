@@ -3,18 +3,18 @@ package distributions
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License")
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
  */
 
 import breeze.numerics._
@@ -25,7 +25,8 @@ import breeze.optimize.DiffFunction
   * @author dlwh
   */
 case class Poisson(mean: Double)(implicit rand: RandBasis = Rand)
-    extends DiscreteDistr[Int] with Moments[Double, Double] {
+    extends DiscreteDistr[Int]
+    with Moments[Double, Double] {
   require(mean >= 0, "Poisson mean must be non-negative, but got " + mean)
   require(!mean.isInfinite, "Poisson mean must be finite, but got " + mean)
 
@@ -50,14 +51,14 @@ case class Poisson(mean: Double)(implicit rand: RandBasis = Rand)
       k
     } else {
       val k_start = mean.toInt
-      val u = rand.uniform.get
-      var t1 = exp(k_start * log(mean) - mean - lgamma(k_start.toDouble + 1))
+      val u       = rand.uniform.get
+      var t1      = exp(k_start * log(mean) - mean - lgamma(k_start.toDouble + 1))
       if (t1 > u) k_start
       else {
         var k1 = k_start
         var k2 = k_start
         var t2 = t1
-        var s = t1
+        var s  = t1
         while (true) {
           k1 += 1
           t1 *= mean / k1; s += t1
@@ -82,22 +83,22 @@ case class Poisson(mean: Double)(implicit rand: RandBasis = Rand)
   def cdf(k: Int) = 1 - gammp(k + 1.0, mean)
 
   def variance = mean
-  def mode = math.ceil(mean) - 1
+  def mode     = math.ceil(mean) - 1
 
   /** Approximate, slow to compute */
   def entropy = {
-    val entr = mean * (1 - log(mean))
-    var extra = 0.0
+    val entr       = mean * (1 - log(mean))
+    var extra      = 0.0
     var correction = 0.0
-    var k = 0
-    var meanmean = 1.0 / mean
+    var k          = 0
+    var meanmean   = 1.0 / mean
     do {
       meanmean *= mean
       val ln_k_! = lgamma(k.toDouble + 1)
       correction = meanmean * ln_k_! / exp(ln_k_!)
       extra += correction
       k += 1
-    } while (correction > 1E-6)
+    } while (correction > 1e-6)
 
     entr + exp(-mean) * extra
   }
@@ -122,7 +123,7 @@ object Poisson extends ExponentialFamily[Poisson, Int] {
   def likelihoodFunction(stats: SufficientStatistic) =
     new DiffFunction[Double] {
       def calculate(x: Double) = {
-        val obj = math.log(x) * stats.sum - x * stats.n
+        val obj  = math.log(x) * stats.sum - x * stats.n
         val grad = stats.sum / x - stats.n
         (-obj, -grad)
       }

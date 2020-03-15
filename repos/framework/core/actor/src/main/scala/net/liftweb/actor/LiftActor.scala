@@ -56,38 +56,38 @@ object LAScheduler extends LAScheduler with Loggable {
   @volatile var blockingQueueSize: Box[Int] = Full(200000)
 
   @volatile
-  var createExecutor: () => ILAExecute = () =>
-    {
-      new ILAExecute {
-        import java.util.concurrent._
+  var createExecutor: () => ILAExecute = () => {
+    new ILAExecute {
+      import java.util.concurrent._
 
-        private val es = // Executors.newFixedThreadPool(threadPoolSize)
-        new ThreadPoolExecutor(threadPoolSize,
-                               maxThreadPoolSize,
-                               60,
-                               TimeUnit.SECONDS,
-                               blockingQueueSize match {
-                                 case Full(x) =>
-                                   new ArrayBlockingQueue(x)
-                                 case _ => new LinkedBlockingQueue
-                               })
+      private val es = // Executors.newFixedThreadPool(threadPoolSize)
+        new ThreadPoolExecutor(
+          threadPoolSize,
+          maxThreadPoolSize,
+          60,
+          TimeUnit.SECONDS,
+          blockingQueueSize match {
+            case Full(x) =>
+              new ArrayBlockingQueue(x)
+            case _ => new LinkedBlockingQueue
+          }
+        )
 
-        def execute(f: () => Unit): Unit =
-          es.execute(
-              new Runnable {
-            def run() {
-              try {
-                f()
-              } catch {
-                case e: Exception => logger.error("Lift Actor Scheduler", e)
-              }
+      def execute(f: () => Unit): Unit =
+        es.execute(new Runnable {
+          def run() {
+            try {
+              f()
+            } catch {
+              case e: Exception => logger.error("Lift Actor Scheduler", e)
             }
-          })
+          }
+        })
 
-        def shutdown(): Unit = {
-          es.shutdown()
-        }
+      def shutdown(): Unit = {
+        es.shutdown()
       }
+    }
   }
 
   @volatile
@@ -119,11 +119,11 @@ object LAScheduler extends LAScheduler with Loggable {
 }
 
 trait SpecializedLiftActor[T] extends SimpleActor[T] {
-  @volatile private[this] var processing = false
-  private[this] val baseMailbox: MailboxItem = new SpecialMailbox
-  @volatile private[this] var msgList: List[T] = Nil
+  @volatile private[this] var processing               = false
+  private[this] val baseMailbox: MailboxItem           = new SpecialMailbox
+  @volatile private[this] var msgList: List[T]         = Nil
   @volatile private[this] var priorityMsgList: List[T] = Nil
-  @volatile private[this] var startCnt = 0
+  @volatile private[this] var startCnt                 = 0
 
   private class MailboxItem(val item: T) {
     var next: MailboxItem = _
@@ -164,11 +164,13 @@ trait SpecializedLiftActor[T] extends SimpleActor[T] {
   }
 
   private def findMailboxItem(
-      start: MailboxItem, f: MailboxItem => Boolean): Box[MailboxItem] =
+      start: MailboxItem,
+      f: MailboxItem => Boolean
+  ): Box[MailboxItem] =
     start match {
       case x: SpecialMailbox => Empty
-      case x if f(x) => Full(x)
-      case x => findMailboxItem(x.next, f)
+      case x if f(x)         => Full(x)
+      case x                 => findMailboxItem(x.next, f)
     }
 
   /**
@@ -189,13 +191,11 @@ trait SpecializedLiftActor[T] extends SimpleActor[T] {
       if (!processing) {
         if (LAScheduler.onSameThread) {
           processing = true
-          () =>
-            processMailbox(true)
+          () => processMailbox(true)
         } else {
           if (startCnt == 0) {
             startCnt += 1
-            () =>
-              LAScheduler.execute(() => processMailbox(false))
+            () => LAScheduler.execute(() => processMailbox(false))
           } else () => {}
         }
       } else () => {}
@@ -214,13 +214,11 @@ trait SpecializedLiftActor[T] extends SimpleActor[T] {
       if (!processing) {
         if (LAScheduler.onSameThread) {
           processing = true
-          () =>
-            processMailbox(true)
+          () => processMailbox(true)
         } else {
           if (startCnt == 0) {
             startCnt += 1
-            () =>
-              LAScheduler.execute(() => processMailbox(false))
+            () => LAScheduler.execute(() => processMailbox(false))
           } else () => {}
         }
       } else () => {}
@@ -243,10 +241,11 @@ trait SpecializedLiftActor[T] extends SimpleActor[T] {
     * You can wrap calls around the evaluation of the mailbox.  This allows you to set up
     * the environment.
     */
-  protected def around[R](f: => R): R = aroundLoans match {
-    case Nil => f
-    case xs => CommonLoanWrapper(xs)(f)
-  }
+  protected def around[R](f: => R): R =
+    aroundLoans match {
+      case Nil => f
+      case xs  => CommonLoanWrapper(xs)(f)
+    }
   private def proc2(ignoreProcessing: Boolean) {
     var clearProcessing = true
     baseMailbox.synchronized {
@@ -259,14 +258,16 @@ trait SpecializedLiftActor[T] extends SimpleActor[T] {
 
     def putListIntoMB(): Unit = {
       if (!priorityMsgList.isEmpty) {
-        priorityMsgList.foldRight(baseMailbox)(
-            (msg, mb) => mb.insertAfter(new MailboxItem(msg)))
+        priorityMsgList.foldRight(baseMailbox)((msg, mb) =>
+          mb.insertAfter(new MailboxItem(msg))
+        )
         priorityMsgList = Nil
       }
 
       if (!msgList.isEmpty) {
-        msgList.foldLeft(baseMailbox)(
-            (mb, msg) => mb.insertBefore(new MailboxItem(msg)))
+        msgList.foldLeft(baseMailbox)((mb, msg) =>
+          mb.insertBefore(new MailboxItem(msg))
+        )
         msgList = Nil
       }
     }
@@ -281,33 +282,38 @@ trait SpecializedLiftActor[T] extends SimpleActor[T] {
 
         while (keepOnDoingHighPriory) {
           val hiPriPfBox = highPriorityReceive
-          hiPriPfBox.map { hiPriPf =>
-            findMailboxItem(
+          hiPriPfBox
+            .map { hiPriPf =>
+              findMailboxItem(
                 baseMailbox.next,
-                mb => testTranslate(hiPriPf.isDefinedAt)(mb.item)) match {
-              case Full(mb) =>
-                mb.remove()
-                try {
-                  execTranslate(hiPriPf)(mb.item)
-                } catch {
-                  case e: Exception => if (eh.isDefinedAt(e)) eh(e)
-                }
-              case _ =>
-                baseMailbox.synchronized {
-                  if (msgList.isEmpty) {
-                    keepOnDoingHighPriory = false
-                  } else {
-                    putListIntoMB()
+                mb => testTranslate(hiPriPf.isDefinedAt)(mb.item)
+              ) match {
+                case Full(mb) =>
+                  mb.remove()
+                  try {
+                    execTranslate(hiPriPf)(mb.item)
+                  } catch {
+                    case e: Exception => if (eh.isDefinedAt(e)) eh(e)
                   }
-                }
+                case _ =>
+                  baseMailbox.synchronized {
+                    if (msgList.isEmpty) {
+                      keepOnDoingHighPriory = false
+                    } else {
+                      putListIntoMB()
+                    }
+                  }
+              }
             }
-          }.openOr { keepOnDoingHighPriory = false }
+            .openOr { keepOnDoingHighPriory = false }
         }
 
         val pf = messageHandler
 
-        findMailboxItem(baseMailbox.next,
-                        mb => testTranslate(pf.isDefinedAt)(mb.item)) match {
+        findMailboxItem(
+          baseMailbox.next,
+          mb => testTranslate(pf.isDefinedAt)(mb.item)
+        ) match {
           case Full(mb) =>
             mb.remove()
             try {
@@ -404,13 +410,16 @@ object ActorLogger extends Logger {}
 private final case class MsgWithResp(msg: Any, future: LAFuture[Any])
 
 trait LiftActor
-    extends SpecializedLiftActor[Any] with GenericActor[Any]
+    extends SpecializedLiftActor[Any]
+    with GenericActor[Any]
     with ForwardableActor[Any, Any] {
   @volatile
   private[this] var responseFuture: LAFuture[Any] = null
 
   protected final def forwardMessageTo(
-      msg: Any, forwardTo: TypedActor[Any, Any]) {
+      msg: Any,
+      forwardTo: TypedActor[Any, Any]
+  ) {
     if (null ne responseFuture) {
       forwardTo match {
         case la: LiftActor => la ! MsgWithResp(msg, responseFuture)
@@ -491,21 +500,23 @@ trait LiftActor
     Full(future.get)
   }
 
-  override protected def testTranslate(f: Any => Boolean)(v: Any) = v match {
-    case MsgWithResp(msg, _) => f(msg)
-    case v => f(v)
-  }
+  override protected def testTranslate(f: Any => Boolean)(v: Any) =
+    v match {
+      case MsgWithResp(msg, _) => f(msg)
+      case v                   => f(v)
+    }
 
-  override protected def execTranslate(f: Any => Unit)(v: Any) = v match {
-    case MsgWithResp(msg, future) =>
-      responseFuture = future
-      try {
-        f(msg)
-      } finally {
-        responseFuture = null
-      }
-    case v => f(v)
-  }
+  override protected def execTranslate(f: Any => Unit)(v: Any) =
+    v match {
+      case MsgWithResp(msg, future) =>
+        responseFuture = future
+        try {
+          f(msg)
+        } finally {
+          responseFuture = null
+        }
+      case v => f(v)
+    }
 
   /**
     * The Actor should call this method with a reply
@@ -540,17 +551,18 @@ object LiftActorJ {
       methods.get(clz) match {
         case Some(pf) => pf.vend(what)
         case _ => {
-            val pf = buildPF(clz)
-            methods += clz -> pf
-            pf.vend(what)
-          }
+          val pf = buildPF(clz)
+          methods += clz -> pf
+          pf.vend(what)
+        }
       }
     }
 
-  private def getBaseClasses(clz: Class[_]): List[Class[_]] = clz match {
-    case null => Nil
-    case clz => clz :: getBaseClasses(clz.getSuperclass)
-  }
+  private def getBaseClasses(clz: Class[_]): List[Class[_]] =
+    clz match {
+      case null => Nil
+      case clz  => clz :: getBaseClasses(clz.getSuperclass)
+    }
 
   private def receiver(in: Method): Boolean = {
     in.getParameterTypes().length == 1 &&
@@ -561,8 +573,7 @@ object LiftActorJ {
     val methods =
       getBaseClasses(clz).flatMap(_.getDeclaredMethods.toList.filter(receiver))
 
-    val clzMap: Map[Class[_], Method] = Map(
-        methods.map { m =>
+    val clzMap: Map[Class[_], Method] = Map(methods.map { m =>
       m.setAccessible(true) // access private and protected methods
       m.getParameterTypes().apply(0) -> m
     }: _*)
@@ -572,8 +583,9 @@ object LiftActorJ {
 }
 
 private final class DispatchVendor(map: Map[Class[_], Method]) {
-  private val baseMap: Map[Class[_], Option[Method]] = Map(
-      map.map { case (k, v) => (k, Some(v)) }.toList: _*)
+  private val baseMap: Map[Class[_], Option[Method]] = Map(map.map {
+    case (k, v) => (k, Some(v))
+  }.toList: _*)
 
   def vend(actor: LiftActorJ): PartialFunction[Any, Unit] =
     new PartialFunction[Any, Unit] {
@@ -587,20 +599,20 @@ private final class DispatchVendor(map: Map[Class[_], Method]) {
         theMap.get(clz) match {
           case Some(Some(_)) => true
           case None => {
-              val answer = findClass(clz)
-              theMap += clz -> answer
-              answer.isDefined
-            }
+            val answer = findClass(clz)
+            theMap += clz -> answer
+            answer.isDefined
+          }
           case _ => false
         }
       }
 
       def apply(v: Any): Unit = {
         val o: Object = v.asInstanceOf[Object]
-        val meth = theMap(o.getClass).get
+        val meth      = theMap(o.getClass).get
         meth.invoke(actor, o) match {
           case null =>
-          case x => actor.internalReply(x)
+          case x    => actor.internalReply(x)
         }
       }
     }

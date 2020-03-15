@@ -27,7 +27,8 @@ trait FlatClassPath extends ClassFileLookup[AbstractFile] {
   // A default implementation which should be overridden, if we can create the more efficient
   // solution for a given type of FlatClassPath
   override def findClass(
-      className: String): Option[ClassRepresentation[AbstractFile]] = {
+      className: String
+  ): Option[ClassRepresentation[AbstractFile]] = {
     val (pkg, simpleClassName) =
       PackageNameUtils.separatePkgAndClassNames(className)
 
@@ -47,8 +48,10 @@ object FlatClassPath {
   val RootPackage = ""
 }
 
-case class FlatClassPathEntries(packages: Seq[PackageEntry],
-                                classesAndSources: Seq[ClassRepClassPathEntry])
+case class FlatClassPathEntries(
+    packages: Seq[PackageEntry],
+    classesAndSources: Seq[ClassRepClassPathEntry]
+)
 
 object FlatClassPathEntries {
   import scala.language.implicitConversions
@@ -88,8 +91,9 @@ private[nsc] case class SourceFileEntryImpl(file: AbstractFile)
 }
 
 private[nsc] case class ClassAndSourceFilesEntry(
-    classFile: AbstractFile, srcFile: AbstractFile)
-    extends ClassRepClassPathEntry {
+    classFile: AbstractFile,
+    srcFile: AbstractFile
+) extends ClassRepClassPathEntry {
   override def name = FileUtils.stripClassExtension(classFile.name)
 
   override def binary: Option[AbstractFile] = Some(classFile)
@@ -99,11 +103,11 @@ private[nsc] case class ClassAndSourceFilesEntry(
 private[nsc] case class PackageEntryImpl(name: String) extends PackageEntry
 
 private[nsc] trait NoSourcePaths {
-  def asSourcePathString: String = ""
+  def asSourcePathString: String                                    = ""
   private[nsc] def sources(inPackage: String): Seq[SourceFileEntry] = Seq.empty
 }
 
 private[nsc] trait NoClassPaths {
-  def findClassFile(className: String): Option[AbstractFile] = None
+  def findClassFile(className: String): Option[AbstractFile]       = None
   private[nsc] def classes(inPackage: String): Seq[ClassFileEntry] = Seq.empty
 }

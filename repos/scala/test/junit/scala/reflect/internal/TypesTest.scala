@@ -23,16 +23,14 @@ class TypesTest {
     assert(boolWithString != boolWithString)
     assert(boolWithString =:= boolWithString)
 
-    val boolWithString1 = boolWithString
+    val boolWithString1        = boolWithString
     val boolWithString1narrow1 = boolWithString1.narrow
     val boolWithString1narrow2 = boolWithString1.narrow
     // Two narrowings of the same refinement end up =:=. This was the root
     // cause of SI-8611. See `narrowUniquely` in `Logic` for the workaround.
     assert(boolWithString1narrow1 =:= boolWithString1narrow2)
-    val uniquelyNarrowed1 = refinedType(
-        boolWithString1narrow1 :: Nil, NoSymbol)
-    val uniquelyNarrowed2 = refinedType(
-        boolWithString1narrow2 :: Nil, NoSymbol)
+    val uniquelyNarrowed1 = refinedType(boolWithString1narrow1 :: Nil, NoSymbol)
+    val uniquelyNarrowed2 = refinedType(boolWithString1narrow2 :: Nil, NoSymbol)
     assert(uniquelyNarrowed1 =:= uniquelyNarrowed2)
   }
 
@@ -44,10 +42,10 @@ class TypesTest {
     val minfo = ClassInfoType(List(ObjectTpe), newScope, moduleClass)
     module.moduleClass setInfo minfo
     module setInfo module.moduleClass.tpe
-    val tp1 = TypeRef(ThisType(EmptyPackageClass), moduleClass, Nil)
-    val tp2 = SingleType(ThisType(EmptyPackageClass), module)
-    val tp3 = ThisType(moduleClass)
-    val tps = List(tp1, tp2, tp3)
+    val tp1     = TypeRef(ThisType(EmptyPackageClass), moduleClass, Nil)
+    val tp2     = SingleType(ThisType(EmptyPackageClass), module)
+    val tp3     = ThisType(moduleClass)
+    val tps     = List(tp1, tp2, tp3)
     val results = mutable.Buffer[String]()
     tps.permutations.foreach {
       case ts @ List(a, b, c) =>

@@ -15,9 +15,9 @@ object Test {
     // println("created trie")
     for (n <- 0 until (sz - 1)) {
       // println("---------> n = " + n)
-      val pit = ht.parallelIterator
+      val pit  = ht.parallelIterator
       val pit2 = ht.parallelIterator
-      var i = 0
+      var i    = 0
       while (i < n) {
         pit.next
         pit2.next
@@ -25,8 +25,8 @@ object Test {
       }
       // println("splitting")
       val pits = pit.split
-      val fst = pits(0).toSet
-      val snd = pits(1).toSet
+      val fst  = pits(0).toSet
+      val snd  = pits(1).toSet
       val orig = pit2.toSet
       if (orig.size != (fst.size + snd.size) || orig != (fst ++ snd)) {
         println("Original: " + orig)

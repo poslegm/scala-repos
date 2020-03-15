@@ -15,8 +15,7 @@ abstract class ForwardingWarmUpFilter[Req, Rep](
     warmupPeriod: Duration,
     forwardTo: Service[Req, Rep],
     statsReceiver: StatsReceiver = DefaultStatsReceiver
-)
-    extends SimpleFilter[Req, Rep] {
+) extends SimpleFilter[Req, Rep] {
 
   @volatile private[this] var warmupComplete = false
 
@@ -26,12 +25,12 @@ abstract class ForwardingWarmUpFilter[Req, Rep](
 
   private[this] val scopedStatsReceiver = statsReceiver.scope("warmup")
 
-  private[this] val localScope = scopedStatsReceiver.scope("local")
-  private[this] val localLatency = localScope.stat("latency_ms")
+  private[this] val localScope          = scopedStatsReceiver.scope("local")
+  private[this] val localLatency        = localScope.stat("latency_ms")
   private[this] val localFailureCounter = localScope.counter("failures")
 
-  private[this] val forwardScope = scopedStatsReceiver.scope("forward")
-  private[this] val forwardLatency = forwardScope.stat("latency_ms")
+  private[this] val forwardScope          = scopedStatsReceiver.scope("forward")
+  private[this] val forwardLatency        = forwardScope.stat("latency_ms")
   private[this] val forwardFailureCounter = forwardScope.counter("failures")
 
   private[this] val onWarmp: Promise[Unit] = Promise[Unit]()
@@ -50,7 +49,7 @@ abstract class ForwardingWarmUpFilter[Req, Rep](
     } else {
       val start = startTime.inMillis
 
-      val timePassed = math.max(Time.now.inMillis - start, 0)
+      val timePassed  = math.max(Time.now.inMillis - start, 0)
       val percentWarm = math.pow(timePassed.toFloat / warmupPeriod.inMillis, 3)
 
       if (percentWarm >= 1) {

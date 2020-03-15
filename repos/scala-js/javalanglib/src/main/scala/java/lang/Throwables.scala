@@ -3,7 +3,8 @@ package java.lang
 import scala.scalajs.js
 
 class Throwable(s: String, private var e: Throwable)
-    extends Object with java.io.Serializable {
+    extends Object
+    with java.io.Serializable {
   def this() = this(null, null)
   def this(s: String) = this(s, null)
   def this(e: Throwable) = this(null, e)
@@ -17,8 +18,8 @@ class Throwable(s: String, private var e: Throwable)
     this
   }
 
-  def getMessage(): String = s
-  def getCause(): Throwable = e
+  def getMessage(): String          = s
+  def getCause(): Throwable         = e
   def getLocalizedMessage(): String = getMessage()
 
   def fillInStackTrace(): Throwable = {
@@ -69,12 +70,12 @@ class Throwable(s: String, private var e: Throwable)
 
     // Causes
     var wCause: Throwable = this
-    while ( (wCause ne wCause.getCause) && (wCause.getCause ne null)) {
+    while ((wCause ne wCause.getCause) && (wCause.getCause ne null)) {
       val parentTrace = wCause.getStackTrace
       wCause = wCause.getCause
       val thisTrace = wCause.getStackTrace
 
-      val thisLength = thisTrace.length
+      val thisLength   = thisTrace.length
       val parentLength = parentTrace.length
 
       sprintln("Caused by: " + wCause.toString)
@@ -85,8 +86,9 @@ class Throwable(s: String, private var e: Throwable)
          */
         var sameFrameCount: Int = 0
         while (sameFrameCount < thisLength && sameFrameCount < parentLength &&
-        thisTrace(thisLength - sameFrameCount - 1) == parentTrace(
-            parentLength - sameFrameCount - 1)) {
+               thisTrace(thisLength - sameFrameCount - 1) == parentTrace(
+                 parentLength - sameFrameCount - 1
+               )) {
           sameFrameCount += 1
         }
 
@@ -97,7 +99,7 @@ class Throwable(s: String, private var e: Throwable)
 
         // Print the non-common frames
         val lengthToPrint = thisLength - sameFrameCount
-        var i = 0
+        var i             = 0
         while (i < lengthToPrint) {
           sprintln("  at " + thisTrace(i))
           i += 1
@@ -112,7 +114,7 @@ class Throwable(s: String, private var e: Throwable)
 
   override def toString(): String = {
     val className = getClass.getName
-    val message = getMessage()
+    val message   = getMessage()
     if (message eq null) className
     else className + ": " + message
   }
@@ -162,7 +164,7 @@ class ExceptionInInitializerError private (s: String, private val e: Throwable)
   def this(thrown: Throwable) = this(null, thrown)
   def this(s: String) = this(s, null)
   def this() = this(null, null)
-  def getException(): Throwable = e
+  def getException(): Throwable      = e
   override def getCause(): Throwable = e
 }
 
@@ -250,7 +252,7 @@ class ClassNotFoundException(s: String, e: Throwable)
     extends ReflectiveOperationException(s) {
   def this(s: String) = this(s, null)
   def this() = this(null, null)
-  def getException(): Throwable = e
+  def getException(): Throwable      = e
   override def getCause(): Throwable = e
 }
 
@@ -261,7 +263,7 @@ class CloneNotSupportedException(s: String) extends Exception(s) {
 class EnumConstantNotPresentException(e: Class[_ <: Enum[_]], c: String)
     extends RuntimeException(e.getName() + "." + c) {
   def enumType(): Class[_ <: Enum[_]] = e
-  def constantName(): String = c
+  def constantName(): String          = c
 }
 
 class Exception(s: String, e: Throwable) extends Throwable(s, e) {
@@ -319,8 +321,7 @@ class NoSuchFieldException(s: String) extends ReflectiveOperationException(s) {
   def this() = this(null)
 }
 
-class NoSuchMethodException(s: String)
-    extends ReflectiveOperationException(s) {
+class NoSuchMethodException(s: String) extends ReflectiveOperationException(s) {
   def this() = this(null)
 }
 

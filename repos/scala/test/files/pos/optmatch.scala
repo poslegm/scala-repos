@@ -4,8 +4,8 @@
 // }
 
 class NonZeroLong(val value: Long) extends AnyVal {
-  def get: Long = value
-  def isEmpty: Boolean = get == 0l
+  def get: Long        = value
+  def isEmpty: Boolean = get == 0L
 }
 object NonZeroLong {
   def unapply(value: Long): NonZeroLong = new NonZeroLong(value)
@@ -21,10 +21,11 @@ object Foo {
 }
 
 object Test {
-  def f(x: Int): Int = x match {
-    case Foo(1024l) => 1
-    case _ => 2
-  }
+  def f(x: Int): Int =
+    x match {
+      case Foo(1024L) => 1
+      case _          => 2
+    }
   def main(args: Array[String]): Unit = {
     println(f(10))
     println(f(11))

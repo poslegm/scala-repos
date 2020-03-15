@@ -5,7 +5,7 @@ class Unapply {
   }
   class A {
     val isEmpty: Boolean = false
-    def get: B = new B
+    def get: B           = new B
   }
 
   object Z {
@@ -14,7 +14,8 @@ class Unapply {
 
   "text" match {
     case Z(s, l) =>
-      /*start*/ l /*end*/
+      /*start*/
+      l /*end*/
   }
 }
 //Seq[Int]

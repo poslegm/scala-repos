@@ -9,9 +9,9 @@ import nsc.plugins.PluginComponent
 class ThePlugin(val global: Global) extends Plugin {
   import global._
 
-  val name = "cyclicdependency"
+  val name        = "cyclicdependency"
   val description = "Declares two phases that have a cyclic dependency"
-  val components = List[PluginComponent](thePhase1, thePhase2)
+  val components  = List[PluginComponent](thePhase1, thePhase2)
 
   private object thePhase1 extends PluginComponent {
     val global = ThePlugin.this.global

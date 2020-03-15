@@ -42,45 +42,57 @@ class MathContextTest {
     assertTrue(mc8.getPrecision == 23)
     assertTrue(mc8.getRoundingMode == RoundingMode.UP)
 
-    expectThrows(classOf[IllegalArgumentException],
-                 new MathContext("prcision=27 roundingMode=CEILING"))
-    expectThrows(classOf[IllegalArgumentException],
-                 new MathContext("precision=26 roundingMoe=CEILING"))
-    expectThrows(classOf[IllegalArgumentException],
-                 new MathContext("precision=25 roundingMode=CEILINGFAN"))
-    expectThrows(classOf[IllegalArgumentException],
-                 new MathContext("precision=24 roundingMode=HALF"))
-    expectThrows(classOf[IllegalArgumentException],
-                 new MathContext("precision=23 roundingMode=UPSIDEDOWN"))
-    expectThrows(classOf[IllegalArgumentException],
-                 new MathContext("precision=22roundingMode=UP"))
+    expectThrows(
+      classOf[IllegalArgumentException],
+      new MathContext("prcision=27 roundingMode=CEILING")
+    )
+    expectThrows(
+      classOf[IllegalArgumentException],
+      new MathContext("precision=26 roundingMoe=CEILING")
+    )
+    expectThrows(
+      classOf[IllegalArgumentException],
+      new MathContext("precision=25 roundingMode=CEILINGFAN")
+    )
+    expectThrows(
+      classOf[IllegalArgumentException],
+      new MathContext("precision=24 roundingMode=HALF")
+    )
+    expectThrows(
+      classOf[IllegalArgumentException],
+      new MathContext("precision=23 roundingMode=UPSIDEDOWN")
+    )
+    expectThrows(
+      classOf[IllegalArgumentException],
+      new MathContext("precision=22roundingMode=UP")
+    )
     expectThrows(classOf[IllegalArgumentException], new MathContext(""))
     expectThrows(classOf[NullPointerException], new MathContext(null))
   }
 
   @Test def testMathContextConstructorEquality(): Unit = {
-    val mc1 = new MathContext(16, RoundingMode.CEILING)
+    val mc1  = new MathContext(16, RoundingMode.CEILING)
     val mc1a = new MathContext("precision=16 roundingMode=CEILING")
     assertTrue(mc1 == mc1a)
-    val mc2 = new MathContext(17, RoundingMode.DOWN)
+    val mc2  = new MathContext(17, RoundingMode.DOWN)
     val mc2a = new MathContext("precision=17 roundingMode=DOWN")
     assertTrue(mc2 == mc2a)
-    val mc3 = new MathContext(18, RoundingMode.FLOOR)
+    val mc3  = new MathContext(18, RoundingMode.FLOOR)
     val mc3a = new MathContext("precision=18 roundingMode=FLOOR")
     assertTrue(mc3 == mc3a)
-    val mc4 = new MathContext(19, RoundingMode.HALF_DOWN)
+    val mc4  = new MathContext(19, RoundingMode.HALF_DOWN)
     val mc4a = new MathContext("precision=19 roundingMode=HALF_DOWN")
     assertTrue(mc4 == mc4a)
-    val mc5 = new MathContext(20, RoundingMode.HALF_EVEN)
+    val mc5  = new MathContext(20, RoundingMode.HALF_EVEN)
     val mc5a = new MathContext("precision=20 roundingMode=HALF_EVEN")
     assertTrue(mc5 == mc5a)
-    val mc6 = new MathContext(21, RoundingMode.HALF_UP)
+    val mc6  = new MathContext(21, RoundingMode.HALF_UP)
     val mc6a = new MathContext("precision=21 roundingMode=HALF_UP")
     assertTrue(mc6 == mc6a)
-    val mc7 = new MathContext(22, RoundingMode.UNNECESSARY)
+    val mc7  = new MathContext(22, RoundingMode.UNNECESSARY)
     val mc7a = new MathContext("precision=22 roundingMode=UNNECESSARY")
     assertTrue(mc7 == mc7a)
-    val mc8 = new MathContext(23, RoundingMode.UP)
+    val mc8  = new MathContext(23, RoundingMode.UP)
     val mc8a = new MathContext("precision=23 roundingMode=UP")
     assertTrue(mc8 == mc8a)
   }

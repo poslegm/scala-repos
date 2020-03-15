@@ -8,6 +8,6 @@ class A {
 
 class B {
   def g(x: Boolean): Unit = ()
-  def g(x: Int): Unit = ()
+  def g(x: Int): Unit     = ()
   def f(xs: List[Bip[_]]) = xs foreach { case x: BoolBip => g(x.h) }
 }

@@ -3,7 +3,10 @@ package mesosphere.marathon
 import mesosphere.marathon.core.base.Clock
 import mesosphere.marathon.core.launcher.TaskOpFactory
 import mesosphere.marathon.core.launcher.impl.TaskOpFactoryHelper
-import mesosphere.marathon.core.launchqueue.{LaunchQueueConfig, LaunchQueueModule}
+import mesosphere.marathon.core.launchqueue.{
+  LaunchQueueConfig,
+  LaunchQueueModule
+}
 import mesosphere.marathon.core.leadership.AlwaysElectedLeadershipModule
 import mesosphere.marathon.core.matcher.DummyOfferMatcherManager
 import mesosphere.marathon.core.task.Task
@@ -20,7 +23,9 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class LaunchQueueModuleTest
-    extends MarathonSpec with BeforeAndAfter with GivenWhenThen
+    extends MarathonSpec
+    with BeforeAndAfter
+    with GivenWhenThen
     with MarathonShutdownHookSupport {
 
   test("empty queue returns no results") {
@@ -144,7 +149,7 @@ class LaunchQueueModuleTest
   }
 
   test("an offer gets successfully matched against an item in the queue") {
-    val offer = MarathonTestHelper.makeBasicOffer().build()
+    val offer  = MarathonTestHelper.makeBasicOffer().build()
     val taskId = Task.Id.forApp(PathId("/test"))
     val mesosTask = MarathonTestHelper
       .makeOneCPUTask("")
@@ -180,13 +185,13 @@ class LaunchQueueModuleTest
   private[this] val app =
     MarathonTestHelper.makeBasicApp().copy(id = PathId("/app"))
 
-  private[this] var clock: Clock = _
-  private[this] var taskBusModule: TaskBusModule = _
+  private[this] var clock: Clock                                  = _
+  private[this] var taskBusModule: TaskBusModule                  = _
   private[this] var offerMatcherManager: DummyOfferMatcherManager = _
-  private[this] var appRepository: AppRepository = _
-  private[this] var taskTracker: TaskTracker = _
-  private[this] var taskOpFactory: TaskOpFactory = _
-  private[this] var module: LaunchQueueModule = _
+  private[this] var appRepository: AppRepository                  = _
+  private[this] var taskTracker: TaskTracker                      = _
+  private[this] var taskOpFactory: TaskOpFactory                  = _
+  private[this] var module: LaunchQueueModule                     = _
 
   private[this] def taskQueue = module.taskQueue
 
@@ -202,14 +207,14 @@ class LaunchQueueModuleTest
     val config: LaunchQueueConfig = new LaunchQueueConfig {}
     config.afterInit()
     module = new LaunchQueueModule(
-        config,
-        AlwaysElectedLeadershipModule(shutdownHooks),
-        clock,
-        subOfferMatcherManager = offerMatcherManager,
-        maybeOfferReviver = None,
-        appRepository,
-        taskTracker,
-        taskOpFactory
+      config,
+      AlwaysElectedLeadershipModule(shutdownHooks),
+      clock,
+      subOfferMatcherManager = offerMatcherManager,
+      maybeOfferReviver = None,
+      appRepository,
+      taskTracker,
+      taskOpFactory
     )
   }
 

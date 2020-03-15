@@ -24,7 +24,7 @@ import common._
   * Calculate the edit distance between words
   */
 object LD {
-  private def min(a: Int, b: Int): Int = if (a < b) a else b
+  private def min(a: Int, b: Int): Int         = if (a < b) a else b
   private def min(a: Int, b: Int, c: Int): Int = min(min(a, b), c)
 
   /**
@@ -52,7 +52,7 @@ object LD {
       case w :: Nil => (w, this(root, f(w)))
 
       case w :: ws =>
-        val tv = this(root, f(w))
+        val tv   = this(root, f(w))
         val rest = this(root, ws, f)
         if (tv < rest._2) (w, tv)
         else rest
@@ -71,17 +71,19 @@ object LD {
     val x1 = x.trim.toLowerCase.toList
     val y1 = y.trim.toLowerCase.toList
 
-    def column(word: List[Char],
-               dist: List[Int],
-               left: Int,
-               top: Int,
-               ch: Char,
-               acc: ListBuffer[Int]): List[Int] =
+    def column(
+        word: List[Char],
+        dist: List[Int],
+        left: Int,
+        top: Int,
+        ch: Char,
+        acc: ListBuffer[Int]
+    ): List[Int] =
       word match {
         case Nil => acc.toList
         case c :: cs =>
           val cost = if (c == ch) 0 else 1
-          val i = dist.head
+          val i    = dist.head
           val calc = min(left + cost, i + 1, top + 1)
           acc += calc
           column(cs, dist.tail, i, calc, ch, acc)
@@ -91,14 +93,12 @@ object LD {
       word match {
         case Nil => dist
         case c :: cs =>
-          matrix(cs,
-                 pos + 1,
-                 column(x1, dist, pos, pos + 1, c, new ListBuffer))
+          matrix(cs, pos + 1, column(x1, dist, pos, pos + 1, c, new ListBuffer))
       }
 
     matrix(y1, 0, (1 to x.length).toList) match {
       case Nil => 100000
-      case xs => xs.last
+      case xs  => xs.last
     }
   }
 }

@@ -12,7 +12,10 @@ object Test {
   def main(args: Array[String]): Unit = delegate(new B[Double]() {}, 1, 0.1)
 
   def delegate[@specialized(Int) K, @specialized(Double) V](
-      a: A[K, V], k: K, v: V) {
+      a: A[K, V],
+      k: K,
+      v: V
+  ) {
     a.doStuff(k, v)
   }
 }

@@ -12,7 +12,7 @@ import akka.testkit.EventFilter
 class FutureDirectivesSpec extends RoutingSpec {
 
   class TestException(msg: String) extends Exception(msg)
-  object TestException extends Exception("XXX")
+  object TestException             extends Exception("XXX")
   def throwTestException[T](msgPrefix: String): T ⇒ Nothing =
     t ⇒ throw new TestException(msgPrefix + t)
 
@@ -23,9 +23,9 @@ class FutureDirectivesSpec extends RoutingSpec {
 
   "The `onComplete` directive" should {
     "unwrap a Future in the success case" in {
-      var i = 0
+      var i            = 0
       def nextNumber() = { i += 1; i }
-      val route = onComplete(Future.successful(nextNumber())) { echoComplete }
+      val route        = onComplete(Future.successful(nextNumber())) { echoComplete }
       Get() ~> route ~> check {
         responseAs[String] shouldEqual "Success(1)"
       }
@@ -65,8 +65,12 @@ class FutureDirectivesSpec extends RoutingSpec {
       }
     }
     "propagate the exception in the failure case" in EventFilter[Exception](
-        occurrences = 1, message = "XXX").intercept {
-      Get() ~> onSuccess(Future.failed(TestException)) { echoComplete } ~> check {
+      occurrences = 1,
+      message = "XXX"
+    ).intercept {
+      Get() ~> onSuccess(Future.failed(TestException)) {
+        echoComplete
+      } ~> check {
         status shouldEqual StatusCodes.InternalServerError
       }
     }
@@ -79,7 +83,9 @@ class FutureDirectivesSpec extends RoutingSpec {
       }
     }
     "catch an exception in the failure case" in EventFilter[Exception](
-        occurrences = 1, message = "XXX").intercept {
+      occurrences = 1,
+      message = "XXX"
+    ).intercept {
       Get() ~> onSuccess(Future.failed(TestException)) {
         throwTestException("EX when ")
       } ~> check {
@@ -91,7 +97,9 @@ class FutureDirectivesSpec extends RoutingSpec {
 
   "The `completeOrRecoverWith` directive" should {
     "complete the request with the Future's value if the future succeeds" in {
-      Get() ~> completeOrRecoverWith(Future.successful("yes")) { echoComplete } ~> check {
+      Get() ~> completeOrRecoverWith(Future.successful("yes")) {
+        echoComplete
+      } ~> check {
         responseAs[String] shouldEqual "yes"
       }
     }

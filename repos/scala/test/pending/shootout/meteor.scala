@@ -21,22 +21,24 @@ object meteor {
 // import scala.collection.mutable._
 
 final class Solver(n: Int) {
-  private var countdown = n
+  private var countdown     = n
   private var first: String = _
-  private var last: String = _
+  private var last: String  = _
 
   private val board = new Board()
 
-  val pieces = Array(new Piece(0),
-                     new Piece(1),
-                     new Piece(2),
-                     new Piece(3),
-                     new Piece(4),
-                     new Piece(5),
-                     new Piece(6),
-                     new Piece(7),
-                     new Piece(8),
-                     new Piece(9))
+  val pieces = Array(
+    new Piece(0),
+    new Piece(1),
+    new Piece(2),
+    new Piece(3),
+    new Piece(4),
+    new Piece(5),
+    new Piece(6),
+    new Piece(7),
+    new Piece(8),
+    new Piece(9)
+  )
 
   val unplaced = new BitSet(pieces.length)
 
@@ -77,7 +79,8 @@ final class Solver(n: Int) {
     if (first == null) {
       first = b; last = b
     } else {
-      if (b < first) { first = b } else { if (b > last) { last = b } }
+      if (b < first) { first = b }
+      else { if (b > last) { last = b } }
     }
     countdown = countdown - 1
   }
@@ -91,7 +94,7 @@ final class Solver(n: Int) {
 
     def printBoard(s: String) = {
       var indent = false
-      var i = 0
+      var i      = 0
       while (i < s.length) {
         if (indent) Console.print(' ')
         for (j <- Iterator.range(0, Board.cols)) {
@@ -109,7 +112,7 @@ final class Solver(n: Int) {
     printBoard(last)
   }
 
-/*
+  /*
    def printPieces() =
       for (i <- Iterator.range(0,Board.pieces)) pieces(i).print
  */
@@ -128,16 +131,18 @@ final class Board {
   val cells = boardCells()
 
   val cellsPieceWillFill = new Array[BoardCell](Piece.size)
-  var cellCount = 0
+  var cellCount          = 0
 
   def unmark() = for (c <- cells) c.unmark
 
   def asString() =
     new String(
-        cells map
+      cells map
         (c =>
-              if (c.piece == null) '-'.toByte
-              else (c.piece.number + 48).toByte))
+          if (c.piece == null) '-'.toByte
+          else (c.piece.number + 48).toByte
+        )
+    )
 
   def firstEmptyCellIndex() = cells.findIndexOf(c => c.isEmpty)
 
@@ -171,10 +176,10 @@ final class Board {
     val m = (Board.size / Board.cols) - 1
 
     for (i <- Iterator.range(0, a.length)) {
-      val row = i / Board.cols
+      val row     = i / Board.cols
       val isFirst = i % Board.cols == 0
-      val isLast = (i + 1) % Board.cols == 0
-      val c = a(i)
+      val isLast  = (i + 1) % Board.cols == 0
+      val c       = a(i)
 
       if (row % 2 == 1) {
         if (!isLast) c.next(Cell.NE) = a(i - (Board.cols - 1))
@@ -198,7 +203,7 @@ final class Board {
     }
     a
   }
-/*
+  /*
 // Printing all the board cells and their neighbours
 // helps check that they are connected properly
 
@@ -223,15 +228,15 @@ final class Board {
 // Piece.scala
 
 object Piece {
-  val size = 5
-  val rotations = Cell.sides
-  val flips = 2
+  val size         = 5
+  val rotations    = Cell.sides
+  val flips        = 2
   val orientations = rotations * flips
 }
 
 final class Piece(_number: Int) {
   val number = _number
-  val cells = for (i <- Array.range(0, Piece.size)) yield new PieceCell()
+  val cells  = for (i <- Array.range(0, Piece.size)) yield new PieceCell()
 
   {
     number match {
@@ -248,7 +253,7 @@ final class Piece(_number: Int) {
     }
   }
 
-  def flip() = for (c <- cells) c.flip
+  def flip()   = for (c <- cells) c.flip
   def rotate() = for (c <- cells) c.rotate
   def unmark() = for (c <- cells) c.unmark
 
@@ -377,7 +382,7 @@ final class Piece(_number: Int) {
     cells(3).next(Cell.SE) = cells(4)
   }
 
-/*
+  /*
    def print() = {
       Console.println("Piece # " + number)
       Console.println("cell\tNW NE W  E  SW SE")
@@ -403,7 +408,7 @@ final class Piece(_number: Int) {
 
 object Cell {
   val NW = 0; val NE = 1
-  val W = 2; val E = 3
+  val W  = 2; val E  = 3
   val SW = 4; val SE = 5
 
   val sides = 6
@@ -412,10 +417,10 @@ object Cell {
 abstract class Cell {
   implicit def t: ClassTag[T]
   type T
-  val next = new Array[T](Cell.sides)
+  val next   = new Array[T](Cell.sides)
   var marked = false
 
-  def mark() = marked = true
+  def mark()   = marked = true
   def unmark() = marked = false
 }
 
@@ -425,19 +430,20 @@ final class BoardCell(_number: Int) extends {
   type T = BoardCell
   implicit val t = classTag[BoardCell]
 } with Cell {
-  val number = _number
+  val number       = _number
   var piece: Piece = _
 
   def isEmpty() = piece == null
-  def empty() = piece = null
+  def empty()   = piece = null
 
   def contiguousEmptyCells(): Int = {
     if (!marked && isEmpty) {
       mark
       var count = 1
 
-      for (neighbour <- next) if (neighbour != null && neighbour.isEmpty)
-        count = count + neighbour.contiguousEmptyCells
+      for (neighbour <- next)
+        if (neighbour != null && neighbour.isEmpty)
+          count = count + neighbour.contiguousEmptyCells
 
       count
     } else { 0 }

@@ -24,12 +24,12 @@ import org.saddle.scalar.NA
   */
 class VecStatsSpec extends Specification {
 
-  val v1 = Vec[Double](1d, 2, 20, 23, 76, 12, -5, -27, 76, 67)
+  val v1    = Vec[Double](1d, 2, 20, 23, 76, 12, -5, -27, 76, 67)
   val v1pos = Vec[Double](1d, 2, 20, 23, 76, 12, 76, 67)
-  val v2 = Vec[Double](12d, 4, 19, 23, 76, 7, 6, -29, 50, 17)
-  val v3 = Vec[Double](1d, 2, 20, 15, 23, 56, 12)
-  val v4 = Vec[Double](1d, 2, 20, 23, 56, 12)
-  val v5 = Vec[Double](2d, 89, 23)
+  val v2    = Vec[Double](12d, 4, 19, 23, 76, 7, 6, -29, 50, 17)
+  val v3    = Vec[Double](1d, 2, 20, 15, 23, 56, 12)
+  val v4    = Vec[Double](1d, 2, 20, 23, 56, 12)
+  val v5    = Vec[Double](2d, 89, 23)
 
   "compute mean of a vector" in {
     areClose(v1.mean, 24.5d)
@@ -127,14 +127,16 @@ class VecStatsSpec extends Specification {
 
     Vec(1d).percentile(0) must_== Vec(1d).percentile(100)
 
-    val tst = Vec[Double](NA,
-                          -1000.0000,
-                          0.0000,
-                          -946.7879,
-                          -256.7953,
-                          1000.0000,
-                          -307.5079,
-                          -832.8867)
+    val tst = Vec[Double](
+      NA,
+      -1000.0000,
+      0.0000,
+      -946.7879,
+      -256.7953,
+      1000.0000,
+      -307.5079,
+      -832.8867
+    )
     areClose(tst.percentile(50), -307.5079, 1e-4)
 
     val tst2 = Vec[Double](1, 0)

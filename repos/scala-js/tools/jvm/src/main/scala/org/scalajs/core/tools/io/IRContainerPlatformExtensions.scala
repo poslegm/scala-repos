@@ -42,7 +42,7 @@ trait IRContainerPlatformExtensions {
 
     for (ir <- walkForIR(baseDir)) yield {
       val relDir = ir.getPath.stripPrefix(baseDir.getPath)
-      val vf = FileVirtualScalaJSIRFile.relative(ir, relDir)
+      val vf     = FileVirtualScalaJSIRFile.relative(ir, relDir)
       File(vf)
     }
   }

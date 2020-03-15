@@ -63,20 +63,23 @@ object LiteralRow {
       def length(arr: S) = arr.length
     }
 
-  implicit def vLiteral[V <: AnyVal]: LiteralRow[V, V] = new LiteralRow[V, V] {
-    def foreach[X](tup: V, fn: ((Int, V) => X)) = {
-      fn(0, tup)
+  implicit def vLiteral[V <: AnyVal]: LiteralRow[V, V] =
+    new LiteralRow[V, V] {
+      def foreach[X](tup: V, fn: ((Int, V) => X)) = {
+        fn(0, tup)
+      }
+
+      def length(tup: V) = 1
     }
 
-    def length(tup: V) = 1
-  }
-
   @arityize(22)
-  implicit def tuple[V]: LiteralRow[
-      Tuple[V @arityize.repeat] @arityize.relative(tuple), V] =
+  implicit def tuple[V]
+      : LiteralRow[Tuple[V @arityize.repeat] @arityize.relative(tuple), V] =
     new LiteralRow[Tuple[V @arityize.repeat] @arityize.relative(tuple), V] {
-      def foreach[X](tup: Tuple[V @arityize.repeat] @arityize.relative(tuple),
-                     fn: ((Int, V) => X)) = {
+      def foreach[X](
+          tup: Tuple[V @arityize.repeat] @arityize.relative(tuple),
+          fn: ((Int, V) => X)
+      ) = {
         for ((v, i) <- tup.productIterator.zipWithIndex) {
           fn(i, v.asInstanceOf[V])
         }

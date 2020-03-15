@@ -16,8 +16,8 @@ import akka.testkit.AkkaSpec
 
 class FlowOnCompleteSpec extends AkkaSpec with ScriptedTest {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 16)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 16)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -25,7 +25,7 @@ class FlowOnCompleteSpec extends AkkaSpec with ScriptedTest {
 
     "invoke callback on normal completion" in assertAllStagesStopped {
       val onCompleteProbe = TestProbe()
-      val p = TestPublisher.manualProbe[Int]()
+      val p               = TestPublisher.manualProbe[Int]()
       Source
         .fromPublisher(p)
         .to(Sink.onComplete[Int](onCompleteProbe.ref ! _))
@@ -40,7 +40,7 @@ class FlowOnCompleteSpec extends AkkaSpec with ScriptedTest {
 
     "yield the first error" in assertAllStagesStopped {
       val onCompleteProbe = TestProbe()
-      val p = TestPublisher.manualProbe[Int]()
+      val p               = TestPublisher.manualProbe[Int]()
       Source
         .fromPublisher(p)
         .to(Sink.onComplete[Int](onCompleteProbe.ref ! _))
@@ -55,7 +55,7 @@ class FlowOnCompleteSpec extends AkkaSpec with ScriptedTest {
 
     "invoke callback for an empty stream" in assertAllStagesStopped {
       val onCompleteProbe = TestProbe()
-      val p = TestPublisher.manualProbe[Int]()
+      val p               = TestPublisher.manualProbe[Int]()
       Source
         .fromPublisher(p)
         .to(Sink.onComplete[Int](onCompleteProbe.ref ! _))
@@ -69,7 +69,7 @@ class FlowOnCompleteSpec extends AkkaSpec with ScriptedTest {
 
     "invoke callback after transform and foreach steps " in assertAllStagesStopped {
       val onCompleteProbe = TestProbe()
-      val p = TestPublisher.manualProbe[Int]()
+      val p               = TestPublisher.manualProbe[Int]()
       import system.dispatcher // for the Future.onComplete
       val foreachSink = Sink.foreach[Int] { x ⇒
         onCompleteProbe.ref ! ("foreach-" + x)

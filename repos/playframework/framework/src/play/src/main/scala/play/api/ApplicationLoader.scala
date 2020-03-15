@@ -43,21 +43,26 @@ object ApplicationLoader {
     *                             configuration used by the application, as the ApplicationLoader may, through it's own
     *                             mechanisms, modify it or completely ignore it.
     */
-  final case class Context(environment: Environment,
-                           sourceMapper: Option[SourceMapper],
-                           webCommands: WebCommands,
-                           initialConfiguration: Configuration)
+  final case class Context(
+      environment: Environment,
+      sourceMapper: Option[SourceMapper],
+      webCommands: WebCommands,
+      initialConfiguration: Configuration
+  )
 
   /**
     * Locate and instantiate the ApplicationLoader.
     */
   def apply(context: Context): ApplicationLoader = {
     Reflect.configuredClass[
-        ApplicationLoader, play.ApplicationLoader, GuiceApplicationLoader](
-        context.environment,
-        PlayConfig(context.initialConfiguration),
-        "play.application.loader",
-        classOf[GuiceApplicationLoader].getName
+      ApplicationLoader,
+      play.ApplicationLoader,
+      GuiceApplicationLoader
+    ](
+      context.environment,
+      PlayConfig(context.initialConfiguration),
+      "play.application.loader",
+      classOf[GuiceApplicationLoader].getName
     ) match {
       case None =>
         new GuiceApplicationLoader
@@ -70,7 +75,7 @@ object ApplicationLoader {
         // effectively anonymous, but let's give it a name to make debugging easier.
         class JavaApplicationLoaderAdapter extends ApplicationLoader {
           override def load(context: ApplicationLoader.Context): Application = {
-            val javaContext = new play.ApplicationLoader.Context(context)
+            val javaContext     = new play.ApplicationLoader.Context(context)
             val javaApplication = javaApplicationLoader.load(javaContext)
             javaApplication.getWrappedApplication
           }
@@ -95,7 +100,8 @@ object ApplicationLoader {
       environment: Environment,
       initialSettings: Map[String, AnyRef] = Map.empty[String, AnyRef],
       sourceMapper: Option[SourceMapper] = None,
-      webCommands: WebCommands = new DefaultWebCommands) = {
+      webCommands: WebCommands = new DefaultWebCommands
+  ) = {
     val configuration = Configuration.load(environment, initialSettings)
     Context(environment, sourceMapper, webCommands, configuration)
   }
@@ -106,8 +112,8 @@ object ApplicationLoader {
   */
 abstract class BuiltInComponentsFromContext(context: ApplicationLoader.Context)
     extends BuiltInComponents {
-  lazy val environment = context.environment
-  lazy val sourceMapper = context.sourceMapper
-  lazy val webCommands = context.webCommands
+  lazy val environment   = context.environment
+  lazy val sourceMapper  = context.sourceMapper
+  lazy val webCommands   = context.webCommands
   lazy val configuration = context.initialConfiguration
 }

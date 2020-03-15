@@ -23,8 +23,8 @@ object ArrayStack extends SeqFactory[ArrayStack] {
   implicit def canBuildFrom[A]: CanBuildFrom[Coll, A, ArrayStack[A]] =
     ReusableCBF.asInstanceOf[GenericCanBuildFrom[A]]
   def newBuilder[A]: Builder[A, ArrayStack[A]] = new ArrayStack[A]
-  def empty: ArrayStack[Nothing] = new ArrayStack()
-  def apply[A : ClassTag](elems: A*): ArrayStack[A] = {
+  def empty: ArrayStack[Nothing]               = new ArrayStack()
+  def apply[A: ClassTag](elems: A*): ArrayStack[A] = {
     val els: Array[AnyRef] = elems.reverseMap(_.asInstanceOf[AnyRef])(breakOut)
     if (els.length == 0) new ArrayStack()
     else new ArrayStack[A](els, els.length)
@@ -61,13 +61,17 @@ object ArrayStack extends SeqFactory[ArrayStack] {
   *  @define willNotTerminateInf
   */
 @SerialVersionUID(8565219180626620510L)
-class ArrayStack[T] private (private var table: Array[AnyRef],
-                             private var index: Int)
-    extends AbstractSeq[T] with IndexedSeq[T]
+class ArrayStack[T] private (
+    private var table: Array[AnyRef],
+    private var index: Int
+) extends AbstractSeq[T]
+    with IndexedSeq[T]
     with IndexedSeqLike[T, ArrayStack[T]]
     with GenericTraversableTemplate[T, ArrayStack]
-    with IndexedSeqOptimized[T, ArrayStack[T]] with Cloneable[ArrayStack[T]]
-    with Builder[T, ArrayStack[T]] with Serializable {
+    with IndexedSeqOptimized[T, ArrayStack[T]]
+    with Cloneable[ArrayStack[T]]
+    with Builder[T, ArrayStack[T]]
+    with Serializable {
   def this() = this(new Array[AnyRef](1), 0)
 
   /** Retrieve n'th element from stack, where top of stack has index 0.
@@ -169,11 +173,11 @@ class ArrayStack[T] private (private var table: Array[AnyRef],
   }
 
   private def reverseTable() {
-    var i = 0
+    var i     = 0
     val until = index / 2
     while (i < until) {
       val revi = index - i - 1
-      val tmp = table(i)
+      val tmp  = table(i)
       table(i) = table(revi)
       table(revi) = tmp
       i += 1
@@ -221,14 +225,15 @@ class ArrayStack[T] private (private var table: Array[AnyRef],
   /** Creates and iterator over the stack in LIFO order.
     *  @return an iterator over the elements of the stack.
     */
-  override def iterator: Iterator[T] = new AbstractIterator[T] {
-    var currentIndex = index
-    def hasNext = currentIndex > 0
-    def next() = {
-      currentIndex -= 1
-      table(currentIndex).asInstanceOf[T]
+  override def iterator: Iterator[T] =
+    new AbstractIterator[T] {
+      var currentIndex = index
+      def hasNext      = currentIndex > 0
+      def next() = {
+        currentIndex -= 1
+        table(currentIndex).asInstanceOf[T]
+      }
     }
-  }
 
   override def foreach[U](f: T => U) {
     var currentIndex = index

@@ -13,11 +13,11 @@ class BigDecimalConvertor[T](
     throw new UnsupportedOperationException(message)
 
   def isPosInf(t: T): Boolean = false
-  def PosInf: T = unsupported("Positive infinity")
+  def PosInf: T               = unsupported("Positive infinity")
   def isNegInf(t: T): Boolean = false
-  def NegInf: T = unsupported("Negative infinity")
-  def isNaN(t: T): Boolean = false
-  def NaN: T = unsupported("NaN")
+  def NegInf: T               = unsupported("Negative infinity")
+  def isNaN(t: T): Boolean    = false
+  def NaN: T                  = unsupported("NaN")
 }
 
 object BigDecimalConvertor {
@@ -29,20 +29,20 @@ object BigDecimalConvertor {
   implicit val FloatBigConv =
     new BigDecimalConvertor[Float](identity, _.floatValue()) {
       override def isPosInf(t: Float) = t.isPosInfinity
-      override def PosInf = Float.PositiveInfinity
+      override def PosInf             = Float.PositiveInfinity
       override def isNegInf(t: Float) = t.isNegInfinity
-      override def NegInf = Float.NegativeInfinity
-      override def isNaN(t: Float) = t.isNaN
-      override def NaN = Float.NaN
+      override def NegInf             = Float.NegativeInfinity
+      override def isNaN(t: Float)    = t.isNaN
+      override def NaN                = Float.NaN
     }
   implicit val DoubleBigConv =
     new BigDecimalConvertor[Double](identity, _.doubleValue()) {
       override def isPosInf(t: Double) = t.isPosInfinity
-      override def PosInf = Double.PositiveInfinity
+      override def PosInf              = Double.PositiveInfinity
       override def isNegInf(t: Double) = t.isNegInfinity
-      override def NegInf = Double.NegativeInfinity
-      override def isNaN(t: Double) = t.isNaN
-      override def NaN = Double.NaN
+      override def NegInf              = Double.NegativeInfinity
+      override def isNaN(t: Double)    = t.isNaN
+      override def NaN                 = Double.NaN
     }
   implicit val ByteBigConv =
     new BigDecimalConvertor[Byte](identity, _.byteValue())
@@ -65,7 +65,7 @@ object BigIntConvertor {
   /** @param bitmask is the same format as used by `BitSet` */
   private def fromBitMask(bitmask: Array[Long]): BigInt = {
     val bytes = Array.ofDim[Byte](bitmask.length * 8)
-    val bb = java.nio.ByteBuffer.wrap(bytes)
+    val bb    = java.nio.ByteBuffer.wrap(bytes)
     bitmask.reverse foreach bb.putLong
     BigInt(bytes)
   }
@@ -80,7 +80,7 @@ object BigIntConvertor {
       else Array.ofDim[Byte](8 - rem) ++ raw
     }
     val longLength = bytes.length / 8
-    val bb = java.nio.ByteBuffer.wrap(bytes)
+    val bb         = java.nio.ByteBuffer.wrap(bytes)
     // asLongBuffer.array doesn't support .array
     val longs = Array.ofDim[Long](longLength)
     for { i <- 0 until longLength } {

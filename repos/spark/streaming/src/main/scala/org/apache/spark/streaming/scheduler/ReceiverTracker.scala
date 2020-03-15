@@ -51,15 +51,19 @@ private[streaming] case class RegisterReceiver(
     host: String,
     executorId: String,
     receiverEndpoint: RpcEndpointRef
-)
-    extends ReceiverTrackerMessage
+) extends ReceiverTrackerMessage
 private[streaming] case class AddBlock(receivedBlockInfo: ReceivedBlockInfo)
     extends ReceiverTrackerMessage
 private[streaming] case class ReportError(
-    streamId: Int, message: String, error: String)
+    streamId: Int,
+    message: String,
+    error: String
+)
 private[streaming] case class DeregisterReceiver(
-    streamId: Int, msg: String, error: String)
-    extends ReceiverTrackerMessage
+    streamId: Int,
+    msg: String,
+    error: String
+) extends ReceiverTrackerMessage
 
 /**
   * Messages used by the driver and ReceiverTrackerEndpoint to communicate locally.
@@ -94,8 +98,9 @@ private[streaming] case object AllReceiverIds
     extends ReceiverTrackerLocalMessage
 
 private[streaming] case class UpdateReceiverRateLimit(
-    streamUID: Int, newRate: Long)
-    extends ReceiverTrackerLocalMessage
+    streamUID: Int,
+    newRate: Long
+) extends ReceiverTrackerLocalMessage
 
 /**
   * This class manages the execution of the receivers of ReceiverInputDStreams. Instance of
@@ -105,18 +110,19 @@ private[streaming] case class UpdateReceiverRateLimit(
   * @param skipReceiverLaunch Do not launch the receiver. This is useful for testing.
   */
 private[streaming] class ReceiverTracker(
-    ssc: StreamingContext, skipReceiverLaunch: Boolean = false)
-    extends Logging {
+    ssc: StreamingContext,
+    skipReceiverLaunch: Boolean = false
+) extends Logging {
 
-  private val receiverInputStreams = ssc.graph.getReceiverInputStreams()
+  private val receiverInputStreams   = ssc.graph.getReceiverInputStreams()
   private val receiverInputStreamIds = receiverInputStreams.map { _.id }
   private val receivedBlockTracker = new ReceivedBlockTracker(
-      ssc.sparkContext.conf,
-      ssc.sparkContext.hadoopConfiguration,
-      receiverInputStreamIds,
-      ssc.scheduler.clock,
-      ssc.isCheckpointPresent,
-      Option(ssc.checkpointDir)
+    ssc.sparkContext.conf,
+    ssc.sparkContext.hadoopConfiguration,
+    receiverInputStreamIds,
+    ssc.scheduler.clock,
+    ssc.isCheckpointPresent,
+    Option(ssc.checkpointDir)
   )
   private val listenerBus = ssc.scheduler.listenerBus
 
@@ -139,7 +145,8 @@ private[streaming] class ReceiverTracker(
   // Track the active receiver job number. When a receiver job exits ultimately, countDown will
   // be called.
   private val receiverJobExitLatch = new CountDownLatch(
-      receiverInputStreams.length)
+    receiverInputStreams.length
+  )
 
   /**
     * Track all receivers' information. The key is the receiver id, the value is the receiver info.
@@ -154,57 +161,62 @@ private[streaming] class ReceiverTracker(
   private val receiverPreferredLocations = new HashMap[Int, Option[String]]
 
   /** Start the endpoint and receiver execution thread. */
-  def start(): Unit = synchronized {
-    if (isTrackerStarted) {
-      throw new SparkException("ReceiverTracker already started")
-    }
-
-    if (!receiverInputStreams.isEmpty) {
-      endpoint = ssc.env.rpcEnv.setupEndpoint(
-          "ReceiverTracker", new ReceiverTrackerEndpoint(ssc.env.rpcEnv))
-      if (!skipReceiverLaunch) launchReceivers()
-      logInfo("ReceiverTracker started")
-      trackerState = Started
-    }
-  }
-
-  /** Stop the receiver execution thread. */
-  def stop(graceful: Boolean): Unit = synchronized {
-    if (isTrackerStarted) {
-      // First, stop the receivers
-      trackerState = Stopping
-      if (!skipReceiverLaunch) {
-        // Send the stop signal to all the receivers
-        endpoint.askWithRetry[Boolean](StopAllReceivers)
-
-        // Wait for the Spark job that runs the receivers to be over
-        // That is, for the receivers to quit gracefully.
-        receiverJobExitLatch.await(10, TimeUnit.SECONDS)
-
-        if (graceful) {
-          logInfo("Waiting for receiver job to terminate gracefully")
-          receiverJobExitLatch.await()
-          logInfo("Waited for receiver job to terminate gracefully")
-        }
-
-        // Check if all the receivers have been deregistered or not
-        val receivers = endpoint.askWithRetry[Seq[Int]](AllReceiverIds)
-        if (receivers.nonEmpty) {
-          logWarning(
-              "Not all of the receivers have deregistered, " + receivers)
-        } else {
-          logInfo("All of the receivers have deregistered successfully")
-        }
+  def start(): Unit =
+    synchronized {
+      if (isTrackerStarted) {
+        throw new SparkException("ReceiverTracker already started")
       }
 
-      // Finally, stop the endpoint
-      ssc.env.rpcEnv.stop(endpoint)
-      endpoint = null
-      receivedBlockTracker.stop()
-      logInfo("ReceiverTracker stopped")
-      trackerState = Stopped
+      if (!receiverInputStreams.isEmpty) {
+        endpoint = ssc.env.rpcEnv.setupEndpoint(
+          "ReceiverTracker",
+          new ReceiverTrackerEndpoint(ssc.env.rpcEnv)
+        )
+        if (!skipReceiverLaunch) launchReceivers()
+        logInfo("ReceiverTracker started")
+        trackerState = Started
+      }
     }
-  }
+
+  /** Stop the receiver execution thread. */
+  def stop(graceful: Boolean): Unit =
+    synchronized {
+      if (isTrackerStarted) {
+        // First, stop the receivers
+        trackerState = Stopping
+        if (!skipReceiverLaunch) {
+          // Send the stop signal to all the receivers
+          endpoint.askWithRetry[Boolean](StopAllReceivers)
+
+          // Wait for the Spark job that runs the receivers to be over
+          // That is, for the receivers to quit gracefully.
+          receiverJobExitLatch.await(10, TimeUnit.SECONDS)
+
+          if (graceful) {
+            logInfo("Waiting for receiver job to terminate gracefully")
+            receiverJobExitLatch.await()
+            logInfo("Waited for receiver job to terminate gracefully")
+          }
+
+          // Check if all the receivers have been deregistered or not
+          val receivers = endpoint.askWithRetry[Seq[Int]](AllReceiverIds)
+          if (receivers.nonEmpty) {
+            logWarning(
+              "Not all of the receivers have deregistered, " + receivers
+            )
+          } else {
+            logInfo("All of the receivers have deregistered successfully")
+          }
+        }
+
+        // Finally, stop the endpoint
+        ssc.env.rpcEnv.stop(endpoint)
+        endpoint = null
+        receivedBlockTracker.stop()
+        logInfo("ReceiverTracker stopped")
+        trackerState = Stopped
+      }
+    }
 
   /** Allocate all unallocated blocks to the given batch. */
   def allocateBlocksToBatch(batchTime: Time): Unit = {
@@ -220,7 +232,9 @@ private[streaming] class ReceiverTracker(
 
   /** Get the blocks allocated to the given batch and stream. */
   def getBlocksOfBatchAndStream(
-      batchTime: Time, streamId: Int): Seq[ReceivedBlockInfo] = {
+      batchTime: Time,
+      streamId: Int
+  ): Seq[ReceivedBlockInfo] = {
     receivedBlockTracker.getBlocksOfBatchAndStream(batchTime, streamId)
   }
 
@@ -231,7 +245,9 @@ private[streaming] class ReceiverTracker(
   def cleanupOldBlocksAndBatches(cleanupThreshTime: Time) {
     // Clean up old block and batch metadata
     receivedBlockTracker.cleanupOldBatches(
-        cleanupThreshTime, waitForCompletion = false)
+      cleanupThreshTime,
+      waitForCompletion = false
+    )
 
     // Signal the receivers to delete old block data
     if (WriteAheadLogUtils.enableReceiverLog(ssc.conf)) {
@@ -255,7 +271,8 @@ private[streaming] class ReceiverTracker(
   ): Boolean = {
     if (!receiverInputStreamIds.contains(streamId)) {
       throw new SparkException(
-          "Register received for unexpected id " + streamId)
+        "Register received for unexpected id " + streamId
+      )
     }
 
     if (isTrackerStopping || isTrackerStopped) {
@@ -274,10 +291,11 @@ private[streaming] class ReceiverTracker(
         scheduleReceiver(streamId)
       }
 
-    def isAcceptable: Boolean = acceptableExecutors.exists {
-      case loc: ExecutorCacheTaskLocation => loc.executorId == executorId
-      case loc: TaskLocation => loc.host == host
-    }
+    def isAcceptable: Boolean =
+      acceptableExecutors.exists {
+        case loc: ExecutorCacheTaskLocation => loc.executorId == executorId
+        case loc: TaskLocation              => loc.host == host
+      }
 
     if (!isAcceptable) {
       // Refuse it since it's scheduled to a wrong executor
@@ -285,47 +303,61 @@ private[streaming] class ReceiverTracker(
     } else {
       val name = s"${typ}-${streamId}"
       val receiverTrackingInfo = ReceiverTrackingInfo(
-          streamId,
-          ReceiverState.ACTIVE,
-          scheduledLocations = None,
-          runningExecutor = Some(ExecutorCacheTaskLocation(host, executorId)),
-          name = Some(name),
-          endpoint = Some(receiverEndpoint))
+        streamId,
+        ReceiverState.ACTIVE,
+        scheduledLocations = None,
+        runningExecutor = Some(ExecutorCacheTaskLocation(host, executorId)),
+        name = Some(name),
+        endpoint = Some(receiverEndpoint)
+      )
       receiverTrackingInfos.put(streamId, receiverTrackingInfo)
-      listenerBus.post(StreamingListenerReceiverStarted(
-              receiverTrackingInfo.toReceiverInfo))
-      logInfo("Registered receiver for stream " + streamId + " from " +
-          senderAddress)
+      listenerBus.post(
+        StreamingListenerReceiverStarted(receiverTrackingInfo.toReceiverInfo)
+      )
+      logInfo(
+        "Registered receiver for stream " + streamId + " from " +
+          senderAddress
+      )
       true
     }
   }
 
   /** Deregister a receiver */
   private def deregisterReceiver(
-      streamId: Int, message: String, error: String) {
+      streamId: Int,
+      message: String,
+      error: String
+  ) {
     val lastErrorTime =
       if (error == null || error == "") -1
       else ssc.scheduler.clock.getTimeMillis()
-    val errorInfo = ReceiverErrorInfo(lastErrorMessage = message,
-                                      lastError = error,
-                                      lastErrorTime = lastErrorTime)
+    val errorInfo = ReceiverErrorInfo(
+      lastErrorMessage = message,
+      lastError = error,
+      lastErrorTime = lastErrorTime
+    )
     val newReceiverTrackingInfo = receiverTrackingInfos.get(streamId) match {
       case Some(oldInfo) =>
         oldInfo.copy(
-            state = ReceiverState.INACTIVE, errorInfo = Some(errorInfo))
+          state = ReceiverState.INACTIVE,
+          errorInfo = Some(errorInfo)
+        )
       case None =>
         logWarning("No prior receiver info")
-        ReceiverTrackingInfo(streamId,
-                             ReceiverState.INACTIVE,
-                             None,
-                             None,
-                             None,
-                             None,
-                             Some(errorInfo))
+        ReceiverTrackingInfo(
+          streamId,
+          ReceiverState.INACTIVE,
+          None,
+          None,
+          None,
+          None,
+          Some(errorInfo)
+        )
     }
     receiverTrackingInfos(streamId) = newReceiverTrackingInfo
-    listenerBus.post(StreamingListenerReceiverStopped(
-            newReceiverTrackingInfo.toReceiverInfo))
+    listenerBus.post(
+      StreamingListenerReceiverStopped(newReceiverTrackingInfo.toReceiverInfo)
+    )
     val messageWithError =
       if (error != null && !error.isEmpty) {
         s"$message - $error"
@@ -336,11 +368,12 @@ private[streaming] class ReceiverTracker(
   }
 
   /** Update a receiver's maximum ingestion rate */
-  def sendRateUpdate(streamUID: Int, newRate: Long): Unit = synchronized {
-    if (isTrackerStarted) {
-      endpoint.send(UpdateReceiverRateLimit(streamUID, newRate))
+  def sendRateUpdate(streamUID: Int, newRate: Long): Unit =
+    synchronized {
+      if (isTrackerStarted) {
+        endpoint.send(UpdateReceiverRateLimit(streamUID, newRate))
+      }
     }
-  }
 
   /** Add new blocks for the given stream */
   private def addBlock(receivedBlockInfo: ReceivedBlockInfo): Boolean = {
@@ -351,30 +384,36 @@ private[streaming] class ReceiverTracker(
   private def reportError(streamId: Int, message: String, error: String) {
     val newReceiverTrackingInfo = receiverTrackingInfos.get(streamId) match {
       case Some(oldInfo) =>
-        val errorInfo = ReceiverErrorInfo(lastErrorMessage = message,
-                                          lastError = error,
-                                          lastErrorTime = oldInfo.errorInfo
-                                              .map(_.lastErrorTime)
-                                              .getOrElse(-1L))
+        val errorInfo = ReceiverErrorInfo(
+          lastErrorMessage = message,
+          lastError = error,
+          lastErrorTime = oldInfo.errorInfo
+            .map(_.lastErrorTime)
+            .getOrElse(-1L)
+        )
         oldInfo.copy(errorInfo = Some(errorInfo))
       case None =>
         logWarning("No prior receiver info")
         val errorInfo = ReceiverErrorInfo(
-            lastErrorMessage = message,
-            lastError = error,
-            lastErrorTime = ssc.scheduler.clock.getTimeMillis())
-        ReceiverTrackingInfo(streamId,
-                             ReceiverState.INACTIVE,
-                             None,
-                             None,
-                             None,
-                             None,
-                             Some(errorInfo))
+          lastErrorMessage = message,
+          lastError = error,
+          lastErrorTime = ssc.scheduler.clock.getTimeMillis()
+        )
+        ReceiverTrackingInfo(
+          streamId,
+          ReceiverState.INACTIVE,
+          None,
+          None,
+          None,
+          None,
+          Some(errorInfo)
+        )
     }
 
     receiverTrackingInfos(streamId) = newReceiverTrackingInfo
     listenerBus.post(
-        StreamingListenerReceiverError(newReceiverTrackingInfo.toReceiverInfo))
+      StreamingListenerReceiverError(newReceiverTrackingInfo.toReceiverInfo)
+    )
     val messageWithError =
       if (error != null && !error.isEmpty) {
         s"$message - $error"
@@ -382,29 +421,40 @@ private[streaming] class ReceiverTracker(
         s"$message"
       }
     logWarning(
-        s"Error reported by receiver for stream $streamId: $messageWithError")
+      s"Error reported by receiver for stream $streamId: $messageWithError"
+    )
   }
 
   private def scheduleReceiver(receiverId: Int): Seq[TaskLocation] = {
     val preferredLocation =
       receiverPreferredLocations.getOrElse(receiverId, None)
     val scheduledLocations = schedulingPolicy.rescheduleReceiver(
-        receiverId, preferredLocation, receiverTrackingInfos, getExecutors)
+      receiverId,
+      preferredLocation,
+      receiverTrackingInfos,
+      getExecutors
+    )
     updateReceiverScheduledExecutors(receiverId, scheduledLocations)
     scheduledLocations
   }
 
   private def updateReceiverScheduledExecutors(
-      receiverId: Int, scheduledLocations: Seq[TaskLocation]): Unit = {
+      receiverId: Int,
+      scheduledLocations: Seq[TaskLocation]
+  ): Unit = {
     val newReceiverTrackingInfo = receiverTrackingInfos.get(receiverId) match {
       case Some(oldInfo) =>
-        oldInfo.copy(state = ReceiverState.SCHEDULED,
-                     scheduledLocations = Some(scheduledLocations))
+        oldInfo.copy(
+          state = ReceiverState.SCHEDULED,
+          scheduledLocations = Some(scheduledLocations)
+        )
       case None =>
-        ReceiverTrackingInfo(receiverId,
-                             ReceiverState.SCHEDULED,
-                             Some(scheduledLocations),
-                             runningExecutor = None)
+        ReceiverTrackingInfo(
+          receiverId,
+          ReceiverState.SCHEDULED,
+          Some(scheduledLocations),
+          runningExecutor = None
+        )
     }
     receiverTrackingInfos.put(receiverId, newReceiverTrackingInfo)
   }
@@ -420,17 +470,26 @@ private[streaming] class ReceiverTracker(
   private def getExecutors: Seq[ExecutorCacheTaskLocation] = {
     if (ssc.sc.isLocal) {
       val blockManagerId = ssc.sparkContext.env.blockManager.blockManagerId
-      Seq(ExecutorCacheTaskLocation(
-              blockManagerId.host, blockManagerId.executorId))
+      Seq(
+        ExecutorCacheTaskLocation(
+          blockManagerId.host,
+          blockManagerId.executorId
+        )
+      )
     } else {
-      ssc.sparkContext.env.blockManager.master.getMemoryStatus.filter {
-        case (blockManagerId, _) =>
-          blockManagerId.executorId != SparkContext.DRIVER_IDENTIFIER // Ignore the driver location
-      }.map {
-        case (blockManagerId, _) =>
-          ExecutorCacheTaskLocation(
-              blockManagerId.host, blockManagerId.executorId)
-      }.toSeq
+      ssc.sparkContext.env.blockManager.master.getMemoryStatus
+        .filter {
+          case (blockManagerId, _) =>
+            blockManagerId.executorId != SparkContext.DRIVER_IDENTIFIER // Ignore the driver location
+        }
+        .map {
+          case (blockManagerId, _) =>
+            ExecutorCacheTaskLocation(
+              blockManagerId.host,
+              blockManagerId.executorId
+            )
+        }
+        .toSeq
     }
   }
 
@@ -458,12 +517,10 @@ private[streaming] class ReceiverTracker(
     * worker nodes as a parallel collection, and runs them.
     */
   private def launchReceivers(): Unit = {
-    val receivers = receiverInputStreams.map(
-        nis =>
-          {
-        val rcvr = nis.getReceiver()
-        rcvr.setReceiverId(nis.id)
-        rcvr
+    val receivers = receiverInputStreams.map(nis => {
+      val rcvr = nis.getReceiver()
+      rcvr.setReceiverId(nis.id)
+      rcvr
     })
 
     runDummySparkJob()
@@ -486,7 +543,8 @@ private[streaming] class ReceiverTracker(
       extends ThreadSafeRpcEndpoint {
 
     private val walBatchingThreadPool = ExecutionContext.fromExecutorService(
-        ThreadUtils.newDaemonCachedThreadPool("wal-batching-thread-pool"))
+      ThreadUtils.newDaemonCachedThreadPool("wal-batching-thread-pool")
+    )
 
     @volatile private var active: Boolean = true
 
@@ -498,13 +556,15 @@ private[streaming] class ReceiverTracker(
         for (receiver <- receivers) {
           val executors = scheduledLocations(receiver.streamId)
           updateReceiverScheduledExecutors(receiver.streamId, executors)
-          receiverPreferredLocations(receiver.streamId) = receiver.preferredLocation
+          receiverPreferredLocations(receiver.streamId) =
+            receiver.preferredLocation
           startReceiver(receiver, executors)
         }
       case RestartReceiver(receiver) =>
         // Old scheduled executors minus the ones that are not active any more
         val oldScheduledExecutors = getStoredScheduledExecutors(
-            receiver.streamId)
+          receiver.streamId
+        )
         val scheduledLocations =
           if (oldScheduledExecutors.nonEmpty) {
             // Try global scheduling again
@@ -513,12 +573,16 @@ private[streaming] class ReceiverTracker(
             val oldReceiverInfo = receiverTrackingInfos(receiver.streamId)
             // Clear "scheduledLocations" to indicate we are going to do local scheduling
             val newReceiverInfo = oldReceiverInfo.copy(
-                state = ReceiverState.INACTIVE, scheduledLocations = None)
+              state = ReceiverState.INACTIVE,
+              scheduledLocations = None
+            )
             receiverTrackingInfos(receiver.streamId) = newReceiverInfo
-            schedulingPolicy.rescheduleReceiver(receiver.streamId,
-                                                receiver.preferredLocation,
-                                                receiverTrackingInfos,
-                                                getExecutors)
+            schedulingPolicy.rescheduleReceiver(
+              receiver.streamId,
+              receiver.preferredLocation,
+              receiverTrackingInfos,
+              getExecutors
+            )
           }
         // Assume there is one receiver restarting at one time, so we don't need to update
         // receiverTrackingInfos
@@ -526,7 +590,8 @@ private[streaming] class ReceiverTracker(
       case c: CleanupOldBlocks =>
         receiverTrackingInfos.values.flatMap(_.endpoint).foreach(_.send(c))
       case UpdateReceiverRateLimit(streamUID, newRate) =>
-        for (info <- receiverTrackingInfos.get(streamUID); eP <- info.endpoint) {
+        for (info <- receiverTrackingInfos.get(streamUID);
+             eP   <- info.endpoint) {
           eP.send(UpdateRateLimit(newRate))
         }
       // Remote messages
@@ -535,28 +600,38 @@ private[streaming] class ReceiverTracker(
     }
 
     override def receiveAndReply(
-        context: RpcCallContext): PartialFunction[Any, Unit] = {
+        context: RpcCallContext
+    ): PartialFunction[Any, Unit] = {
       // Remote messages
       case RegisterReceiver(
-          streamId, typ, host, executorId, receiverEndpoint) =>
-        val successful = registerReceiver(streamId,
-                                          typ,
-                                          host,
-                                          executorId,
-                                          receiverEndpoint,
-                                          context.senderAddress)
+            streamId,
+            typ,
+            host,
+            executorId,
+            receiverEndpoint
+          ) =>
+        val successful = registerReceiver(
+          streamId,
+          typ,
+          host,
+          executorId,
+          receiverEndpoint,
+          context.senderAddress
+        )
         context.reply(successful)
       case AddBlock(receivedBlockInfo) =>
         if (WriteAheadLogUtils.isBatchingEnabled(ssc.conf, isDriver = true)) {
           walBatchingThreadPool.execute(new Runnable {
-            override def run(): Unit = Utils.tryLogNonFatalError {
-              if (active) {
-                context.reply(addBlock(receivedBlockInfo))
-              } else {
-                throw new IllegalStateException(
-                    "ReceiverTracker RpcEndpoint shut down.")
+            override def run(): Unit =
+              Utils.tryLogNonFatalError {
+                if (active) {
+                  context.reply(addBlock(receivedBlockInfo))
+                } else {
+                  throw new IllegalStateException(
+                    "ReceiverTracker RpcEndpoint shut down."
+                  )
+                }
               }
-            }
           })
         } else {
           context.reply(addBlock(receivedBlockInfo))
@@ -567,10 +642,11 @@ private[streaming] class ReceiverTracker(
       // Local messages
       case AllReceiverIds =>
         context.reply(
-            receiverTrackingInfos
-              .filter(_._2.state != ReceiverState.INACTIVE)
-              .keys
-              .toSeq)
+          receiverTrackingInfos
+            .filter(_._2.state != ReceiverState.INACTIVE)
+            .keys
+            .toSeq
+        )
       case StopAllReceivers =>
         assert(isTrackerStopping || isTrackerStopped)
         stopReceivers()
@@ -581,7 +657,8 @@ private[streaming] class ReceiverTracker(
       * Return the stored scheduled executors that are still alive.
       */
     private def getStoredScheduledExecutors(
-        receiverId: Int): Seq[TaskLocation] = {
+        receiverId: Int
+    ): Seq[TaskLocation] = {
       if (receiverTrackingInfos.contains(receiverId)) {
         val scheduledLocations =
           receiverTrackingInfos(receiverId).scheduledLocations
@@ -590,7 +667,7 @@ private[streaming] class ReceiverTracker(
           // Only return the alive executors
           scheduledLocations.get.filter {
             case loc: ExecutorCacheTaskLocation => executors(loc)
-            case loc: TaskLocation => true
+            case loc: TaskLocation              => true
           }
         } else {
           Nil
@@ -604,7 +681,9 @@ private[streaming] class ReceiverTracker(
       * Start a receiver along with its scheduled executors
       */
     private def startReceiver(
-        receiver: Receiver[_], scheduledLocations: Seq[TaskLocation]): Unit = {
+        receiver: Receiver[_],
+        scheduledLocations: Seq[TaskLocation]
+    ): Unit = {
       def shouldStartReceiver: Boolean = {
         // It's okay to start when trackerState is Initialized or Started
         !(isTrackerStopping || isTrackerStopped)
@@ -618,29 +697,31 @@ private[streaming] class ReceiverTracker(
 
       val checkpointDirOption = Option(ssc.checkpointDir)
       val serializableHadoopConf = new SerializableConfiguration(
-          ssc.sparkContext.hadoopConfiguration)
+        ssc.sparkContext.hadoopConfiguration
+      )
 
       // Function to start the receiver on the worker node
       val startReceiverFunc: Iterator[Receiver[_]] => Unit =
-        (iterator: Iterator[Receiver[_]]) =>
-          {
-            if (!iterator.hasNext) {
-              throw new SparkException(
-                  "Could not start receiver as object not found.")
-            }
-            if (TaskContext.get().attemptNumber() == 0) {
-              val receiver = iterator.next()
-              assert(iterator.hasNext == false)
-              val supervisor = new ReceiverSupervisorImpl(
-                  receiver,
-                  SparkEnv.get,
-                  serializableHadoopConf.value,
-                  checkpointDirOption)
-              supervisor.start()
-              supervisor.awaitTermination()
-            } else {
-              // It's restarted by TaskScheduler, but we want to reschedule it again. So exit it.
-            }
+        (iterator: Iterator[Receiver[_]]) => {
+          if (!iterator.hasNext) {
+            throw new SparkException(
+              "Could not start receiver as object not found."
+            )
+          }
+          if (TaskContext.get().attemptNumber() == 0) {
+            val receiver = iterator.next()
+            assert(iterator.hasNext == false)
+            val supervisor = new ReceiverSupervisorImpl(
+              receiver,
+              SparkEnv.get,
+              serializableHadoopConf.value,
+              checkpointDirOption
+            )
+            supervisor.start()
+            supervisor.awaitTermination()
+          } else {
+            // It's restarted by TaskScheduler, but we want to reschedule it again. So exit it.
+          }
         }
 
       // Create the RDD using the scheduledLocations to run the receiver in a Spark job
@@ -653,12 +734,19 @@ private[streaming] class ReceiverTracker(
         }
       receiverRDD.setName(s"Receiver $receiverId")
       ssc.sparkContext.setJobDescription(
-          s"Streaming job running receiver $receiverId")
+        s"Streaming job running receiver $receiverId"
+      )
       ssc.sparkContext.setCallSite(
-          Option(ssc.getStartSite()).getOrElse(Utils.getCallSite()))
+        Option(ssc.getStartSite()).getOrElse(Utils.getCallSite())
+      )
 
       val future = ssc.sparkContext.submitJob[Receiver[_], Unit, Unit](
-          receiverRDD, startReceiverFunc, Seq(0), (_, _) => Unit, ())
+        receiverRDD,
+        startReceiverFunc,
+        Seq(0),
+        (_, _) => Unit,
+        ()
+      )
       // We will keep restarting the receiver job until ReceiverTracker is stopped
       future.onComplete {
         case Success(_) =>
@@ -690,11 +778,10 @@ private[streaming] class ReceiverTracker(
       */
     private def onReceiverJobFinish(receiverId: Int): Unit = {
       receiverJobExitLatch.countDown()
-      receiverTrackingInfos.remove(receiverId).foreach {
-        receiverTrackingInfo =>
-          if (receiverTrackingInfo.state == ReceiverState.ACTIVE) {
-            logWarning(s"Receiver $receiverId exited but didn't deregister")
-          }
+      receiverTrackingInfos.remove(receiverId).foreach { receiverTrackingInfo =>
+        if (receiverTrackingInfo.state == ReceiverState.ACTIVE) {
+          logWarning(s"Receiver $receiverId exited but didn't deregister")
+        }
       }
     }
 
@@ -703,8 +790,10 @@ private[streaming] class ReceiverTracker(
       receiverTrackingInfos.values.flatMap(_.endpoint).foreach {
         _.send(StopReceiver)
       }
-      logInfo("Sent stop signal to all " + receiverTrackingInfos.size +
-          " receivers")
+      logInfo(
+        "Sent stop signal to all " + receiverTrackingInfos.size +
+          " receivers"
+      )
     }
   }
 }

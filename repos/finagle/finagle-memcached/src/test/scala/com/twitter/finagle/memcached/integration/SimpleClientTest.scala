@@ -20,7 +20,7 @@ class SimpleClientTest extends FunSuite with BeforeAndAfter {
   /**
     * Note: This integration test requires a real Memcached server to run.
     */
-  var client: Client = null
+  var client: Client                          = null
   var testServer: Option[TestMemcachedServer] = None
 
   val stats = new SummarizingStatsReceiver
@@ -64,10 +64,11 @@ class SimpleClientTest extends FunSuite with BeforeAndAfter {
       case (key, Buf.Utf8(value)) => (key, value)
     }
     assert(
-        result == Map(
-            "foo" -> "bar",
-            "baz" -> "boing"
-        ))
+      result == Map(
+        "foo" -> "bar",
+        "baz" -> "boing"
+      )
+    )
   }
 
   if (Option(System.getProperty("USE_EXTERNAL_MEMCACHED")).isDefined) {
@@ -82,10 +83,16 @@ class SimpleClientTest extends FunSuite with BeforeAndAfter {
         }
 
       assert(
-          result == Map(
-              "foos" -> (("xyz", "1")), // the "cas unique" values are predictable from a fresh memcached
-              "bazs" -> (("zyx", "3"))
-          ))
+        result == Map(
+          "foos" -> (
+            (
+              "xyz",
+              "1"
+            )
+          ), // the "cas unique" values are predictable from a fresh memcached
+          "bazs" -> (("zyx", "3"))
+        )
+      )
     }
   }
 
@@ -134,9 +141,7 @@ class SimpleClientTest extends FunSuite with BeforeAndAfter {
       val stats = Await.result(client.stats())
       assert(stats != null)
       assert(!stats.isEmpty)
-      stats.foreach { stat =>
-        assert(stat.startsWith("STAT"))
-      }
+      stats.foreach { stat => assert(stat.startsWith("STAT")) }
     }
   }
 
@@ -156,7 +161,8 @@ class SimpleClientTest extends FunSuite with BeforeAndAfter {
       Await.result(client.set("    ", Buf.Utf8("bar")))
     }
 
-    try { Await.result(client.set("\t", Buf.Utf8("bar"))) } catch {
+    try { Await.result(client.set("\t", Buf.Utf8("bar"))) }
+    catch {
       case _: ClientError => fail("\t is allowed")
     }
 
@@ -170,7 +176,8 @@ class SimpleClientTest extends FunSuite with BeforeAndAfter {
       "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
     intercept[ClientError] { Await.result(client.get(veryLongKey)) }
     assert(
-        Await.ready(client.set(veryLongKey, Buf.Utf8("bar"))).poll.get.isThrow)
+      Await.ready(client.set(veryLongKey, Buf.Utf8("bar"))).poll.get.isThrow
+    )
 
     // test other keyed command validation
     val nullSeq: Seq[String] = null

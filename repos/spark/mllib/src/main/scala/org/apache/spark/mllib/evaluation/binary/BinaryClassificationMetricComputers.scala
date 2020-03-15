@@ -72,7 +72,7 @@ private[evaluation] case class FMeasure(beta: Double)
   private val beta2 = beta * beta
   override def apply(c: BinaryConfusionMatrix): Double = {
     val precision = Precision(c)
-    val recall = Recall(c)
+    val recall    = Recall(c)
     if (precision + recall == 0) {
       0.0
     } else {

@@ -37,9 +37,9 @@ trait JSGlobalAddons extends JSDefinitions with Compat210Component {
     /** Symbols of constructors and modules that are to be exported */
     private val exportedSymbols = mutable.Map.empty[Symbol, List[ExportInfo]]
 
-    private val exportPrefix = "$js$exported$"
+    private val exportPrefix       = "$js$exported$"
     private val methodExportPrefix = exportPrefix + "meth$"
-    private val propExportPrefix = exportPrefix + "prop$"
+    private val propExportPrefix   = exportPrefix + "prop$"
 
     trait ExportInfo {
       val jsName: String
@@ -48,8 +48,10 @@ trait JSGlobalAddons extends JSDefinitions with Compat210Component {
     }
 
     private def assertValidForRegistration(sym: Symbol): Unit = {
-      assert(sym.isConstructor || sym.isClass,
-             "Can only register constructors or classes for export")
+      assert(
+        sym.isConstructor || sym.isClass,
+        "Can only register constructors or classes for export"
+      )
     }
 
     def clearRegisteredExports(): Unit =
@@ -68,7 +70,7 @@ trait JSGlobalAddons extends JSDefinitions with Compat210Component {
 
     /** creates a name for an export specification */
     def scalaExportName(jsName: String, isProp: Boolean): TermName = {
-      val pref = if (isProp) propExportPrefix else methodExportPrefix
+      val pref    = if (isProp) propExportPrefix else methodExportPrefix
       val encname = NameTransformer.encode(jsName)
       newTermName(pref + encname)
     }
@@ -76,7 +78,7 @@ trait JSGlobalAddons extends JSDefinitions with Compat210Component {
     /** checks if the given symbol is a JSExport */
     def isExport(sym: Symbol): Boolean =
       sym.unexpandedName.startsWith(exportPrefix) &&
-      !sym.hasFlag(Flags.DEFAULTPARAM)
+        !sym.hasFlag(Flags.DEFAULTPARAM)
 
     /** retrieves the originally assigned jsName of this export and whether it
       *  is a property
@@ -91,8 +93,10 @@ trait JSGlobalAddons extends JSDefinitions with Compat210Component {
       }
 
       dropPrefix(methodExportPrefix).map((_, false)) orElse dropPrefix(
-          propExportPrefix).map((_, true)) getOrElse sys.error(
-          "non-exported name passed to jsInfoSpec")
+        propExportPrefix
+      ).map((_, true)) getOrElse sys.error(
+        "non-exported name passed to jsInfoSpec"
+      )
     }
 
     def isJSProperty(sym: Symbol): Boolean = isJSGetter(sym) || isJSSetter(sym)
@@ -145,7 +149,9 @@ trait JSGlobalAddons extends JSDefinitions with Compat210Component {
       */
     def fullJSNameOf(sym: Symbol): String = {
       assert(sym.isClass, s"fullJSNameOf called for non-class symbol $sym")
-      sym.getAnnotation(JSFullNameAnnotation).flatMap(_.stringArg(0)) getOrElse {
+      sym
+        .getAnnotation(JSFullNameAnnotation)
+        .flatMap(_.stringArg(0)) getOrElse {
         jsNameOf(sym)
       }
     }

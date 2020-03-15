@@ -10,7 +10,8 @@ import akka.http.javadsl.{model ⇒ jm}
 import akka.http.impl.util.JavaMapping.Implicits._
 
 sealed abstract class RemoteAddress
-    extends jm.RemoteAddress with ValueRenderable {
+    extends jm.RemoteAddress
+    with ValueRenderable {
   def toOption: Option[InetAddress]
   def toIP: Option[RemoteAddress.IP]
   def isUnknown: Boolean
@@ -25,7 +26,7 @@ sealed abstract class RemoteAddress
 object RemoteAddress {
   case object Unknown extends RemoteAddress {
     def toOption = None
-    def toIP = None
+    def toIP     = None
 
     def render[R <: Rendering](r: R): r.type = r ~~ "unknown"
 
@@ -35,7 +36,7 @@ object RemoteAddress {
   final case class IP(ip: InetAddress, port: Option[Int] = None)
       extends RemoteAddress {
     def toOption: Option[InetAddress] = Some(ip)
-    def toIP = Some(this)
+    def toIP                          = Some(this)
     def render[R <: Rendering](r: R): r.type = {
       r ~~ ip.getHostAddress
       if (port.isDefined) r ~~ ":" ~~ port.get
@@ -52,7 +53,8 @@ object RemoteAddress {
 
   def apply(bytes: Array[Byte]): RemoteAddress = {
     require(bytes.length == 4 || bytes.length == 16)
-    try IP(InetAddress.getByAddress(bytes)) catch {
+    try IP(InetAddress.getByAddress(bytes))
+    catch {
       case _: UnknownHostException ⇒ Unknown
     }
   }

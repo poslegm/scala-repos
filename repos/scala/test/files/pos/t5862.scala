@@ -9,15 +9,15 @@ trait Emitter[A] {
 }
 
 /** A wrapper for a 'map' function tagged for a specific output channel. */
-abstract class TaggedMapper[A, K, V](val tags: Set[Int])(
-    implicit val mA: Manifest[A],
+abstract class TaggedMapper[A, K, V](val tags: Set[Int])(implicit
+    val mA: Manifest[A],
     val wtA: WireFormat[A],
     val mK: Manifest[K],
     val wtK: WireFormat[K],
     val ordK: Ordering[K],
     val mV: Manifest[V],
-    val wtV: WireFormat[V])
-    extends Serializable {}
+    val wtV: WireFormat[V]
+) extends Serializable {}
 
 /** Type-class for sending types across the Hadoop wire. */
 trait WireFormat[A]
@@ -30,11 +30,12 @@ class MapReduceJob {
     MMap.empty
 
   def addTaggedMapper[A, K, V](
-      input: DataSource, m: TaggedMapper[A, K, V]): Unit = {
+      input: DataSource,
+      m: TaggedMapper[A, K, V]
+  ): Unit = {
     if (!mappers.contains(input)) mappers += (input -> MSet(m))
     else mappers(input) += m // : Unit
 
-    m.tags.foreach { tag =>
-    }
+    m.tags.foreach { tag => }
   }
 }

@@ -10,8 +10,9 @@ class WeakHashSetTest {
 
   // a class guaranteed to provide hash collisions
   case class Collider(x: String)
-      extends Comparable[Collider] with Serializable {
-    override def hashCode = 0
+      extends Comparable[Collider]
+      with Serializable {
+    override def hashCode      = 0
     def compareTo(y: Collider) = this.x compareTo y.x
   }
 
@@ -26,7 +27,7 @@ class WeakHashSetTest {
   // make sure += works
   @Test
   def checkPlusEquals {
-    val hs = new WeakHashSet[String]()
+    val hs       = new WeakHashSet[String]()
     val elements = List("hello", "goodbye")
     elements foreach (hs += _)
     assert(hs.size == 2)
@@ -38,7 +39,7 @@ class WeakHashSetTest {
   // make sure += works when there are collisions
   @Test
   def checkPlusEqualsCollisions {
-    val hs = new WeakHashSet[Collider]()
+    val hs       = new WeakHashSet[Collider]()
     val elements = List("hello", "goodbye") map Collider
     elements foreach (hs += _)
     assert(hs.size == 2)
@@ -50,13 +51,11 @@ class WeakHashSetTest {
   // add a large number of elements to force rehashing and then validate
   @Test
   def checkRehashing {
-    val size = 200
-    val hs = new WeakHashSet[String]()
+    val size     = 200
+    val hs       = new WeakHashSet[String]()
     val elements = (0 until size).toList map ("a" + _)
     elements foreach (hs += _)
-    elements foreach { i =>
-      assert(hs contains i)
-    }
+    elements foreach { i => assert(hs contains i) }
     hs.diagnostics.fullyValidate
   }
 
@@ -64,15 +63,11 @@ class WeakHashSetTest {
   @Test
   def checkRehashCollisions {
     val size = 200
-    val hs = new WeakHashSet[Collider]()
+    val hs   = new WeakHashSet[Collider]()
     val elements =
-      (0 until size).toList map { x =>
-        Collider("a" + x)
-      }
+      (0 until size).toList map { x => Collider("a" + x) }
     elements foreach (hs += _)
-    elements foreach { i =>
-      assert(hs contains i)
-    }
+    elements foreach { i => assert(hs contains i) }
     hs.diagnostics.fullyValidate
   }
 
@@ -81,11 +76,9 @@ class WeakHashSetTest {
   //@Test
   def checkRemoveUnreferencedObjects {
     val size = 200
-    val hs = new WeakHashSet[Collider]()
+    val hs   = new WeakHashSet[Collider]()
     val elements =
-      (0 until size).toList map { x =>
-        Collider("a" + x)
-      }
+      (0 until size).toList map { x => Collider("a" + x) }
     elements foreach (hs += _)
     // don't throw the following into a retained collection so gc
     // can remove them
@@ -95,9 +88,7 @@ class WeakHashSetTest {
     System.gc()
     Thread.sleep(1000)
     assert(hs.size == 200)
-    elements foreach { i =>
-      assert(hs contains i)
-    }
+    elements foreach { i => assert(hs contains i) }
     for (i <- 0 until size) {
       assert(!(hs contains Collider("b" + i)))
     }
@@ -108,14 +99,10 @@ class WeakHashSetTest {
   @Test
   def checkFindOrUpdate {
     val size = 200
-    val hs = new WeakHashSet[Collider]()
+    val hs   = new WeakHashSet[Collider]()
     val elements =
-      (0 until size).toList map { x =>
-        Collider("a" + x)
-      }
-    elements foreach { x =>
-      assert(hs findEntryOrUpdate x eq x)
-    }
+      (0 until size).toList map { x => Collider("a" + x) }
+    elements foreach { x => assert(hs findEntryOrUpdate x eq x) }
     for (i <- 0 until size) {
       // when we do a lookup the result should be the same reference we
       // original put in
@@ -127,7 +114,7 @@ class WeakHashSetTest {
   // check -= functionality
   @Test
   def checkMinusEquals {
-    val hs = new WeakHashSet[String]()
+    val hs       = new WeakHashSet[String]()
     val elements = List("hello", "goodbye")
     elements foreach (hs += _)
     hs -= "goodbye"
@@ -140,7 +127,7 @@ class WeakHashSetTest {
   // check -= when there are collisions
   @Test
   def checkMinusEqualsCollisions {
-    val hs = new WeakHashSet[Collider]
+    val hs       = new WeakHashSet[Collider]
     val elements = List(Collider("hello"), Collider("goodbye"))
     elements foreach (hs += _)
     hs -= Collider("goodbye")
@@ -156,22 +143,20 @@ class WeakHashSetTest {
   // check that the clear method actually cleans everything
   @Test
   def checkClear {
-    val size = 200
-    val hs = new WeakHashSet[String]()
+    val size     = 200
+    val hs       = new WeakHashSet[String]()
     val elements = (0 until size).toList map ("a" + _)
     elements foreach (hs += _)
     hs.clear()
     assert(hs.size == 0)
-    elements foreach { i =>
-      assert(!(hs contains i))
-    }
+    elements foreach { i => assert(!(hs contains i)) }
     hs.diagnostics.fullyValidate
   }
 
   // check that the iterator covers all the contents
   @Test
   def checkIterator {
-    val hs = new WeakHashSet[String]()
+    val hs       = new WeakHashSet[String]()
     val elements = (0 until 20).toList map ("a" + _)
     elements foreach (hs += _)
     assert(elements.iterator.toList.sorted == elements.sorted)
@@ -183,9 +168,7 @@ class WeakHashSetTest {
   def checkIteratorCollisions {
     val hs = new WeakHashSet[Collider]
     val elements =
-      (0 until 20).toList map { x =>
-        Collider("a" + x)
-      }
+      (0 until 20).toList map { x => Collider("a" + x) }
     elements foreach (hs += _)
     assert(elements.iterator.toList.sorted == elements.sorted)
     hs.diagnostics.fullyValidate

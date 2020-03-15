@@ -29,10 +29,12 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet
   * @param withQuote If true, do not strip quote character from quoted fields
   * @param skipLines Whether to skip some integer number of lines, default 0
   */
-case class CsvParams(separChar: Char = ',',
-                     quoteChar: Char = '"',
-                     withQuote: Boolean = false,
-                     skipLines: Int = 0)
+case class CsvParams(
+    separChar: Char = ',',
+    quoteChar: Char = '"',
+    withQuote: Boolean = false,
+    skipLines: Int = 0
+)
 
 /**
   * Csv parsing utilities
@@ -64,10 +66,13 @@ object CsvParser {
     * @param source The csv data source to operate on
     */
   def parse(cols: Seq[Int] = List(), params: CsvParams = CsvParams())(
-      source: CsvSource): Frame[Int, Int, String] = {
+      source: CsvSource
+  ): Frame[Int, Int, String] = {
 
-    require(params.separChar != params.quoteChar,
-            "Separator character and quote character cannot be the same")
+    require(
+      params.separChar != params.quoteChar,
+      "Separator character and quote character cannot be the same"
+    )
 
     // sorted, unique column locations to parse
     var locs = Set(cols: _*).toArray[Int].sorted
@@ -100,27 +105,27 @@ object CsvParser {
 
     // parse remaining rows
     var str: String = null
-    var nln: Int = 0
+    var nln: Int    = 0
     while ({ str = source.readLine; str != null }) {
       extractFields(str, addToBuffer, locs, params)
       nln += 1
     }
 
     val columns =
-      bufdata map { b =>
-        Vec(b.toArray)
-      }
+      bufdata map { b => Vec(b.toArray) }
 
     Frame(columns: _*).row(params.skipLines -> *)
   }
 
-  private def extractFields(line: String,
-                            callback: (String, Int) => Unit,
-                            locs: Array[Int],
-                            params: CsvParams) {
+  private def extractFields(
+      line: String,
+      callback: (String, Int) => Unit,
+      locs: Array[Int],
+      params: CsvParams
+  ) {
 
-    val quote = params.quoteChar
-    val sep = params.separChar
+    val quote      = params.quoteChar
+    val sep        = params.separChar
     val stripQuote = !params.withQuote
 
     var inQ = false // whether our scan is between quotes
@@ -132,7 +137,7 @@ object CsvParser {
     var inQoff = 0 // offset if there is a quote character to strip
 
     val carr = line.toCharArray // line as character array
-    val slen = carr.length // length of line
+    val slen = carr.length      // length of line
 
     while (curEnd < slen && locIdx < locs.length) {
       val chr = carr(curEnd) // get current character
@@ -140,7 +145,7 @@ object CsvParser {
       if (chr == quote) {
         // handle a quote
         if (stripQuote) {
-          if (inQ) inQoff = 1 // we're exiting a quoted field
+          if (inQ) inQoff = 1      // we're exiting a quoted field
           else curBeg = curEnd + 1 // we're starting a quoted field
         }
         inQ = !inQ
@@ -151,7 +156,9 @@ object CsvParser {
         if (curFld == locs(locIdx)) {
           // we want this field
           callback(
-              String.valueOf(carr, curBeg, curEnd - curBeg - inQoff), locIdx)
+            String.valueOf(carr, curBeg, curEnd - curBeg - inQoff),
+            locIdx
+          )
           locIdx += 1
         }
         inQoff = 0
@@ -177,17 +184,21 @@ object CsvParser {
 
     // if we didn't scan a field for all requested locations, throw an error
     if (locIdx < locs.length) {
-      throw new ArrayIndexOutOfBoundsException("""Unable to read column %d in line:
+      throw new ArrayIndexOutOfBoundsException(
+        """Unable to read column %d in line:
           | ------------
           | %s
-          | ------------""".stripMargin.format(locs(locIdx), line))
+          | ------------""".stripMargin.format(locs(locIdx), line)
+      )
     }
   }
 
   private def extractAllFields(
-      line: String, params: CsvParams): Array[String] = {
-    val quote = params.quoteChar
-    val sep = params.separChar
+      line: String,
+      params: CsvParams
+  ): Array[String] = {
+    val quote      = params.quoteChar
+    val sep        = params.separChar
     val stripQuote = !params.withQuote
 
     val result = ArrayBuffer[String]()
@@ -200,7 +211,7 @@ object CsvParser {
     var inQoff = 0 // offset if there is a quote character to strip
 
     val carr = line.toCharArray // line as character array
-    val slen = carr.length // length of line
+    val slen = carr.length      // length of line
 
     while (curEnd < slen) {
       val chr = carr(curEnd) // get current character
@@ -208,7 +219,7 @@ object CsvParser {
       if (chr == quote) {
         // handle a quote
         if (stripQuote) {
-          if (inQ) inQoff = 1 // we're exiting a quoted field
+          if (inQ) inQoff = 1      // we're exiting a quoted field
           else curBeg = curEnd + 1 // we're starting a quoted field
         }
         inQ = !inQ
@@ -235,22 +246,26 @@ object CsvParser {
   }
 
   def parseInt(s: String) =
-    try { java.lang.Integer.parseInt(s) } catch {
+    try { java.lang.Integer.parseInt(s) }
+    catch {
       case _: NumberFormatException => Int.MinValue
     }
 
   def parseLong(s: String) =
-    try { java.lang.Long.parseLong(s) } catch {
+    try { java.lang.Long.parseLong(s) }
+    catch {
       case _: NumberFormatException => Long.MinValue
     }
 
   def parseFloat(s: String) =
-    try { java.lang.Float.parseFloat(s) } catch {
+    try { java.lang.Float.parseFloat(s) }
+    catch {
       case _: NumberFormatException => Float.NaN
     }
 
   def parseDouble(s: String) =
-    try { java.lang.Double.parseDouble(s) } catch {
+    try { java.lang.Double.parseDouble(s) }
+    catch {
       case _: NumberFormatException => Double.NaN
     }
 }

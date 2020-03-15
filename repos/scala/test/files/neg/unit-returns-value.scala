@@ -11,11 +11,11 @@ object Test {
 }
 
 class UnusedValues {
-  var i1 = 2
-  val i2 = 2
+  var i1      = 2
+  val i2      = 2
   lazy val i3 = 2
   object i4 {}
-  def i5 = 2
+  def i5       = 2
   final def i6 = 2
 
   def x = {

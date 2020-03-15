@@ -1,6 +1,6 @@
 object P {
   object Foo {
-    implicit def string2int(x: String) = x.length
+    implicit def string2int(x: String)                      = x.length
     implicit def tuple2int(x: (String, String)): (Int, Int) = (x._1, x._2)
   }
 

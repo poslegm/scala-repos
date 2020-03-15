@@ -17,31 +17,40 @@ object SourceGenerator {
   }
 
   def generateTask =
-    (moduleName,
-     baseDirectory,
-     sourceDirectory in Compile,
-     extract in Scaloid,
-     apiVersion in Scaloid,
-     scalaVersion,
-     streams) map {
-      (mName, baseDir, srcDir, androidClasses, androidApiVersion, scalaVersion,
-      s) =>
+    (
+      moduleName,
+      baseDirectory,
+      sourceDirectory in Compile,
+      extract in Scaloid,
+      apiVersion in Scaloid,
+      scalaVersion,
+      streams
+    ) map {
+      (
+          mName,
+          baseDir,
+          srcDir,
+          androidClasses,
+          androidApiVersion,
+          scalaVersion,
+          s
+      ) =>
         import NameFilter._
 
         if (mName == "parent") Nil
         else {
-          val stGroupsDir = baseDir / ".." / "project" / "st"
-          val templateDir = srcDir / "st"
+          val stGroupsDir  = baseDir / ".." / "project" / "st"
+          val templateDir  = srcDir / "st"
           val relativePath = Path.relativeTo(templateDir)
-          val scalaTemplates = recursiveListFiles(
-              templateDir, (s: String) => s.endsWith(".scala"))
+          val scalaTemplates =
+            recursiveListFiles(templateDir, (s: String) => s.endsWith(".scala"))
 
           scalaTemplates.map { (file: File) =>
             val outFile = srcDir / "scala" / relativePath(file).get
             s.log.info("Generating: " + outFile)
 
-            val stg = new StringTemplateSupport(androidApiVersion, file, s.log)
-            val params = androidClasses
+            val stg           = new StringTemplateSupport(androidApiVersion, file, s.log)
+            val params        = androidClasses
             val generatedCode = stg.render(file, params)
             IO.write(outFile, generatedCode)
 
@@ -71,9 +80,9 @@ object SourceGenerator {
 
   private def formatCode(code: String, scalaVersion: String): String = {
     ScalaFormatter.format(
-        code,
-        scalariformPreferences,
-        scalaVersion = pureScalaVersion(scalaVersion)
+      code,
+      scalariformPreferences,
+      scalaVersion = pureScalaVersion(scalaVersion)
     )
   }
 

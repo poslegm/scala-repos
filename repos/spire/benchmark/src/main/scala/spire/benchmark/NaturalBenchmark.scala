@@ -28,7 +28,7 @@ class NaturalBenchmarks extends MyBenchmark {
 
   var size: Int = 0
 
-  var nats: Array[Natural] = _
+  var nats: Array[Natural]   = _
   var bigints: Array[BigInt] = _
   var safes: Array[SafeLong] = _
 
@@ -39,8 +39,8 @@ class NaturalBenchmarks extends MyBenchmark {
     safes = bigints.map(SafeLong(_))
   }
 
-  def timeNaturalSum(reps: Int) = run(reps)(nats.qsum)
-  def timeBigIntSum(reps: Int) = run(reps)(bigints.qsum)
+  def timeNaturalSum(reps: Int)   = run(reps)(nats.qsum)
+  def timeBigIntSum(reps: Int)    = run(reps)(bigints.qsum)
   def timeSafeLongSums(reps: Int) = run(reps)(safes.qsum)
 
   def timeNaturalSumDoubles(reps: Int) = run(reps)(nats.map(n => n << 1).qsum)
@@ -48,8 +48,8 @@ class NaturalBenchmarks extends MyBenchmark {
     run(reps)(bigints.map(n => n << 1).qsum)
   def timeSafeLongSumDoubles(reps: Int) = run(reps)(safes.map(n => n * 2).qsum)
 
-  def timeNaturalSumSquares(reps: Int) = run(reps)(nats.map(n => n * n).qsum)
-  def timeBigIntSumSquares(reps: Int) = run(reps)(bigints.map(n => n * n).qsum)
+  def timeNaturalSumSquares(reps: Int)  = run(reps)(nats.map(n => n * n).qsum)
+  def timeBigIntSumSquares(reps: Int)   = run(reps)(bigints.map(n => n * n).qsum)
   def timeSafeLongSumSquares(reps: Int) = run(reps)(safes.map(n => n * n).qsum)
 
   def timeNaturalSumNormalized(reps: Int) =
@@ -59,7 +59,7 @@ class NaturalBenchmarks extends MyBenchmark {
   def timeSafeLongSumNormalized(reps: Int) =
     run(reps)(safes.map(n => n / 10).qsum)
 
-  def timeNaturalMin(reps: Int) = run(reps)(nats.qmin)
-  def timeBigIntMin(reps: Int) = run(reps)(bigints.qmin)
+  def timeNaturalMin(reps: Int)  = run(reps)(nats.qmin)
+  def timeBigIntMin(reps: Int)   = run(reps)(bigints.qmin)
   def timeSafeLongMin(reps: Int) = run(reps)(safes.qmin)
 }

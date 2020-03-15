@@ -11,7 +11,7 @@ object O {
 
   // this order breaks under 2.11.x
   def empty(implicit a: Any): Any = ???
-  def empty[E]: C[E] = ???
+  def empty[E]: C[E]              = ???
 }
 
 abstract class C[E] {

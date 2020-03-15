@@ -32,10 +32,12 @@ class HiveCatalogSuite extends CatalogTestCases {
 
   private val client: HiveClient = {
     IsolatedClientLoader
-      .forVersion(hiveMetastoreVersion = HiveContext.hiveExecutionVersion,
-                  hadoopVersion = VersionInfo.getVersion,
-                  sparkConf = new SparkConf(),
-                  hadoopConf = new Configuration())
+      .forVersion(
+        hiveMetastoreVersion = HiveContext.hiveExecutionVersion,
+        hadoopVersion = VersionInfo.getVersion,
+        sparkConf = new SparkConf(),
+        hadoopConf = new Configuration()
+      )
       .createClient()
   }
 

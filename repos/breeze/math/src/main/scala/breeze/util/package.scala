@@ -22,7 +22,8 @@ package object util {
     */
   def readObject[T](loc: File, ignoreSerialVersionUID: Boolean) = {
     val stream = new BufferedInputStream(
-        new GZIPInputStream(new FileInputStream(loc)))
+      new GZIPInputStream(new FileInputStream(loc))
+    )
     val oin = nonstupidObjectInputStream(stream, ignoreSerialVersionUID)
     try {
       oin.readObject().asInstanceOf[T]
@@ -41,7 +42,8 @@ package object util {
     */
   def nonstupidObjectInputStream(
       stream: InputStream,
-      ignoreSerialVersionUID: Boolean = false): ObjectInputStream = {
+      ignoreSerialVersionUID: Boolean = false
+  ): ObjectInputStream = {
     new ObjectInputStream(stream) with SerializableLogging {
       @throws[IOException]
       @throws[ClassNotFoundException]
@@ -69,24 +71,28 @@ package object util {
           } catch {
             case e: ClassNotFoundException =>
               logger.error(
-                  "No local class for " + resultClassDescriptor.getName, e)
+                "No local class for " + resultClassDescriptor.getName,
+                e
+              )
               return resultClassDescriptor
           }
 
           val localClassDescriptor = ObjectStreamClass.lookup(localClass)
           if (localClassDescriptor != null) {
             // only if class implements serializable
-            val localSUID = localClassDescriptor.getSerialVersionUID
+            val localSUID  = localClassDescriptor.getSerialVersionUID
             val streamSUID = resultClassDescriptor.getSerialVersionUID
             if (streamSUID != localSUID) {
               // check for serialVersionUID mismatch.
               val s = new StringBuffer(
-                  "Overriding serialized class version mismatch: ")
+                "Overriding serialized class version mismatch: "
+              )
               s.append("local serialVersionUID = ").append(localSUID)
               s.append(" stream serialVersionUID = ").append(streamSUID)
               val e = new InvalidClassException(s.toString())
               logger.error("Potentially Fatal Deserialization Operation.", e);
-              resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
+              resultClassDescriptor =
+                localClassDescriptor; // Use local class descriptor for deserialization
             }
           }
         }
@@ -100,8 +106,8 @@ package object util {
     */
   def writeObject[T](out: File, parser: T): Unit = {
     val stream = new ObjectOutputStream(
-        new BufferedOutputStream(
-            new GZIPOutputStream(new FileOutputStream(out))))
+      new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(out)))
+    )
     stream.writeObject(parser)
     stream.close()
   }
@@ -142,8 +148,8 @@ package object util {
     * Returns a string with info about the available and used space.
     */
   def memoryString = {
-    val r = Runtime.getRuntime
-    val free = r.freeMemory / (1024 * 1024)
+    val r     = Runtime.getRuntime
+    val free  = r.freeMemory / (1024 * 1024)
     val total = r.totalMemory / (1024 * 1024)
     ((total - free) + "M used; " + free + "M free; " + total + "M total")
   }
@@ -166,8 +172,9 @@ package object util {
         ._2
     }
 
-    def unfold[U, To](init: U)(f: (U, T) => U)(
-        implicit cbf: CanBuildFrom[Seq[T], U, To]) = {
+    def unfold[U, To](
+        init: U
+    )(f: (U, T) => U)(implicit cbf: CanBuildFrom[Seq[T], U, To]) = {
       val builder = cbf.apply(s)
       builder.sizeHint(s.size + 1)
       var u = init
@@ -189,13 +196,12 @@ package object util {
 
     def iterator: Iterator[Int] = new BSIterator(bs)
 
-    def map[U, C](f: Int => U)(
-        implicit cbf: CanBuildFrom[java.util.BitSet, U, C]) = {
+    def map[U, C](
+        f: Int => U
+    )(implicit cbf: CanBuildFrom[java.util.BitSet, U, C]) = {
       val r: mutable.Builder[U, C] = cbf(bs)
       r.sizeHint(bs.size)
-      iterator foreach { i =>
-        r += f(i)
-      }
+      iterator foreach { i => r += f(i) }
 
       r.result()
     }
@@ -255,7 +261,7 @@ package object util {
   }
 
   private class BSIterator(bs: java.util.BitSet) extends Iterator[Int] {
-    var currentBit = bs.nextSetBit(0)
+    var currentBit       = bs.nextSetBit(0)
     def hasNext: Boolean = currentBit != -1
 
     def next() = {
@@ -269,7 +275,7 @@ package object util {
   implicit def _bitsetcbf[U]: CanBuildFrom[java.util.BitSet, U, Set[U]] =
     new CanBuildFrom[java.util.BitSet, U, Set[U]] {
       def apply(from: BitSet): mutable.Builder[U, Set[U]] = Set.newBuilder[U]
-      def apply(): mutable.Builder[U, Set[U]] = Set.newBuilder[U]
+      def apply(): mutable.Builder[U, Set[U]]             = Set.newBuilder[U]
     }
 
   implicit class AwesomeScalaBitSet(val bs: scala.collection.BitSet)

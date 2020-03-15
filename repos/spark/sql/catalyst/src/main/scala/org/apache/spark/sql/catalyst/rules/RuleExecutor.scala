@@ -33,7 +33,7 @@ object RuleExecutor {
 
   /** Dump statistics about time spent running specific rules. */
   def dumpTimeSpent(): String = {
-    val map = timeMap.asMap().asScala
+    val map     = timeMap.asMap().asScala
     val maxSize = map.keys.map(_.toString.length).max
     map.toSeq
       .sortBy(_._2)
@@ -61,7 +61,10 @@ abstract class RuleExecutor[TreeType <: TreeNode[_]] extends Logging {
 
   /** A batch of rules. */
   protected case class Batch(
-      name: String, strategy: Strategy, rules: Rule[TreeType]*)
+      name: String,
+      strategy: Strategy,
+      rules: Rule[TreeType]*
+  )
 
   /** Defines a sequence of rule batches, to be overridden by the implementation. */
   protected def batches: Seq[Batch]
@@ -75,24 +78,25 @@ abstract class RuleExecutor[TreeType <: TreeNode[_]] extends Logging {
 
     batches.foreach { batch =>
       val batchStartPlan = curPlan
-      var iteration = 1
-      var lastPlan = curPlan
-      var continue = true
+      var iteration      = 1
+      var lastPlan       = curPlan
+      var continue       = true
 
       // Run until fix point (or the max number of iterations as specified in the strategy.
       while (continue) {
         curPlan = batch.rules.foldLeft(curPlan) {
           case (plan, rule) =>
             val startTime = System.nanoTime()
-            val result = rule(plan)
-            val runTime = System.nanoTime() - startTime
+            val result    = rule(plan)
+            val runTime   = System.nanoTime() - startTime
             RuleExecutor.timeMap.addAndGet(rule.ruleName, runTime)
 
             if (!result.fastEquals(plan)) {
               logTrace(s"""
                   |=== Applying Rule ${rule.ruleName} ===
                   |${sideBySide(plan.treeString, result.treeString).mkString(
-                          "\n")}
+                            "\n"
+                          )}
                 """.stripMargin)
             }
 
@@ -103,14 +107,16 @@ abstract class RuleExecutor[TreeType <: TreeNode[_]] extends Logging {
           // Only log if this is a rule that is supposed to run more than once.
           if (iteration != 2) {
             logInfo(
-                s"Max iterations (${iteration - 1}) reached for batch ${batch.name}")
+              s"Max iterations (${iteration - 1}) reached for batch ${batch.name}"
+            )
           }
           continue = false
         }
 
         if (curPlan.fastEquals(lastPlan)) {
           logTrace(
-              s"Fixed point reached for batch ${batch.name} after ${iteration - 1} iterations.")
+            s"Fixed point reached for batch ${batch.name} after ${iteration - 1} iterations."
+          )
           continue = false
         }
         lastPlan = curPlan

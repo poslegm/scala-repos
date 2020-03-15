@@ -16,14 +16,14 @@
 
 package net.liftweb
 package object mapper {
-  type SuperConnection = db.SuperConnection
+  type SuperConnection      = db.SuperConnection
   type ConnectionIdentifier = util.ConnectionIdentifier
-  type DriverType = db.DriverType
-  type ConnectionManager = db.ConnectionManager
-  type DBLogEntry = db.DBLogEntry
-  type StandardDBVendor = db.StandardDBVendor
+  type DriverType           = db.DriverType
+  type ConnectionManager    = db.ConnectionManager
+  type DBLogEntry           = db.DBLogEntry
+  type StandardDBVendor     = db.StandardDBVendor
 
-  def DBLogEntry = db.DBLogEntry
+  def DBLogEntry                  = db.DBLogEntry
   def DefaultConnectionIdentifier = util.DefaultConnectionIdentifier
-  def DriverType = db.DriverType
+  def DriverType                  = db.DriverType
 }

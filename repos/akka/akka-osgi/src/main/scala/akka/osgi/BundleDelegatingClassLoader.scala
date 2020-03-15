@@ -27,9 +27,12 @@ object BundleDelegatingClassLoader {
 
   def apply(
       context: BundleContext,
-      fallBackCLassLoader: Option[ClassLoader]): BundleDelegatingClassLoader =
+      fallBackCLassLoader: Option[ClassLoader]
+  ): BundleDelegatingClassLoader =
     new BundleDelegatingClassLoader(
-        context.getBundle, fallBackCLassLoader.orNull)
+      context.getBundle,
+      fallBackCLassLoader.orNull
+    )
 }
 
 /*
@@ -37,8 +40,9 @@ object BundleDelegatingClassLoader {
  * and the bundles transitive dependencies. If there's a ClassLoader specified, that will be used as a fallback.
  */
 class BundleDelegatingClassLoader(
-    bundle: Bundle, fallBackClassLoader: ClassLoader)
-    extends ClassLoader(fallBackClassLoader) {
+    bundle: Bundle,
+    fallBackClassLoader: ClassLoader
+) extends ClassLoader(fallBackClassLoader) {
 
   private val bundles = findTransitiveBundles(bundle).toList
 
@@ -48,7 +52,7 @@ class BundleDelegatingClassLoader(
       else
         Try { remaining.head.loadClass(name) } match {
           case Success(cls) ⇒ cls
-          case Failure(_) ⇒ find(remaining.tail)
+          case Failure(_)   ⇒ find(remaining.tail)
         }
     }
     find(bundles)
@@ -60,7 +64,7 @@ class BundleDelegatingClassLoader(
       else
         Option { remaining.head.getResource(name) } match {
           case Some(r) ⇒ r
-          case None ⇒ find(remaining.tail)
+          case None    ⇒ find(remaining.tail)
         }
     }
     find(bundles)

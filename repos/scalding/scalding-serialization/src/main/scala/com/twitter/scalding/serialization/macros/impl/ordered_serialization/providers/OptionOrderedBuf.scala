@@ -19,31 +19,36 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{CompileTimeLengthTypes, ProductLike, TreeOrderedBuf}
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
 object OptionOrderedBuf {
   def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
-    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] =>
       OptionOrderedBuf(c)(buildDispatcher, tpe)
   }
 
   def apply(c: Context)(
       buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type): TreeOrderedBuf[c.type] = {
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
-    val dispatcher = buildDispatcher
+    val dispatcher         = buildDispatcher
 
-    val innerType = outerType.asInstanceOf[TypeRefApi].args.head
+    val innerType                        = outerType.asInstanceOf[TypeRefApi].args.head
     val innerBuf: TreeOrderedBuf[c.type] = dispatcher(innerType)
 
     def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName) = {
-      val valueOfA = freshT("valueOfA")
-      val valueOfB = freshT("valueOfB")
+      val valueOfA  = freshT("valueOfA")
+      val valueOfB  = freshT("valueOfB")
       val tmpHolder = freshT("tmpHolder")
       q"""
         val $valueOfA = $inputStreamA.readByte
@@ -80,7 +85,7 @@ object OptionOrderedBuf {
     }
 
     def genPutFn(inputStream: TermName, element: TermName) = {
-      val tmpPutVal = freshT("tmpPutVal")
+      val tmpPutVal  = freshT("tmpPutVal")
       val innerValue = freshT("innerValue")
       q"""
         if($element.isDefined) {
@@ -94,8 +99,8 @@ object OptionOrderedBuf {
     }
 
     def genCompareFn(elementA: TermName, elementB: TermName) = {
-      val aIsDefined = freshT("aIsDefined")
-      val bIsDefined = freshT("bIsDefined")
+      val aIsDefined  = freshT("aIsDefined")
+      val bIsDefined  = freshT("bIsDefined")
       val innerValueA = freshT("innerValueA")
       val innerValueB = freshT("innerValueB")
       q"""
@@ -118,9 +123,11 @@ object OptionOrderedBuf {
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
-      override val tpe = outerType
+      override val tpe         = outerType
       override def compareBinary(
-          inputStreamA: TermName, inputStreamB: TermName) =
+          inputStreamA: TermName,
+          inputStreamB: TermName
+      ) =
         genBinaryCompare(inputStreamA, inputStreamB)
       override def hash(element: TermName): ctx.Tree = genHashFn(element)
       override def put(inputStream: TermName, element: TermName) =

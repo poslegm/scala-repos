@@ -22,7 +22,8 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
       if (mode == Mode.Dev) "logback-play-dev.xml"
       else "logback-play-default.xml"
     val resourceUrl = Option(
-        this.getClass.getClassLoader.getResource(resourceName))
+      this.getClass.getClassLoader.getResource(resourceName)
+    )
     configure(properties, resourceUrl)
   }
 
@@ -34,9 +35,10 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
 
     // Get an explicitly configured resource URL
     // Fallback to a file in the conf directory if the resource wasn't found on the classpath
-    def explicitResourceUrl = sys.props.get("logger.resource").map { r =>
-      env.resource(r).getOrElse(new File(env.getFile("conf"), r).toURI.toURL)
-    }
+    def explicitResourceUrl =
+      sys.props.get("logger.resource").map { r =>
+        env.resource(r).getOrElse(new File(env.getFile("conf"), r).toURI.toURL)
+      }
 
     // Get an explicitly configured file URL
     def explicitFileUrl =
@@ -49,7 +51,8 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
           .orElse(env.resource("logger.xml"))
           .isEmpty) {
       System.err.println(
-          "application-logger.xml and logger.xml are no longer supported. Please name your file logback.xml");
+        "application-logger.xml and logger.xml are no longer supported. Please name your file logback.xml"
+      );
     }
 
     // logback.xml is the documented method, logback-play-default.xml is the fallback that Play uses
@@ -57,10 +60,13 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
     def resourceUrl =
       env
         .resource("logback.xml")
-        .orElse(env.resource(
-                if (env.mode == Mode.Dev)
-                  "logback-play-dev.xml" else "logback-play-default.xml"
-            ))
+        .orElse(
+          env.resource(
+            if (env.mode == Mode.Dev)
+              "logback-play-dev.xml"
+            else "logback-play-default.xml"
+          )
+        )
 
     val configUrl =
       explicitResourceUrl orElse explicitFileUrl orElse resourceUrl
@@ -95,7 +101,7 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
         import org.slf4j._
 
         try {
-          val ctx = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
+          val ctx          = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
           val configurator = new JoranConfigurator
           configurator.setContext(ctx)
           ctx.reset()
@@ -115,12 +121,12 @@ class LogbackLoggerConfigurator extends LoggerConfigurator {
               case Some(url) => configurator.doConfigure(url)
               case None =>
                 System.err.println(
-                    "Could not detect a logback configuration file, not configuring logback")
+                  "Could not detect a logback configuration file, not configuring logback"
+                )
             }
           } catch {
             case NonFatal(e) =>
-              System.err.println(
-                  "Error encountered while configuring logback:")
+              System.err.println("Error encountered while configuring logback:")
               e.printStackTrace()
           }
 

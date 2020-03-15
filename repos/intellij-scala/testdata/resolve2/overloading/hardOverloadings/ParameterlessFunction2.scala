@@ -1,6 +1,6 @@
 object Test {
   class A {
-    def foo: String => String = p => p
+    def foo: String => String  = p => p
     def foo(x: String): String = x + "1"
   }
 

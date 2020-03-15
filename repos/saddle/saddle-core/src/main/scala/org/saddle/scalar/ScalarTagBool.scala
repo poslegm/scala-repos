@@ -27,8 +27,8 @@ import org.saddle.array.Sorter
   * Boolean ScalarTag
   */
 object ScalarTagBool extends ScalarTag[Boolean] {
-  def missing: Boolean = false
-  def isMissing(v: Boolean): Boolean = false
+  def missing: Boolean                = false
+  def isMissing(v: Boolean): Boolean  = false
   def notMissing(v: Boolean): Boolean = true
 
   def compare(x: Boolean, y: Boolean)(implicit ev: ORD[Boolean]) =
@@ -36,21 +36,21 @@ object ScalarTagBool extends ScalarTag[Boolean] {
 
   def toDouble(t: Boolean)(implicit ev: NUM[Boolean]) = if (t) 1.0 else 0.0
 
-  def zero(implicit ev: NUM[Boolean]) = false
-  def one(implicit ev: NUM[Boolean]) = true
-  def inf(implicit ev: NUM[Boolean]) = true
+  def zero(implicit ev: NUM[Boolean])   = false
+  def one(implicit ev: NUM[Boolean])    = true
+  def inf(implicit ev: NUM[Boolean])    = true
   def negInf(implicit ev: NUM[Boolean]) = false
 
   def show(v: Boolean) = "%b" format v
 
   override def runtimeClass = classOf[Boolean]
 
-  def makeBuf(sz: Int = Buffer.INIT_CAPACITY) = new BufferAny[Boolean](sz)
-  def makeLoc(sz: Int = Buffer.INIT_CAPACITY) = new LocatorBool()
-  def makeVec(arr: Array[Boolean]) = new VecBool(arr)
+  def makeBuf(sz: Int = Buffer.INIT_CAPACITY)      = new BufferAny[Boolean](sz)
+  def makeLoc(sz: Int = Buffer.INIT_CAPACITY)      = new LocatorBool()
+  def makeVec(arr: Array[Boolean])                 = new VecBool(arr)
   def makeMat(r: Int, c: Int, arr: Array[Boolean]) = new MatBool(r, c, arr)
-  def makeIndex(vec: Vec[Boolean])(
-      implicit ord: ORD[Boolean]): Index[Boolean] = new IndexAny[Boolean](vec)
+  def makeIndex(vec: Vec[Boolean])(implicit ord: ORD[Boolean]): Index[Boolean] =
+    new IndexAny[Boolean](vec)
   def makeSorter(implicit ord: ORD[Boolean]): Sorter[Boolean] =
     Sorter.boolSorter
 

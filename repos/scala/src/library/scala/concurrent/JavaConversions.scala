@@ -22,7 +22,8 @@ object JavaConversions {
     * Creates a new `ExecutionContext` which uses the provided `ExecutorService`.
     */
   implicit def asExecutionContext(
-      exec: ExecutorService): ExecutionContextExecutorService =
+      exec: ExecutorService
+  ): ExecutionContextExecutorService =
     ExecutionContext.fromExecutorService(exec)
 
   /**

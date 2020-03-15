@@ -2,7 +2,7 @@ object X extends Enumeration {
   val Y = Value
 }
 object Fruit extends Enumeration {
-  val x = X.Y
+  val x       = X.Y
   val A, B, C = Value
 }
 object Test {

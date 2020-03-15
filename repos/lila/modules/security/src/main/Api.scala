@@ -10,23 +10,27 @@ import reactivemongo.bson._
 import lila.db.BSON.BSONJodaDateTimeHandler
 import lila.user.{User, UserRepo}
 
-final class Api(firewall: Firewall,
-                tor: Tor,
-                geoIP: GeoIP,
-                emailAddress: EmailAddress) {
+final class Api(
+    firewall: Firewall,
+    tor: Tor,
+    geoIP: GeoIP,
+    emailAddress: EmailAddress
+) {
 
   val AccessUri = "access_uri"
 
   def loginForm =
     Form(
-        mapping(
-            "username" -> nonEmptyText,
-            "password" -> nonEmptyText
-        )(authenticateUser)(_.map(u => (u.username, "")))
-          .verifying("Invalid username or password", _.isDefined))
+      mapping(
+        "username" -> nonEmptyText,
+        "password" -> nonEmptyText
+      )(authenticateUser)(_.map(u => (u.username, "")))
+        .verifying("Invalid username or password", _.isDefined)
+    )
 
   def saveAuthentication(userId: String, apiVersion: Option[Int])(
-      implicit req: RequestHeader): Fu[String] =
+      implicit req: RequestHeader
+  ): Fu[String] =
     if (tor isExitNode req.remoteAddress) fufail(Api.AuthFromTorExitNode)
     else
       UserRepo mustConfirmEmail userId flatMap {
@@ -38,7 +42,9 @@ final class Api(firewall: Firewall,
 
   // blocking function, required by Play2 form
   private def authenticateUser(
-      usernameOrEmail: String, password: String): Option[User] =
+      usernameOrEmail: String,
+      password: String
+  ): Option[User] =
     (emailAddress.validate(usernameOrEmail) match {
       case Some(email) => UserRepo.authenticateByEmail(email, password)
       case None =>
@@ -64,16 +70,16 @@ final class Api(firewall: Firewall,
 
   def locatedOpenSessions(userId: String, nb: Int): Fu[List[LocatedSession]] =
     Store.openSessions(userId, nb) map {
-      _.map { session =>
-        LocatedSession(session, geoIP(session.ip))
-      }
+      _.map { session => LocatedSession(session, geoIP(session.ip)) }
     }
 
   def dedup(userId: String, req: RequestHeader): Funit =
     reqSessionId(req) ?? { Store.dedup(userId, _) }
 
   def setFingerprint(
-      req: RequestHeader, fingerprint: String): Fu[Option[String]] =
+      req: RequestHeader,
+      fingerprint: String
+  ): Fu[Option[String]] =
     reqSessionId(req) ?? { Store.setFingerprint(_, fingerprint) map some }
 
   def reqSessionId(req: RequestHeader) = req.session get "sessionId"
@@ -83,22 +89,25 @@ final class Api(firewall: Firewall,
   def userIdsSharingFingerprint = userIdsSharingField("fp") _
 
   private def userIdsSharingField(
-      field: String)(userId: String): Fu[List[String]] =
+      field: String
+  )(userId: String): Fu[List[String]] =
     tube.storeColl
       .distinct(
-          field,
-          BSONDocument("user" -> userId,
-                       field -> BSONDocument("$exists" -> true)).some
+        field,
+        BSONDocument(
+          "user" -> userId,
+          field  -> BSONDocument("$exists" -> true)
+        ).some
       )
       .flatMap {
         case Nil => fuccess(Nil)
         case values =>
           tube.storeColl.distinct(
-              "user",
-              BSONDocument(
-                  field -> BSONDocument("$in" -> values),
-                  "user" -> BSONDocument("$ne" -> userId)
-              ).some
+            "user",
+            BSONDocument(
+              field  -> BSONDocument("$in" -> values),
+              "user" -> BSONDocument("$ne" -> userId)
+            ).some
           ) map lila.db.BSON.asStrings
       }
 
@@ -107,18 +116,19 @@ final class Api(firewall: Firewall,
   def recentUserIdsByIp = recentUserIdsByField("ip") _
 
   private def recentUserIdsByField(
-      field: String)(value: String): Fu[List[String]] =
+      field: String
+  )(value: String): Fu[List[String]] =
     tube.storeColl.distinct(
-        "user",
-        BSONDocument(
-            field -> value,
-            "date" -> BSONDocument("$gt" -> DateTime.now.minusYears(1))
-        ).some
+      "user",
+      BSONDocument(
+        field  -> value,
+        "date" -> BSONDocument("$gt" -> DateTime.now.minusYears(1))
+      ).some
     ) map lila.db.BSON.asStrings
 }
 
 object Api {
 
-  case object AuthFromTorExitNode extends Exception
+  case object AuthFromTorExitNode             extends Exception
   case class MustConfirmEmail(userId: String) extends Exception
 }

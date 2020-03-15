@@ -95,17 +95,18 @@ object Analysis {
       } else {
         import ir.Types._
 
-        def typeDisplayName(tpe: ReferenceType): String = tpe match {
-          case ClassType(encodedName) => decodeClassName(encodedName)
-          case ArrayType(base, dimensions) =>
-            "[" * dimensions + decodeClassName(base)
-        }
+        def typeDisplayName(tpe: ReferenceType): String =
+          tpe match {
+            case ClassType(encodedName) => decodeClassName(encodedName)
+            case ArrayType(base, dimensions) =>
+              "[" * dimensions + decodeClassName(base)
+          }
 
         val (simpleName, paramTypes, resultType) =
           ir.Definitions.decodeMethodName(encodedName)
 
         simpleName + "(" + paramTypes.map(typeDisplayName).mkString(",") +
-        ")" + resultType.fold("")(typeDisplayName)
+          ")" + resultType.fold("")(typeDisplayName)
       }
     }
 
@@ -152,8 +153,7 @@ object Analysis {
       *  }
       *  }}}
       */
-    final case class ReflectiveProxy(target: String)
-        extends MethodSyntheticKind
+    final case class ReflectiveProxy(target: String) extends MethodSyntheticKind
 
     /** Bridge to a default method.
       *
@@ -180,17 +180,18 @@ object Analysis {
   final case class MissingJavaLangObjectClass(from: From) extends Error
   final case class CycleInInheritanceChain(cycle: List[ClassInfo], from: From)
       extends Error
-  final case class MissingClass(info: ClassInfo, from: From) extends Error
-  final case class NotAModule(info: ClassInfo, from: From) extends Error
+  final case class MissingClass(info: ClassInfo, from: From)   extends Error
+  final case class NotAModule(info: ClassInfo, from: From)     extends Error
   final case class MissingMethod(info: MethodInfo, from: From) extends Error
   final case class ConflictingDefaultMethods(
-      infos: List[MethodInfo], from: From)
-      extends Error
+      infos: List[MethodInfo],
+      from: From
+  ) extends Error
 
   sealed trait From
   final case class FromMethod(methodInfo: MethodInfo) extends From
-  final case class FromCore(moduleName: String) extends From
-  case object FromExports extends From
+  final case class FromCore(moduleName: String)       extends From
+  case object FromExports                             extends From
 
   def logError(error: Error, logger: Logger, level: Level): Unit = {
     val headMsg = error match {
@@ -198,7 +199,7 @@ object Analysis {
         "Fatal error: java.lang.Object is missing"
       case CycleInInheritanceChain(cycle, _) =>
         ("Fatal error: cycle in inheritance chain involving " +
-            cycle.map(_.displayName).mkString(", "))
+          cycle.map(_.displayName).mkString(", "))
       case MissingClass(info, _) =>
         s"Referring to non-existent class ${info.displayName}"
       case NotAModule(info, _) =>
@@ -215,7 +216,7 @@ object Analysis {
   }
 
   private class CallStackLogger(logger: Logger) {
-    private[this] val seenInfos = mutable.Set.empty[AnyRef]
+    private[this] val seenInfos           = mutable.Set.empty[AnyRef]
     private[this] var indentation: String = ""
 
     def logCallStack(from: From, level: Level): Unit = {
@@ -228,11 +229,15 @@ object Analysis {
 
     private def indented[A](body: => A): A = {
       indentation += "  "
-      try body finally indentation = indentation.substring(2)
+      try body
+      finally indentation = indentation.substring(2)
     }
 
     private def logCallStackImpl(
-        level: Level, optFrom: Option[From], verb: String = "called"): Unit = {
+        level: Level,
+        optFrom: Option[From],
+        verb: String = "called"
+    ): Unit = {
       val involvedClasses = new mutable.ListBuffer[ClassInfo]
 
       def onlyOnce(level: Level, info: AnyRef): Boolean = {
@@ -248,8 +253,10 @@ object Analysis {
       def loopTrace(optFrom: Option[From], verb: String = "called"): Unit = {
         optFrom match {
           case None =>
-            log(level,
-                s"$verb from ... er ... nowhere!? (this is a bug in dce)")
+            log(
+              level,
+              s"$verb from ... er ... nowhere!? (this is a bug in dce)"
+            )
           case Some(from) =>
             from match {
               case FromMethod(methodInfo) =>
@@ -278,9 +285,11 @@ object Analysis {
 
             // recurse with Debug log level not to overwhelm the user
             if (onlyOnce(Level.Debug, classInfo)) {
-              logCallStackImpl(Level.Debug,
-                               classInfo.instantiatedFrom.headOption,
-                               verb = "instantiated")
+              logCallStackImpl(
+                Level.Debug,
+                classInfo.instantiatedFrom.headOption,
+                verb = "instantiated"
+              )
             }
           }
         }

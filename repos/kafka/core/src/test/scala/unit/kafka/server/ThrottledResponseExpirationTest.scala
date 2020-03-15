@@ -24,12 +24,13 @@ import org.apache.kafka.common.utils.MockTime
 import org.junit.{Assert, Before, Test}
 
 class ThrottledResponseExpirationTest {
-  private val time = new MockTime
+  private val time              = new MockTime
   private var numCallbacks: Int = 0
   private val metrics = new org.apache.kafka.common.metrics.Metrics(
-      new MetricConfig(),
-      Collections.emptyList(),
-      time)
+    new MetricConfig(),
+    Collections.emptyList(),
+    time
+  )
 
   def callback(delayTimeMs: Int) {
     numCallbacks += 1
@@ -43,10 +44,14 @@ class ThrottledResponseExpirationTest {
   @Test
   def testExpire() {
     val clientMetrics = new ClientQuotaManager(
-        ClientQuotaManagerConfig(), metrics, "producer", time)
+      ClientQuotaManagerConfig(),
+      metrics,
+      "producer",
+      time
+    )
 
     val delayQueue = new DelayQueue[ThrottledResponse]()
-    val reaper = new clientMetrics.ThrottledRequestReaper(delayQueue)
+    val reaper     = new clientMetrics.ThrottledRequestReaper(delayQueue)
     try {
       // Add 4 elements to the queue out of order. Add 2 elements with the same expire timestamp
       delayQueue.add(new ThrottledResponse(time, 10, callback))

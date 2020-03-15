@@ -16,7 +16,7 @@ object Introduction {
 
       def receive = {
         case msg: CamelMessage => { /* ... */ }
-        case _ => { /* ... */ }
+        case _                 => { /* ... */ }
       }
     }
 
@@ -24,7 +24,7 @@ object Introduction {
     import akka.actor.{ActorSystem, Props}
 
     val system = ActorSystem("some-system")
-    val mina = system.actorOf(Props[MyEndpoint])
+    val mina   = system.actorOf(Props[MyEndpoint])
     //#Consumer-mina
   }
   def bar(): Unit = {
@@ -36,7 +36,7 @@ object Introduction {
 
       def receive = {
         case msg: CamelMessage => { /* ... */ }
-        case _ => { /* ... */ }
+        case _                 => { /* ... */ }
       }
     }
     //#Consumer
@@ -51,7 +51,7 @@ object Introduction {
       def endpointUri = "jms:queue:Orders"
     }
 
-    val sys = ActorSystem("some-system")
+    val sys    = ActorSystem("some-system")
     val orders = sys.actorOf(Props[Orders])
 
     orders ! <order amount="100" currency="PLN" itemId="12345"/>
@@ -59,9 +59,9 @@ object Introduction {
   }
   {
     //#CamelExtension
-    val system = ActorSystem("some-system")
-    val camel = CamelExtension(system)
-    val camelContext = camel.context
+    val system           = ActorSystem("some-system")
+    val camel            = CamelExtension(system)
+    val camelContext     = camel.context
     val producerTemplate = camel.template
 
     //#CamelExtension
@@ -69,8 +69,8 @@ object Introduction {
   {
     //#CamelExtensionAddComponent
     // import org.apache.activemq.camel.component.ActiveMQComponent
-    val system = ActorSystem("some-system")
-    val camel = CamelExtension(system)
+    val system       = ActorSystem("some-system")
+    val camel        = CamelExtension(system)
     val camelContext = camel.context
     // camelContext.addComponent("activemq", ActiveMQComponent.activeMQComponent(
     //   "vm://localhost?broker.persistent=false"))
@@ -86,21 +86,25 @@ object Introduction {
 
       def receive = {
         case msg: CamelMessage => { /* ... */ }
-        case _ => { /* ... */ }
+        case _                 => { /* ... */ }
       }
     }
-    val system = ActorSystem("some-system")
-    val camel = CamelExtension(system)
+    val system   = ActorSystem("some-system")
+    val camel    = CamelExtension(system)
     val actorRef = system.actorOf(Props[MyEndpoint])
     // get a future reference to the activation of the endpoint of the Consumer Actor
     val activationFuture = camel.activationFutureFor(actorRef)(
-        timeout = 10 seconds, executor = system.dispatcher)
+      timeout = 10 seconds,
+      executor = system.dispatcher
+    )
     //#CamelActivation
     //#CamelDeactivation
     system.stop(actorRef)
     // get a future reference to the deactivation of the endpoint of the Consumer Actor
     val deactivationFuture = camel.deactivationFutureFor(actorRef)(
-        timeout = 10 seconds, executor = system.dispatcher)
+      timeout = 10 seconds,
+      executor = system.dispatcher
+    )
     //#CamelDeactivation
   }
 }

@@ -29,13 +29,15 @@ object ByteBuffer {
     TypedArrayByteBuffer.wrap(array)
 }
 
-abstract class ByteBuffer private[nio](_capacity: Int,
-                                       private[nio] val _array: Array[Byte],
-                                       private[nio] val _arrayOffset: Int)
-    extends Buffer(_capacity) with Comparable[ByteBuffer] {
+abstract class ByteBuffer private[nio] (
+    _capacity: Int,
+    private[nio] val _array: Array[Byte],
+    private[nio] val _arrayOffset: Int
+) extends Buffer(_capacity)
+    with Comparable[ByteBuffer] {
 
-  private[nio] type ElementType = Byte
-  private[nio] type BufferType = ByteBuffer
+  private[nio] type ElementType    = Byte
+  private[nio] type BufferType     = ByteBuffer
   private[nio] type TypedArrayType = Int8Array
 
   def this(_capacity: Int) = this(_capacity, null, -1)
@@ -93,10 +95,11 @@ abstract class ByteBuffer private[nio](_capacity: Int,
   override def hashCode(): Int =
     GenBuffer(this).generic_hashCode(ByteBuffer.HashSeed)
 
-  override def equals(that: Any): Boolean = that match {
-    case that: ByteBuffer => compareTo(that) == 0
-    case _ => false
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: ByteBuffer => compareTo(that) == 0
+      case _                => false
+    }
 
   @noinline
   def compareTo(that: ByteBuffer): Int =
@@ -165,11 +168,19 @@ abstract class ByteBuffer private[nio](_capacity: Int,
 
   @inline
   private[nio] def load(
-      startIndex: Int, dst: Array[Byte], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      dst: Array[Byte],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_load(startIndex, dst, offset, length)
 
   @inline
   private[nio] def store(
-      startIndex: Int, src: Array[Byte], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      src: Array[Byte],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_store(startIndex, src, offset, length)
 }

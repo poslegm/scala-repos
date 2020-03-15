@@ -38,7 +38,10 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class TabPaneTabClosingPolicySpec
     extends SFXEnumDelegateSpec[
-        jfxsc.TabPane.TabClosingPolicy, TabPane.TabClosingPolicy](
-        classOf[jfxsc.TabPane.TabClosingPolicy],
-        classOf[TabPane.TabClosingPolicy],
-        TabPane.TabClosingPolicy)
+      jfxsc.TabPane.TabClosingPolicy,
+      TabPane.TabClosingPolicy
+    ](
+      classOf[jfxsc.TabPane.TabClosingPolicy],
+      classOf[TabPane.TabClosingPolicy],
+      TabPane.TabClosingPolicy
+    )

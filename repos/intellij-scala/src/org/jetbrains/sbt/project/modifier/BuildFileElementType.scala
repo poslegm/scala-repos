@@ -10,6 +10,6 @@ case class BuildFileElementType(id: String)
 
 object BuildFileElementType {
   val libraryDependencyElementId = BuildFileElementType("LIBRARY_DEPENDENCY")
-  val resolverElementId = BuildFileElementType("RESOLVER")
-  val scalacOptionsElementId = BuildFileElementType("SCALAC_OPTIONS")
+  val resolverElementId          = BuildFileElementType("RESOLVER")
+  val scalacOptionsElementId     = BuildFileElementType("SCALAC_OPTIONS")
 }

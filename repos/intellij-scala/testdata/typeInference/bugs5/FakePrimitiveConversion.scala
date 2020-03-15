@@ -1,6 +1,6 @@
 object FakePrimitiveConversion {
   def foo[T](x: Z => Option[T] => Unit, s: T) = 1
-  def foo(x: Int) = "text"
+  def foo(x: Int)                             = "text"
 
   class Z {
     var z: Option[Int] = None

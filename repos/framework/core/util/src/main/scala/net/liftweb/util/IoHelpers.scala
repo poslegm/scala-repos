@@ -35,9 +35,11 @@ trait IoHelpers {
       class ReadItAll(in: InputStream, done: String => Unit) extends Runnable {
         def run {
           val br =
-            new BufferedReader(new InputStreamReader(in)) // default to platform character set
+            new BufferedReader(
+              new InputStreamReader(in)
+            ) // default to platform character set
           val lines = new ListBuffer[String]
-          var line = ""
+          var line  = ""
           while (line != null) {
             line = br.readLine
             if (line != null) lines += line
@@ -50,10 +52,10 @@ trait IoHelpers {
 
       var stdOut = ""
       var stdErr = ""
-      val proc = Runtime.getRuntime.exec(cmds.toArray)
-      val t1 = new Thread(new ReadItAll(proc.getInputStream, x => stdOut = x))
+      val proc   = Runtime.getRuntime.exec(cmds.toArray)
+      val t1     = new Thread(new ReadItAll(proc.getInputStream, x => stdOut = x))
       t1.start
-      val t2 = new Thread(new ReadItAll(proc.getErrorStream, x => stdErr = x))
+      val t2  = new Thread(new ReadItAll(proc.getErrorStream, x => stdErr = x))
       val res = proc.waitFor
       t1.join
       t2.join
@@ -70,7 +72,7 @@ trait IoHelpers {
     */
   def readWholeThing(in: Reader): String = {
     val bos = new StringBuilder
-    val ba = new Array[Char](4096)
+    val ba  = new Array[Char](4096)
 
     def readOnce {
       val len = in.read(ba)
@@ -95,7 +97,7 @@ trait IoHelpers {
     */
   def readWholeStream(in: InputStream): Array[Byte] = {
     val bos = new ByteArrayOutputStream
-    val ba = new Array[Byte](4096)
+    val ba  = new Array[Byte](4096)
 
     def readOnce {
       val len = in.read(ba)

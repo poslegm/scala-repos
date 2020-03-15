@@ -19,8 +19,12 @@ import scala.concurrent.Promise
 import scala.concurrent.duration._
 
 class OffersWantedForReconciliationActorTest
-    extends FunSuite with MarathonActorSupport with Mockito with GivenWhenThen
-    with Matchers with ScalaFutures {
+    extends FunSuite
+    with MarathonActorSupport
+    with Mockito
+    with GivenWhenThen
+    with Matchers
+    with ScalaFutures {
   test("want offers on startup but times out") {
     val f = new Fixture()
 
@@ -65,9 +69,12 @@ class OffersWantedForReconciliationActorTest
     val app =
       AppDefinition(PathId("/resident"), residency = Some(Residency.default))
     val plan = DeploymentPlan(
-        original = Group.empty.copy(apps = Set(app)), target = Group.empty)
+      original = Group.empty.copy(apps = Set(app)),
+      target = Group.empty
+    )
     f.eventStream.publish(
-        DeploymentStepSuccess(plan = plan, currentStep = plan.steps.head))
+      DeploymentStepSuccess(plan = plan, currentStep = plan.steps.head)
+    )
 
     Then("there is interest for offers")
     valAfterDeploymentStepSuccess.futureValue should be(true)
@@ -89,8 +96,8 @@ class OffersWantedForReconciliationActorTest
   class Fixture {
     lazy val reviveOffersConfig: ReviveOffersConfig =
       MarathonTestHelper.defaultConfig()
-    lazy val clock: ConstantClock = ConstantClock()
-    lazy val eventStream: EventStream = system.eventStream
+    lazy val clock: ConstantClock           = ConstantClock()
+    lazy val eventStream: EventStream       = system.eventStream
     lazy val offersWanted: Subject[Boolean] = PublishSubject()
 
     def futureOffersWanted(drop: Int = 0) = {
@@ -102,17 +109,18 @@ class OffersWantedForReconciliationActorTest
     lazy val cancellable = mock[Cancellable]
 
     private[this] var scheduleNextCheckCalls_ = 0
-    def scheduleNextCheckCalls = synchronized(scheduleNextCheckCalls_)
-    def scheduleNextCheck: Cancellable = synchronized {
-      scheduleNextCheckCalls_ += 1
-      cancellable
-    }
+    def scheduleNextCheckCalls                = synchronized(scheduleNextCheckCalls_)
+    def scheduleNextCheck: Cancellable =
+      synchronized {
+        scheduleNextCheckCalls_ += 1
+        cancellable
+      }
 
     lazy val actorInstance = new OffersWantedForReconciliationActor(
-        reviveOffersConfig,
-        clock,
-        eventStream,
-        offersWanted
+      reviveOffersConfig,
+      clock,
+      eventStream,
+      offersWanted
     ) {
       override protected def scheduleNextCheck: Cancellable =
         Fixture.this.scheduleNextCheck

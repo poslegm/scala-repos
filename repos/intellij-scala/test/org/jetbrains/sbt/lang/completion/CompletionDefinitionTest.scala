@@ -6,9 +6,9 @@ package lang.completion
   * @since 7/17/14.
   */
 class CompletionDefinitionTest extends CompletionTestBase {
-  def testObjectValues = doTest()
-  def testLocalVars = doTest()
+  def testObjectValues   = doTest()
+  def testLocalVars      = doTest()
   def testJavaEnumValues = doTest()
-  def testScopes = doTest()
-  def testSequences = doTest()
+  def testScopes         = doTest()
+  def testSequences      = doTest()
 }

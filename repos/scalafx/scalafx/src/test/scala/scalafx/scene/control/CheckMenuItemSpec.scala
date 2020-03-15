@@ -39,4 +39,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class CheckMenuItemSpec
     extends SimpleSFXDelegateSpec[jfxsc.CheckMenuItem, CheckMenuItem](
-        classOf[jfxsc.CheckMenuItem], classOf[CheckMenuItem])
+      classOf[jfxsc.CheckMenuItem],
+      classOf[CheckMenuItem]
+    )

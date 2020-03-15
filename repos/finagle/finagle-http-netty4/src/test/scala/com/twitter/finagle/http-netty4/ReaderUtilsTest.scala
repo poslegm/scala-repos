@@ -46,7 +46,7 @@ class ReaderUtilsTest extends FunSuite {
     val rw = Reader.writable()
 
     val (write, read) = (new AsyncQueue[Any], new AsyncQueue[Any])
-    val tr = new QueueTransport[Any, Any](write, read)
+    val tr            = new QueueTransport[Any, Any](write, read)
 
     rw.write(Buf.Utf8("msg1"))
 

@@ -11,18 +11,21 @@ import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class ReaderTest
-    extends FunSuite with GeneratorDrivenPropertyChecks with Matchers {
+    extends FunSuite
+    with GeneratorDrivenPropertyChecks
+    with Matchers {
 
   def arr(i: Int, j: Int) = Array.range(i, j).map(_.toByte)
   def buf(i: Int, j: Int) = Buf.ByteArray.Owned(arr(i, j))
 
-  def toSeq(b: Option[Buf]) = b match {
-    case None => fail("Expected full buffer")
-    case Some(buf) =>
-      val a = new Array[Byte](buf.length)
-      buf.write(a, 0)
-      a.toSeq
-  }
+  def toSeq(b: Option[Buf]) =
+    b match {
+      case None => fail("Expected full buffer")
+      case Some(buf) =>
+        val a = new Array[Byte](buf.length)
+        buf.write(a, 0)
+        a.toSeq
+    }
 
   def assertRead(r: Reader, i: Int, j: Int) {
     val n = j - i
@@ -40,7 +43,7 @@ class ReaderTest
 
   def assertWrite(w: Writer, i: Int, j: Int) {
     val buf = Buf.ByteArray.Owned(Array.range(i, j).map(_.toByte))
-    val f = w.write(buf)
+    val f   = w.write(buf)
     assert(f.isDefined)
     assert(Await.result(f.liftToTry) == Return(()))
   }
@@ -92,7 +95,7 @@ class ReaderTest
 
   test("Reader.copy - source and destination equality") {
     forAll { (p: Array[Byte], q: Array[Byte], r: Array[Byte]) =>
-      val rw = Reader.writable()
+      val rw  = Reader.writable()
       val bos = new ByteArrayOutputStream
 
       val w = Writer.fromOutputStream(bos, 31)
@@ -100,7 +103,8 @@ class ReaderTest
       val g =
         rw.write(Buf.ByteArray.Owned(p)) before rw
           .write(Buf.ByteArray.Owned(q)) before rw.write(
-            Buf.ByteArray.Owned(r)) before rw.close()
+          Buf.ByteArray.Owned(r)
+        ) before rw.close()
 
       Await.result(Future.join(f, g))
 
@@ -166,7 +170,7 @@ class ReaderTest
   }
 
   test("Reader.readAll") {
-    val rw = Reader.writable()
+    val rw  = Reader.writable()
     val all = Reader.readAll(rw)
     assert(!all.isDefined)
     assertWrite(rw, 0, 3)
@@ -411,9 +415,7 @@ class ReaderTest
   test("Reader.writable - close not satisfied until reads are fulfilled") {
     val rw = Reader.writable()
     val rf = rw.read(6)
-    val cf = rf.flatMap { _ =>
-      rw.close()
-    }
+    val cf = rf.flatMap { _ => rw.close() }
     assert(!rf.isDefined)
     assert(!cf.isDone)
 
@@ -478,9 +480,7 @@ class ReaderTest
   test("Reader.concat") {
     forAll { (ss: List[String]) =>
       val readers =
-        ss map { s =>
-          BufReader(Buf.Utf8(s))
-        }
+        ss map { s => BufReader(Buf.Utf8(s)) }
       val buf = Reader.readAll(Reader.concat(AsyncStream.fromSeq(readers)))
       Await.result(buf) should equal(Buf.Utf8(ss.mkString))
     }
@@ -490,7 +490,7 @@ class ReaderTest
     val p = new Promise[Option[Buf]]
     val head = new Reader {
       def read(n: Int) = p
-      def discard() = p.setException(new Reader.ReaderDiscarded)
+      def discard()    = p.setException(new Reader.ReaderDiscarded)
     }
     val reader = Reader.concat(head +:: undefined)
     reader.discard()
@@ -501,7 +501,7 @@ class ReaderTest
     val p = new Promise[Option[Buf]]
     val head = new Reader {
       def read(n: Int) = p
-      def discard() = p.setException(new Reader.ReaderDiscarded)
+      def discard()    = p.setException(new Reader.ReaderDiscarded)
     }
     val reader = Reader.concat(head +:: undefined)
     assertReadWhileReading(reader)
@@ -511,7 +511,7 @@ class ReaderTest
     val p = new Promise[Option[Buf]]
     val head = new Reader {
       def read(n: Int) = p
-      def discard() = p.setException(new Reader.ReaderDiscarded)
+      def discard()    = p.setException(new Reader.ReaderDiscarded)
     }
     val reader = Reader.concat(head +:: undefined)
     assertFailed(reader, p)
@@ -528,7 +528,7 @@ class ReaderTest
       AsyncStream.empty
     }
     val combined = Reader.concat(head +:: tail)
-    val buf = Reader.readAll(combined)
+    val buf      = Reader.readAll(combined)
     intercept[Exception] { Await.result(buf) }
     assert(!p.isDefined)
   }

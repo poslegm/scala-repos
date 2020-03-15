@@ -9,7 +9,10 @@ import java.util.regex.Pattern
   * @since 7/25/14.
   */
 case class SbtResolver(
-    kind: SbtResolver.Kind.Value, name: String, root: String) {
+    kind: SbtResolver.Kind.Value,
+    name: String,
+    root: String
+) {
   import org.jetbrains.sbt.resolvers.SbtResolver._
   def associatedIndex = SbtResolverIndexesManager().find(this)
 
@@ -19,13 +22,15 @@ case class SbtResolver(
 object SbtResolver {
   object Kind extends Enumeration {
     val Maven = Value(0, "maven")
-    val Ivy = Value(1, "ivy")
+    val Ivy   = Value(1, "ivy")
   }
 
   def localCacheResolver(localCachePath: Option[String]) = {
     val defaultPath =
       System.getProperty("user.home") + "/.ivy2/cache".replace(
-          '/', File.separatorChar)
+        '/',
+        File.separatorChar
+      )
     SbtResolver(Kind.Ivy, "Local cache", localCachePath getOrElse defaultPath)
   }
 

@@ -30,11 +30,13 @@ class WrappedDictionaryTest {
   }
 
   @Test def `+=_and_-=`(): Unit = {
-    val dict = js.Dictionary[String]()
+    val dict                             = js.Dictionary[String]()
     val map: mutable.Map[String, String] = dict
 
     assertArrayEquals(
-        Array[AnyRef](), js.Object.properties(dict).toArray[AnyRef])
+      Array[AnyRef](),
+      js.Object.properties(dict).toArray[AnyRef]
+    )
 
     map += "hello" -> "world"
     assertEquals("world", dict("hello"))
@@ -43,12 +45,14 @@ class WrappedDictionaryTest {
     map -= "hello"
     assertFalse(dict.get("hello").isDefined)
     assertArrayEquals(
-        Array[AnyRef]("foo"), js.Object.properties(dict).toArray[AnyRef])
+      Array[AnyRef]("foo"),
+      js.Object.properties(dict).toArray[AnyRef]
+    )
   }
 
   @Test def iterator(): Unit = {
-    val elems = ('a' to 'e').map(_.toString).zip(1 to 5)
-    val dict = js.Dictionary[Int]()
+    val elems                         = ('a' to 'e').map(_.toString).zip(1 to 5)
+    val dict                          = js.Dictionary[Int]()
     val map: mutable.Map[String, Int] = dict
 
     dict ++= elems
@@ -59,11 +63,11 @@ class WrappedDictionaryTest {
   // Some arbitrary methods to test the builders
 
   @Test def map(): Unit = {
-    def ct[A : ClassTag](x: A): ClassTag[A] = implicitly[ClassTag[A]]
-    val dict = js.Dictionary[Int]()
+    def ct[A: ClassTag](x: A): ClassTag[A] = implicitly[ClassTag[A]]
+    val dict                               = js.Dictionary[Int]()
     dict ++= Seq("one" -> 1, "two" -> 2, "three" -> 3)
 
-    val mapChr = dict.map { case (k, v) => k(0) -> v * 2 }
+    val mapChr = dict.map { case (k, v) => k(0)          -> v * 2 }
     val mapStr = dict.map { case (k, v) => k(0).toString -> v * 2 }
 
     assertFalse(ct(mapChr).runtimeClass == classOf[js.WrappedDictionary[_]])
@@ -74,8 +78,8 @@ class WrappedDictionaryTest {
   }
 
   @Test def withFilter(): Unit = {
-    val dict = js.Dictionary[Int]()
-    val flt = dict.withFilter { case (k, v) => v > 5 || k == "a" }
+    val dict      = js.Dictionary[Int]()
+    val flt       = dict.withFilter { case (k, v) => v > 5 || k == "a" }
     def size: Int = flt.map(x => x).size
 
     assertEquals(0, size)

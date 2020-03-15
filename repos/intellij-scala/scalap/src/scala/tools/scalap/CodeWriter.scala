@@ -11,12 +11,12 @@ import java.io._
 
 class CodeWriter(writer: Writer) {
 
-  private val nl = compat.Platform.EOL
-  private var step = "  "
+  private val nl    = compat.Platform.EOL
+  private var step  = "  "
   private var level = 0
   private var align = false
   private var space = false
-  private var line = false
+  private var line  = false
 
   def getWriter = writer
 

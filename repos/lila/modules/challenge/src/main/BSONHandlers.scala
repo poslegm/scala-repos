@@ -16,21 +16,21 @@ private object BSONHandlers {
 
   implicit val ColorChoiceBSONHandler =
     new BSONHandler[BSONInteger, ColorChoice] {
-      def read(b: BSONInteger) = b.value match {
-        case 1 => ColorChoice.White
-        case 2 => ColorChoice.Black
-        case _ => ColorChoice.Random
-      }
+      def read(b: BSONInteger) =
+        b.value match {
+          case 1 => ColorChoice.White
+          case 2 => ColorChoice.Black
+          case _ => ColorChoice.Random
+        }
       def write(c: ColorChoice) =
-        BSONInteger(
-            c match {
-          case ColorChoice.White => 1
-          case ColorChoice.Black => 2
+        BSONInteger(c match {
+          case ColorChoice.White  => 1
+          case ColorChoice.Black  => 2
           case ColorChoice.Random => 0
         })
     }
   implicit val ColorBSONHandler = new BSONHandler[BSONBoolean, chess.Color] {
-    def read(b: BSONBoolean) = chess.Color(b.value)
+    def read(b: BSONBoolean)  = chess.Color(b.value)
     def write(c: chess.Color) = BSONBoolean(c.white)
   }
   implicit val TimeControlBSONHandler = new BSON[TimeControl] {
@@ -40,11 +40,12 @@ private object BSONHandlers {
       } orElse {
         r intO "d" map TimeControl.Correspondence.apply
       } getOrElse TimeControl.Unlimited
-    def writes(w: Writer, t: TimeControl) = t match {
-      case TimeControl.Clock(l, i) => BSONDocument("l" -> l, "i" -> i)
-      case TimeControl.Correspondence(d) => BSONDocument("d" -> d)
-      case TimeControl.Unlimited => BSONDocument()
-    }
+    def writes(w: Writer, t: TimeControl) =
+      t match {
+        case TimeControl.Clock(l, i)       => BSONDocument("l" -> l, "i" -> i)
+        case TimeControl.Correspondence(d) => BSONDocument("d" -> d)
+        case TimeControl.Unlimited         => BSONDocument()
+      }
   }
   implicit val VariantBSONHandler = new BSONHandler[BSONInteger, Variant] {
     def read(b: BSONInteger): Variant =
@@ -58,7 +59,7 @@ private object BSONHandlers {
   }
   implicit val ModeBSONHandler = new BSONHandler[BSONBoolean, Mode] {
     def read(b: BSONBoolean) = Mode(b.value)
-    def write(m: Mode) = BSONBoolean(m.rated)
+    def write(m: Mode)       = BSONBoolean(m.rated)
   }
   implicit val RatingBSONHandler = new BSON[Rating] {
     def reads(r: Reader) = Rating(r.int("i"), r.boolD("p"))
@@ -71,7 +72,7 @@ private object BSONHandlers {
       BSONDocument("id" -> r.id, "r" -> r.rating)
   }
   implicit val AnonymousBSONHandler = new BSON[Anonymous] {
-    def reads(r: Reader) = Anonymous(r.str("s"))
+    def reads(r: Reader)                = Anonymous(r.str("s"))
     def writes(w: Writer, a: Anonymous) = BSONDocument("s" -> a.secret)
   }
   implicit val EitherChallengerBSONHandler = new BSON[EitherChallenger] {
@@ -79,8 +80,10 @@ private object BSONHandlers {
       if (r contains "id") Right(RegisteredBSONHandler reads r)
       else Left(AnonymousBSONHandler reads r)
     def writes(w: Writer, c: EitherChallenger) =
-      c.fold(a => AnonymousBSONHandler.writes(w, a),
-             r => RegisteredBSONHandler.writes(w, r))
+      c.fold(
+        a => AnonymousBSONHandler.writes(w, a),
+        r => RegisteredBSONHandler.writes(w, r)
+      )
   }
 
   implicit val ChallengeBSONHandler = Macros.handler[Challenge]

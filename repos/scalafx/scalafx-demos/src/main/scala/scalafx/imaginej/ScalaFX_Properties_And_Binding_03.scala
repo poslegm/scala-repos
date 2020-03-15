@@ -55,7 +55,7 @@ object ScalaFX_Properties_And_Binding_03 {
   def main(args: Array[String]) {
     val num1 = new IntegerProperty(null, "num1")
     val num2 = new IntegerProperty(null, "num2")
-    val max = Bindings.max(num1, num2)
+    val max  = Bindings.max(num1, num2)
     println("before property changes: max = " + max())
     num1() = 1
     num2() = 2

@@ -2,18 +2,18 @@ package breeze.util
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License")
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
  */
 
 import collection.{mutable, IterableProxy}
@@ -29,7 +29,7 @@ import java.util
   * vector space mappings for strings.  The methods in this trait do not mutate
   * the underlying index.  Use either a MutableIndex or one of the companion
   * object constructor methods to build an index.
-  * 
+  *
   * @author dlwh, dramage
   */
 @SerialVersionUID(1L)
@@ -99,14 +99,14 @@ trait Index[T] extends Iterable[T] with (T => Int) with Serializable {
   * @author dramage
   */
 trait SynchronizedIndex[T] extends Index[T] {
-  abstract override def size = this synchronized super.size
+  abstract override def size        = this synchronized super.size
   abstract override def apply(t: T) = this synchronized super.apply(t)
   abstract override def unapply(pos: Int) =
     this synchronized super.unapply(pos)
   abstract override def contains(t: T) = this synchronized super.contains(t)
   abstract override def indexOpt(t: T) = this synchronized super.indexOpt(t)
-  abstract override def indexOf(t: T) = this synchronized super.indexOf(t)
-  abstract override def get(pos: Int) = this synchronized super.get(pos)
+  abstract override def indexOf(t: T)  = this synchronized super.indexOf(t)
+  abstract override def get(pos: Int)  = this synchronized super.get(pos)
   abstract override def equals(other: Any) =
     this synchronized super.equals(other)
   abstract override def hashCode = this synchronized super.hashCode
@@ -134,14 +134,15 @@ trait MutableIndex[T] extends Index[T] {
   * @author dramage
   */
 trait SynchronizedMutableIndex[T]
-    extends MutableIndex[T] with SynchronizedIndex[T] {
+    extends MutableIndex[T]
+    with SynchronizedIndex[T] {
   abstract override def index(t: T) = this synchronized super.index(t)
 }
 
 /**
   * Class that builds a 1-to-1 mapping between Ints and T's, which
   * is very useful for efficiency concerns.
-  * 
+  *
   * Two extra views are provided: the index.synchronized view
   * enables threadsafe access and the index.immutable view keeps
   * prevents the (view) from being updated.
@@ -234,13 +235,13 @@ object Index {
   /** Constructs an empty index. */
   import scala.reflect.ClassTag.{Char => MChar}
   import scala.reflect.OptManifest
-  def apply[T : OptManifest](): MutableIndex[T] =
+  def apply[T: OptManifest](): MutableIndex[T] =
     implicitly[OptManifest[T]] match {
       case _ => new HashIndex[T];
     }
 
   /** Constructs an Index from some iterator. */
-  def apply[T : OptManifest](iterator: Iterator[T]): Index[T] = {
+  def apply[T: OptManifest](iterator: Iterator[T]): Index[T] = {
     val index = Index[T]()
     // read through all iterator now -- don't lazily defer evaluation
     for (element <- iterator) {
@@ -277,10 +278,11 @@ object Index {
   */
 class EitherIndex[L, R](left: Index[L], right: Index[R])
     extends Index[Either[L, R]] {
-  def apply(t: Either[L, R]) = t match {
-    case Left(l) => left(l)
-    case Right(r) => right(r) + rightOffset
-  }
+  def apply(t: Either[L, R]) =
+    t match {
+      case Left(l)  => left(l)
+      case Right(r) => right(r) + rightOffset
+    }
 
   /**
     * What you add to the indices from the rightIndex to get indices into this index
@@ -295,8 +297,8 @@ class EitherIndex[L, R](left: Index[L], right: Index[R])
   }
 
   def pairs =
-    left.pairs.map { case (l, i) => Left(l) -> i } ++ right.pairs.map {
-      case (r, i) => Right(r) -> (i + left.size)
+    left.pairs.map { case (l, i) => Left(l)  -> i } ++ right.pairs.map {
+      case (r, i)                => Right(r) -> (i + left.size)
     }
 
   def iterator = left.iterator.map { Left(_) } ++ right.map { Right(_) }
@@ -310,15 +312,16 @@ class EitherIndex[L, R](left: Index[L], right: Index[R])
   * @author dlwh
   */
 class OptionIndex[T](inner: Index[T]) extends Index[Option[T]] {
-  def apply(t: Option[T]) = t match {
-    case Some(l) => inner(l)
-    case None => inner.size
-  }
+  def apply(t: Option[T]) =
+    t match {
+      case Some(l) => inner(l)
+      case None    => inner.size
+    }
 
   def unapply(i: Int) = {
     if (i < 0 || i >= size) None
     else if (i < inner.size) Some(Some(inner.get(i))) // sic!
-    else Some(None) // sic!
+    else Some(None)                                   // sic!
   }
 
   override def get(i: Int): Option[T] = {
@@ -329,7 +332,8 @@ class OptionIndex[T](inner: Index[T]) extends Index[Option[T]] {
 
   def pairs =
     inner.pairs.map { case (l, i) => Some(l) -> i } ++ Iterator(
-        None -> inner.size)
+      None -> inner.size
+    )
 
   def iterator = inner.iterator.map { Some(_) } ++ Iterator(None)
 
@@ -341,12 +345,9 @@ class OptionIndex[T](inner: Index[T]) extends Index[Option[T]] {
   *
   * @author dlwh
   */
-final class CompositeIndex[U](indices: Index[_ <: U]*)
-    extends Index[(Int, U)] {
+final class CompositeIndex[U](indices: Index[_ <: U]*) extends Index[(Int, U)] {
   private val offsets: Array[Int] = indices
-    .unfold(0) { (n, i) =>
-      n + i.size
-    }
+    .unfold(0) { (n, i) => n + i.size }
     .toArray
 
   /** If you know which component, and which index in that component,
@@ -381,43 +382,41 @@ final class CompositeIndex[U](indices: Index[_ <: U]*)
   def pairs =
     indices.iterator.zipWithIndex.flatMap {
       case (index, i) =>
-        index.iterator.map { t =>
-          (i, t: U)
-        }
+        index.iterator.map { t => (i, t: U) }
     }.zipWithIndex
 
-  def iterator = indices.iterator.zipWithIndex.flatMap {
-    case (index, i) =>
-      index.iterator.map { t =>
-        (i -> t)
-      }
-  }
+  def iterator =
+    indices.iterator.zipWithIndex.flatMap {
+      case (index, i) =>
+        index.iterator.map { t => (i -> t) }
+    }
 
   override def size: Int = offsets(offsets.length - 1)
 }
 
 object EnumerationIndex {
-  def apply[T <: Enumeration](t: T): Index[t.Value] = new Index[t.Value] {
+  def apply[T <: Enumeration](t: T): Index[t.Value] =
+    new Index[t.Value] {
 
-    /**
-      * Returns the int id of the given element (0-based) or -1 if not
-      * found in the index.  This method never changes the index (even
-      * in MutableIndex).
-      */
-    def apply(x: t.Value): Int = x.id
+      /**
+        * Returns the int id of the given element (0-based) or -1 if not
+        * found in the index.  This method never changes the index (even
+        * in MutableIndex).
+        */
+      def apply(x: t.Value): Int = x.id
 
-    /**
-      * Returns Some(t) if this int corresponds to some object,
-      * and None otherwise.
-      */
-    def unapply(i: Int): Option[t.Value] = Some[t.Value](t(i))
+      /**
+        * Returns Some(t) if this int corresponds to some object,
+        * and None otherwise.
+        */
+      def unapply(i: Int): Option[t.Value] = Some[t.Value](t(i))
 
-    /** Returns the indexed items along with their indicies */
-    def pairs: Iterator[(t.Value, Int)] =
-      for (v <- t.values.iterator) yield v -> v.id
+      /** Returns the indexed items along with their indicies */
+      def pairs: Iterator[(t.Value, Int)] =
+        for (v <- t.values.iterator) yield v -> v.id
 
-    def iterator: Iterator[t.Value] = t.values.iterator
+      def iterator: Iterator[t.Value] = t.values.iterator
 
-    override def size: Int = t.maxId
-  }
+      override def size: Int = t.maxId
+    }
 }

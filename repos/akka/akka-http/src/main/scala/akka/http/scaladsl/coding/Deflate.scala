@@ -15,8 +15,9 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.HttpEncodings
 
 class Deflate(val messageFilter: HttpMessage ⇒ Boolean)
-    extends Coder with StreamDecoder {
-  val encoding = HttpEncodings.deflate
+    extends Coder
+    with StreamDecoder {
+  val encoding      = HttpEncodings.deflate
   def newCompressor = new DeflateCompressor
   def newDecompressorStage(maxBytesPerChunk: Int) =
     () ⇒ new DeflateDecompressor(maxBytesPerChunk)
@@ -40,11 +41,13 @@ class DeflateCompressor extends Compressor {
   }
   override final def compress(input: ByteString): ByteString =
     compressWithBuffer(input, newTempBuffer())
-  override final def flush(): ByteString = flushWithBuffer(newTempBuffer())
+  override final def flush(): ByteString  = flushWithBuffer(newTempBuffer())
   override final def finish(): ByteString = finishWithBuffer(newTempBuffer())
 
   protected def compressWithBuffer(
-      input: ByteString, buffer: Array[Byte]): ByteString = {
+      input: ByteString,
+      buffer: Array[Byte]
+  ): ByteString = {
     require(deflater.needsInput())
     deflater.setInput(input.toArray)
     drainDeflater(deflater, buffer)
@@ -82,7 +85,8 @@ private[http] object DeflateCompressor {
   def drainDeflater(
       deflater: Deflater,
       buffer: Array[Byte],
-      result: ByteStringBuilder = new ByteStringBuilder()): ByteString = {
+      result: ByteStringBuilder = new ByteStringBuilder()
+  ): ByteString = {
     val len = deflater.deflate(buffer)
     if (len > 0) {
       result ++= ByteString.fromArray(buffer, 0, len)
@@ -95,27 +99,31 @@ private[http] object DeflateCompressor {
 }
 
 class DeflateDecompressor(
-    maxBytesPerChunk: Int = Decoder.MaxBytesPerChunkDefault)
-    extends DeflateDecompressorBase(maxBytesPerChunk) {
+    maxBytesPerChunk: Int = Decoder.MaxBytesPerChunkDefault
+) extends DeflateDecompressorBase(maxBytesPerChunk) {
 
-  override def createLogic(attr: Attributes) = new DecompressorParsingLogic {
-    override val inflater: Inflater = new Inflater()
+  override def createLogic(attr: Attributes) =
+    new DecompressorParsingLogic {
+      override val inflater: Inflater = new Inflater()
 
-    override val inflateState = new Inflate(true) {
-      override def onTruncation(): Unit = completeStage()
+      override val inflateState = new Inflate(true) {
+        override def onTruncation(): Unit = completeStage()
+      }
+
+      override def afterInflate = inflateState
+      override def afterBytesRead(
+          buffer: Array[Byte],
+          offset: Int,
+          length: Int
+      ): Unit = {}
+
+      startWith(inflateState)
     }
-
-    override def afterInflate = inflateState
-    override def afterBytesRead(
-        buffer: Array[Byte], offset: Int, length: Int): Unit = {}
-
-    startWith(inflateState)
-  }
 }
 
 abstract class DeflateDecompressorBase(
-    maxBytesPerChunk: Int = Decoder.MaxBytesPerChunkDefault)
-    extends ByteStringParser[ByteString] {
+    maxBytesPerChunk: Int = Decoder.MaxBytesPerChunkDefault
+) extends ByteStringParser[ByteString] {
 
   abstract class DecompressorParsingLogic extends ParsingLogic {
     val inflater: Inflater
@@ -127,20 +135,23 @@ abstract class DeflateDecompressorBase(
         extends ParseStep[ByteString] {
       override def canWorkWithPartialData = true
       override def parse(
-          reader: ByteStringParser.ByteReader): ParseResult[ByteString] = {
+          reader: ByteStringParser.ByteReader
+      ): ParseResult[ByteString] = {
         inflater.setInput(reader.remainingData.toArray)
 
         val buffer = new Array[Byte](maxBytesPerChunk)
-        val read = inflater.inflate(buffer)
+        val read   = inflater.inflate(buffer)
 
         reader.skip(reader.remainingSize - inflater.getRemaining)
 
         if (read > 0) {
           afterBytesRead(buffer, 0, read)
           val next = if (inflater.finished()) afterInflate else this
-          ParseResult(Some(ByteString.fromArray(buffer, 0, read)),
-                      next,
-                      noPostProcessing)
+          ParseResult(
+            Some(ByteString.fromArray(buffer, 0, read)),
+            next,
+            noPostProcessing
+          )
         } else {
           if (inflater.finished())
             ParseResult(None, afterInflate, noPostProcessing)

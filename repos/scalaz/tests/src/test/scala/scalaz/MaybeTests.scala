@@ -76,33 +76,23 @@ object MaybeTest extends SpecLite {
     just(x).toLeft(s).isLeft
   }
 
-  "empty toLeft is right" ! forAll { s: String =>
-    empty.toLeft(s).isRight
-  }
+  "empty toLeft is right" ! forAll { s: String => empty.toLeft(s).isRight }
 
   "just toRight is right" ! forAll { (x: Int, s: String) =>
     just(x).toRight(s).isRight
   }
 
-  "empty toRight is left" ! forAll { s: String =>
-    empty.toRight(s).isLeft
-  }
+  "empty toRight is left" ! forAll { s: String => empty.toRight(s).isLeft }
 
-  "just isJust" ! forAll { x: Int =>
-    just(x).isJust
-  }
+  "just isJust" ! forAll { x: Int => just(x).isJust }
 
-  "just isn't empty" ! forAll { x: Int =>
-    !just(x).isEmpty
-  }
+  "just isn't empty" ! forAll { x: Int => !just(x).isEmpty }
 
   "empty is empty" ! check(empty.isEmpty)
 
   "empty isn't just" ! check(!empty.isJust)
 
-  "just to option is some" ! forAll { x: Int =>
-    just(x).toOption.isDefined
-  }
+  "just to option is some" ! forAll { x: Int => just(x).toOption.isDefined }
 
   "empty to option is none" ! check(empty.toOption.isEmpty)
 
@@ -120,16 +110,16 @@ object MaybeTest extends SpecLite {
   }
 
   object instances {
-    def equal[A : Equal] = Equal[Maybe[A]]
-    def order[A : Order] = Order[Maybe[A]]
-    def semigroup[A : Semigroup] = Monoid[Maybe[A]]
-    def bindRec = BindRec[Maybe]
-    def monad = Monad[Maybe]
+    def equal[A: Equal]         = Equal[Maybe[A]]
+    def order[A: Order]         = Order[Maybe[A]]
+    def semigroup[A: Semigroup] = Monoid[Maybe[A]]
+    def bindRec                 = BindRec[Maybe]
+    def monad                   = Monad[Maybe]
 
     def monoidFirst[A] = Monoid[Maybe[A] @@ First]
-    def monoidLast[A] = Monoid[Maybe[A] @@ Last]
+    def monoidLast[A]  = Monoid[Maybe[A] @@ Last]
 
     // checking absence of ambiguity
-    def equal[A : Order] = Equal[Maybe[A]]
+    def equal[A: Order] = Equal[Maybe[A]]
   }
 }

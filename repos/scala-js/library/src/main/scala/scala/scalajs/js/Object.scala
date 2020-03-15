@@ -19,7 +19,7 @@ class Object extends Any {
   def this(value: Any) = this()
 
   def toLocaleString(): String = native
-  def valueOf(): scala.Any = native
+  def valueOf(): scala.Any     = native
 
   /** Tests whether this object has the specified property as a direct property.
     *
@@ -46,7 +46,7 @@ class Object extends Any {
 /** The top-level `Object` JavaScript object. */
 @native
 object Object extends Object {
-  def apply(): Object = native
+  def apply(): Object           = native
   def apply(value: Any): Object = native
 
   /** Tests whether the object has a property on itself or in its prototype
@@ -91,7 +91,7 @@ object Object extends Object {
     * MDN
     */
   def create(o: Object, properties: Any): Object = native
-  def create(o: Object): Object = native
+  def create(o: Object): Object                  = native
 
   /**
     * The Object.defineProperty() method defines a new property directly on an
@@ -113,7 +113,10 @@ object Object extends Object {
     * MDN
     */
   def defineProperty(
-      o: Object, p: String, attributes: PropertyDescriptor): o.type = native
+      o: Object,
+      p: String,
+      attributes: PropertyDescriptor
+  ): o.type = native
 
   /**
     * The Object.defineProperties() method defines new or modifies existing

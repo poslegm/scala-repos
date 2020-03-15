@@ -14,7 +14,7 @@ import java.io._
 class MemVirtualFile(val path: String) extends VirtualFile {
   private[this] var _version: Option[String] = None
 
-  override def version: Option[String] = _version
+  override def version: Option[String]   = _version
   def version_=(v: Option[String]): Unit = _version = v
 
   final def withVersion(v: Option[String]): this.type = {
@@ -27,10 +27,11 @@ class MemVirtualFile(val path: String) extends VirtualFile {
 
 /** A simple in-memory mutable virtual text file. */
 class MemVirtualTextFile(p: String)
-    extends MemVirtualFile(p) with VirtualTextFile {
+    extends MemVirtualFile(p)
+    with VirtualTextFile {
   private[this] var _content: String = ""
 
-  override def content: String = _content
+  override def content: String   = _content
   def content_=(v: String): Unit = _content = v
 
   final def withContent(v: String): this.type = {
@@ -40,13 +41,15 @@ class MemVirtualTextFile(p: String)
 }
 
 trait WritableMemVirtualTextFile
-    extends MemVirtualTextFile with WritableVirtualTextFile {
-  def contentWriter: Writer = new StringWriter {
-    override def close(): Unit = {
-      super.close()
-      WritableMemVirtualTextFile.this.content = this.toString
+    extends MemVirtualTextFile
+    with WritableVirtualTextFile {
+  def contentWriter: Writer =
+    new StringWriter {
+      override def close(): Unit = {
+        super.close()
+        WritableMemVirtualTextFile.this.content = this.toString
+      }
     }
-  }
 }
 
 object WritableMemVirtualTextFile {
@@ -56,10 +59,11 @@ object WritableMemVirtualTextFile {
 
 /** A simple in-memory mutable virtual binary file. */
 class MemVirtualBinaryFile(p: String)
-    extends MemVirtualFile(p) with VirtualBinaryFile {
+    extends MemVirtualFile(p)
+    with VirtualBinaryFile {
   private[this] var _content: Array[Byte] = new Array[Byte](0)
 
-  override def content: Array[Byte] = _content
+  override def content: Array[Byte]   = _content
   def content_=(v: Array[Byte]): Unit = _content = v
 
   final def withContent(v: Array[Byte]): this.type = {
@@ -70,10 +74,11 @@ class MemVirtualBinaryFile(p: String)
 
 /** A simple in-memory mutable virtual JS file. */
 class MemVirtualJSFile(p: String)
-    extends MemVirtualTextFile(p) with VirtualJSFile {
+    extends MemVirtualTextFile(p)
+    with VirtualJSFile {
   private[this] var _sourceMap: Option[String] = None
 
-  override def sourceMap: Option[String] = _sourceMap
+  override def sourceMap: Option[String]   = _sourceMap
   def sourceMap_=(v: Option[String]): Unit = _sourceMap = v
 
   final def withSourceMap(v: Option[String]): this.type = {
@@ -83,15 +88,17 @@ class MemVirtualJSFile(p: String)
 }
 
 trait WritableMemVirtualJSFile
-    extends MemVirtualJSFile with WritableVirtualJSFile
+    extends MemVirtualJSFile
+    with WritableVirtualJSFile
     with WritableMemVirtualTextFile {
 
-  def sourceMapWriter: Writer = new StringWriter {
-    override def close(): Unit = {
-      super.close()
-      WritableMemVirtualJSFile.this.sourceMap = Some(this.toString)
+  def sourceMapWriter: Writer =
+    new StringWriter {
+      override def close(): Unit = {
+        super.close()
+        WritableMemVirtualJSFile.this.sourceMap = Some(this.toString)
+      }
     }
-  }
 }
 
 object WritableMemVirtualJSFile {
@@ -101,4 +108,5 @@ object WritableMemVirtualJSFile {
 
 /** A simple in-memory mutable virtual serialized Scala.js IR file. */
 class MemVirtualSerializedScalaJSIRFile(p: String)
-    extends MemVirtualBinaryFile(p) with VirtualSerializedScalaJSIRFile
+    extends MemVirtualBinaryFile(p)
+    with VirtualSerializedScalaJSIRFile

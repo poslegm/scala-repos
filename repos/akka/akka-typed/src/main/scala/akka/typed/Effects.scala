@@ -30,8 +30,10 @@ object Effect {
   final case class Messaged[U](other: ActorRef[U], msg: U) extends Effect
   @SerialVersionUID(1L)
   final case class Scheduled[U](
-      delay: FiniteDuration, target: ActorRef[U], msg: U)
-      extends Effect
+      delay: FiniteDuration,
+      target: ActorRef[U],
+      msg: U
+  ) extends Effect
   @SerialVersionUID(1L)
   case object EmptyEffect extends Effect
 }
@@ -41,23 +43,27 @@ object Effect {
   * on it and otherwise stubs them out like a [[StubbedActorContext]].
   */
 class EffectfulActorContext[T](
-    _name: String, _props: Props[T], _system: ActorSystem[Nothing])
-    extends StubbedActorContext[T](_name, _props)(_system) {
+    _name: String,
+    _props: Props[T],
+    _system: ActorSystem[Nothing]
+) extends StubbedActorContext[T](_name, _props)(_system) {
   import akka.{actor ⇒ a}
   import Effect._
 
   private val effectQueue = new ConcurrentLinkedQueue[Effect]
-  def getEffect(): Effect = effectQueue.poll() match {
-    case null ⇒
-      throw new NoSuchElementException(
-          s"polling on an empty effect queue: $name")
-    case x ⇒ x
-  }
+  def getEffect(): Effect =
+    effectQueue.poll() match {
+      case null ⇒
+        throw new NoSuchElementException(
+          s"polling on an empty effect queue: $name"
+        )
+      case x ⇒ x
+    }
   def getAllEffects(): immutable.Seq[Effect] = {
     @tailrec def rec(acc: List[Effect]): List[Effect] =
       effectQueue.poll() match {
         case null ⇒ acc.reverse
-        case x ⇒ rec(x :: acc)
+        case x    ⇒ rec(x :: acc)
       }
     rec(Nil)
   }
@@ -71,8 +77,8 @@ class EffectfulActorContext[T](
   def run(msg: T): Unit =
     current = Behavior.canonicalize(this, current.message(this, msg), current)
   def signal(signal: Signal): Unit =
-    current = Behavior.canonicalize(
-        this, current.management(this, signal), current)
+    current =
+      Behavior.canonicalize(this, current.management(this, signal), current)
 
   override def spawnAnonymous[U](props: Props[U]): ActorRef[U] = {
     val ref = super.spawnAnonymous(props)
@@ -117,7 +123,10 @@ class EffectfulActorContext[T](
     super.setReceiveTimeout(d)
   }
   override def schedule[U](
-      delay: FiniteDuration, target: ActorRef[U], msg: U): a.Cancellable = {
+      delay: FiniteDuration,
+      target: ActorRef[U],
+      msg: U
+  ): a.Cancellable = {
     effectQueue.offer(Scheduled(delay, target, msg))
     super.schedule(delay, target, msg)
   }

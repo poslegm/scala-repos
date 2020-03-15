@@ -38,17 +38,23 @@ final class RetryingComJSEnv(val baseEnv: ComJSEnv, val maxRetries: Int)
   def name: String = s"Retrying ${baseEnv.name}"
 
   def jsRunner(
-      libs: Seq[ResolvedJSDependency], code: VirtualJSFile): JSRunner = {
+      libs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ): JSRunner = {
     baseEnv.jsRunner(libs, code)
   }
 
   def asyncRunner(
-      libs: Seq[ResolvedJSDependency], code: VirtualJSFile): AsyncJSRunner = {
+      libs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ): AsyncJSRunner = {
     baseEnv.asyncRunner(libs, code)
   }
 
   def comRunner(
-      libs: Seq[ResolvedJSDependency], code: VirtualJSFile): ComJSRunner = {
+      libs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ): ComJSRunner = {
     new RetryingComJSRunner(libs, code)
   }
 
@@ -58,19 +64,21 @@ final class RetryingComJSEnv(val baseEnv: ComJSEnv, val maxRetries: Int)
   }
 
   private class RetryingComJSRunner(
-      libs: Seq[ResolvedJSDependency], code: VirtualJSFile)
-      extends DummyJSRunner with ComJSRunner {
+      libs: Seq[ResolvedJSDependency],
+      code: VirtualJSFile
+  ) extends DummyJSRunner
+      with ComJSRunner {
 
     private[this] val promise = Promise[Unit]
 
     private[this] var curRunner = baseEnv.comRunner(libs, code)
 
     private[this] var hasReceived = false
-    private[this] var retryCount = 0
+    private[this] var retryCount  = 0
 
     private[this] val log = mutable.Buffer.empty[LogItem]
 
-    private[this] var _logger: Logger = _
+    private[this] var _logger: Logger     = _
     private[this] var _console: JSConsole = _
 
     def future: Future[Unit] = promise.future
@@ -131,19 +139,24 @@ final class RetryingComJSEnv(val baseEnv: ComJSEnv, val maxRetries: Int)
         if (hasReceived || retryCount > maxRetries || promise.isCompleted)
           throw cause
 
-        _logger.warn("Retrying to launch a " + baseEnv.getClass.getName +
-            " after " + cause.toString)
+        _logger.warn(
+          "Retrying to launch a " + baseEnv.getClass.getName +
+            " after " + cause.toString
+        )
 
         val oldRunner = curRunner
 
-        curRunner = try {
-          baseEnv.comRunner(libs, code)
-        } catch {
-          case NonFatal(t) =>
-            _logger.error("Could not retry: creating an new runner failed: " +
-                t.toString)
-            throw cause
-        }
+        curRunner =
+          try {
+            baseEnv.comRunner(libs, code)
+          } catch {
+            case NonFatal(t) =>
+              _logger.error(
+                "Could not retry: creating an new runner failed: " +
+                  t.toString
+              )
+              throw cause
+          }
 
         try oldRunner.stop() // just in case
         catch {
@@ -155,39 +168,41 @@ final class RetryingComJSEnv(val baseEnv: ComJSEnv, val maxRetries: Int)
       // Need to use Try for tailrec
       Try(log.foreach(executeTask)) match {
         case Failure(t) => retry(t)
-        case _ =>
+        case _          =>
       }
     }
 
     private def logAndDo(task: LogItem) = {
       log += task
-      try executeTask(task) catch {
+      try executeTask(task)
+      catch {
         case NonFatal(t) => retry(t)
       }
     }
 
-    private def executeTask(task: LogItem) = task match {
-      case Start =>
-        import ExecutionContext.Implicits.global
-        val runner = curRunner
-        runner.start(_logger, _console) onComplete { result =>
-          // access to curRunner and promise must be synchronized
-          synchronized {
-            if (curRunner eq runner) promise.complete(result)
+    private def executeTask(task: LogItem) =
+      task match {
+        case Start =>
+          import ExecutionContext.Implicits.global
+          val runner = curRunner
+          runner.start(_logger, _console) onComplete { result =>
+            // access to curRunner and promise must be synchronized
+            synchronized {
+              if (curRunner eq runner) promise.complete(result)
+            }
           }
-        }
-      case Send(msg) =>
-        curRunner.send(msg)
-      case Stop =>
-        curRunner.stop()
-      case Close =>
-        curRunner.close()
-    }
+        case Send(msg) =>
+          curRunner.send(msg)
+        case Stop =>
+          curRunner.stop()
+        case Close =>
+          curRunner.close()
+      }
 
     private sealed trait LogItem
-    private case object Start extends LogItem
+    private case object Start            extends LogItem
     private case class Send(msg: String) extends LogItem
-    private case object Stop extends LogItem
-    private case object Close extends LogItem
+    private case object Stop             extends LogItem
+    private case object Close            extends LogItem
   }
 }

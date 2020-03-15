@@ -19,7 +19,7 @@ class VMEventManager(val eventQueue: EventQueue, debugManager: ActorRef)
     while (!finished) {
       try {
         val eventSet = eventQueue.remove()
-        val it = eventSet.eventIterator()
+        val it       = eventSet.eventIterator()
         while (it.hasNext) {
           val evt = it.nextEvent()
           evt match {

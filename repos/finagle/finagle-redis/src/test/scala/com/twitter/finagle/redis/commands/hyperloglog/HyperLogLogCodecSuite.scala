@@ -33,7 +33,10 @@ final class HyperLogLogCodecSuite extends RedisRequestTest {
     }
   }
 
-  test("Throw a ClientError if PFCOUNT is called with no arguments", CodecTest) {
+  test(
+    "Throw a ClientError if PFCOUNT is called with no arguments",
+    CodecTest
+  ) {
     intercept[ClientError] {
       codec(wrap("PFCOUNT\r\n"))
     }
@@ -54,13 +57,19 @@ final class HyperLogLogCodecSuite extends RedisRequestTest {
     }
   }
 
-  test("Throw a ClientError if PFMERGE is called with no arguments", CodecTest) {
+  test(
+    "Throw a ClientError if PFMERGE is called with no arguments",
+    CodecTest
+  ) {
     intercept[ClientError] {
       codec(wrap("PFMERGE\r\n"))
     }
   }
 
-  test("Throw a ClientError if PFMERGE is called with one argument", CodecTest) {
+  test(
+    "Throw a ClientError if PFMERGE is called with one argument",
+    CodecTest
+  ) {
     intercept[ClientError] {
       codec(wrap("PFMERGE foo\r\n"))
     }

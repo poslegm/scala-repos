@@ -58,7 +58,9 @@ object functions {
   private def withExpr(expr: Expression): Column = Column(expr)
 
   private def withAggregateFunction(
-      func: AggregateFunction, isDistinct: Boolean = false): Column = {
+      func: AggregateFunction,
+      isDistinct: Boolean = false
+  ): Column = {
     Column(func.toAggregateExpression(isDistinct))
   }
 
@@ -138,9 +140,10 @@ object functions {
     * @group agg_funcs
     * @since 1.3.0
     */
-  def approxCountDistinct(e: Column): Column = withAggregateFunction {
-    HyperLogLogPlusPlus(e.expr)
-  }
+  def approxCountDistinct(e: Column): Column =
+    withAggregateFunction {
+      HyperLogLogPlusPlus(e.expr)
+    }
 
   /**
     * Aggregate function: returns the approximate number of distinct items in a group.
@@ -235,9 +238,10 @@ object functions {
     * @group agg_funcs
     * @since 1.6.0
     */
-  def corr(column1: Column, column2: Column): Column = withAggregateFunction {
-    Corr(column1.expr, column2.expr)
-  }
+  def corr(column1: Column, column2: Column): Column =
+    withAggregateFunction {
+      Corr(column1.expr, column2.expr)
+    }
 
   /**
     * Aggregate function: returns the Pearson Correlation Coefficient for two columns.
@@ -255,13 +259,14 @@ object functions {
     * @group agg_funcs
     * @since 1.3.0
     */
-  def count(e: Column): Column = withAggregateFunction {
-    e.expr match {
-      // Turn count(*) into count(1)
-      case s: Star => Count(Literal(1))
-      case _ => Count(e.expr)
+  def count(e: Column): Column =
+    withAggregateFunction {
+      e.expr match {
+        // Turn count(*) into count(1)
+        case s: Star => Count(Literal(1))
+        case _       => Count(e.expr)
+      }
     }
-  }
 
   /**
     * Aggregate function: returns the number of items in a group.
@@ -281,7 +286,9 @@ object functions {
   @scala.annotation.varargs
   def countDistinct(expr: Column, exprs: Column*): Column = {
     withAggregateFunction(
-        Count.apply((expr +: exprs).map(_.expr)), isDistinct = true)
+      Count.apply((expr +: exprs).map(_.expr)),
+      isDistinct = true
+    )
   }
 
   /**
@@ -345,9 +352,10 @@ object functions {
     * @group agg_funcs
     * @since 2.0.0
     */
-  def first(e: Column, ignoreNulls: Boolean): Column = withAggregateFunction {
-    new First(e.expr, Literal(ignoreNulls))
-  }
+  def first(e: Column, ignoreNulls: Boolean): Column =
+    withAggregateFunction {
+      new First(e.expr, Literal(ignoreNulls))
+    }
 
   /**
     * Aggregate function: returns the first value of a column in a group.
@@ -454,9 +462,10 @@ object functions {
     * @group agg_funcs
     * @since 2.0.0
     */
-  def last(e: Column, ignoreNulls: Boolean): Column = withAggregateFunction {
-    new Last(e.expr, Literal(ignoreNulls))
-  }
+  def last(e: Column, ignoreNulls: Boolean): Column =
+    withAggregateFunction {
+      new Last(e.expr, Literal(ignoreNulls))
+    }
 
   /**
     * Aggregate function: returns the last value of the column in a group.
@@ -583,9 +592,10 @@ object functions {
     * @group agg_funcs
     * @since 1.6.0
     */
-  def stddev_samp(e: Column): Column = withAggregateFunction {
-    StddevSamp(e.expr)
-  }
+  def stddev_samp(e: Column): Column =
+    withAggregateFunction {
+      StddevSamp(e.expr)
+    }
 
   /**
     * Aggregate function: returns the sample standard deviation of
@@ -603,9 +613,10 @@ object functions {
     * @group agg_funcs
     * @since 1.6.0
     */
-  def stddev_pop(e: Column): Column = withAggregateFunction {
-    StddevPop(e.expr)
-  }
+  def stddev_pop(e: Column): Column =
+    withAggregateFunction {
+      StddevPop(e.expr)
+    }
 
   /**
     * Aggregate function: returns the population standard deviation of
@@ -655,9 +666,10 @@ object functions {
     * @group agg_funcs
     * @since 1.6.0
     */
-  def variance(e: Column): Column = withAggregateFunction {
-    VarianceSamp(e.expr)
-  }
+  def variance(e: Column): Column =
+    withAggregateFunction {
+      VarianceSamp(e.expr)
+    }
 
   /**
     * Aggregate function: alias for [[var_samp]].
@@ -673,9 +685,10 @@ object functions {
     * @group agg_funcs
     * @since 1.6.0
     */
-  def var_samp(e: Column): Column = withAggregateFunction {
-    VarianceSamp(e.expr)
-  }
+  def var_samp(e: Column): Column =
+    withAggregateFunction {
+      VarianceSamp(e.expr)
+    }
 
   /**
     * Aggregate function: returns the unbiased variance of the values in a group.
@@ -691,9 +704,10 @@ object functions {
     * @group agg_funcs
     * @since 1.6.0
     */
-  def var_pop(e: Column): Column = withAggregateFunction {
-    VariancePop(e.expr)
-  }
+  def var_pop(e: Column): Column =
+    withAggregateFunction {
+      VariancePop(e.expr)
+    }
 
   /**
     * Aggregate function: returns the population variance of the values in a group.
@@ -783,9 +797,10 @@ object functions {
     * @group window_funcs
     * @since 1.4.0
     */
-  def lag(e: Column, offset: Int, defaultValue: Any): Column = withExpr {
-    Lag(e.expr, Literal(offset), Literal(defaultValue))
-  }
+  def lag(e: Column, offset: Int, defaultValue: Any): Column =
+    withExpr {
+      Lag(e.expr, Literal(offset), Literal(defaultValue))
+    }
 
   /**
     * Window function: returns the value that is `offset` rows after the current row, and
@@ -837,9 +852,10 @@ object functions {
     * @group window_funcs
     * @since 1.4.0
     */
-  def lead(e: Column, offset: Int, defaultValue: Any): Column = withExpr {
-    Lead(e.expr, Literal(offset), Literal(defaultValue))
-  }
+  def lead(e: Column, offset: Int, defaultValue: Any): Column =
+    withExpr {
+      Lead(e.expr, Literal(offset), Literal(defaultValue))
+    }
 
   /**
     * Window function: returns the ntile group id (from 1 to `n` inclusive) in an ordered window
@@ -1007,9 +1023,10 @@ object functions {
     * @group normal_funcs
     * @since 1.6.0
     */
-  def monotonically_increasing_id(): Column = withExpr {
-    MonotonicallyIncreasingID()
-  }
+  def monotonically_increasing_id(): Column =
+    withExpr {
+      MonotonicallyIncreasingID()
+    }
 
   /**
     * Returns col1 if it is not NaN, or col2 if col1 is NaN.
@@ -1019,9 +1036,10 @@ object functions {
     * @group normal_funcs
     * @since 1.5.0
     */
-  def nanvl(col1: Column, col2: Column): Column = withExpr {
-    NaNvl(col1.expr, col2.expr)
-  }
+  def nanvl(col1: Column, col2: Column): Column =
+    withExpr {
+      NaNvl(col1.expr, col2.expr)
+    }
 
   /**
     * Unary minus, i.e. negate the expression.
@@ -1127,9 +1145,10 @@ object functions {
     * @since 1.4.0
     */
   @scala.annotation.varargs
-  def struct(cols: Column*): Column = withExpr {
-    CreateStruct(cols.map(_.expr))
-  }
+  def struct(cols: Column*): Column =
+    withExpr {
+      CreateStruct(cols.map(_.expr))
+    }
 
   /**
     * Creates a new struct column that composes multiple input columns.
@@ -1163,9 +1182,10 @@ object functions {
     * @group normal_funcs
     * @since 1.4.0
     */
-  def when(condition: Column, value: Any): Column = withExpr {
-    CaseWhen(Seq((condition.expr, lit(value).expr)))
-  }
+  def when(condition: Column, value: Any): Column =
+    withExpr {
+      CaseWhen(Seq((condition.expr, lit(value).expr)))
+    }
 
   /**
     * Computes bitwise NOT.
@@ -1378,9 +1398,10 @@ object functions {
     * @group math_funcs
     * @since 1.5.0
     */
-  def conv(num: Column, fromBase: Int, toBase: Int): Column = withExpr {
-    Conv(num.expr, lit(fromBase).expr, lit(toBase).expr)
-  }
+  def conv(num: Column, fromBase: Int, toBase: Int): Column =
+    withExpr {
+      Conv(num.expr, lit(fromBase).expr, lit(toBase).expr)
+    }
 
   /**
     * Computes the cosine of the given value.
@@ -1478,10 +1499,11 @@ object functions {
     * @since 1.5.0
     */
   @scala.annotation.varargs
-  def greatest(exprs: Column*): Column = withExpr {
-    require(exprs.length > 1, "greatest requires at least 2 arguments.")
-    Greatest(exprs.map(_.expr))
-  }
+  def greatest(exprs: Column*): Column =
+    withExpr {
+      require(exprs.length > 1, "greatest requires at least 2 arguments.")
+      Greatest(exprs.map(_.expr))
+    }
 
   /**
     * Returns the greatest value of the list of column names, skipping null values.
@@ -1585,10 +1607,11 @@ object functions {
     * @since 1.5.0
     */
   @scala.annotation.varargs
-  def least(exprs: Column*): Column = withExpr {
-    require(exprs.length > 1, "least requires at least 2 arguments.")
-    Least(exprs.map(_.expr))
-  }
+  def least(exprs: Column*): Column =
+    withExpr {
+      require(exprs.length > 1, "least requires at least 2 arguments.")
+      Least(exprs.map(_.expr))
+    }
 
   /**
     * Returns the least value of the list of column names, skipping null values.
@@ -1624,9 +1647,10 @@ object functions {
     * @group math_funcs
     * @since 1.4.0
     */
-  def log(base: Double, a: Column): Column = withExpr {
-    Logarithm(lit(base).expr, a.expr)
-  }
+  def log(base: Double, a: Column): Column =
+    withExpr {
+      Logarithm(lit(base).expr, a.expr)
+    }
 
   /**
     * Returns the first argument-base logarithm of the second argument.
@@ -1756,9 +1780,10 @@ object functions {
     * @group math_funcs
     * @since 1.5.0
     */
-  def pmod(dividend: Column, divisor: Column): Column = withExpr {
-    Pmod(dividend.expr, divisor.expr)
-  }
+  def pmod(dividend: Column, divisor: Column): Column =
+    withExpr {
+      Pmod(dividend.expr, divisor.expr)
+    }
 
   /**
     * Returns the double value that is closest in value to the argument and
@@ -1793,9 +1818,10 @@ object functions {
     * @group math_funcs
     * @since 1.5.0
     */
-  def round(e: Column, scale: Int): Column = withExpr {
-    Round(e.expr, Literal(scale))
-  }
+  def round(e: Column, scale: Int): Column =
+    withExpr {
+      Round(e.expr, Literal(scale))
+    }
 
   /**
     * Shift the given value numBits left. If the given value is a long value, this function
@@ -1804,9 +1830,10 @@ object functions {
     * @group math_funcs
     * @since 1.5.0
     */
-  def shiftLeft(e: Column, numBits: Int): Column = withExpr {
-    ShiftLeft(e.expr, lit(numBits).expr)
-  }
+  def shiftLeft(e: Column, numBits: Int): Column =
+    withExpr {
+      ShiftLeft(e.expr, lit(numBits).expr)
+    }
 
   /**
     * Shift the given value numBits right. If the given value is a long value, it will return
@@ -1815,9 +1842,10 @@ object functions {
     * @group math_funcs
     * @since 1.5.0
     */
-  def shiftRight(e: Column, numBits: Int): Column = withExpr {
-    ShiftRight(e.expr, lit(numBits).expr)
-  }
+  def shiftRight(e: Column, numBits: Int): Column =
+    withExpr {
+      ShiftRight(e.expr, lit(numBits).expr)
+    }
 
   /**
     * Unsigned shift the given value numBits right. If the given value is a long value,
@@ -1826,9 +1854,10 @@ object functions {
     * @group math_funcs
     * @since 1.5.0
     */
-  def shiftRightUnsigned(e: Column, numBits: Int): Column = withExpr {
-    ShiftRightUnsigned(e.expr, lit(numBits).expr)
-  }
+  def shiftRightUnsigned(e: Column, numBits: Int): Column =
+    withExpr {
+      ShiftRightUnsigned(e.expr, lit(numBits).expr)
+    }
 
   /**
     * Computes the signum of the given value.
@@ -1976,8 +2005,9 @@ object functions {
     */
   def sha2(e: Column, numBits: Int): Column = {
     require(
-        Seq(0, 224, 256, 384, 512).contains(numBits),
-        s"numBits $numBits is not in the permitted values (0, 224, 256, 384, 512)")
+      Seq(0, 224, 256, 384, 512).contains(numBits),
+      s"numBits $numBits is not in the permitted values (0, 224, 256, 384, 512)"
+    )
     withExpr { Sha2(e.expr, lit(numBits).expr) }
   }
 
@@ -1997,9 +2027,10 @@ object functions {
     * @since 2.0
     */
   @scala.annotation.varargs
-  def hash(cols: Column*): Column = withExpr {
-    new Murmur3Hash(cols.map(_.expr))
-  }
+  def hash(cols: Column*): Column =
+    withExpr {
+      new Murmur3Hash(cols.map(_.expr))
+    }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   // String functions
@@ -2040,9 +2071,10 @@ object functions {
     * @since 1.5.0
     */
   @scala.annotation.varargs
-  def concat_ws(sep: String, exprs: Column*): Column = withExpr {
-    ConcatWs(Literal.create(sep, StringType) +: exprs.map(_.expr))
-  }
+  def concat_ws(sep: String, exprs: Column*): Column =
+    withExpr {
+      ConcatWs(Literal.create(sep, StringType) +: exprs.map(_.expr))
+    }
 
   /**
     * Computes the first argument into a string from a binary using the provided character set
@@ -2052,9 +2084,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def decode(value: Column, charset: String): Column = withExpr {
-    Decode(value.expr, lit(charset).expr)
-  }
+  def decode(value: Column, charset: String): Column =
+    withExpr {
+      Decode(value.expr, lit(charset).expr)
+    }
 
   /**
     * Computes the first argument into a binary from a string using the provided character set
@@ -2064,9 +2097,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def encode(value: Column, charset: String): Column = withExpr {
-    Encode(value.expr, lit(charset).expr)
-  }
+  def encode(value: Column, charset: String): Column =
+    withExpr {
+      Encode(value.expr, lit(charset).expr)
+    }
 
   /**
     * Formats numeric column x to a format like '#,###,###.##', rounded to d decimal places,
@@ -2078,9 +2112,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def format_number(x: Column, d: Int): Column = withExpr {
-    FormatNumber(x.expr, lit(d).expr)
-  }
+  def format_number(x: Column, d: Int): Column =
+    withExpr {
+      FormatNumber(x.expr, lit(d).expr)
+    }
 
   /**
     * Formats the arguments in printf-style and returns the result as a string column.
@@ -2089,9 +2124,10 @@ object functions {
     * @since 1.5.0
     */
   @scala.annotation.varargs
-  def format_string(format: String, arguments: Column*): Column = withExpr {
-    FormatString((lit(format) +: arguments).map(_.expr): _*)
-  }
+  def format_string(format: String, arguments: Column*): Column =
+    withExpr {
+      FormatString((lit(format) +: arguments).map(_.expr): _*)
+    }
 
   /**
     * Returns a new string column by converting the first letter of each word to uppercase.
@@ -2114,9 +2150,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def instr(str: Column, substring: String): Column = withExpr {
-    StringInstr(str.expr, lit(substring).expr)
-  }
+  def instr(str: Column, substring: String): Column =
+    withExpr {
+      StringInstr(str.expr, lit(substring).expr)
+    }
 
   /**
     * Computes the length of a given string or binary column.
@@ -2139,9 +2176,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def levenshtein(l: Column, r: Column): Column = withExpr {
-    Levenshtein(l.expr, r.expr)
-  }
+  def levenshtein(l: Column, r: Column): Column =
+    withExpr {
+      Levenshtein(l.expr, r.expr)
+    }
 
   /**
     * Locate the position of the first occurrence of substr.
@@ -2151,9 +2189,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def locate(substr: String, str: Column): Column = withExpr {
-    new StringLocate(lit(substr).expr, str.expr)
-  }
+  def locate(substr: String, str: Column): Column =
+    withExpr {
+      new StringLocate(lit(substr).expr, str.expr)
+    }
 
   /**
     * Locate the position of the first occurrence of substr in a string column, after position pos.
@@ -2164,9 +2203,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def locate(substr: String, str: Column, pos: Int): Column = withExpr {
-    StringLocate(lit(substr).expr, str.expr, lit(pos).expr)
-  }
+  def locate(substr: String, str: Column, pos: Int): Column =
+    withExpr {
+      StringLocate(lit(substr).expr, str.expr, lit(pos).expr)
+    }
 
   /**
     * Left-pad the string column with
@@ -2174,9 +2214,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def lpad(str: Column, len: Int, pad: String): Column = withExpr {
-    StringLPad(str.expr, lit(len).expr, lit(pad).expr)
-  }
+  def lpad(str: Column, len: Int, pad: String): Column =
+    withExpr {
+      StringLPad(str.expr, lit(len).expr, lit(pad).expr)
+    }
 
   /**
     * Trim the spaces from left end for the specified string value.
@@ -2223,9 +2264,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def rpad(str: Column, len: Int, pad: String): Column = withExpr {
-    StringRPad(str.expr, lit(len).expr, lit(pad).expr)
-  }
+  def rpad(str: Column, len: Int, pad: String): Column =
+    withExpr {
+      StringRPad(str.expr, lit(len).expr, lit(pad).expr)
+    }
 
   /**
     * Repeats a string column n times, and returns it as a new string column.
@@ -2233,9 +2275,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def repeat(str: Column, n: Int): Column = withExpr {
-    StringRepeat(str.expr, lit(n).expr)
-  }
+  def repeat(str: Column, n: Int): Column =
+    withExpr {
+      StringRepeat(str.expr, lit(n).expr)
+    }
 
   /**
     * Reverses the string column and returns it as a new string column.
@@ -2268,9 +2311,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def split(str: Column, pattern: String): Column = withExpr {
-    StringSplit(str.expr, lit(pattern).expr)
-  }
+  def split(str: Column, pattern: String): Column =
+    withExpr {
+      StringSplit(str.expr, lit(pattern).expr)
+    }
 
   /**
     * Substring starts at `pos` and is of length `len` when str is String type or
@@ -2280,9 +2324,10 @@ object functions {
     * @group string_funcs
     * @since 1.5.0
     */
-  def substring(str: Column, pos: Int, len: Int): Column = withExpr {
-    Substring(str.expr, lit(pos).expr, lit(len).expr)
-  }
+  def substring(str: Column, pos: Int, len: Int): Column =
+    withExpr {
+      Substring(str.expr, lit(pos).expr, lit(len).expr)
+    }
 
   /**
     * Returns the substring from string str before count occurrences of the delimiter delim.
@@ -2307,10 +2352,16 @@ object functions {
     * @since 1.5.0
     */
   def translate(
-      src: Column, matchingString: String, replaceString: String): Column =
+      src: Column,
+      matchingString: String,
+      replaceString: String
+  ): Column =
     withExpr {
       StringTranslate(
-          src.expr, lit(matchingString).expr, lit(replaceString).expr)
+        src.expr,
+        lit(matchingString).expr,
+        lit(replaceString).expr
+      )
     }
 
   /**
@@ -2339,9 +2390,10 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def add_months(startDate: Column, numMonths: Int): Column = withExpr {
-    AddMonths(startDate.expr, Literal(numMonths))
-  }
+  def add_months(startDate: Column, numMonths: Int): Column =
+    withExpr {
+      AddMonths(startDate.expr, Literal(numMonths))
+    }
 
   /**
     * Returns the current date as a date column.
@@ -2372,36 +2424,40 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def date_format(dateExpr: Column, format: String): Column = withExpr {
-    DateFormatClass(dateExpr.expr, Literal(format))
-  }
+  def date_format(dateExpr: Column, format: String): Column =
+    withExpr {
+      DateFormatClass(dateExpr.expr, Literal(format))
+    }
 
   /**
     * Returns the date that is `days` days after `start`
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def date_add(start: Column, days: Int): Column = withExpr {
-    DateAdd(start.expr, Literal(days))
-  }
+  def date_add(start: Column, days: Int): Column =
+    withExpr {
+      DateAdd(start.expr, Literal(days))
+    }
 
   /**
     * Returns the date that is `days` days before `start`
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def date_sub(start: Column, days: Int): Column = withExpr {
-    DateSub(start.expr, Literal(days))
-  }
+  def date_sub(start: Column, days: Int): Column =
+    withExpr {
+      DateSub(start.expr, Literal(days))
+    }
 
   /**
     * Returns the number of days from `start` to `end`.
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def datediff(end: Column, start: Column): Column = withExpr {
-    DateDiff(end.expr, start.expr)
-  }
+  def datediff(end: Column, start: Column): Column =
+    withExpr {
+      DateDiff(end.expr, start.expr)
+    }
 
   /**
     * Extracts the year as an integer from a given date/timestamp/string.
@@ -2467,9 +2523,10 @@ object functions {
    * @group datetime_funcs
    * @since 1.5.0
    */
-  def months_between(date1: Column, date2: Column): Column = withExpr {
-    MonthsBetween(date1.expr, date2.expr)
-  }
+  def months_between(date1: Column, date2: Column): Column =
+    withExpr {
+      MonthsBetween(date1.expr, date2.expr)
+    }
 
   /**
     * Given a date column, returns the first date which is later than the value of the date column
@@ -2484,9 +2541,10 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def next_day(date: Column, dayOfWeek: String): Column = withExpr {
-    NextDay(date.expr, lit(dayOfWeek).expr)
-  }
+  def next_day(date: Column, dayOfWeek: String): Column =
+    withExpr {
+      NextDay(date.expr, lit(dayOfWeek).expr)
+    }
 
   /**
     * Extracts the seconds as an integer from a given date/timestamp/string.
@@ -2509,9 +2567,10 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def from_unixtime(ut: Column): Column = withExpr {
-    FromUnixTime(ut.expr, Literal("yyyy-MM-dd HH:mm:ss"))
-  }
+  def from_unixtime(ut: Column): Column =
+    withExpr {
+      FromUnixTime(ut.expr, Literal("yyyy-MM-dd HH:mm:ss"))
+    }
 
   /**
     * Converts the number of seconds from unix epoch (1970-01-01 00:00:00 UTC) to a string
@@ -2520,18 +2579,20 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def from_unixtime(ut: Column, f: String): Column = withExpr {
-    FromUnixTime(ut.expr, Literal(f))
-  }
+  def from_unixtime(ut: Column, f: String): Column =
+    withExpr {
+      FromUnixTime(ut.expr, Literal(f))
+    }
 
   /**
     * Gets current Unix timestamp in seconds.
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def unix_timestamp(): Column = withExpr {
-    UnixTimestamp(CurrentTimestamp(), Literal("yyyy-MM-dd HH:mm:ss"))
-  }
+  def unix_timestamp(): Column =
+    withExpr {
+      UnixTimestamp(CurrentTimestamp(), Literal("yyyy-MM-dd HH:mm:ss"))
+    }
 
   /**
     * Converts time string in format yyyy-MM-dd HH:mm:ss to Unix timestamp (in seconds),
@@ -2539,9 +2600,10 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def unix_timestamp(s: Column): Column = withExpr {
-    UnixTimestamp(s.expr, Literal("yyyy-MM-dd HH:mm:ss"))
-  }
+  def unix_timestamp(s: Column): Column =
+    withExpr {
+      UnixTimestamp(s.expr, Literal("yyyy-MM-dd HH:mm:ss"))
+    }
 
   /**
     * Convert time string with given pattern
@@ -2550,9 +2612,10 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def unix_timestamp(s: Column, p: String): Column = withExpr {
-    UnixTimestamp(s.expr, Literal(p))
-  }
+  def unix_timestamp(s: Column, p: String): Column =
+    withExpr {
+      UnixTimestamp(s.expr, Literal(p))
+    }
 
   /**
     * Converts the column into DateType.
@@ -2571,27 +2634,30 @@ object functions {
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def trunc(date: Column, format: String): Column = withExpr {
-    TruncDate(date.expr, Literal(format))
-  }
+  def trunc(date: Column, format: String): Column =
+    withExpr {
+      TruncDate(date.expr, Literal(format))
+    }
 
   /**
     * Assumes given timestamp is UTC and converts to given timezone.
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def from_utc_timestamp(ts: Column, tz: String): Column = withExpr {
-    FromUTCTimestamp(ts.expr, Literal(tz))
-  }
+  def from_utc_timestamp(ts: Column, tz: String): Column =
+    withExpr {
+      FromUTCTimestamp(ts.expr, Literal(tz))
+    }
 
   /**
     * Assumes given timestamp is in given timezone and converts to UTC.
     * @group datetime_funcs
     * @since 1.5.0
     */
-  def to_utc_timestamp(ts: Column, tz: String): Column = withExpr {
-    ToUTCTimestamp(ts.expr, Literal(tz))
-  }
+  def to_utc_timestamp(ts: Column, tz: String): Column =
+    withExpr {
+      ToUTCTimestamp(ts.expr, Literal(tz))
+    }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Collection functions
@@ -2602,9 +2668,10 @@ object functions {
     * @group collection_funcs
     * @since 1.5.0
     */
-  def array_contains(column: Column, value: Any): Column = withExpr {
-    ArrayContains(column.expr, Literal(value))
-  }
+  def array_contains(column: Column, value: Any): Column =
+    withExpr {
+      ArrayContains(column.expr, Literal(value))
+    }
 
   /**
     * Creates a new row for each element in the given array or map column.
@@ -2621,9 +2688,10 @@ object functions {
     * @group collection_funcs
     * @since 1.6.0
     */
-  def get_json_object(e: Column, path: String): Column = withExpr {
-    GetJsonObject(e.expr, lit(path).expr)
-  }
+  def get_json_object(e: Column, path: String): Column =
+    withExpr {
+      GetJsonObject(e.expr, lit(path).expr)
+    }
 
   /**
     * Creates a new row for a json column according to the given field names.
@@ -2632,10 +2700,11 @@ object functions {
     * @since 1.6.0
     */
   @scala.annotation.varargs
-  def json_tuple(json: Column, fields: String*): Column = withExpr {
-    require(fields.nonEmpty, "at least 1 field name should be given.")
-    JsonTuple(json.expr +: fields.map(Literal.apply))
-  }
+  def json_tuple(json: Column, fields: String*): Column =
+    withExpr {
+      require(fields.nonEmpty, "at least 1 field name should be given.")
+      JsonTuple(json.expr +: fields.map(Literal.apply))
+    }
 
   /**
     * Returns length of array or map.
@@ -2661,9 +2730,10 @@ object functions {
     * @group collection_funcs
     * @since 1.5.0
     */
-  def sort_array(e: Column, asc: Boolean): Column = withExpr {
-    SortArray(e.expr, lit(asc).expr)
-  }
+  def sort_array(e: Column, asc: Boolean): Column =
+    withExpr {
+      SortArray(e.expr, lit(asc).expr)
+    }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -2698,10 +2768,13 @@ object functions {
     * @group udf_funcs
     * @since 1.3.0
     */
-  def udf[RT : TypeTag](f: Function0[RT]): UserDefinedFunction = {
+  def udf[RT: TypeTag](f: Function0[RT]): UserDefinedFunction = {
     val inputTypes = Try(Nil).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2711,12 +2784,17 @@ object functions {
     * @group udf_funcs
     * @since 1.3.0
     */
-  def udf[RT : TypeTag, A1 : TypeTag](
-      f: Function1[A1, RT]): UserDefinedFunction = {
+  def udf[RT: TypeTag, A1: TypeTag](
+      f: Function1[A1, RT]
+  ): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2726,14 +2804,19 @@ object functions {
     * @group udf_funcs
     * @since 1.3.0
     */
-  def udf[RT : TypeTag, A1 : TypeTag, A2 : TypeTag](
-      f: Function2[A1, A2, RT]): UserDefinedFunction = {
+  def udf[RT: TypeTag, A1: TypeTag, A2: TypeTag](
+      f: Function2[A1, A2, RT]
+  ): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2743,14 +2826,19 @@ object functions {
     * @group udf_funcs
     * @since 1.3.0
     */
-  def udf[RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag](
-      f: Function3[A1, A2, A3, RT]): UserDefinedFunction = {
+  def udf[RT: TypeTag, A1: TypeTag, A2: TypeTag, A3: TypeTag](
+      f: Function3[A1, A2, A3, RT]
+  ): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2760,17 +2848,23 @@ object functions {
     * @group udf_funcs
     * @since 1.3.0
     */
-  def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag](
-      f: Function4[A1, A2, A3, A4, RT]): UserDefinedFunction = {
+  def udf[RT: TypeTag, A1: TypeTag, A2: TypeTag, A3: TypeTag, A4: TypeTag](
+      f: Function4[A1, A2, A3, A4, RT]
+  ): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2781,16 +2875,27 @@ object functions {
     * @since 1.3.0
     */
   def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag, A5 : TypeTag](
-      f: Function5[A1, A2, A3, A4, A5, RT]): UserDefinedFunction = {
+      RT: TypeTag,
+      A1: TypeTag,
+      A2: TypeTag,
+      A3: TypeTag,
+      A4: TypeTag,
+      A5: TypeTag
+  ](f: Function5[A1, A2, A3, A4, A5, RT]): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2801,18 +2906,32 @@ object functions {
     * @since 1.3.0
     */
   def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag, A5 : TypeTag, A6 : TypeTag](
-      f: Function6[A1, A2, A3, A4, A5, A6, RT]): UserDefinedFunction = {
+      RT: TypeTag,
+      A1: TypeTag,
+      A2: TypeTag,
+      A3: TypeTag,
+      A4: TypeTag,
+      A5: TypeTag,
+      A6: TypeTag
+  ](f: Function6[A1, A2, A3, A4, A5, A6, RT]): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A6])
-          .dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A5])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A6])
+        .dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2823,18 +2942,33 @@ object functions {
     * @since 1.3.0
     */
   def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag, A5 : TypeTag, A6 : TypeTag, A7 : TypeTag](
-      f: Function7[A1, A2, A3, A4, A5, A6, A7, RT]): UserDefinedFunction = {
+      RT: TypeTag,
+      A1: TypeTag,
+      A2: TypeTag,
+      A3: TypeTag,
+      A4: TypeTag,
+      A5: TypeTag,
+      A6: TypeTag,
+      A7: TypeTag
+  ](f: Function7[A1, A2, A3, A4, A5, A6, A7, RT]): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A6])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A7]).dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A5])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A6])
+        .dataType :: ScalaReflection.schemaFor(typeTag[A7]).dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2845,21 +2979,38 @@ object functions {
     * @since 1.3.0
     */
   def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag, A5 : TypeTag, A6 : TypeTag, A7 : TypeTag, A8 : TypeTag](
-      f: Function8[A1, A2, A3, A4, A5, A6, A7, A8, RT])
-    : UserDefinedFunction = {
+      RT: TypeTag,
+      A1: TypeTag,
+      A2: TypeTag,
+      A3: TypeTag,
+      A4: TypeTag,
+      A5: TypeTag,
+      A6: TypeTag,
+      A7: TypeTag,
+      A8: TypeTag
+  ](f: Function8[A1, A2, A3, A4, A5, A6, A7, A8, RT]): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A6])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A7]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A8])
-          .dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A5])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A6])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A7])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A8])
+        .dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2870,21 +3021,41 @@ object functions {
     * @since 1.3.0
     */
   def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag, A5 : TypeTag, A6 : TypeTag, A7 : TypeTag, A8 : TypeTag, A9 : TypeTag](
-      f: Function9[A1, A2, A3, A4, A5, A6, A7, A8, A9, RT])
-    : UserDefinedFunction = {
+      RT: TypeTag,
+      A1: TypeTag,
+      A2: TypeTag,
+      A3: TypeTag,
+      A4: TypeTag,
+      A5: TypeTag,
+      A6: TypeTag,
+      A7: TypeTag,
+      A8: TypeTag,
+      A9: TypeTag
+  ](
+      f: Function9[A1, A2, A3, A4, A5, A6, A7, A8, A9, RT]
+  ): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A6])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A7]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A8])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A9]).dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A5])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A6])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A7])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A8])
+        .dataType :: ScalaReflection.schemaFor(typeTag[A9]).dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   /**
@@ -2895,23 +3066,46 @@ object functions {
     * @since 1.3.0
     */
   def udf[
-      RT : TypeTag, A1 : TypeTag, A2 : TypeTag, A3 : TypeTag, A4 : TypeTag, A5 : TypeTag, A6 : TypeTag, A7 : TypeTag, A8 : TypeTag, A9 : TypeTag, A10 : TypeTag](
-      f: Function10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, RT])
-    : UserDefinedFunction = {
+      RT: TypeTag,
+      A1: TypeTag,
+      A2: TypeTag,
+      A3: TypeTag,
+      A4: TypeTag,
+      A5: TypeTag,
+      A6: TypeTag,
+      A7: TypeTag,
+      A8: TypeTag,
+      A9: TypeTag,
+      A10: TypeTag
+  ](
+      f: Function10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, RT]
+  ): UserDefinedFunction = {
     val inputTypes = Try(
-        ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A2])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A3]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A4])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A5]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A6])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A7]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A8])
-          .dataType :: ScalaReflection.schemaFor(typeTag[A9]).dataType :: ScalaReflection
-          .schemaFor(typeTag[A10])
-          .dataType :: Nil).toOption
+      ScalaReflection.schemaFor(typeTag[A1]).dataType :: ScalaReflection
+        .schemaFor(typeTag[A2])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A3])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A4])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A5])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A6])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A7])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A8])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A9])
+        .dataType :: ScalaReflection
+        .schemaFor(typeTag[A10])
+        .dataType :: Nil
+    ).toOption
     UserDefinedFunction(
-        f, ScalaReflection.schemaFor(typeTag[RT]).dataType, inputTypes)
+      f,
+      ScalaReflection.schemaFor(typeTag[RT]).dataType,
+      inputTypes
+    )
   }
 
   // scalastyle:on parameter.number
@@ -2947,7 +3141,8 @@ object functions {
     * @since 1.5.0
     */
   @scala.annotation.varargs
-  def callUDF(udfName: String, cols: Column*): Column = withExpr {
-    UnresolvedFunction(udfName, cols.map(_.expr), isDistinct = false)
-  }
+  def callUDF(udfName: String, cols: Column*): Column =
+    withExpr {
+      UnresolvedFunction(udfName, cols.map(_.expr), isDistinct = false)
+    }
 }

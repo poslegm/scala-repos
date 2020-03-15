@@ -16,11 +16,12 @@ import java.io.File
 
 object GitSpecUtil {
   def withTestFolder[U](f: File => U): U = {
-    val folder = new File(
-        System.getProperty("java.io.tmpdir"), "test-" + System.nanoTime)
+    val folder =
+      new File(System.getProperty("java.io.tmpdir"), "test-" + System.nanoTime)
     if (!folder.mkdirs()) {
       throw new java.io.IOException(
-          "can't create folder " + folder.getAbsolutePath)
+        "can't create folder " + folder.getAbsolutePath
+      )
     }
     try {
       f(folder)
@@ -37,38 +38,49 @@ object GitSpecUtil {
     JGitUtil.initRepository(dir)
     dir
   }
-  def createFile(git: Git,
-                 branch: String,
-                 name: String,
-                 content: String,
-                 autorName: String = "dummy",
-                 autorEmail: String = "dummy@example.com",
-                 message: String = "test commit") {
-    val builder = DirCache.newInCore.builder()
+  def createFile(
+      git: Git,
+      branch: String,
+      name: String,
+      content: String,
+      autorName: String = "dummy",
+      autorEmail: String = "dummy@example.com",
+      message: String = "test commit"
+  ) {
+    val builder  = DirCache.newInCore.builder()
     val inserter = git.getRepository.newObjectInserter()
-    val headId = git.getRepository.resolve(branch + "^{commit}")
+    val headId   = git.getRepository.resolve(branch + "^{commit}")
     if (headId != null) {
       JGitUtil.processTree(git, headId) { (path, tree) =>
         if (name != path) {
-          builder.add(JGitUtil.createDirCacheEntry(
-                  path, tree.getEntryFileMode, tree.getEntryObjectId))
+          builder.add(
+            JGitUtil.createDirCacheEntry(
+              path,
+              tree.getEntryFileMode,
+              tree.getEntryObjectId
+            )
+          )
         }
       }
     }
     builder.add(
-        JGitUtil.createDirCacheEntry(
-            name,
-            FileMode.REGULAR_FILE,
-            inserter.insert(Constants.OBJ_BLOB, content.getBytes("UTF-8"))))
+      JGitUtil.createDirCacheEntry(
+        name,
+        FileMode.REGULAR_FILE,
+        inserter.insert(Constants.OBJ_BLOB, content.getBytes("UTF-8"))
+      )
+    )
     builder.finish()
-    JGitUtil.createNewCommit(git,
-                             inserter,
-                             headId,
-                             builder.getDirCache.writeTree(inserter),
-                             branch,
-                             autorName,
-                             autorEmail,
-                             message)
+    JGitUtil.createNewCommit(
+      git,
+      inserter,
+      headId,
+      builder.getDirCache.writeTree(inserter),
+      branch,
+      autorName,
+      autorEmail,
+      message
+    )
     inserter.flush()
     inserter.close()
   }
@@ -79,26 +91,32 @@ object GitSpecUtil {
       walk.addTree(revCommit.getTree)
       walk.setRecursive(true)
       @scala.annotation.tailrec
-      def _getPathObjectId: ObjectId = walk.next match {
-        case true if (walk.getPathString == path) => walk.getObjectId(0)
-        case true => _getPathObjectId
-        case false => throw new Exception(s"not found ${branch} / ${path}")
-      }
+      def _getPathObjectId: ObjectId =
+        walk.next match {
+          case true if (walk.getPathString == path) => walk.getObjectId(0)
+          case true                                 => _getPathObjectId
+          case false                                => throw new Exception(s"not found ${branch} / ${path}")
+        }
       _getPathObjectId
     }
     JGitUtil.getContentInfo(git, path, objectId)
   }
   def mergeAndCommit(
-      git: Git, into: String, branch: String, message: String = null): Unit = {
-    val repository = git.getRepository
-    val merger = MergeStrategy.RECURSIVE.newMerger(repository, true)
+      git: Git,
+      into: String,
+      branch: String,
+      message: String = null
+  ): Unit = {
+    val repository   = git.getRepository
+    val merger       = MergeStrategy.RECURSIVE.newMerger(repository, true)
     val mergeBaseTip = repository.resolve(into)
-    val mergeTip = repository.resolve(branch)
-    val conflicted = try {
-      !merger.merge(mergeBaseTip, mergeTip)
-    } catch {
-      case e: NoMergeBaseException => true
-    }
+    val mergeTip     = repository.resolve(branch)
+    val conflicted =
+      try {
+        !merger.merge(mergeBaseTip, mergeTip)
+      } catch {
+        case e: NoMergeBaseException => true
+      }
     if (conflicted) {
       throw new RuntimeException("conflict!")
     }
@@ -113,7 +131,7 @@ object GitSpecUtil {
     mergeCommit.setCommitter(committer)
     mergeCommit.setMessage(message)
     // insertObject and got mergeCommit Object Id
-    val inserter = repository.newObjectInserter
+    val inserter      = repository.newObjectInserter
     val mergeCommitId = inserter.insert(mergeCommit)
     inserter.flush()
     inserter.close()

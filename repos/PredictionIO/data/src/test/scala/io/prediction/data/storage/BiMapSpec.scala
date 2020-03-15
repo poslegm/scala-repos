@@ -29,10 +29,10 @@ class BiMapSpec extends Specification {
 
   "BiMap created with map" should {
 
-    val keys = Seq(1, 4, 6)
+    val keys      = Seq(1, 4, 6)
     val orgValues = Seq(2, 5, 7)
-    val org = keys.zip(orgValues).toMap
-    val bi = BiMap(org)
+    val org       = keys.zip(orgValues).toMap
+    val bi        = BiMap(org)
 
     "return correct values for each key of original map" in {
       val biValues = keys.map(k => bi(k))
@@ -42,8 +42,8 @@ class BiMapSpec extends Specification {
 
     "get return Option[V]" in {
       val checkKeys = keys ++ Seq(12345)
-      val biValues = checkKeys.map(k => bi.get(k))
-      val expected = orgValues.map(Some(_)) ++ Seq(None)
+      val biValues  = checkKeys.map(k => bi.get(k))
+      val expected  = orgValues.map(Some(_)) ++ Seq(None)
 
       biValues must beEqualTo(expected)
     }
@@ -55,7 +55,7 @@ class BiMapSpec extends Specification {
     }
 
     "getOrElse return default values for invalid key" in {
-      val keys = Seq(999, -1, -2)
+      val keys     = Seq(999, -1, -2)
       val defaults = Seq(1234, 5678, 987)
       val biValues =
         keys.zip(defaults).map { case (k, d) => bi.getOrElse(k, d) }
@@ -65,8 +65,8 @@ class BiMapSpec extends Specification {
 
     "contains() returns true/false correctly" in {
       val checkKeys = keys ++ Seq(12345)
-      val biValues = checkKeys.map(k => bi.contains(k))
-      val expected = orgValues.map(_ => true) ++ Seq(false)
+      val biValues  = checkKeys.map(k => bi.contains(k))
+      val expected  = orgValues.map(_ => true) ++ Seq(false)
 
       biValues must beEqualTo(expected)
     }
@@ -112,83 +112,83 @@ class BiMapSpec extends Specification {
   "BiMap.stringLong and stringInt" should {
 
     "create BiMap from set of string" in {
-      val keys = Set("a", "b", "foo", "bar")
+      val keys              = Set("a", "b", "foo", "bar")
       val values: Seq[Long] = Seq(0, 1, 2, 3)
 
-      val bi = BiMap.stringLong(keys)
+      val bi       = BiMap.stringLong(keys)
       val biValues = keys.map(k => bi(k))
 
-      val biInt = BiMap.stringInt(keys)
+      val biInt               = BiMap.stringInt(keys)
       val valuesInt: Seq[Int] = values.map(_.toInt)
-      val biIntValues = keys.map(k => biInt(k))
+      val biIntValues         = keys.map(k => biInt(k))
 
       biValues must containTheSameElementsAs(values) and
-      (biIntValues must containTheSameElementsAs(valuesInt))
+        (biIntValues must containTheSameElementsAs(valuesInt))
     }
 
     "create BiMap from Array of unique string" in {
-      val keys = Array("a", "b", "foo", "bar")
+      val keys              = Array("a", "b", "foo", "bar")
       val values: Seq[Long] = Seq(0, 1, 2, 3)
 
-      val bi = BiMap.stringLong(keys)
+      val bi       = BiMap.stringLong(keys)
       val biValues = keys.toSeq.map(k => bi(k))
 
-      val biInt = BiMap.stringInt(keys)
+      val biInt               = BiMap.stringInt(keys)
       val valuesInt: Seq[Int] = values.map(_.toInt)
-      val biIntValues = keys.toSeq.map(k => biInt(k))
+      val biIntValues         = keys.toSeq.map(k => biInt(k))
 
       biValues must containTheSameElementsAs(values) and
-      (biIntValues must containTheSameElementsAs(valuesInt))
+        (biIntValues must containTheSameElementsAs(valuesInt))
     }
 
     "not guarantee sequential index for Array with duplicated string" in {
-      val keys = Array("a", "b", "foo", "bar", "a", "b", "x")
+      val keys                 = Array("a", "b", "foo", "bar", "a", "b", "x")
       val dupValues: Seq[Long] = Seq(0, 1, 2, 3, 4, 5, 6)
-      val values = keys.zip(dupValues).toMap.values.toSeq
+      val values               = keys.zip(dupValues).toMap.values.toSeq
 
-      val bi = BiMap.stringLong(keys)
+      val bi       = BiMap.stringLong(keys)
       val biValues = keys.toSet[String].map(k => bi(k))
 
-      val biInt = BiMap.stringInt(keys)
+      val biInt               = BiMap.stringInt(keys)
       val valuesInt: Seq[Int] = values.map(_.toInt)
-      val biIntValues = keys.toSet[String].map(k => biInt(k))
+      val biIntValues         = keys.toSet[String].map(k => biInt(k))
 
       biValues must containTheSameElementsAs(values) and
-      (biIntValues must containTheSameElementsAs(valuesInt))
+        (biIntValues must containTheSameElementsAs(valuesInt))
     }
 
     "create BiMap from RDD[String]" in {
 
-      val keys = Seq("a", "b", "foo", "bar")
+      val keys              = Seq("a", "b", "foo", "bar")
       val values: Seq[Long] = Seq(0, 1, 2, 3)
-      val rdd = sc.parallelize(keys)
+      val rdd               = sc.parallelize(keys)
 
-      val bi = BiMap.stringLong(rdd)
+      val bi       = BiMap.stringLong(rdd)
       val biValues = keys.map(k => bi(k))
 
-      val biInt = BiMap.stringInt(rdd)
+      val biInt               = BiMap.stringInt(rdd)
       val valuesInt: Seq[Int] = values.map(_.toInt)
-      val biIntValues = keys.map(k => biInt(k))
+      val biIntValues         = keys.map(k => biInt(k))
 
       biValues must containTheSameElementsAs(values) and
-      (biIntValues must containTheSameElementsAs(valuesInt))
+        (biIntValues must containTheSameElementsAs(valuesInt))
     }
 
     "create BiMap from RDD[String] with duplicated string" in {
 
-      val keys = Seq("a", "b", "foo", "bar", "a", "b", "x")
+      val keys              = Seq("a", "b", "foo", "bar", "a", "b", "x")
       val values: Seq[Long] = Seq(0, 1, 2, 3, 4)
-      val rdd = sc.parallelize(keys)
+      val rdd               = sc.parallelize(keys)
 
-      val bi = BiMap.stringLong(rdd)
+      val bi       = BiMap.stringLong(rdd)
       val biValues = keys.distinct.map(k => bi(k))
 
-      val biInt = BiMap.stringInt(rdd)
+      val biInt               = BiMap.stringInt(rdd)
       val valuesInt: Seq[Int] = values.map(_.toInt)
-      val biIntValues = keys.distinct.map(k => biInt(k))
+      val biIntValues         = keys.distinct.map(k => biInt(k))
 
       biValues must containTheSameElementsAs(values) and
-      (biIntValues must containTheSameElementsAs(valuesInt))
+        (biIntValues must containTheSameElementsAs(valuesInt))
     }
   }
 

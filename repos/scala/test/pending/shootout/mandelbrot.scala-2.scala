@@ -14,7 +14,7 @@
 //   [partest] testing: [...]\files\shootout\mandelbrot.scala-2.scala                [FAILED]
 //   [partest] P4
 //   [partest] 200 200
-//   [partest] 
+//   [partest]
 // ^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^B^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@
 // ^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@^@
 // [etc]
@@ -23,12 +23,12 @@ import java.io.BufferedOutputStream
 
 object mandelbrot {
   def main(args: Array[String]) = {
-    val side = Integer.parseInt(args(0))
+    val side         = Integer.parseInt(args(0))
     val limitSquared = 4.0
-    val max = 50
-    var bits = 0
-    var bitnum = 0
-    val w = new BufferedOutputStream(System.out)
+    val max          = 50
+    var bits         = 0
+    var bitnum       = 0
+    val w            = new BufferedOutputStream(System.out)
 
     Console.println("P4\n" + side + " " + side)
 

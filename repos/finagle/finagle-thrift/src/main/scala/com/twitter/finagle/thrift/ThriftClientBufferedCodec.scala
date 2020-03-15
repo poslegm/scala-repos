@@ -5,13 +5,15 @@ import com.twitter.finagle.{CodecFactory, ClientCodecConfig}
 import org.apache.thrift.protocol.TProtocolFactory
 
 private[finagle] case class ThriftClientBufferedPipelineFactory(
-    protocolFactory: TProtocolFactory)
-    extends ChannelPipelineFactory {
+    protocolFactory: TProtocolFactory
+) extends ChannelPipelineFactory {
   def getPipeline() = {
     val pipeline = ThriftClientFramedPipelineFactory.getPipeline()
-    pipeline.replace("thriftFrameCodec",
-                     "thriftBufferDecoder",
-                     new ThriftBufferDecoder(protocolFactory))
+    pipeline.replace(
+      "thriftFrameCodec",
+      "thriftBufferDecoder",
+      new ThriftBufferDecoder(protocolFactory)
+    )
     pipeline
   }
 }
@@ -58,8 +60,9 @@ class ThriftClientBufferedCodecFactory(protocolFactory: TProtocolFactory)
 }
 
 class ThriftClientBufferedCodec(
-    protocolFactory: TProtocolFactory, config: ClientCodecConfig)
-    extends ThriftClientFramedCodec(protocolFactory, config) {
+    protocolFactory: TProtocolFactory,
+    config: ClientCodecConfig
+) extends ThriftClientFramedCodec(protocolFactory, config) {
   override def pipelineFactory =
     ThriftClientBufferedPipelineFactory(protocolFactory)
 }

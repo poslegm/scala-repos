@@ -11,7 +11,8 @@ object RuntimeDependencyInjection extends PlaySpecification {
   "Play's runtime dependency injection support" should {
     "support constructor injection" in new WithApplication() {
       app.injector.instanceOf[constructor.MyComponent] must beAnInstanceOf[
-          constructor.MyComponent]
+        constructor.MyComponent
+      ]
     }
     "support singleton scope" in new WithApplication() {
       app.injector.instanceOf[singleton.CurrentSharePrice].set(10)
@@ -24,7 +25,9 @@ object RuntimeDependencyInjection extends PlaySpecification {
       cleanup.MessageQueue.stopped must_== true
     }
     "support implemented by annotation" in new WithApplication() {
-      app.injector.instanceOf[implemented.Hello].sayHello("world") must_== "Hello world"
+      app.injector
+        .instanceOf[implemented.Hello]
+        .sayHello("world") must_== "Hello world"
     }
   }
 }
@@ -34,7 +37,7 @@ package constructor {
   import javax.inject._
   import play.api.libs.ws._
 
-  class MyComponent @Inject()(ws: WSClient) {
+  class MyComponent @Inject() (ws: WSClient) {
     // ...
   }
 //#constructor
@@ -49,16 +52,16 @@ package singleton {
     @volatile private var price = 0
 
     def set(p: Int) = price = p
-    def get = price
+    def get         = price
   }
 //#singleton
 }
 
 package cleanup {
   object MessageQueue {
-    @volatile var stopped = false
+    @volatile var stopped       = false
     def connectToMessageQueue() = MessageQueue
-    def stop() = stopped = true
+    def stop()                  = stopped = true
   }
   import MessageQueue.connectToMessageQueue
 
@@ -68,11 +71,9 @@ package cleanup {
   import play.api.inject.ApplicationLifecycle
 
   @Singleton
-  class MessageQueueConnection @Inject()(lifecycle: ApplicationLifecycle) {
+  class MessageQueueConnection @Inject() (lifecycle: ApplicationLifecycle) {
     val connection = connectToMessageQueue()
-    lifecycle.addStopHook { () =>
-      Future.successful(connection.stop())
-    }
+    lifecycle.addStopHook { () => Future.successful(connection.stop()) }
 
     //...
   }
@@ -188,10 +189,11 @@ package playmodule {
   import play.api.inject._
 
   class HelloModule extends Module {
-    def bindings(environment: Environment, configuration: Configuration) = Seq(
+    def bindings(environment: Environment, configuration: Configuration) =
+      Seq(
         bind[Hello].qualifiedWith("en").to[EnglishHello],
         bind[Hello].qualifiedWith("de").to[GermanHello]
-    )
+      )
   }
 //#play-module
 }
@@ -206,10 +208,11 @@ package eagerplaymodule {
   import play.api.inject._
 
   class HelloModule extends Module {
-    def bindings(environment: Environment, configuration: Configuration) = Seq(
+    def bindings(environment: Environment, configuration: Configuration) =
+      Seq(
         bind[Hello].qualifiedWith("en").to[EnglishHello].eagerly,
         bind[Hello].qualifiedWith("de").to[GermanHello].eagerly
-    )
+      )
   }
 //#eager-play-module
 }
@@ -234,7 +237,8 @@ package customapplicationloader {
 
   class CustomApplicationLoader extends GuiceApplicationLoader() {
     override def builder(
-        context: ApplicationLoader.Context): GuiceApplicationBuilder = {
+        context: ApplicationLoader.Context
+    ): GuiceApplicationBuilder = {
       val extra = Configuration("a" -> 1)
       initialBuilder
         .in(context.environment)
@@ -250,9 +254,9 @@ package circular {
 //#circular
   import javax.inject.Inject
 
-  class Foo @Inject()(bar: Bar)
-  class Bar @Inject()(baz: Baz)
-  class Baz @Inject()(foo: Foo)
+  class Foo @Inject() (bar: Bar)
+  class Bar @Inject() (baz: Baz)
+  class Baz @Inject() (foo: Foo)
 //#circular
 }
 
@@ -261,8 +265,8 @@ package circularProvider {
 //#circular-provider
   import javax.inject.{Inject, Provider}
 
-  class Foo @Inject()(bar: Bar)
-  class Bar @Inject()(baz: Baz)
-  class Baz @Inject()(foo: Provider[Foo])
+  class Foo @Inject() (bar: Bar)
+  class Bar @Inject() (baz: Baz)
+  class Baz @Inject() (foo: Provider[Foo])
 //#circular-provider
 }

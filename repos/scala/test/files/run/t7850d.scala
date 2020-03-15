@@ -4,10 +4,10 @@ trait T[A, B >: Null] {
   def isEmpty: A = false.asInstanceOf[A]; def get: B = null
 }
 class Casey1(val a: Int) {
-  def isEmpty: Boolean = false
+  def isEmpty: Boolean         = false
   def isEmpty(x: Int): Boolean = ???
-  def get: Int = a
-  def get(x: Int): String = ???
+  def get: Int                 = a
+  def get(x: Int): String      = ???
 }
 object Casey1 { def unapply(a: Casey1) = a }
 

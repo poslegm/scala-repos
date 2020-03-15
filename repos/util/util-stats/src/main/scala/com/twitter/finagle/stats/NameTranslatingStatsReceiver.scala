@@ -9,15 +9,16 @@ package com.twitter.finagle.stats
   * @param namespacePrefix the namespace used for translations
   */
 abstract class NameTranslatingStatsReceiver(
-    val self: StatsReceiver, namespacePrefix: String)
-    extends StatsReceiver {
+    val self: StatsReceiver,
+    namespacePrefix: String
+) extends StatsReceiver {
   def this(self: StatsReceiver) = this(self, "<namespacePrefix>")
 
   override def toString: String =
     s"$self/$namespacePrefix"
 
   protected[this] def translate(name: Seq[String]): Seq[String]
-  val repr = self.repr
+  val repr                     = self.repr
   override def isNull: Boolean = self.isNull
 
   def counter(name: String*): Counter =

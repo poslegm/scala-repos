@@ -34,8 +34,9 @@ trait HandlerInvoker[-T] {
   * An invoker that wraps another invoker, ensuring the request is tagged appropriately.
   */
 private class TaggingInvoker[-A](
-    underlyingInvoker: HandlerInvoker[A], handlerDef: HandlerDef)
-    extends HandlerInvoker[A] {
+    underlyingInvoker: HandlerInvoker[A],
+    handlerDef: HandlerDef
+) extends HandlerInvoker[A] {
   import HandlerInvokerFactory._
   val cachedHandlerTags = handlerTags(handlerDef)
   def call(call: => A): Handler = {
@@ -62,7 +63,8 @@ private class TaggingInvoker[-A](
   * for an implicit `HandlerInvokerFactory` and uses that to create a `HandlerInvoker`.
   */
 @scala.annotation.implicitNotFound(
-    "Cannot use a method returning ${T} as a Handler for requests")
+  "Cannot use a method returning ${T} as a Handler for requests"
+)
 trait HandlerInvokerFactory[-T] {
 
   /**
@@ -81,16 +83,20 @@ object HandlerInvokerFactory {
   import com.fasterxml.jackson.databind.JsonNode
 
   private[routing] def handlerTags(
-      handlerDef: HandlerDef): Map[String, String] = Map(
-      play.api.routing.Router.Tags.RoutePattern -> handlerDef.path,
-      play.api.routing.Router.Tags.RouteVerb -> handlerDef.verb,
-      play.api.routing.Router.Tags.RouteController -> handlerDef.controller,
+      handlerDef: HandlerDef
+  ): Map[String, String] =
+    Map(
+      play.api.routing.Router.Tags.RoutePattern      -> handlerDef.path,
+      play.api.routing.Router.Tags.RouteVerb         -> handlerDef.verb,
+      play.api.routing.Router.Tags.RouteController   -> handlerDef.controller,
       play.api.routing.Router.Tags.RouteActionMethod -> handlerDef.method,
-      play.api.routing.Router.Tags.RouteComments -> handlerDef.comments
-  )
+      play.api.routing.Router.Tags.RouteComments     -> handlerDef.comments
+    )
 
   private[routing] def taggedRequest(
-      rh: RequestHeader, tags: Map[String, String]): RequestHeader = {
+      rh: RequestHeader,
+      tags: Map[String, String]
+  ): RequestHeader = {
     val newTags = if (rh.tags.isEmpty) tags else rh.tags ++ tags
     rh.copy(tags = newTags)
   }
@@ -118,7 +124,8 @@ object HandlerInvokerFactory {
         if (handlerDef.routerPackage.length > 0) {
           try {
             handlerDef.classLoader.loadClass(
-                handlerDef.routerPackage + "." + handlerDef.controller)
+              handlerDef.routerPackage + "." + handlerDef.controller
+            )
           } catch {
             case NonFatal(_) => throw e
           }
@@ -133,36 +140,44 @@ object HandlerInvokerFactory {
   private abstract class JavaActionInvokerFactory[A]
       extends HandlerInvokerFactory[A] {
     def createInvoker(
-        fakeCall: => A, handlerDef: HandlerDef): HandlerInvoker[A] =
+        fakeCall: => A,
+        handlerDef: HandlerDef
+    ): HandlerInvoker[A] =
       new HandlerInvoker[A] {
         val cachedHandlerTags = handlerTags(handlerDef)
         val cachedAnnotations = {
           val controller = loadJavaControllerClass(handlerDef)
           val method = MethodUtils.getMatchingAccessibleMethod(
-              controller, handlerDef.method, handlerDef.parameterTypes: _*)
+            controller,
+            handlerDef.method,
+            handlerDef.parameterTypes: _*
+          )
           new JavaActionAnnotations(controller, method)
         }
-        def call(call: => A): Handler = new JavaHandler {
-          def withComponents(components: JavaHandlerComponents) =
-            new play.core.j.JavaAction(components) with RequestTaggingHandler {
-              val annotations = cachedAnnotations
-              val parser = {
-                val javaParser =
-                  components.getBodyParser(cachedAnnotations.parser)
-                javaBodyParserToScala(javaParser)
+        def call(call: => A): Handler =
+          new JavaHandler {
+            def withComponents(components: JavaHandlerComponents) =
+              new play.core.j.JavaAction(components)
+                with RequestTaggingHandler {
+                val annotations = cachedAnnotations
+                val parser = {
+                  val javaParser =
+                    components.getBodyParser(cachedAnnotations.parser)
+                  javaBodyParserToScala(javaParser)
+                }
+                def invocation: CompletionStage[JResult] = resultCall(call)
+                def tagRequest(rh: RequestHeader) =
+                  taggedRequest(rh, cachedHandlerTags)
               }
-              def invocation: CompletionStage[JResult] = resultCall(call)
-              def tagRequest(rh: RequestHeader) =
-                taggedRequest(rh, cachedHandlerTags)
-            }
-        }
+          }
       }
     def resultCall(call: => A): CompletionStage[JResult]
   }
 
   private[play] def javaBodyParserToScala(
-      parser: play.mvc.BodyParser[_]): BodyParser[RequestBody] = BodyParser {
-    request =>
+      parser: play.mvc.BodyParser[_]
+  ): BodyParser[RequestBody] =
+    BodyParser { request =>
       val accumulator =
         parser.apply(new play.core.j.RequestHeaderImpl(request)).asScala()
       import play.api.libs.iteratee.Execution.Implicits.trampoline
@@ -173,14 +188,15 @@ object HandlerInvokerFactory {
           Right(new RequestBody(javaEither.right.get()))
         }
       }
-  }
+    }
 
   implicit def wrapJava: HandlerInvokerFactory[JResult] =
     new JavaActionInvokerFactory[JResult] {
       def resultCall(call: => JResult) =
         CompletableFuture.completedFuture(call)
     }
-  implicit def wrapJavaPromise: HandlerInvokerFactory[CompletionStage[JResult]] =
+  implicit def wrapJavaPromise
+      : HandlerInvokerFactory[CompletionStage[JResult]] =
     new JavaActionInvokerFactory[CompletionStage[JResult]] {
       def resultCall(call: => CompletionStage[JResult]) = call
     }
@@ -192,55 +208,61 @@ object HandlerInvokerFactory {
       extends HandlerInvokerFactory[A] {
     def webSocketCall(call: => A): WebSocket
     def createInvoker(
-        fakeCall: => A, handlerDef: HandlerDef): HandlerInvoker[A] =
+        fakeCall: => A,
+        handlerDef: HandlerDef
+    ): HandlerInvoker[A] =
       new HandlerInvoker[A] {
-        val cachedHandlerTags = handlerTags(handlerDef)
+        val cachedHandlerTags           = handlerTags(handlerDef)
         def call(call: => A): WebSocket = webSocketCall(call)
       }
   }
 
-  implicit def javaBytesWebSocket: HandlerInvokerFactory[LegacyWebSocket[
-          Array[Byte]]] =
+  implicit def javaBytesWebSocket
+      : HandlerInvokerFactory[LegacyWebSocket[Array[Byte]]] =
     new JavaWebSocketInvokerFactory[LegacyWebSocket[Array[Byte]], Array[Byte]] {
       def webSocketCall(call: => LegacyWebSocket[Array[Byte]]) =
         JavaWebSocket.ofBytes(call)
     }
 
-  implicit def javaStringWebSocket: HandlerInvokerFactory[LegacyWebSocket[
-          String]] =
+  implicit def javaStringWebSocket
+      : HandlerInvokerFactory[LegacyWebSocket[String]] =
     new JavaWebSocketInvokerFactory[LegacyWebSocket[String], String] {
       def webSocketCall(call: => LegacyWebSocket[String]) =
         JavaWebSocket.ofString(call)
     }
 
-  implicit def javaJsonWebSocket: HandlerInvokerFactory[LegacyWebSocket[
-          JsonNode]] =
+  implicit def javaJsonWebSocket
+      : HandlerInvokerFactory[LegacyWebSocket[JsonNode]] =
     new JavaWebSocketInvokerFactory[LegacyWebSocket[JsonNode], JsonNode] {
       def webSocketCall(call: => LegacyWebSocket[JsonNode]) =
         JavaWebSocket.ofJson(call)
     }
 
-  implicit def javaBytesPromiseWebSocket: HandlerInvokerFactory[
-      CompletionStage[LegacyWebSocket[Array[Byte]]]] =
-    new JavaWebSocketInvokerFactory[
-        CompletionStage[LegacyWebSocket[Array[Byte]]], Array[Byte]] {
+  implicit def javaBytesPromiseWebSocket
+      : HandlerInvokerFactory[CompletionStage[LegacyWebSocket[Array[Byte]]]] =
+    new JavaWebSocketInvokerFactory[CompletionStage[
+      LegacyWebSocket[Array[Byte]]
+    ], Array[Byte]] {
       def webSocketCall(
-          call: => CompletionStage[LegacyWebSocket[Array[Byte]]]) =
+          call: => CompletionStage[LegacyWebSocket[Array[Byte]]]
+      ) =
         JavaWebSocket.promiseOfBytes(call)
     }
 
-  implicit def javaStringPromiseWebSocket: HandlerInvokerFactory[
-      CompletionStage[LegacyWebSocket[String]]] =
-    new JavaWebSocketInvokerFactory[
-        CompletionStage[LegacyWebSocket[String]], String] {
+  implicit def javaStringPromiseWebSocket
+      : HandlerInvokerFactory[CompletionStage[LegacyWebSocket[String]]] =
+    new JavaWebSocketInvokerFactory[CompletionStage[
+      LegacyWebSocket[String]
+    ], String] {
       def webSocketCall(call: => CompletionStage[LegacyWebSocket[String]]) =
         JavaWebSocket.promiseOfString(call)
     }
 
-  implicit def javaJsonPromiseWebSocket: HandlerInvokerFactory[
-      CompletionStage[LegacyWebSocket[JsonNode]]] =
-    new JavaWebSocketInvokerFactory[
-        CompletionStage[LegacyWebSocket[JsonNode]], JsonNode] {
+  implicit def javaJsonPromiseWebSocket
+      : HandlerInvokerFactory[CompletionStage[LegacyWebSocket[JsonNode]]] =
+    new JavaWebSocketInvokerFactory[CompletionStage[
+      LegacyWebSocket[JsonNode]
+    ], JsonNode] {
       def webSocketCall(call: => CompletionStage[LegacyWebSocket[JsonNode]]) =
         JavaWebSocket.promiseOfJson(call)
     }
@@ -260,29 +282,37 @@ object HandlerInvokerFactory {
                   if (resultOrFlow.left.isPresent) {
                     Left(resultOrFlow.left.get.asScala())
                   } else {
-                    Right(Flow[Message].map {
-                      case TextMessage(text) => new JMessage.Text(text)
-                      case BinaryMessage(data) => new JMessage.Binary(data)
-                      case PingMessage(data) => new JMessage.Ping(data)
-                      case PongMessage(data) => new JMessage.Pong(data)
-                      case CloseMessage(code, reason) =>
-                        new JMessage.Close(OptionConverters
-                                             .toJava(code)
-                                             .asInstanceOf[Optional[Integer]],
-                                           reason)
-                    }.via(resultOrFlow.right.get.asScala)
-                          .map {
-                        case text: JMessage.Text => TextMessage(text.data)
-                        case binary: JMessage.Binary =>
-                          BinaryMessage(binary.data)
-                        case ping: JMessage.Ping => PingMessage(ping.data)
-                        case pong: JMessage.Pong => PongMessage(pong.data)
-                        case close: JMessage.Close =>
-                          CloseMessage(OptionConverters
-                                         .toScala(close.code)
-                                         .asInstanceOf[Option[Int]],
-                                       close.reason)
-                      })
+                    Right(
+                      Flow[Message]
+                        .map {
+                          case TextMessage(text)   => new JMessage.Text(text)
+                          case BinaryMessage(data) => new JMessage.Binary(data)
+                          case PingMessage(data)   => new JMessage.Ping(data)
+                          case PongMessage(data)   => new JMessage.Pong(data)
+                          case CloseMessage(code, reason) =>
+                            new JMessage.Close(
+                              OptionConverters
+                                .toJava(code)
+                                .asInstanceOf[Optional[Integer]],
+                              reason
+                            )
+                        }
+                        .via(resultOrFlow.right.get.asScala)
+                        .map {
+                          case text: JMessage.Text => TextMessage(text.data)
+                          case binary: JMessage.Binary =>
+                            BinaryMessage(binary.data)
+                          case ping: JMessage.Ping => PingMessage(ping.data)
+                          case pong: JMessage.Pong => PongMessage(pong.data)
+                          case close: JMessage.Close =>
+                            CloseMessage(
+                              OptionConverters
+                                .toScala(close.code)
+                                .asInstanceOf[Option[Int]],
+                              close.reason
+                            )
+                        }
+                    )
                   }
                 }
             }

@@ -27,10 +27,12 @@ import org.apache.spark.{SparkConf, SparkFunSuite}
 import org.apache.spark.util.Utils
 
 class DiskBlockManagerSuite
-    extends SparkFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
-  private val testConf = new SparkConf(false)
-  private var rootDir0: File = _
-  private var rootDir1: File = _
+    extends SparkFunSuite
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll {
+  private val testConf         = new SparkConf(false)
+  private var rootDir0: File   = _
+  private var rootDir1: File   = _
   private var rootDirs: String = _
 
   var diskBlockManager: DiskBlockManager = _
@@ -76,7 +78,7 @@ class DiskBlockManagerSuite
   }
 
   test("enumerating blocks") {
-    val ids = (1 to 100).map(i => TestBlockId("test_" + i))
+    val ids   = (1 to 100).map(i => TestBlockId("test_" + i))
     val files = ids.map(id => diskBlockManager.getFile(id))
     files.foreach(file => writeToFile(file, 10))
     assert(diskBlockManager.getAllBlocks.toSet === ids.toSet)

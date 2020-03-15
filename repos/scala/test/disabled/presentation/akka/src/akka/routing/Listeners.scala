@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentSkipListSet
 import scala.collection.JavaConversions._
 
 sealed trait ListenerMessage
-case class Listen(listener: ActorRef) extends ListenerMessage
-case class Deafen(listener: ActorRef) extends ListenerMessage
+case class Listen(listener: ActorRef)           extends ListenerMessage
+case class Deafen(listener: ActorRef)           extends ListenerMessage
 case class WithListeners(f: (ActorRef) => Unit) extends ListenerMessage
 
 /**
@@ -27,8 +27,8 @@ trait Listeners { self: Actor =>
   private val listeners = new ConcurrentSkipListSet[ActorRef]
 
   protected def listenerManagement: Receive = {
-    case Listen(l) => listeners add l
-    case Deafen(l) => listeners remove l
+    case Listen(l)        => listeners add l
+    case Deafen(l)        => listeners remove l
     case WithListeners(f) => listeners foreach f
   }
 

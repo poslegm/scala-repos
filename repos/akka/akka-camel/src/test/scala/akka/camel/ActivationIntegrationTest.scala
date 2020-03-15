@@ -17,33 +17,39 @@ import java.util.concurrent.TimeoutException
 import akka.util.Timeout
 
 class ActivationIntegrationTest
-    extends WordSpec with Matchers with SharedCamelSystem {
-  val timeoutDuration = 10 seconds
-  implicit val timeout = Timeout(timeoutDuration)
+    extends WordSpec
+    with Matchers
+    with SharedCamelSystem {
+  val timeoutDuration            = 10 seconds
+  implicit val timeout           = Timeout(timeoutDuration)
   def template: ProducerTemplate = camel.template
   import system.dispatcher
 
   "ActivationAware should be notified when endpoint is activated" in {
     val latch = new TestLatch(0)
     val actor = system.actorOf(
-        Props(new TestConsumer("direct:actor-1", latch)), "act-direct-actor-1")
-    Await.result(camel.activationFutureFor(actor), 10 seconds) should ===(
-        actor)
+      Props(new TestConsumer("direct:actor-1", latch)),
+      "act-direct-actor-1"
+    )
+    Await.result(camel.activationFutureFor(actor), 10 seconds) should ===(actor)
 
     template.requestBody("direct:actor-1", "test") should ===("received test")
   }
 
   "ActivationAware should be notified when endpoint is de-activated" in {
     val latch = TestLatch(1)
-    val actor = start(new Consumer {
-      def endpointUri = "direct:a3"
-      def receive = { case _ ⇒ {} }
+    val actor = start(
+      new Consumer {
+        def endpointUri = "direct:a3"
+        def receive     = { case _ ⇒ {} }
 
-      override def postStop() {
-        super.postStop()
-        latch.countDown()
-      }
-    }, name = "direct-a3")
+        override def postStop() {
+          super.postStop()
+          latch.countDown()
+        }
+      },
+      name = "direct-a3"
+    )
     Await.result(camel.activationFutureFor(actor), timeoutDuration)
 
     system.stop(actor)
@@ -63,7 +69,9 @@ class ActivationIntegrationTest
   "activationFutureFor must fail if notification timeout is too short and activation is not complete yet" in {
     val latch = new TestLatch(1)
     val actor = system.actorOf(
-        Props(new TestConsumer("direct:actor-4", latch)), "direct-actor-4")
+      Props(new TestConsumer("direct:actor-4", latch)),
+      "direct-actor-4"
+    )
     intercept[TimeoutException] {
       Await.result(camel.activationFutureFor(actor), 1 millis)
     }

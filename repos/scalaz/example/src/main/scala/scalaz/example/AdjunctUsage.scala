@@ -7,7 +7,7 @@ object AdjunctUsage extends App {
 
   // two lists we'll be traversing
   val nonRepeating = List(1, 2, 3, 4)
-  val repeating = List(1, 2, 3, 3, 4)
+  val repeating    = List(1, 2, 3, 3, 4)
 
   // Here is a function which uses the state monad to traverse a list
   // and remember the previous element of the list, in order to
@@ -15,8 +15,8 @@ object AdjunctUsage extends App {
   val checkForRepeats: Int ⇒ State[Option[Int], Boolean] = { next ⇒
     import State._
     for {
-      last ← get // get the last value from the previous iteration
-      _ ← put(some(next)) // set the next value to the value in this iteration
+      last ← get             // get the last value from the previous iteration
+      _    ← put(some(next)) // set the next value to the value in this iteration
     } yield (last === some(next)) // emit a boolean if this is the same as last
   }
 
@@ -51,14 +51,14 @@ object AdjunctUsage extends App {
   val adjOptionInt = Adjunction.writerReaderAdjunction[Option[Int]]
   val didTheyRepeat: Boolean = {
     implicit val adjMonad = adjOptionInt.monad
-    val (_, bools) = nonRepeating.traverseU(checkForRepeatsAdj).run(None).run
+    val (_, bools)        = nonRepeating.traverseU(checkForRepeatsAdj).run(None).run
     bools.foldLeft(false)((r, a) ⇒ r || a)
   }
   assert(didTheyRepeat == false)
 
   val didTheyRepeat2: Boolean = {
     implicit val adjMonad = adjOptionInt.monad
-    val (_, bools) = repeating.traverseU(checkForRepeatsAdj).run(None).run
+    val (_, bools)        = repeating.traverseU(checkForRepeatsAdj).run(None).run
     bools.foldLeft(false)((r, a) ⇒ r || a)
   }
   assert(didTheyRepeat2 === true)
@@ -89,10 +89,15 @@ object AdjunctUsage extends App {
   // composed together, so that they happen on a single pass through a
   // Traversable,
   type ROIRIWW[A] = Reader[
-      Option[Int], // read the previous value for computing repeats
-      Reader[Int, // read the accumulated sum
-             Writer[Int, // write the new sum
-                    Writer[Option[Int], A]]]] // write the next value for computing repeats
+    Option[Int], // read the previous value for computing repeats
+    Reader[
+      Int, // read the accumulated sum
+      Writer[
+        Int, // write the new sum
+        Writer[Option[Int], A]
+      ]
+    ]
+  ] // write the next value for computing repeats
 
   // now we can combine our two stateful computations
   val checkForRepeatsAdjAndSum2: Int ⇒ ROIRIWW[Boolean] = { next ⇒
@@ -101,15 +106,17 @@ object AdjunctUsage extends App {
 
   // but this can be done more generically for any two of these Reader/Writer adjunctions
   def run2RWState[A, S1, S2, B, C, R](
-      rws1: A ⇒ RWState[S1, B], rws2: A ⇒ RWState[S2, C], f: (B, C) ⇒ R) = {
-    a: A ⇒
-      rws1(a).map(b ⇒ rws2(a).map(_.map(c ⇒ Writer(b.run._1, f(b.run._2, c)))))
+      rws1: A ⇒ RWState[S1, B],
+      rws2: A ⇒ RWState[S2, C],
+      f: (B, C) ⇒ R
+  ) = { a: A ⇒
+    rws1(a).map(b ⇒ rws2(a).map(_.map(c ⇒ Writer(b.run._1, f(b.run._2, c)))))
   }
 
   // with the above function we can combine the two stateful
   // computations with a function that throws away the Unit from sum.
-  val checkForRepeatsAdjAndSum: Int ⇒ ROIRIWW[Boolean] = run2RWState(
-      checkForRepeatsAdj, sum, (a: Boolean, _: Any) ⇒ a)
+  val checkForRepeatsAdjAndSum: Int ⇒ ROIRIWW[Boolean] =
+    run2RWState(checkForRepeatsAdj, sum, (a: Boolean, _: Any) ⇒ a)
 
   // since the adjunctions compose, we can run both stateful
   // computations with a single traverse of the list. This
@@ -123,8 +130,8 @@ object AdjunctUsage extends App {
   }
 
   val repeats: Boolean = bothAtOnce._2.run._2.foldLeft(false)((x, y) ⇒ x || y)
-  val sumResult: Int = bothAtOnce._1
+  val sumResult: Int   = bothAtOnce._1
 
   assert(repeats === false) // no repeats
-  assert(sumResult === 10) // sum is 10
+  assert(sumResult === 10)  // sum is 10
 }

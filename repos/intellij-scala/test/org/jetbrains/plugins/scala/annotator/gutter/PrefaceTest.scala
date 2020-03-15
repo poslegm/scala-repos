@@ -6,8 +6,8 @@ package org.jetbrains.plugins.scala.annotator.gutter
 class PrefaceTest extends LineMarkerTestBase {
   protected override def getBasePath = super.getBasePath + "/preface/"
 
-  def testClassAndPackage() = doTest()
+  def testClassAndPackage()          = doTest()
   def testClassAndPackageContainer() = doTest()
   def testPackageContainerAndClass() = doTest()
-  def testImportInBetween() = doTest()
+  def testImportInBetween()          = doTest()
 }

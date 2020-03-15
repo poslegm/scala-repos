@@ -2,9 +2,24 @@ package org.scalatra
 
 import java.io._
 import java.nio.charset.Charset
-import java.util.zip.{DeflaterOutputStream, GZIPInputStream, GZIPOutputStream, InflaterInputStream}
-import javax.servlet.http.{HttpServletRequest, HttpServletRequestWrapper, HttpServletResponse, HttpServletResponseWrapper}
-import javax.servlet.{ReadListener, ServletInputStream, ServletOutputStream, WriteListener}
+import java.util.zip.{
+  DeflaterOutputStream,
+  GZIPInputStream,
+  GZIPOutputStream,
+  InflaterInputStream
+}
+import javax.servlet.http.{
+  HttpServletRequest,
+  HttpServletRequestWrapper,
+  HttpServletResponse,
+  HttpServletResponseWrapper
+}
+import javax.servlet.{
+  ReadListener,
+  ServletInputStream,
+  ServletOutputStream,
+  WriteListener
+}
 
 import scala.util.Try
 
@@ -33,40 +48,48 @@ trait ContentEncoding {
 
 object ContentEncoding {
 
-  private def create(id: String,
-                     e: OutputStream => OutputStream,
-                     d: InputStream => InputStream): ContentEncoding = {
+  private def create(
+      id: String,
+      e: OutputStream => OutputStream,
+      d: InputStream => InputStream
+  ): ContentEncoding = {
     new ContentEncoding {
-      override def name: String = id
+      override def name: String                            = id
       override def encode(out: OutputStream): OutputStream = e(out)
-      override def decode(in: InputStream): InputStream = d(in)
+      override def decode(in: InputStream): InputStream    = d(in)
     }
   }
 
   val GZip: ContentEncoding = {
-    create("gzip",
-           out => new GZIPOutputStream(out),
-           in => new GZIPInputStream(in))
+    create(
+      "gzip",
+      out => new GZIPOutputStream(out),
+      in => new GZIPInputStream(in)
+    )
   }
 
   val Deflate: ContentEncoding = {
-    create("deflate",
-           out => new DeflaterOutputStream(out),
-           in => new InflaterInputStream(in))
+    create(
+      "deflate",
+      out => new DeflaterOutputStream(out),
+      in => new InflaterInputStream(in)
+    )
   }
 
-  def forName(name: String): Option[ContentEncoding] = name.toLowerCase match {
-    case "gzip" => Some(GZip)
-    case "deflate" => Some(Deflate)
-    case _ => None
-  }
+  def forName(name: String): Option[ContentEncoding] =
+    name.toLowerCase match {
+      case "gzip"    => Some(GZip)
+      case "deflate" => Some(Deflate)
+      case _         => None
+    }
 }
 
 // - Request decoding --------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
 private class DecodedServletRequest(
-    req: HttpServletRequest, enc: ContentEncoding)
-    extends HttpServletRequestWrapper(req) {
+    req: HttpServletRequest,
+    enc: ContentEncoding
+) extends HttpServletRequestWrapper(req) {
 
   override lazy val getInputStream: EncodedInputStream = {
     val raw = req.getInputStream
@@ -75,7 +98,8 @@ private class DecodedServletRequest(
 
   override lazy val getReader: BufferedReader = {
     new BufferedReader(
-        new InputStreamReader(getInputStream, getCharacterEncoding))
+      new InputStreamReader(getInputStream, getCharacterEncoding)
+    )
   }
 
   override def getContentLength: Int = -1
@@ -85,11 +109,11 @@ private class EncodedInputStream(encoded: InputStream, raw: ServletInputStream)
     extends ServletInputStream {
 
   override def isFinished: Boolean = raw.isFinished
-  override def isReady: Boolean = raw.isReady
+  override def isReady: Boolean    = raw.isReady
   override def setReadListener(readListener: ReadListener): Unit =
     raw.setReadListener(readListener)
 
-  override def read(): Int = encoded.read()
+  override def read(): Int               = encoded.read()
   override def read(b: Array[Byte]): Int = read(b, 0, b.length)
   override def read(b: Array[Byte], off: Int, len: Int) =
     encoded.read(b, off, len)
@@ -99,8 +123,9 @@ private class EncodedInputStream(encoded: InputStream, raw: ServletInputStream)
 // ---------------------------------------------------------------------------------------------------------------------
 /** Encodes any output written to a servlet response. */
 private class EncodedServletResponse(
-    res: HttpServletResponse, enc: ContentEncoding)
-    extends HttpServletResponseWrapper(res) {
+    res: HttpServletResponse,
+    enc: ContentEncoding
+) extends HttpServletResponseWrapper(res) {
 
   // Object to flush when complete, if any.
   // Note that while this is essentially a mutable shared state, it's not really an issue here - or rather, if multiple
@@ -118,7 +143,8 @@ private class EncodedServletResponse(
 
   override lazy val getWriter: PrintWriter = {
     val writer = new PrintWriter(
-        new OutputStreamWriter(getOutputStream, getCharset))
+      new OutputStreamWriter(getOutputStream, getCharset)
+    )
     toFlush = Some(writer)
     writer
   }
@@ -126,7 +152,7 @@ private class EncodedServletResponse(
   /** Returns the charset with which to encode the response. */
   private def getCharset: Charset =
     (for {
-      name <- Option(getCharacterEncoding)
+      name    <- Option(getCharacterEncoding)
       charset <- Try(Charset.forName(name)).toOption
     } yield charset).getOrElse {
       // The charset is either not known or not supported, defaults to ISO 8859 1, as per RFC and servlet documentation.
@@ -141,7 +167,7 @@ private class EncodedServletResponse(
   }
 
   // Encoded responses do not have a content length.
-  override def setContentLength(i: Int) = {}
+  override def setContentLength(i: Int)              = {}
   override def setContentLengthLong(len: Long): Unit = {}
 }
 
@@ -151,7 +177,7 @@ private class EncodedOutputStream(out: OutputStream, orig: ServletOutputStream)
 
   // - Raw writing -----------------------------------------------------------------------------------------------------
   // -------------------------------------------------------------------------------------------------------------------
-  override def write(b: Int): Unit = out.write(b)
+  override def write(b: Int): Unit   = out.write(b)
   override def write(b: Array[Byte]) = write(b, 0, b.length)
   override def write(b: Array[Byte], off: Int, len: Int): Unit =
     out.write(b, off, len)

@@ -3,9 +3,10 @@ object Test {
 
   // fallback, lower priority (overloading rules apply: pick alternative in subclass lowest in subtyping lattice)
   class ZipWithDefault {
-    implicit def ZeroZipWith[S] = new ZipWith[S] {
-      type T = Stream[S]
-    }
+    implicit def ZeroZipWith[S] =
+      new ZipWith[S] {
+        type T = Stream[S]
+      }
   }
 
   object ZipWith extends ZipWithDefault {
@@ -14,7 +15,8 @@ object Test {
 
     implicit def SuccZipWith[S, R](implicit zWith: ZipWith[R]) =
       new ZipWith[S => R] {
-        type T = Stream[S] => zWith.T // dependent types replace the associated types functionality
+        type T =
+          Stream[S] => zWith.T // dependent types replace the associated types functionality
       }
   }
 
@@ -26,7 +28,5 @@ object Test {
   // bug: inferred return type = (Stream[A]) => java.lang.Object with Test.ZipWith[B]{type T = Stream[B]}#T
   // this seems incompatible with vvvvvvvvvvvvvvvvvvvvvv   -- #3731
   def map[A, B](f: A => B) /* : Stream[A] => Stream[B]*/ = ZipWith(f)
-  val tst: Stream[Int] = map { x: String =>
-    x.length
-  }(Stream("a"))
+  val tst: Stream[Int]                                   = map { x: String => x.length }(Stream("a"))
 }

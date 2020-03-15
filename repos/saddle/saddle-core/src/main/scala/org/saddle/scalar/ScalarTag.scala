@@ -26,14 +26,18 @@ import org.saddle.array.Sorter
   * as an array. Often implicitly required when dealing with objects in Saddle
   */
 trait ScalarTag[@spec(Boolean, Int, Long, Float, Double) T]
-    extends ClassManifest[T] with SpecializedFactory[T] with CouldBeOrdered[T]
-    with CouldBeNumber[T] with ScalarHelperOps[T] with Serializable {
+    extends ClassManifest[T]
+    with SpecializedFactory[T]
+    with CouldBeOrdered[T]
+    with CouldBeNumber[T]
+    with ScalarHelperOps[T]
+    with Serializable {
   // representation of missing data
   def missing: T
   def isMissing(t: T): Boolean
   def notMissing(t: T): Boolean
 
-  def isTuple: Boolean = false
+  def isTuple: Boolean  = false
   def isDouble: Boolean = false
 
   def strList = (v: T) => List(show(v))
@@ -42,19 +46,20 @@ trait ScalarTag[@spec(Boolean, Int, Long, Float, Double) T]
 
   // Workaround: Scala types Any, AnyRef, AnyVal all have runtimeClass java.lang.Object; workaround continues
   // via ScalarTag implicit resolution hierarchy below.
-  def isAny = false
+  def isAny    = false
   def isAnyVal = false
 
   override def hashCode(): Int =
     isAny.hashCode() + isAnyVal.hashCode() * 31 +
-    runtimeClass.hashCode() * 31 * 31
+      runtimeClass.hashCode() * 31 * 31
 
-  override def equals(o: Any): Boolean = o match {
-    case s: ScalarTag[_] =>
-      (this eq s) || runtimeClass == s.runtimeClass && isAny == s.isAny &&
-      isAnyVal == s.isAnyVal
-    case _ => false
-  }
+  override def equals(o: Any): Boolean =
+    o match {
+      case s: ScalarTag[_] =>
+        (this eq s) || runtimeClass == s.runtimeClass && isAny == s.isAny &&
+          isAnyVal == s.isAnyVal
+      case _ => false
+    }
 
   override def toString = "ScalarTag[%s]" format runtimeClass
 
@@ -65,42 +70,44 @@ trait ScalarTag[@spec(Boolean, Int, Long, Float, Double) T]
 }
 
 object ScalarTag extends ScalarTagImplicits {
-  implicit val stChar = ScalarTagChar
-  implicit val stByte = ScalarTagByte
-  implicit val stBool = ScalarTagBool
-  implicit val stShort = ScalarTagShort
-  implicit val stInt = ScalarTagInt
-  implicit val stFloat = ScalarTagFloat
-  implicit val stLong = ScalarTagLong
+  implicit val stChar   = ScalarTagChar
+  implicit val stByte   = ScalarTagByte
+  implicit val stBool   = ScalarTagBool
+  implicit val stShort  = ScalarTagShort
+  implicit val stInt    = ScalarTagInt
+  implicit val stFloat  = ScalarTagFloat
+  implicit val stLong   = ScalarTagLong
   implicit val stDouble = ScalarTagDouble
-  implicit val stTime = ScalarTagTime
+  implicit val stTime   = ScalarTagTime
 }
 
 trait ScalarTagImplicits extends ScalarTagImplicitsL1 {
-  implicit def stPrd[T <: Product : CLM] = new ScalarTagProduct[T]
+  implicit def stPrd[T <: Product: CLM] = new ScalarTagProduct[T]
 }
 
 trait ScalarTagImplicitsL1 extends ScalarTagImplicitsL2 {
-  implicit def stAnyVal[T <: AnyVal : CLM] = new ScalarTagAny[T] {
-    override def isAnyVal = true
-  }
+  implicit def stAnyVal[T <: AnyVal: CLM] =
+    new ScalarTagAny[T] {
+      override def isAnyVal = true
+    }
 }
 
 trait ScalarTagImplicitsL2 extends ScalarTagImplicitsL3 {
-  implicit def stAnyRef[T <: AnyRef : CLM] = new ScalarTagAny[T]
+  implicit def stAnyRef[T <: AnyRef: CLM] = new ScalarTagAny[T]
 }
 
 trait ScalarTagImplicitsL3 {
-  implicit def stAny[T : CLM] = new ScalarTagAny[T] {
-    override def isAny = true
-  }
+  implicit def stAny[T: CLM] =
+    new ScalarTagAny[T] {
+      override def isAny = true
+    }
 }
 
 trait CouldBeOrdered[@spec(Boolean, Int, Long, Float, Double) T] {
   // for comparable scalars
   def compare(a: T, b: T)(implicit ev: ORD[T]): Int
-  def lt(a: T, b: T)(implicit ev: ORD[T]) = compare(a, b) < 0
-  def gt(a: T, b: T)(implicit ev: ORD[T]) = compare(a, b) > 0
+  def lt(a: T, b: T)(implicit ev: ORD[T])   = compare(a, b) < 0
+  def gt(a: T, b: T)(implicit ev: ORD[T])   = compare(a, b) > 0
   def iseq(a: T, b: T)(implicit ev: ORD[T]) = compare(a, b) == 0
 }
 
@@ -141,8 +148,10 @@ trait SpecializedFactory[@spec(Boolean, Int, Long, Float, Double) T] {
       val r = arr(0).length
       if (r == 0) st.makeMat(0, 0, st.newArray(0))
       else {
-        require(arr.foldLeft(true)(_ && _.length == r),
-                "All vec inputs must have the same length")
+        require(
+          arr.foldLeft(true)(_ && _.length == r),
+          "All vec inputs must have the same length"
+        )
         altMatConstructor(r, c, arr)
       }
     }
@@ -153,6 +162,7 @@ trait SpecializedFactory[@spec(Boolean, Int, Long, Float, Double) T] {
     * don't want to extract elements that way.
     */
   protected def altMatConstructor(r: Int, c: Int, arr: Array[Vec[T]])(
-      implicit st: ST[T]): Mat[T] =
+      implicit st: ST[T]
+  ): Mat[T] =
     makeMat(c, r, st.concat(arr).toArray).T
 }

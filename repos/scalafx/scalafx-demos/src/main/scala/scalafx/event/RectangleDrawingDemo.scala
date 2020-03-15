@@ -54,7 +54,7 @@ object RectangleDrawingDemo extends JFXApp {
   /** Encapsulate handle updates to the rectangle */
   object Updater {
     private var _start = new Point2D(0, 0)
-    private var _end = new Point2D(0, 0)
+    private var _end   = new Point2D(0, 0)
 
     val rectangle = new Rectangle {
       fill = Color.Blue
@@ -81,14 +81,14 @@ object RectangleDrawingDemo extends JFXApp {
     {
       me.eventType match {
         case MouseEvent.MousePressed => {
-            // Reset the shape
-            val p = new Point2D(me.x, me.y)
-            Updater.update(p, p)
-          }
+          // Reset the shape
+          val p = new Point2D(me.x, me.y)
+          Updater.update(p, p)
+        }
         case MouseEvent.MouseDragged => {
-            // Adjust the shape
-            Updater.update(end = new Point2D(me.x, me.y))
-          }
+          // Adjust the shape
+          Updater.update(end = new Point2D(me.x, me.y))
+        }
         case _ => {}
       }
     }

@@ -22,7 +22,10 @@ import org.apache.log4j.{Level, Logger}
 import scopt.OptionParser
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.mllib.classification.{LogisticRegressionWithLBFGS, SVMWithSGD}
+import org.apache.spark.mllib.classification.{
+  LogisticRegressionWithLBFGS,
+  SVMWithSGD
+}
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.optimization.{L1Updater, SquaredL2Updater}
 import org.apache.spark.mllib.util.MLUtils
@@ -50,13 +53,14 @@ object BinaryClassification {
   import Algorithm._
   import RegType._
 
-  case class Params(input: String = null,
-                    numIterations: Int = 100,
-                    stepSize: Double = 1.0,
-                    algorithm: Algorithm = LR,
-                    regType: RegType = L2,
-                    regParam: Double = 0.01)
-      extends AbstractParams[Params]
+  case class Params(
+      input: String = null,
+      numIterations: Int = 100,
+      stepSize: Double = 1.0,
+      algorithm: Algorithm = LR,
+      regType: RegType = L2,
+      regParam: Double = 0.01
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
@@ -67,16 +71,22 @@ object BinaryClassification {
         .text("number of iterations")
         .action((x, c) => c.copy(numIterations = x))
       opt[Double]("stepSize")
-        .text("initial step size (ignored by logistic regression), " +
-            s"default: ${defaultParams.stepSize}")
+        .text(
+          "initial step size (ignored by logistic regression), " +
+            s"default: ${defaultParams.stepSize}"
+        )
         .action((x, c) => c.copy(stepSize = x))
       opt[String]("algorithm")
-        .text(s"algorithm (${Algorithm.values.mkString(",")}), " +
-            s"default: ${defaultParams.algorithm}")
+        .text(
+          s"algorithm (${Algorithm.values.mkString(",")}), " +
+            s"default: ${defaultParams.algorithm}"
+        )
         .action((x, c) => c.copy(algorithm = Algorithm.withName(x)))
       opt[String]("regType")
-        .text(s"regularization type (${RegType.values.mkString(",")}), " +
-            s"default: ${defaultParams.regType}")
+        .text(
+          s"regularization type (${RegType.values.mkString(",")}), " +
+            s"default: ${defaultParams.regType}"
+        )
         .action((x, c) => c.copy(regType = RegType.withName(x)))
       opt[Double]("regParam")
         .text(s"regularization parameter, default: ${defaultParams.regParam}")
@@ -84,37 +94,37 @@ object BinaryClassification {
         .required()
         .text("input paths to labeled examples in LIBSVM format")
         .action((x, c) => c.copy(input = x))
-      note("""
+      note(
+        """
           |For example, the following command runs this app on a synthetic dataset:
           |
           | bin/spark-submit --class org.apache.spark.examples.mllib.BinaryClassification \
           |  examples/target/scala-*/spark-examples-*.jar \
           |  --algorithm LR --regType L2 --regParam 1.0 \
           |  data/mllib/sample_binary_classification_data.txt
-        """.stripMargin)
+        """.stripMargin
+      )
     }
 
-    parser.parse(args, defaultParams).map { params =>
-      run(params)
-    } getOrElse {
+    parser.parse(args, defaultParams).map { params => run(params) } getOrElse {
       sys.exit(1)
     }
   }
 
   def run(params: Params) {
     val conf = new SparkConf().setAppName(s"BinaryClassification with $params")
-    val sc = new SparkContext(conf)
+    val sc   = new SparkContext(conf)
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
     val examples = MLUtils.loadLibSVMFile(sc, params.input).cache()
 
-    val splits = examples.randomSplit(Array(0.8, 0.2))
+    val splits   = examples.randomSplit(Array(0.8, 0.2))
     val training = splits(0).cache()
-    val test = splits(1).cache()
+    val test     = splits(1).cache()
 
     val numTraining = training.count()
-    val numTest = test.count()
+    val numTest     = test.count()
     println(s"Training: $numTraining, test: $numTest.")
 
     examples.unpersist(blocking = false)
@@ -142,7 +152,7 @@ object BinaryClassification {
         algorithm.run(training).clearThreshold()
     }
 
-    val prediction = model.predict(test.map(_.features))
+    val prediction         = model.predict(test.map(_.features))
     val predictionAndLabel = prediction.zip(test.map(_.label))
 
     val metrics = new BinaryClassificationMetrics(predictionAndLabel)

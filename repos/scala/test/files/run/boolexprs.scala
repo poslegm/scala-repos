@@ -3,13 +3,13 @@
 //############################################################################
 
 class Counter {
-  private var n: Int = 0;
+  private var n: Int       = 0;
   def incrThen(b: Boolean) = if (b) n += 1;
-  def value = n;
+  def value                = n;
 }
 
 object Test1 {
-  var flag = false;
+  var flag          = false;
   def flip: Boolean = { val tmp = flag; flag = !flag; tmp }
   def run: Int = {
     val c = new Counter;

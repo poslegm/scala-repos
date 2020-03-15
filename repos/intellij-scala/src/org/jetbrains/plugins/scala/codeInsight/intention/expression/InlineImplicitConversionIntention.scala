@@ -25,13 +25,16 @@ class InlineImplicitConversionIntention extends PsiElementBaseIntentionAction {
   override def getText: String = getFamilyName
 
   def isAvailable(
-      project: Project, editor: Editor, element: PsiElement): Boolean = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Boolean = {
     val expr: ScExpression =
       PsiTreeUtil.getParentOfType(element, classOf[ScExpression], false)
     if (expr == null) return false
 
     val implicitConversions = expr.getImplicitConversions(fromUnder = true)
-    val conversionFun = implicitConversions._2.orNull
+    val conversionFun       = implicitConversions._2.orNull
     if (conversionFun == null) return false
 
     true
@@ -43,15 +46,17 @@ class InlineImplicitConversionIntention extends PsiElementBaseIntentionAction {
     if (expr == null || !expr.isValid) return
 
     val implicitConversions = expr.getImplicitConversions(fromUnder = true)
-    val conversionFun = implicitConversions._2.orNull
+    val conversionFun       = implicitConversions._2.orNull
     if (conversionFun == null || !conversionFun.isInstanceOf[ScFunction])
       return
     val secondPart = implicitConversions._4.getOrElse(Seq.empty)
 
-    IntentionUtils.replaceWithExplicit(expr,
-                                       conversionFun.asInstanceOf[ScFunction],
-                                       project,
-                                       editor,
-                                       secondPart)
+    IntentionUtils.replaceWithExplicit(
+      expr,
+      conversionFun.asInstanceOf[ScFunction],
+      project,
+      editor,
+      secondPart
+    )
   }
 }

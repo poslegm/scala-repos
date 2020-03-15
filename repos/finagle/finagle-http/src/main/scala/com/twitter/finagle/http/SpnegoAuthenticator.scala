@@ -26,9 +26,7 @@ object SpnegoAuthenticator {
   private object AuthHeader {
     val SchemePrefixLength = AuthScheme.length + 1
     def apply(token: Option[Token]): Option[String] =
-      token map { t =>
-        AuthScheme + " " + Base64StringEncoder.encode(t)
-      }
+      token map { t => AuthScheme + " " + Base64StringEncoder.encode(t) }
 
     /** If the header represents a valid spnego negotiation, return it. */
     def unapply(header: String): Option[Token] =
@@ -54,7 +52,9 @@ object SpnegoAuthenticator {
   }
 
   case class Negotiated(
-      established: Option[GSSContext], wwwAuthenticate: Option[String])
+      established: Option[GSSContext],
+      wwwAuthenticate: Option[String]
+  )
 
   object Credentials {
     trait ServerSource {
@@ -79,7 +79,9 @@ object SpnegoAuthenticator {
         * to send to the server. ChallengeToken may be empty if we haven't been challenged.
         */
       def init(
-          context: GSSContext, challengeToken: Option[Token]): Future[Token]
+          context: GSSContext,
+          challengeToken: Option[Token]
+      ): Future[Token]
     }
 
     /**
@@ -97,7 +99,7 @@ object SpnegoAuthenticator {
         * http://www.oid-info.com/get/1.2.840.113554.1.2.2
         *
         */
-      val Krb5Mechanism = new Oid("1.2.840.113554.1.2.2")
+      val Krb5Mechanism     = new Oid("1.2.840.113554.1.2.2")
       val Krb5PrincipalType = new Oid("1.2.840.113554.1.2.2.1")
 
       /**
@@ -111,13 +113,14 @@ object SpnegoAuthenticator {
     trait JAAS {
       val loginContext: String
 
-      def load(): Future[GSSContext] = pool {
-        log.debug("Getting context: %s", loginContext)
-        val portal = new LoginContext(loginContext)
-        // TODO: should logout?
-        portal.login()
-        Subject.doAs(portal.getSubject, createContextAction)
-      }
+      def load(): Future[GSSContext] =
+        pool {
+          log.debug("Getting context: %s", loginContext)
+          val portal = new LoginContext(loginContext)
+          // TODO: should logout?
+          portal.login()
+          Subject.doAs(portal.getSubject, createContextAction)
+        }
 
       private val createContextAction = new PrivilegedAction[GSSContext] {
         def run(): GSSContext = createGSSContext()
@@ -129,25 +132,27 @@ object SpnegoAuthenticator {
       /** A processes' own principal is usually specified via {{sun.security.krb5.principal}}. */
       protected def selfPrincipal: Option[GSSName] = None
 
-      protected def lifetime: Int = GSSContext.DEFAULT_LIFETIME
-      protected def mechanism: Oid = JAAS.Krb5Mechanism
+      protected def lifetime: Int       = GSSContext.DEFAULT_LIFETIME
+      protected def mechanism: Oid      = JAAS.Krb5Mechanism
       protected def manager: GSSManager = GSSManager.getInstance
-      protected def pool: FuturePool = FuturePool.unboundedPool
+      protected def pool: FuturePool    = FuturePool.unboundedPool
     }
 
     class JAASClientSource(
         val loginContext: String,
         _serverPrincipal: String,
         _serverPrincipalType: Oid = JAAS.Krb5PrincipalType
-    )
-        extends ClientSource with JAAS {
+    ) extends ClientSource
+        with JAAS {
       val serverPrincipal =
         manager.createName(_serverPrincipal, _serverPrincipalType)
 
       def init(
-          context: GSSContext, challengeToken: Option[Token]): Future[Token] =
+          context: GSSContext,
+          challengeToken: Option[Token]
+      ): Future[Token] =
         pool {
-          val tokenIn = challengeToken.getOrElse(Token.Empty)
+          val tokenIn         = challengeToken.getOrElse(Token.Empty)
           var tokenOut: Token = null
           do {
             tokenOut = context.initSecContext(tokenIn, 0, tokenIn.length)
@@ -157,42 +162,43 @@ object SpnegoAuthenticator {
 
       protected def createGSSContext(): GSSContext =
         manager.createContext(
-            serverPrincipal,
+          serverPrincipal,
+          mechanism,
+          manager.createCredential(
+            selfPrincipal.orNull,
+            lifetime,
             mechanism,
-            manager.createCredential(
-                selfPrincipal.orNull,
-                lifetime,
-                mechanism,
-                GSSCredential.INITIATE_ONLY
-            ),
-            lifetime
+            GSSCredential.INITIATE_ONLY
+          ),
+          lifetime
         )
     }
 
     class JAASServerSource(val loginContext: String)
-        extends ServerSource with JAAS {
+        extends ServerSource
+        with JAAS {
       def accept(context: GSSContext, negotiation: Token): Future[Negotiated] =
         pool {
           val token =
             context.acceptSecContext(negotiation, 0, negotiation.length)
-          val established = if (context.isEstablished) Some(context) else None
+          val established     = if (context.isEstablished) Some(context) else None
           val wwwAuthenticate = AuthHeader(Option(token))
           Negotiated(established, wwwAuthenticate)
         }
 
       protected def createGSSContext(): GSSContext = {
         val cred = manager.createCredential(
-            selfPrincipal.orNull,
-            lifetime,
-            JAAS.SpnegoMechanism,
-            GSSCredential.ACCEPT_ONLY
+          selfPrincipal.orNull,
+          lifetime,
+          JAAS.SpnegoMechanism,
+          GSSCredential.ACCEPT_ONLY
         )
         cred.add(
-            selfPrincipal.orNull,
-            lifetime,
-            lifetime,
-            JAAS.Krb5Mechanism,
-            GSSCredential.ACCEPT_ONLY
+          selfPrincipal.orNull,
+          lifetime,
+          lifetime,
+          JAAS.Krb5Mechanism,
+          GSSCredential.ACCEPT_ONLY
         )
         manager.createContext(cred)
       }
@@ -258,7 +264,7 @@ object SpnegoAuthenticator {
       Authenticated.Http(req, context)
   }
 
-  sealed abstract class Client[Req : ReqSupport, Rsp : RspSupport]
+  sealed abstract class Client[Req: ReqSupport, Rsp: RspSupport]
       extends Filter[Req, Rsp, Req, Rsp] {
     val credSrc: Credentials.ClientSource
     val reqs = implicitly[ReqSupport[Req]]
@@ -298,7 +304,7 @@ object SpnegoAuthenticator {
       }
   }
 
-  sealed abstract class Server[Req : ReqSupport, Rsp : RspSupport]
+  sealed abstract class Server[Req: ReqSupport, Rsp: RspSupport]
       extends Filter[Req, Rsp, SpnegoAuthenticator.Authenticated[Req], Rsp] {
     val credSrc: Credentials.ServerSource
     val reqs = implicitly[ReqSupport[Req]]
@@ -311,7 +317,9 @@ object SpnegoAuthenticator {
     }
 
     final def apply(
-        req: Req, authed: Service[Authenticated[Req], Rsp]): Future[Rsp] =
+        req: Req,
+        authed: Service[Authenticated[Req], Rsp]
+    ): Future[Rsp] =
       reqs.authorizationHeader(req).collect {
         case AuthHeader(negotiation) =>
           credSrc.load() flatMap {
@@ -329,13 +337,14 @@ object SpnegoAuthenticator {
             }
           } handle {
             case e: GSSException => {
-                log.error(e, "authenticating")
-                unauthorized(req)
-              }
+              log.error(e, "authenticating")
+              unauthorized(req)
+            }
           }
       } getOrElse {
         log.debug(
-            "Request had no AuthHeader information.  Returning Unauthorized.")
+          "Request had no AuthHeader information.  Returning Unauthorized."
+        )
         Future value unauthorized(req)
       }
   }

@@ -9,7 +9,7 @@ class ImportRelationTest extends ResolveTestBase {
   }
 
   def testAbsolute() = doTest()
-  def testClash() = doTest()
+  def testClash()    = doTest()
   def testRelative() = doTest()
-  def testRoot() = doTest()
+  def testRoot()     = doTest()
 }

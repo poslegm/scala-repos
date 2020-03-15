@@ -20,14 +20,15 @@ class AkkaLoader {
   /*
    * Boot initializes the specified bundles
    */
-  def boot(withBanner: Boolean, b: Bootable): Unit = hasBooted switchOn {
-    if (withBanner) printBanner()
-    println("Starting Akka...")
-    b.onLoad
-    Thread.currentThread.setContextClassLoader(getClass.getClassLoader)
-    _bundles = Some(b)
-    println("Akka started successfully")
-  }
+  def boot(withBanner: Boolean, b: Bootable): Unit =
+    hasBooted switchOn {
+      if (withBanner) printBanner()
+      println("Starting Akka...")
+      b.onLoad
+      Thread.currentThread.setContextClassLoader(getClass.getClassLoader)
+      _bundles = Some(b)
+      println("Akka started successfully")
+    }
 
   /*
    * Shutdown, well, shuts down the bundles used in boot
@@ -43,7 +44,8 @@ class AkkaLoader {
   }
 
   private def printBanner() {
-    println("""
+    println(
+      """
 ==============================================================================
 
                                                    ZZ:
@@ -88,6 +90,7 @@ class AkkaLoader {
 ==============================================================================
                       Running version %s
 ==============================================================================
-""".format(Config.VERSION))
+""".format(Config.VERSION)
+    )
   }
 }

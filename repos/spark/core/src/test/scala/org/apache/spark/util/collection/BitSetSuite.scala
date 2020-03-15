@@ -23,7 +23,7 @@ class BitSetSuite extends SparkFunSuite {
 
   test("basic set and get") {
     val setBits = Seq(0, 9, 1, 10, 90, 96)
-    val bitset = new BitSet(100)
+    val bitset  = new BitSet(100)
 
     for (i <- 0 until 100) {
       assert(!bitset.get(i))
@@ -55,7 +55,7 @@ class BitSetSuite extends SparkFunSuite {
 
   test("nextSetBit") {
     val setBits = Seq(0, 9, 1, 10, 90, 96)
-    val bitset = new BitSet(100)
+    val bitset  = new BitSet(100)
     setBits.foreach(i => bitset.set(i))
 
     assert(bitset.nextSetBit(0) === 0)
@@ -73,7 +73,7 @@ class BitSetSuite extends SparkFunSuite {
   test("xor len(bitsetX) < len(bitsetY)") {
     val setBitsX = Seq(0, 2, 3, 37, 41)
     val setBitsY = Seq(0, 1, 3, 37, 38, 41, 85)
-    val bitsetX = new BitSet(60)
+    val bitsetX  = new BitSet(60)
     setBitsX.foreach(i => bitsetX.set(i))
     val bitsetY = new BitSet(100)
     setBitsY.foreach(i => bitsetY.set(i))
@@ -94,7 +94,7 @@ class BitSetSuite extends SparkFunSuite {
   test("xor len(bitsetX) > len(bitsetY)") {
     val setBitsX = Seq(0, 1, 3, 37, 38, 41, 85)
     val setBitsY = Seq(0, 2, 3, 37, 41)
-    val bitsetX = new BitSet(100)
+    val bitsetX  = new BitSet(100)
     setBitsX.foreach(i => bitsetX.set(i))
     val bitsetY = new BitSet(60)
     setBitsY.foreach(i => bitsetY.set(i))
@@ -115,7 +115,7 @@ class BitSetSuite extends SparkFunSuite {
   test("andNot len(bitsetX) < len(bitsetY)") {
     val setBitsX = Seq(0, 2, 3, 37, 41, 48)
     val setBitsY = Seq(0, 1, 3, 37, 38, 41, 85)
-    val bitsetX = new BitSet(60)
+    val bitsetX  = new BitSet(60)
     setBitsX.foreach(i => bitsetX.set(i))
     val bitsetY = new BitSet(100)
     setBitsY.foreach(i => bitsetY.set(i))
@@ -134,7 +134,7 @@ class BitSetSuite extends SparkFunSuite {
   test("andNot len(bitsetX) > len(bitsetY)") {
     val setBitsX = Seq(0, 1, 3, 37, 38, 41, 85)
     val setBitsY = Seq(0, 2, 3, 37, 41, 48)
-    val bitsetX = new BitSet(100)
+    val bitsetX  = new BitSet(100)
     setBitsX.foreach(i => bitsetX.set(i))
     val bitsetY = new BitSet(60)
     setBitsY.foreach(i => bitsetY.set(i))

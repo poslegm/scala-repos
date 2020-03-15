@@ -17,7 +17,7 @@ import scala.util.Try
 class ReflectiveDynamicAccess(val classLoader: ClassLoader)
     extends DynamicAccess {
 
-  override def getClassFor[T : ClassTag](fqcn: String): Try[Class[_ <: T]] =
+  override def getClassFor[T: ClassTag](fqcn: String): Try[Class[_ <: T]] =
     Try[Class[_ <: T]]({
       val c =
         Class.forName(fqcn, false, classLoader).asInstanceOf[Class[_ <: T]]
@@ -26,31 +26,34 @@ class ReflectiveDynamicAccess(val classLoader: ClassLoader)
       else throw new ClassCastException(t + " is not assignable from " + c)
     })
 
-  override def createInstanceFor[T : ClassTag](
-      clazz: Class[_], args: immutable.Seq[(Class[_], AnyRef)]): Try[T] =
+  override def createInstanceFor[T: ClassTag](
+      clazz: Class[_],
+      args: immutable.Seq[(Class[_], AnyRef)]
+  ): Try[T] =
     Try {
-      val types = args.map(_._1).toArray
-      val values = args.map(_._2).toArray
+      val types       = args.map(_._1).toArray
+      val values      = args.map(_._2).toArray
       val constructor = clazz.getDeclaredConstructor(types: _*)
       constructor.setAccessible(true)
       val obj = constructor.newInstance(values: _*)
-      val t = implicitly[ClassTag[T]].runtimeClass
+      val t   = implicitly[ClassTag[T]].runtimeClass
       if (t.isInstance(obj)) obj.asInstanceOf[T]
       else
         throw new ClassCastException(
-            clazz.getName + " is not a subtype of " + t)
+          clazz.getName + " is not a subtype of " + t
+        )
     } recover {
       case i: InvocationTargetException if i.getTargetException ne null ⇒
         throw i.getTargetException
     }
 
-  override def createInstanceFor[T : ClassTag](
-      fqcn: String, args: immutable.Seq[(Class[_], AnyRef)]): Try[T] =
-    getClassFor(fqcn) flatMap { c ⇒
-      createInstanceFor(c, args)
-    }
+  override def createInstanceFor[T: ClassTag](
+      fqcn: String,
+      args: immutable.Seq[(Class[_], AnyRef)]
+  ): Try[T] =
+    getClassFor(fqcn) flatMap { c ⇒ createInstanceFor(c, args) }
 
-  override def getObjectFor[T : ClassTag](fqcn: String): Try[T] = {
+  override def getObjectFor[T: ClassTag](fqcn: String): Try[T] = {
     val classTry =
       if (fqcn.endsWith("$")) getClassFor(fqcn)
       else getClassFor(fqcn + "$") recoverWith { case _ ⇒ getClassFor(fqcn) }

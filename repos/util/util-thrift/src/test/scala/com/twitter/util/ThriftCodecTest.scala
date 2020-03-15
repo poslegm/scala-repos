@@ -8,8 +8,8 @@ import org.scalatest.junit.JUnitRunner
 class ThriftCodecTest extends FunSuite {
 
   private def roundTrip(codec: ThriftCodec[TestThriftStructure, _]): Unit = {
-    val struct = new TestThriftStructure("aString", 5)
-    val encoded: Array[Byte] = codec.encode(struct)
+    val struct                       = new TestThriftStructure("aString", 5)
+    val encoded: Array[Byte]         = codec.encode(struct)
     val decoded: TestThriftStructure = codec.decode(encoded)
 
     assert(decoded == struct)

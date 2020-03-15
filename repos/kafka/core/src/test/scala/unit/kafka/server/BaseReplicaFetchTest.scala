@@ -29,8 +29,8 @@ import org.apache.kafka.common.serialization.StringSerializer
 
 abstract class BaseReplicaFetchTest extends ZooKeeperTestHarness {
   var brokers: Seq[KafkaServer] = null
-  val topic1 = "foo"
-  val topic2 = "bar"
+  val topic1                    = "foo"
+  val topic2                    = "bar"
 
   // This should be defined if `securityProtocol` uses SSL (eg SSL, SASL_SSL)
   protected def trustStoreFile: Option[File]
@@ -40,10 +40,11 @@ abstract class BaseReplicaFetchTest extends ZooKeeperTestHarness {
   override def setUp() {
     super.setUp()
     val props = createBrokerConfigs(
-        2,
-        zkConnect,
-        interBrokerSecurityProtocol = Some(securityProtocol),
-        trustStoreFile = trustStoreFile)
+      2,
+      zkConnect,
+      interBrokerSecurityProtocol = Some(securityProtocol),
+      trustStoreFile = trustStoreFile
+    )
     brokers = props.map(KafkaConfig.fromProps).map(TestUtils.createServer(_))
   }
 
@@ -55,27 +56,32 @@ abstract class BaseReplicaFetchTest extends ZooKeeperTestHarness {
 
   @Test
   def testReplicaFetcherThread() {
-    val partition = 0
+    val partition        = 0
     val testMessageList1 = List("test1", "test2", "test3", "test4")
     val testMessageList2 = List("test5", "test6", "test7", "test8")
 
     // create a topic and partition and await leadership
     for (topic <- List(topic1, topic2)) {
-      createTopic(zkUtils,
-                  topic,
-                  numPartitions = 1,
-                  replicationFactor = 2,
-                  servers = brokers)
+      createTopic(
+        zkUtils,
+        topic,
+        numPartitions = 1,
+        replicationFactor = 2,
+        servers = brokers
+      )
     }
 
     // send test messages to leader
     val producer = TestUtils.createNewProducer(
-        TestUtils.getBrokerListStrFromServers(brokers),
-        retries = 5,
-        keySerializer = new StringSerializer,
-        valueSerializer = new StringSerializer)
+      TestUtils.getBrokerListStrFromServers(brokers),
+      retries = 5,
+      keySerializer = new StringSerializer,
+      valueSerializer = new StringSerializer
+    )
     val records =
-      testMessageList1.map(m => new ProducerRecord(topic1, m, m)) ++ testMessageList2
+      testMessageList1.map(m =>
+        new ProducerRecord(topic1, m, m)
+      ) ++ testMessageList2
         .map(m => new ProducerRecord(topic2, m, m))
     records.map(producer.send).foreach(_.get)
     producer.close()
@@ -88,10 +94,10 @@ abstract class BaseReplicaFetchTest extends ZooKeeperTestHarness {
           brokers.head.getLogManager().getLog(topicAndPart).get.logEndOffset
         result = result && expectedOffset > 0 && brokers.forall { item =>
           (expectedOffset == item
-                .getLogManager()
-                .getLog(topicAndPart)
-                .get
-                .logEndOffset)
+            .getLogManager()
+            .getLog(topicAndPart)
+            .get
+            .logEndOffset)
         }
       }
       result

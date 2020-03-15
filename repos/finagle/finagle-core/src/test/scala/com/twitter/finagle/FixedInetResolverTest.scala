@@ -31,8 +31,8 @@ class FixedInetResolverTest extends FunSuite {
   }
 
   trait Ctx {
-    var numLookups = 0
-    var shouldFail = false
+    var numLookups    = 0
+    var shouldFail    = false
     val statsReceiver = new InMemoryStatsReceiver
 
     def resolve(host: String): Future[Seq[InetAddress]] = {
@@ -47,14 +47,14 @@ class FixedInetResolverTest extends FunSuite {
   test("Caching resolver caches successes") {
     new Ctx {
       // make the same request n-times
-      val hostname = "1.2.3.4:100"
+      val hostname   = "1.2.3.4:100"
       val iterations = 10
       for (i <- 1 to iterations) {
         val request = resolver.bind(hostname).changes.filter(_ != Addr.Pending)
 
         Await.result(request.toFuture(), 2.milliseconds) match {
           case Addr.Bound(_, _) =>
-          case _ => fail("Resolution should have succeeded")
+          case _                => fail("Resolution should have succeeded")
         }
       }
 
@@ -75,7 +75,7 @@ class FixedInetResolverTest extends FunSuite {
 
         Await.result(request.toFuture(), 2.milliseconds) match {
           case Addr.Neg =>
-          case x => fail(s"Resolution should have failed: $x")
+          case x        => fail(s"Resolution should have failed: $x")
         }
       }
 

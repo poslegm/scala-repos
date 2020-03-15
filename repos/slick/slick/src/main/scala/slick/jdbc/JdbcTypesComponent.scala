@@ -1,6 +1,14 @@
 package slick.jdbc
 
-import java.sql.{Blob, Clob, Date, Time, Timestamp, ResultSet, PreparedStatement}
+import java.sql.{
+  Blob,
+  Clob,
+  Date,
+  Time,
+  Timestamp,
+  ResultSet,
+  PreparedStatement
+}
 import java.util.UUID
 
 import scala.reflect.ClassTag
@@ -12,16 +20,17 @@ import slick.relational.{RelationalProfile, RelationalTypesComponent}
 trait JdbcTypesComponent extends RelationalTypesComponent {
   self: JdbcProfile =>
 
-  abstract class MappedJdbcType[T, U](
-      implicit val tmd: JdbcType[U], val classTag: ClassTag[T])
-      extends JdbcType[T] {
+  abstract class MappedJdbcType[T, U](implicit
+      val tmd: JdbcType[U],
+      val classTag: ClassTag[T]
+  ) extends JdbcType[T] {
     def map(t: T): U
     def comap(u: U): T
 
-    def newSqlType: Option[Int] = None
+    def newSqlType: Option[Int]                                   = None
     def newSqlTypeName(size: Option[FieldSymbol]): Option[String] = None
-    def newValueToSQLLiteral(value: T): Option[String] = None
-    def newHasLiteralForm: Option[Boolean] = None
+    def newValueToSQLLiteral(value: T): Option[String]            = None
+    def newHasLiteralForm: Option[Boolean]                        = None
 
     def sqlType = newSqlType.getOrElse(tmd.sqlType)
     def sqlTypeName(sym: Option[FieldSymbol]) =
@@ -41,22 +50,25 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
     def valueToSQLLiteral(value: T) =
       newValueToSQLLiteral(value).getOrElse(tmd.valueToSQLLiteral(map(value)))
     def hasLiteralForm = newHasLiteralForm.getOrElse(tmd.hasLiteralForm)
-    def scalaType = ScalaBaseType[T]
+    def scalaType      = ScalaBaseType[T]
     override def toString =
       s"MappedJdbcType[${classTag.runtimeClass.getName} -> $tmd]"
     override def hashCode = tmd.hashCode() + classTag.hashCode()
-    override def equals(o: Any) = o match {
-      case o: MappedJdbcType[_, _] => tmd == o.tmd && classTag == o.classTag
-      case _ => false
-    }
+    override def equals(o: Any) =
+      o match {
+        case o: MappedJdbcType[_, _] => tmd == o.tmd && classTag == o.classTag
+        case _                       => false
+      }
   }
 
   object MappedJdbcType extends MappedColumnTypeFactory {
-    def base[T : ClassTag, U : BaseColumnType](
-        tmap: T => U, tcomap: U => T): BaseColumnType[T] = {
+    def base[T: ClassTag, U: BaseColumnType](
+        tmap: T => U,
+        tcomap: U => T
+    ): BaseColumnType[T] = {
       assertNonNullType(implicitly[BaseColumnType[U]])
       new MappedJdbcType[T, U] with BaseTypedType[T] {
-        def map(t: T) = tmap(t)
+        def map(t: T)   = tmap(t)
         def comap(u: U) = tcomap(u)
       }
     }
@@ -68,19 +80,19 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
 
   def jdbcTypeFor(t: Type): JdbcType[Any] =
     ((t.structural match {
-      case tmd: JdbcType[_] => tmd
-      case ScalaBaseType.booleanType => columnTypes.booleanJdbcType
+      case tmd: JdbcType[_]             => tmd
+      case ScalaBaseType.booleanType    => columnTypes.booleanJdbcType
       case ScalaBaseType.bigDecimalType => columnTypes.bigDecimalJdbcType
-      case ScalaBaseType.byteType => columnTypes.byteJdbcType
-      case ScalaBaseType.charType => columnTypes.charJdbcType
-      case ScalaBaseType.doubleType => columnTypes.doubleJdbcType
-      case ScalaBaseType.floatType => columnTypes.floatJdbcType
-      case ScalaBaseType.intType => columnTypes.intJdbcType
-      case ScalaBaseType.longType => columnTypes.longJdbcType
-      case ScalaBaseType.nullType => columnTypes.nullJdbcType
-      case ScalaBaseType.shortType => columnTypes.shortJdbcType
-      case ScalaBaseType.stringType => columnTypes.stringJdbcType
-      case t: OptionType => jdbcTypeFor(t.elementType)
+      case ScalaBaseType.byteType       => columnTypes.byteJdbcType
+      case ScalaBaseType.charType       => columnTypes.charJdbcType
+      case ScalaBaseType.doubleType     => columnTypes.doubleJdbcType
+      case ScalaBaseType.floatType      => columnTypes.floatJdbcType
+      case ScalaBaseType.intType        => columnTypes.intJdbcType
+      case ScalaBaseType.longType       => columnTypes.longJdbcType
+      case ScalaBaseType.nullType       => columnTypes.nullJdbcType
+      case ScalaBaseType.shortType      => columnTypes.shortJdbcType
+      case ScalaBaseType.stringType     => columnTypes.stringJdbcType
+      case t: OptionType                => jdbcTypeFor(t.elementType)
       case t: ErasedScalaBaseType[_, _] => jdbcTypeFor(t.erasure)
       case t =>
         throw new SlickException("JdbcProfile has no JdbcType for type " + t)
@@ -89,21 +101,24 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
   def defaultSqlTypeName(tmd: JdbcType[_], sym: Option[FieldSymbol]): String =
     tmd.sqlType match {
       case java.sql.Types.VARCHAR =>
-        val size = sym.flatMap(
-            _.findColumnOption[RelationalProfile.ColumnOption.Length])
+        val size =
+          sym.flatMap(_.findColumnOption[RelationalProfile.ColumnOption.Length])
         size.fold("VARCHAR(254)")(l =>
-              if (l.varying) s"VARCHAR(${l.length})" else s"CHAR(${l.length})")
+          if (l.varying) s"VARCHAR(${l.length})" else s"CHAR(${l.length})"
+        )
       case java.sql.Types.DECIMAL => "DECIMAL(21,2)"
       case t =>
         JdbcTypesComponent.typeNames.getOrElse(
-            t,
-            throw new SlickException(
-                "No SQL type name found in java.sql.Types for code " + t))
+          t,
+          throw new SlickException(
+            "No SQL type name found in java.sql.Types for code " + t
+          )
+        )
     }
 
   abstract class DriverJdbcType[@specialized T](
-      implicit val classTag: ClassTag[T])
-      extends JdbcType[T] {
+      implicit val classTag: ClassTag[T]
+  ) extends JdbcType[T] {
     def scalaType = ScalaBaseType[T]
     def sqlTypeName(sym: Option[FieldSymbol]): String =
       self.defaultSqlTypeName(this, sym)
@@ -111,31 +126,32 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
       if (hasLiteralForm) value.toString
       else
         throw new SlickException(
-            sqlTypeName(None) + " does not have a literal representation")
-    def hasLiteralForm = true
-    def wasNull(r: ResultSet, idx: Int) = r.wasNull()
+          sqlTypeName(None) + " does not have a literal representation"
+        )
+    def hasLiteralForm                                = true
+    def wasNull(r: ResultSet, idx: Int)               = r.wasNull()
     def setNull(p: PreparedStatement, idx: Int): Unit = p.setNull(idx, sqlType)
   }
 
   class JdbcTypes {
-    val booleanJdbcType = new BooleanJdbcType
-    val blobJdbcType = new BlobJdbcType
-    val byteJdbcType = new ByteJdbcType
-    val byteArrayJdbcType = new ByteArrayJdbcType
-    val charJdbcType = new CharJdbcType
-    val clobJdbcType = new ClobJdbcType
-    val dateJdbcType = new DateJdbcType
-    val doubleJdbcType = new DoubleJdbcType
-    val floatJdbcType = new FloatJdbcType
-    val intJdbcType = new IntJdbcType
-    val longJdbcType = new LongJdbcType
-    val shortJdbcType = new ShortJdbcType
-    val stringJdbcType = new StringJdbcType
-    val timeJdbcType = new TimeJdbcType
-    val timestampJdbcType = new TimestampJdbcType
-    val uuidJdbcType = new UUIDJdbcType
+    val booleanJdbcType    = new BooleanJdbcType
+    val blobJdbcType       = new BlobJdbcType
+    val byteJdbcType       = new ByteJdbcType
+    val byteArrayJdbcType  = new ByteArrayJdbcType
+    val charJdbcType       = new CharJdbcType
+    val clobJdbcType       = new ClobJdbcType
+    val dateJdbcType       = new DateJdbcType
+    val doubleJdbcType     = new DoubleJdbcType
+    val floatJdbcType      = new FloatJdbcType
+    val intJdbcType        = new IntJdbcType
+    val longJdbcType       = new LongJdbcType
+    val shortJdbcType      = new ShortJdbcType
+    val stringJdbcType     = new StringJdbcType
+    val timeJdbcType       = new TimeJdbcType
+    val timestampJdbcType  = new TimestampJdbcType
+    val uuidJdbcType       = new UUIDJdbcType
     val bigDecimalJdbcType = new BigDecimalJdbcType
-    val nullJdbcType = new NullJdbcType
+    val nullJdbcType       = new NullJdbcType
 
     class BooleanJdbcType extends DriverJdbcType[Boolean] {
       def sqlType = java.sql.Types.BOOLEAN
@@ -147,18 +163,18 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
     }
 
     class BlobJdbcType extends DriverJdbcType[Blob] {
-      def sqlType = java.sql.Types.BLOB
+      def sqlType                                           = java.sql.Types.BLOB
       def setValue(v: Blob, p: PreparedStatement, idx: Int) = p.setBlob(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getBlob(idx)
-      def updateValue(v: Blob, r: ResultSet, idx: Int) = r.updateBlob(idx, v)
-      override def hasLiteralForm = false
+      def getValue(r: ResultSet, idx: Int)                  = r.getBlob(idx)
+      def updateValue(v: Blob, r: ResultSet, idx: Int)      = r.updateBlob(idx, v)
+      override def hasLiteralForm                           = false
     }
 
     class ByteJdbcType extends DriverJdbcType[Byte] with NumericTypedType {
-      def sqlType = java.sql.Types.TINYINT
+      def sqlType                                           = java.sql.Types.TINYINT
       def setValue(v: Byte, p: PreparedStatement, idx: Int) = p.setByte(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getByte(idx)
-      def updateValue(v: Byte, r: ResultSet, idx: Int) = r.updateByte(idx, v)
+      def getValue(r: ResultSet, idx: Int)                  = r.getByte(idx)
+      def updateValue(v: Byte, r: ResultSet, idx: Int)      = r.updateByte(idx, v)
     }
 
     class ByteArrayJdbcType extends DriverJdbcType[Array[Byte]] {
@@ -172,15 +188,15 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
     }
 
     class ClobJdbcType extends DriverJdbcType[Clob] {
-      def sqlType = java.sql.Types.CLOB
+      def sqlType                                           = java.sql.Types.CLOB
       def setValue(v: Clob, p: PreparedStatement, idx: Int) = p.setClob(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getClob(idx)
-      def updateValue(v: Clob, r: ResultSet, idx: Int) = r.updateClob(idx, v)
-      override def hasLiteralForm = false
+      def getValue(r: ResultSet, idx: Int)                  = r.getClob(idx)
+      def updateValue(v: Clob, r: ResultSet, idx: Int)      = r.updateClob(idx, v)
+      override def hasLiteralForm                           = false
     }
 
     class CharJdbcType extends DriverJdbcType[Char] {
-      def sqlType = java.sql.Types.CHAR
+      def sqlType                                        = java.sql.Types.CHAR
       override def sqlTypeName(sym: Option[FieldSymbol]) = "CHAR(1)"
       def setValue(v: Char, p: PreparedStatement, idx: Int) =
         stringJdbcType.setValue(String.valueOf(v), p, idx)
@@ -195,10 +211,10 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
     }
 
     class DateJdbcType extends DriverJdbcType[Date] {
-      def sqlType = java.sql.Types.DATE
+      def sqlType                                           = java.sql.Types.DATE
       def setValue(v: Date, p: PreparedStatement, idx: Int) = p.setDate(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getDate(idx)
-      def updateValue(v: Date, r: ResultSet, idx: Int) = r.updateDate(idx, v)
+      def getValue(r: ResultSet, idx: Int)                  = r.getDate(idx)
+      def updateValue(v: Date, r: ResultSet, idx: Int)      = r.updateDate(idx, v)
       override def valueToSQLLiteral(value: Date) =
         "{d '" + value.toString + "'}"
     }
@@ -217,29 +233,29 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
         java.sql.Types.REAL // see http://docs.oracle.com/javase/1.5.0/docs/guide/jdbc/getstart/mapping.html#1055162
       def setValue(v: Float, p: PreparedStatement, idx: Int) =
         p.setFloat(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getFloat(idx)
+      def getValue(r: ResultSet, idx: Int)              = r.getFloat(idx)
       def updateValue(v: Float, r: ResultSet, idx: Int) = r.updateFloat(idx, v)
     }
 
     class IntJdbcType extends DriverJdbcType[Int] with NumericTypedType {
-      def sqlType = java.sql.Types.INTEGER
+      def sqlType                                          = java.sql.Types.INTEGER
       def setValue(v: Int, p: PreparedStatement, idx: Int) = p.setInt(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getInt(idx)
-      def updateValue(v: Int, r: ResultSet, idx: Int) = r.updateInt(idx, v)
+      def getValue(r: ResultSet, idx: Int)                 = r.getInt(idx)
+      def updateValue(v: Int, r: ResultSet, idx: Int)      = r.updateInt(idx, v)
     }
 
     class LongJdbcType extends DriverJdbcType[Long] with NumericTypedType {
-      def sqlType = java.sql.Types.BIGINT
+      def sqlType                                           = java.sql.Types.BIGINT
       def setValue(v: Long, p: PreparedStatement, idx: Int) = p.setLong(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getLong(idx)
-      def updateValue(v: Long, r: ResultSet, idx: Int) = r.updateLong(idx, v)
+      def getValue(r: ResultSet, idx: Int)                  = r.getLong(idx)
+      def updateValue(v: Long, r: ResultSet, idx: Int)      = r.updateLong(idx, v)
     }
 
     class ShortJdbcType extends DriverJdbcType[Short] with NumericTypedType {
       def sqlType = java.sql.Types.SMALLINT
       def setValue(v: Short, p: PreparedStatement, idx: Int) =
         p.setShort(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getShort(idx)
+      def getValue(r: ResultSet, idx: Int)              = r.getShort(idx)
       def updateValue(v: Short, r: ResultSet, idx: Int) = r.updateShort(idx, v)
     }
 
@@ -257,7 +273,7 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
           sb append '\''
           for (c <- value) c match {
             case '\'' => sb append "''"
-            case _ => sb append c
+            case _    => sb append c
           }
           sb append '\''
           sb.toString
@@ -265,10 +281,10 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
     }
 
     class TimeJdbcType extends DriverJdbcType[Time] {
-      def sqlType = java.sql.Types.TIME
+      def sqlType                                           = java.sql.Types.TIME
       def setValue(v: Time, p: PreparedStatement, idx: Int) = p.setTime(idx, v)
-      def getValue(r: ResultSet, idx: Int) = r.getTime(idx)
-      def updateValue(v: Time, r: ResultSet, idx: Int) = r.updateTime(idx, v)
+      def getValue(r: ResultSet, idx: Int)                  = r.getTime(idx)
+      def updateValue(v: Time, r: ResultSet, idx: Int)      = r.updateTime(idx, v)
       override def valueToSQLLiteral(value: Time) =
         "{t '" + value.toString + "'}"
     }
@@ -295,8 +311,8 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
       def toBytes(uuid: UUID) =
         if (uuid eq null) null
         else {
-          val msb = uuid.getMostSignificantBits
-          val lsb = uuid.getLeastSignificantBits
+          val msb  = uuid.getMostSignificantBits
+          val lsb  = uuid.getLeastSignificantBits
           val buff = new Array[Byte](16)
           for (i <- 0 until 8) {
             buff(i) = ((msb >> (8 * (7 - i))) & 255).toByte
@@ -320,7 +336,8 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
     }
 
     class BigDecimalJdbcType
-        extends DriverJdbcType[BigDecimal] with NumericTypedType {
+        extends DriverJdbcType[BigDecimal]
+        with NumericTypedType {
       def sqlType = java.sql.Types.DECIMAL
       def setValue(v: BigDecimal, p: PreparedStatement, idx: Int) =
         p.setBigDecimal(idx, v.bigDecimal)
@@ -338,29 +355,29 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
         p.setString(idx, null)
       override def setNull(p: PreparedStatement, idx: Int) =
         p.setString(idx, null)
-      def getValue(r: ResultSet, idx: Int) = null
+      def getValue(r: ResultSet, idx: Int)             = null
       def updateValue(v: Null, r: ResultSet, idx: Int) = r.updateNull(idx)
-      override def valueToSQLLiteral(value: Null) = "NULL"
+      override def valueToSQLLiteral(value: Null)      = "NULL"
     }
   }
 
   trait ImplicitColumnTypes extends super.ImplicitColumnTypes {
-    implicit def booleanColumnType = columnTypes.booleanJdbcType
-    implicit def blobColumnType = columnTypes.blobJdbcType
-    implicit def byteColumnType = columnTypes.byteJdbcType
-    implicit def byteArrayColumnType = columnTypes.byteArrayJdbcType
-    implicit def charColumnType = columnTypes.charJdbcType
-    implicit def clobColumnType = columnTypes.clobJdbcType
-    implicit def dateColumnType = columnTypes.dateJdbcType
-    implicit def doubleColumnType = columnTypes.doubleJdbcType
-    implicit def floatColumnType = columnTypes.floatJdbcType
-    implicit def intColumnType = columnTypes.intJdbcType
-    implicit def longColumnType = columnTypes.longJdbcType
-    implicit def shortColumnType = columnTypes.shortJdbcType
-    implicit def stringColumnType = columnTypes.stringJdbcType
-    implicit def timeColumnType = columnTypes.timeJdbcType
-    implicit def timestampColumnType = columnTypes.timestampJdbcType
-    implicit def uuidColumnType = columnTypes.uuidJdbcType
+    implicit def booleanColumnType    = columnTypes.booleanJdbcType
+    implicit def blobColumnType       = columnTypes.blobJdbcType
+    implicit def byteColumnType       = columnTypes.byteJdbcType
+    implicit def byteArrayColumnType  = columnTypes.byteArrayJdbcType
+    implicit def charColumnType       = columnTypes.charJdbcType
+    implicit def clobColumnType       = columnTypes.clobJdbcType
+    implicit def dateColumnType       = columnTypes.dateJdbcType
+    implicit def doubleColumnType     = columnTypes.doubleJdbcType
+    implicit def floatColumnType      = columnTypes.floatJdbcType
+    implicit def intColumnType        = columnTypes.intJdbcType
+    implicit def longColumnType       = columnTypes.longJdbcType
+    implicit def shortColumnType      = columnTypes.shortJdbcType
+    implicit def stringColumnType     = columnTypes.stringJdbcType
+    implicit def timeColumnType       = columnTypes.timeJdbcType
+    implicit def timestampColumnType  = columnTypes.timestampJdbcType
+    implicit def uuidColumnType       = columnTypes.uuidJdbcType
     implicit def bigDecimalColumnType = columnTypes.bigDecimalJdbcType
   }
 }
@@ -368,6 +385,6 @@ trait JdbcTypesComponent extends RelationalTypesComponent {
 object JdbcTypesComponent {
   private[slick] lazy val typeNames =
     Map() ++
-    (for (f <- classOf[java.sql.Types].getFields) yield
-          f.get(null).asInstanceOf[Int] -> f.getName)
+      (for (f <- classOf[java.sql.Types].getFields)
+        yield f.get(null).asInstanceOf[Int] -> f.getName)
 }

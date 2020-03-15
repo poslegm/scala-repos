@@ -35,40 +35,43 @@ import org.scalacheck.Prop._
 object StormPlanTopology extends Properties("StormDag") {
 
   implicit def extractor[T]: TimeExtractor[T] = TimeExtractor(_ => 0L)
-  implicit val batcher = Batcher.unit
+  implicit val batcher                        = Batcher.unit
   private type StormDag = Dag[Storm]
 
   import TestGraphGenerators._
-  implicit def sink1: Storm#Sink[Int] = Storm.sink((_) => Future.Unit)
+  implicit def sink1: Storm#Sink[Int]        = Storm.sink((_) => Future.Unit)
   implicit def sink2: Storm#Sink[(Int, Int)] = Storm.sink((_) => Future.Unit)
 
-  implicit def testStore: Storm#Store[Int, Int] = MergeableStoreFactory.from {
-    MergeableStore.fromStore[(Int, BatchID), Int](
-        new JMapStore[(Int, BatchID), Int]())
-  }
+  implicit def testStore: Storm#Store[Int, Int] =
+    MergeableStoreFactory.from {
+      MergeableStore.fromStore[(Int, BatchID), Int](
+        new JMapStore[(Int, BatchID), Int]()
+      )
+    }
 
   implicit def arbSource1: Arbitrary[Producer[Storm, Int]] =
     Arbitrary(
-        Gen
-          .listOfN(5000, Arbitrary.arbitrary[Int])
-          .map { x: List[Int] =>
-        Storm.source(TraversableSpout(x))
-      })
+      Gen
+        .listOfN(5000, Arbitrary.arbitrary[Int])
+        .map { x: List[Int] => Storm.source(TraversableSpout(x)) }
+    )
   implicit def arbSource2: Arbitrary[KeyedProducer[Storm, Int, Int]] =
     Arbitrary(
-        Gen
-          .listOfN(5000, Arbitrary.arbitrary[(Int, Int)])
-          .map { x: List[(Int, Int)] =>
-        IdentityKeyedProducer(Storm.source(TraversableSpout(x)))
-      })
+      Gen
+        .listOfN(5000, Arbitrary.arbitrary[(Int, Int)])
+        .map { x: List[(Int, Int)] =>
+          IdentityKeyedProducer(Storm.source(TraversableSpout(x)))
+        }
+    )
 
   implicit def arbService2: Arbitrary[Storm#Service[Int, Int]] =
     Arbitrary(
-        Arbitrary
-          .arbitrary[Int => Option[Int]]
-          .map { fn =>
-        ReadableServiceFactory[Int, Int](() => ReadableStore.fromFn(fn))
-      })
+      Arbitrary
+        .arbitrary[Int => Option[Int]]
+        .map { fn =>
+          ReadableServiceFactory[Int, Int](() => ReadableStore.fromFn(fn))
+        }
+    )
 
   lazy val genDag: Gen[TailProducer[Storm, Any]] = for {
     tail <- oneOf(summed, written)
@@ -77,18 +80,17 @@ object StormPlanTopology extends Properties("StormDag") {
   implicit def genProducer: Arbitrary[TailProducer[Storm, Any]] =
     Arbitrary(genDag)
 
-  val testFn = { i: Int =>
-    List((i -> i))
-  }
+  val testFn = { i: Int => List((i -> i)) }
 
-  def sample[T : Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
+  def sample[T: Arbitrary]: T = Arbitrary.arbitrary[T].sample.get
 
   var dumpNumber = 1
   def dumpGraph(dag: StormDag) = {
     import java.io._
     import com.twitter.summingbird.viz.VizGraph
     val writer2 = new PrintWriter(
-        new File("/tmp/failingGraph" + dumpNumber + ".dot"))
+      new File("/tmp/failingGraph" + dumpNumber + ".dot")
+    )
     VizGraph(dag, writer2)
     writer2.close()
     dumpNumber = dumpNumber + 1
@@ -98,7 +100,8 @@ object StormPlanTopology extends Properties("StormDag") {
     import java.io._
     import com.twitter.summingbird.viz.VizGraph
     val writer2 = new PrintWriter(
-        new File("/tmp/failingProducerGraph" + dumpNumber + ".dot"))
+      new File("/tmp/failingProducerGraph" + dumpNumber + ".dot")
+    )
     VizGraph(tail, writer2)
     writer2.close()
     dumpNumber = dumpNumber + 1

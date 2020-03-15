@@ -7,7 +7,9 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class InMemoryStatsReceiverTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   test("clear") {
     val inMemoryStatsReceiver = new InMemoryStatsReceiver
@@ -47,16 +49,16 @@ class InMemoryStatsReceiverTest
 
   test("ReadableCounter.toString") {
     val stats = new InMemoryStatsReceiver()
-    val c = stats.counter("a", "b")
+    val c     = stats.counter("a", "b")
     assert("Counter(a/b=0)" == c.toString)
     c.incr()
     assert("Counter(a/b=1)" == c.toString)
   }
 
   test("ReadableGauge.toString") {
-    var n = 0
+    var n     = 0
     val stats = new InMemoryStatsReceiver()
-    val g = stats.addGauge("a", "b") { n }
+    val g     = stats.addGauge("a", "b") { n }
     assert("Gauge(a/b=0.0)" == g.toString)
 
     n = 11
@@ -65,7 +67,7 @@ class InMemoryStatsReceiverTest
 
   test("ReadableStat.toString") {
     val stats = new InMemoryStatsReceiver()
-    val s = stats.stat("a", "b")
+    val s     = stats.stat("a", "b")
     assert("Stat(a/b=[])" == s.toString)
 
     s.add(1)

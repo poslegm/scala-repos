@@ -33,12 +33,18 @@ import scala.collection.parallel.Task
   *  section on Parallel Hash Tables for more information.
   */
 @SerialVersionUID(1L)
-class ParHashMap[K, V] private[collection](
-    contents: HashTable.Contents[K, DefaultEntry[K, V]])
-    extends ParMap[K, V] with GenericParMapTemplate[K, V, ParHashMap]
+class ParHashMap[K, V] private[collection] (
+    contents: HashTable.Contents[K, DefaultEntry[K, V]]
+) extends ParMap[K, V]
+    with GenericParMapTemplate[K, V, ParHashMap]
     with ParMapLike[
-        K, V, ParHashMap[K, V], scala.collection.mutable.HashMap[K, V]]
-    with ParHashTable[K, DefaultEntry[K, V]] with Serializable {
+      K,
+      V,
+      ParHashMap[K, V],
+      scala.collection.mutable.HashMap[K, V]
+    ]
+    with ParHashTable[K, DefaultEntry[K, V]]
+    with Serializable {
   self =>
   initWithContents(contents)
 
@@ -57,7 +63,11 @@ class ParHashMap[K, V] private[collection](
 
   def splitter =
     new ParHashMapIterator(
-        1, table.length, size, table(0).asInstanceOf[DefaultEntry[K, V]])
+      1,
+      table.length,
+      size,
+      table(0).asInstanceOf[DefaultEntry[K, V]]
+    )
 
   override def size = tableSize
 
@@ -94,13 +104,24 @@ class ParHashMap[K, V] private[collection](
   override def stringPrefix = "ParHashMap"
 
   class ParHashMapIterator(
-      start: Int, untilIdx: Int, totalSize: Int, e: DefaultEntry[K, V])
-      extends EntryIterator[(K, V), ParHashMapIterator](
-          start, untilIdx, totalSize, e) {
+      start: Int,
+      untilIdx: Int,
+      totalSize: Int,
+      e: DefaultEntry[K, V]
+  ) extends EntryIterator[(K, V), ParHashMapIterator](
+        start,
+        untilIdx,
+        totalSize,
+        e
+      ) {
     def entry2item(entry: DefaultEntry[K, V]) = (entry.key, entry.value)
 
     def newIterator(
-        idxFrom: Int, idxUntil: Int, totalSz: Int, es: DefaultEntry[K, V]) =
+        idxFrom: Int,
+        idxUntil: Int,
+        totalSz: Int,
+        es: DefaultEntry[K, V]
+    ) =
       new ParHashMapIterator(idxFrom, idxUntil, totalSz, es)
   }
 
@@ -109,10 +130,13 @@ class ParHashMap[K, V] private[collection](
   }
 
   private def writeObject(out: java.io.ObjectOutputStream) {
-    serializeTo(out, { entry =>
-      out.writeObject(entry.key)
-      out.writeObject(entry.value)
-    })
+    serializeTo(
+      out,
+      { entry =>
+        out.writeObject(entry.key)
+        out.writeObject(entry.value)
+      }
+    )
   }
 
   private def readObject(in: java.io.ObjectInputStream) {
@@ -121,8 +145,8 @@ class ParHashMap[K, V] private[collection](
 
   private[parallel] override def brokenInvariants = {
     // bucket by bucket, count elements
-    val buckets = for (i <- 0 until (table.length / sizeMapBucketSize)) yield
-      checkBucket(i)
+    val buckets =
+      for (i <- 0 until (table.length / sizeMapBucketSize)) yield checkBucket(i)
 
     // check if each element is in the position corresponding to its key
     val elems = for (i <- 0 until table.length) yield checkEntry(i)
@@ -135,9 +159,7 @@ class ParHashMap[K, V] private[collection](
       if (e eq null) 0 else 1 + count(e.next)
     val expected = sizemap(i)
     val found = ((i * sizeMapBucketSize) until ((i + 1) * sizeMapBucketSize))
-      .foldLeft(0) { (acc, c) =>
-      acc + count(table(c))
-    }
+      .foldLeft(0) { (acc, c) => acc + count(table(c)) }
     if (found != expected)
       List("Found " + found + " elements, while sizemap showed " + expected)
     else Nil
@@ -149,7 +171,7 @@ class ParHashMap[K, V] private[collection](
       else if (index(elemHashCode(e.key)) == i) check(e.next)
       else
         ("Element " + e.key + " at " + i + " with " + elemHashCode(e.key) +
-            " maps to " + index(elemHashCode(e.key))) :: check(e.next)
+          " maps to " + index(elemHashCode(e.key))) :: check(e.next)
     check(table(i))
   }
 }
@@ -166,24 +188,26 @@ object ParHashMap extends ParMapFactory[ParHashMap] {
   def newCombiner[K, V]: Combiner[(K, V), ParHashMap[K, V]] =
     ParHashMapCombiner.apply[K, V]
 
-  implicit def canBuildFrom[K, V]: CanCombineFrom[
-      Coll, (K, V), ParHashMap[K, V]] = new CanCombineFromMap[K, V]
+  implicit def canBuildFrom[K, V]
+      : CanCombineFrom[Coll, (K, V), ParHashMap[K, V]] =
+    new CanCombineFromMap[K, V]
 }
 
 private[mutable] abstract class ParHashMapCombiner[K, V](
-    private val tableLoadFactor: Int)
-    extends scala.collection.parallel.BucketCombiner[(K, V),
-                                                     ParHashMap[K, V],
-                                                     DefaultEntry[K, V],
-                                                     ParHashMapCombiner[K, V]](
-        ParHashMapCombiner.numblocks)
+    private val tableLoadFactor: Int
+) extends scala.collection.parallel.BucketCombiner[(K, V), ParHashMap[
+      K,
+      V
+    ], DefaultEntry[K, V], ParHashMapCombiner[K, V]](
+      ParHashMapCombiner.numblocks
+    )
     with scala.collection.mutable.HashTable.HashUtils[K] {
   private val nonmasklen = ParHashMapCombiner.nonmasklength
-  private val seedvalue = 27
+  private val seedvalue  = 27
 
   def +=(elem: (K, V)) = {
     sz += 1
-    val hc = improve(elemHashCode(elem._1), seedvalue)
+    val hc  = improve(elemHashCode(elem._1), seedvalue)
     val pos = (hc >>> nonmasklen)
     if (buckets(pos) eq null) {
       // initialize bucket
@@ -201,7 +225,8 @@ private[mutable] abstract class ParHashMapCombiner[K, V](
       val table = new AddingHashTable(size, tableLoadFactor, seedvalue)
       val bucks = buckets.map(b => if (b ne null) b.headPtr else null)
       val insertcount = combinerTaskSupport.executeAndWaitResult(
-          new FillBlocks(bucks, table, 0, bucks.length))
+        new FillBlocks(bucks, table, 0, bucks.length)
+      )
       table.setSize(insertcount)
       // TODO compare insertcount and size to see if compression is needed
       val c = table.hashTableContents
@@ -237,19 +262,22 @@ private[mutable] abstract class ParHashMapCombiner[K, V](
     *  in the table.
     */
   private[ParHashMapCombiner] class AddingHashTable(
-      numelems: Int, lf: Int, _seedvalue: Int)
-      extends HashTable[K, DefaultEntry[K, V]] {
+      numelems: Int,
+      lf: Int,
+      _seedvalue: Int
+  ) extends HashTable[K, DefaultEntry[K, V]] {
     import HashTable._
     _loadFactor = lf
     table = new Array[HashEntry[K, DefaultEntry[K, V]]](
-        capacity(sizeForThreshold(_loadFactor, numelems)))
+      capacity(sizeForThreshold(_loadFactor, numelems))
+    )
     tableSize = 0
     seedvalue = _seedvalue
     threshold = newThreshold(_loadFactor, table.length)
     sizeMapInit(table.length)
     def setSize(sz: Int) = tableSize = sz
     def insertEntry( /*block: Int, */ e: DefaultEntry[K, V]) = {
-      var h = index(elemHashCode(e.key))
+      var h    = index(elemHashCode(e.key))
       val olde = table(h).asInstanceOf[DefaultEntry[K, V]]
 
       // check if key already exists
@@ -276,14 +304,15 @@ private[mutable] abstract class ParHashMapCombiner[K, V](
 
   import UnrolledBuffer.Unrolled
 
-  class FillBlocks(buckets: Array[Unrolled[DefaultEntry[K, V]]],
-                   table: AddingHashTable,
-                   offset: Int,
-                   howmany: Int)
-      extends Task[Int, FillBlocks] {
+  class FillBlocks(
+      buckets: Array[Unrolled[DefaultEntry[K, V]]],
+      table: AddingHashTable,
+      offset: Int,
+      howmany: Int
+  ) extends Task[Int, FillBlocks] {
     var result = Int.MinValue
     def leaf(prev: Option[Int]) = {
-      var i = offset
+      var i     = offset
       val until = offset + howmany
       result = 0
       while (i < until) {
@@ -293,12 +322,12 @@ private[mutable] abstract class ParHashMapCombiner[K, V](
     }
     private def fillBlock(block: Int, elems: Unrolled[DefaultEntry[K, V]]) = {
       var insertcount = 0
-      var unrolled = elems
-      var i = 0
-      val t = table
+      var unrolled    = elems
+      var i           = 0
+      val t           = table
       while (unrolled ne null) {
         val chunkarr = unrolled.array
-        val chunksz = unrolled.size
+        val chunksz  = unrolled.size
         while (i < chunksz) {
           val elem = chunkarr(i)
           if (t.insertEntry(elem)) insertcount += 1
@@ -311,24 +340,30 @@ private[mutable] abstract class ParHashMapCombiner[K, V](
     }
     def split = {
       val fp = howmany / 2
-      List(new FillBlocks(buckets, table, offset, fp),
-           new FillBlocks(buckets, table, offset + fp, howmany - fp))
+      List(
+        new FillBlocks(buckets, table, offset, fp),
+        new FillBlocks(buckets, table, offset + fp, howmany - fp)
+      )
     }
     override def merge(that: FillBlocks) {
       this.result += that.result
     }
     def shouldSplitFurther =
       howmany > scala.collection.parallel.thresholdFromSize(
-          ParHashMapCombiner.numblocks, combinerTaskSupport.parallelismLevel)
+        ParHashMapCombiner.numblocks,
+        combinerTaskSupport.parallelismLevel
+      )
   }
 }
 
 private[parallel] object ParHashMapCombiner {
   private[mutable] val discriminantbits = 5
-  private[mutable] val numblocks = 1 << discriminantbits
+  private[mutable] val numblocks        = 1 << discriminantbits
   private[mutable] val discriminantmask = ((1 << discriminantbits) - 1)
-  private[mutable] val nonmasklength = 32 - discriminantbits
+  private[mutable] val nonmasklength    = 32 - discriminantbits
 
   def apply[K, V] =
-    new ParHashMapCombiner[K, V](HashTable.defaultLoadFactor) {} // was: with EnvironmentPassingCombiner[(K, V), ParHashMap[K, V]]
+    new ParHashMapCombiner[K, V](
+      HashTable.defaultLoadFactor
+    ) {} // was: with EnvironmentPassingCombiner[(K, V), ParHashMap[K, V]]
 }

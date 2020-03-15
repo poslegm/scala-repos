@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -36,8 +36,9 @@ trait ConsumerConnector {
     *          The number of items in the list is #streams. Each stream supports
     *          an iterator over message/metadata pairs.
     */
-  def createMessageStreams(topicCountMap: Map[String, Int])
-    : Map[String, List[KafkaStream[Array[Byte], Array[Byte]]]]
+  def createMessageStreams(
+      topicCountMap: Map[String, Int]
+  ): Map[String, List[KafkaStream[Array[Byte], Array[Byte]]]]
 
   /**
     *  Create a list of MessageStreams for each topic.
@@ -52,7 +53,8 @@ trait ConsumerConnector {
   def createMessageStreams[K, V](
       topicCountMap: Map[String, Int],
       keyDecoder: Decoder[K],
-      valueDecoder: Decoder[V]): Map[String, List[KafkaStream[K, V]]]
+      valueDecoder: Decoder[V]
+  ): Map[String, List[KafkaStream[K, V]]]
 
   /**
     *  Create a list of message streams for all topics that match a given filter.
@@ -68,7 +70,8 @@ trait ConsumerConnector {
       topicFilter: TopicFilter,
       numStreams: Int = 1,
       keyDecoder: Decoder[K] = new DefaultDecoder(),
-      valueDecoder: Decoder[V] = new DefaultDecoder()): Seq[KafkaStream[K, V]]
+      valueDecoder: Decoder[V] = new DefaultDecoder()
+  ): Seq[KafkaStream[K, V]]
 
   /**
     *  Commit the offsets of all broker partitions connected by this connector.
@@ -86,7 +89,8 @@ trait ConsumerConnector {
     */
   def commitOffsets(
       offsetsToCommit: immutable.Map[TopicAndPartition, OffsetAndMetadata],
-      retryOnFailure: Boolean)
+      retryOnFailure: Boolean
+  )
 
   /**
     * Wire in a consumer rebalance listener to be executed when consumer rebalance occurs.
@@ -120,7 +124,8 @@ object Consumer extends Logging {
     *                 connection string zookeeper.connect.
     */
   def createJavaConsumerConnector(
-      config: ConsumerConfig): kafka.javaapi.consumer.ConsumerConnector = {
+      config: ConsumerConfig
+  ): kafka.javaapi.consumer.ConsumerConnector = {
     val consumerConnect =
       new kafka.javaapi.consumer.ZookeeperConsumerConnector(config)
     consumerConnect

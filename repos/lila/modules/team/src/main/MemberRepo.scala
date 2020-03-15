@@ -12,10 +12,16 @@ object MemberRepo {
   type ID = String
 
   def userIdsByTeam(teamId: ID): Fu[Set[ID]] =
-    memberTube.coll.distinct("user", BSONDocument("team" -> teamId).some) map lila.db.BSON.asStringSet
+    memberTube.coll.distinct(
+      "user",
+      BSONDocument("team" -> teamId).some
+    ) map lila.db.BSON.asStringSet
 
   def teamIdsByUser(userId: ID): Fu[Set[ID]] =
-    memberTube.coll.distinct("team", BSONDocument("user" -> userId).some) map lila.db.BSON.asStringSet
+    memberTube.coll.distinct(
+      "team",
+      BSONDocument("user" -> userId).some
+    ) map lila.db.BSON.asStringSet
 
   def removeByteam(teamId: ID): Funit =
     $remove(teamQuery(teamId))
@@ -36,6 +42,6 @@ object MemberRepo {
     $count(teamQuery(teamId))
 
   def selectId(teamId: ID, userId: ID) = $select(Member.makeId(teamId, userId))
-  def teamQuery(teamId: ID) = Json.obj("team" -> teamId)
-  def userQuery(userId: ID) = Json.obj("user" -> userId)
+  def teamQuery(teamId: ID)            = Json.obj("team" -> teamId)
+  def userQuery(userId: ID)            = Json.obj("user" -> userId)
 }

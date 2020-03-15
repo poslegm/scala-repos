@@ -7,10 +7,10 @@ trait Base[A, B, C] {
 trait D1[B, C] extends Base[String, B, C]
 trait D2[A, B] extends Base[A, B, String]
 trait D3[A, C] extends Base[A, String, C]
-trait D4[A] extends Base[A, String, String]
-trait D5[B] extends Base[String, B, String]
-trait D6[C] extends Base[String, String, C]
-trait D7 extends Base[String, String, String]
+trait D4[A]    extends Base[A, String, String]
+trait D5[B]    extends Base[String, B, String]
+trait D6[C]    extends Base[String, String, C]
+trait D7       extends Base[String, String, String]
 
 trait E1[B, C] extends Base[String, B, C] {
   def f(x: String, y: B, z: C): Unit;
@@ -64,20 +64,35 @@ trait F7 extends Base[String, String, String] {
 }
 
 abstract class DBag
-    extends D1[String, String] with D2[String, String] with D3[String, String]
-    with D4[String] with D5[String] with D6[String] with D7 {
+    extends D1[String, String]
+    with D2[String, String]
+    with D3[String, String]
+    with D4[String]
+    with D5[String]
+    with D6[String]
+    with D7 {
   def f(x: String, y: String, z: String) =
     println(x.length + y.length + z.length)
 }
 abstract class EBag
-    extends E1[String, String] with E2[String, String] with E3[String, String]
-    with E4[String] with E5[String] with E6[String] with E7 {
+    extends E1[String, String]
+    with E2[String, String]
+    with E3[String, String]
+    with E4[String]
+    with E5[String]
+    with E6[String]
+    with E7 {
   def f(x: String, y: String, z: String) =
     println(x.length + y.length + z.length)
 }
 abstract class FBag
-    extends F1[String, String] with F2[String, String] with F3[String, String]
-    with F4[String] with F5[String] with F6[String] with F7 {
+    extends F1[String, String]
+    with F2[String, String]
+    with F3[String, String]
+    with F4[String]
+    with F5[String]
+    with F6[String]
+    with F7 {
   override def f(x: String, y: String, z: String) =
     println(x.length + y.length + z.length)
 }
@@ -92,18 +107,23 @@ abstract class GBag3 extends GBag2[String] with D7 {
   override def f(x: String, y: String, z: String) = println(z.length)
 }
 class GBag
-    extends GBag3 with D2[String, String] with D3[String, String]
-    with D4[String] with D5[String] with D6[String] with D7 {}
+    extends GBag3
+    with D2[String, String]
+    with D3[String, String]
+    with D4[String]
+    with D5[String]
+    with D6[String]
+    with D7 {}
 
 object Test {
   def f0(x: Base[String, String, String]) = x.f("a", "b", "c")
-  def f1(x: D1[String, String]) = x.f("a", "b", "c")
-  def f2(x: D2[String, String]) = x.f("a", "b", "c")
-  def f3(x: D3[String, String]) = x.f("a", "b", "c")
-  def f4(x: D4[String]) = x.f("a", "b", "c")
-  def f5(x: D5[String]) = x.f("a", "b", "c")
-  def f6(x: D6[String]) = x.f("a", "b", "c")
-  def f7(x: D7) = x.f("a", "b", "c")
+  def f1(x: D1[String, String])           = x.f("a", "b", "c")
+  def f2(x: D2[String, String])           = x.f("a", "b", "c")
+  def f3(x: D3[String, String])           = x.f("a", "b", "c")
+  def f4(x: D4[String])                   = x.f("a", "b", "c")
+  def f5(x: D5[String])                   = x.f("a", "b", "c")
+  def f6(x: D6[String])                   = x.f("a", "b", "c")
+  def f7(x: D7)                           = x.f("a", "b", "c")
 
   def main(args: Array[String]): Unit = {
     val x = new DBag {}

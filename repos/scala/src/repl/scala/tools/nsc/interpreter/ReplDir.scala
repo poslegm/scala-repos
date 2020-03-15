@@ -15,9 +15,11 @@ import scala.collection.generic.Clearable
 trait ReplDir extends AbstractFile with Clearable {}
 
 private class ReplVirtualDir()
-    extends VirtualDirectory("(memory)", None) with ReplDir {}
+    extends VirtualDirectory("(memory)", None)
+    with ReplDir {}
 private class ReplRealDir(dir: Directory)
-    extends PlainDirectory(dir) with ReplDir {
+    extends PlainDirectory(dir)
+    with ReplDir {
   def clear() = {
     dir.deleteRecursively()
     dir.createDirectory()
@@ -36,7 +38,7 @@ class ReplOutput(val dirSetting: MutableSettings#StringSetting) {
   // print the contents hierarchically
   def show(out: JPrintWriter) = {
     def pp(root: AbstractFile, indentLevel: Int) {
-      val label = root.name
+      val label  = root.name
       val spaces = "    " * indentLevel
       out.println(spaces + label)
       if (root.isDirectory)

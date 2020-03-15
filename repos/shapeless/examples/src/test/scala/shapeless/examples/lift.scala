@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ class LiftTests {
   @Test
   def testLiftO {
 
-    val sum: (Int, Int) => Int = _ + _
+    val sum: (Int, Int) => Int      = _ + _
     val prd: (Int, Int, Int) => Int = _ * _ * _
 
     val hlsum = sum.toProduct
@@ -47,14 +47,14 @@ class LiftTests {
     val p1 = hlprd(l2)
     assertEquals(24, p1)
 
-    val l3 = Option(2) :: Option(3) :: HNil
+    val l3     = Option(2) :: Option(3) :: HNil
     val isDef3 = l3.foldMap(true)(isDefined)(_ & _)
     assertTrue(isDef3)
     val l3a = l3 map get
     val s2a = hlsum(l3a)
     assertEquals(5, s2a)
 
-    val l4 = Option(2) :: Option(3) :: Option(4) :: HNil
+    val l4     = Option(2) :: Option(3) :: Option(4) :: HNil
     val isDef4 = l4.foldMap(true)(isDefined)(_ & _)
     assertTrue(isDef4)
     val l4a = l4 map get

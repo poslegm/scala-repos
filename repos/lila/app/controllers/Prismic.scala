@@ -15,25 +15,28 @@ object Prismic {
     level match {
       case 'DEBUG => logger debug message
       case 'ERROR => logger error message
-      case _ => logger info message
-  }
+      case _      => logger info message
+    }
 
   private val fetchPrismicApi = AsyncCache.single[PrismicApi](
-      f = PrismicApi.get(Env.api.PrismicApiUrl, logger = prismicLogger),
-      timeToLive = 1 minute)
+    f = PrismicApi.get(Env.api.PrismicApiUrl, logger = prismicLogger),
+    timeToLive = 1 minute
+  )
 
   def prismicApi = fetchPrismicApi(true)
 
   implicit def makeLinkResolver(
-      prismicApi: PrismicApi, ref: Option[String] = None) =
+      prismicApi: PrismicApi,
+      ref: Option[String] = None
+  ) =
     DocumentLinkResolver(prismicApi) {
       case (DocumentLink(id, _, _, slug, false), _) =>
         routes.Blog.show(id, slug, ref).url
       case _ => routes.Lobby.home.url
     }
 
-  def getDocument(id: String): Fu[Option[Document]] = prismicApi flatMap {
-    api =>
+  def getDocument(id: String): Fu[Option[Document]] =
+    prismicApi flatMap { api =>
       api
         .forms("everything")
         .query(s"""[[:d = at(document.id, "$id")]]""")
@@ -41,13 +44,12 @@ object Prismic {
         .submit() map {
         _.results.headOption
       }
-  }
+    }
 
   def getBookmark(name: String) =
     fetchPrismicApi(true) flatMap { api =>
       api.bookmarks.get(name) ?? getDocument map2 {
-        (doc: io.prismic.Document) =>
-          doc -> makeLinkResolver(api)
+        (doc: io.prismic.Document) => doc -> makeLinkResolver(api)
       }
     } recover {
       case e: Exception =>
@@ -55,13 +57,14 @@ object Prismic {
         none
     }
 
-  def getVariant(variant: chess.variant.Variant) = prismicApi flatMap { api =>
-    api
-      .forms("variant")
-      .query(s"""[[:d = at(my.variant.key, "${variant.key}")]]""")
-      .ref(api.master.ref)
-      .submit() map {
-      _.results.headOption map (_ -> makeLinkResolver(api))
+  def getVariant(variant: chess.variant.Variant) =
+    prismicApi flatMap { api =>
+      api
+        .forms("variant")
+        .query(s"""[[:d = at(my.variant.key, "${variant.key}")]]""")
+        .ref(api.master.ref)
+        .submit() map {
+        _.results.headOption map (_ -> makeLinkResolver(api))
+      }
     }
-  }
 }

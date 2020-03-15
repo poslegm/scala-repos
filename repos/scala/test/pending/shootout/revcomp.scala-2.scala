@@ -11,8 +11,8 @@ object revcomp {
   val IUB = IUBCodeComplements
 
   def IUBCodeComplements() = {
-    val code = "ABCDGHKMNRSTVWYabcdghkmnrstvwy".getBytes
-    val comp = "TVGHCDMKNYSABWRTVGHCDMKNYSABWR".getBytes
+    val code           = "ABCDGHKMNRSTVWYabcdghkmnrstvwy".getBytes
+    val comp           = "TVGHCDMKNYSABWRTVGHCDMKNYSABWR".getBytes
     val a: Array[Byte] = new Array('z'.toByte)
 
     for (indexValue <- code zip comp) indexValue match {
@@ -29,7 +29,7 @@ object revcomp {
     val w = new BufferedOutputStream(System.out)
 
     var lines: LineStack = new Stack
-    var desc = ""
+    var desc             = ""
 
     var line = r.readLine
     while (line != null) {
@@ -52,7 +52,10 @@ object revcomp {
   }
 
   def complementReverseWrite(
-      desc: String, lines: LineStack, w: BufferedOutputStream) = {
+      desc: String,
+      lines: LineStack,
+      w: BufferedOutputStream
+  ) = {
 
     def inplaceComplementReverse(b: Array[Byte]) = {
       var i = 0
@@ -70,8 +73,8 @@ object revcomp {
     val nl = '\n'.toByte
     w.write(desc.getBytes); w.write(nl)
 
-    val n = 60
-    val k = if (lines.isEmpty) 0 else lines.top.length
+    val n           = 60
+    val k           = if (lines.isEmpty) 0 else lines.top.length
     val isSplitLine = k < n
     var isFirstLine = true
 
@@ -80,7 +83,8 @@ object revcomp {
       inplaceComplementReverse(line)
 
       if (isSplitLine) {
-        if (isFirstLine) { w.write(line); isFirstLine = false } else {
+        if (isFirstLine) { w.write(line); isFirstLine = false }
+        else {
           w.write(line, 0, n - k); w.write(nl); w.write(line, n - k, k)
         }
       } else { w.write(line); w.write(nl) }

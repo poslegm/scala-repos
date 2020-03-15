@@ -24,26 +24,30 @@ object TaskOpFactory {
     *              needed to check constraints and handle resident tasks
     * @param additionalLaunches the number of additional launches that has been requested
     */
-  case class Request(app: AppDefinition,
-                     offer: Mesos.Offer,
-                     taskMap: Map[Task.Id, Task],
-                     additionalLaunches: Int) {
+  case class Request(
+      app: AppDefinition,
+      offer: Mesos.Offer,
+      taskMap: Map[Task.Id, Task],
+      additionalLaunches: Int
+  ) {
     def frameworkId: FrameworkId =
       FrameworkId("").mergeFromProto(offer.getFrameworkId)
     def tasks: Iterable[Task] = taskMap.values
     lazy val reserved: Iterable[Task.Reserved] = tasks.collect {
       case r: Task.Reserved => r
     }
-    def hasWaitingReservations: Boolean = reserved.nonEmpty
+    def hasWaitingReservations: Boolean  = reserved.nonEmpty
     def numberOfWaitingReservations: Int = reserved.size
-    def isForResidentApp: Boolean = app.isResident
+    def isForResidentApp: Boolean        = app.isResident
   }
 
   object Request {
-    def apply(app: AppDefinition,
-              offer: Mesos.Offer,
-              tasks: Iterable[Task],
-              additionalLaunches: Int): Request = {
+    def apply(
+        app: AppDefinition,
+        offer: Mesos.Offer,
+        tasks: Iterable[Task],
+        additionalLaunches: Int
+    ): Request = {
       new Request(app, offer, Task.tasksById(tasks), additionalLaunches)
     }
   }

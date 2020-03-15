@@ -19,7 +19,7 @@ object Test {
 
     def cloneViaSerialization[T](t: T): T = deser(ser(t))
 
-    val f = cloneViaSerialization(_: TrieMap[Int, Int])
+    val f  = cloneViaSerialization(_: TrieMap[Int, Int])
     val tm = TrieMap(1 -> 2)
     assert(f(f(tm)) == tm)
     assert(ser(tm).length == ser(f(tm)).length)

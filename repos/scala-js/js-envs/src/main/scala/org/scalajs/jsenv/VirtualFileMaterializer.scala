@@ -31,23 +31,25 @@ final class VirtualFileMaterializer(singleDir: Boolean = false) {
     f
   }
 
-  def materialize(vf: VirtualTextFile): File = vf match {
-    case vf: FileVirtualFile if !singleDir =>
-      vf.file
-    case _ =>
-      val trg = trgFile(vf.name)
-      IO.copyTo(vf, WritableFileVirtualTextFile(trg))
-      trg
-  }
+  def materialize(vf: VirtualTextFile): File =
+    vf match {
+      case vf: FileVirtualFile if !singleDir =>
+        vf.file
+      case _ =>
+        val trg = trgFile(vf.name)
+        IO.copyTo(vf, WritableFileVirtualTextFile(trg))
+        trg
+    }
 
-  def materialize(vf: VirtualBinaryFile): File = vf match {
-    case vf: FileVirtualFile if !singleDir =>
-      vf.file
-    case _ =>
-      val trg = trgFile(vf.name)
-      IO.copyTo(vf, WritableFileVirtualBinaryFile(trg))
-      trg
-  }
+  def materialize(vf: VirtualBinaryFile): File =
+    vf match {
+      case vf: FileVirtualFile if !singleDir =>
+        vf.file
+      case _ =>
+        val trg = trgFile(vf.name)
+        IO.copyTo(vf, WritableFileVirtualBinaryFile(trg))
+        trg
+    }
 
   /** Removes the cache directory. Any operation on this
     *  VirtualFileMaterializer is invalid after [[close]] has been
@@ -64,7 +66,7 @@ final class VirtualFileMaterializer(singleDir: Boolean = false) {
    */
   // scalastyle:on line.size.limit
   private def createTempDir(): File = {
-    val baseDir = new File(System.getProperty("java.io.tmpdir"))
+    val baseDir  = new File(System.getProperty("java.io.tmpdir"))
     val baseName = System.currentTimeMillis() + "-"
 
     @tailrec
@@ -74,9 +76,10 @@ final class VirtualFileMaterializer(singleDir: Boolean = false) {
       else if (tries < TempDirAttempts) loop(tries + 1)
       else {
         throw new IllegalStateException(
-            "Failed to create directory within " +
+          "Failed to create directory within " +
             s"$TempDirAttempts attempts (tried ${baseName}0 to " +
-            s"${baseName}${TempDirAttempts - 1})")
+            s"${baseName}${TempDirAttempts - 1})"
+        )
       }
     }
 

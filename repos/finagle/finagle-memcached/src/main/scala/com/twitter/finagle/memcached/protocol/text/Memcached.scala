@@ -19,7 +19,7 @@ import com.twitter.io.Buf
 
 object Memcached {
   def apply(): Memcached = new Memcached()
-  def get() = apply()
+  def get()              = apply()
 }
 
 object MemcachedClientPipelineFactory extends ChannelPipelineFactory {
@@ -54,26 +54,29 @@ object MemcachedServerPipelineFactory extends ChannelPipelineFactory {
 }
 class Memcached extends CodecFactory[Command, Response] {
 
-  def server = Function.const {
-    new Codec[Command, Response] {
-      def pipelineFactory = MemcachedServerPipelineFactory
+  def server =
+    Function.const {
+      new Codec[Command, Response] {
+        def pipelineFactory = MemcachedServerPipelineFactory
+      }
     }
-  }
 
-  def client = Function.const {
-    new Codec[Command, Response] {
-      def pipelineFactory = MemcachedClientPipelineFactory
+  def client =
+    Function.const {
+      new Codec[Command, Response] {
+        def pipelineFactory = MemcachedClientPipelineFactory
 
-      // pass every request through a filter to create trace data
-      override def prepareConnFactory(
-          underlying: ServiceFactory[Command, Response],
-          params: Stack.Params) =
-        new MemcachedLoggingFilter(params[param.Stats].statsReceiver)
-          .andThen(underlying)
+        // pass every request through a filter to create trace data
+        override def prepareConnFactory(
+            underlying: ServiceFactory[Command, Response],
+            params: Stack.Params
+        ) =
+          new MemcachedLoggingFilter(params[param.Stats].statsReceiver)
+            .andThen(underlying)
 
-      override def newTraceInitializer = MemcachedTraceInitializer.Module
+        override def newTraceInitializer = MemcachedTraceInitializer.Module
+      }
     }
-  }
 
   override val protocolLibraryName: String = "memcached"
 }
@@ -103,9 +106,7 @@ private class MemcachedTracingFilter extends SimpleFilter[Command, Response] {
                   keyStr
               }
               val misses: immutable.Set[String] = keys -- hits
-              misses foreach { k: String =>
-                Trace.recordBinary(k, "Miss")
-              }
+              misses foreach { k: String => Trace.recordBinary(k, "Miss") }
             case _ =>
           }
         case _ =>
@@ -123,7 +124,7 @@ private class MemcachedLoggingFilter(stats: StatsReceiver)
   private[this] val serviceName = "memcached"
 
   private[this] val error = stats.scope("error")
-  private[this] val succ = stats.scope("success")
+  private[this] val succ  = stats.scope("success")
 
   override def apply(command: Command, service: Service[Command, Response]) = {
     service(command) map { response =>
@@ -132,7 +133,7 @@ private class MemcachedLoggingFilter(stats: StatsReceiver)
             NoOp() | Info(_, _) | InfoLines(_) | Values(_) | Number(_) =>
           succ.counter(command.name).incr()
         case Error(_) => error.counter(command.name).incr()
-        case _ => error.counter(command.name).incr()
+        case _        => error.counter(command.name).incr()
       }
       response
     }

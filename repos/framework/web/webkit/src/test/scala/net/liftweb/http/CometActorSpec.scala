@@ -33,7 +33,7 @@ object CometActorSpec extends Specification {
   private class SpecCometActor extends CometActor {
     var receivedMessages = List[Any]()
 
-    def render = NodeSeq.Empty
+    def render              = NodeSeq.Empty
     override def theSession = testSession
 
     override def !(msg: Any) = {

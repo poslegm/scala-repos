@@ -24,19 +24,21 @@ sealed trait UserContext {
 
   def ip = req.remoteAddress
 
-  def kid = me.??(_.kid)
+  def kid   = me.??(_.kid)
   def noKid = !kid
 }
 
 sealed abstract class BaseUserContext(
-    val req: RequestHeader, val me: Option[User])
-    extends UserContext {
+    val req: RequestHeader,
+    val me: Option[User]
+) extends UserContext {
 
-  override def toString = "%s %s %s".format(
+  override def toString =
+    "%s %s %s".format(
       me.fold("Anonymous")(_.username),
       req.remoteAddress,
       req.headers.get("User-Agent") | "?"
-  )
+    )
 }
 
 final class BodyUserContext[A](val body: Request[A], m: Option[User])
@@ -48,7 +50,7 @@ final class HeaderUserContext(r: RequestHeader, m: Option[User])
 trait UserContextWrapper extends UserContext {
   val userContext: UserContext
   val req = userContext.req
-  val me = userContext.me
+  val me  = userContext.me
 }
 
 object UserContext {

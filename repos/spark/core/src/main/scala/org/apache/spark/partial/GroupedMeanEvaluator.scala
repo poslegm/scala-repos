@@ -29,19 +29,22 @@ import org.apache.spark.util.StatCounter
   * An ApproximateEvaluator for means by key. Returns a map of key to confidence interval.
   */
 private[spark] class GroupedMeanEvaluator[T](
-    totalOutputs: Int, confidence: Double)
-    extends ApproximateEvaluator[
-        JHashMap[T, StatCounter], Map[T, BoundedDouble]] {
+    totalOutputs: Int,
+    confidence: Double
+) extends ApproximateEvaluator[
+      JHashMap[T, StatCounter],
+      Map[T, BoundedDouble]
+    ] {
 
   var outputsMerged = 0
-  var sums = new JHashMap[T, StatCounter] // Sum of counts for each key
+  var sums          = new JHashMap[T, StatCounter] // Sum of counts for each key
 
   override def merge(outputId: Int, taskResult: JHashMap[T, StatCounter]) {
     outputsMerged += 1
     val iter = taskResult.entrySet.iterator()
     while (iter.hasNext) {
       val entry = iter.next()
-      val old = sums.get(entry.getKey)
+      val old   = sums.get(entry.getKey)
       if (old != null) {
         old.merge(entry.getValue)
       } else {
@@ -53,10 +56,10 @@ private[spark] class GroupedMeanEvaluator[T](
   override def currentResult(): Map[T, BoundedDouble] = {
     if (outputsMerged == totalOutputs) {
       val result = new JHashMap[T, BoundedDouble](sums.size)
-      val iter = sums.entrySet.iterator()
+      val iter   = sums.entrySet.iterator()
       while (iter.hasNext) {
         val entry = iter.next()
-        val mean = entry.getValue.mean
+        val mean  = entry.getValue.mean
         result.put(entry.getKey, new BoundedDouble(mean, 1.0, mean, mean))
       }
       result.asScala
@@ -64,18 +67,17 @@ private[spark] class GroupedMeanEvaluator[T](
       new HashMap[T, BoundedDouble]
     } else {
       val studentTCacher = new StudentTCacher(confidence)
-      val result = new JHashMap[T, BoundedDouble](sums.size)
-      val iter = sums.entrySet.iterator()
+      val result         = new JHashMap[T, BoundedDouble](sums.size)
+      val iter           = sums.entrySet.iterator()
       while (iter.hasNext) {
-        val entry = iter.next()
-        val counter = entry.getValue
-        val mean = counter.mean
-        val stdev = math.sqrt(counter.sampleVariance / counter.count)
+        val entry      = iter.next()
+        val counter    = entry.getValue
+        val mean       = counter.mean
+        val stdev      = math.sqrt(counter.sampleVariance / counter.count)
         val confFactor = studentTCacher.get(counter.count)
-        val low = mean - confFactor * stdev
-        val high = mean + confFactor * stdev
-        result.put(
-            entry.getKey, new BoundedDouble(mean, confidence, low, high))
+        val low        = mean - confFactor * stdev
+        val high       = mean + confFactor * stdev
+        result.put(entry.getKey, new BoundedDouble(mean, confidence, low, high))
       }
       result.asScala
     }

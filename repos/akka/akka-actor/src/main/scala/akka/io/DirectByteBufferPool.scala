@@ -24,8 +24,9 @@ trait BufferPool {
   * benefit to wrapping in-heap JVM data when writing with NIO.
   */
 private[akka] class DirectByteBufferPool(
-    defaultBufferSize: Int, maxPoolEntries: Int)
-    extends BufferPool {
+    defaultBufferSize: Int,
+    maxPoolEntries: Int
+) extends BufferPool {
   private[this] val pool: Array[ByteBuffer] =
     new Array[ByteBuffer](maxPoolEntries)
   private[this] var buffersInPool: Int = 0

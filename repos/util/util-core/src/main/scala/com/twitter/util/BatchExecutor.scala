@@ -30,15 +30,14 @@ private[util] class BatchExecutor[In, Out](
     timeThreshold: Duration = Duration.Top,
     sizePercentile: => Float = 1.0f,
     f: Seq[In] => Future[Seq[Out]]
-)(
-    implicit timer: Timer
-)
-    extends Function1[In, Future[Out]] { batcher =>
+)(implicit
+    timer: Timer
+) extends Function1[In, Future[Out]] { batcher =>
   import java.util.logging.Level.WARNING
 
   class ScheduledFlush(after: Duration, timer: Timer) {
     @volatile var cancelled = false
-    val task = timer.schedule(after.fromNow) { flush() }
+    val task                = timer.schedule(after.fromNow) { flush() }
 
     def cancel() {
       cancelled = true
@@ -57,31 +56,35 @@ private[util] class BatchExecutor[In, Out](
   val log = Logger.getLogger("Future.batched")
 
   // operations on these are synchronized on `this`.
-  val buf = new mutable.ArrayBuffer[(In, Promise[Out])](sizeThreshold)
+  val buf                               = new mutable.ArrayBuffer[(In, Promise[Out])](sizeThreshold)
   var scheduled: Option[ScheduledFlush] = scala.None
-  var currentBufThreshold = newBufThreshold
+  var currentBufThreshold               = newBufThreshold
 
-  def currentBufPercentile = sizePercentile match {
-    case tooHigh if tooHigh > 1.0f =>
-      log.log(WARNING,
-              "value returned for sizePercentile (%f) was > 1.0f, using 1.0",
-              tooHigh)
-      1.0f
+  def currentBufPercentile =
+    sizePercentile match {
+      case tooHigh if tooHigh > 1.0f =>
+        log.log(
+          WARNING,
+          "value returned for sizePercentile (%f) was > 1.0f, using 1.0",
+          tooHigh
+        )
+        1.0f
 
-    case tooLow if tooLow < 0.0f =>
-      log.log(
+      case tooLow if tooLow < 0.0f =>
+        log.log(
           WARNING,
           "value returned for sizePercentile (%f) was negative, using 0.0f",
-          tooLow)
-      0.0f
+          tooLow
+        )
+        0.0f
 
-    case p => p
-  }
+      case p => p
+    }
 
   def newBufThreshold =
     math.round(currentBufPercentile * sizeThreshold) match {
       case tooLow if tooLow < 1 => 1
-      case size => math.min(size, sizeThreshold)
+      case size                 => math.min(size, sizeThreshold)
     }
 
   def apply(t: In): Future[Out] = enqueue(t)
@@ -93,8 +96,7 @@ private[util] class BatchExecutor[In, Out](
       if (buf.size >= currentBufThreshold) flushBatch()
       else {
         scheduleFlushIfNecessary()
-        () =>
-          ()
+        () => ()
       }
     }
 
@@ -131,10 +133,13 @@ private[util] class BatchExecutor[In, Out](
         executeBatch(prevBatch)
       } catch {
         case e: Throwable =>
-          log.log(WARNING,
-                  "unhandled exception caught in Future.batched: %s".format(
-                      e.toString),
-                  e)
+          log.log(
+            WARNING,
+            "unhandled exception caught in Future.batched: %s".format(
+              e.toString
+            ),
+            e
+          )
       }
   }
 
@@ -166,7 +171,7 @@ private[util] class BatchExecutor[In, Out](
 
       case Throw(e) =>
         val t = Throw(e)
-        promises foreach { _ () = t }
+        promises foreach { _() = t }
     }
   }
 }

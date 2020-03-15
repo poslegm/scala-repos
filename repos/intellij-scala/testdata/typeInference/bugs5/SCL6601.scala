@@ -2,7 +2,7 @@ object SCL6601 {
   sealed trait IList {
     def ::[T](that: T) = SCL6601.::(that, this)
   }
-  case object INil extends IList
+  case object INil                               extends IList
   case class ::[H, T <: IList](head: H, tail: T) extends IList
 
   implicit def ilist0[T](

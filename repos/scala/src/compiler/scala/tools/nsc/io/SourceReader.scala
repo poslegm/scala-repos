@@ -28,16 +28,18 @@ class SourceReader(decoder: CharsetDecoder, reporter: Reporter) {
 
   private def reportEncodingError(filename: String) = {
     reporter.error(
-        scala.reflect.internal.util.NoPosition,
-        "IO error while decoding " + filename + " with " + decoder.charset() +
-        "\n" + "Please try specifying another one using the -encoding option")
+      scala.reflect.internal.util.NoPosition,
+      "IO error while decoding " + filename + " with " + decoder.charset() +
+        "\n" + "Please try specifying another one using the -encoding option"
+    )
   }
 
   /** Reads the specified file. */
   def read(file: JFile): Array[Char] = {
     val c = new FileInputStream(file).getChannel
 
-    try read(c) catch {
+    try read(c)
+    catch {
       case e: Exception => reportEncodingError("" + file); Array()
     } finally c.close()
   }
@@ -46,9 +48,9 @@ class SourceReader(decoder: CharsetDecoder, reporter: Reporter) {
     */
   def read(file: AbstractFile): Array[Char] = {
     try file match {
-      case p: PlainFile => read(p.file)
+      case p: PlainFile        => read(p.file)
       case z: ZipArchive#Entry => read(Channels.newChannel(z.input))
-      case _ => read(ByteBuffer.wrap(file.toByteArray))
+      case _                   => read(ByteBuffer.wrap(file.toByteArray))
     } catch {
       case e: Exception => reportEncodingError("" + file); Array()
     }
@@ -57,9 +59,9 @@ class SourceReader(decoder: CharsetDecoder, reporter: Reporter) {
   /** Reads the specified byte channel. */
   protected def read(input: ReadableByteChannel): Array[Char] = {
     val decoder: CharsetDecoder = this.decoder.reset()
-    val bytes: ByteBuffer = this.bytes; bytes.clear()
-    var chars: CharBuffer = this.chars; chars.clear()
-    var endOfInput = false
+    val bytes: ByteBuffer       = this.bytes; bytes.clear()
+    var chars: CharBuffer       = this.chars; chars.clear()
+    var endOfInput              = false
 
     while (!endOfInput) {
       endOfInput = input.read(bytes) < 0
@@ -72,7 +74,7 @@ class SourceReader(decoder: CharsetDecoder, reporter: Reporter) {
   /** Reads the specified byte buffer. */
   protected def read(bytes: ByteBuffer): Array[Char] = {
     val decoder: CharsetDecoder = this.decoder.reset()
-    val chars: CharBuffer = this.chars; chars.clear()
+    val chars: CharBuffer       = this.chars; chars.clear()
     terminate(flush(decoder, decode(decoder, bytes, chars, endOfInput = true)))
   }
 
@@ -101,10 +103,12 @@ object SourceReader {
     * argument indicates whether the byte buffer contains the last
     * chunk of the input file.
     */
-  def decode(decoder: CharsetDecoder,
-             bytes: ByteBuffer,
-             chars: CharBuffer,
-             endOfInput: Boolean): CharBuffer = {
+  def decode(
+      decoder: CharsetDecoder,
+      bytes: ByteBuffer,
+      chars: CharBuffer,
+      endOfInput: Boolean
+  ): CharBuffer = {
     val result: CoderResult = decoder.decode(bytes, chars, endOfInput)
     if (result.isUnderflow()) {
       bytes.compact()

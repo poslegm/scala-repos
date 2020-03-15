@@ -50,11 +50,11 @@ object Font {
   def families = jfxst.Font.getFamilies.toSeq
 
   /** Searches for an appropriate font based on the default font family name and given font size. */
-  def font(size: Double) = new Font(jfxst.Font.font(size))
+  def font(size: Double)  = new Font(jfxst.Font.font(size))
   def apply(size: Double) = new Font(jfxst.Font.font(size))
 
   /** Searches for an appropriate font based on the given font family name and default font size. */
-  def font(family: String) = new Font(jfxst.Font.font(family))
+  def font(family: String)  = new Font(jfxst.Font.font(family))
   def apply(family: String) = new Font(jfxst.Font.font(family))
 
   /**
@@ -85,15 +85,19 @@ object Font {
   /**
     * Searches for an appropriate font based on the font family name and weight and posture style.
     */
-  def font(family: String,
-           weight: jfxst.FontWeight,
-           posture: jfxst.FontPosture,
-           size: Double) =
+  def font(
+      family: String,
+      weight: jfxst.FontWeight,
+      posture: jfxst.FontPosture,
+      size: Double
+  ) =
     new Font(jfxst.Font.font(family, weight, posture, size))
-  def apply(family: String,
-            weight: jfxst.FontWeight,
-            posture: jfxst.FontPosture,
-            size: Double) =
+  def apply(
+      family: String,
+      weight: jfxst.FontWeight,
+      posture: jfxst.FontPosture,
+      size: Double
+  ) =
     new Font(jfxst.Font.font(family, weight, posture, size))
 
   /**

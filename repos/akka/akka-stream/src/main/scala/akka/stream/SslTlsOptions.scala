@@ -34,14 +34,14 @@ sealed abstract class TLSRole
   * interlocutor. The precise interpretation of this role is protocol specific.
   */
 sealed abstract class Client extends TLSRole
-case object Client extends Client
+case object Client           extends Client
 
 /**
   * The server is usually the side the provides the service to its interlocutor.
   * The precise interpretation of this role is protocol specific.
   */
 sealed abstract class Server extends TLSRole
-case object Server extends Server
+case object Server           extends Server
 
 /**
   * All streams in Akka are unidirectional: while in a complex flow graph data
@@ -106,7 +106,7 @@ object TLSClosing {
   * see [[TLSClosing]]
   */
 sealed abstract class EagerClose extends TLSClosing {
-  override def ignoreCancel = false
+  override def ignoreCancel   = false
   override def ignoreComplete = false
 }
 case object EagerClose extends EagerClose
@@ -115,7 +115,7 @@ case object EagerClose extends EagerClose
   * see [[TLSClosing]]
   */
 sealed abstract class IgnoreCancel extends TLSClosing {
-  override def ignoreCancel = true
+  override def ignoreCancel   = true
   override def ignoreComplete = false
 }
 case object IgnoreCancel extends IgnoreCancel
@@ -124,7 +124,7 @@ case object IgnoreCancel extends IgnoreCancel
   * see [[TLSClosing]]
   */
 sealed abstract class IgnoreComplete extends TLSClosing {
-  override def ignoreCancel = false
+  override def ignoreCancel   = false
   override def ignoreComplete = true
 }
 case object IgnoreComplete extends IgnoreComplete
@@ -133,7 +133,7 @@ case object IgnoreComplete extends IgnoreComplete
   * see [[TLSClosing]]
   */
 sealed abstract class IgnoreBoth extends TLSClosing {
-  override def ignoreCancel = true
+  override def ignoreCancel   = true
   override def ignoreComplete = true
 }
 case object IgnoreBoth extends IgnoreBoth
@@ -169,7 +169,8 @@ object TLSProtocol {
     * the Scala API adapters are offered below.
     */
   final case class SessionBytes(session: SSLSession, bytes: ByteString)
-      extends SslTlsInbound with scaladsl.ScalaSessionAPI
+      extends SslTlsInbound
+      with scaladsl.ScalaSessionAPI
 
   /**
     * This is the supertype of all messages that the SslTls stage accepts on its
@@ -199,8 +200,8 @@ object TLSProtocol {
       enabledCipherSuites: Option[immutable.Seq[String]],
       enabledProtocols: Option[immutable.Seq[String]],
       clientAuth: Option[TLSClientAuth],
-      sslParameters: Option[SSLParameters])
-      extends SslTlsOutbound {
+      sslParameters: Option[SSLParameters]
+  ) extends SslTlsOutbound {
 
     /**
       * Java API: Make a copy of this message with the given `enabledCipherSuites`.

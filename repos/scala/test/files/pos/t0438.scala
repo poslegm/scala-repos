@@ -4,12 +4,10 @@ class Foo {
   }
 
   def foo(f: ((Int, Int)) => Int) = f
-  def bar(x: Int, y: Int) = x + y
+  def bar(x: Int, y: Int)         = x + y
 
-  foo({ (x: Int, y: Int) =>
-    x + y
-  }) // works
-  foo(pair2fun2(bar _)) // works
-  foo(bar _) // error
-  foo(bar) // same error
+  foo({ (x: Int, y: Int) => x + y }) // works
+  foo(pair2fun2(bar _))              // works
+  foo(bar _)                         // error
+  foo(bar)                           // same error
 }

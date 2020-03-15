@@ -9,10 +9,11 @@ import mesosphere.marathon.api.{MarathonMediaType, LeaderInfo, RestResource}
 import mesosphere.marathon.{MarathonSchedulerService, MarathonConf}
 
 @Path("v2/leader")
-class LeaderResource @Inject()(leaderInfo: LeaderInfo,
-                               schedulerService: MarathonSchedulerService,
-                               val config: MarathonConf with HttpConf)
-    extends RestResource {
+class LeaderResource @Inject() (
+    leaderInfo: LeaderInfo,
+    schedulerService: MarathonSchedulerService,
+    val config: MarathonConf with HttpConf
+) extends RestResource {
 
   @GET
   @Produces(Array(MarathonMediaType.PREFERRED_APPLICATION_JSON))

@@ -3,7 +3,11 @@ package scala.tools.scalap
 import java.io.{ByteArrayOutputStream, PrintStream}
 
 import scala.reflect.internal.pickling.ByteCodecs
-import scala.tools.scalap.scalax.rules.scalasig.ClassFileParser.{Annotation, ArrayValue, ConstValueIndex}
+import scala.tools.scalap.scalax.rules.scalasig.ClassFileParser.{
+  Annotation,
+  ArrayValue,
+  ConstValueIndex
+}
 import scala.tools.scalap.scalax.rules.scalasig._
 
 /**
@@ -11,18 +15,20 @@ import scala.tools.scalap.scalax.rules.scalasig._
   * @since  11/09/15
   */
 object Decompiler {
-  private val UTF8 = "UTF-8"
-  private val SOURCE_FILE = "SourceFile"
-  private val SCALA_SIG = "ScalaSig"
-  private val SCALA_SIG_ANNOTATION = "Lscala/reflect/ScalaSignature;"
+  private val UTF8                      = "UTF-8"
+  private val SOURCE_FILE               = "SourceFile"
+  private val SCALA_SIG                 = "ScalaSig"
+  private val SCALA_SIG_ANNOTATION      = "Lscala/reflect/ScalaSignature;"
   private val SCALA_LONG_SIG_ANNOTATION = "Lscala/reflect/ScalaLongSignature;"
-  private val BYTES_VALUE = "bytes"
+  private val BYTES_VALUE               = "bytes"
 
   def decompile(
-      fileName: String, bytes: Array[Byte]): Option[(String, String)] = {
-    val byteCode = ByteCode(bytes)
+      fileName: String,
+      bytes: Array[Byte]
+  ): Option[(String, String)] = {
+    val byteCode        = ByteCode(bytes)
     val isPackageObject = fileName == "package.class"
-    val classFile = ClassFileParser.parse(byteCode)
+    val classFile       = ClassFileParser.parse(byteCode)
     val scalaSig = classFile
       .attribute(SCALA_SIG)
       .map(_.byteCode)
@@ -56,11 +62,11 @@ object Decompiler {
             scalaSig
         }
       case Some(other) => other
-      case None => null
+      case None        => null
     }
     if (scalaSig == null) return None
     val decompiledSourceText = {
-      val baos = new ByteArrayOutputStream
+      val baos   = new ByteArrayOutputStream
       val stream = new PrintStream(baos, true, UTF8)
       if (scalaSig == null) return None
       val syms = scalaSig.topLevelClasses ::: scalaSig.topLevelObjects

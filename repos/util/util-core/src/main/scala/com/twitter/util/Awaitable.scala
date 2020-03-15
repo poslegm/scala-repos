@@ -141,15 +141,17 @@ object Await {
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[InterruptedException])
-  def all(awaitables: java.util.Collection[Awaitable[_]],
-          timeout: Duration): Unit =
+  def all(
+      awaitables: java.util.Collection[Awaitable[_]],
+      timeout: Duration
+  ): Unit =
     all(awaitables.asScala.toSeq, timeout)
 }
 
 // See http://stackoverflow.com/questions/26643045/java-interoperability-woes-with-scala-generics-and-boxing
 private[util] trait CloseAwaitably0[U <: Unit] extends Awaitable[U] {
   private[this] val onClose = new Promise[U]
-  private[this] val closed = new AtomicBoolean(false)
+  private[this] val closed  = new AtomicBoolean(false)
 
   /**
     * closeAwaitably is intended to be used as a wrapper for
@@ -160,8 +162,9 @@ private[util] trait CloseAwaitably0[U <: Unit] extends Awaitable[U] {
     onClose
   }
 
-  def ready(timeout: Duration)(
-      implicit permit: Awaitable.CanAwait): this.type = {
+  def ready(
+      timeout: Duration
+  )(implicit permit: Awaitable.CanAwait): this.type = {
     onClose.ready(timeout)
     this
   }

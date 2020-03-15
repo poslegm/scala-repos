@@ -23,7 +23,7 @@ object test {
 
   {
     implicit def t3: T3 = new T3 {}
-    val t1 = requireT1
+    val t1              = requireT1
     assert(t1.source == "implicit def T1FromT2")
 
     // Expected a compile error here, but because T1.T1FromT2(T2.t2) was cached as a non-local implicit

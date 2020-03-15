@@ -26,7 +26,7 @@ object CachedTestsDefinitions {
         val msg = "first"
       }
 
-      def msg = implicitly[TC[Int]].msg
+      def msg       = implicitly[TC[Int]].msg
       def msgCached = Cached.implicitly[TC[Int]].msg
     }
 
@@ -35,7 +35,7 @@ object CachedTestsDefinitions {
         val msg = "second"
       }
 
-      def msg = implicitly[TC[Int]].msg
+      def msg       = implicitly[TC[Int]].msg
       def msgCached = Cached.implicitly[TC[Int]].msg
     }
   }
@@ -46,7 +46,7 @@ class CachedTests {
 
   @Test
   def simple {
-    val first = Intermediate()
+    val first       = Intermediate()
     val cachedFirst = Cached.implicitly[Intermediate]
     assert(first.repr == "default")
     assert(cachedFirst.repr == "default")
@@ -56,7 +56,7 @@ class CachedTests {
         val repr = "override"
       }
 
-      val second = Intermediate()
+      val second       = Intermediate()
       val cachedSecond = Cached.implicitly[Intermediate]
       assert(second.repr == "override")
       assert(cachedSecond.repr == "default")
@@ -67,9 +67,9 @@ class CachedTests {
   def scalaDocExample {
     import ScalaDocExample._
 
-    val first = First.msg
-    val second = Second.msg
-    val firstCached = First.msgCached
+    val first        = First.msg
+    val second       = Second.msg
+    val firstCached  = First.msgCached
     val secondCached = Second.msgCached
 
     assert(first == "first")

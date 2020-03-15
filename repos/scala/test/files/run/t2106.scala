@@ -3,6 +3,6 @@ class A extends Cloneable {
 }
 
 object Test {
-  val x = new A
+  val x                               = new A
   def main(args: Array[String]): Unit = x.foo
 }

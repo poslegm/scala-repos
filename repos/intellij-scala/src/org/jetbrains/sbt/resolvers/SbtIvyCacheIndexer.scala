@@ -31,10 +31,10 @@ class SbtIvyCacheIndexer(val cacheDir: File) {
 
   private def extractArtifact(ivyFile: File): Option[ArtifactInfo] = {
     try {
-      val xml = XML.loadFile(ivyFile)
-      val group = (xml \\ "ivy-module" \\ "info" \\ "@organisation").text
+      val xml      = XML.loadFile(ivyFile)
+      val group    = (xml \\ "ivy-module" \\ "info" \\ "@organisation").text
       val artifact = (xml \\ "ivy-module" \\ "info" \\ "@module").text
-      val version = (xml \\ "ivy-module" \\ "info" \\ "@revision").text
+      val version  = (xml \\ "ivy-module" \\ "info" \\ "@revision").text
       Some(new ArtifactInfo("", group, artifact, version, "", ""))
     } catch {
       case e: Throwable => None

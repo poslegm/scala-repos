@@ -38,16 +38,17 @@ class Tool extends Configured with HTool {
     }
   }
 
-  protected def getJob(args: Args): Job = rootJob match {
-    case Some(job) => job(args)
-    case None if args.positional.isEmpty =>
-      throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
-    case None => // has at least one arg
-      val jobName = args.positional(0)
-      // Remove the job name from the positional arguments:
-      val nonJobNameArgs = args + ("" -> args.positional.tail)
-      Job(jobName, nonJobNameArgs)
-  }
+  protected def getJob(args: Args): Job =
+    rootJob match {
+      case Some(job) => job(args)
+      case None if args.positional.isEmpty =>
+        throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
+      case None => // has at least one arg
+        val jobName = args.positional(0)
+        // Remove the job name from the positional arguments:
+        val nonJobNameArgs = args + ("" -> args.positional.tail)
+        Job(jobName, nonJobNameArgs)
+    }
 
   // This both updates the jobConf with hadoop arguments
   // and returns all the non-hadoop arguments. Should be called once if
@@ -74,7 +75,8 @@ class Tool extends Configured with HTool {
     if (onlyPrintGraph) {
       // TODO use proper logging
       println(
-          "Only printing the job graph, NOT executing. Run without --tool.graph to execute the job")
+        "Only printing the job graph, NOT executing. Run without --tool.graph to execute the job"
+      )
     }
 
     /*
@@ -100,24 +102,22 @@ class Tool extends Configured with HTool {
           flow match {
             case hadoopFlow: HadoopFlow =>
               val flowSteps = hadoopFlow.getFlowSteps.asScala
-              flowSteps.foreach(
-                  step =>
-                    {
-                  val baseFlowStep: BaseFlowStep[JobConf] =
-                    step.asInstanceOf[BaseFlowStep[JobConf]]
-                  val descriptions =
-                    baseFlowStep.getConfig.get(Config.StepDescriptions, "")
-                  if (!descriptions.isEmpty) {
-                    val stepXofYData = """\(\d+/\d+\)""".r
-                      .findFirstIn(baseFlowStep.getName)
-                      .getOrElse("")
-                    // Reflection is only temporary.  Latest cascading has setName public: https://github.com/cwensel/cascading/commit/487a6e9ef#diff-0feab84bc8832b2a39312dbd208e3e69L175
-                    // https://github.com/twitter/scalding/issues/1294
-                    val x = classOf[BaseFlowStep[JobConf]]
-                      .getDeclaredMethod("setName", classOf[String])
-                    x.setAccessible(true)
-                    x.invoke(step, "%s %s".format(stepXofYData, descriptions))
-                  }
+              flowSteps.foreach(step => {
+                val baseFlowStep: BaseFlowStep[JobConf] =
+                  step.asInstanceOf[BaseFlowStep[JobConf]]
+                val descriptions =
+                  baseFlowStep.getConfig.get(Config.StepDescriptions, "")
+                if (!descriptions.isEmpty) {
+                  val stepXofYData = """\(\d+/\d+\)""".r
+                    .findFirstIn(baseFlowStep.getName)
+                    .getOrElse("")
+                  // Reflection is only temporary.  Latest cascading has setName public: https://github.com/cwensel/cascading/commit/487a6e9ef#diff-0feab84bc8832b2a39312dbd208e3e69L175
+                  // https://github.com/twitter/scalding/issues/1294
+                  val x = classOf[BaseFlowStep[JobConf]]
+                    .getDeclaredMethod("setName", classOf[String])
+                  x.setAccessible(true)
+                  x.invoke(step, "%s %s".format(stepXofYData, descriptions))
+                }
               })
             case _ => // descriptions not yet supported in other modes
           }
@@ -137,14 +137,15 @@ class Tool extends Configured with HTool {
       if (successful) {
         j.next match {
           case Some(nextj) => start(nextj, cnt + 1)
-          case None => Unit
+          case None        => Unit
         }
       } else {
         throw new RuntimeException(
-            "Job failed to run: " + jobName +
+          "Job failed to run: " + jobName +
             (if (cnt > 0) {
-           " child: " + cnt.toString + ", class: " + j.getClass.getName
-         } else { "" }))
+               " child: " + cnt.toString + ", class: " + j.getClass.getName
+             } else { "" })
+        )
       }
     }
     //start a counter to see how deep we recurse:
@@ -159,9 +160,9 @@ object Tool {
       ToolRunner.run(new JobConf, new Tool, ExpandLibJarsGlobs(args))
     } catch {
       case t: Throwable => {
-          //re-throw the exception with extra info
-          throw new Throwable(RichXHandler(t), t)
-        }
+        //re-throw the exception with extra info
+        throw new Throwable(RichXHandler(t), t)
+      }
     }
   }
 }

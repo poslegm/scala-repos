@@ -44,8 +44,9 @@ class FileAndResourceDirectivesExamplesSpec extends RoutingSpec {
         listDirectoryContents("/tmp")
       } ~ path("custom") {
         val renderer = new DirectoryRenderer {
-          override def marshaller(renderVanityFooter: Boolean)
-            : ToEntityMarshaller[DirectoryListing] = ???
+          override def marshaller(
+              renderVanityFooter: Boolean
+          ): ToEntityMarshaller[DirectoryListing] = ???
         }
         listDirectoryContents("/tmp")(renderer)
       }

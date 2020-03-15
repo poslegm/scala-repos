@@ -27,19 +27,19 @@ class DataFrameComplexTypeSuite extends QueryTest with SharedSQLContext {
   import testImplicits._
 
   test("UDF on struct") {
-    val f = udf((a: String) => a)
+    val f  = udf((a: String) => a)
     val df = sparkContext.parallelize(Seq((1, 1))).toDF("a", "b")
     df.select(struct($"a").as("s")).select(f($"s.a")).collect()
   }
 
   test("UDF on named_struct") {
-    val f = udf((a: String) => a)
+    val f  = udf((a: String) => a)
     val df = sparkContext.parallelize(Seq((1, 1))).toDF("a", "b")
     df.selectExpr("named_struct('a', a) s").select(f($"s.a")).collect()
   }
 
   test("UDF on array") {
-    val f = udf((a: String) => a)
+    val f  = udf((a: String) => a)
     val df = sparkContext.parallelize(Seq((1, 1))).toDF("a", "b")
     df.select(array($"a").as("s")).select(f(expr("s[0]"))).collect()
   }
@@ -47,7 +47,8 @@ class DataFrameComplexTypeSuite extends QueryTest with SharedSQLContext {
   test("SPARK-12477 accessing null element in array field") {
     val df = sparkContext
       .parallelize(
-          Seq((Seq("val1", null, "val2"), Seq(Some(1), None, Some(2)))))
+        Seq((Seq("val1", null, "val2"), Seq(Some(1), None, Some(2))))
+      )
       .toDF("s", "i")
     val nullStringRow = df.selectExpr("s[1]").collect()(0)
     assert(nullStringRow == org.apache.spark.sql.Row(null))

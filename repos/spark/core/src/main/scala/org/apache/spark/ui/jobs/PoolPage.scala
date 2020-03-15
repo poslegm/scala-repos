@@ -26,28 +26,30 @@ import org.apache.spark.ui.{UIUtils, WebUIPage}
 
 /** Page showing specific pool details */
 private[ui] class PoolPage(parent: StagesTab) extends WebUIPage("pool") {
-  private val sc = parent.sc
+  private val sc       = parent.sc
   private val listener = parent.progressListener
 
   def render(request: HttpServletRequest): Seq[Node] = {
     listener.synchronized {
-      val poolName = Option(request.getParameter("poolname")).map { poolname =>
-        UIUtils.decodeURLParameter(poolname)
-      }.getOrElse {
-        throw new IllegalArgumentException(s"Missing poolname parameter")
-      }
+      val poolName = Option(request.getParameter("poolname"))
+        .map { poolname => UIUtils.decodeURLParameter(poolname) }
+        .getOrElse {
+          throw new IllegalArgumentException(s"Missing poolname parameter")
+        }
 
       val poolToActiveStages = listener.poolToActiveStages
       val activeStages = poolToActiveStages.get(poolName) match {
         case Some(s) => s.values.toSeq
-        case None => Seq[StageInfo]()
+        case None    => Seq[StageInfo]()
       }
       val activeStagesTable =
-        new StageTableBase(activeStages.sortBy(_.submissionTime).reverse,
-                           parent.basePath,
-                           parent.progressListener,
-                           isFairScheduler = parent.isFairScheduler,
-                           killEnabled = parent.killEnabled)
+        new StageTableBase(
+          activeStages.sortBy(_.submissionTime).reverse,
+          parent.basePath,
+          parent.progressListener,
+          isFairScheduler = parent.isFairScheduler,
+          killEnabled = parent.killEnabled
+        )
 
       // For now, pool information is only accessible in live UIs
       val pools = sc
@@ -58,10 +60,15 @@ private[ui] class PoolPage(parent: StagesTab) extends WebUIPage("pool") {
       val poolTable = new PoolTable(pools, parent)
 
       val content =
-        <h4>Summary </h4> ++ poolTable.toNodeSeq ++ <h4>{activeStages.size} Active Stages</h4> ++ activeStagesTable.toNodeSeq
+        <h4>Summary </h4> ++ poolTable.toNodeSeq ++ <h4>{
+          activeStages.size
+        } Active Stages</h4> ++ activeStagesTable.toNodeSeq
 
       UIUtils.headerSparkPage(
-          "Fair Scheduler Pool: " + poolName, content, parent)
+        "Fair Scheduler Pool: " + poolName,
+        content,
+        parent
+      )
     }
   }
 }

@@ -23,7 +23,10 @@ class AkkaSpecSpec extends WordSpec with Matchers {
       implicit val system = ActorSystem("AkkaSpec0", AkkaSpec.testConf)
       try {
         val a = system.actorOf(Props.empty)
-        EventFilter.warning(start = "unhandled message", occurrences = 1) intercept {
+        EventFilter.warning(
+          start = "unhandled message",
+          occurrences = 1
+        ) intercept {
           a ! 42
         }
       } finally {
@@ -34,13 +37,16 @@ class AkkaSpecSpec extends WordSpec with Matchers {
     "terminate all actors" in {
       // verbose config just for demonstration purposes, please leave in in case of debugging
       import scala.collection.JavaConverters._
-      val conf = Map("akka.actor.debug.lifecycle" -> true,
-                     "akka.actor.debug.event-stream" -> true,
-                     "akka.loglevel" -> "DEBUG",
-                     "akka.stdout-loglevel" -> "DEBUG")
+      val conf = Map(
+        "akka.actor.debug.lifecycle"    -> true,
+        "akka.actor.debug.event-stream" -> true,
+        "akka.loglevel"                 -> "DEBUG",
+        "akka.stdout-loglevel"          -> "DEBUG"
+      )
       val system = ActorSystem(
-          "AkkaSpec1",
-          ConfigFactory.parseMap(conf.asJava).withFallback(AkkaSpec.testConf))
+        "AkkaSpec1",
+        ConfigFactory.parseMap(conf.asJava).withFallback(AkkaSpec.testConf)
+      )
       var refs = Seq.empty[ActorRef]
       val spec = new AkkaSpec(system) {
         refs = Seq(testActor, system.actorOf(Props.empty, "name"))
@@ -52,8 +58,8 @@ class AkkaSpecSpec extends WordSpec with Matchers {
 
     "stop correctly when sending PoisonPill to rootGuardian" in {
       val system = ActorSystem("AkkaSpec2", AkkaSpec.testConf)
-      val spec = new AkkaSpec(system) {}
-      val latch = new TestLatch(1)(system)
+      val spec   = new AkkaSpec(system) {}
+      val latch  = new TestLatch(1)(system)
       system.registerOnTermination(latch.countDown())
 
       system.actorSelection("/") ! PoisonPill
@@ -65,14 +71,17 @@ class AkkaSpecSpec extends WordSpec with Matchers {
       val system, otherSystem = ActorSystem("AkkaSpec3", AkkaSpec.testConf)
 
       try {
-        var locker = Seq.empty[DeadLetter]
+        var locker           = Seq.empty[DeadLetter]
         implicit val timeout = TestKitExtension(system).DefaultTimeout
-        val davyJones = otherSystem.actorOf(Props(new Actor {
-          def receive = {
-            case m: DeadLetter ⇒ locker :+= m
-            case "Die!" ⇒ sender() ! "finally gone"; context.stop(self)
-          }
-        }), "davyJones")
+        val davyJones = otherSystem.actorOf(
+          Props(new Actor {
+            def receive = {
+              case m: DeadLetter ⇒ locker :+= m
+              case "Die!"        ⇒ sender() ! "finally gone"; context.stop(self)
+            }
+          }),
+          "davyJones"
+        )
 
         system.eventStream.subscribe(davyJones, classOf[DeadLetter])
 
@@ -92,7 +101,8 @@ class AkkaSpecSpec extends WordSpec with Matchers {
         TestKit.shutdownActorSystem(system)
         Await.ready(latch, 2 seconds)
         Await.result(davyJones ? "Die!", timeout.duration) should ===(
-            "finally gone")
+          "finally gone"
+        )
 
         // this will typically also contain log messages which were sent after the logger shutdown
         locker should contain(DeadLetter(42, davyJones, probe.ref))

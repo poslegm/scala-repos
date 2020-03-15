@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 class StreamFileDocSpec extends AkkaSpec(UnboundedMailboxConfig) {
 
-  implicit val ec = system.dispatcher
+  implicit val ec           = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
   // silence sysout
@@ -30,7 +30,9 @@ class StreamFileDocSpec extends AkkaSpec(UnboundedMailboxConfig) {
     //#file-source
     import akka.stream.scaladsl._
     //#file-source
-    Thread.sleep(0) // needs a statement here for valid syntax and to avoid "unused" warnings
+    Thread.sleep(
+      0
+    ) // needs a statement here for valid syntax and to avoid "unused" warnings
   }
 
   {
@@ -55,7 +57,8 @@ class StreamFileDocSpec extends AkkaSpec(UnboundedMailboxConfig) {
     FileIO
       .fromFile(file)
       .withAttributes(
-          ActorAttributes.dispatcher("custom-blocking-io-dispatcher"))
+        ActorAttributes.dispatcher("custom-blocking-io-dispatcher")
+      )
     //#custom-dispatcher-code
   }
 }

@@ -3,7 +3,10 @@
   */
 package akka.stream.impl
 
-import akka.stream.stage.GraphStageLogic.{EagerTerminateOutput, EagerTerminateInput}
+import akka.stream.stage.GraphStageLogic.{
+  EagerTerminateOutput,
+  EagerTerminateInput
+}
 import akka.testkit.AkkaSpec
 import akka.stream._
 import akka.stream.Fusing.aggressive
@@ -21,98 +24,118 @@ class GraphStageLogicSpec extends AkkaSpec with GraphInterpreterSpecKit {
   implicit val materializer = ActorMaterializer()
 
   object emit1234 extends GraphStage[FlowShape[Int, Int]] {
-    val in = Inlet[Int]("in")
-    val out = Outlet[Int]("out")
+    val in             = Inlet[Int]("in")
+    val out            = Outlet[Int]("out")
     override val shape = FlowShape(in, out)
-    override def createLogic(attr: Attributes) = new GraphStageLogic(shape) {
-      setHandler(in, eagerTerminateInput)
-      setHandler(out, eagerTerminateOutput)
-      override def preStart(): Unit = {
-        emit(out, 1, () ⇒ emit(out, 2))
-        emit(out, 3, () ⇒ emit(out, 4))
+    override def createLogic(attr: Attributes) =
+      new GraphStageLogic(shape) {
+        setHandler(in, eagerTerminateInput)
+        setHandler(out, eagerTerminateOutput)
+        override def preStart(): Unit = {
+          emit(out, 1, () ⇒ emit(out, 2))
+          emit(out, 3, () ⇒ emit(out, 4))
+        }
       }
-    }
   }
 
   object emit5678 extends GraphStage[FlowShape[Int, Int]] {
-    val in = Inlet[Int]("in")
-    val out = Outlet[Int]("out")
+    val in             = Inlet[Int]("in")
+    val out            = Outlet[Int]("out")
     override val shape = FlowShape(in, out)
-    override def createLogic(attr: Attributes) = new GraphStageLogic(shape) {
-      setHandler(in, new InHandler {
-        override def onPush(): Unit = push(out, grab(in))
-        override def onUpstreamFinish(): Unit = {
-          emit(out, 5, () ⇒ emit(out, 6))
-          emit(out, 7, () ⇒ emit(out, 8))
-          completeStage()
-        }
-      })
-      setHandler(out, new OutHandler {
-        override def onPull(): Unit = pull(in)
-      })
-    }
+    override def createLogic(attr: Attributes) =
+      new GraphStageLogic(shape) {
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush(): Unit = push(out, grab(in))
+            override def onUpstreamFinish(): Unit = {
+              emit(out, 5, () ⇒ emit(out, 6))
+              emit(out, 7, () ⇒ emit(out, 8))
+              completeStage()
+            }
+          }
+        )
+        setHandler(
+          out,
+          new OutHandler {
+            override def onPull(): Unit = pull(in)
+          }
+        )
+      }
   }
 
   object passThrough extends GraphStage[FlowShape[Int, Int]] {
-    val in = Inlet[Int]("in")
-    val out = Outlet[Int]("out")
+    val in             = Inlet[Int]("in")
+    val out            = Outlet[Int]("out")
     override val shape = FlowShape(in, out)
-    override def createLogic(attr: Attributes) = new GraphStageLogic(shape) {
-      setHandler(in, new InHandler {
-        override def onPush(): Unit = push(out, grab(in))
-        override def onUpstreamFinish(): Unit = complete(out)
-      })
-      setHandler(out, new OutHandler {
-        override def onPull(): Unit = pull(in)
-      })
-    }
+    override def createLogic(attr: Attributes) =
+      new GraphStageLogic(shape) {
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush(): Unit           = push(out, grab(in))
+            override def onUpstreamFinish(): Unit = complete(out)
+          }
+        )
+        setHandler(
+          out,
+          new OutHandler {
+            override def onPull(): Unit = pull(in)
+          }
+        )
+      }
   }
 
   object emitEmptyIterable extends GraphStage[SourceShape[Int]] {
-    val out = Outlet[Int]("out")
+    val out            = Outlet[Int]("out")
     override val shape = SourceShape(out)
-    override def createLogic(
-        inheritedAttributes: Attributes): GraphStageLogic =
+    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
       new GraphStageLogic(shape) {
 
-        setHandler(out, new OutHandler {
-          override def onPull(): Unit =
-            emitMultiple(
-                out, Iterator.empty, () ⇒ emit(out, 42, () ⇒ completeStage()))
-        })
+        setHandler(
+          out,
+          new OutHandler {
+            override def onPull(): Unit =
+              emitMultiple(
+                out,
+                Iterator.empty,
+                () ⇒ emit(out, 42, () ⇒ completeStage())
+              )
+          }
+        )
       }
   }
 
   final case class ReadNEmitN(n: Int) extends GraphStage[FlowShape[Int, Int]] {
-    override val shape = FlowShape(
-        Inlet[Int]("readN.in"), Outlet[Int]("readN.out"))
+    override val shape =
+      FlowShape(Inlet[Int]("readN.in"), Outlet[Int]("readN.out"))
 
-    override def createLogic(
-        inheritedAttributes: Attributes): GraphStageLogic =
+    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
       new GraphStageLogic(shape) {
         setHandler(shape.in, EagerTerminateInput)
         setHandler(shape.out, EagerTerminateOutput)
         override def preStart(): Unit =
           readN(shape.in, n)(
-              e ⇒ emitMultiple(shape.out, e.iterator, () ⇒ completeStage()),
-              (_) ⇒ ())
+            e ⇒ emitMultiple(shape.out, e.iterator, () ⇒ completeStage()),
+            (_) ⇒ ()
+          )
       }
   }
 
   final case class ReadNEmitRestOnComplete(n: Int)
       extends GraphStage[FlowShape[Int, Int]] {
-    override val shape = FlowShape(
-        Inlet[Int]("readN.in"), Outlet[Int]("readN.out"))
+    override val shape =
+      FlowShape(Inlet[Int]("readN.in"), Outlet[Int]("readN.out"))
 
-    override def createLogic(
-        inheritedAttributes: Attributes): GraphStageLogic =
+    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
       new GraphStageLogic(shape) {
         setHandler(shape.in, EagerTerminateInput)
         setHandler(shape.out, EagerTerminateOutput)
         override def preStart(): Unit =
           readN(shape.in, n)(
-              _ ⇒ failStage(new IllegalStateException("Shouldn't happen!")),
-              e ⇒ emitMultiple(shape.out, e.iterator, () ⇒ completeStage()))
+            _ ⇒ failStage(new IllegalStateException("Shouldn't happen!")),
+            e ⇒ emitMultiple(shape.out, e.iterator, () ⇒ completeStage())
+          )
       }
   }
 
@@ -189,24 +212,29 @@ class GraphStageLogicSpec extends AkkaSpec with GraphInterpreterSpecKit {
 
     "emit properly after empty iterable" in assertAllStagesStopped {
 
-      Source.fromGraph(emitEmptyIterable).runWith(Sink.seq).futureValue should ===(
-          List(42))
+      Source
+        .fromGraph(emitEmptyIterable)
+        .runWith(Sink.seq)
+        .futureValue should ===(List(42))
     }
 
     "invoke lifecycle hooks in the right order" in assertAllStagesStopped {
       val g = new GraphStage[FlowShape[Int, Int]] {
-        val in = Inlet[Int]("in")
-        val out = Outlet[Int]("out")
+        val in             = Inlet[Int]("in")
+        val out            = Outlet[Int]("out")
         override val shape = FlowShape(in, out)
         override def createLogic(attr: Attributes) =
           new GraphStageLogic(shape) {
             setHandler(in, eagerTerminateInput)
-            setHandler(out, new OutHandler {
-              override def onPull(): Unit = {
-                completeStage()
-                testActor ! "pulled"
+            setHandler(
+              out,
+              new OutHandler {
+                override def onPull(): Unit = {
+                  completeStage()
+                  testActor ! "pulled"
+                }
               }
-            })
+            )
             override def preStart(): Unit = testActor ! "preStart"
             override def postStop(): Unit = testActor ! "postStop"
           }
@@ -219,8 +247,8 @@ class GraphStageLogicSpec extends AkkaSpec with GraphInterpreterSpecKit {
 
     "not double-terminate a single stage" in new Builder {
       object g extends GraphStage[FlowShape[Int, Int]] {
-        val in = Inlet[Int]("in")
-        val out = Outlet[Int]("out")
+        val in             = Inlet[Int]("in")
+        val out            = Outlet[Int]("out")
         override val shape = FlowShape(in, out)
         override def createLogic(attr: Attributes) =
           new GraphStageLogic(shape) {

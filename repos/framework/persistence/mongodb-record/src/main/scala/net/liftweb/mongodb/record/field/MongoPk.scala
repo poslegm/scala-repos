@@ -46,8 +46,8 @@ trait ObjectIdPk[OwnerType <: MongoRecord[OwnerType]]
   def defaultIdValue = ObjectId.get
 
   object id extends ObjectIdField(this.asInstanceOf[OwnerType]) {
-    override def name = "_id"
-    override def defaultValue = defaultIdValue
+    override def name            = "_id"
+    override def defaultValue    = defaultIdValue
     override def shouldDisplay_? = false
   }
 }
@@ -58,8 +58,8 @@ trait UUIDPk[OwnerType <: MongoRecord[OwnerType]]
   def defaultIdValue = UUID.randomUUID
 
   object id extends UUIDField(this.asInstanceOf[OwnerType]) {
-    override def name = "_id"
-    override def defaultValue = defaultIdValue
+    override def name            = "_id"
+    override def defaultValue    = defaultIdValue
     override def shouldDisplay_? = false
   }
 }
@@ -70,8 +70,8 @@ trait StringPk[OwnerType <: MongoRecord[OwnerType]]
   def defaultIdValue = StringHelpers.randomString(32)
 
   object id extends StringField(this.asInstanceOf[OwnerType], 12) {
-    override def name = "_id"
-    override def defaultValue = defaultIdValue
+    override def name            = "_id"
+    override def defaultValue    = defaultIdValue
     override def shouldDisplay_? = false
   }
 }
@@ -82,8 +82,8 @@ trait IntPk[OwnerType <: MongoRecord[OwnerType]]
   def defaultIdValue = Random.nextInt
 
   object id extends IntField(this.asInstanceOf[OwnerType]) {
-    override def name = "_id"
-    override def defaultValue = defaultIdValue
+    override def name            = "_id"
+    override def defaultValue    = defaultIdValue
     override def shouldDisplay_? = false
   }
 }
@@ -94,8 +94,8 @@ trait LongPk[OwnerType <: MongoRecord[OwnerType]]
   def defaultIdValue = Random.nextLong
 
   object id extends LongField(this.asInstanceOf[OwnerType]) {
-    override def name = "_id"
-    override def defaultValue = defaultIdValue
+    override def name            = "_id"
+    override def defaultValue    = defaultIdValue
     override def shouldDisplay_? = false
   }
 }

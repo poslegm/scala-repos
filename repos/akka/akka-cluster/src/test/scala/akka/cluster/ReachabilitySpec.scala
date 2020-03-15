@@ -83,7 +83,8 @@ class ReachabilitySpec extends WordSpec with Matchers {
       r.isReachable(nodeC) should ===(false)
       r.allUnreachableOrTerminated should ===(Set(nodeA, nodeB, nodeC))
       r.removeObservers(Set(nodeB)).allUnreachableOrTerminated should ===(
-          Set(nodeB))
+        Set(nodeB)
+      )
     }
 
     "be pruned when all records of an observer are Reachable" in {
@@ -98,18 +99,24 @@ class ReachabilitySpec extends WordSpec with Matchers {
       r.records should ===(Vector(Record(nodeD, nodeC, Unreachable, 1L)))
 
       val r2 = r.unreachable(nodeB, nodeD).unreachable(nodeB, nodeE)
-      r2.records.toSet should ===(Set(Record(nodeD, nodeC, Unreachable, 1L),
-                                      Record(nodeB, nodeD, Unreachable, 5L),
-                                      Record(nodeB, nodeE, Unreachable, 6L)))
+      r2.records.toSet should ===(
+        Set(
+          Record(nodeD, nodeC, Unreachable, 1L),
+          Record(nodeB, nodeD, Unreachable, 5L),
+          Record(nodeB, nodeE, Unreachable, 6L)
+        )
+      )
     }
 
     "have correct aggregated status" in {
-      val records = Vector(Reachability.Record(nodeA, nodeB, Reachable, 2),
-                           Reachability.Record(nodeC, nodeB, Unreachable, 2),
-                           Reachability.Record(nodeA, nodeD, Unreachable, 3),
-                           Reachability.Record(nodeD, nodeB, Terminated, 4))
+      val records = Vector(
+        Reachability.Record(nodeA, nodeB, Reachable, 2),
+        Reachability.Record(nodeC, nodeB, Unreachable, 2),
+        Reachability.Record(nodeA, nodeD, Unreachable, 3),
+        Reachability.Record(nodeD, nodeB, Terminated, 4)
+      )
       val versions = Map(nodeA -> 3L, nodeC -> 3L, nodeD -> 4L)
-      val r = Reachability(records, versions)
+      val r        = Reachability(records, versions)
       r.status(nodeA) should ===(Reachable)
       r.status(nodeB) should ===(Terminated)
       r.status(nodeD) should ===(Unreachable)
@@ -152,9 +159,12 @@ class ReachabilitySpec extends WordSpec with Matchers {
       r.allUnreachableFrom(nodeD) should ===(Set(nodeA, nodeB))
 
       r.observersGroupedByUnreachable should ===(
-          Map(nodeA -> Set(nodeB, nodeC, nodeD),
-              nodeB -> Set(nodeD),
-              nodeE -> Set(nodeA)))
+        Map(
+          nodeA -> Set(nodeB, nodeC, nodeD),
+          nodeB -> Set(nodeD),
+          nodeE -> Set(nodeA)
+        )
+      )
     }
 
     "merge by picking latest version of each record" in {
@@ -189,7 +199,7 @@ class ReachabilitySpec extends WordSpec with Matchers {
         .unreachable(nodeC, nodeA)
       // nodeD not in allowed set
       val allowed = Set(nodeA, nodeB, nodeC, nodeE)
-      val merged = r1.merge(allowed, r2)
+      val merged  = r1.merge(allowed, r2)
 
       merged.status(nodeB, nodeA) should ===(Reachable)
       merged.status(nodeC, nodeA) should ===(Unreachable)
@@ -211,13 +221,16 @@ class ReachabilitySpec extends WordSpec with Matchers {
     "merge correctly after pruning" in {
       val r1 =
         Reachability.empty.unreachable(nodeB, nodeA).unreachable(nodeC, nodeD)
-      val r2 = r1.unreachable(nodeA, nodeE)
-      val r3 = r1.reachable(nodeB, nodeA) // nodeB pruned
+      val r2     = r1.unreachable(nodeA, nodeE)
+      val r3     = r1.reachable(nodeB, nodeA) // nodeB pruned
       val merged = r2.merge(Set(nodeA, nodeB, nodeC, nodeD, nodeE), r3)
 
       merged.records.toSet should ===(
-          Set(Record(nodeA, nodeE, Unreachable, 1),
-              Record(nodeC, nodeD, Unreachable, 1)))
+        Set(
+          Record(nodeA, nodeE, Unreachable, 1),
+          Record(nodeC, nodeD, Unreachable, 1)
+        )
+      )
 
       val merged3 = r3.merge(Set(nodeA, nodeB, nodeC, nodeD, nodeE), r2)
       merged3.records.toSet should ===(merged.records.toSet)

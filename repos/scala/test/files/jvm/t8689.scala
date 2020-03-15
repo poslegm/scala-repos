@@ -4,7 +4,7 @@ object Test {
     import ExecutionContext.Implicits.global
     val source1 = Promise[Int]()
     val source2 = Promise[Int]()
-    val done = Promise[Unit]()
+    val done    = Promise[Unit]()
     source2.completeWith(source1.future).future.onComplete {
       case _ =>
         print("success")

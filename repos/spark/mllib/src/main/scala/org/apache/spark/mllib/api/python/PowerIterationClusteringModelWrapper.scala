@@ -24,8 +24,8 @@ import org.apache.spark.rdd.RDD
   * A Wrapper of PowerIterationClusteringModel to provide helper method for Python
   */
 private[python] class PowerIterationClusteringModelWrapper(
-    model: PowerIterationClusteringModel)
-    extends PowerIterationClusteringModel(model.k, model.assignments) {
+    model: PowerIterationClusteringModel
+) extends PowerIterationClusteringModel(model.k, model.assignments) {
 
   def getAssignments: RDD[Array[Any]] = {
     model.assignments.map(x => Array(x.id, x.cluster))

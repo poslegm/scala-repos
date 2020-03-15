@@ -37,10 +37,11 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
   /**
     * Possibly moves to next element to the right of focus.
     */
-  def next: Option[Zipper[A]] = rights match {
-    case Stream.Empty => None
-    case r #:: rs => Some(zipper(Stream.cons(focus, lefts), r, rs))
-  }
+  def next: Option[Zipper[A]] =
+    rights match {
+      case Stream.Empty => None
+      case r #:: rs     => Some(zipper(Stream.cons(focus, lefts), r, rs))
+    }
 
   /**
     * Possibly moves to next element to the right of focus.
@@ -51,10 +52,11 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
   /**
     * Possibly moves to the previous element to the left of focus.
     */
-  def previous: Option[Zipper[A]] = lefts match {
-    case Stream.Empty => None
-    case l #:: ls => Some(zipper(ls, l, Stream.cons(focus, rights)))
-  }
+  def previous: Option[Zipper[A]] =
+    lefts match {
+      case Stream.Empty => None
+      case l #:: ls     => Some(zipper(ls, l, Stream.cons(focus, rights)))
+    }
 
   /**
     * Possibly moves to previous element to the left of focus.
@@ -94,14 +96,15 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
     * Deletes the element at focus and moves the focus to the left. If there is no element on the left,
     * focus is moved to the right.
     */
-  def deleteLeft: Option[Zipper[A]] = lefts match {
-    case l #:: ls => Some(zipper(ls, l, rights))
-    case Stream.Empty =>
-      rights match {
-        case r #:: rs => Some(zipper(Stream.empty, r, rs))
-        case Stream.Empty => None
-      }
-  }
+  def deleteLeft: Option[Zipper[A]] =
+    lefts match {
+      case l #:: ls => Some(zipper(ls, l, rights))
+      case Stream.Empty =>
+        rights match {
+          case r #:: rs     => Some(zipper(Stream.empty, r, rs))
+          case Stream.Empty => None
+        }
+    }
 
   /**
     * Deletes the element at focus and moves the focus to the left. If there is no element on the left,
@@ -114,14 +117,15 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
     * Deletes the element at focus and moves the focus to the right. If there is no element on the right,
     * focus is moved to the left.
     */
-  def deleteRight: Option[Zipper[A]] = rights match {
-    case r #:: rs => Some(zipper(lefts, r, rs))
-    case Stream.Empty =>
-      lefts match {
-        case l #:: ls => Some(zipper(ls, l, Stream.empty))
-        case Stream.Empty => None
-      }
-  }
+  def deleteRight: Option[Zipper[A]] =
+    rights match {
+      case r #:: rs => Some(zipper(lefts, r, rs))
+      case Stream.Empty =>
+        lefts match {
+          case l #:: ls     => Some(zipper(ls, l, Stream.empty))
+          case Stream.Empty => None
+        }
+    }
 
   /**
     * Deletes the element at focus and moves the focus to the right. If there is no element on the right,
@@ -142,7 +146,8 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
 
   def foldRight[B](b: => B)(f: (A, => B) => B): B =
     lefts.foldLeft(Stream.cons(focus, rights).foldRight(b)((a, b) => f(a, b)))(
-        (a, b) => f(b, a))
+      (a, b) => f(b, a)
+    )
 
   def length: Int =
     this.foldLeft(0)((b, _) => b + 1)
@@ -161,9 +166,11 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
     * Pairs each element with a boolean indicating whether that element has focus.
     */
   def withFocus: Zipper[(A, Boolean)] =
-    zipper(lefts.zip(Stream.continually(false)),
-           (focus, true),
-           rights.zip(Stream.continually(false)))
+    zipper(
+      lefts.zip(Stream.continually(false)),
+      (focus, true),
+      rights.zip(Stream.continually(false))
+    )
 
   /**
     * Moves focus n elements in the zipper, or None if there is no such element.
@@ -225,13 +232,14 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
   /**
     * Given a traversal function, find the first element along the traversal that matches a given predicate.
     */
-  def findBy[AA >: A](f: Zipper[AA] => Option[Zipper[AA]])(
-      p: AA => Boolean): Option[Zipper[AA]] = {
+  def findBy[AA >: A](
+      f: Zipper[AA] => Option[Zipper[AA]]
+  )(p: AA => Boolean): Option[Zipper[AA]] = {
     @tailrec
     def go(zopt: Option[Zipper[AA]]): Option[Zipper[AA]] = {
       zopt match {
         case Some(z) => if (p(z.focus)) Some(z) else go(f(z))
-        case None => None
+        case None    => None
       }
     }
     go(f(this))
@@ -255,7 +263,7 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
     * A zipper of all positions of the zipper, with focus on the current position.
     */
   def positions: Zipper[Zipper[A]] = {
-    val left = std.stream.unfold(this)(_.previous.map(x => (x, x)))
+    val left  = std.stream.unfold(this)(_.previous.map(x => (x, x)))
     val right = std.stream.unfold(this)(_.next.map(x => (x, x)))
 
     zipper(left, this, right)
@@ -269,40 +277,43 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
   /**
     * Moves focus to the next element. If the last element is currently focused, loop to the first element.
     */
-  def nextC: Zipper[A] = (lefts, rights) match {
-    case (Stream.Empty, Stream.Empty) => this
-    case (_, Stream.Empty) =>
-      val xs = lefts.reverse
-      zipper(rights, xs.head, xs.tail.append(Stream(focus)))
-    case (_, r #:: rs) =>
-      zipper(Stream.cons(focus, lefts), r, rs)
-  }
+  def nextC: Zipper[A] =
+    (lefts, rights) match {
+      case (Stream.Empty, Stream.Empty) => this
+      case (_, Stream.Empty) =>
+        val xs = lefts.reverse
+        zipper(rights, xs.head, xs.tail.append(Stream(focus)))
+      case (_, r #:: rs) =>
+        zipper(Stream.cons(focus, lefts), r, rs)
+    }
 
   /**
     * Moves focus to the previous element. If the first element is currently focused, loop to the last element.
     */
-  def previousC: Zipper[A] = (lefts, rights) match {
-    case (Stream.Empty, Stream.Empty) => this
-    case (Stream.Empty, _) =>
-      val xs = rights.reverse
-      zipper(xs.tail.append(Stream(focus)), xs.head, lefts)
-    case (_, _) => tryPrevious
-  }
+  def previousC: Zipper[A] =
+    (lefts, rights) match {
+      case (Stream.Empty, Stream.Empty) => this
+      case (Stream.Empty, _) =>
+        val xs = rights.reverse
+        zipper(xs.tail.append(Stream(focus)), xs.head, lefts)
+      case (_, _) => tryPrevious
+    }
 
   /**
     * Deletes the focused element and moves focus to the left. If the focus was on the first element,
     * focus is moved to the last element.
     */
-  def deleteLeftC: Option[Zipper[A]] = lefts match {
-    case l #:: ls => Some(zipper(ls, l, rights))
-    case Stream.Empty =>
-      rights match {
-        case _ #:: _ =>
-          val rrev = rights.reverse;
-          Some(zipper(rrev.tail, rrev.head, Stream.empty))
-        case Stream.Empty => None
-      }
-  }
+  def deleteLeftC: Option[Zipper[A]] =
+    lefts match {
+      case l #:: ls => Some(zipper(ls, l, rights))
+      case Stream.Empty =>
+        rights match {
+          case _ #:: _ =>
+            val rrev = rights.reverse;
+            Some(zipper(rrev.tail, rrev.head, Stream.empty))
+          case Stream.Empty => None
+        }
+    }
 
   /**
     * Deletes the focused element and moves focus to the left. If the focus was on the first element,
@@ -315,16 +326,17 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
     * Deletes the focused element and moves focus to the right. If the focus was on the last element,
     * focus is moved to the first element.
     */
-  def deleteRightC: Option[Zipper[A]] = rights match {
-    case r #:: rs => Some(zipper(lefts, r, rs))
-    case Stream.Empty =>
-      lefts match {
-        case _ #:: _ =>
-          val lrev = lefts.reverse;
-          Some(zipper(Stream.empty, lrev.head, lrev.tail))
-        case Stream.Empty => None
-      }
-  }
+  def deleteRightC: Option[Zipper[A]] =
+    rights match {
+      case r #:: rs => Some(zipper(lefts, r, rs))
+      case Stream.Empty =>
+        lefts match {
+          case _ #:: _ =>
+            val lrev = lefts.reverse;
+            Some(zipper(Stream.empty, lrev.head, lrev.tail))
+          case Stream.Empty => None
+        }
+    }
 
   /**
     * An alias for `deleteRightC`
@@ -342,9 +354,16 @@ final case class Zipper[+A](lefts: Stream[A], focus: A, rights: Stream[A]) {
     val z = (Zipper.zipper(_: Stream[B], _: B, _: Stream[B])).curried
     val G = Applicative[G]
     import std.stream.streamInstance
-    G.apF(G.apF(G.map(Traverse[Stream].traverse[G, A, B](lefts.reverse)(f))(
-                s => z(s.reverse)))(f(focus)))(Traverse[Stream]
-          .traverse[G, A, B](rights)(f))
+    G.apF(
+      G.apF(
+        G.map(Traverse[Stream].traverse[G, A, B](lefts.reverse)(f))(s =>
+          z(s.reverse)
+        )
+      )(f(focus))
+    )(
+      Traverse[Stream]
+        .traverse[G, A, B](rights)(f)
+    )
   }
 
   def ap[B](f: => Zipper[A => B]): Zipper[B] = {
@@ -372,115 +391,127 @@ object Zipper extends ZipperInstances {
 sealed abstract class ZipperInstances {
   import Zipper._
 
-  implicit val zipperInstance: Traverse1[Zipper] with Applicative[Zipper] with Comonad[
-      Zipper] = new Traverse1[Zipper] with Applicative[Zipper]
-  with Comonad[Zipper] {
-    import std.stream._
-    override def cojoin[A](a: Zipper[A]): Zipper[Zipper[A]] =
-      a.positions
-    def cobind[A, B](fa: Zipper[A])(f: Zipper[A] => B): Zipper[B] =
-      map(cojoin(fa))(f)
-    def copoint[A](p: Zipper[A]): A =
-      p.focus
-    override def traverseImpl[G[_]: Applicative, A, B](za: Zipper[A])(
-        f: A => G[B]): G[Zipper[B]] =
-      za traverse f
-    override def foldRight[A, B](fa: Zipper[A], z: => B)(
-        f: (A, => B) => B): B =
-      fa.foldRight(z)(f)
-    override def foldLeft[A, B](fa: Zipper[A], z: B)(f: (B, A) => B): B =
-      fa.foldLeft(z)(f)
-    override def foldMap[A, B](fa: Zipper[A])(f: A => B)(
-        implicit F: Monoid[B]) =
-      fa.foldLeft(F.zero)((b, a) => F.append(b, f(a)))
-    def point[A](a: => A): Zipper[A] =
-      zipper(Stream.continually(a), a, Stream.continually(a))
-    def ap[A, B](fa: => Zipper[A])(f: => Zipper[A => B]): Zipper[B] =
-      fa ap f
-    override def map[A, B](fa: Zipper[A])(f: A => B): Zipper[B] =
-      fa map f
-    override def all[A](fa: Zipper[A])(f: A => Boolean) =
-      fa.lefts.forall(f) && f(fa.focus) && fa.rights.forall(f)
-    override def any[A](fa: Zipper[A])(f: A => Boolean) =
-      fa.lefts.exists(f) || f(fa.focus) || fa.rights.exists(f)
-    override def foldMap1[A, B](fa: Zipper[A])(f: A => B)(
-        implicit F: Semigroup[B]) =
-      fa.rights.foldLeft(
+  implicit val zipperInstance
+      : Traverse1[Zipper] with Applicative[Zipper] with Comonad[Zipper] =
+    new Traverse1[Zipper] with Applicative[Zipper] with Comonad[Zipper] {
+      import std.stream._
+      override def cojoin[A](a: Zipper[A]): Zipper[Zipper[A]] =
+        a.positions
+      def cobind[A, B](fa: Zipper[A])(f: Zipper[A] => B): Zipper[B] =
+        map(cojoin(fa))(f)
+      def copoint[A](p: Zipper[A]): A =
+        p.focus
+      override def traverseImpl[G[_]: Applicative, A, B](
+          za: Zipper[A]
+      )(f: A => G[B]): G[Zipper[B]] =
+        za traverse f
+      override def foldRight[A, B](fa: Zipper[A], z: => B)(
+          f: (A, => B) => B
+      ): B =
+        fa.foldRight(z)(f)
+      override def foldLeft[A, B](fa: Zipper[A], z: B)(f: (B, A) => B): B =
+        fa.foldLeft(z)(f)
+      override def foldMap[A, B](
+          fa: Zipper[A]
+      )(f: A => B)(implicit F: Monoid[B]) =
+        fa.foldLeft(F.zero)((b, a) => F.append(b, f(a)))
+      def point[A](a: => A): Zipper[A] =
+        zipper(Stream.continually(a), a, Stream.continually(a))
+      def ap[A, B](fa: => Zipper[A])(f: => Zipper[A => B]): Zipper[B] =
+        fa ap f
+      override def map[A, B](fa: Zipper[A])(f: A => B): Zipper[B] =
+        fa map f
+      override def all[A](fa: Zipper[A])(f: A => Boolean) =
+        fa.lefts.forall(f) && f(fa.focus) && fa.rights.forall(f)
+      override def any[A](fa: Zipper[A])(f: A => Boolean) =
+        fa.lefts.exists(f) || f(fa.focus) || fa.rights.exists(f)
+      override def foldMap1[A, B](
+          fa: Zipper[A]
+      )(f: A => B)(implicit F: Semigroup[B]) =
+        fa.rights.foldLeft(
           Foldable[Stream]
             .foldMapRight1Opt(fa.lefts)(f)((a, b) => F.append(b, f(a))) match {
             case Some(b) => F.append(b, f(fa.focus))
-            case None => f(fa.focus)
+            case None    => f(fa.focus)
           }
-      )((b, a) => F.append(b, f(a)))
-    override def foldMapRight1[A, B](fa: Zipper[A])(
-        z: A => B)(f: (A, => B) => B) =
-      Foldable[Stream].foldLeft(
+        )((b, a) => F.append(b, f(a)))
+      override def foldMapRight1[A, B](
+          fa: Zipper[A]
+      )(z: A => B)(f: (A, => B) => B) =
+        Foldable[Stream].foldLeft(
           fa.lefts,
           Foldable[Stream].foldMapRight1Opt(fa.rights)(z)(f) match {
             case Some(b) => f(fa.focus, b)
-            case None => z(fa.focus)
+            case None    => z(fa.focus)
           }
-      )((b, a) => f(a, b))
-    override def foldMapLeft1[A, B](fa: Zipper[A])(z: A => B)(f: (B, A) => B) =
-      fa.rights.foldLeft(
-          Foldable[Stream].foldMapRight1Opt(fa.lefts)(z)((a, b) => f(b, a)) match {
+        )((b, a) => f(a, b))
+      override def foldMapLeft1[A, B](
+          fa: Zipper[A]
+      )(z: A => B)(f: (B, A) => B) =
+        fa.rights.foldLeft(
+          Foldable[Stream].foldMapRight1Opt(fa.lefts)(z)((a, b) =>
+            f(b, a)
+          ) match {
             case Some(b) => f(b, fa.focus)
-            case None => z(fa.focus)
+            case None    => z(fa.focus)
           }
-      )(f)
-    override def traverse1Impl[G[_], A, B](fa: Zipper[A])(f: A => G[B])(
-        implicit G: Apply[G]) = {
-      val F = Traverse1[OneAnd[Stream, ?]]
-      fa.lefts.reverse match {
-        case h1 #:: t1 =>
-          val x = G.map(F.traverse1(OneAnd(h1, t1))(f)) { s =>
-            (s.head #:: s.tail).reverse
-          }
-          fa.rights match {
-            case h2 #:: t2 =>
-              G.apply3(x, f(fa.focus), F.traverse1(OneAnd(h2, t2))(f)) {
-                (l, z, r) =>
-                  Zipper(l, z, r.head #:: r.tail)
-              }
-            case Stream.Empty =>
-              G.apply2(x, f(fa.focus)) { (l, z) =>
-                Zipper(l, z, Stream.Empty)
-              }
-          }
-        case Stream.Empty =>
-          fa.rights match {
-            case h2 #:: t2 =>
-              G.apply2(f(fa.focus), F.traverse1(OneAnd(h2, t2))(f)) { (z, r) =>
-                Zipper(Stream.Empty, z, r.head #:: r.tail)
-              }
-            case Stream.Empty =>
-              G.map(f(fa.focus)) { z =>
-                Zipper(Stream.Empty, z, Stream.Empty)
-              }
-          }
+        )(f)
+      override def traverse1Impl[G[_], A, B](
+          fa: Zipper[A]
+      )(f: A => G[B])(implicit G: Apply[G]) = {
+        val F = Traverse1[OneAnd[Stream, ?]]
+        fa.lefts.reverse match {
+          case h1 #:: t1 =>
+            val x = G.map(F.traverse1(OneAnd(h1, t1))(f)) { s =>
+              (s.head #:: s.tail).reverse
+            }
+            fa.rights match {
+              case h2 #:: t2 =>
+                G.apply3(x, f(fa.focus), F.traverse1(OneAnd(h2, t2))(f)) {
+                  (l, z, r) => Zipper(l, z, r.head #:: r.tail)
+                }
+              case Stream.Empty =>
+                G.apply2(x, f(fa.focus)) { (l, z) =>
+                  Zipper(l, z, Stream.Empty)
+                }
+            }
+          case Stream.Empty =>
+            fa.rights match {
+              case h2 #:: t2 =>
+                G.apply2(f(fa.focus), F.traverse1(OneAnd(h2, t2))(f)) {
+                  (z, r) => Zipper(Stream.Empty, z, r.head #:: r.tail)
+                }
+              case Stream.Empty =>
+                G.map(f(fa.focus)) { z =>
+                  Zipper(Stream.Empty, z, Stream.Empty)
+                }
+            }
+        }
       }
     }
-  }
 
-  implicit def zipperEqual[A : Equal]: Equal[Zipper[A]] =
+  implicit def zipperEqual[A: Equal]: Equal[Zipper[A]] =
     new Equal[Zipper[A]] {
       import std.stream.streamEqual
       def equal(a1: Zipper[A], a2: Zipper[A]) =
         streamEqual[A].equal(a1.lefts, a2.lefts) &&
-        Equal[A].equal(a1.focus, a2.focus) &&
-        streamEqual[A].equal(a1.rights, a2.rights)
+          Equal[A].equal(a1.focus, a2.focus) &&
+          streamEqual[A].equal(a1.rights, a2.rights)
     }
 
-  implicit def zipperShow[A : Show]: Show[Zipper[A]] = new Show[Zipper[A]] {
-    import std.stream._
+  implicit def zipperShow[A: Show]: Show[Zipper[A]] =
+    new Show[Zipper[A]] {
+      import std.stream._
 
-    override def show(f: Zipper[A]) =
-      Cord("Zipper(",
-           Show[Stream[A]].show(f.lefts),
-           ", ",
-           Show[A].show(f.focus),
-           ", ",
-           Show[Stream[A]].show(f.rights),
-           ")")
-  }
+      override def show(f: Zipper[A]) =
+        Cord(
+          "Zipper(",
+          Show[Stream[A]].show(f.lefts),
+          ", ",
+          Show[A].show(f.focus),
+          ", ",
+          Show[Stream[A]].show(f.rights),
+          ")"
+        )
+    }
 }

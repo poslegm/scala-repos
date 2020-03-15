@@ -25,9 +25,9 @@ object Play extends AutoPlugin {
 
   override def projectSettings =
     PlaySettings.defaultSettings ++ Seq(
-        scalacOptions ++=
-          Seq("-deprecation", "-unchecked", "-encoding", "utf8"),
-        javacOptions in Compile ++= Seq("-encoding", "utf8", "-g")
+      scalacOptions ++=
+        Seq("-deprecation", "-unchecked", "-encoding", "utf8"),
+      javacOptions in Compile ++= Seq("-encoding", "utf8", "-g")
     )
 }
 
@@ -42,7 +42,8 @@ object PlayJava extends AutoPlugin {
   override def requires = Play
   override def projectSettings =
     PlaySettings.defaultJavaSettings ++ Seq(
-        libraryDependencies += PlayImport.javaCore)
+      libraryDependencies += PlayImport.javaCore
+    )
 }
 
 /**
@@ -63,17 +64,20 @@ object PlayScala extends AutoPlugin {
   */
 object PlayNettyServer extends AutoPlugin {
   override def requires = Play
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       libraryDependencies ++= {
         if (PlayKeys.playPlugin.value) {
           Nil
         } else {
-          Seq("com.typesafe.play" %% "play-netty-server" % play.core.PlayVersion.current)
+          Seq(
+            "com.typesafe.play" %% "play-netty-server" % play.core.PlayVersion.current
+          )
         }
       }
-  )
+    )
 }
 
 /**
@@ -82,8 +86,9 @@ object PlayNettyServer extends AutoPlugin {
 object PlayAkkaHttpServer extends AutoPlugin {
   override def requires = Play
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       libraryDependencies +=
         "com.typesafe.play" %% "play-akka-http-server-experimental" % play.core.PlayVersion.current
-  )
+    )
 }

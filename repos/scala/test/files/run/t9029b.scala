@@ -1,6 +1,6 @@
 class Foo(val x: Bar) {
   def isEmpty = false
-  def get = x
+  def get     = x
 }
 
 object Foo {
@@ -9,9 +9,9 @@ object Foo {
 
 class Bar(val x: Option[Int], val y: Option[Int]) {
   def isEmpty = false
-  def get = this
-  def _1 = x
-  def _2 = y
+  def get     = this
+  def _1      = x
+  def _2      = y
 }
 
 object Bar {

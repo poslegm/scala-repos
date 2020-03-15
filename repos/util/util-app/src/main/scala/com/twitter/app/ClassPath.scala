@@ -15,16 +15,18 @@ import scala.collection.mutable
   */
 private object ClassPath {
 
-  private val ignoredPackages = Seq("apple/",
-                                    "ch/epfl/",
-                                    "com/apple/",
-                                    "com/oracle/",
-                                    "com/sun/",
-                                    "java/",
-                                    "javax/",
-                                    "scala/",
-                                    "sun/",
-                                    "sunw/")
+  private val ignoredPackages = Seq(
+    "apple/",
+    "ch/epfl/",
+    "com/apple/",
+    "com/oracle/",
+    "com/sun/",
+    "java/",
+    "javax/",
+    "scala/",
+    "sun/",
+    "sunw/"
+  )
 
   // TODO: we can inspect the constant pool for "Premain"
   // if needed to speed up start.
@@ -50,7 +52,7 @@ private object ClassPath {
     * its package root.
     */
   def browse(loader: ClassLoader): Seq[Info] = {
-    val buf = mutable.Buffer[Info]()
+    val buf      = mutable.Buffer[Info]()
     val seenUris = mutable.HashSet[URI]()
 
     for ((uri, loader) <- getEntries(loader)) {
@@ -63,10 +65,10 @@ private object ClassPath {
 
   private def isClass(name: String) =
     (name endsWith ".class") &&
-    ((name endsWith "$.class") || !(name contains "$"))
+      ((name endsWith "$.class") || !(name contains "$"))
 
   private def getEntries(loader: ClassLoader): Seq[(URI, ClassLoader)] = {
-    val ents = mutable.Buffer[(URI, ClassLoader)]()
+    val ents   = mutable.Buffer[(URI, ClassLoader)]()
     val parent = loader.getParent()
     if (parent != null) ents ++= getEntries(parent)
 
@@ -106,9 +108,10 @@ private object ClassPath {
       return
     }
 
-    for (f <- dir.listFiles) if (f.isDirectory())
-      browseDir(f, loader, prefix + f.getName + "/", buf)
-    else if (isClass(f.getName)) buf += Info(prefix + f.getName, loader)
+    for (f <- dir.listFiles)
+      if (f.isDirectory())
+        browseDir(f, loader, prefix + f.getName + "/", buf)
+      else if (isClass(f.getName)) buf += Info(prefix + f.getName, loader)
   }
 
   private def browseJar(
@@ -117,9 +120,11 @@ private object ClassPath {
       buf: mutable.Buffer[Info],
       seenUris: mutable.Set[URI]
   ): Unit = {
-    val jarFile = try new JarFile(file) catch {
-      case _: IOException => return // not a Jar file
-    }
+    val jarFile =
+      try new JarFile(file)
+      catch {
+        case _: IOException => return // not a Jar file
+      }
 
     try {
       for (uri <- jarClasspath(file, jarFile.getManifest)) {
@@ -131,23 +136,26 @@ private object ClassPath {
 
       for {
         e <- jarFile.entries.asScala if !e.isDirectory
-        n = e.getName if !(ignoredPackages exists (n startsWith _))
+        n  = e.getName if !(ignoredPackages exists (n startsWith _))
         if isClass(n)
       } buf += Info(n, loader)
     } finally {
-      try jarFile.close() catch {
+      try jarFile.close()
+      catch {
         case _: IOException =>
       }
     }
   }
 
   private def jarClasspath(
-      jarFile: File, manifest: java.util.jar.Manifest): Seq[URI] =
+      jarFile: File,
+      manifest: java.util.jar.Manifest
+  ): Seq[URI] =
     for {
-      m <- Option(manifest).toSeq
+      m    <- Option(manifest).toSeq
       attr <- Option(m.getMainAttributes().getValue("Class-Path")).toSeq
-      el <- attr.split(" ")
-      uri <- uriFromJarClasspath(jarFile, el)
+      el   <- attr.split(" ")
+      uri  <- uriFromJarClasspath(jarFile, el)
     } yield uri
 
   def uriFromJarClasspath(jarFile: File, path: String): Option[URI] =
@@ -156,8 +164,11 @@ private object ClassPath {
       if (uri.isAbsolute) Some(uri)
       else
         Some(
-            new File(jarFile.getParentFile,
-                     path.replace('/', File.separatorChar)).toURI)
+          new File(
+            jarFile.getParentFile,
+            path.replace('/', File.separatorChar)
+          ).toURI
+        )
     } catch {
       case _: URISyntaxException => None
     }

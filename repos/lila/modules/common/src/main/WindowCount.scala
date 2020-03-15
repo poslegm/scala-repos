@@ -21,9 +21,9 @@ final class WindowCount(timeout: FiniteDuration) {
   }
 
   def get = {
-    val current = nowMillis
+    val current                      = nowMillis
     val (precedent, (count, millis)) = counter.single()
-    val since = current - millis
+    val since                        = current - millis
     if (since <= tms) ((count + precedent) * 1000) / (since + tms / 2)
     else 0
   } toInt

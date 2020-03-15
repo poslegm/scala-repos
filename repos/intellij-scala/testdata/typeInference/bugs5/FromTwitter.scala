@@ -7,7 +7,7 @@ package object z extends U
 
 object obj extends scala.AnyRef {
   def apply[A](rn: z.RN[A]): A = null.asInstanceOf[A]
-  def apply(sp: Int): Int = 2
+  def apply(sp: Int): Int      = 2
 }
 
 class FromTwitter {

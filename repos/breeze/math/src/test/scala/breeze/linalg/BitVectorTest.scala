@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
   **/
 class BitVectorTest extends FunSuite {
   test("Ones") {
-    val as = BitVector.ones(5)
+    val as       = BitVector.ones(5)
     val expected = BitVector(5)(0, 1, 2, 3, 4)
     assert(as === expected)
   }
@@ -50,8 +50,8 @@ class BitVectorTest extends FunSuite {
   }
 
   test("MulInner") {
-    val a = BitVector(false, false, true, true, false, true, true)
-    val b = SparseVector(1, 0, 2, 0, 3, 4, 0)
+    val a  = BitVector(false, false, true, true, false, true, true)
+    val b  = SparseVector(1, 0, 2, 0, 3, 4, 0)
     val bd = DenseVector(1, 0, 2, 0, 3, 4, 0)
     b.compact()
     assert((a dot b) === (b dot a))

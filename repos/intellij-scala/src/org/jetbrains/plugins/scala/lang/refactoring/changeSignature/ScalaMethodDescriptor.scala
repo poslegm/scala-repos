@@ -6,7 +6,10 @@ import java.util
 import com.intellij.psi.PsiElement
 import com.intellij.refactoring.changeSignature.MethodDescriptor
 import com.intellij.refactoring.changeSignature.MethodDescriptor.ReadWriteOption
-import org.jetbrains.plugins.scala.lang.psi.api.base.{ScMethodLike, ScPrimaryConstructor}
+import org.jetbrains.plugins.scala.lang.psi.api.base.{
+  ScMethodLike,
+  ScPrimaryConstructor
+}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunction
 
 import scala.collection.JavaConverters._
@@ -17,13 +20,14 @@ import scala.collection.JavaConverters._
   */
 class ScalaMethodDescriptor(val fun: ScMethodLike)
     extends MethodDescriptor[ScalaParameterInfo, String] {
-  override def getName: String = fun match {
-    case fun: ScFunction =>
-      if (fun.isConstructor) fun.containingClass.name
-      else fun.name
-    case pc: ScPrimaryConstructor => pc.containingClass.name
-    case _ => ""
-  }
+  override def getName: String =
+    fun match {
+      case fun: ScFunction =>
+        if (fun.isConstructor) fun.containingClass.name
+        else fun.name
+      case pc: ScPrimaryConstructor => pc.containingClass.name
+      case _                        => ""
+    }
 
   override def canChangeName: Boolean = !fun.isConstructor
 
@@ -45,10 +49,11 @@ class ScalaMethodDescriptor(val fun: ScMethodLike)
   override def getVisibility: String =
     fun.getModifierList.accessModifier.fold("")(_.getText)
 
-  def returnTypeText = fun match {
-    case f: ScFunction => f.returnType.getOrAny.presentableText
-    case _ => ""
-  }
+  def returnTypeText =
+    fun match {
+      case f: ScFunction => f.returnType.getOrAny.presentableText
+      case _             => ""
+    }
 
   protected def parametersInner: Seq[Seq[ScalaParameterInfo]] =
     ScalaParameterInfo.allForMethod(fun)

@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -37,9 +37,9 @@ trait RankSpecs extends EvalStackSpecs {
         foo where rank >= 0
       """.stripMargin
 
-      val input2 = """count((//clicks).time)"""
+      val input2   = """count((//clicks).time)"""
       val results2 = evalE(input2)
-      val size = results2 collect { case (_, SDecimal(d)) => d.toInt }
+      val size     = results2 collect { case (_, SDecimal(d)) => d.toInt }
 
       val result = evalE(input)
 
@@ -68,9 +68,9 @@ trait RankSpecs extends EvalStackSpecs {
         distinctFoo where rank >= 0
       """.stripMargin
 
-      val input2 = """count(distinct((//clicks).time))"""
+      val input2   = """count(distinct((//clicks).time))"""
       val results2 = evalE(input2)
-      val size = results2 collect { case (_, SDecimal(d)) => d.toInt }
+      val size     = results2 collect { case (_, SDecimal(d)) => d.toInt }
 
       val result = evalE(input)
 
@@ -113,18 +113,18 @@ trait RankSpecs extends EvalStackSpecs {
         distinct(perCapitaAthletes)""".stripMargin
 
       val result2 = evalE(input2)
-      val size = result2.size
+      val size    = result2.size
 
       result must haveSize(size)
 
       result must haveAllElementsLike {
         case (ids, SObject(obj)) => {
-            ids.length must_== 1
-            obj must haveSize(3)
-            obj must haveKey("rank")
-            obj must haveKey("country")
-            obj must haveKey("athletesPerMillion")
-          }
+          ids.length must_== 1
+          obj must haveSize(3)
+          obj must haveKey("rank")
+          obj must haveKey("country")
+          obj must haveKey("athletesPerMillion")
+        }
       }
     }
 
@@ -139,9 +139,9 @@ trait RankSpecs extends EvalStackSpecs {
         distinctFoo where rank >= 0
       """.stripMargin
 
-      val input2 = """count(distinct((//clicks).time))"""
+      val input2   = """count(distinct((//clicks).time))"""
       val results2 = evalE(input2)
-      val size = results2 collect { case (_, SDecimal(d)) => d.toInt }
+      val size     = results2 collect { case (_, SDecimal(d)) => d.toInt }
 
       val result = evalE(input)
 
@@ -167,9 +167,9 @@ trait RankSpecs extends EvalStackSpecs {
         newFoo where rank >= 0
       """.stripMargin
 
-      val input2 = """count((//clicks).time)"""
+      val input2   = """count((//clicks).time)"""
       val results2 = evalE(input2)
-      val size = results2 collect { case (_, SDecimal(d)) => d.toInt }
+      val size     = results2 collect { case (_, SDecimal(d)) => d.toInt }
 
       val result = evalE(input)
 
@@ -199,14 +199,16 @@ trait RankSpecs extends EvalStackSpecs {
       val input2 =
         """count(//clicks where (//clicks).time = min((//clicks).time))"""
       val results2 = evalE(input2)
-      val size = results2 collect { case (_, SDecimal(d)) => d.toInt }
+      val size     = results2 collect { case (_, SDecimal(d)) => d.toInt }
 
       val result = evalE(input)
 
       val actual =
         result collect { case (ids, SDecimal(d)) if ids.size == 1 => d.toInt }
       val expected =
-        evalE("(//clicks).time where (//clicks).time = min((//clicks).time)") collect {
+        evalE(
+          "(//clicks).time where (//clicks).time = min((//clicks).time)"
+        ) collect {
           case (ids, SDecimal(d)) if ids.size == 1 => d.toInt
         }
 
@@ -227,10 +229,10 @@ trait RankSpecs extends EvalStackSpecs {
 
         results must haveAllElementsLike {
           case (ids, SObject(obj)) => {
-              ids.length must_== 1
-              obj must haveSize(5)
-              obj must contain("cpm" -> SDecimal(6))
-            }
+            ids.length must_== 1
+            obj must haveSize(5)
+            obj must contain("cpm" -> SDecimal(6))
+          }
           case r => failure("Result has wrong shape: " + r)
         }
       }
@@ -246,10 +248,10 @@ trait RankSpecs extends EvalStackSpecs {
 
         results must haveAllElementsLike {
           case (ids, SObject(obj)) => {
-              ids.length must_== 1
-              obj must haveSize(5)
-              obj must contain("cpm" -> SDecimal(6))
-            }
+            ids.length must_== 1
+            obj must haveSize(5)
+            obj must contain("cpm" -> SDecimal(6))
+          }
           case r => failure("Result has wrong shape: " + r)
         }
       }
@@ -332,10 +334,10 @@ trait RankSpecs extends EvalStackSpecs {
 
         results must haveAllElementsLike {
           case (ids, SObject(obj)) => {
-              ids.length must_== 1
-              obj must haveSize(5)
-              obj must contain("cpm" -> SDecimal(6))
-            }
+            ids.length must_== 1
+            obj must haveSize(5)
+            obj must contain("cpm" -> SDecimal(6))
+          }
           case r => failure("Result has wrong shape: " + r)
         }
       }

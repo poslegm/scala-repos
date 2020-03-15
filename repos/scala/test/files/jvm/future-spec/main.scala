@@ -14,16 +14,17 @@ object Test {
 
 trait Features {
   implicit def implicitously = scala.language.implicitConversions
-  implicit def reflectively = scala.language.reflectiveCalls
-  implicit def postulously = scala.language.postfixOps
+  implicit def reflectively  = scala.language.reflectiveCalls
+  implicit def postulously   = scala.language.postfixOps
 }
 
 trait Output {
   val buffer = new StringBuilder
 
-  def bufferPrintln(a: Any) = buffer.synchronized {
-    buffer.append(a.toString + "\n")
-  }
+  def bufferPrintln(a: Any) =
+    buffer.synchronized {
+      buffer.append(a.toString + "\n")
+    }
 }
 
 trait MinimalScalaTest extends Output with Features {
@@ -34,38 +35,41 @@ trait MinimalScalaTest extends Output with Features {
     if (throwables.nonEmpty) println(buffer.toString)
   }
 
-  implicit def stringops(s: String) = new {
+  implicit def stringops(s: String) =
+    new {
 
-    def should[U](snippets: => U) = {
-      bufferPrintln(s + " should:")
-      snippets
-    }
+      def should[U](snippets: => U) = {
+        bufferPrintln(s + " should:")
+        snippets
+      }
 
-    def in[U](snippet: => U) = {
-      try {
-        bufferPrintln("- " + s)
-        snippet
-        bufferPrintln("[OK] Test passed.")
-      } catch {
-        case e: Throwable =>
-          bufferPrintln("[FAILED] " + e)
-          bufferPrintln(e.getStackTrace().mkString("\n"))
-          throwables += e
+      def in[U](snippet: => U) = {
+        try {
+          bufferPrintln("- " + s)
+          snippet
+          bufferPrintln("[OK] Test passed.")
+        } catch {
+          case e: Throwable =>
+            bufferPrintln("[FAILED] " + e)
+            bufferPrintln(e.getStackTrace().mkString("\n"))
+            throwables += e
+        }
       }
     }
-  }
 
-  implicit def objectops(obj: Any) = new {
+  implicit def objectops(obj: Any) =
+    new {
 
-    def mustBe(other: Any) = assert(obj == other, obj + " is not " + other)
-    def mustEqual(other: Any) = mustBe(other)
-  }
+      def mustBe(other: Any)    = assert(obj == other, obj + " is not " + other)
+      def mustEqual(other: Any) = mustBe(other)
+    }
 
-  def intercept[T <: Throwable : Manifest](body: => Any): T = {
+  def intercept[T <: Throwable: Manifest](body: => Any): T = {
     try {
       body
       throw new Exception(
-          "Exception of type %s was not thrown".format(manifest[T]))
+        "Exception of type %s was not thrown".format(manifest[T])
+      )
     } catch {
       case t: Throwable =>
         if (manifest[T].runtimeClass != t.getClass) throw t
@@ -73,8 +77,10 @@ trait MinimalScalaTest extends Output with Features {
     }
   }
 
-  def checkType[T : Manifest, S](
-      in: Future[T], refmanifest: Manifest[S]): Boolean =
+  def checkType[T: Manifest, S](
+      in: Future[T],
+      refmanifest: Manifest[S]
+  ): Boolean =
     manifest[T] == refmanifest
 }
 
@@ -87,10 +93,10 @@ object TestLatch {
 class TestLatch(count: Int = 1) extends Awaitable[Unit] {
   private var latch = new CountDownLatch(count)
 
-  def countDown() = latch.countDown()
+  def countDown()     = latch.countDown()
   def isOpen: Boolean = latch.getCount == 0
-  def open() = while (!isOpen) countDown()
-  def reset() = latch = new CountDownLatch(count)
+  def open()          = while (!isOpen) countDown()
+  def reset()         = latch = new CountDownLatch(count)
 
   @throws(classOf[TimeoutException])
   def ready(atMost: Duration)(implicit permit: CanAwait) = {

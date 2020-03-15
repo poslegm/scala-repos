@@ -18,23 +18,25 @@ class ScalaGenerateCompanionObjectHandler
     extends LanguageCodeInsightActionHandler {
   def isValidFor(editor: Editor, file: PsiFile): Boolean =
     file != null && ScalaFileType.SCALA_FILE_TYPE == file.getFileType &&
-    GenerationUtil
-      .classOrTraitAtCaret(editor, file)
-      .exists(canAddCompanionObject)
+      GenerationUtil
+        .classOrTraitAtCaret(editor, file)
+        .exists(canAddCompanionObject)
 
   def invoke(project: Project, editor: Editor, file: PsiFile) {
     val classOpt = GenerationUtil.classOrTraitAtCaret(editor, file)
     for (clazz <- classOpt) {
-      val obj = createCompanionObject(clazz)
-      val parent = clazz.getParent
+      val obj      = createCompanionObject(clazz)
+      val parent   = clazz.getParent
       val addedObj = parent.addAfter(obj, clazz)
       parent.addAfter(
-          ScalaPsiElementFactory.createNewLine(clazz.getManager), clazz)
+        ScalaPsiElementFactory.createNewLine(clazz.getManager),
+        clazz
+      )
       val document = editor.getDocument
       PsiDocumentManager
         .getInstance(project)
         .doPostponedOperationsAndUnblockDocument(document)
-      val offset = addedObj.getTextRange.getStartOffset
+      val offset     = addedObj.getTextRange.getStartOffset
       val lineInside = document.getLineNumber(offset) + 1
       CodeStyleManager
         .getInstance(project)
@@ -59,7 +61,10 @@ class ScalaGenerateCompanionObjectHandler
       val name = clazz.name
       val text = s"object $name {\n \n}"
       ScalaPsiElementFactory.createObjectWithContext(
-          text, clazz.getContext, clazz)
+        text,
+        clazz.getContext,
+        clazz
+      )
     } else throw new IllegalArgumentException("Cannot create companion object")
   }
 }

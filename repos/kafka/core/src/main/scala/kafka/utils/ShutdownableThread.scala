@@ -20,12 +20,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.CountDownLatch
 
 abstract class ShutdownableThread(
-    val name: String, val isInterruptible: Boolean = true)
-    extends Thread(name) with Logging {
+    val name: String,
+    val isInterruptible: Boolean = true
+) extends Thread(name)
+    with Logging {
   this.setDaemon(false)
   this.logIdent = "[" + name + "], "
   val isRunning: AtomicBoolean = new AtomicBoolean(true)
-  private val shutdownLatch = new CountDownLatch(1)
+  private val shutdownLatch    = new CountDownLatch(1)
 
   def shutdown() = {
     initiateShutdown()

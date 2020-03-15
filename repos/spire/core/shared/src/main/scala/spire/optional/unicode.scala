@@ -27,12 +27,12 @@ package object unicode {
   val ⅈ = Complex.i[Real]
   val ⅉ = Quaternion.j[Real]
 
-  def ⊤[A](implicit ev: Heyting[A]): A = ev.one
-  def ⊥[A](implicit ev: Heyting[A]): A = ev.zero
+  def ⊤[A](implicit ev: Heyting[A]): A       = ev.one
+  def ⊥[A](implicit ev: Heyting[A]): A       = ev.zero
   def ¬[A](a: A)(implicit ev: Heyting[A]): A = ev.complement(a)
-  def √[A](a: A)(implicit ev: NRoot[A]): A = ev.sqrt(a)
-  def ∛[A](a: A)(implicit ev: NRoot[A]): A = ev.nroot(a, 3)
-  def ∜[A](a: A)(implicit ev: NRoot[A]): A = ev.nroot(a, 4)
+  def √[A](a: A)(implicit ev: NRoot[A]): A   = ev.sqrt(a)
+  def ∛[A](a: A)(implicit ev: NRoot[A]): A   = ev.nroot(a, 3)
+  def ∜[A](a: A)(implicit ev: NRoot[A]): A   = ev.nroot(a, 4)
 
   def Σ[A](as: Iterable[A])(implicit ev: AdditiveMonoid[A]): A =
     as.aggregate(ev.zero)(ev.plus, ev.plus)
@@ -54,13 +54,15 @@ package object unicode {
     def ≥(rhs: A): Boolean = macro Ops.binop[A, A]
   }
 
-  implicit class MeetSemilatticeOps[
-      A](lhs: A)(implicit ev: MeetSemilattice[A]) {
+  implicit class MeetSemilatticeOps[A](lhs: A)(
+      implicit ev: MeetSemilattice[A]
+  ) {
     def ∧(rhs: A): A = macro Ops.binop[A, A]
   }
 
-  implicit class JoinSemilatticeOps[
-      A](lhs: A)(implicit ev: JoinSemilattice[A]) {
+  implicit class JoinSemilatticeOps[A](lhs: A)(
+      implicit ev: JoinSemilattice[A]
+  ) {
     def ∨(rhs: A): A = macro Ops.binop[A, A]
   }
 

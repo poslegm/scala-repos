@@ -29,12 +29,13 @@ trait PriorityQueueStabilizer[E <: AnyRef] extends AbstractQueue[E] {
     backingQueue.offer(wrappedElement)
   }
 
-  override def iterator(): Iterator[E] = new Iterator[E] {
-    private[this] val backingIterator = backingQueue.iterator()
-    def hasNext: Boolean = backingIterator.hasNext
-    def next(): E = backingIterator.next().element
-    def remove() = backingIterator.remove()
-  }
+  override def iterator(): Iterator[E] =
+    new Iterator[E] {
+      private[this] val backingIterator = backingQueue.iterator()
+      def hasNext: Boolean              = backingIterator.hasNext
+      def next(): E                     = backingIterator.next().element
+      def remove()                      = backingIterator.remove()
+    }
 
   override def poll(): E = {
     val wrappedElement = backingQueue.poll()
@@ -67,7 +68,9 @@ class StablePriorityQueue[E <: AnyRef](capacity: Int, cmp: Comparator[E])
     extends PriorityQueueStabilizer[E] {
   val backingQueue =
     new PriorityQueue[PriorityQueueStabilizer.WrappedElement[E]](
-        capacity, new PriorityQueueStabilizer.WrappedElementComparator[E](cmp))
+      capacity,
+      new PriorityQueueStabilizer.WrappedElementComparator[E](cmp)
+    )
 }
 
 /**
@@ -76,9 +79,12 @@ class StablePriorityQueue[E <: AnyRef](capacity: Int, cmp: Comparator[E])
   * @param cmp - Comparator for comparing Queue elements
   */
 class StablePriorityBlockingQueue[E <: AnyRef](
-    capacity: Int, cmp: Comparator[E])
-    extends PriorityQueueStabilizer[E] {
+    capacity: Int,
+    cmp: Comparator[E]
+) extends PriorityQueueStabilizer[E] {
   val backingQueue =
     new PriorityBlockingQueue[PriorityQueueStabilizer.WrappedElement[E]](
-        capacity, new PriorityQueueStabilizer.WrappedElementComparator[E](cmp))
+      capacity,
+      new PriorityQueueStabilizer.WrappedElementComparator[E](cmp)
+    )
 }

@@ -15,21 +15,24 @@ class ScalaLiteralSelectioner extends ExtendWordSelectionHandlerBase {
   def canSelect(e: PsiElement) =
     isStringLiteral(e) || isStringLiteral(e.getParent)
 
-  def isStringLiteral(e: PsiElement) = e match {
-    case l: ScLiteral =>
-      val children = l.getNode.getChildren(null)
-      children.length == 1 &&
-      (children(0).getElementType == ScalaTokenTypes.tSTRING ||
-          children(0).getElementType == ScalaTokenTypes.tMULTILINE_STRING)
-    case _ => false
-  }
+  def isStringLiteral(e: PsiElement) =
+    e match {
+      case l: ScLiteral =>
+        val children = l.getNode.getChildren(null)
+        children.length == 1 &&
+        (children(0).getElementType == ScalaTokenTypes.tSTRING ||
+        children(0).getElementType == ScalaTokenTypes.tMULTILINE_STRING)
+      case _ => false
+    }
 
-  override def select(e: PsiElement,
-                      editorText: CharSequence,
-                      cursorOffset: Int,
-                      editor: Editor) = {
+  override def select(
+      e: PsiElement,
+      editorText: CharSequence,
+      cursorOffset: Int,
+      editor: Editor
+  ) = {
     val list = super.select(e, editorText, cursorOffset, editor)
-    val r = e.getTextRange
+    val r    = e.getTextRange
     val text = e.getText
     if (text.startsWith("\"\"\"") && text.endsWith("\"\"\"") &&
         text.length > 6) {

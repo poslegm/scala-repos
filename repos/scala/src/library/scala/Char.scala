@@ -557,8 +557,8 @@ object Char extends AnyValCompanion {
 
   /** Language mandated coercions from Char to "wider" types. */
   import scala.language.implicitConversions
-  implicit def char2int(x: Char): Int = x.toInt
-  implicit def char2long(x: Char): Long = x.toLong
-  implicit def char2float(x: Char): Float = x.toFloat
+  implicit def char2int(x: Char): Int       = x.toInt
+  implicit def char2long(x: Char): Long     = x.toLong
+  implicit def char2float(x: Char): Float   = x.toFloat
   implicit def char2double(x: Char): Double = x.toDouble
 }

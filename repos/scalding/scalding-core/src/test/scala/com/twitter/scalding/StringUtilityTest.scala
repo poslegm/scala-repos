@@ -21,21 +21,21 @@ class StringUtilityTest extends WordSpec with Matchers {
   }
   "be able to split other separators" in {
     val text2 = "a:b:c:d:"
-    val res2 = StringUtility.fastSplit(text2, ":")
+    val res2  = StringUtility.fastSplit(text2, ":")
     res2 should be {
       Seq("a", "b", "c", "d", "")
     }
   }
   "be able to split only one separators" in {
     val text2 = "a@"
-    val res2 = StringUtility.fastSplit(text2, "@")
+    val res2  = StringUtility.fastSplit(text2, "@")
     res2 should be {
       Seq("a", "")
     }
   }
   "be able to split when separator doesn't show up" in {
     val text2 = "a"
-    val res2 = StringUtility.fastSplit(text2, "@")
+    val res2  = StringUtility.fastSplit(text2, "@")
     res2 should be {
       Seq("a")
     }
@@ -45,7 +45,9 @@ class StringUtilityTest extends WordSpec with Matchers {
 class StringUtilityPropertyTest extends PropSpec with Checkers {
   val randomStringGen = for {
     s <- Gen.pick(
-        5, List.fill(100)(List("k", "l", "m", "x", "//.", "@")).flatten)
+          5,
+          List.fill(100)(List("k", "l", "m", "x", "//.", "@")).flatten
+        )
   } yield s
 
   // test for one separator and two
@@ -53,10 +55,12 @@ class StringUtilityPropertyTest extends PropSpec with Checkers {
     s <- Gen.oneOf("@@", "@", "x", "//.")
   } yield s
 
-  property("fastSplit(s, sep) should match s.split(sep, -1) for non-regex sep") {
+  property(
+    "fastSplit(s, sep) should match s.split(sep, -1) for non-regex sep"
+  ) {
     check {
       forAll(randomStringGen, randomSeparator) { (str, separator) =>
-        val t = str.mkString("")
+        val t  = str.mkString("")
         val r1 = t.split(separator, -1).toList
         val r2 = StringUtility.fastSplit(t, separator)
         r1 == r2

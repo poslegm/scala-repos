@@ -28,10 +28,8 @@ class HttpServerDispatcherTest extends FunSuite {
 
   test("invalid message") {
     val (in, out) = mkPair[Any, Any]
-    val service = Service.mk { req: Request =>
-      Future.value(Response())
-    }
-    val disp = new HttpServerDispatcher(out, service)
+    val service   = Service.mk { req: Request => Future.value(Response()) }
+    val disp      = new HttpServerDispatcher(out, service)
 
     in.write("invalid")
     Await.ready(out.onClose)
@@ -40,10 +38,8 @@ class HttpServerDispatcherTest extends FunSuite {
 
   test("bad request") {
     val (in, out) = mkPair[Any, Any]
-    val service = Service.mk { req: Request =>
-      Future.value(Response())
-    }
-    val disp = new HttpServerDispatcher(out, service)
+    val service   = Service.mk { req: Request => Future.value(Response()) }
+    val disp      = new HttpServerDispatcher(out, service)
 
     in.write(BadHttpRequest(new Exception()))
     Await.result(in.read)
@@ -51,11 +47,9 @@ class HttpServerDispatcherTest extends FunSuite {
   }
 
   test("streaming request body") {
-    val service = Service.mk { req: Request =>
-      ok(req.reader)
-    }
+    val service   = Service.mk { req: Request => ok(req.reader) }
     val (in, out) = mkPair[Any, Any]
-    val disp = new HttpServerDispatcher(out, service)
+    val disp      = new HttpServerDispatcher(out, service)
 
     val req = Request()
     req.setChunked(true)
@@ -69,12 +63,10 @@ class HttpServerDispatcherTest extends FunSuite {
 
   test("client abort before dispatch") {
     val promise = new Promise[Response]
-    val service = Service.mk { _: Request =>
-      promise
-    }
+    val service = Service.mk { _: Request => promise }
 
     val (in, out) = mkPair[Any, Any]
-    val disp = new HttpServerDispatcher(out, service)
+    val disp      = new HttpServerDispatcher(out, service)
 
     in.write(Request().httpRequest)
 
@@ -84,14 +76,12 @@ class HttpServerDispatcherTest extends FunSuite {
   }
 
   test("client abort after dispatch") {
-    val req = Request()
-    val res = req.response
-    val service = Service.mk { _: Request =>
-      Future.value(res)
-    }
+    val req     = Request()
+    val res     = req.response
+    val service = Service.mk { _: Request => Future.value(res) }
 
     val (in, out) = mkPair[Any, Any]
-    val disp = new HttpServerDispatcher(out, service)
+    val disp      = new HttpServerDispatcher(out, service)
 
     req.response.setChunked(true)
     in.write(req.httpRequest)
@@ -108,13 +98,13 @@ class HttpServerDispatcherTest extends FunSuite {
 
 object HttpServerDispatcherTest {
   def mkPair[A, B] = {
-    val inQ = new AsyncQueue[A]
+    val inQ  = new AsyncQueue[A]
     val outQ = new AsyncQueue[B]
     (new QueueTransport[A, B](inQ, outQ), new QueueTransport[B, A](outQ, inQ))
   }
 
-  def wrap(msg: String) = ChannelBuffers.wrappedBuffer(msg.getBytes("UTF-8"))
-  def buf(msg: String) = ChannelBufferBuf.Owned(wrap(msg))
+  def wrap(msg: String)  = ChannelBuffers.wrappedBuffer(msg.getBytes("UTF-8"))
+  def buf(msg: String)   = ChannelBufferBuf.Owned(wrap(msg))
   def chunk(msg: String) = new DefaultHttpChunk(wrap(msg))
 
   def ok(reader: Reader): Future[Response] =

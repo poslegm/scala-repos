@@ -1,11 +1,19 @@
 package org.jetbrains.plugins.scala
 package debugger.ui
 
-import com.intellij.debugger.engine.evaluation.{EvaluateException, EvaluationContext, EvaluationContextImpl}
+import com.intellij.debugger.engine.evaluation.{
+  EvaluateException,
+  EvaluationContext,
+  EvaluationContextImpl
+}
 import com.intellij.debugger.engine.{DebugProcess, DebugProcessImpl}
 import com.intellij.debugger.ui.impl.watch.ValueDescriptorImpl
 import com.intellij.debugger.ui.tree.render._
-import com.intellij.debugger.ui.tree.{DebuggerTreeNode, NodeDescriptor, ValueDescriptor}
+import com.intellij.debugger.ui.tree.{
+  DebuggerTreeNode,
+  NodeDescriptor,
+  ValueDescriptor
+}
 import com.intellij.debugger.{DebuggerBundle, DebuggerContext}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
@@ -34,43 +42,53 @@ class RuntimeRefRenderer extends NodeRendererImpl {
     t.name().endsWith("Ref")
   }
 
-  override def buildChildren(value: Value,
-                             builder: ChildrenBuilder,
-                             context: EvaluationContext): Unit = {
+  override def buildChildren(
+      value: Value,
+      builder: ChildrenBuilder,
+      context: EvaluationContext
+  ): Unit = {
     val descr = unwrappedDescriptor(value, context.getProject)
     autoRenderer(context.getDebugProcess, descr)
       .buildChildren(descr.getValue, builder, context)
   }
 
-  override def isExpandable(value: Value,
-                            evaluationContext: EvaluationContext,
-                            parentDescriptor: NodeDescriptor): Boolean = {
-    val descr = unwrappedDescriptor(value, evaluationContext.getProject)
+  override def isExpandable(
+      value: Value,
+      evaluationContext: EvaluationContext,
+      parentDescriptor: NodeDescriptor
+  ): Boolean = {
+    val descr    = unwrappedDescriptor(value, evaluationContext.getProject)
     val renderer = autoRenderer(evaluationContext.getDebugProcess, descr)
     renderer.isExpandable(descr.getValue, evaluationContext, parentDescriptor)
   }
 
   override def getChildValueExpression(
-      node: DebuggerTreeNode, context: DebuggerContext): PsiElement = {
+      node: DebuggerTreeNode,
+      context: DebuggerContext
+  ): PsiElement = {
     val descr = unwrappedDescriptor(
-        node.getParent.asInstanceOf[ValueDescriptor].getValue,
-        context.getProject)
+      node.getParent.asInstanceOf[ValueDescriptor].getValue,
+      context.getProject
+    )
     val renderer = autoRenderer(context.getDebugProcess, descr)
     renderer.getChildValueExpression(node, context)
   }
 
-  override def calcLabel(descriptor: ValueDescriptor,
-                         evaluationContext: EvaluationContext,
-                         listener: DescriptorLabelListener): String = {
-    val unwrapped = unwrappedDescriptor(
-        descriptor.getValue, evaluationContext.getProject)
+  override def calcLabel(
+      descriptor: ValueDescriptor,
+      evaluationContext: EvaluationContext,
+      listener: DescriptorLabelListener
+  ): String = {
+    val unwrapped =
+      unwrappedDescriptor(descriptor.getValue, evaluationContext.getProject)
     autoRenderer(evaluationContext.getDebugProcess, unwrapped) match {
       case toStr: ToStringRenderer =>
         calcToStringLabel(
-            descriptor,
-            unwrapped.getValue,
-            evaluationContext.createEvaluationContext(unwrapped.getValue),
-            listener)
+          descriptor,
+          unwrapped.getValue,
+          evaluationContext.createEvaluationContext(unwrapped.getValue),
+          listener
+        )
       case r =>
         r.calcLabel(unwrapped, evaluationContext, listener)
     }
@@ -82,7 +100,9 @@ class RuntimeRefRenderer extends NodeRendererImpl {
   }
 
   private def autoRenderer(
-      debugProcess: DebugProcess, valueDescriptor: ValueDescriptor) = {
+      debugProcess: DebugProcess,
+      valueDescriptor: ValueDescriptor
+  ) = {
     debugProcess
       .asInstanceOf[DebugProcessImpl]
       .getAutoRenderer(valueDescriptor)
@@ -97,7 +117,8 @@ class RuntimeRefRenderer extends NodeRendererImpl {
       override def calcValueName(): String = "unwrapped"
 
       override def getDescriptorEvaluation(
-          context: DebuggerContext): PsiExpression = null
+          context: DebuggerContext
+      ): PsiExpression = null
     }
   }
 
@@ -114,7 +135,8 @@ class RuntimeRefRenderer extends NodeRendererImpl {
       valueDescriptor: ValueDescriptor,
       value: Value,
       evaluationContext: EvaluationContext,
-      labelListener: DescriptorLabelListener): String = {
+      labelListener: DescriptorLabelListener
+  ): String = {
     BatchEvaluator
       .getBatchEvaluator(evaluationContext.getDebugProcess)
       .invoke(new ToStringCommand(evaluationContext, value) {
@@ -127,8 +149,9 @@ class RuntimeRefRenderer extends NodeRendererImpl {
           val msg: String =
             if (value != null)
               message + " " + DebuggerBundle.message(
-                  "evaluation.error.cannot.evaluate.tostring",
-                  value.`type`.name)
+                "evaluation.error.cannot.evaluate.tostring",
+                value.`type`.name
+              )
             else message
           valueDescriptor.setValueLabelFailed(new EvaluateException(msg, null))
           labelListener.labelChanged()

@@ -85,7 +85,7 @@ object Utils {
   }
 
   def seedFromArray(length: Int, seed: Array[Int]): Array[Int] = {
-    val a = seedFromInt(length, 19650218)
+    val a        = seedFromInt(length, 19650218)
     val length_1 = length - 1
 
     var i = 1
@@ -128,7 +128,7 @@ object Utils {
   }
 
   def seedFromArray(length: Int, seed: Array[Long]): Array[Long] = {
-    val a = seedFromLong(length, 19650218)
+    val a        = seedFromLong(length, 19650218)
     val length_1 = length - 1
 
     var i = 1

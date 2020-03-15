@@ -24,7 +24,7 @@ class JavaRequestsSpec extends PlaySpecification with Mockito {
         FakeRequest().withHeaders("Content-type" -> "application/json")
       val javaRequest: Http.Request = new RequestImpl(requestHeader)
 
-      val ct = javaRequest.getHeader("Content-Type")
+      val ct      = javaRequest.getHeader("Content-Type")
       val headers = javaRequest.headers()
       ct must_== "application/json"
       headers.get("content-type") must_== Array(ct)
@@ -35,12 +35,12 @@ class JavaRequestsSpec extends PlaySpecification with Mockito {
     "create a request with a helper that can do cookies" in {
       import scala.collection.JavaConversions._
 
-      val cookie1 = Cookie("name1", "value1")
+      val cookie1                      = Cookie("name1", "value1")
       val requestHeader: RequestHeader = FakeRequest().withCookies(cookie1)
-      val javaRequest: Http.Request = new RequestImpl(requestHeader)
+      val javaRequest: Http.Request    = new RequestImpl(requestHeader)
 
       val iterator: Iterator[Http.Cookie] = javaRequest.cookies().iterator()
-      val cookieList = iterator.toList
+      val cookieList                      = iterator.toList
 
       cookieList.size must be equalTo 1
       cookieList(0).name must be equalTo "name1"
@@ -53,12 +53,14 @@ class JavaRequestsSpec extends PlaySpecification with Mockito {
       val cookie1 = Cookie("name1", "value1")
 
       val requestHeader: Request[Http.RequestBody] = Request[Http.RequestBody](
-          FakeRequest().withCookies(cookie1), new RequestBody())
+        FakeRequest().withCookies(cookie1),
+        new RequestBody()
+      )
       val javaContext: Context = JavaHelpers.createJavaContext(requestHeader)
-      val javaRequest = javaContext.request()
+      val javaRequest          = javaContext.request()
 
       val iterator: Iterator[Http.Cookie] = javaRequest.cookies().iterator()
-      val cookieList = iterator.toList
+      val cookieList                      = iterator.toList
 
       cookieList.size must be equalTo 1
       cookieList(0).name must be equalTo "name1"

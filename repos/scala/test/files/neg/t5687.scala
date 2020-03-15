@@ -1,14 +1,14 @@
 abstract class Template[T <: AnyRef](private val t: T) {
 
 //  type Repr[A<:AnyRef]<:Template[T]
-  type Repr [T] <: Template[T]
+  type Repr[T] <: Template[T]
 
   def access1(timeout: Int): Repr[T] = this.asInstanceOf[Repr[T]]
-  def access2: Repr[T] = this.asInstanceOf[Repr[T]]
-  val access3: Repr[T] = this.asInstanceOf[Repr[T]]
-  def access4(v: Repr[T]): Repr[T] = this.asInstanceOf[Repr[T]]
-  def access5(x: X): Repr[T] = this.asInstanceOf[Repr[T]]
-  def access5(x: Y): Repr[T] = this.asInstanceOf[Repr[T]]
+  def access2: Repr[T]               = this.asInstanceOf[Repr[T]]
+  val access3: Repr[T]               = this.asInstanceOf[Repr[T]]
+  def access4(v: Repr[T]): Repr[T]   = this.asInstanceOf[Repr[T]]
+  def access5(x: X): Repr[T]         = this.asInstanceOf[Repr[T]]
+  def access5(x: Y): Repr[T]         = this.asInstanceOf[Repr[T]]
 
   def withReadModifiers(readModifiers: Int): Repr[T] =
     this.asInstanceOf[Repr[T]]

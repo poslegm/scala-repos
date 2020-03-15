@@ -16,7 +16,9 @@ import scala.language.reflectiveCalls
 
 @RunWith(classOf[JUnitRunner])
 class ChannelTransportTest
-    extends FunSuite with MockitoSugar with OneInstancePerTest {
+    extends FunSuite
+    with MockitoSugar
+    with OneInstancePerTest {
 
   // For some reason, the scala compiler has a difficult time with
   // mockito's vararg-v-singlearg 'thenReturns'. We force the
@@ -24,9 +26,9 @@ class ChannelTransportTest
   def when[T](o: T) =
     Mockito
       .when(o)
-      .asInstanceOf[ { def thenReturn[T](s: T): OngoingStubbing[T] }]
+      .asInstanceOf[{ def thenReturn[T](s: T): OngoingStubbing[T] }]
 
-  val ch = mock[Channel]
+  val ch          = mock[Channel]
   val closeFuture = mock[ChannelFuture]
   when(ch.getCloseFuture).thenReturn(closeFuture)
   val remoteAddress = mock[SocketAddress]
@@ -34,14 +36,14 @@ class ChannelTransportTest
   when(ch.isReadable).thenReturn(true)
   when(ch.isOpen).thenReturn(true)
   val pipeline = new DefaultChannelPipeline
-  val sink = mock[ChannelSink]
+  val sink     = mock[ChannelSink]
   when(ch.getPipeline).thenReturn(pipeline)
   pipeline.attach(ch, sink)
   val trans = new ChannelTransport[String, String](ch)
 
   def sendUpstream(e: ChannelEvent) {
     val handler = pipeline.getLast.asInstanceOf[ChannelUpstreamHandler]
-    val ctx = mock[ChannelHandlerContext]
+    val ctx     = mock[ChannelHandlerContext]
     handler.handleUpstream(ctx, e)
   }
 
@@ -52,18 +54,20 @@ class ChannelTransportTest
       e
     })
 
-  def newProxyCtx() = new {
-    val f = trans.write("one")
-    assert(!f.isDefined)
-    val captor = ArgumentCaptor.forClass(classOf[ChannelEvent])
-    verify(sink, times(1)).eventSunk(Matchers.eq(pipeline), captor.capture)
-    assert(captor.getValue.getClass == classOf[DownstreamMessageEvent])
-    val dsme = captor.getValue.asInstanceOf[DownstreamMessageEvent]
-    assert(dsme.getMessage == "one")
-  }
+  def newProxyCtx() =
+    new {
+      val f = trans.write("one")
+      assert(!f.isDefined)
+      val captor = ArgumentCaptor.forClass(classOf[ChannelEvent])
+      verify(sink, times(1)).eventSunk(Matchers.eq(pipeline), captor.capture)
+      assert(captor.getValue.getClass == classOf[DownstreamMessageEvent])
+      val dsme = captor.getValue.asInstanceOf[DownstreamMessageEvent]
+      assert(dsme.getMessage == "one")
+    }
 
   test(
-      "write to the underlying channel, proxying the underlying ChannelFuture (ok)") {
+    "write to the underlying channel, proxying the underlying ChannelFuture (ok)"
+  ) {
     val ctx = newProxyCtx()
     import ctx._
 
@@ -72,7 +76,8 @@ class ChannelTransportTest
   }
 
   test(
-      "write to the underlying channel, proxying the underlying ChannelFuture (err)") {
+    "write to the underlying channel, proxying the underlying ChannelFuture (err)"
+  ) {
     val ctx = newProxyCtx()
     import ctx._
 
@@ -171,8 +176,8 @@ class ChannelTransportTest
   test("FIFO queue messages") {
     for (i <- 0 until 10) sendUpstreamMessage("message:%d".format(i))
 
-    for (i <- 0 until 10) assert(
-        Await.result(trans.read()) == "message:%d".format(i))
+    for (i <- 0 until 10)
+      assert(Await.result(trans.read()) == "message:%d".format(i))
 
     assert(!trans.read().isDefined)
   }
@@ -232,6 +237,7 @@ class ChannelTransportTest
     assert(f.poll == Some(Return("a")))
     assert(trans.read().poll == Some(Return("b")))
     assert(
-        trans.read().poll == Some(Throw(ChannelException(exc, remoteAddress))))
+      trans.read().poll == Some(Throw(ChannelException(exc, remoteAddress)))
+    )
   }
 }

@@ -12,7 +12,7 @@ import akka.http.impl.util.JavaMapping.Implicits._
 /**
   * Public API but not intended for subclassing
   */
-abstract class ConnectionPoolSettings private[akka]() {
+abstract class ConnectionPoolSettings private[akka] () {
   self: ConnectionPoolSettingsImpl ⇒
   def getMaxConnections: Int
   def getMaxRetries: Int
@@ -34,7 +34,8 @@ abstract class ConnectionPoolSettings private[akka]() {
   def withIdleTimeout(newValue: Duration): ConnectionPoolSettings =
     self.copy(idleTimeout = newValue)
   def withConnectionSettings(
-      newValue: ClientConnectionSettings): ConnectionPoolSettings =
+      newValue: ClientConnectionSettings
+  ): ConnectionPoolSettings =
     self.copy(connectionSettings = newValue.asScala)
 }
 

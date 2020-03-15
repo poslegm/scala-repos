@@ -4,7 +4,7 @@ import scala.tools.partest.ScaladocModelTest
 
 object Test extends ScaladocModelTest {
   override def scaladocSettings = ""
-  override def code = """
+  override def code             = """
 
   object Test {
     /** Here z(1) is defined as follows:

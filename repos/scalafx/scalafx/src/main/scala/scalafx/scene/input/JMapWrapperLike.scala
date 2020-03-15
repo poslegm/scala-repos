@@ -32,8 +32,11 @@ import java.{util => ju}
 import scala.collection.{Iterator, mutable}
 
 private[input] trait JMapWrapperLike[
-    A, B, +Repr <: mutable.MapLike[A, B, Repr] with mutable.Map[A, B]]
-    extends mutable.Map[A, B] with mutable.MapLike[A, B, Repr] {
+    A,
+    B,
+    +Repr <: mutable.MapLike[A, B, Repr] with mutable.Map[A, B]
+] extends mutable.Map[A, B]
+    with mutable.MapLike[A, B, Repr] {
 
   def underlying: ju.Map[A, B]
 
@@ -47,7 +50,7 @@ private[input] trait JMapWrapperLike[
   }
 
   def +=(kv: (A, B)): this.type = { underlying.put(kv._1, kv._2); this }
-  def -=(key: A): this.type = { underlying remove key; this }
+  def -=(key: A): this.type     = { underlying remove key; this }
 
   override def put(k: A, v: B): Option[B] = {
     val r = underlying.put(k, v)
@@ -62,11 +65,12 @@ private[input] trait JMapWrapperLike[
   }
 
   //  def iterator: Iterator[(A, B)] = new AbstractIterator[(A, B)] {
-  def iterator: Iterator[(A, B)] = new Iterator[(A, B)] {
-    val ui = underlying.entrySet.iterator
-    def hasNext = ui.hasNext
-    def next() = { val e = ui.next(); (e.getKey, e.getValue) }
-  }
+  def iterator: Iterator[(A, B)] =
+    new Iterator[(A, B)] {
+      val ui      = underlying.entrySet.iterator
+      def hasNext = ui.hasNext
+      def next()  = { val e = ui.next(); (e.getKey, e.getValue) }
+    }
 
   override def clear() = underlying.clear()
 

@@ -28,8 +28,8 @@ import org.apache.spark.sql.SQLContext
 
 object RegressionMetricsExample {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("RegressionMetricsExample")
-    val sc = new SparkContext(conf)
+    val conf       = new SparkConf().setAppName("RegressionMetricsExample")
+    val sc         = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     // $example on$
     // Load the data
@@ -39,7 +39,7 @@ object RegressionMetricsExample {
 
     // Build the model
     val numIterations = 100
-    val model = LinearRegressionWithSGD.train(data, numIterations)
+    val model         = LinearRegressionWithSGD.train(data, numIterations)
 
     // Get predictions
     val valuesAndPreds = data.map { point =>

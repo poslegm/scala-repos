@@ -12,8 +12,8 @@ class TracingTest extends FunSuite {
   import HttpTracing.{Header, stripParameters}
 
   lazy val flags = Flags().setDebug
-  lazy val traceId = TraceId(
-      Some(SpanId(1)), None, SpanId(2), Some(true), flags)
+  lazy val traceId =
+    TraceId(Some(SpanId(1)), None, SpanId(2), Some(true), flags)
 
   test("set header") {
     Trace.letId(traceId) {
@@ -21,13 +21,16 @@ class TracingTest extends FunSuite {
       val dummyService = new Service[Request, Response] {
         def apply(request: Request) = {
           assert(
-              request.headers.get(Header.TraceId) == traceId.traceId.toString)
+            request.headers.get(Header.TraceId) == traceId.traceId.toString
+          )
           assert(request.headers.get(Header.SpanId) == traceId.spanId.toString)
           assert(request.headers.contains(Header.ParentSpanId) == false)
           assert(
-              request.headers.get(Header.Sampled).toBoolean == traceId.sampled.get)
+            request.headers.get(Header.Sampled).toBoolean == traceId.sampled.get
+          )
           assert(
-              request.headers.get(Header.Flags).toLong == traceId.flags.toLong)
+            request.headers.get(Header.Flags).toLong == traceId.flags.toLong
+          )
 
           Future.value(Response())
         }
@@ -46,7 +49,9 @@ class TracingTest extends FunSuite {
     assert(stripped == "/1/lists/statuses.json")
 
     val invalid = stripParameters("\\")
-    assert(invalid == "\\") // request path doesn't throw exceptions if url is invalid
+    assert(
+      invalid == "\\"
+    ) // request path doesn't throw exceptions if url is invalid
   }
 
   test("parse header") {
@@ -59,7 +64,7 @@ class TracingTest extends FunSuite {
     }
 
     val filter = new HttpServerTracingFilter[Request, Response]("testservice")
-    val req = Request("/test.json")
+    val req    = Request("/test.json")
     req.headers.add(Header.TraceId, "0000000000000001")
     req.headers.add(Header.SpanId, "0000000000000002")
     req.headers.add(Header.Sampled, "true")
@@ -76,7 +81,7 @@ class TracingTest extends FunSuite {
     }
 
     val filter = new HttpServerTracingFilter[Request, Response]("testservice")
-    val req = Request("/test.json")
+    val req    = Request("/test.json")
     // push span id, but no trace id
     req.headers.add(Header.SpanId, "0000000000000002")
     filter(req, dummyService)
@@ -91,7 +96,7 @@ class TracingTest extends FunSuite {
     }
 
     val filter = new HttpServerTracingFilter[Request, Response]("testservice")
-    val req = Request("/test.json")
+    val req    = Request("/test.json")
     req.headers.add(Header.TraceId, "0000000000000001")
     req.headers.add(Header.SpanId, "0000000000000002")
     req.headers.add(Header.Flags, "these aren't the droids you're looking for")
@@ -107,7 +112,7 @@ class TracingTest extends FunSuite {
     }
 
     val filter = new HttpServerTracingFilter[Request, Response]("testservice")
-    val req = Request("/test.json")
+    val req    = Request("/test.json")
     req.headers.add(Header.TraceId, "0000000000000001")
     req.headers.add(Header.SpanId, "0000000000000002")
     filter(req, dummyService)

@@ -41,33 +41,41 @@ import scalafx.stage.Stage
 object JFXApp {
 
   var Stage: jfxs.Stage = null
-  @deprecated("Prefer Scala naming convention over Java, use `Stage` instead.",
-              "8.0.60-R10")
+  @deprecated(
+    "Prefer Scala naming convention over Java, use `Stage` instead.",
+    "8.0.60-R10"
+  )
   def STAGE: jfxs.Stage = Stage
-  @deprecated("Prefer Scala naming convention over Java, use `Stage` instead.",
-              "8.0.60-R10")
+  @deprecated(
+    "Prefer Scala naming convention over Java, use `Stage` instead.",
+    "8.0.60-R10"
+  )
   def STAGE_=(stage: jfxs.Stage): Unit = Stage = stage
 
   var ActiveApp: JFXApp = null
   @deprecated(
-      "Prefer Scala naming convention over Java, use `ActiveApp` instead.",
-      "8.0.60-R10")
+    "Prefer Scala naming convention over Java, use `ActiveApp` instead.",
+    "8.0.60-R10"
+  )
   def ACTIVE_APP: JFXApp = ActiveApp
   @deprecated(
-      "Prefer Scala naming convention over Java, use `ActiveApp` instead.",
-      "8.0.60-R10")
+    "Prefer Scala naming convention over Java, use `ActiveApp` instead.",
+    "8.0.60-R10"
+  )
   def ACTIVE_APP_=(app: JFXApp): Unit = ActiveApp = app
 
   private[application] var ActiveJFXApp: jfxa.Application = null
 
   var AutoShow: Boolean = true
   @deprecated(
-      "Prefer Scala naming convention over Java, use `AutoShow` instead.",
-      "8.0.60-R10")
+    "Prefer Scala naming convention over Java, use `AutoShow` instead.",
+    "8.0.60-R10"
+  )
   def AUTO_SHOW: Boolean = true
   @deprecated(
-      "Prefer Scala naming convention over Java, use `AutoShow` instead.",
-      "8.0.60-R10")
+    "Prefer Scala naming convention over Java, use `AutoShow` instead.",
+    "8.0.60-R10"
+  )
   def AUTO_SHOW_=(autoShow: Boolean) = AutoShow = true
 
   /**
@@ -118,17 +126,17 @@ object JFXApp {
     private var namedArguments: mutable.Map[String, String] =
       mutable.Map.empty[String, String]
     private var unnamedArguments = Buffer.empty[String]
-    private var filled = false
+    private var filled           = false
 
     private def parseArguments() {
       if (!filled) {
-        arguments.foreach(
-            arg =>
-              keyValue.findFirstMatchIn(arg) match {
+        arguments.foreach(arg =>
+          keyValue.findFirstMatchIn(arg) match {
             case None => unnamedArguments += arg
             case Some(matcher) =>
               namedArguments(matcher.group(1)) = matcher.group(2)
-        })
+          }
+        )
         filled = true
       }
     }
@@ -146,8 +154,8 @@ object JFXApp {
     }
 
     lazy val delegate = new jfxa.Application.Parameters {
-      def getRaw = raw
-      def getNamed = named
+      def getRaw     = raw
+      def getNamed   = named
       def getUnnamed = unnamed
     }
   }
@@ -183,12 +191,12 @@ object JFXApp {
     * Empty parameters for an application
     */
   private[application] object EmptyParameters extends Parameters {
-    def raw = Seq.empty[String]
-    def named = Map.empty[String, String]
+    def raw     = Seq.empty[String]
+    def named   = Map.empty[String, String]
     def unnamed = Seq.empty[String]
     lazy val delegate = new jfxa.Application.Parameters {
-      def getRaw = raw
-      def getNamed = named
+      def getRaw     = raw
+      def getNamed   = named
       def getUnnamed = unnamed
     }
   }
@@ -308,8 +316,7 @@ trait JFXApp extends DelayedInit {
     for (initCode <- subClassInitCode) initCode()
 
   def hostServices: HostServices =
-    ApplicationIncludes.jfxHostServices2sfx(
-        JFXApp.ActiveJFXApp.getHostServices)
+    ApplicationIncludes.jfxHostServices2sfx(JFXApp.ActiveJFXApp.getHostServices)
 
   /**
     * This method is called when the application should stop, and provides a convenient place to prepare

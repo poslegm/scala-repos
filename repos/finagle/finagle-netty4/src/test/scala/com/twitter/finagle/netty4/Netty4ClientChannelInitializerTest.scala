@@ -21,35 +21,37 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class Netty4ClientChannelInitializerTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   val timeout = Duration.fromSeconds(15)
 
   private[this] trait Ctx {
-    val frameSize = 4
-    val data = "hello world"
+    val frameSize             = 4
+    val data                  = "hello world"
     val client: SocketChannel = new NioSocketChannel()
-    val loop = new NioEventLoopGroup()
+    val loop                  = new NioEventLoopGroup()
     loop.register(client)
     val enc = Buf.Utf8(_)
     def dec =
       new FixedLengthDecoder(frameSize, Buf.Utf8.unapply(_).getOrElse("????"))
     def customHandlers: Seq[ChannelHandler] = Nil
-    def params = Params.empty
+    def params                              = Params.empty
 
     var channelInit: Netty4ClientChannelInitializer[String, String] = null
 
-    var server: ServerSocket = null
-    var acceptedSocket: Socket = null
+    var server: ServerSocket                           = null
+    var acceptedSocket: Socket                         = null
     var clientsideTransport: Transport[String, String] = null
-    val transportP = new Promise[Transport[String, String]]
+    val transportP                                     = new Promise[Transport[String, String]]
 
     def initChannel() = {
       channelInit = new Netty4ClientChannelInitializer(
-          transportP,
-          params,
-          Some(enc),
-          Some(() => dec)
+        transportP,
+        params,
+        Some(enc),
+        Some(() => dec)
       )
       server = new ServerSocket(0, 50, InetAddress.getLoopbackAddress)
       channelInit.initChannel(client)
@@ -59,8 +61,10 @@ class Netty4ClientChannelInitializerTest
 
       client
         .connect(
-            new InetSocketAddress(InetAddress.getLoopbackAddress,
-                                  server.getLocalPort)
+          new InetSocketAddress(
+            InetAddress.getLoopbackAddress,
+            server.getLocalPort
+          )
         )
         .awaitUninterruptibly(timeout.inMilliseconds)
 
@@ -81,16 +85,16 @@ class Netty4ClientChannelInitializerTest
 
       // one server message produces two client transport messages
       assert(
-          Await.result(clientsideTransport.read(), timeout) == data
-            .take(frameSize)
-            .mkString
-        )
+        Await.result(clientsideTransport.read(), timeout) == data
+          .take(frameSize)
+          .mkString
+      )
       assert(
-          Await.result(clientsideTransport.read(), timeout) == data
-            .drop(frameSize)
-            .take(frameSize)
-            .mkString
-        )
+        Await.result(clientsideTransport.read(), timeout) == data
+          .drop(frameSize)
+          .take(frameSize)
+          .mkString
+      )
 
       server.close()
     }
@@ -104,7 +108,7 @@ class Netty4ClientChannelInitializerTest
       Await.ready(clientsideTransport.write(data), timeout)
 
       val bytes = new Array[Byte](data.length)
-      val is = acceptedSocket.getInputStream
+      val is    = acceptedSocket.getInputStream
       is.read(bytes, 0, bytes.length)
       assert(new String(bytes) == data)
 
@@ -117,7 +121,9 @@ class Netty4ClientChannelInitializerTest
     @volatile var observedExn: Throwable = null
     val exnSnooper = new ChannelInboundHandlerAdapter {
       override def exceptionCaught(
-          ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+          ctx: ChannelHandlerContext,
+          cause: Throwable
+      ): Unit = {
         observedExn = cause
         super.exceptionCaught(ctx, cause)
       }
@@ -125,7 +131,7 @@ class Netty4ClientChannelInitializerTest
     new Ctx {
       override def params =
         Params.empty +
-        Transport.Liveness(readTimeout = 1.millisecond, Duration.Top, None)
+          Transport.Liveness(readTimeout = 1.millisecond, Duration.Top, None)
 
       initChannel()
       client.pipeline.addLast(exnSnooper)
@@ -141,23 +147,27 @@ class Netty4ClientChannelInitializerTest
     @volatile var observedExn: Throwable = null
     val exnSnooper = new ChannelInboundHandlerAdapter {
       override def exceptionCaught(
-          ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+          ctx: ChannelHandlerContext,
+          cause: Throwable
+      ): Unit = {
         observedExn = cause
         super.exceptionCaught(ctx, cause)
       }
     }
 
     val writeSwallower = new ChannelOutboundHandlerAdapter {
-      override def write(ctx: ChannelHandlerContext,
-                         msg: scala.Any,
-                         promise: ChannelPromise): Unit =
+      override def write(
+          ctx: ChannelHandlerContext,
+          msg: scala.Any,
+          promise: ChannelPromise
+      ): Unit =
         ()
     }
 
     new Ctx {
       override def params =
         Params.empty +
-        Transport.Liveness(Duration.Top, writeTimeout = 1.millisecond, None)
+          Transport.Liveness(Duration.Top, writeTimeout = 1.millisecond, None)
 
       initChannel()
       client.pipeline.addLast(exnSnooper)
@@ -180,22 +190,24 @@ class Netty4ClientChannelInitializerTest
 
     val transportP = new Promise[Transport[Int, String]]
     val channelInit = new Netty4ClientChannelInitializer[Int, String](
-        transportP,
-        Params.empty,
-        Some(enc),
-        Some(() => decoder)
+      transportP,
+      Params.empty,
+      Some(enc),
+      Some(() => decoder)
     )
 
     channelInit.initChannel(ctx.client)
     val server = new ServerSocket(0, 50, InetAddress.getLoopbackAddress)
     ctx.client
       .connect(
-          new InetSocketAddress(InetAddress.getLoopbackAddress,
-                                server.getLocalPort)
+        new InetSocketAddress(
+          InetAddress.getLoopbackAddress,
+          server.getLocalPort
+        )
       )
       .awaitUninterruptibly(timeout.inMilliseconds)
 
-    val acceptedSocket = server.accept()
+    val acceptedSocket                    = server.accept()
     val transport: Transport[Int, String] = Await.result(transportP, timeout)
     transport.write(123)
     val serverInputStream = acceptedSocket.getInputStream
@@ -210,34 +222,42 @@ class Netty4ClientChannelInitializerTest
   test("raw channel initializer exposes netty pipeline") {
     val p = new Promise[Transport[ByteBuf, ByteBuf]]
     val reverser = new ChannelOutboundHandlerAdapter {
-      override def write(ctx: ChannelHandlerContext,
-                         msg: scala.Any,
-                         promise: ChannelPromise): Unit = msg match {
-        case b: ByteBuf =>
-          val bytes = new Array[Byte](b.readableBytes)
-          b.readBytes(bytes)
-          val reversed = Unpooled.wrappedBuffer(bytes.reverse)
-          super.write(ctx, reversed, promise)
-        case _ => fail("expected ByteBuf message")
-      }
+      override def write(
+          ctx: ChannelHandlerContext,
+          msg: scala.Any,
+          promise: ChannelPromise
+      ): Unit =
+        msg match {
+          case b: ByteBuf =>
+            val bytes = new Array[Byte](b.readableBytes)
+            b.readBytes(bytes)
+            val reversed = Unpooled.wrappedBuffer(bytes.reverse)
+            super.write(ctx, reversed, promise)
+          case _ => fail("expected ByteBuf message")
+        }
     }
     val init = new RawNetty4ClientChannelInitializer[ByteBuf, ByteBuf](
-        p, Params.empty, _.addLast(reverser))
+      p,
+      Params.empty,
+      _.addLast(reverser)
+    )
 
     val channel: SocketChannel = new NioSocketChannel()
-    val loop = new NioEventLoopGroup()
+    val loop                   = new NioEventLoopGroup()
     loop.register(channel)
     init.initChannel(channel)
 
     val msgSeen = new Promise[ByteBuf]
-    channel.pipeline.addFirst(
-        new ChannelOutboundHandlerAdapter {
-      override def write(ctx: ChannelHandlerContext,
-                         msg: scala.Any,
-                         promise: ChannelPromise): Unit = msg match {
-        case b: ByteBuf => msgSeen.setValue(b)
-        case _ => fail("expected ByteBuf message")
-      }
+    channel.pipeline.addFirst(new ChannelOutboundHandlerAdapter {
+      override def write(
+          ctx: ChannelHandlerContext,
+          msg: scala.Any,
+          promise: ChannelPromise
+      ): Unit =
+        msg match {
+          case b: ByteBuf => msgSeen.setValue(b)
+          case _          => fail("expected ByteBuf message")
+        }
     })
     val bytes = Array(1.toByte, 2.toByte, 3.toByte)
     channel.write(Unpooled.wrappedBuffer(bytes))

@@ -10,15 +10,13 @@ class RecipeLoggingElements extends RecipeSpec {
   "Simple logging recipe" must {
 
     "work with println" in {
-      val printProbe = TestProbe()
+      val printProbe               = TestProbe()
       def println(s: String): Unit = printProbe.ref ! s
 
       val mySource = Source(List("1", "2", "3"))
 
       //#println-debug
-      val loggedSource = mySource.map { elem =>
-        println(elem); elem
-      }
+      val loggedSource = mySource.map { elem => println(elem); elem }
       //#println-debug
 
       loggedSource.runWith(Sink.ignore)
@@ -26,7 +24,7 @@ class RecipeLoggingElements extends RecipeSpec {
     }
 
     "use log()" in {
-      val mySource = Source(List("1", "2", "3"))
+      val mySource           = Source(List("1", "2", "3"))
       def analyse(s: String) = s
 
       //#log-custom

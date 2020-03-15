@@ -1,7 +1,7 @@
 object Test {
   class C
   class A {
-    val foo: C = new C
+    val foo: C              = new C
     def foo(x: Int): String = ""
   }
 

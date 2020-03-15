@@ -8,7 +8,7 @@ object Test extends App {
     List[String]("")
   }
   println(thiss.eval)
-  val tb = cm.mkToolBox()
+  val tb     = cm.mkToolBox()
   val tthiss = tb.typecheck(thiss.tree)
   println(tthiss)
   println(showRaw(tthiss))

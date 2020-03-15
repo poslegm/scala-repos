@@ -17,11 +17,13 @@ import scala.concurrent.{Await, Awaitable}
 /**
   * Result of an REST operation.
   */
-case class RestResult[
-    +T](valueGetter: () => T, originalResponse: HttpResponse) {
-  def code: Int = originalResponse.status.intValue
+case class RestResult[+T](
+    valueGetter: () => T,
+    originalResponse: HttpResponse
+) {
+  def code: Int        = originalResponse.status.intValue
   def success: Boolean = code == 200
-  lazy val value: T = valueGetter()
+  lazy val value: T    = valueGetter()
 
   /** Transform the value of this result. */
   def map[R](change: T => R): RestResult[R] = {
@@ -43,8 +45,10 @@ object RestResult {
     new RestResult[HttpResponse](() => response, response)
   }
 
-  def await(responseFuture: Awaitable[HttpResponse],
-            waitTime: Duration): RestResult[HttpResponse] = {
+  def await(
+      responseFuture: Awaitable[HttpResponse],
+      waitTime: Duration
+  ): RestResult[HttpResponse] = {
     apply(Await.result(responseFuture, waitTime))
   }
 }
@@ -70,7 +74,7 @@ case class CallbackEvent(eventType: String, info: Map[String, Any])
   * Callback
   */
 @Path("callback")
-class CallbackEventHandler @Inject()() {
+class CallbackEventHandler @Inject() () {
 
   private[this] val log = LoggerFactory.getLogger(getClass.getName)
 
@@ -90,20 +94,24 @@ class CallbackEventHandler @Inject()() {
 }
 
 @Path("health")
-class ApplicationHealthCheck @Inject()() {
+class ApplicationHealthCheck @Inject() () {
 
   @GET
   @Path("{appId:.+}/{versionId}/{port}")
-  def isApplicationHealthy(@PathParam("appId") path: String,
-                           @PathParam("versionId") versionId: String,
-                           @PathParam("port") port: Int): Response = {
+  def isApplicationHealthy(
+      @PathParam("appId") path: String,
+      @PathParam("versionId") versionId: String,
+      @PathParam("port") port: Int
+  ): Response = {
     val appId = path.toRootPath
-    def instance = ExternalMarathonIntegrationTest.healthChecks.find { c =>
-      c.appId == appId && c.versionId == versionId && c.port == port
-    }
-    def definition = ExternalMarathonIntegrationTest.healthChecks.find { c =>
-      c.appId == appId && c.versionId == versionId && c.port == 0
-    }
+    def instance =
+      ExternalMarathonIntegrationTest.healthChecks.find { c =>
+        c.appId == appId && c.versionId == versionId && c.port == port
+      }
+    def definition =
+      ExternalMarathonIntegrationTest.healthChecks.find { c =>
+        c.appId == appId && c.versionId == versionId && c.port == 0
+      }
     val state = instance.orElse(definition).fold(true)(_.healthy)
     if (state) Response.ok().build() else Response.serverError().build()
   }

@@ -32,7 +32,7 @@ private case class Render(js: JsCmd)
   *  - The `CanBind` implicits in the `net.liftweb.http` package that allow using
   *    `LAFuture` and Scala `Future` objects as the right-hand-side of a CSS
   *    selector binding.
-  * 
+  *
   * None of these requires explicit use of `buildDeferredFunction`.
   */
 class AsyncRenderComet extends MessageCometActor {
@@ -60,12 +60,12 @@ class AsyncRenderComet extends MessageCometActor {
 object AsyncRenderComet {
   private object pageAsyncRenderer
       extends TransientRequestVar[Box[AsyncRenderComet]](
-          S.findOrCreateComet[AsyncRenderComet](
-              cometName = Full(s"lazy-${S.renderVersion}"),
-              cometHtml = NodeSeq.Empty,
-              cometAttributes = Map.empty,
-              receiveUpdatesOnPage = true
-          )
+        S.findOrCreateComet[AsyncRenderComet](
+          cometName = Full(s"lazy-${S.renderVersion}"),
+          cometHtml = NodeSeq.Empty,
+          cometAttributes = Map.empty,
+          receiveUpdatesOnPage = true
+        )
       )
 
   /**
@@ -96,7 +96,9 @@ object AsyncRenderComet {
     * asynchronous renderer.
     */
   def completeAsyncRender(command: JsCmd): Box[Unit] = {
-    pageAsyncRenderer.is.map(_ ! Render(command)) ?~! "Failed to create async renderer."
+    pageAsyncRenderer.is.map(
+      _ ! Render(command)
+    ) ?~! "Failed to create async renderer."
   }
 
   /**
@@ -109,7 +111,7 @@ object AsyncRenderComet {
     */
   def asyncRender(renderFunction: () => JsCmd): Box[Unit] = {
     for {
-      session <- S.session ?~ "Asynchronous rendering requires a session context."
+      session  <- S.session ?~ "Asynchronous rendering requires a session context."
       renderer <- pageAsyncRenderer.is ?~! "Failed to create async renderer."
     } yield {
       renderer ! Compute(session.buildDeferredFunction(renderFunction))

@@ -40,18 +40,19 @@ object Args {
   def apply(args: Iterable[String]): Args = {
     def startingDashes(word: String) = word.takeWhile { _ == '-' }.length
     new Args(
-        //Fold into a list of (arg -> List[values])
-        args.filter { a =>
-      !a.matches("\\s*")
-    }.foldLeft(List("" -> List[String]())) { (acc, arg) =>
-        val noDashes = arg.dropWhile { _ == '-' }
-        if (arg == noDashes || isNumber(arg))
-          (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
-        else (noDashes -> List()) :: acc
-      }
-          //Now reverse the values to keep the same order
-          .map { case (key, value) => key -> value.reverse }
-          .toMap)
+      //Fold into a list of (arg -> List[values])
+      args
+        .filter { a => !a.matches("\\s*") }
+        .foldLeft(List("" -> List[String]())) { (acc, arg) =>
+          val noDashes = arg.dropWhile { _ == '-' }
+          if (arg == noDashes || isNumber(arg))
+            (acc.head._1 -> (arg :: acc.head._2)) :: acc.tail
+          else (noDashes -> List()) :: acc
+        }
+        //Now reverse the values to keep the same order
+        .map { case (key, value) => key -> value.reverse }
+        .toMap
+    )
   }
 
   def isNumber(arg: String): Boolean = {
@@ -96,12 +97,14 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
   /**
     * return required positional value.
     */
-  def required(position: Int): String = positional match {
-    case l if l.size > position => l(position)
-    case _ =>
-      throw ArgsException(
-          "Please provide " + (position + 1) + " positional arguments")
-  }
+  def required(position: Int): String =
+    positional match {
+      case l if l.size > position => l(position)
+      case _ =>
+        throw ArgsException(
+          "Please provide " + (position + 1) + " positional arguments"
+        )
+    }
 
   /**
     * This is a synonym for required
@@ -128,16 +131,17 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
     * return exactly one value for a given key.
     * If there is more than one value, you get an exception
     */
-  def required(key: String): String = list(key) match {
-    case List() => throw ArgsException("Please provide a value for --" + key)
-    case List(a) => a
-    case _ =>
-      throw ArgsException("Please only provide a single value for --" + key)
-  }
+  def required(key: String): String =
+    list(key) match {
+      case List()  => throw ArgsException("Please provide a value for --" + key)
+      case List(a) => a
+      case _ =>
+        throw ArgsException("Please only provide a single value for --" + key)
+    }
 
   def toList: List[String] = {
     m.foldLeft(List[String]()) { (args, kvlist) =>
-      val k = kvlist._1
+      val k      = kvlist._1
       val values = kvlist._2
       if (k != "") {
         //Make sure positional args are first
@@ -156,10 +160,11 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
   def restrictTo(acceptedArgs: Set[String]): Unit = {
     val invalidArgs =
       m.keySet.filter(!_.startsWith("scalding.")) --
-      (acceptedArgs + "" + "tool.graph" + "hdfs" + "local")
+        (acceptedArgs + "" + "tool.graph" + "hdfs" + "local")
     if (!invalidArgs.isEmpty)
       throw ArgsException(
-          "Invalid args: " + invalidArgs.map("--" + _).mkString(", "))
+        "Invalid args: " + invalidArgs.map("--" + _).mkString(", ")
+      )
   }
 
   // TODO: if there are spaces in the keys or values, this will not round-trip
@@ -169,26 +174,30 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
     * If there is zero or one element, return it as an Option.
     * If there is a list of more than one item, you get an error
     */
-  def optional(key: String): Option[String] = list(key) match {
-    case List() => None
-    case List(a) => Some(a)
-    case _ =>
-      throw ArgsException("Please provide at most one value for --" + key)
-  }
+  def optional(key: String): Option[String] =
+    list(key) match {
+      case List()  => None
+      case List(a) => Some(a)
+      case _ =>
+        throw ArgsException("Please provide at most one value for --" + key)
+    }
 
   def int(key: String, default: Int): Int = {
     optional(key)
       .map(value =>
-            try value.toInt catch {
+        try value.toInt
+        catch {
           case NonFatal(_) =>
             throw ArgsException(s"Invalid value ${value} for -- ${key}")
-      })
+        }
+      )
       .getOrElse(default)
   }
 
   def int(key: String): Int = {
     val value = required(key)
-    try value.toInt catch {
+    try value.toInt
+    catch {
       case NonFatal(_) =>
         throw ArgsException(s"Invalid value ${value} for -- ${key}")
     }
@@ -197,16 +206,19 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
   def long(key: String, default: Long): Long = {
     optional(key)
       .map(value =>
-            try value.toLong catch {
+        try value.toLong
+        catch {
           case NonFatal(_) =>
             throw ArgsException(s"Invalid value ${value} for -- ${key}")
-      })
+        }
+      )
       .getOrElse(default)
   }
 
   def long(key: String): Long = {
     val value = required(key)
-    try value.toLong catch {
+    try value.toLong
+    catch {
       case NonFatal(_) =>
         throw ArgsException(s"Invalid value ${value} for -- ${key}")
     }
@@ -215,16 +227,19 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
   def float(key: String, default: Float): Float = {
     optional(key)
       .map(value =>
-            try value.toFloat catch {
+        try value.toFloat
+        catch {
           case NonFatal(_) =>
             throw ArgsException(s"Invalid value ${value} for -- ${key}")
-      })
+        }
+      )
       .getOrElse(default)
   }
 
   def float(key: String): Float = {
     val value = required(key)
-    try value.toFloat catch {
+    try value.toFloat
+    catch {
       case NonFatal(_) =>
         throw ArgsException(s"Invalid value ${value} for -- ${key}")
     }
@@ -233,16 +248,19 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
   def double(key: String, default: Double): Double = {
     optional(key)
       .map(value =>
-            try value.toDouble catch {
+        try value.toDouble
+        catch {
           case NonFatal(_) =>
             throw ArgsException(s"Invalid value ${value} for -- ${key}")
-      })
+        }
+      )
       .getOrElse(default)
   }
 
   def double(key: String): Double = {
     val value = required(key)
-    try value.toDouble catch {
+    try value.toDouble
+    catch {
       case NonFatal(_) =>
         throw ArgsException(s"Invalid value ${value} for -- ${key}")
     }

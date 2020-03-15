@@ -7,16 +7,18 @@ class Plugin(val global: Global) extends NscPlugin {
   import global._
   import analyzer._
 
-  val name = "macroArgs"
+  val name        = "macroArgs"
   val description = "A sample analyzer plugin that overrides macroArgs."
-  val components = Nil
+  val components  = Nil
   addMacroPlugin(MacroPlugin)
 
   object MacroPlugin extends MacroPlugin {
     override def pluginsMacroArgs(
-        typer: Typer, expandee: Tree): Option[MacroArgs] = {
-      val MacroArgs(c, List(Literal(Constant(s: String)))) = standardMacroArgs(
-          typer, expandee)
+        typer: Typer,
+        expandee: Tree
+    ): Option[MacroArgs] = {
+      val MacroArgs(c, List(Literal(Constant(s: String)))) =
+        standardMacroArgs(typer, expandee)
       Some(MacroArgs(c, List(Literal(Constant("hijacked " + s)))))
     }
   }

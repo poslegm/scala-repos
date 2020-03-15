@@ -17,8 +17,16 @@ import akka.stream._
 import akka.stream.scaladsl._
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers
-import akka.http.scaladsl.model.{IllegalResponseException, HttpRequest, HttpResponse, ResponseEntity}
-import akka.http.impl.engine.rendering.{RequestRenderingContext, HttpRequestRendererFactory}
+import akka.http.scaladsl.model.{
+  IllegalResponseException,
+  HttpRequest,
+  HttpResponse,
+  ResponseEntity
+}
+import akka.http.impl.engine.rendering.{
+  RequestRenderingContext,
+  HttpRequestRendererFactory
+}
 import akka.http.impl.engine.parsing._
 import akka.http.impl.util._
 import akka.stream.stage.GraphStage
@@ -49,9 +57,11 @@ private[http] object OutgoingConnectionBlueprint {
                                   |  Merge     |<------------------------------------------ V
                                   +------------+
    */
-  def apply(hostHeader: headers.Host,
-            settings: ClientConnectionSettings,
-            log: LoggingAdapter): Http.ClientLayer = {
+  def apply(
+      hostHeader: headers.Host,
+      settings: ClientConnectionSettings,
+      log: LoggingAdapter
+  ): Http.ClientLayer = {
     import settings._
 
     val core =
@@ -73,11 +83,13 @@ private[http] object OutgoingConnectionBlueprint {
 
         val terminationMerge = b.add(TerminationMerge)
 
-        val requestRendering: Flow[RequestRenderingContext,
-                                   ByteString,
-                                   NotUsed] = {
+        val requestRendering
+            : Flow[RequestRenderingContext, ByteString, NotUsed] = {
           val requestRendererFactory = new HttpRequestRendererFactory(
-              userAgentHeader, requestHeaderSizeHint, log)
+            userAgentHeader,
+            requestHeaderSizeHint,
+            log
+          )
           Flow[RequestRenderingContext]
             .flatMapConcat(requestRendererFactory.renderToSource)
             .named("renderer")
@@ -86,8 +98,9 @@ private[http] object OutgoingConnectionBlueprint {
         val bypass =
           Flow[RequestRenderingContext] map { ctx ⇒
             HttpResponseParser.ResponseContext(
-                ctx.request.method,
-                ctx.sendEntityTrigger.map(_.asInstanceOf[Promise[Unit]]))
+              ctx.request.method,
+              ctx.sendEntityTrigger.map(_.asInstanceOf[Promise[Unit]])
+            )
           }
 
         val responseParsingMerge =
@@ -95,13 +108,16 @@ private[http] object OutgoingConnectionBlueprint {
             // the initial header parser we initially use for every connection,
             // will not be mutated, all "shared copy" parsers copy on first-write into the header cache
             val rootParser = new HttpResponseParser(
-                parserSettings, HttpHeaderParser(parserSettings) { info ⇒
-              if (parserSettings.illegalHeaderWarnings)
-                logParsingError(
+              parserSettings,
+              HttpHeaderParser(parserSettings) { info ⇒
+                if (parserSettings.illegalHeaderWarnings)
+                  logParsingError(
                     info withSummaryPrepended "Illegal response header",
                     log,
-                    parserSettings.errorLoggingVerbosity)
-            })
+                    parserSettings.errorLoggingVerbosity
+                  )
+              }
+            )
             new ResponseParsingMerge(rootParser)
           }
 
@@ -129,10 +145,12 @@ private[http] object OutgoingConnectionBlueprint {
         responseParsingMerge.out ~> responsePrep ~> terminationFanout.in
         terminationFanout.out(0) ~> terminationMerge.in1
 
-        BidiShape(renderingContextCreation.in,
-                  wrapTls.out,
-                  collectSessionBytes.in,
-                  terminationFanout.out(1))
+        BidiShape(
+          renderingContextCreation.in,
+          wrapTls.out,
+          collectSessionBytes.in,
+          terminationFanout.out(1)
+        )
       })
 
     One2OneBidiFlow[HttpRequest, HttpResponse](-1) atop core
@@ -141,12 +159,14 @@ private[http] object OutgoingConnectionBlueprint {
   // a simple merge stage that simply forwards its first input and ignores its second input
   // (the terminationBackchannelInput), but applies a special completion handling
   private object TerminationMerge
-      extends GraphStage[FanInShape2[RequestRenderingContext,
-                                     HttpResponse,
-                                     RequestRenderingContext]] {
-    private val requests = Inlet[RequestRenderingContext]("requests")
+      extends GraphStage[FanInShape2[
+        RequestRenderingContext,
+        HttpResponse,
+        RequestRenderingContext
+      ]] {
+    private val requests  = Inlet[RequestRenderingContext]("requests")
     private val responses = Inlet[HttpResponse]("responses")
-    private val out = Outlet[RequestRenderingContext]("out")
+    private val out       = Outlet[RequestRenderingContext]("out")
 
     override def initialAttributes = Attributes.name("TerminationMerge")
 
@@ -157,9 +177,12 @@ private[http] object OutgoingConnectionBlueprint {
         passAlong(requests, out, doFinish = false, doFail = true)
         setHandler(out, eagerTerminateOutput)
 
-        setHandler(responses, new InHandler {
-          override def onPush(): Unit = pull(responses)
-        })
+        setHandler(
+          responses,
+          new InHandler {
+            override def onPush(): Unit = pull(responses)
+          }
+        )
 
         override def preStart(): Unit = {
           pull(requests)
@@ -181,7 +204,7 @@ private[http] object OutgoingConnectionBlueprint {
   private[client] final class PrepareResponse(parserSettings: ParserSettings)
       extends GraphStage[FlowShape[ResponseOutput, HttpResponse]] {
 
-    private val in = Inlet[ResponseOutput]("PrepareResponse.in")
+    private val in  = Inlet[ResponseOutput]("PrepareResponse.in")
     private val out = Outlet[HttpResponse]("PrepareResponse.out")
 
     val shape = new FlowShape(in, out)
@@ -189,9 +212,9 @@ private[http] object OutgoingConnectionBlueprint {
     override def createLogic(effectiveAttributes: Attributes) =
       new GraphStageLogic(shape) with InHandler with OutHandler {
         private var entitySource: SubSourceOutlet[ResponseOutput] = _
-        private def entitySubstreamStarted = entitySource ne null
-        private def idle = this
-        private var completionDeferred = false
+        private def entitySubstreamStarted                        = entitySource ne null
+        private def idle                                          = this
+        private var completionDeferred                            = false
 
         def setIdleHandlers(): Unit = {
           if (completionDeferred) {
@@ -202,21 +225,30 @@ private[http] object OutgoingConnectionBlueprint {
           }
         }
 
-        def onPush(): Unit = grab(in) match {
-          case ResponseStart(
-              statusCode, protocol, headers, entityCreator, closeRequested) ⇒
-            val entity =
-              createEntity(entityCreator) withSizeLimit parserSettings.maxContentLength
-            push(out, HttpResponse(statusCode, headers, entity, protocol))
-            if (closeRequested) completeStage()
+        def onPush(): Unit =
+          grab(in) match {
+            case ResponseStart(
+                  statusCode,
+                  protocol,
+                  headers,
+                  entityCreator,
+                  closeRequested
+                ) ⇒
+              val entity =
+                createEntity(
+                  entityCreator
+                ) withSizeLimit parserSettings.maxContentLength
+              push(out, HttpResponse(statusCode, headers, entity, protocol))
+              if (closeRequested) completeStage()
 
-          case MessageStartError(_, info) ⇒
-            throw IllegalResponseException(info)
+            case MessageStartError(_, info) ⇒
+              throw IllegalResponseException(info)
 
-          case other ⇒
-            throw new IllegalStateException(
-                s"ResponseStart expected but $other received.")
-        }
+            case other ⇒
+              throw new IllegalStateException(
+                s"ResponseStart expected but $other received."
+              )
+          }
 
         def onPull(): Unit = {
           if (!entitySubstreamStarted) pull(in)
@@ -237,14 +269,16 @@ private[http] object OutgoingConnectionBlueprint {
 
         // with a strict message there still is a MessageEnd to wait for
         lazy val waitForMessageEnd = new InHandler with OutHandler {
-          def onPush(): Unit = grab(in) match {
-            case MessageEnd ⇒
-              if (isAvailable(out)) pull(in)
-              setIdleHandlers()
-            case other ⇒
-              throw new IllegalStateException(
-                  s"MessageEnd expected but $other received.")
-          }
+          def onPush(): Unit =
+            grab(in) match {
+              case MessageEnd ⇒
+                if (isAvailable(out)) pull(in)
+                setIdleHandlers()
+              case other ⇒
+                throw new IllegalStateException(
+                  s"MessageEnd expected but $other received."
+                )
+            }
 
           override def onPull(): Unit = {
             // ignore pull as we will anyways pull when we get MessageEnd
@@ -254,18 +288,19 @@ private[http] object OutgoingConnectionBlueprint {
         // with a streamed entity we push the chunks into the substream
         // until we reach MessageEnd
         private lazy val substreamHandler = new InHandler with OutHandler {
-          override def onPush(): Unit = grab(in) match {
-            case MessageEnd ⇒
-              entitySource.complete()
-              entitySource = null
-              // there was a deferred pull from upstream
-              // while we were streaming the entity
-              if (isAvailable(out)) pull(in)
-              setIdleHandlers()
+          override def onPush(): Unit =
+            grab(in) match {
+              case MessageEnd ⇒
+                entitySource.complete()
+                entitySource = null
+                // there was a deferred pull from upstream
+                // while we were streaming the entity
+                if (isAvailable(out)) pull(in)
+                setIdleHandlers()
 
-            case messagePart ⇒
-              entitySource.push(messagePart)
-          }
+              case messagePart ⇒
+                entitySource.push(messagePart)
+            }
 
           override def onPull(): Unit = pull(in)
 
@@ -281,8 +316,8 @@ private[http] object OutgoingConnectionBlueprint {
         }
 
         private def createEntity(
-            creator: EntityCreator[ResponseOutput, ResponseEntity])
-          : ResponseEntity = {
+            creator: EntityCreator[ResponseOutput, ResponseEntity]
+        ): ResponseEntity = {
           creator match {
             case StrictEntityCreator(entity) ⇒
               // upstream demanded one element, which it just got
@@ -293,8 +328,7 @@ private[http] object OutgoingConnectionBlueprint {
               entity
 
             case StreamedEntityCreator(creator) ⇒
-              entitySource = new SubSourceOutlet[ResponseOutput](
-                  "EntitySource")
+              entitySource = new SubSourceOutlet[ResponseOutput]("EntitySource")
               entitySource.setHandler(substreamHandler)
               setHandler(in, substreamHandler)
               creator(Source.fromGraph(entitySource.source))
@@ -310,11 +344,12 @@ private[http] object OutgoingConnectionBlueprint {
     * 3. Go back to 1.
     */
   private class ResponseParsingMerge(rootParser: HttpResponseParser)
-      extends GraphStage[FanInShape2[
-              SessionBytes, BypassData, List[ResponseOutput]]] {
-    private val dataInput = Inlet[SessionBytes]("data")
+      extends GraphStage[
+        FanInShape2[SessionBytes, BypassData, List[ResponseOutput]]
+      ] {
+    private val dataInput   = Inlet[SessionBytes]("data")
     private val bypassInput = Inlet[BypassData]("request")
-    private val out = Outlet[List[ResponseOutput]]("out")
+    private val out         = Outlet[List[ResponseOutput]]("out")
 
     override def initialAttributes = Attributes.name("ResponseParsingMerge")
 
@@ -324,65 +359,70 @@ private[http] object OutgoingConnectionBlueprint {
       new GraphStageLogic(shape) {
         // each connection uses a single (private) response parser instance for all its responses
         // which builds a cache of all header instances seen on that connection
-        val parser = rootParser.createShallowCopy()
+        val parser           = rootParser.createShallowCopy()
         var waitingForMethod = true
 
-        setHandler(bypassInput, new InHandler {
-          override def onPush(): Unit = {
-            val responseContext = grab(bypassInput)
-            parser.setContextForNextResponse(responseContext)
-            val output = parser.parseBytes(ByteString.empty)
-            drainParser(output)
-          }
-          override def onUpstreamFinish(): Unit =
-            if (waitingForMethod) completeStage()
-        })
-
-        setHandler(dataInput, new InHandler {
-          override def onPush(): Unit = {
-            val bytes = grab(dataInput)
-            val output = parser.parseSessionBytes(bytes)
-            drainParser(output)
-          }
-          override def onUpstreamFinish(): Unit =
-            if (waitingForMethod) completeStage()
-            else {
-              if (parser.onUpstreamFinish()) {
-                completeStage()
-              } else {
-                emit(out, parser.onPull() :: Nil, () ⇒ completeStage())
-              }
+        setHandler(
+          bypassInput,
+          new InHandler {
+            override def onPush(): Unit = {
+              val responseContext = grab(bypassInput)
+              parser.setContextForNextResponse(responseContext)
+              val output = parser.parseBytes(ByteString.empty)
+              drainParser(output)
             }
-        })
+            override def onUpstreamFinish(): Unit =
+              if (waitingForMethod) completeStage()
+          }
+        )
+
+        setHandler(
+          dataInput,
+          new InHandler {
+            override def onPush(): Unit = {
+              val bytes  = grab(dataInput)
+              val output = parser.parseSessionBytes(bytes)
+              drainParser(output)
+            }
+            override def onUpstreamFinish(): Unit =
+              if (waitingForMethod) completeStage()
+              else {
+                if (parser.onUpstreamFinish()) {
+                  completeStage()
+                } else {
+                  emit(out, parser.onPull() :: Nil, () ⇒ completeStage())
+                }
+              }
+          }
+        )
 
         setHandler(out, eagerTerminateOutput)
 
-        val getNextMethod = () ⇒
-          {
-            waitingForMethod = true
-            if (isClosed(bypassInput)) completeStage()
-            else pull(bypassInput)
+        val getNextMethod = () ⇒ {
+          waitingForMethod = true
+          if (isClosed(bypassInput)) completeStage()
+          else pull(bypassInput)
         }
 
-        val getNextData = () ⇒
-          {
-            waitingForMethod = false
-            if (isClosed(dataInput)) completeStage()
-            else pull(dataInput)
+        val getNextData = () ⇒ {
+          waitingForMethod = false
+          if (isClosed(dataInput)) completeStage()
+          else pull(dataInput)
         }
 
         @tailrec
         def drainParser(
             current: ResponseOutput,
-            b: ListBuffer[ResponseOutput] = ListBuffer.empty): Unit = {
+            b: ListBuffer[ResponseOutput] = ListBuffer.empty
+        ): Unit = {
           def e(output: List[ResponseOutput], andThen: () ⇒ Unit): Unit =
             if (output.nonEmpty) emit(out, output, andThen)
             else andThen()
           current match {
             case NeedNextRequestMethod ⇒ e(b.result(), getNextMethod)
-            case StreamEnd ⇒ e(b.result(), () ⇒ completeStage())
-            case NeedMoreData ⇒ e(b.result(), getNextData)
-            case x ⇒ drainParser(parser.onPull(), b += x)
+            case StreamEnd             ⇒ e(b.result(), () ⇒ completeStage())
+            case NeedMoreData          ⇒ e(b.result(), getNextData)
+            case x                     ⇒ drainParser(parser.onPull(), b += x)
           }
         }
 

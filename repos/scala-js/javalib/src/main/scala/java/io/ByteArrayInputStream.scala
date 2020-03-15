@@ -1,12 +1,14 @@
 package java.io
 
 class ByteArrayInputStream(
-    protected val buf: Array[Byte], offset: Int, length: Int)
-    extends InputStream {
+    protected val buf: Array[Byte],
+    offset: Int,
+    length: Int
+) extends InputStream {
 
   protected val count: Int = offset + length
-  protected var mark: Int = offset
-  protected var pos: Int = offset
+  protected var mark: Int  = offset
+  protected var pos: Int   = offset
 
   def this(buf: Array[Byte]) = this(buf, 0, buf.length)
 
@@ -25,7 +27,7 @@ class ByteArrayInputStream(
 
     val len = Math.min(reqLen, count - pos)
 
-    if (reqLen == 0) 0 // 0 requested, 0 returned
+    if (reqLen == 0) 0    // 0 requested, 0 returned
     else if (len == 0) -1 // nothing to read at all
     else {
       System.arraycopy(buf, pos, b, off, len)

@@ -19,11 +19,11 @@ class BufCodecBenchmark extends StdBenchAnnotations {
   @Param(Array("100"))
   var size: Int = _
 
-  private[this] var bufs: Seq[Buf] = _
+  private[this] var bufs: Seq[Buf]          = _
   private[this] var cbs: Seq[ChannelBuffer] = _
 
   private[this] var encodedCB: ChannelBuffer = _
-  private[this] var encodedBuf: Buf = _
+  private[this] var encodedBuf: Buf          = _
 
   @Setup(Level.Iteration)
   def setup(): Unit = {
@@ -121,7 +121,7 @@ object BufCodecBenchmark {
 
     def decode(buf: Buf): Seq[Buf] = {
       val values = new ArrayBuffer[Buf]
-      val br = BufReader(buf)
+      val br     = BufReader(buf)
       while (br.remaining > 0) {
         val v = br.readBytes(br.readIntBE())
         values += v

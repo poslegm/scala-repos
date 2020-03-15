@@ -17,7 +17,7 @@ object IvyPlugin extends AutoPlugin {
   // We are automatically included on everything that has the global module,
   // which is automatically included on everything.
   override def requires = CorePlugin
-  override def trigger = allRequirements
+  override def trigger  = allRequirements
 
   override lazy val projectSettings: Seq[Setting[_]] =
     Classpaths.ivyPublishSettings ++ Classpaths.ivyBaseSettings

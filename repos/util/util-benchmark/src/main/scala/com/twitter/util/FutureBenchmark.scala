@@ -67,10 +67,10 @@ class FutureBenchmark extends StdBenchAnnotations {
 
   @Benchmark
   def runqBaseline(state: RunqState): Promise[Int] = {
-    val p = new Promise[Int]()
+    val p                 = new Promise[Int]()
     var next: Future[Int] = p
-    var sum = 0
-    var i = 0
+    var sum               = 0
+    var i                 = 0
     while (i < state.depth) {
       next = next.ensure { sum += 1 }
       i += 1
@@ -105,9 +105,7 @@ class FutureBenchmark extends StdBenchAnnotations {
 object FutureBenchmark {
   final val N = 10
 
-  private val RespondFn: Try[Unit] => Unit = { _ =>
-    ()
-  }
+  private val RespondFn: Try[Unit] => Unit = { _ => () }
 
   private val NumToSelect = 5
 
@@ -133,12 +131,8 @@ object FutureBenchmark {
 
   @State(Scope.Thread)
   class PromiseUnitState {
-    val FlatMapFn = { _: Unit =>
-      Future.Unit
-    }
-    val MapFn = { _: Unit =>
-      "hi"
-    }
+    val FlatMapFn = { _: Unit => Future.Unit }
+    val MapFn     = { _: Unit => "hi" }
 
     var promise: Promise[Unit] = _
 

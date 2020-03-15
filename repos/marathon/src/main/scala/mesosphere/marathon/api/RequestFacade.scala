@@ -14,8 +14,8 @@ class RequestFacade(request: HttpServletRequest, path: String)
   val headers = request.getHeaderNames.asScala
     .map(header => header -> request.getHeaders(header).asScala.toSeq)
     .toMap
-  val cookies = request.getCookies
-  val params = request.getParameterMap
+  val cookies    = request.getCookies
+  val params     = request.getParameterMap
   val remoteAddr = request.getRemoteAddr
   override def header(name: String): Seq[String] =
     headers.getOrElse(name, Seq.empty)

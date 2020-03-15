@@ -49,9 +49,9 @@ private[python] class Word2VecModelWrapper(model: Word2VecModel) {
   }
 
   def findSynonyms(vector: Vector, num: Int): JList[Object] = {
-    val result = model.findSynonyms(vector, num)
+    val result     = model.findSynonyms(vector, num)
     val similarity = Vectors.dense(result.map(_._2))
-    val words = result.map(_._1)
+    val words      = result.map(_._1)
     List(words, similarity).map(_.asInstanceOf[Object]).asJava
   }
 

@@ -62,10 +62,10 @@ trait WebServer {
           <body>
             <h1>ENSIME: Your Project's Documentation</h1>
             <ul>{
-              docJars().toList.map(_.getName).sorted.map { f =>
-                <li><a href={ s"docs/$f/index.html" }>{ f }</a> </li>
-              }
-            }</ul>
+          docJars().toList.map(_.getName).sorted.map { f =>
+            <li><a href={s"docs/$f/index.html"}>{f}</a> </li>
+          }
+        }</ul>
           </body>
         </html>
       }
@@ -73,18 +73,16 @@ trait WebServer {
       rejectEmptyResponse {
         complete {
           for {
-            media <- MediaTypes.forExtension(Files.getFileExtension(entry))
+            media   <- MediaTypes.forExtension(Files.getFileExtension(entry))
             content <- docJarContent(filename, entry)
           } yield {
-            HttpResponse(
-                entity = HttpEntity(ContentType(media, None), content))
+            HttpResponse(entity = HttpEntity(ContentType(media, None), content))
           }
         }
       }
     } ~ path("jerky") {
       get {
-        jsonWebsocket[RpcRequestEnvelope, RpcResponseEnvelope](
-            websocketHandler)
+        jsonWebsocket[RpcRequestEnvelope, RpcResponseEnvelope](websocketHandler)
       }
     }
   }

@@ -9,7 +9,7 @@ object Test extends App {
   val a = new A
 
   val im: InstanceMirror = cm.reflect(a)
-  val cs = im.symbol
+  val cs                 = im.symbol
 
   def test(f: Symbol) = {
     try {

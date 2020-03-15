@@ -15,35 +15,44 @@ object ReliableProxy {
     * Scala API Props.  Arguments are detailed in the [[akka.contrib.pattern.ReliableProxy]]
     * constructor.
     */
-  def props(targetPath: ActorPath,
-            retryAfter: FiniteDuration,
-            reconnectAfter: Option[FiniteDuration],
-            maxReconnects: Option[Int]): Props = {
-    Props(new ReliableProxy(
-            targetPath, retryAfter, reconnectAfter, maxReconnects))
+  def props(
+      targetPath: ActorPath,
+      retryAfter: FiniteDuration,
+      reconnectAfter: Option[FiniteDuration],
+      maxReconnects: Option[Int]
+  ): Props = {
+    Props(
+      new ReliableProxy(targetPath, retryAfter, reconnectAfter, maxReconnects)
+    )
   }
 
   /**
     * Java API Props.  Arguments are detailed in the [[akka.contrib.pattern.ReliableProxy]]
     * constructor.
     */
-  def props(targetPath: ActorPath,
-            retryAfter: FiniteDuration,
-            reconnectAfter: FiniteDuration,
-            maxReconnects: Int): Props = {
-    props(targetPath,
-          retryAfter,
-          Option(reconnectAfter),
-          if (maxReconnects > 0) Some(maxReconnects) else None)
+  def props(
+      targetPath: ActorPath,
+      retryAfter: FiniteDuration,
+      reconnectAfter: FiniteDuration,
+      maxReconnects: Int
+  ): Props = {
+    props(
+      targetPath,
+      retryAfter,
+      Option(reconnectAfter),
+      if (maxReconnects > 0) Some(maxReconnects) else None
+    )
   }
 
   /**
     * Props with no limit on reconnections.  Arguments are detailed in the [[akka.contrib.pattern.ReliableProxy]]
     * constructor.
     */
-  def props(targetPath: ActorPath,
-            retryAfter: FiniteDuration,
-            reconnectAfter: FiniteDuration): Props = {
+  def props(
+      targetPath: ActorPath,
+      retryAfter: FiniteDuration,
+      reconnectAfter: FiniteDuration
+  ): Props = {
     props(targetPath, retryAfter, Option(reconnectAfter), None)
   }
 
@@ -56,7 +65,8 @@ object ReliableProxy {
   }
 
   class Receiver(target: ActorRef, initialSerial: Int)
-      extends Actor with ReliableProxyDebugLogging {
+      extends Actor
+      with ReliableProxyDebugLogging {
     var lastSerial = initialSerial
 
     context.watch(target)
@@ -83,9 +93,9 @@ object ReliableProxy {
   def compare(a: Int, b: Int): Int = {
     val c = a - b
     c match {
-      case x if x < 0 ⇒ -1
+      case x if x < 0  ⇒ -1
       case x if x == 0 ⇒ 0
-      case x if x > 0 ⇒ 1
+      case x if x > 0  ⇒ 1
     }
   }
 
@@ -113,13 +123,13 @@ object ReliableProxy {
   final case class Unsent(queue: Vector[Message])
 
   sealed trait State
-  case object Idle extends State
-  case object Active extends State
+  case object Idle       extends State
+  case object Active     extends State
   case object Connecting extends State
 
   // Java API
-  val idle = Idle
-  val active = Active
+  val idle         = Idle
+  val active       = Active
   val reconnecting = Connecting
 }
 
@@ -129,7 +139,9 @@ object ReliableProxy {
 private[akka] trait ReliableProxyDebugLogging extends ActorLogging {
   this: Actor ⇒
   val debug: Boolean =
-    Try(context.system.settings.config.getBoolean("akka.reliable-proxy.debug")) getOrElse false
+    Try(
+      context.system.settings.config.getBoolean("akka.reliable-proxy.debug")
+    ) getOrElse false
 
   def enabled: Boolean = debug && log.isDebugEnabled
 
@@ -236,31 +248,36 @@ import ReliableProxy._
   * @param maxConnectAttempts &nbsp;is an optional maximum number of attempts to connect to the
   *   target actor. Use `None` for no limit. If `reconnectAfter` is `None` this value is ignored.
   */
-class ReliableProxy(targetPath: ActorPath,
-                    retryAfter: FiniteDuration,
-                    reconnectAfter: Option[FiniteDuration],
-                    maxConnectAttempts: Option[Int])
-    extends Actor with LoggingFSM[State, Vector[Message]]
+class ReliableProxy(
+    targetPath: ActorPath,
+    retryAfter: FiniteDuration,
+    reconnectAfter: Option[FiniteDuration],
+    maxConnectAttempts: Option[Int]
+) extends Actor
+    with LoggingFSM[State, Vector[Message]]
     with ReliableProxyDebugLogging {
 
-  var tunnel: ActorRef = _
-  var currentSerial: Int = 0
-  var lastAckSerial: Int = _
-  var currentTarget: ActorRef = _
+  var tunnel: ActorRef         = _
+  var currentSerial: Int       = 0
+  var lastAckSerial: Int       = _
+  var currentTarget: ActorRef  = _
   var attemptedReconnects: Int = _
 
-  val resendTimer = "resend"
+  val resendTimer    = "resend"
   val reconnectTimer = "reconnect"
 
-  val retryGateClosedFor = Try(context.system.settings.config.getDuration(
-          "akka.remote.retry-gate-closed-for", TimeUnit.MILLISECONDS))
-    .map(_.longValue)
+  val retryGateClosedFor = Try(
+    context.system.settings.config
+      .getDuration("akka.remote.retry-gate-closed-for", TimeUnit.MILLISECONDS)
+  ).map(_.longValue)
     .getOrElse(5000L)
 
-  val defaultConnectInterval = Try(context.system.settings.config.getDuration(
-          "akka.reliable-proxy.default-connect-interval",
-          TimeUnit.MILLISECONDS))
-    .map(_.longValue)
+  val defaultConnectInterval = Try(
+    context.system.settings.config.getDuration(
+      "akka.reliable-proxy.default-connect-interval",
+      TimeUnit.MILLISECONDS
+    )
+  ).map(_.longValue)
     .getOrElse(retryGateClosedFor)
     .millis
 
@@ -271,9 +288,10 @@ class ReliableProxy(targetPath: ActorPath,
   def createTunnel(target: ActorRef): Unit = {
     logDebug("Creating new tunnel for {}", target)
     tunnel = context.actorOf(
-        receiver(target, lastAckSerial).withDeploy(
-            Deploy(scope = RemoteScope(target.path.address))),
-        "tunnel")
+      receiver(target, lastAckSerial)
+        .withDeploy(Deploy(scope = RemoteScope(target.path.address))),
+      "tunnel"
+    )
 
     context.watch(tunnel)
     currentTarget = target
@@ -284,16 +302,21 @@ class ReliableProxy(targetPath: ActorPath,
   if (targetPath.address.host.isEmpty &&
       self.path.address == targetPath.address) {
     logDebug(
-        "Unnecessary to use ReliableProxy for local target: {}", targetPath)
+      "Unnecessary to use ReliableProxy for local target: {}",
+      targetPath
+    )
   }
 
-  override def supervisorStrategy = OneForOneStrategy() {
-    case _ ⇒ SupervisorStrategy.Escalate
-  }
+  override def supervisorStrategy =
+    OneForOneStrategy() {
+      case _ ⇒ SupervisorStrategy.Escalate
+    }
 
   override def postStop() {
-    logDebug("Stopping proxy and sending {} messages to subscribers in Unsent",
-             stateData.size)
+    logDebug(
+      "Stopping proxy and sending {} messages to subscribers in Unsent",
+      stateData.size
+    )
     gossip(ProxyTerminated(self, Unsent(stateData)))
     super.postStop()
   }
@@ -302,14 +325,14 @@ class ReliableProxy(targetPath: ActorPath,
 
   when(Idle) {
     case Event(Terminated(_), _) ⇒ terminated()
-    case Event(Ack(_), _) ⇒ stay()
-    case Event(Unsent(msgs), _) ⇒ goto(Active) using resend(updateSerial(msgs))
-    case Event(msg, _) ⇒ goto(Active) using Vector(send(msg, sender()))
+    case Event(Ack(_), _)        ⇒ stay()
+    case Event(Unsent(msgs), _)  ⇒ goto(Active) using resend(updateSerial(msgs))
+    case Event(msg, _)           ⇒ goto(Active) using Vector(send(msg, sender()))
   }
 
   onTransition {
-    case _ -> Active ⇒ scheduleTick()
-    case Active -> Idle ⇒ cancelTimer(resendTimer)
+    case _ -> Active     ⇒ scheduleTick()
+    case Active -> Idle  ⇒ cancelTimer(resendTimer)
     case _ -> Connecting ⇒ scheduleReconnectTick()
   }
 
@@ -349,9 +372,11 @@ class ReliableProxy(targetPath: ActorPath,
         logDebug("Failed to reconnect after {}", attemptedReconnects)
         stop()
       } else {
-        logDebug("{} ! {}",
-                 context.actorSelection(targetPath),
-                 Identify(targetPath))
+        logDebug(
+          "{} ! {}",
+          context.actorSelection(targetPath),
+          Identify(targetPath)
+        )
         context.actorSelection(targetPath) ! Identify(targetPath)
         scheduleReconnectTick()
         attemptedReconnects += 1

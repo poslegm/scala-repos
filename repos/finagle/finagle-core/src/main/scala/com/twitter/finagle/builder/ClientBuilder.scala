@@ -30,11 +30,16 @@ import scala.annotation.{implicitNotFound, varargs}
   */
 object ClientBuilder {
   type Complete[Req, Rep] = ClientBuilder[
-      Req, Rep, ClientConfig.Yes, ClientConfig.Yes, ClientConfig.Yes]
-  type NoCluster[Req, Rep] = ClientBuilder[
-      Req, Rep, Nothing, ClientConfig.Yes, ClientConfig.Yes]
-  type NoCodec = ClientBuilder[
-      _, _, ClientConfig.Yes, Nothing, ClientConfig.Yes]
+    Req,
+    Rep,
+    ClientConfig.Yes,
+    ClientConfig.Yes,
+    ClientConfig.Yes
+  ]
+  type NoCluster[Req, Rep] =
+    ClientBuilder[Req, Rep, Nothing, ClientConfig.Yes, ClientConfig.Yes]
+  type NoCodec =
+    ClientBuilder[_, _, ClientConfig.Yes, Nothing, ClientConfig.Yes]
 
   def apply() = new ClientBuilder()
 
@@ -53,7 +58,8 @@ object ClientBuilder {
     * Provides a typesafe `buildFactory` for Java.
     */
   def safeBuildFactory[Req, Rep](
-      builder: Complete[Req, Rep]): ServiceFactory[Req, Rep] =
+      builder: Complete[Req, Rep]
+  ): ServiceFactory[Req, Rep] =
     builder.buildFactory()(ClientConfigEvidence.FullyConfigured)
 
   /**
@@ -92,20 +98,22 @@ object ClientConfig {
   private case class NilClient[Req, Rep](
       stack: Stack[ServiceFactory[Req, Rep]] = StackClient.newStack[Req, Rep],
       params: Stack.Params = DefaultParams
-  )
-      extends StackBasedClient[Req, Rep] {
+  ) extends StackBasedClient[Req, Rep] {
 
-    def withParams(ps: Stack.Params) = copy(params = ps)
+    def withParams(ps: Stack.Params)      = copy(params = ps)
     def transformed(t: Stack.Transformer) = copy(stack = t(stack))
 
     def newService(dest: Name, label: String): Service[Req, Rep] =
       newClient(dest, label).toService
 
     def newClient(dest: Name, label: String): ServiceFactory[Req, Rep] =
-      ServiceFactory(
-          () =>
-            Future.value(Service.mk[Req, Rep](
-                    _ => Future.exception(new Exception("unimplemented")))))
+      ServiceFactory(() =>
+        Future.value(
+          Service.mk[Req, Rep](_ =>
+            Future.exception(new Exception("unimplemented"))
+          )
+        )
+      )
   }
 
   def nilClient[Req, Rep]: StackBasedClient[Req, Rep] = NilClient[Req, Rep]()
@@ -146,24 +154,33 @@ object ClientConfig {
   // historical defaults for ClientBuilder
   private[builder] val DefaultParams =
     Stack.Params.empty + param.Stats(NullStatsReceiver) +
-    param.Label(DefaultName) + DefaultPool.Param(low = 1,
-                                                 high = Int.MaxValue,
-                                                 bufferSize = 0,
-                                                 idleTime = 5.seconds,
-                                                 maxWaiters = Int.MaxValue) +
-    param.Tracer(NullTracer) + param.Monitor(NullMonitor) +
-    param.Reporter(NullReporterFactory) + Daemonize(false)
+      param.Label(DefaultName) + DefaultPool.Param(
+      low = 1,
+      high = Int.MaxValue,
+      bufferSize = 0,
+      idleTime = 5.seconds,
+      maxWaiters = Int.MaxValue
+    ) +
+      param.Tracer(NullTracer) + param.Monitor(NullMonitor) +
+      param.Reporter(NullReporterFactory) + Daemonize(false)
 }
 
 @implicitNotFound(
-    "Builder is not fully configured: Cluster: ${HasCluster}, Codec: ${HasCodec}, HostConnectionLimit: ${HasHostConnectionLimit}")
+  "Builder is not fully configured: Cluster: ${HasCluster}, Codec: ${HasCodec}, HostConnectionLimit: ${HasHostConnectionLimit}"
+)
 private[builder] trait ClientConfigEvidence[
-    HasCluster, HasCodec, HasHostConnectionLimit]
+    HasCluster,
+    HasCodec,
+    HasHostConnectionLimit
+]
 
 private[builder] object ClientConfigEvidence {
   implicit object FullyConfigured
       extends ClientConfigEvidence[
-          ClientConfig.Yes, ClientConfig.Yes, ClientConfig.Yes]
+        ClientConfig.Yes,
+        ClientConfig.Yes,
+        ClientConfig.Yes
+      ]
 }
 
 /**
@@ -174,7 +191,12 @@ private[builder] object ClientConfigEvidence {
   * are accessed by the end-user.
   */
 private[builder] final class ClientConfig[
-    Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit]
+    Req,
+    Rep,
+    HasCluster,
+    HasCodec,
+    HasHostConnectionLimit
+]
 
 /**
   * A builder of Finagle [[com.twitter.finagle.Client Clients]].
@@ -262,7 +284,8 @@ private[builder] final class ClientConfig[
   *      for information on the preferred `with`-style APIs insead.
   */
 class ClientBuilder[
-    Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit] private[finagle](
+    Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit
+] private[finagle] (
     client: StackBasedClient[Req, Rep]
 ) {
   import ClientConfig._
@@ -270,25 +293,32 @@ class ClientBuilder[
 
   // Convenient aliases.
   type FullySpecifiedConfig = FullySpecified[Req, Rep]
-  type ThisConfig = ClientConfig[
-      Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit]
-  type This = ClientBuilder[
-      Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit]
+  type ThisConfig =
+    ClientConfig[Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit]
+  type This =
+    ClientBuilder[Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit]
 
   private[builder] def this() = this(ClientConfig.nilClient)
 
   override def toString() = "ClientBuilder(%s)".format(params)
 
-  private def copy[
-      Req1, Rep1, HasCluster1, HasCodec1, HasHostConnectionLimit1](
+  private def copy[Req1, Rep1, HasCluster1, HasCodec1, HasHostConnectionLimit1](
       client: StackBasedClient[Req1, Rep1]
-  )
-    : ClientBuilder[
-        Req1, Rep1, HasCluster1, HasCodec1, HasHostConnectionLimit1] =
+  ): ClientBuilder[
+    Req1,
+    Rep1,
+    HasCluster1,
+    HasCodec1,
+    HasHostConnectionLimit1
+  ] =
     new ClientBuilder(client)
 
   private def configured[
-      P : Stack.Param, HasCluster1, HasCodec1, HasHostConnectionLimit1](
+      P: Stack.Param,
+      HasCluster1,
+      HasCodec1,
+      HasHostConnectionLimit1
+  ](
       param: P
   ): ClientBuilder[Req, Rep, HasCluster1, HasCodec1, HasHostConnectionLimit1] =
     copy(client.configured(param))
@@ -553,7 +583,8 @@ class ClientBuilder[
     * connections than this limit.
     */
   def hostConnectionLimit(
-      value: Int): ClientBuilder[Req, Rep, HasCluster, HasCodec, Yes] =
+      value: Int
+  ): ClientBuilder[Req, Rep, HasCluster, HasCodec, Yes] =
     configured(params[DefaultPool.Param].copy(high = value))
 
   /**
@@ -633,7 +664,8 @@ class ClientBuilder[
     * which is a total function fully covering the input domain.
     */
   def responseClassifier(
-      classifier: com.twitter.finagle.service.ResponseClassifier): This =
+      classifier: com.twitter.finagle.service.ResponseClassifier
+  ): This =
     configured(param.ResponseClassifier(classifier))
 
   /**
@@ -713,7 +745,9 @@ class ClientBuilder[
     * eligible for retries.
     */
   def retryBudget(
-      budget: RetryBudget, backoffSchedule: Stream[Duration]): This =
+      budget: RetryBudget,
+      backoffSchedule: Stream[Duration]
+  ): This =
     configured(Retries.Budget(budget, backoffSchedule))
 
   /**
@@ -742,10 +776,9 @@ class ClientBuilder[
     * provided against the given hostname.
     */
   def tls(hostname: String): This = {
-    configured(
-        (Transport.TLSClientEngine(Some({
+    configured((Transport.TLSClientEngine(Some({
       case inet: InetSocketAddress => Ssl.client(hostname, inet.getPort)
-      case _ => Ssl.client()
+      case _                       => Ssl.client()
     })))).configured(Transporter.TLSHostname(Some(hostname)))
   }
 
@@ -755,8 +788,7 @@ class ClientBuilder[
     * No SSL Hostname Validation is performed
     */
   def tls(sslContext: SSLContext): This =
-    configured(
-        (Transport.TLSClientEngine(Some({
+    configured((Transport.TLSClientEngine(Some({
       case inet: InetSocketAddress =>
         Ssl.client(sslContext, inet.getHostName, inet.getPort)
       case _ => Ssl.client(sslContext)
@@ -768,11 +800,13 @@ class ClientBuilder[
     * SSL Hostname Validation is performed, on the passed in hostname
     */
   def tls(sslContext: SSLContext, hostname: Option[String]): This =
-    configured(
-        (Transport.TLSClientEngine(Some({
+    configured((Transport.TLSClientEngine(Some({
       case inet: InetSocketAddress =>
         Ssl.client(
-            sslContext, hostname.getOrElse(inet.getHostName), inet.getPort)
+          sslContext,
+          hostname.getOrElse(inet.getHostName),
+          inet.getPort
+        )
       case _ => Ssl.client(sslContext)
     })))).configured(Transporter.TLSHostname(hostname))
 
@@ -780,8 +814,7 @@ class ClientBuilder[
     * Do not perform TLS validation. Probably dangerous.
     */
   def tlsWithoutValidation(): This =
-    configured(
-        Transport.TLSClientEngine(Some({
+    configured(Transport.TLSClientEngine(Some({
       case inet: InetSocketAddress =>
         Ssl.clientWithoutCertificateValidation(inet.getHostName, inet.getPort)
       case _ => Ssl.clientWithoutCertificateValidation()
@@ -802,18 +835,19 @@ class ClientBuilder[
     */
   def expHttpProxy(hostName: String, port: Int): This =
     configured(
-        params[Transporter.HttpProxy]
-          .copy(sa = Some(InetSocketAddress.createUnresolved(hostName, port))))
+      params[Transporter.HttpProxy]
+        .copy(sa = Some(InetSocketAddress.createUnresolved(hostName, port)))
+    )
 
   /**
     * For the http proxy use these [[Credentials]] for authentication.
     */
   def httpProxyUsernameAndPassword(credentials: Credentials): This =
     configured(
-        params[Transporter.HttpProxy].copy(credentials = Some(credentials)))
+      params[Transporter.HttpProxy].copy(credentials = Some(credentials))
+    )
 
-  @deprecated(
-      "Use socksProxy(socksProxy: Option[SocketAddress])", "2014-12-02")
+  @deprecated("Use socksProxy(socksProxy: Option[SocketAddress])", "2014-12-02")
   def socksProxy(socksProxy: SocketAddress): This =
     configured(params[Transporter.SocksProxy].copy(sa = Some(socksProxy)))
 
@@ -832,8 +866,9 @@ class ClientBuilder[
     */
   def expSocksProxy(hostName: String, port: Int): This =
     configured(
-        params[Transporter.HttpProxy]
-          .copy(sa = Some(InetSocketAddress.createUnresolved(hostName, port))))
+      params[Transporter.HttpProxy]
+        .copy(sa = Some(InetSocketAddress.createUnresolved(hostName, port)))
+    )
 
   /**
     * For the socks proxy use this username for authentication.
@@ -841,15 +876,15 @@ class ClientBuilder[
     */
   def socksUsernameAndPassword(credentials: (String, String)): This =
     configured(
-        params[Transporter.SocksProxy].copy(credentials = Some(credentials)))
+      params[Transporter.SocksProxy].copy(credentials = Some(credentials))
+    )
 
   /**
     * Specifies a tracer that receives trace events.
     * See [[com.twitter.finagle.tracing]] for details.
     */
   @deprecated("Use tracer() instead", "7.0.0")
-  def tracerFactory(
-      factory: com.twitter.finagle.tracing.Tracer.Factory): This =
+  def tracerFactory(factory: com.twitter.finagle.tracing.Tracer.Factory): This =
     tracer(factory())
 
   // API compatibility method
@@ -901,13 +936,15 @@ class ClientBuilder[
     * To completely disable [[FailureAccrualFactory]] use `noFailureAccrual`.
     */
   def failureAccrualFactory(
-      factory: util.Timer => ServiceFactoryWrapper): This =
+      factory: util.Timer => ServiceFactoryWrapper
+  ): This =
     configured(FailureAccrualFactory.Replaced(factory))
 
   @deprecated(
-      "No longer experimental: Use failFast()." +
+    "No longer experimental: Use failFast()." +
       "The new default value is true, so replace .expFailFast(true) with nothing at all",
-      "5.3.10")
+    "5.3.10"
+  )
   def expFailFast(enabled: Boolean): This =
     failFast(enabled)
 
@@ -937,7 +974,8 @@ class ClientBuilder[
     * @param exceptionStatsHandler function to record failure details.
     */
   def exceptionCategorizer(
-      exceptionStatsHandler: stats.ExceptionStatsHandler): This =
+      exceptionStatsHandler: stats.ExceptionStatsHandler
+  ): This =
     configured(ExceptionStatsHandler(exceptionStatsHandler))
 
   /**
@@ -953,7 +991,7 @@ class ClientBuilder[
   // a more ideal usage would be to retrieve the stats param inside your specific module
   // instead of using this statsReceiver as it keeps the params closer to where they're used
   private[finagle] lazy val statsReceiver = {
-    val Stats(sr) = params[Stats]
+    val Stats(sr)    = params[Stats]
     val Label(label) = params[Label]
     sr.scope(label)
   }
@@ -962,11 +1000,14 @@ class ClientBuilder[
     * Construct a ServiceFactory. This is useful for stateful protocols
     * (e.g., those that support transactions or authentication).
     */
-  def buildFactory()(
-      implicit THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ClientBuilder_DOCUMENTATION: ClientConfigEvidence[
-          HasCluster, HasCodec, HasHostConnectionLimit]
+  def buildFactory()(implicit
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ClientBuilder_DOCUMENTATION: ClientConfigEvidence[
+        HasCluster,
+        HasCodec,
+        HasHostConnectionLimit
+      ]
   ): ServiceFactory[Req, Rep] = {
-    val Label(label) = params[Label]
+    val Label(label)   = params[Label]
     val DestName(dest) = params[DestName]
     ClientBuilderClient.newClient(client, dest, label)
   }
@@ -975,17 +1016,21 @@ class ClientBuilder[
   def buildFactory(
       THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ClientBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig
   ): ServiceFactory[Req, Rep] =
-    buildFactory()(new ClientConfigEvidence[
-            HasCluster, HasCodec, HasHostConnectionLimit] {})
+    buildFactory()(
+      new ClientConfigEvidence[HasCluster, HasCodec, HasHostConnectionLimit] {}
+    )
 
   /**
     * Construct a Service.
     */
-  def build()(
-      implicit THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ClientBuilder_DOCUMENTATION: ClientConfigEvidence[
-          HasCluster, HasCodec, HasHostConnectionLimit]
+  def build()(implicit
+      THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ClientBuilder_DOCUMENTATION: ClientConfigEvidence[
+        HasCluster,
+        HasCodec,
+        HasHostConnectionLimit
+      ]
   ): Service[Req, Rep] = {
-    val Label(label) = params[Label]
+    val Label(label)   = params[Label]
     val DestName(dest) = params[DestName]
     ClientBuilderClient.newService(client, dest, label)
   }
@@ -994,8 +1039,9 @@ class ClientBuilder[
   def build(
       THE_BUILDER_IS_NOT_FULLY_SPECIFIED_SEE_ClientBuilder_DOCUMENTATION: ThisConfig =:= FullySpecifiedConfig
   ): Service[Req, Rep] =
-    build()(new ClientConfigEvidence[
-            HasCluster, HasCodec, HasHostConnectionLimit] {})
+    build()(
+      new ClientConfigEvidence[HasCluster, HasCodec, HasHostConnectionLimit] {}
+    )
 
   private[this] def validated = {
     if (!params.contains[DestName])
@@ -1025,12 +1071,11 @@ class ClientBuilder[
   */
 private case class ClientBuilderClient[Req, Rep](
     client: StackClient[Req, Rep]
-)
-    extends StackClient[Req, Rep] {
+) extends StackClient[Req, Rep] {
 
-  def params = client.params
+  def params                       = client.params
   def withParams(ps: Stack.Params) = copy(client.withParams(ps))
-  def stack = client.stack
+  def stack                        = client.stack
   def withStack(stack: Stack[ServiceFactory[Req, Rep]]) =
     copy(client.withStack(stack))
 
@@ -1046,8 +1091,10 @@ private object ClientBuilderClient {
   import com.twitter.finagle.param._
 
   private class StatsFilterModule[Req, Rep]
-      extends Stack.Module2[
-          Stats, ExceptionStatsHandler, ServiceFactory[Req, Rep]] {
+      extends Stack.Module2[Stats, ExceptionStatsHandler, ServiceFactory[
+        Req,
+        Rep
+      ]] {
     override val role = new Stack.Role("ClientBuilder StatsFilter")
     override val description =
       "Record request stats scoped to 'tries', measured after any retries have occurred"
@@ -1057,7 +1104,7 @@ private object ClientBuilderClient {
         exceptionStatsHandlerP: ExceptionStatsHandler,
         next: ServiceFactory[Req, Rep]
     ) = {
-      val Stats(statsReceiver) = statsP
+      val Stats(statsReceiver)               = statsP
       val ExceptionStatsHandler(categorizer) = exceptionStatsHandlerP
 
       val stats =
@@ -1068,7 +1115,7 @@ private object ClientBuilderClient {
 
   private class GlobalTimeoutModule[Req, Rep]
       extends Stack.Module2[GlobalTimeout, Timer, ServiceFactory[Req, Rep]] {
-    override val role = new Stack.Role("ClientBuilder GlobalTimeoutFilter")
+    override val role        = new Stack.Role("ClientBuilder GlobalTimeoutFilter")
     override val description = "Application-configured global timeout"
 
     override def make(
@@ -1077,7 +1124,7 @@ private object ClientBuilderClient {
         next: ServiceFactory[Req, Rep]
     ) = {
       val GlobalTimeout(timeout) = globalTimeoutP
-      val Timer(timer) = timerP
+      val Timer(timer)           = timerP
 
       if (timeout == Duration.Top) next
       else {
@@ -1091,7 +1138,7 @@ private object ClientBuilderClient {
 
   private class ExceptionSourceFilterModule[Req, Rep]
       extends Stack.Module1[Label, ServiceFactory[Req, Rep]] {
-    override val role = new Stack.Role("ClientBuilder ExceptionSourceFilter")
+    override val role        = new Stack.Role("ClientBuilder ExceptionSourceFilter")
     override val description = "Exception source filter"
 
     override def make(
@@ -1110,9 +1157,9 @@ private object ClientBuilderClient {
       dest: Name,
       label: String
   ): ServiceFactory[Req, Rep] = {
-    val params = client.params
-    val Daemonize(daemon) = params[Daemonize]
-    val Logger(logger) = params[Logger]
+    val params                   = client.params
+    val Daemonize(daemon)        = params[Daemonize]
+    val Logger(logger)           = params[Logger]
     val MonitorFactory(mFactory) = params[MonitorFactory]
 
     val clientParams = params + Monitor(mFactory(label))
@@ -1125,9 +1172,11 @@ private object ClientBuilderClient {
       private[this] val closed = new AtomicBoolean(false)
       override def close(deadline: Time): Future[Unit] = {
         if (!closed.compareAndSet(false, true)) {
-          logger.log(Level.WARNING,
-                     "Close on ServiceFactory called multiple times!",
-                     new Exception /*stack trace please*/ )
+          logger.log(
+            Level.WARNING,
+            "Close on ServiceFactory called multiple times!",
+            new Exception /*stack trace please*/
+          )
           return Future.exception(new IllegalStateException)
         }
 
@@ -1146,18 +1195,23 @@ private object ClientBuilderClient {
     val client = client0
       .transformed(new Stack.Transformer {
         def apply[Request, Response](
-            stack: Stack[ServiceFactory[Request, Response]]) =
+            stack: Stack[ServiceFactory[Request, Response]]
+        ) =
           stack
-            .insertBefore(Retries.Role,
-                          new StatsFilterModule[Request, Response])
-            .replace(Retries.Role,
-                     Retries.moduleWithRetryPolicy[Request, Response])
+            .insertBefore(
+              Retries.Role,
+              new StatsFilterModule[Request, Response]
+            )
+            .replace(
+              Retries.Role,
+              Retries.moduleWithRetryPolicy[Request, Response]
+            )
             .prepend(new GlobalTimeoutModule[Request, Response])
             .prepend(new ExceptionSourceFilterModule[Request, Response])
       })
       .configured(FactoryToService.Enabled(true))
 
-    val factory = newClient(client, dest, label)
+    val factory                    = newClient(client, dest, label)
     val service: Service[Req, Rep] = new FactoryToService[Req, Rep](factory)
 
     new ServiceProxy[Req, Rep](service) {
@@ -1165,9 +1219,11 @@ private object ClientBuilderClient {
       override def close(deadline: Time): Future[Unit] = {
         if (!released.compareAndSet(false, true)) {
           val Logger(logger) = client.params[Logger]
-          logger.log(java.util.logging.Level.WARNING,
-                     "Release on Service called multiple times!",
-                     new Exception /*stack trace please*/ )
+          logger.log(
+            java.util.logging.Level.WARNING,
+            "Release on Service called multiple times!",
+            new Exception /*stack trace please*/
+          )
           return Future.exception(new IllegalStateException)
         }
         super.close(deadline)
@@ -1184,11 +1240,10 @@ private case class CodecClient[Req, Rep](
     codecFactory: CodecFactory[Req, Rep]#Client,
     stack: Stack[ServiceFactory[Req, Rep]] = StackClient.newStack[Req, Rep],
     params: Stack.Params = ClientConfig.DefaultParams
-)
-    extends StackClient[Req, Rep] {
+) extends StackClient[Req, Rep] {
   import com.twitter.finagle.param._
 
-  def withParams(ps: Stack.Params) = copy(params = ps)
+  def withParams(ps: Stack.Params)                      = copy(params = ps)
   def withStack(stack: Stack[ServiceFactory[Req, Rep]]) = copy(stack = stack)
 
   def newClient(dest: Name, label: String): ServiceFactory[Req, Rep] = {
@@ -1196,12 +1251,12 @@ private case class CodecClient[Req, Rep](
 
     val prepConn = new Stack.ModuleParams[ServiceFactory[Req, Rep]] {
       override def parameters: Seq[Stack.Param[_]] = Nil
-      override val role = StackClient.Role.prepConn
+      override val role                            = StackClient.Role.prepConn
       override val description =
         "Connection preparation phase as defined by a Codec"
       def make(ps: Stack.Params, next: ServiceFactory[Req, Rep]) = {
         val Stats(stats) = ps[Stats]
-        val underlying = codec.prepareConnFactory(next, ps)
+        val underlying   = codec.prepareConnFactory(next, ps)
         new ServiceFactoryProxy(underlying) {
           val stat = stats.stat("codec_connection_preparation_latency_ms")
           override def apply(conn: ClientConnection) = {
@@ -1217,9 +1272,10 @@ private case class CodecClient[Req, Rep](
     val clientStack = {
       val stack0 = stack
         .replace(StackClient.Role.prepConn, prepConn)
-        .replace(StackClient.Role.prepFactory,
-                 (next: ServiceFactory[Req, Rep]) =>
-                   codec.prepareServiceFactory(next))
+        .replace(
+          StackClient.Role.prepFactory,
+          (next: ServiceFactory[Req, Rep]) => codec.prepareServiceFactory(next)
+        )
         .replace(TraceInitializerFilter.role, codec.newTraceInitializer)
 
       // disable failFast if the codec requests it or it is
@@ -1232,21 +1288,23 @@ private case class CodecClient[Req, Rep](
     case class Client(
         stack: Stack[ServiceFactory[Req, Rep]] = clientStack,
         params: Stack.Params = params
-    )
-        extends StdStackClient[Req, Rep, Client] {
-      protected def copy1(stack: Stack[ServiceFactory[Req, Rep]] = this.stack,
-                          params: Stack.Params = this.params): Client =
+    ) extends StdStackClient[Req, Rep, Client] {
+      protected def copy1(
+          stack: Stack[ServiceFactory[Req, Rep]] = this.stack,
+          params: Stack.Params = this.params
+      ): Client =
         copy(stack, params)
 
-      protected type In = Any
+      protected type In  = Any
       protected type Out = Any
 
       protected def newTransporter(): Transporter[Any, Any] = {
         val Stats(stats) = params[Stats]
         val newTransport = (ch: Channel) => codec.newClientTransport(ch, stats)
         Netty3Transporter[Any, Any](
-            codec.pipelineFactory,
-            params + Netty3Transporter.TransportFactory(newTransport))
+          codec.pipelineFactory,
+          params + Netty3Transporter.TransportFactory(newTransport)
+        )
       }
 
       protected def newDispatcher(transport: Transport[In, Out]) =
@@ -1261,8 +1319,8 @@ private case class CodecClient[Req, Rep](
       else params + ProtocolLibrary(codec.protocolLibraryName)
 
     Client(
-        stack = clientStack,
-        params = clientParams
+      stack = clientStack,
+      params = clientParams
     ).newClient(dest, label)
   }
 

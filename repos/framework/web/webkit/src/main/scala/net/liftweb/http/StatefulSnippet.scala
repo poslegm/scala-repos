@@ -70,9 +70,10 @@ trait StatefulSnippet extends DispatchSnippet {
     }
   }
 
-  def names: Set[String] = synchronized {
-    _names
-  }
+  def names: Set[String] =
+    synchronized {
+      _names
+    }
 
   def registerThisSnippet() =
     names.foreach(n => S.overrideSnippetForClass(n, this))
@@ -87,10 +88,12 @@ trait StatefulSnippet extends DispatchSnippet {
     * @param body - the NodeSeq to wrap in the anchor tag
     * @param attrs - the (optional) attributes for the HTML element
     */
-  def link(to: String,
-           func: () => Any,
-           body: NodeSeq,
-           attrs: SHtml.ElemAttr*): Elem =
+  def link(
+      to: String,
+      func: () => Any,
+      body: NodeSeq,
+      attrs: SHtml.ElemAttr*
+  ): Elem =
     SHtml.link(to, () => { registerThisSnippet(); func() }, body, attrs: _*)
 
   /**
@@ -110,10 +113,13 @@ trait StatefulSnippet extends DispatchSnippet {
     * Merge the SHtml into the form
     */
   private[http] def mergeIntoForm(
-      isForm: Boolean, res: NodeSeq, toMerge: => NodeSeq): NodeSeq = {
+      isForm: Boolean,
+      res: NodeSeq,
+      toMerge: => NodeSeq
+  ): NodeSeq = {
     val formElem = Helpers.findOption(res) {
       case e: Elem if e.label == "form" && null == e.prefix => Some(e)
-      case _ => None
+      case _                                                => None
     }
 
     if (formElem.isDefined) {
@@ -167,8 +173,7 @@ trait RenderFuncDispatch {
   * The simple composition of StatefulSnippet, Whence and RenderFuncDispatch.
   * This is the common use of stateful snippets and makes things easier.
   */
-trait SimpleStateful
-    extends StatefulSnippet with Whence with RenderFuncDispatch
+trait SimpleStateful extends StatefulSnippet with Whence with RenderFuncDispatch
 
 trait DispatchSnippet {
   type DispatchIt = PartialFunction[String, NodeSeq => NodeSeq]
@@ -196,10 +201,11 @@ object TransientSnippet {
   /**
     * Compute if the instance should be treated as transient
     */
-  def notTransient(obj: Any): Boolean = obj match {
-    case t: TransientSnippet => !t.transient_?
-    case _ => true
-  }
+  def notTransient(obj: Any): Boolean =
+    obj match {
+      case t: TransientSnippet => !t.transient_?
+      case _                   => true
+    }
 }
 
 /**
@@ -233,7 +239,6 @@ trait SimpleStatelessBehavior extends StatelessBehavior {
 trait BlankStatelessBehavior extends StatelessBehavior {
   def statelessDispatch: PartialFunction[String, NodeSeq => NodeSeq] = {
     case _ =>
-      _ =>
-        NodeSeq.Empty
+      _ => NodeSeq.Empty
   }
 }

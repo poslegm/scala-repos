@@ -1,7 +1,7 @@
 object Test1 {
   def one[T](x: T): Option[T] = Some(x)
-  val x = "one"
-  val y: Option[x.type] = one(x)
+  val x                       = "one"
+  val y: Option[x.type]       = one(x)
 }
 
 object Test2 {
@@ -38,17 +38,17 @@ class Test4 {
 }
 
 class Super5 {
-  final val q = ""
+  final val q    = ""
   def q1: q.type = q
 }
 
 class Test5 extends Super5 {
   val a = ""
   object Id {
-    def unapply(xxxx: Any): Some[Test5. super.q.type] =
-      Some[Test5. super.q.type](q1)
+    def unapply(xxxx: Any): Some[Test5.super.q.type] =
+      Some[Test5.super.q.type](q1)
   }
-  val b: Test5. super.q.type = a match {
+  val b: Test5.super.q.type = a match {
     case Id(x) => x
   }
 }

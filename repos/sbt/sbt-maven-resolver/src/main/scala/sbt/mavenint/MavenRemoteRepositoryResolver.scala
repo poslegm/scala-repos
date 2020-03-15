@@ -7,7 +7,14 @@ import org.apache.ivy.core.settings.IvySettings
 import org.eclipse.aether.artifact.{DefaultArtifact => AetherArtifact}
 import org.eclipse.aether.deployment.{DeployRequest => AetherDeployRequest}
 import org.eclipse.aether.metadata.{DefaultMetadata, Metadata}
-import org.eclipse.aether.resolution.{ArtifactDescriptorRequest => AetherDescriptorRequest, ArtifactDescriptorResult => AetherDescriptorResult, ArtifactRequest => AetherArtifactRequest, MetadataRequest => AetherMetadataRequest, VersionRequest => AetherVersionRequest, VersionRangeRequest => AetherVersionRangeRequest}
+import org.eclipse.aether.resolution.{
+  ArtifactDescriptorRequest => AetherDescriptorRequest,
+  ArtifactDescriptorResult => AetherDescriptorResult,
+  ArtifactRequest => AetherArtifactRequest,
+  MetadataRequest => AetherMetadataRequest,
+  VersionRequest => AetherVersionRequest,
+  VersionRangeRequest => AetherVersionRangeRequest
+}
 
 import sbt.internal.librarymanagement.ivyint.CustomRemoteMavenResolver
 import sbt.librarymanagement.MavenRepository
@@ -21,11 +28,13 @@ import scala.collection.JavaConverters._
   *
   */
 class MavenRemoteRepositoryResolver(
-    val repo: MavenRepository, settings: IvySettings)
-    extends MavenRepositoryResolver(settings) with CustomRemoteMavenResolver {
+    val repo: MavenRepository,
+    settings: IvySettings
+) extends MavenRepositoryResolver(settings)
+    with CustomRemoteMavenResolver {
   setName(repo.name)
   override def toString = s"${repo.name}: ${repo.root}"
-  protected val system = MavenRepositorySystemFactory.newRepositorySystemImpl
+  protected val system  = MavenRepositorySystemFactory.newRepositorySystemImpl
   // Note:  All maven repository resolvers will use the SAME maven cache.
   //        We're not sure if we care whether or not this means that the wrong resolver may report finding an artifact.
   //        The key is not to duplicate files repeatedly across many caches.
@@ -36,7 +45,10 @@ class MavenRemoteRepositoryResolver(
     MavenRepositorySystemFactory.newSessionImpl(system, localRepo)
   private val aetherRepository = {
     new org.eclipse.aether.repository.RemoteRepository.Builder(
-        repo.name, SbtRepositoryLayout.LAYOUT_NAME, repo.root).build()
+      repo.name,
+      SbtRepositoryLayout.LAYOUT_NAME,
+      repo.root
+    ).build()
   }
   // TODO - Check if isUseCacheOnly is used correctly.
   private def isUseCacheOnly: Boolean =
@@ -46,16 +58,20 @@ class MavenRemoteRepositoryResolver(
       .map(_.isUseCacheOnly)
       .getOrElse(false)
   protected def addRepositories(
-      request: AetherDescriptorRequest): AetherDescriptorRequest =
+      request: AetherDescriptorRequest
+  ): AetherDescriptorRequest =
     if (isUseCacheOnly) request else request.addRepository(aetherRepository)
   protected def addRepositories(
-      request: AetherArtifactRequest): AetherArtifactRequest =
+      request: AetherArtifactRequest
+  ): AetherArtifactRequest =
     if (isUseCacheOnly) request else request.addRepository(aetherRepository)
   protected def addRepositories(
-      request: AetherVersionRequest): AetherVersionRequest =
+      request: AetherVersionRequest
+  ): AetherVersionRequest =
     if (isUseCacheOnly) request else request.addRepository(aetherRepository)
   protected def addRepositories(
-      request: AetherVersionRangeRequest): AetherVersionRangeRequest =
+      request: AetherVersionRangeRequest
+  ): AetherVersionRangeRequest =
     if (isUseCacheOnly) request else request.addRepository(aetherRepository)
 
   /** Actually publishes aether artifacts. */
@@ -68,37 +84,44 @@ class MavenRemoteRepositoryResolver(
   protected def getPublicationTime(mrid: ModuleRevisionId): Option[Long] = {
     val metadataRequest = new AetherMetadataRequest()
     metadataRequest.setMetadata(
-        new DefaultMetadata(mrid.getOrganisation,
-                            mrid.getName,
-                            mrid.getRevision,
-                            MavenRepositoryResolver.MAVEN_METADATA_XML,
-                            Metadata.Nature.RELEASE_OR_SNAPSHOT))
+      new DefaultMetadata(
+        mrid.getOrganisation,
+        mrid.getName,
+        mrid.getRevision,
+        MavenRepositoryResolver.MAVEN_METADATA_XML,
+        Metadata.Nature.RELEASE_OR_SNAPSHOT
+      )
+    )
     if (!isUseCacheOnly) metadataRequest.setRepository(aetherRepository)
-    val metadataResultOpt = try system
-      .resolveMetadata(session, java.util.Arrays.asList(metadataRequest))
-      .asScala
-      .headOption catch {
-      case e: org.eclipse.aether.resolution.ArtifactResolutionException => None
-    }
+    val metadataResultOpt =
+      try system
+        .resolveMetadata(session, java.util.Arrays.asList(metadataRequest))
+        .asScala
+        .headOption
+      catch {
+        case e: org.eclipse.aether.resolution.ArtifactResolutionException =>
+          None
+      }
     try metadataResultOpt match {
       case Some(md) if md.isResolved =>
         import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader
         import org.codehaus.plexus.util.ReaderFactory
         val readMetadata = {
           val reader = ReaderFactory.newXmlReader(md.getMetadata.getFile)
-          try new MetadataXpp3Reader().read(reader, false) finally reader
+          try new MetadataXpp3Reader().read(reader, false)
+          finally reader
             .close()
         }
         val timestampOpt = for {
-          v <- Option(readMetadata.getVersioning)
+          v  <- Option(readMetadata.getVersioning)
           sp <- Option(v.getSnapshot)
           ts <- Option(sp.getTimestamp)
-          t <- MavenRepositoryResolver.parseTimeString(ts)
+          t  <- MavenRepositoryResolver.parseTimeString(ts)
         } yield t
         val lastUpdatedOpt = for {
-          v <- Option(readMetadata.getVersioning)
+          v  <- Option(readMetadata.getVersioning)
           lu <- Option(v.getLastUpdated)
-          d <- MavenRepositoryResolver.parseTimeString(lu)
+          d  <- MavenRepositoryResolver.parseTimeString(lu)
         } yield d
         // TODO - Only look at timestamp *IF* the version is for a snapshot.
         timestampOpt orElse lastUpdatedOpt

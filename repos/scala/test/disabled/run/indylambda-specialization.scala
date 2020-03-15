@@ -5,7 +5,7 @@ object Test {
     val usesObjectApply = frames.exists(_.getMethodName == "apply")
     assert(expected == usesObjectApply, frames.mkString("\n"))
   }
-  def assertSpecialized() = assertApply(false)
+  def assertSpecialized()   = assertApply(false)
   def assertUnspecialized() = assertApply(true)
   def main(args: Array[String]): Unit = {
     ((i: String) => { assertUnspecialized(); i }).apply("")

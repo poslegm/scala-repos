@@ -14,16 +14,21 @@ import org.jetbrains.plugins.scala.extensions.BooleanExt
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.parser.ScalaElementTypes
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScStableCodeReferenceElement
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.{ScImportExpr, ScImportSelector}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.{
+  ScImportExpr,
+  ScImportSelector
+}
 import org.jetbrains.plugins.scala.lang.psi.stubs.ScImportSelectorStub
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 20.02.2008
   */
 class ScImportSelectorImpl private (
-    stub: StubElement[ScImportSelector], nodeType: IElementType, node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    stub: StubElement[ScImportSelector],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
     with ScImportSelector {
   def this(node: ASTNode) = { this(null, null, node) }
   def this(stub: ScImportSelectorStub) = {
@@ -48,7 +53,7 @@ class ScImportSelectorImpl private (
     }
     getFirstChild match {
       case s: ScStableCodeReferenceElement => s
-      case _ => null
+      case _                               => null
     }
   }
 
@@ -59,9 +64,9 @@ class ScImportSelectorImpl private (
       expr.deleteExpr()
     }
     val forward: Boolean = expr.selectors.head == this
-    var node = this.getNode
-    var prev = if (forward) node.getTreeNext else node.getTreePrev
-    var t: IElementType = null
+    var node             = this.getNode
+    var prev             = if (forward) node.getTreeNext else node.getTreePrev
+    var t: IElementType  = null
     do {
       node.getTreeParent.removeChild(node)
       node = prev
@@ -70,14 +75,16 @@ class ScImportSelectorImpl private (
         t = node.getElementType
       }
     } while (node != null && !(t == ScalaElementTypes.IMPORT_SELECTOR ||
-        t == ScalaTokenTypes.tUNDER))
+      t == ScalaTokenTypes.tUNDER))
 
     expr.selectors match {
       case Seq(sel: ScImportSelector) if !sel.isAliasedImport =>
         val withoutBracesText =
           expr.qualifier.getText + "." + sel.reference.getText
         val newImportExpr = ScalaPsiElementFactory.createImportExprFromText(
-            withoutBracesText, expr.getManager)
+          withoutBracesText,
+          expr.getManager
+        )
         expr.replace(newImportExpr)
       case _ =>
     }

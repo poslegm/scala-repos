@@ -26,7 +26,9 @@ import org.apache.spark.internal.Logging
   * Base abstract class for all unit tests in Spark for handling common functionality.
   */
 private[spark] abstract class SparkFunSuite
-    extends FunSuite with BeforeAndAfterAll with Logging {
+    extends FunSuite
+    with BeforeAndAfterAll
+    with Logging {
 // scalastyle:on
 
   protected override def afterAll(): Unit = {
@@ -46,12 +48,11 @@ private[spark] abstract class SparkFunSuite
     * {{org.scalatest.BeforeAndAfter}} trait instead.
     */
   final protected override def withFixture(test: NoArgTest): Outcome = {
-    val testName = test.text
-    val suiteName = this.getClass.getName
+    val testName       = test.text
+    val suiteName      = this.getClass.getName
     val shortSuiteName = suiteName.replaceAll("org.apache.spark", "o.a.s")
     try {
-      logInfo(
-          s"\n\n===== TEST OUTPUT FOR $shortSuiteName: '$testName' =====\n")
+      logInfo(s"\n\n===== TEST OUTPUT FOR $shortSuiteName: '$testName' =====\n")
       test()
     } finally {
       logInfo(s"\n\n===== FINISHED $shortSuiteName: '$testName' =====\n")

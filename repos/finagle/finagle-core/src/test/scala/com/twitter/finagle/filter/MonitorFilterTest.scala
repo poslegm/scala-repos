@@ -16,20 +16,22 @@ import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
 class MonitorFilterTest
-    extends FunSuite with MockitoSugar with IntegrationBase {
+    extends FunSuite
+    with MockitoSugar
+    with IntegrationBase {
 
   class MockMonitor extends Monitor {
     def handle(cause: Throwable) = false
   }
 
   class MonitorFilterHelper {
-    val monitor = Mockito.spy(new MockMonitor)
+    val monitor    = Mockito.spy(new MockMonitor)
     val underlying = mock[Service[Int, Int]]
     when(underlying.close(any[Time])) thenReturn Future.Done
     val reply = new Promise[Int]
     when(underlying(any[Int])) thenReturn reply
     val service = new MonitorFilter(monitor) andThen underlying
-    val exc = new RuntimeException
+    val exc     = new RuntimeException
   }
 
   test("MonitorFilter should report Future.exception") {
@@ -56,16 +58,17 @@ class MonitorFilterTest
   }
 
   class MockSourcedException(underlying: Throwable, name: String)
-      extends RuntimeException(underlying) with SourcedException {
+      extends RuntimeException(underlying)
+      with SourcedException {
     def this(name: String) = this(null, name)
     serviceName = name
   }
 
   class Helper {
     val monitor = Mockito.spy(new MockMonitor)
-    val inner = new MockSourcedException("FakeService1")
-    val outer = new MockSourcedException(
-        inner, SourcedException.UnspecifiedServiceName)
+    val inner   = new MockSourcedException("FakeService1")
+    val outer =
+      new MockSourcedException(inner, SourcedException.UnspecifiedServiceName)
 
     val mockLogger = Mockito.spy(Logger.getLogger("MockServer"))
     // add handler to redirect and mute output, so that it doesn't show up in the console during a test run.
@@ -74,7 +77,8 @@ class MonitorFilterTest
   }
 
   test(
-      "MonitorFilter should when attached to a server, report source for sourced exceptions") {
+    "MonitorFilter should when attached to a server, report source for sourced exceptions"
+  ) {
     val h = new Helper
     import h._
 
@@ -97,7 +101,9 @@ class MonitorFilterTest
       .hostConnectionLimit(1)
       .build()
 
-    when(service(any[String])) thenThrow outer // make server service throw the mock exception
+    when(
+      service(any[String])
+    ) thenThrow outer // make server service throw the mock exception
 
     try {
       val f = Await.result(client("123"))
@@ -109,19 +115,22 @@ class MonitorFilterTest
     verify(monitor, times(0)).handle(inner)
     verify(monitor).handle(outer)
     verify(mockLogger).log(
-        Matchers.eq(Level.SEVERE),
-        Matchers.eq(
-            "The 'FakeService2' service FakeService2 on behalf of FakeService1 threw an exception"),
-        Matchers.eq(outer))
+      Matchers.eq(Level.SEVERE),
+      Matchers.eq(
+        "The 'FakeService2' service FakeService2 on behalf of FakeService1 threw an exception"
+      ),
+      Matchers.eq(outer)
+    )
   }
 
   test(
-      "MonitorFilter should when attached to a client, report source for sourced exceptions") {
+    "MonitorFilter should when attached to a client, report source for sourced exceptions"
+  ) {
     val h = new Helper
     import h._
 
     // mock channel to mock the service provided by a server
-    val preparedFactory = mock[ServiceFactory[String, String]]
+    val preparedFactory        = mock[ServiceFactory[String, String]]
     val preparedServicePromise = new Promise[Service[String, String]]
     when(preparedFactory()) thenReturn preparedServicePromise
     when(preparedFactory.close(any[Time])) thenReturn Future.Done
@@ -130,9 +139,12 @@ class MonitorFilterTest
     when(preparedFactory.status) thenReturn (Status.Open)
 
     val m = new MockChannel
-    when(m.codec.prepareConnFactory(
-            any[ServiceFactory[String, String]],
-            any[Stack.Params])) thenReturn preparedFactory
+    when(
+      m.codec.prepareConnFactory(
+        any[ServiceFactory[String, String]],
+        any[Stack.Params]
+      )
+    ) thenReturn preparedFactory
 
     val client =
       m.clientBuilder.monitor(_ => monitor).logger(mockLogger).build()

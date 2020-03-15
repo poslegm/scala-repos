@@ -20,14 +20,14 @@ object Test0Test {
 
   def test(args: Array[String]): Unit = {
     val zs: Array[Boolean] = Array(false, true);
-    val bs: Array[Byte] = Array(0, 1, 2);
-    val ss: Array[Short] = Array(3, 4, 5);
-    val cs: Array[Char] = Array('a', 'b', 'c');
-    val is: Array[Int] = Array(6, 7, 8);
-    val ls: Array[Long] = Array(9l, 10l, 11l);
-    val fs: Array[Float] = Array(12.0f, 13.0f);
-    val ds: Array[Double] = Array(14.0d, 15.0d);
-    val os: Array[AnyRef] = Array("string");
+    val bs: Array[Byte]    = Array(0, 1, 2);
+    val ss: Array[Short]   = Array(3, 4, 5);
+    val cs: Array[Char]    = Array('a', 'b', 'c');
+    val is: Array[Int]     = Array(6, 7, 8);
+    val ls: Array[Long]    = Array(9L, 10L, 11L);
+    val fs: Array[Float]   = Array(12.0f, 13.0f);
+    val ds: Array[Double]  = Array(14.0d, 15.0d);
+    val os: Array[AnyRef]  = Array("string");
     println(zs);
     println(bs);
     println(ss);
@@ -126,10 +126,11 @@ object Test3Test {
 
   def check(expected: Boolean, actual1: Boolean, actual2: Boolean): Unit =
     Console.println(
-        if ((actual1 == expected) && (actual2 == !expected)) "Ok"
-        else
-          "KO: " + "expected: " + expected + " - " + (!expected) + ", " +
-          "found: " + actual1 + " - " + actual1);
+      if ((actual1 == expected) && (actual2 == !expected)) "Ok"
+      else
+        "KO: " + "expected: " + expected + " - " + (!expected) + ", " +
+          "found: " + actual1 + " - " + actual1
+    );
 
   def test(args: Array[String]): Unit = {
     val foo1: AnyRef = null;
@@ -169,11 +170,11 @@ object Test {
       test;
     } catch {
       case exception: Throwable => {
-          //val name: String = Thread.currentThread().getName();
-          Console.print("Exception in thread \"" + name + "\" " + exception);
-          Console.println;
-          errors = errors + 1;
-        }
+        //val name: String = Thread.currentThread().getName();
+        Console.print("Exception in thread \"" + name + "\" " + exception);
+        Console.println;
+        errors = errors + 1;
+      }
     }
     Console.println(">>> " + name);
     Console.println;

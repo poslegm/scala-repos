@@ -7,13 +7,13 @@ import java.io.File
 sealed abstract class DeclaredAs(val symbol: scala.Symbol)
 
 object DeclaredAs {
-  case object Method extends DeclaredAs('method)
-  case object Trait extends DeclaredAs('trait)
+  case object Method    extends DeclaredAs('method)
+  case object Trait     extends DeclaredAs('trait)
   case object Interface extends DeclaredAs('interface)
-  case object Object extends DeclaredAs('object)
-  case object Class extends DeclaredAs('class)
-  case object Field extends DeclaredAs('field)
-  case object Nil extends DeclaredAs('nil)
+  case object Object    extends DeclaredAs('object)
+  case object Class     extends DeclaredAs('class)
+  case object Field     extends DeclaredAs('field)
+  case object Nil       extends DeclaredAs('nil)
 
   def allDeclarations =
     Seq(Method, Trait, Interface, Object, Class, Field, Nil)
@@ -54,45 +54,48 @@ object DeleteFile {
 
 sealed trait NoteSeverity
 case object NoteError extends NoteSeverity
-case object NoteWarn extends NoteSeverity
-case object NoteInfo extends NoteSeverity
+case object NoteWarn  extends NoteSeverity
+case object NoteInfo  extends NoteSeverity
 object NoteSeverity {
-  def apply(severity: Int) = severity match {
-    case 2 => NoteError
-    case 1 => NoteWarn
-    case 0 => NoteInfo
-  }
+  def apply(severity: Int) =
+    severity match {
+      case 2 => NoteError
+      case 1 => NoteWarn
+      case 0 => NoteInfo
+    }
 }
 
 sealed abstract class RefactorLocation(val symbol: Symbol)
 
 object RefactorLocation {
   case object QualifiedName extends RefactorLocation('qualifiedName)
-  case object File extends RefactorLocation('file)
-  case object NewName extends RefactorLocation('newName)
-  case object Name extends RefactorLocation('name)
-  case object Start extends RefactorLocation('start)
-  case object End extends RefactorLocation('end)
-  case object MethodName extends RefactorLocation('methodName)
+  case object File          extends RefactorLocation('file)
+  case object NewName       extends RefactorLocation('newName)
+  case object Name          extends RefactorLocation('name)
+  case object Start         extends RefactorLocation('start)
+  case object End           extends RefactorLocation('end)
+  case object MethodName    extends RefactorLocation('methodName)
 }
 
 sealed abstract class RefactorType(val symbol: Symbol)
 
 object RefactorType {
-  case object Rename extends RefactorType('rename)
-  case object ExtractMethod extends RefactorType('extractMethod)
-  case object ExtractLocal extends RefactorType('extractLocal)
-  case object InlineLocal extends RefactorType('inlineLocal)
+  case object Rename          extends RefactorType('rename)
+  case object ExtractMethod   extends RefactorType('extractMethod)
+  case object ExtractLocal    extends RefactorType('extractLocal)
+  case object InlineLocal     extends RefactorType('inlineLocal)
   case object OrganizeImports extends RefactorType('organizeImports)
-  case object AddImport extends RefactorType('addImport)
+  case object AddImport       extends RefactorType('addImport)
 
   def allTypes =
-    Seq(Rename,
-        ExtractMethod,
-        ExtractLocal,
-        InlineLocal,
-        OrganizeImports,
-        AddImport)
+    Seq(
+      Rename,
+      ExtractMethod,
+      ExtractLocal,
+      InlineLocal,
+      OrganizeImports,
+      AddImport
+    )
 }
 
 case class SourceFileInfo(

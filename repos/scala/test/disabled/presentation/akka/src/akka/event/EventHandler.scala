@@ -56,10 +56,10 @@ object EventHandler extends ListenerManagement {
   import java.util.Date
   import akka.dispatch.Dispatchers
 
-  val ErrorLevel = 1
+  val ErrorLevel   = 1
   val WarningLevel = 2
-  val InfoLevel = 3
-  val DebugLevel = 4
+  val InfoLevel    = 3
+  val DebugLevel   = 4
 
   sealed trait Event {
     @transient
@@ -80,12 +80,12 @@ object EventHandler extends ListenerManagement {
     override val level = DebugLevel
   }
 
-  val error = "[ERROR]   [%s] [%s] [%s] %s\n%s".intern
+  val error   = "[ERROR]   [%s] [%s] [%s] %s\n%s".intern
   val warning = "[WARN]    [%s] [%s] [%s] %s".intern
-  val info = "[INFO]    [%s] [%s] [%s] %s".intern
-  val debug = "[DEBUG]   [%s] [%s] [%s] %s".intern
+  val info    = "[INFO]    [%s] [%s] [%s] %s".intern
+  val debug   = "[DEBUG]   [%s] [%s] [%s] %s".intern
   val generic = "[GENERIC] [%s] [%s]".intern
-  val ID = "event:handler".intern
+  val ID      = "event:handler".intern
 
   class EventHandlerException extends AkkaException
 
@@ -93,14 +93,15 @@ object EventHandler extends ListenerManagement {
     Dispatchers.newExecutorBasedEventDrivenDispatcher(ID).build
 
   val level: Int = config.getString("akka.event-handler-level", "INFO") match {
-    case "ERROR" => ErrorLevel
+    case "ERROR"   => ErrorLevel
     case "WARNING" => WarningLevel
-    case "INFO" => InfoLevel
-    case "DEBUG" => DebugLevel
+    case "INFO"    => InfoLevel
+    case "DEBUG"   => DebugLevel
     case unknown =>
       throw new ConfigurationException(
-          "Configuration option 'akka.event-handler-level' is invalid [" +
-          unknown + "]")
+        "Configuration option 'akka.event-handler-level' is invalid [" +
+          unknown + "]"
+      )
   }
 
   /**
@@ -117,7 +118,7 @@ object EventHandler extends ListenerManagement {
     } else notifyListeners(event)
   }
 
-  def notify[T <: Event : ClassTag](event: => T) {
+  def notify[T <: Event: ClassTag](event: => T) {
     if (level >= levelFor(classTag[T].erasure.asInstanceOf[Class[_ <: Event]]))
       notifyListeners(event)
   }
@@ -192,36 +193,48 @@ object EventHandler extends ListenerManagement {
     def receive = {
       case event @ Error(cause, instance, message) =>
         println(
-            error.format(formattedTimestamp,
-                         event.thread.getName,
-                         instance.getClass.getSimpleName,
-                         message,
-                         stackTraceFor(cause)))
+          error.format(
+            formattedTimestamp,
+            event.thread.getName,
+            instance.getClass.getSimpleName,
+            message,
+            stackTraceFor(cause)
+          )
+        )
       case event @ Warning(instance, message) =>
         println(
-            warning.format(formattedTimestamp,
-                           event.thread.getName,
-                           instance.getClass.getSimpleName,
-                           message))
+          warning.format(
+            formattedTimestamp,
+            event.thread.getName,
+            instance.getClass.getSimpleName,
+            message
+          )
+        )
       case event @ Info(instance, message) =>
         println(
-            info.format(formattedTimestamp,
-                        event.thread.getName,
-                        instance.getClass.getSimpleName,
-                        message))
+          info.format(
+            formattedTimestamp,
+            event.thread.getName,
+            instance.getClass.getSimpleName,
+            message
+          )
+        )
       case event @ Debug(instance, message) =>
         println(
-            debug.format(formattedTimestamp,
-                         event.thread.getName,
-                         instance.getClass.getSimpleName,
-                         message))
+          debug.format(
+            formattedTimestamp,
+            event.thread.getName,
+            instance.getClass.getSimpleName,
+            message
+          )
+        )
       case event =>
         println(generic.format(formattedTimestamp, event.toString))
     }
   }
 
   val defaultListeners = config.getList("akka.event-handlers") match {
-    case Nil => "akka.event.EventHandler$DefaultListener" :: Nil
+    case Nil       => "akka.event.EventHandler$DefaultListener" :: Nil
     case listeners => listeners
   }
   defaultListeners foreach { listenerName =>
@@ -234,9 +247,10 @@ object EventHandler extends ListenerManagement {
     } catch {
       case e: Exception =>
         throw new ConfigurationException(
-            "Event Handler specified in config can't be loaded [" +
+          "Event Handler specified in config can't be loaded [" +
             listenerName + "] due to [" + e.toString + "]",
-            e)
+          e
+        )
     }
   }
 }

@@ -26,13 +26,14 @@ object TestCrcPerformance {
   def main(args: Array[String]): Unit = {
     if (args.length < 2)
       Utils.croak(
-          "USAGE: java " + getClass().getName() + " num_messages message_size")
+        "USAGE: java " + getClass().getName() + " num_messages message_size"
+      )
     val numMessages = args(0).toInt
     val messageSize = args(1).toInt
     //val numMessages = 100000000
     //val messageSize = 32
 
-    val dir = TestUtils.tempDir()
+    val dir     = TestUtils.tempDir()
     val content = new Array[Byte](messageSize)
     new Random(1).nextBytes(content)
 
@@ -43,9 +44,11 @@ object TestCrcPerformance {
     }
     val ellapsed = System.nanoTime - start
     println(
-        "%d messages created in %.2f seconds + (%.2f ns per message).".format(
-            numMessages,
-            ellapsed / (1000.0 * 1000.0 * 1000.0),
-            ellapsed / numMessages.toDouble))
+      "%d messages created in %.2f seconds + (%.2f ns per message).".format(
+        numMessages,
+        ellapsed / (1000.0 * 1000.0 * 1000.0),
+        ellapsed / numMessages.toDouble
+      )
+    )
   }
 }

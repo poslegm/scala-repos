@@ -7,7 +7,7 @@ class NewlineTest extends LineMarkerTestBase {
   protected override def getBasePath = super.getBasePath + "/newline/"
 
   def testCollision() = doTest()
-  def testJoined() = doTest()
-  def testSpacing() = doTest()
-  def testWrap() = doTest()
+  def testJoined()    = doTest()
+  def testSpacing()   = doTest()
+  def testWrap()      = doTest()
 }

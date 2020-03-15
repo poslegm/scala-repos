@@ -32,11 +32,13 @@ object JsonQueryExamples extends Specification {
       ip
     }
 
-    ips mustEqual List("192.168.1.125",
-                       "192.168.1.126",
-                       "192.168.1.127",
-                       "192.168.2.125",
-                       "192.168.2.126")
+    ips mustEqual List(
+      "192.168.1.125",
+      "192.168.1.126",
+      "192.168.1.127",
+      "192.168.2.125",
+      "192.168.2.126"
+    )
   }
 
   "List of IPs converted to XML" in {
@@ -44,9 +46,9 @@ object JsonQueryExamples extends Specification {
 
     val ips = <ips>{
       for {
-        field <-ipsList
+        field       <- ipsList
         JString(ip) <- field.value
-      } yield <ip>{ ip }</ip>
+      } yield <ip>{ip}</ip>
     }</ips>
 
     ips mustEqual <ips><ip>192.168.1.125</ip><ip>192.168.1.126</ip><ip>192.168.1.127</ip><ip>192.168.2.125</ip><ip>192.168.2.126</ip></ips>
@@ -54,8 +56,8 @@ object JsonQueryExamples extends Specification {
 
   "List of IPs in cluster2" in {
     val ips = for {
-      cluster @ JObject(x) <- json \ "data_center" if
-                             (x contains JField("name", JString("cluster2")))
+      cluster @ JObject(x) <- json \ "data_center"
+      if (x contains JField("name", JString("cluster2")))
       JField("ip", JString(ip)) <- (cluster \\ "ip").obj
     } yield {
       ip
@@ -79,26 +81,27 @@ object JsonQueryExamples extends Specification {
 
     val servers = for {
       JField("servers", JArray(servers)) <- (json \\ "servers").obj
-      JObject(server) <- servers
-      JField("ip", JString(ip)) <- server
-      JField("uptime", JInt(uptime)) <- server
+      JObject(server)                    <- servers
+      JField("ip", JString(ip))          <- server
+      JField("uptime", JInt(uptime))     <- server
     } yield {
       Server(ip, uptime.longValue)
     }
 
     servers sortWith (_.uptime > _.uptime) mustEqual List(
-        Server("192.168.1.127", 901214),
-        Server("192.168.2.125", 453423),
-        Server("192.168.2.126", 214312),
-        Server("192.168.1.126", 189822),
-        Server("192.168.1.125", 150123))
+      Server("192.168.1.127", 901214),
+      Server("192.168.2.125", 453423),
+      Server("192.168.2.126", 214312),
+      Server("192.168.1.126", 189822),
+      Server("192.168.1.125", 150123)
+    )
   }
 
   "Clusters administered by liza" in {
     val clusters = for {
-      JObject(cluster) <- json
+      JObject(cluster)                 <- json
       JField("admins", JArray(admins)) <- cluster
-                                             if admins contains JString("liza")
+      if admins contains JString("liza")
       JField("name", JString(name)) <- cluster
     } yield name
 
@@ -106,7 +109,8 @@ object JsonQueryExamples extends Specification {
   }
 
   val json =
-    parse("""
+    parse(
+      """
     { "data_center": [
       {
         "name": "cluster1",
@@ -134,5 +138,6 @@ object JsonQueryExamples extends Specification {
         "admins": ["joe", "liza"]
       }
    ]}
-  """)
+  """
+    )
 }

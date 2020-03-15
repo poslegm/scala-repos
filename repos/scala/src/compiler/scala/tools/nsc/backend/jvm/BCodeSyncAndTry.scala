@@ -30,8 +30,8 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
 
     def genSynchronized(tree: Apply, expectedType: BType): BType = {
       val Apply(fun, args) = tree
-      val monitor = locals.makeLocal(ObjectRef, "monitor")
-      val monCleanup = new asm.Label
+      val monitor          = locals.makeLocal(ObjectRef, "monitor")
+      val monCleanup       = new asm.Label
 
       // if the synchronized block returns a result, store it in a local variable.
       // Just leaving it on the stack is not valid in MSIL (stack is cleaned when leaving try-blocks).
@@ -180,7 +180,7 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
     def genLoadTry(tree: Try): BType = {
 
       val Try(block, catches, finalizer) = tree
-      val kind = tpeTK(tree)
+      val kind                           = tpeTK(tree)
 
       val caseHandlers: List[EHClause] =
         for (CaseDef(pat, _, caseBody) <- catches) yield {
@@ -188,7 +188,7 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
             case Typed(Ident(nme.WILDCARD), tpt) =>
               NamelessEH(tpeTK(tpt).asClassBType, caseBody)
             case Ident(nme.WILDCARD) => NamelessEH(jlThrowableRef, caseBody)
-            case Bind(_, _) => BoundEH(pat.symbol, caseBody)
+            case Bind(_, _)          => BoundEH(pat.symbol, caseBody)
           }
         }
 
@@ -252,14 +252,17 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
       for (ch <- caseHandlers) {
 
         // (2.a) emit case clause proper
-        val startHandler = currProgramPoint()
+        val startHandler          = currProgramPoint()
         var endHandler: asm.Label = null
-        var excType: ClassBType = null
+        var excType: ClassBType   = null
         registerCleanup(finCleanup)
         ch match {
           case NamelessEH(typeToDrop, caseBody) =>
             bc drop typeToDrop
-            genLoad(caseBody, kind) // adapts caseBody to `kind`, thus it can be stored, if `guardResult`, in `tmp`.
+            genLoad(
+              caseBody,
+              kind
+            ) // adapts caseBody to `kind`, thus it can be stored, if `guardResult`, in `tmp`.
             nopIfNeeded(startHandler)
             endHandler = currProgramPoint()
             excType = typeToDrop
@@ -296,7 +299,8 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
           currProgramPoint() // version of the finally-clause reached via unhandled exception.
         protect(startTryBody, finalHandler, finalHandler, null)
         val Local(eTK, _, eIdx, _) = locals(
-            locals.makeLocal(jlThrowableRef, "exc"))
+          locals.makeLocal(jlThrowableRef, "exc")
+        )
         bc.store(eIdx, eTK)
         emitFinalizer(finalizer, null, isDuplicate = true)
         bc.load(eIdx, eTK)
@@ -339,7 +343,11 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
 
       markProgramPoint(postHandlers)
       if (hasFinally) {
-        emitFinalizer(finalizer, tmp, isDuplicate = false) // the only invocation of emitFinalizer with `isDuplicate == false`
+        emitFinalizer(
+          finalizer,
+          tmp,
+          isDuplicate = false
+        ) // the only invocation of emitFinalizer with `isDuplicate == false`
       }
 
       kind
@@ -362,16 +370,19 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
       }
     }
 
-    def protect(start: asm.Label,
-                end: asm.Label,
-                handler: asm.Label,
-                excType: ClassBType) {
+    def protect(
+        start: asm.Label,
+        end: asm.Label,
+        handler: asm.Label,
+        excType: ClassBType
+    ) {
       val excInternalName: String =
         if (excType == null) null
         else excType.internalName
       assert(
-          start != end,
-          "protecting a range of zero instructions leads to illegal class format. Solution: add a NOP to that range.")
+        start != end,
+        "protecting a range of zero instructions leads to illegal class format. Solution: add a NOP to that range."
+      )
       mnode.visitTryCatchBlock(start, end, handler, excInternalName)
     }
 
@@ -394,9 +405,8 @@ abstract class BCodeSyncAndTry extends BCodeBodyBuilder {
     }
 
     /* Does this tree have a try-catch block? */
-    def mayCleanStack(tree: Tree): Boolean = tree exists { t =>
-      t.isInstanceOf[Try]
-    }
+    def mayCleanStack(tree: Tree): Boolean =
+      tree exists { t => t.isInstanceOf[Try] }
 
     trait EHClause
     case class NamelessEH(typeToDrop: ClassBType, caseBody: Tree)

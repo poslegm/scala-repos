@@ -30,12 +30,14 @@ import reflect.Manifest
 import net.liftweb.http.js.JsExp
 
 class MongoCaseClassField[OwnerType <: Record[OwnerType], CaseType](
-    rec: OwnerType)(implicit mf: Manifest[CaseType])
-    extends Field[CaseType, OwnerType] with MandatoryTypedField[CaseType]
+    rec: OwnerType
+)(implicit mf: Manifest[CaseType])
+    extends Field[CaseType, OwnerType]
+    with MandatoryTypedField[CaseType]
     with MongoFieldFlavor[CaseType] {
 
   // override this for custom formats
-  def formats: Formats = DefaultFormats
+  def formats: Formats       = DefaultFormats
   implicit lazy val _formats = formats
 
   override type MyType = CaseType
@@ -47,15 +49,16 @@ class MongoCaseClassField[OwnerType <: Record[OwnerType], CaseType](
   def toForm: Box[NodeSeq] = Empty
 
   override def defaultValue = null.asInstanceOf[MyType]
-  override def optional_? = true
+  override def optional_?   = true
 
   def asJValue: JValue =
     valueBox.map(v => Extraction.decompose(v)) openOr (JNothing: JValue)
 
-  def setFromJValue(jvalue: JValue): Box[CaseType] = jvalue match {
-    case JNothing | JNull => setBox(Empty)
-    case s => setBox(Helpers.tryo[CaseType] { s.extract[CaseType] })
-  }
+  def setFromJValue(jvalue: JValue): Box[CaseType] =
+    jvalue match {
+      case JNothing | JNull => setBox(Empty)
+      case s                => setBox(Helpers.tryo[CaseType] { s.extract[CaseType] })
+    }
 
   def asDBObject: DBObject = {
     JObjectParser.parse(asJValue.asInstanceOf[JObject])
@@ -70,26 +73,28 @@ class MongoCaseClassField[OwnerType <: Record[OwnerType], CaseType](
     Helpers.tryo { JsonParser.parse(in).extract[CaseType] }
   }
 
-  def setFromAny(in: Any): Box[CaseType] = in match {
-    case dbo: DBObject => setFromDBObject(dbo)
-    case c if mf.runtimeClass.isInstance(c) =>
-      setBox(Full(c.asInstanceOf[CaseType]))
-    case Full(c) if mf.runtimeClass.isInstance(c) =>
-      setBox(Full(c.asInstanceOf[CaseType]))
-    case null | None | Empty => setBox(defaultValueBox)
-    case (failure: Failure) => setBox(failure)
-    case _ => setBox(defaultValueBox)
-  }
+  def setFromAny(in: Any): Box[CaseType] =
+    in match {
+      case dbo: DBObject => setFromDBObject(dbo)
+      case c if mf.runtimeClass.isInstance(c) =>
+        setBox(Full(c.asInstanceOf[CaseType]))
+      case Full(c) if mf.runtimeClass.isInstance(c) =>
+        setBox(Full(c.asInstanceOf[CaseType]))
+      case null | None | Empty => setBox(defaultValueBox)
+      case (failure: Failure)  => setBox(failure)
+      case _                   => setBox(defaultValueBox)
+    }
 }
 
 class MongoCaseClassListField[OwnerType <: Record[OwnerType], CaseType](
-    rec: OwnerType)(implicit mf: Manifest[CaseType])
+    rec: OwnerType
+)(implicit mf: Manifest[CaseType])
     extends Field[List[CaseType], OwnerType]
     with MandatoryTypedField[List[CaseType]]
     with MongoFieldFlavor[List[CaseType]] {
 
   // override this for custom formats
-  def formats: Formats = DefaultFormats
+  def formats: Formats       = DefaultFormats
   implicit lazy val _formats = formats
 
   override type MyType = List[CaseType]
@@ -101,25 +106,29 @@ class MongoCaseClassListField[OwnerType <: Record[OwnerType], CaseType](
   def toForm: Box[NodeSeq] = Empty
 
   override def defaultValue: MyType = Nil
-  override def optional_? = true
+  override def optional_?           = true
 
   def asJValue: JValue = JArray(value.map(v => Extraction.decompose(v)))
 
-  def setFromJValue(jvalue: JValue): Box[MyType] = jvalue match {
-    case JArray(contents) =>
-      setBox(
-          Full(contents.flatMap(
-                  s => Helpers.tryo[CaseType] { s.extract[CaseType] })))
-    case _ => setBox(Empty)
-  }
+  def setFromJValue(jvalue: JValue): Box[MyType] =
+    jvalue match {
+      case JArray(contents) =>
+        setBox(
+          Full(
+            contents.flatMap(s =>
+              Helpers.tryo[CaseType] { s.extract[CaseType] }
+            )
+          )
+        )
+      case _ => setBox(Empty)
+    }
 
   def asDBObject: DBObject = {
     val dbl = new BasicDBList
 
     asJValue match {
       case JArray(list) =>
-        list.foreach(
-            v => dbl.add(JObjectParser.parse(v.asInstanceOf[JObject])))
+        list.foreach(v => dbl.add(JObjectParser.parse(v.asInstanceOf[JObject])))
       case _ =>
     }
 
@@ -131,12 +140,13 @@ class MongoCaseClassListField[OwnerType <: Record[OwnerType], CaseType](
     setFromJValue(jvalue)
   }
 
-  def setFromAny(in: Any): Box[MyType] = in match {
-    case dbo: DBObject => setFromDBObject(dbo)
-    case list @ c :: xs if mf.runtimeClass.isInstance(c) =>
-      setBox(Full(list.asInstanceOf[MyType]))
-    case _ => setBox(Empty)
-  }
+  def setFromAny(in: Any): Box[MyType] =
+    in match {
+      case dbo: DBObject => setFromDBObject(dbo)
+      case list @ c :: xs if mf.runtimeClass.isInstance(c) =>
+        setBox(Full(list.asInstanceOf[MyType]))
+      case _ => setBox(Empty)
+    }
 
   override def setFromString(in: String): Box[MyType] = {
     setFromJValue(JsonParser.parse(in))

@@ -3,7 +3,12 @@ package akka.stream.scaladsl
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.Future
-import akka.stream.{SourceShape, ClosedShape, ActorMaterializer, ActorMaterializerSettings}
+import akka.stream.{
+  SourceShape,
+  ClosedShape,
+  ActorMaterializer,
+  ActorMaterializerSettings
+}
 import akka.stream.testkit._
 import akka.stream.testkit.scaladsl._
 import akka.stream.testkit.Utils._
@@ -11,8 +16,8 @@ import akka.testkit.AkkaSpec
 
 class GraphBalanceSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 16)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 16)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -83,16 +88,19 @@ class GraphBalanceSpec extends AkkaSpec {
       val s1 = TestSubscriber.manualProbe[Int]()
 
       val (p2, p3) = RunnableGraph
-        .fromGraph(GraphDSL.create(Sink.asPublisher[Int](false),
-                                   Sink.asPublisher[Int](false))(Keep.both) {
-          implicit b ⇒ (p2Sink, p3Sink) ⇒
+        .fromGraph(
+          GraphDSL.create(
+            Sink.asPublisher[Int](false),
+            Sink.asPublisher[Int](false)
+          )(Keep.both) { implicit b ⇒ (p2Sink, p3Sink) ⇒
             val balance = b.add(Balance[Int](3, waitForAllDownstreams = true))
             Source(List(1, 2, 3)) ~> balance.in
             balance.out(0) ~> Sink.fromSubscriber(s1)
             balance.out(1) ~> p2Sink
             balance.out(2) ~> p3Sink
             ClosedShape
-        })
+          }
+        )
         .run()
 
       val sub1 = s1.expectSubscription()
@@ -121,7 +129,7 @@ class GraphBalanceSpec extends AkkaSpec {
       val result = Source
         .fromGraph(GraphDSL.create() { implicit b ⇒
           val balance = b.add(Balance[Int](1))
-          val source = b.add(Source(1 to 3))
+          val source  = b.add(Source(1 to 3))
 
           source ~> balance.in
           SourceShape(balance.out(0))
@@ -135,8 +143,7 @@ class GraphBalanceSpec extends AkkaSpec {
 
       val sink = Sink.head[Seq[Int]]
       val (s1, s2, s3, s4, s5) = RunnableGraph
-        .fromGraph(
-            GraphDSL.create(sink, sink, sink, sink, sink)(Tuple5.apply) {
+        .fromGraph(GraphDSL.create(sink, sink, sink, sink, sink)(Tuple5.apply) {
           implicit b ⇒ (f1, f2, f3, f4, f5) ⇒
             val balance = b.add(Balance[Int](5, waitForAllDownstreams = true))
             Source(0 to 14) ~> balance.in
@@ -150,12 +157,13 @@ class GraphBalanceSpec extends AkkaSpec {
         .run()
 
       Set(s1, s2, s3, s4, s5) flatMap (Await.result(_, 3.seconds)) should be(
-          (0 to 14).toSet)
+        (0 to 14).toSet
+      )
     }
 
     "balance between all three outputs" in {
       val numElementsForSink = 10000
-      val outputs = Sink.fold[Int, Int](0)(_ + _)
+      val outputs            = Sink.fold[Int, Int](0)(_ + _)
 
       val results = RunnableGraph
         .fromGraph(GraphDSL.create(outputs, outputs, outputs)(List(_, _, _)) {

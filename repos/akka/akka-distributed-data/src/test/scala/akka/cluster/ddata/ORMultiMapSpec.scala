@@ -71,10 +71,12 @@ class ORMultiMapSpec extends WordSpec with Matchers {
 
       // merge both ways
 
-      val expectedMerged = Map("a" -> Set("A2"),
-                               "b" -> Set("B1"),
-                               "c" -> Set("C2"),
-                               "d" -> Set("D1", "D2"))
+      val expectedMerged = Map(
+        "a" -> Set("A2"),
+        "b" -> Set("B1"),
+        "c" -> Set("C2"),
+        "d" -> Set("D1", "D2")
+      )
 
       val merged1 = m1 merge m2
       merged1.entries should be(expectedMerged)
@@ -118,12 +120,12 @@ class ORMultiMapSpec extends WordSpec with Matchers {
   "have unapply extractor" in {
     val m1 =
       ORMultiMap.empty.put(node1, "a", Set(1L, 2L)).put(node2, "b", Set(3L))
-    val m2: ORMultiMap[Long] = m1
-    val ORMultiMap(entries1) = m1
+    val m2: ORMultiMap[Long]             = m1
+    val ORMultiMap(entries1)             = m1
     val entries2: Map[String, Set[Long]] = entries1
     Changed(ORMultiMapKey[Long]("key"))(m1) match {
       case c @ Changed(ORMultiMapKey("key")) ⇒
-        val ORMultiMap(entries3) = c.dataValue
+        val ORMultiMap(entries3)             = c.dataValue
         val entries4: Map[String, Set[Long]] = entries3
         entries4 should be(Map("a" -> Set(1L, 2L), "b" -> Set(3L)))
     }

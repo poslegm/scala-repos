@@ -6,7 +6,7 @@ package a {
 
   class Usages {
     val aa = AA
-    val t = test
+    val t  = test
   }
 }
 

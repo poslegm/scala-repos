@@ -8,7 +8,7 @@ object UnapplyInference extends App {
     import scalaz._, Scalaz._
 
     val either: (Int \/ Int) = \/.right(1)
-    val eitherT = EitherT(some(either))
+    val eitherT              = EitherT(some(either))
 
     println((eitherT :-> (_ - 1)).run) // Some(Right(0))
   }
@@ -18,7 +18,7 @@ object UnapplyInference extends App {
     import std.list._, std.option._
     import syntax.all._
 
-    val either: (List[Int] \/ List[Int]) = \/.right(List(1))
+    val either: (List[Int] \/ List[Int])               = \/.right(List(1))
     val eitherT: EitherT[Option, List[Int], List[Int]] = EitherT(some(either))
 
     val bisequence: List[EitherT[Option, Int, Int]] =
@@ -28,7 +28,7 @@ object UnapplyInference extends App {
   // Without Unapply
   def stateTraverse1 {
     import scalaz._, Scalaz._
-    val ls = List(1, 2, 3)
+    val ls                             = List(1, 2, 3)
     val traverseOpt: Option[List[Int]] = ls.traverse(a => some(a))
     val traverseState: State[Int, List[Int]] =
       ls.traverse[State[Int, ?], Int](a => State((x: Int) => (x + 1, a)))
@@ -38,9 +38,9 @@ object UnapplyInference extends App {
   def stateTraverse2 {
     import scalaz._, Scalaz._
 
-    val ls = List(1, 2, 3)
+    val ls                             = List(1, 2, 3)
     val traverseOpt: Option[List[Int]] = ls.traverseU(a => some(a))
-    val traverseState = ls.traverseU(a => State((x: Int) => (x + 1, a)))
+    val traverseState                  = ls.traverseU(a => State((x: Int) => (x + 1, a)))
 
     val pair: State[Int, (Int, Int)] =
       State((x: Int) => (x + 1, x)).tuple(State((x: Int) => (x + 2, x)))
@@ -60,7 +60,8 @@ object UnapplyInference extends App {
     import scalaz._
     val k: Kleisli[NumberFormatException \/ ?, String, Int] =
       Kleisli.kleisliU { s: String =>
-        try \/-(s.toInt) catch { case e: NumberFormatException => -\/(e) }
+        try \/-(s.toInt)
+        catch { case e: NumberFormatException => -\/(e) }
       }
   }
 
@@ -80,18 +81,18 @@ object UnapplyInference extends App {
     (1, 2)
       .map(1 +)
       .map(1 +)
-      (1, 2, 3)
+    (1, 2, 3)
       .map(1 +)
       .map(1 +)
-      (1, 2, 3, 4)
+    (1, 2, 3, 4)
       .map(1 +)
       .map(1 +)
-      (1, 2, 3, 4, 5)
+    (1, 2, 3, 4, 5)
       .map(1 +)
       .map(1 +)
-      (1, 2, 3, 4, 5, 6)
+    (1, 2, 3, 4, 5, 6)
       .map(1 +)
       .map(1 +)
-      (1, 2, 3, 4, 5, 6, 7).map(1 +).map(1 +)
+    (1, 2, 3, 4, 5, 6, 7).map(1 +).map(1 +)
   }
 }

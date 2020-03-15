@@ -21,7 +21,7 @@ class WebSocketExampleSpec extends WordSpec with Matchers {
     import akka.http.scaladsl.model.{HttpResponse, Uri, HttpRequest}
     import akka.http.scaladsl.model.HttpMethods._
 
-    implicit val system = ActorSystem()
+    implicit val system       = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
     //#websocket-handler
@@ -54,15 +54,17 @@ class WebSocketExampleSpec extends WordSpec with Matchers {
     //#websocket-request-handling
 
     val bindingFuture = Http().bindAndHandleSync(
-        requestHandler, interface = "localhost", port = 8080)
+      requestHandler,
+      interface = "localhost",
+      port = 8080
+    )
 
-    println(
-        s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
     Console.readLine()
 
     import system.dispatcher // for the future transformations
     bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
+      .flatMap(_.unbind())                // trigger unbinding from the port
       .onComplete(_ ⇒ system.terminate()) // and shutdown when done
   }
   "routing-example" in {
@@ -74,7 +76,7 @@ class WebSocketExampleSpec extends WordSpec with Matchers {
     import akka.http.scaladsl.model.ws.{TextMessage, Message}
     import akka.http.scaladsl.server.Directives
 
-    implicit val system = ActorSystem()
+    implicit val system       = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
     import Directives._
@@ -97,13 +99,12 @@ class WebSocketExampleSpec extends WordSpec with Matchers {
 
     val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 
-    println(
-        s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
     Console.readLine()
 
     import system.dispatcher // for the future transformations
     bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
+      .flatMap(_.unbind())                // trigger unbinding from the port
       .onComplete(_ ⇒ system.terminate()) // and shutdown when done
   }
 }

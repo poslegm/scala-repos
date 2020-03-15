@@ -34,7 +34,7 @@ class FlowFromFutureSpec extends AkkaSpec {
 
     "produce error from already failed Future" in assertAllStagesStopped {
       val ex = new RuntimeException("test") with NoStackTrace
-      val c = TestSubscriber.manualProbe[Int]()
+      val c  = TestSubscriber.manualProbe[Int]()
       Source
         .fromFuture(Future.failed[Int](ex))
         .runWith(Sink.asPublisher(false))
@@ -44,7 +44,7 @@ class FlowFromFutureSpec extends AkkaSpec {
 
     "produce one element when Future is completed" in assertAllStagesStopped {
       val promise = Promise[Int]()
-      val c = TestSubscriber.manualProbe[Int]()
+      val c       = TestSubscriber.manualProbe[Int]()
       Source
         .fromFuture(promise.future)
         .runWith(Sink.asPublisher(true))
@@ -60,7 +60,7 @@ class FlowFromFutureSpec extends AkkaSpec {
 
     "produce one element when Future is completed but not before request" in {
       val promise = Promise[Int]()
-      val c = TestSubscriber.manualProbe[Int]()
+      val c       = TestSubscriber.manualProbe[Int]()
       Source
         .fromFuture(promise.future)
         .runWith(Sink.asPublisher(true))
@@ -75,9 +75,9 @@ class FlowFromFutureSpec extends AkkaSpec {
 
     "produce elements with multiple subscribers" in assertAllStagesStopped {
       val promise = Promise[Int]()
-      val p = Source.fromFuture(promise.future).runWith(Sink.asPublisher(true))
-      val c1 = TestSubscriber.manualProbe[Int]()
-      val c2 = TestSubscriber.manualProbe[Int]()
+      val p       = Source.fromFuture(promise.future).runWith(Sink.asPublisher(true))
+      val c1      = TestSubscriber.manualProbe[Int]()
+      val c2      = TestSubscriber.manualProbe[Int]()
       p.subscribe(c1)
       p.subscribe(c2)
       val sub1 = c1.expectSubscription()
@@ -92,10 +92,10 @@ class FlowFromFutureSpec extends AkkaSpec {
     }
 
     "allow cancel before receiving element" in {
-      val promise = Promise[Int]()
-      val p = Source.fromFuture(promise.future).runWith(Sink.asPublisher(true))
+      val promise   = Promise[Int]()
+      val p         = Source.fromFuture(promise.future).runWith(Sink.asPublisher(true))
       val keepAlive = TestSubscriber.manualProbe[Int]()
-      val c = TestSubscriber.manualProbe[Int]()
+      val c         = TestSubscriber.manualProbe[Int]()
       p.subscribe(keepAlive)
       p.subscribe(c)
       val sub = c.expectSubscription()
