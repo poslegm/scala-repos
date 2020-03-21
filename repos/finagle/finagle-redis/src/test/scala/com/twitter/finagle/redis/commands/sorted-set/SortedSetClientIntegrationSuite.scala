@@ -47,33 +47,35 @@ final class SortedSetClientIntegrationSuite extends RedisClientTest {
     withRedisClient { client =>
       assert(Await.result(client.zAdd(foo, 10, bar)) == 1)
       assert(Await.result(client.zAdd(foo, 20, baz)) == 1)
-      for (left <- Await
-             .result(
-               client.zRangeByScore(
-                 foo,
-                 ZInterval(0),
-                 ZInterval(30),
-                 true,
-                 Some(Limit(0, 5))
+      for (left <-
+             Await
+               .result(
+                 client.zRangeByScore(
+                   foo,
+                   ZInterval(0),
+                   ZInterval(30),
+                   true,
+                   Some(Limit(0, 5))
+                 )
                )
-             )
-             .left) {
+               .left) {
         assert(
           CBToString.fromTuplesWithDoubles(left.asTuples) ==
             (Seq(("bar", 10), ("baz", 20)))
         )
       }
-      for (left <- Await
-             .result(
-               client.zRangeByScore(
-                 foo,
-                 ZInterval(30),
-                 ZInterval(0),
-                 true,
-                 Some(Limit(0, 5))
+      for (left <-
+             Await
+               .result(
+                 client.zRangeByScore(
+                   foo,
+                   ZInterval(30),
+                   ZInterval(0),
+                   true,
+                   Some(Limit(0, 5))
+                 )
                )
-             )
-             .left) {
+               .left) {
         assert(left.asTuples == Seq())
       }
     }
@@ -101,45 +103,48 @@ final class SortedSetClientIntegrationSuite extends RedisClientTest {
     withRedisClient { client =>
       assert(Await.result(client.zAdd(foo, 10, bar)) == 1)
       assert(Await.result(client.zAdd(foo, 20, baz)) == 1)
-      for (left <- Await
-             .result(
-               client.zRevRangeByScore(
-                 foo,
-                 ZInterval(10),
-                 ZInterval(0),
-                 true,
-                 Some(Limit(0, 1))
+      for (left <-
+             Await
+               .result(
+                 client.zRevRangeByScore(
+                   foo,
+                   ZInterval(10),
+                   ZInterval(0),
+                   true,
+                   Some(Limit(0, 1))
+                 )
                )
-             )
-             .left) {
+               .left) {
         assert(
           CBToString.fromTuplesWithDoubles(left.asTuples) == Seq(("bar", 10))
         )
       }
-      for (left <- Await
-             .result(
-               client.zRevRangeByScore(
-                 foo,
-                 ZInterval(0),
-                 ZInterval(10),
-                 true,
-                 Some(Limit(0, 1))
+      for (left <-
+             Await
+               .result(
+                 client.zRevRangeByScore(
+                   foo,
+                   ZInterval(0),
+                   ZInterval(10),
+                   true,
+                   Some(Limit(0, 1))
+                 )
                )
-             )
-             .left) {
+               .left) {
         assert(left.asTuples == Seq())
       }
-      for (left <- Await
-             .result(
-               client.zRevRangeByScore(
-                 foo,
-                 ZInterval(0),
-                 ZInterval(0),
-                 true,
-                 Some(Limit(0, 1))
+      for (left <-
+             Await
+               .result(
+                 client.zRevRangeByScore(
+                   foo,
+                   ZInterval(0),
+                   ZInterval(0),
+                   true,
+                   Some(Limit(0, 1))
+                 )
                )
-             )
-             .left) {
+               .left) {
         assert(left.asTuples == Seq())
       }
     }

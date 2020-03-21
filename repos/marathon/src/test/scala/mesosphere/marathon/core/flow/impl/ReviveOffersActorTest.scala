@@ -61,10 +61,11 @@ class ReviveOffersActorTest
     f.verifyNoMoreInteractions()
   }
 
-  for (reviveEvent <- Seq(
-         SchedulerReregisteredEvent("somemaster"),
-         SchedulerRegisteredEvent("frameworkid", "somemaster")
-       )) {
+  for (reviveEvent <-
+         Seq(
+           SchedulerReregisteredEvent("somemaster"),
+           SchedulerRegisteredEvent("frameworkid", "somemaster")
+         )) {
     test(s"revive if offers wanted and we receive $reviveEvent") {
       val f = new Fixture()
       Given("a started actor that wants offers")
@@ -120,11 +121,12 @@ class ReviveOffersActorTest
     f.verifyNoMoreInteractions()
   }
 
-  for (reviveEvent <- Seq(
-         SchedulerReregisteredEvent("somemaster"),
-         SchedulerRegisteredEvent("frameworkid", "somemaster"),
-         ReviveOffersActor.TimedCheck
-       )) {
+  for (reviveEvent <-
+         Seq(
+           SchedulerReregisteredEvent("somemaster"),
+           SchedulerRegisteredEvent("frameworkid", "somemaster"),
+           ReviveOffersActor.TimedCheck
+         )) {
     test(s"DO NOT revive if offers NOT wanted and we receive $reviveEvent") {
       val f = new Fixture()
       Given("a started actor that wants offers")

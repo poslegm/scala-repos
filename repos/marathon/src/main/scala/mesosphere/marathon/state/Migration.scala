@@ -264,16 +264,18 @@ class MigrationTo0_11(
           for {
             maybeLastApp <- maybeLastAppFuture
             maybeNextApp <- loadApp(id, nextVersion)
-            withVersionInfo = addVersionInfoToVersioned(
-              maybeLastApp,
-              nextVersion,
-              maybeNextApp
-            )
-            storedResult <- withVersionInfo
-              .map((newApp: AppDefinition) =>
-                appRepository.store(newApp).map(Some(_))
+            withVersionInfo =
+              addVersionInfoToVersioned(
+                maybeLastApp,
+                nextVersion,
+                maybeNextApp
               )
-              .getOrElse(maybeLastAppFuture)
+            storedResult <-
+              withVersionInfo
+                .map((newApp: AppDefinition) =>
+                  appRepository.store(newApp).map(Some(_))
+                )
+                .getOrElse(maybeLastAppFuture)
           } yield storedResult
       }
     }

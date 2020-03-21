@@ -632,9 +632,10 @@ object EvaluateTask {
       state: State,
       streams: Streams
   ): Unit =
-    for (referenced <- Previous.references in Global get Project
-           .structure(state)
-           .data) Previous.complete(referenced, results, streams)
+    for (referenced <-
+           Previous.references in Global get Project
+             .structure(state)
+             .data) Previous.complete(referenced, results, streams)
 
   def applyResults[T](
       results: RMap[Task, Result],

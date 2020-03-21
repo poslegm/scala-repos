@@ -502,12 +502,13 @@ class ALSSuite
       rank = 2,
       noiseStd = 0.01
     )
-    for ((numUserBlocks, numItemBlocks) <- Seq(
-           (1, 1),
-           (1, 2),
-           (2, 1),
-           (2, 2)
-         )) {
+    for ((numUserBlocks, numItemBlocks) <-
+           Seq(
+             (1, 1),
+             (1, 2),
+             (2, 1),
+             (2, 2)
+           )) {
       testALS(
         training,
         test,

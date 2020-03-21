@@ -120,12 +120,13 @@ class PlainSQLTest extends AsyncTest[JdbcTestDB] {
         DBIO
           .fold(
             (for {
-              (id, name) <- List(
-                (1, "szeiger"),
-                (0, "admin"),
-                (2, "guest"),
-                (3, "foo")
-              )
+              (id, name) <-
+                List(
+                  (1, "szeiger"),
+                  (0, "admin"),
+                  (2, "guest"),
+                  (3, "foo")
+                )
             } yield sqlu"insert into USERS values ($id, $name)"),
             0
           )(_ + _)

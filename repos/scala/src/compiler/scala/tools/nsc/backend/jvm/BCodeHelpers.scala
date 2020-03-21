@@ -1225,10 +1225,11 @@ abstract class BCodeHelpers extends BCodeIdiomatic with BytecodeWriters {
         s"Potentially conflicting names for forwarders: $conflictingNames"
       )
 
-      for (m <- moduleClass.info.membersBasedOnFlags(
-             BCodeHelpers.ExcludedForwarderFlags,
-             symtab.Flags.METHOD
-           )) {
+      for (m <-
+             moduleClass.info.membersBasedOnFlags(
+               BCodeHelpers.ExcludedForwarderFlags,
+               symtab.Flags.METHOD
+             )) {
         if (m.isType || m.isDeferred || (m.owner eq definitions.ObjectClass) ||
             m.isConstructor)
           debuglog(

@@ -46,10 +46,13 @@ trait CookedBlockFormatSpecs
   override val defaultPrettyParams = Pretty.Params(2)
 
   implicit val arbFile = Arbitrary(for {
-    parts <- Gen.listOfN(
-      3,
-      Gen.identifier map { part => part.substring(0, math.min(part.length, 5)) }
-    )
+    parts <-
+      Gen.listOfN(
+        3,
+        Gen.identifier map { part =>
+          part.substring(0, math.min(part.length, 5))
+        }
+      )
   } yield new File(parts.mkString("/", "/", ".cooked")))
 
   implicit val arbSegmentId = Arbitrary(genSegmentId)

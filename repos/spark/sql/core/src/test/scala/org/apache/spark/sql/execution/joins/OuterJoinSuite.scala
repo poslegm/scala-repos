@@ -35,7 +35,10 @@ class OuterJoinSuite extends SparkPlanTest with SharedSQLContext {
       Seq(
         Row(1, 2.0),
         Row(2, 100.0),
-        Row(2, 1.0), // This row is duplicated to ensure that we will have multiple buffered matches
+        Row(
+          2,
+          1.0
+        ), // This row is duplicated to ensure that we will have multiple buffered matches
         Row(2, 1.0),
         Row(3, 3.0),
         Row(5, 1.0),
@@ -50,7 +53,10 @@ class OuterJoinSuite extends SparkPlanTest with SharedSQLContext {
     sparkContext.parallelize(
       Seq(
         Row(0, 0.0),
-        Row(2, 3.0), // This row is duplicated to ensure that we will have multiple buffered matches
+        Row(
+          2,
+          3.0
+        ), // This row is duplicated to ensure that we will have multiple buffered matches
         Row(2, -1.0),
         Row(2, -1.0),
         Row(2, 3.0),

@@ -328,8 +328,7 @@ class JDBCSuite
     assert(
       checkPushdown(
         sql("SELECT * FROM foobar WHERE THEID = 1 OR NAME = 'mary'")
-      ).collect()
-        .size == 2
+      ).collect().size == 2
     )
     assert(
       checkPushdown(

@@ -758,11 +758,12 @@ object MatrixProduct extends java.io.Serializable {
       }
     }
 
-  implicit def matrixDiagProduct[RowT, ColT, ValT](implicit ring: Ring[ValT])
-      : MatrixProduct[Matrix[RowT, ColT, ValT], DiagonalMatrix[
-        ColT,
-        ValT
-      ], Matrix[RowT, ColT, ValT]] =
+  implicit def matrixDiagProduct[RowT, ColT, ValT](implicit
+      ring: Ring[ValT]
+  ): MatrixProduct[Matrix[RowT, ColT, ValT], DiagonalMatrix[
+    ColT,
+    ValT
+  ], Matrix[RowT, ColT, ValT]] =
     new MatrixProduct[
       Matrix[RowT, ColT, ValT],
       DiagonalMatrix[ColT, ValT],

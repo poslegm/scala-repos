@@ -155,11 +155,12 @@ class RemotingSpec
     .resolve()
   val remoteSystem = ActorSystem("remote-sys", conf)
 
-  for ((name, proto) ← Seq(
-         "/gonk" -> "tcp",
-         "/zagzag" -> "udp",
-         "/roghtaar" -> "ssl.tcp"
-       ))
+  for ((name, proto) ←
+         Seq(
+           "/gonk" -> "tcp",
+           "/zagzag" -> "udp",
+           "/roghtaar" -> "ssl.tcp"
+         ))
     deploy(system, Deploy(name, scope = RemoteScope(addr(remoteSystem, proto))))
 
   def addr(sys: ActorSystem, proto: String) =

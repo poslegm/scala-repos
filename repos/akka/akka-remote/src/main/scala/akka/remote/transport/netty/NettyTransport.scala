@@ -337,9 +337,10 @@ private[transport] object NettyTransport {
         case _ ⇒ c.getChannel
       }
     for {
-      _ ← always {
-        channel.write(ChannelBuffers.buffer(0))
-      } // Force flush by waiting on a final dummy write
+      _ ←
+        always {
+          channel.write(ChannelBuffers.buffer(0))
+        } // Force flush by waiting on a final dummy write
       _ ← always { channel.disconnect() }
     } channel.close()
   }
@@ -631,9 +632,10 @@ class NettyTransport(
 
   override def listen: Future[(Address, Promise[AssociationEventListener])] = {
     for {
-      address ← addressToSocketAddress(
-        Address("", "", settings.BindHostname, settings.BindPortSelector)
-      )
+      address ←
+        addressToSocketAddress(
+          Address("", "", settings.BindHostname, settings.BindPortSelector)
+        )
     } yield {
       try {
         val newServerChannel = inboundBootstrap match {
@@ -706,8 +708,8 @@ class NettyTransport(
 
       (for {
         socketAddress ← addressToSocketAddress(remoteAddress)
-        readyChannel ← NettyFutureBridge(bootstrap.connect(socketAddress)) map {
-          channel ⇒
+        readyChannel ←
+          NettyFutureBridge(bootstrap.connect(socketAddress)) map { channel ⇒
             if (EnableSsl)
               blocking {
                 channel.getPipeline
@@ -717,33 +719,34 @@ class NettyTransport(
               }
             if (!isDatagram) channel.setReadable(false)
             channel
-        }
-        handle ← if (isDatagram)
-          Future {
-            readyChannel.getRemoteAddress match {
-              case addr: InetSocketAddress ⇒
-                val handle =
-                  new UdpAssociationHandle(
-                    localAddress,
-                    remoteAddress,
-                    readyChannel,
-                    NettyTransport.this
-                  )
-                handle.readHandlerPromise.future.onSuccess {
-                  case listener ⇒
-                    udpConnectionTable.put(addr, listener)
-                }
-                handle
-              case unknown ⇒
-                throw new NettyTransportException(
-                  s"Unknown outbound remote address type [${unknown.getClass.getName}]"
-                )
-            }
           }
-        else
-          readyChannel.getPipeline
-            .get(classOf[ClientHandler])
-            .statusFuture
+        handle ←
+          if (isDatagram)
+            Future {
+              readyChannel.getRemoteAddress match {
+                case addr: InetSocketAddress ⇒
+                  val handle =
+                    new UdpAssociationHandle(
+                      localAddress,
+                      remoteAddress,
+                      readyChannel,
+                      NettyTransport.this
+                    )
+                  handle.readHandlerPromise.future.onSuccess {
+                    case listener ⇒
+                      udpConnectionTable.put(addr, listener)
+                  }
+                  handle
+                case unknown ⇒
+                  throw new NettyTransportException(
+                    s"Unknown outbound remote address type [${unknown.getClass.getName}]"
+                  )
+              }
+            }
+          else
+            readyChannel.getPipeline
+              .get(classOf[ClientHandler])
+              .statusFuture
       } yield handle) recover {
         case c: CancellationException ⇒
           throw new NettyTransportException("Connection was cancelled")

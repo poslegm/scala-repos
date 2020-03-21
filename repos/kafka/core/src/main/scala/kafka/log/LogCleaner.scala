@@ -426,11 +426,12 @@ private[log] class Cleaner(
       "Cleaning log %s (discarding tombstones prior to %s)..."
         .format(log.name, new Date(deleteHorizonMs))
     )
-    for (group <- groupSegmentsBySize(
-           log.logSegments(0, endOffset),
-           log.config.segmentSize,
-           log.config.maxIndexSize
-         )) cleanSegments(log, group, offsetMap, deleteHorizonMs)
+    for (group <-
+           groupSegmentsBySize(
+             log.logSegments(0, endOffset),
+             log.config.segmentSize,
+             log.config.maxIndexSize
+           )) cleanSegments(log, group, offsetMap, deleteHorizonMs)
 
     // record buffer utilization
     stats.bufferUtilization = offsetMap.utilization

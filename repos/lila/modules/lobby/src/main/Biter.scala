@@ -30,29 +30,33 @@ private[lobby] object Biter {
     for {
       userOption ← lobbyUserOption.map(_.id) ?? UserRepo.byId
       ownerOption ← hook.userId ?? UserRepo.byId
-      creatorColor <- assignCreatorColor(
-        ownerOption,
-        userOption,
-        hook.realColor
-      )
-      game = blame(
-        !creatorColor,
-        userOption,
-        blame(creatorColor, ownerOption, makeGame(hook))
-      ).start
+      creatorColor <-
+        assignCreatorColor(
+          ownerOption,
+          userOption,
+          hook.realColor
+        )
+      game =
+        blame(
+          !creatorColor,
+          userOption,
+          blame(creatorColor, ownerOption, makeGame(hook))
+        ).start
       _ ← GameRepo insertDenormalized game
     } yield JoinHook(uid, hook, game, creatorColor)
 
   private def join(seek: Seek, lobbyUser: LobbyUser): Fu[JoinSeek] =
     for {
       user ← UserRepo byId lobbyUser.id flatten s"No such user: ${lobbyUser.id}"
-      owner ← UserRepo byId seek.user.id flatten s"No such user: ${seek.user.id}"
+      owner ←
+        UserRepo byId seek.user.id flatten s"No such user: ${seek.user.id}"
       creatorColor <- assignCreatorColor(owner.some, user.some, seek.realColor)
-      game = blame(
-        !creatorColor,
-        user.some,
-        blame(creatorColor, owner.some, makeGame(seek))
-      ).start
+      game =
+        blame(
+          !creatorColor,
+          user.some,
+          blame(creatorColor, owner.some, makeGame(seek))
+        ).start
       _ ← GameRepo insertDenormalized game
     } yield JoinSeek(user.id, seek, game, creatorColor)
 

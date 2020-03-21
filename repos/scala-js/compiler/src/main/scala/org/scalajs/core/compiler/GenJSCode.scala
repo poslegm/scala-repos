@@ -3512,12 +3512,13 @@ abstract class GenJSCode
         }
 
         for {
-          (rtClass, reflBoxClass) <- Seq(
-            (StringClass, StringClass),
-            (BoxedDoubleClass, NumberReflectiveCallClass),
-            (BoxedBooleanClass, BooleanReflectiveCallClass),
-            (BoxedLongClass, LongReflectiveCallClass)
-          )
+          (rtClass, reflBoxClass) <-
+            Seq(
+              (StringClass, StringClass),
+              (BoxedDoubleClass, NumberReflectiveCallClass),
+              (BoxedBooleanClass, BooleanReflectiveCallClass),
+              (BoxedLongClass, LongReflectiveCallClass)
+            )
           implMethodSym = matchingSymIn(reflBoxClass)
           if implMethodSym != NoSymbol && implMethodSym.isPublic
         } {

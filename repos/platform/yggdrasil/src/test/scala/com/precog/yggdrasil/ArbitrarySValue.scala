@@ -150,30 +150,34 @@ trait CValueGenerators extends ArbitraryBigDecimal {
     for {
       idCount <- choose(1, 3)
       dataSize <- choose(0, 20)
-      ids <- containerOfN[Set, List[Long]](
-        dataSize,
-        containerOfN[List, Long](idCount, posNum[Long])
-      )
-      values <- containerOfN[List, Seq[(JPath, JValue)]](
-        dataSize,
-        Gen.sequence[List, (JPath, JValue)](jschema map {
-          case (jpath, ctype) => jvalue(ctype).map(jpath ->)
-        })
-      )
+      ids <-
+        containerOfN[Set, List[Long]](
+          dataSize,
+          containerOfN[List, Long](idCount, posNum[Long])
+        )
+      values <-
+        containerOfN[List, Seq[(JPath, JValue)]](
+          dataSize,
+          Gen.sequence[List, (JPath, JValue)](jschema map {
+            case (jpath, ctype) => jvalue(ctype).map(jpath ->)
+          })
+        )
 
       falseDepth <- choose(1, 3)
       falseSchema <- schema(falseDepth)
       falseSize <- choose(0, 5)
-      falseIds <- containerOfN[Set, List[Long]](
-        falseSize,
-        containerOfN[List, Long](idCount, posNum[Long])
-      )
-      falseValues <- containerOfN[List, Seq[(JPath, JValue)]](
-        falseSize,
-        Gen.sequence[List, (JPath, JValue)](falseSchema map {
-          case (jpath, ctype) => jvalue(ctype).map(jpath ->)
-        })
-      )
+      falseIds <-
+        containerOfN[Set, List[Long]](
+          falseSize,
+          containerOfN[List, Long](idCount, posNum[Long])
+        )
+      falseValues <-
+        containerOfN[List, Seq[(JPath, JValue)]](
+          falseSize,
+          Gen.sequence[List, (JPath, JValue)](falseSchema map {
+            case (jpath, ctype) => jvalue(ctype).map(jpath ->)
+          })
+        )
 
       falseIds2 = falseIds -- ids // distinct ids
     } yield {
@@ -278,13 +282,14 @@ trait ArbitraryBigDecimal {
       mantissa <- arbitrary[Long]
       exponent <- Gen.chooseNum(-MAX_EXPONENT, MAX_EXPONENT)
 
-      adjusted = if (exponent.toLong +
-                       mantissa.toString.length >= Int.MaxValue.toLong)
-        exponent - mantissa.toString.length
-      else if (exponent.toLong -
-                 mantissa.toString.length <= Int.MinValue.toLong)
-        exponent + mantissa.toString.length
-      else exponent
+      adjusted =
+        if (exponent.toLong +
+              mantissa.toString.length >= Int.MaxValue.toLong)
+          exponent - mantissa.toString.length
+        else if (exponent.toLong -
+                   mantissa.toString.length <= Int.MinValue.toLong)
+          exponent + mantissa.toString.length
+        else exponent
     } yield BigDecimal(mantissa, adjusted, java.math.MathContext.UNLIMITED))
 }
 // vim: set ts=4 sw=4 et:

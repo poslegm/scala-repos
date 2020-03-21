@@ -507,8 +507,8 @@ abstract class AggregationQuerySuite
           |FROM agg1
           |GROUP BY key
         """.stripMargin),
-      Row(1, 64.5, 120.0, 19.0, 55.5,
-        20.0) :: Row(2, 5.0, 99.5, -2.5, -7.0, -0.5) :: Row(
+      Row(1, 64.5, 120.0, 19.0, 55.5, 20.0) :: Row(2, 5.0, 99.5, -2.5, -7.0,
+        -0.5) :: Row(
         3,
         null,
         null,

@@ -164,10 +164,11 @@ class ScalaGlobalMembersCompletionContributor
         for {
           element <- elemsSet if element.name == name
           if element.getContainingFile == file
-          cClass = ScalaPsiUtil.nameContext(element) match {
-            case member: PsiMember => member.containingClass
-            case _                 => null
-          } if cClass != null
+          cClass =
+            ScalaPsiUtil.nameContext(element) match {
+              case member: PsiMember => member.containingClass
+              case _                 => null
+            } if cClass != null
           if cClass.qualifiedName != null
           if cClass.qualifiedName == qualName
         } {
@@ -291,10 +292,11 @@ class ScalaGlobalMembersCompletionContributor
         for {
           element <- elemsSet if element.name == name
           if element.getContainingFile == file
-          cClass = ScalaPsiUtil.nameContext(element) match {
-            case member: PsiMember => member.containingClass
-            case _                 => null
-          } if cClass != null
+          cClass =
+            ScalaPsiUtil.nameContext(element) match {
+              case member: PsiMember => member.containingClass
+              case _                 => null
+            } if cClass != null
           if cClass.qualifiedName != null
           if cClass.qualifiedName == qualName
         } {

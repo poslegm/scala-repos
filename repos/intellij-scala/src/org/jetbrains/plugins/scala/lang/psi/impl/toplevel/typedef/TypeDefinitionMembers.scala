@@ -699,9 +699,10 @@ object TypeDefinitionMembers {
 
     def forAllSignatureNodes(c: PsiClass)(action: Node => Unit): Unit = {
       for {
-        signature <- TypeDefinitionMembers
-          .getSignatures(c)
-          .allFirstSeq()
+        signature <-
+          TypeDefinitionMembers
+            .getSignatures(c)
+            .allFirstSeq()
         (_, node) <- signature
       } action(node)
     }

@@ -59,17 +59,19 @@ trait ClassHelpers { self: ControlHelpers =>
     (for (place <- where.view;
           mod <- modifiers.view;
           fullName = place + "." + mod(name);
-          ignore = List(
-            classOf[ClassNotFoundException],
-            classOf[ClassCastException],
-            classOf[NoClassDefFoundError]
-          );
-          klass <- tryo(ignore)(
-            Class
-              .forName(fullName)
-              .asSubclass(targetType)
-              .asInstanceOf[Class[C]]
-          )) yield klass).headOption
+          ignore =
+            List(
+              classOf[ClassNotFoundException],
+              classOf[ClassCastException],
+              classOf[NoClassDefFoundError]
+            );
+          klass <-
+            tryo(ignore)(
+              Class
+                .forName(fullName)
+                .asSubclass(targetType)
+                .asInstanceOf[Class[C]]
+            )) yield klass).headOption
 
   /**
     * General method to in find a class according to its type, its name, a list of possible

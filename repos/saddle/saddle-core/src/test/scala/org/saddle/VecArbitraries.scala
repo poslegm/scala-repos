@@ -29,10 +29,14 @@ object VecArbitraries {
   def vecDoubleWithNA: Gen[Vec[Double]] =
     for {
       n <- Gen.choose(0, 10)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency[Double]((9, Gen.chooseNum(-1e3, 1e3)), (1, na.to[Double]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency[Double](
+            (9, Gen.chooseNum(-1e3, 1e3)),
+            (1, na.to[Double])
+          )
+        )
     } yield Vec(lst: _*)
 
   // Generates vec of length of up to 20 entries w/o NA's
@@ -45,10 +49,11 @@ object VecArbitraries {
   def vecDoublePWithNA: Gen[Vec[Double]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency((9, Gen.chooseNum(-1e3, 1e3)), (1, na.to[Double]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency((9, Gen.chooseNum(-1e3, 1e3)), (1, na.to[Double]))
+        )
     } yield Vec(lst.filter(_ > 0): _*)
 
   def vecDoublePWithoutNA: Gen[Vec[Double]] =
@@ -62,10 +67,14 @@ object VecArbitraries {
   def vecFloatWithNA: Gen[Vec[Float]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency[Float]((9, Gen.chooseNum(-1e3f, 1e3f)), (1, na.to[Float]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency[Float](
+            (9, Gen.chooseNum(-1e3f, 1e3f)),
+            (1, na.to[Float])
+          )
+        )
     } yield Vec(lst: _*)
 
   def vecFloatWithoutNA: Gen[Vec[Float]] =
@@ -77,10 +86,11 @@ object VecArbitraries {
   def vecFloatPWithNA: Gen[Vec[Float]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency((9, Gen.chooseNum(-1e3f, 1e3f)), (1, na.to[Float]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency((9, Gen.chooseNum(-1e3f, 1e3f)), (1, na.to[Float]))
+        )
     } yield Vec(lst.filter(_ > 0): _*)
 
   def vecFloatPWithoutNA: Gen[Vec[Float]] =
@@ -94,10 +104,11 @@ object VecArbitraries {
   def vecLongWithNA: Gen[Vec[Long]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency((9, Gen.chooseNum(-1000L, 1000L)), (1, na.to[Long]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency((9, Gen.chooseNum(-1000L, 1000L)), (1, na.to[Long]))
+        )
     } yield Vec(lst: _*)
 
   def vecLongWithoutNA: Gen[Vec[Long]] =
@@ -109,10 +120,11 @@ object VecArbitraries {
   def vecLongPWithNA: Gen[Vec[Long]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency((9, Gen.chooseNum(-1000L, 1000L)), (1, na.to[Long]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency((9, Gen.chooseNum(-1000L, 1000L)), (1, na.to[Long]))
+        )
     } yield Vec(lst.filter(_ > 0): _*)
 
   def vecLongPWithoutNA: Gen[Vec[Long]] =
@@ -126,10 +138,11 @@ object VecArbitraries {
   def vecIntWithNA: Gen[Vec[Int]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency((9, Gen.chooseNum(-1000, 1000)), (1, na.to[Int]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency((9, Gen.chooseNum(-1000, 1000)), (1, na.to[Int]))
+        )
     } yield Vec(lst: _*)
 
   def vecIntWithoutNA: Gen[Vec[Int]] =
@@ -141,10 +154,11 @@ object VecArbitraries {
   def vecIntPWithNA: Gen[Vec[Int]] =
     for {
       n <- Gen.choose(0, 20)
-      lst <- Gen.listOfN(
-        n,
-        Gen.frequency((9, Gen.chooseNum(-1000, 1000)), (1, na.to[Int]))
-      )
+      lst <-
+        Gen.listOfN(
+          n,
+          Gen.frequency((9, Gen.chooseNum(-1000, 1000)), (1, na.to[Int]))
+        )
     } yield Vec(lst.filter(_ > 0): _*)
 
   def vecIntPWithoutNA: Gen[Vec[Int]] =

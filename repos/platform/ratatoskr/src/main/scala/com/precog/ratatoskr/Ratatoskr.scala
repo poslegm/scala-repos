@@ -1171,21 +1171,22 @@ object ImportTools extends Command with Logging {
       for {
         rootKey <- apiKeyManager.rootAPIKey
         rootGrantId <- apiKeyManager.rootGrantId
-        _ <- apiKeyManager.populateAPIKey(
-          None,
-          None,
-          rootKey,
-          key,
-          Set(rootGrantId)
-        ) onComplete {
-          case Left(error) =>
-            logger.error(
-              "Could not add grant " + rootGrantId + " to apiKey " + key,
-              error
-            )
-          case Right(success) =>
-            logger.info("Updated API key record: " + success)
-        }
+        _ <-
+          apiKeyManager.populateAPIKey(
+            None,
+            None,
+            rootKey,
+            key,
+            Set(rootGrantId)
+          ) onComplete {
+            case Left(error) =>
+              logger.error(
+                "Could not add grant " + rootGrantId + " to apiKey " + key,
+                error
+              )
+            case Right(success) =>
+              logger.info("Updated API key record: " + success)
+          }
       } yield key
 
     def logGrants(key: APIKey) =
@@ -1413,13 +1414,14 @@ object APIKeyTools extends Command with AkkaDefaults with Logging {
   def process(config: Config) {
     val job = for {
       (apiKeys, stoppable) <- apiKeyManager(config)
-      actions = (config.list).option(list(apiKeys)).toSeq ++ (config.showRoot)
-        .option(showRoot(apiKeys))
-        .toSeq ++ //              config.listChildren.map(listChildren(_, apiKeys)) ++
-        config.accountId.map(p =>
-          create(p, config.newAPIKeyName, apiKeys)
-        ) ++ config.delete
-        .map(delete(_, apiKeys))
+      actions =
+        (config.list).option(list(apiKeys)).toSeq ++ (config.showRoot)
+          .option(showRoot(apiKeys))
+          .toSeq ++ //              config.listChildren.map(listChildren(_, apiKeys)) ++
+          config.accountId.map(p =>
+            create(p, config.newAPIKeyName, apiKeys)
+          ) ++ config.delete
+          .map(delete(_, apiKeys))
       _ <- Future.sequence(actions)
       _ <- Stoppable.stop(stoppable)
     } yield {

@@ -39,9 +39,10 @@ class ReplaceDoWhileWithWhileIntention extends PsiElementBaseIntentionAction {
       element: PsiElement
   ): Boolean = {
     for {
-      doStmt <- Option(
-        PsiTreeUtil.getParentOfType(element, classOf[ScDoStmt], false)
-      )
+      doStmt <-
+        Option(
+          PsiTreeUtil.getParentOfType(element, classOf[ScDoStmt], false)
+        )
       condition <- doStmt.condition
       body <- doStmt.getExprBody
     } {
@@ -106,9 +107,10 @@ class ReplaceDoWhileWithWhileIntention extends PsiElementBaseIntentionAction {
 
     def doReplacement() {
       for {
-        doStmt <- Option(
-          PsiTreeUtil.getParentOfType(element, classOf[ScDoStmt])
-        )
+        doStmt <-
+          Option(
+            PsiTreeUtil.getParentOfType(element, classOf[ScDoStmt])
+          )
         condition <- doStmt.condition
         body <- doStmt.getExprBody
         doStmtParent <- doStmt.parent

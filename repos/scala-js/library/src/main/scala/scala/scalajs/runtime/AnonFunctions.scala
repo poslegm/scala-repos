@@ -111,7 +111,17 @@ final class AnonFunction9[-T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, +R](
 
 @inline
 final class AnonFunction10[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    +R
 ](f: js.Function10[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R])
     extends AbstractFunction10[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R] {
   override def apply(
@@ -131,7 +141,18 @@ final class AnonFunction10[
 
 @inline
 final class AnonFunction11[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    +R
 ](f: js.Function11[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R])
     extends AbstractFunction11[
       T1,
@@ -165,7 +186,19 @@ final class AnonFunction11[
 
 @inline
 final class AnonFunction12[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    +R
 ](f: js.Function12[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, R])
     extends AbstractFunction12[
       T1,
@@ -201,7 +234,20 @@ final class AnonFunction12[
 
 @inline
 final class AnonFunction13[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    +R
 ](f: js.Function13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R])
     extends AbstractFunction13[
       T1,
@@ -253,7 +299,20 @@ final class AnonFunction13[
 
 @inline
 final class AnonFunction14[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
     +R
 ](
     f: js.Function14[
@@ -326,8 +385,22 @@ final class AnonFunction14[
 
 @inline
 final class AnonFunction15[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    +R
 ](
     f: js.Function15[
       T1,
@@ -403,8 +476,23 @@ final class AnonFunction15[
 
 @inline
 final class AnonFunction16[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    +R
 ](
     f: js.Function16[
       T1,
@@ -484,8 +572,24 @@ final class AnonFunction16[
 
 @inline
 final class AnonFunction17[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, -T17, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    -T17,
+    +R
 ](
     f: js.Function17[
       T1,
@@ -569,8 +673,25 @@ final class AnonFunction17[
 
 @inline
 final class AnonFunction18[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, -T17, -T18, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    -T17,
+    -T18,
+    +R
 ](
     f: js.Function18[
       T1,
@@ -658,8 +779,26 @@ final class AnonFunction18[
 
 @inline
 final class AnonFunction19[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, -T17, -T18, -T19, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    -T17,
+    -T18,
+    -T19,
+    +R
 ](
     f: js.Function19[
       T1,
@@ -751,8 +890,27 @@ final class AnonFunction19[
 
 @inline
 final class AnonFunction20[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, -T17, -T18, -T19, -T20, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    -T17,
+    -T18,
+    -T19,
+    -T20,
+    +R
 ](
     f: js.Function20[
       T1,
@@ -848,8 +1006,28 @@ final class AnonFunction20[
 
 @inline
 final class AnonFunction21[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, -T17, -T18, -T19, -T20, -T21, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    -T17,
+    -T18,
+    -T19,
+    -T20,
+    -T21,
+    +R
 ](
     f: js.Function21[
       T1,
@@ -949,8 +1127,29 @@ final class AnonFunction21[
 
 @inline
 final class AnonFunction22[
-    -T1, -T2, -T3, -T4, -T5, -T6, -T7, -T8, -T9, -T10, -T11, -T12, -T13, -T14,
-    -T15, -T16, -T17, -T18, -T19, -T20, -T21, -T22, +R
+    -T1,
+    -T2,
+    -T3,
+    -T4,
+    -T5,
+    -T6,
+    -T7,
+    -T8,
+    -T9,
+    -T10,
+    -T11,
+    -T12,
+    -T13,
+    -T14,
+    -T15,
+    -T16,
+    -T17,
+    -T18,
+    -T19,
+    -T20,
+    -T21,
+    -T22,
+    +R
 ](
     f: js.Function22[
       T1,

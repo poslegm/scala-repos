@@ -20,9 +20,10 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
     val ts = TableQuery[T]
 
     for {
-      _ <- db.run {
-        ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
-      }
+      _ <-
+        db.run {
+          ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
+        }
       q1 = ts.sortBy(_.a).map(_.a)
       f1 = db.run(q1.result)
       r1 <- f1: Future[Seq[Int]]
@@ -56,16 +57,17 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
     } yield ()
 
     val aPinned = for {
-      _ <- (for {
-        p1 <- IsPinned
-        s1 <- GetSession
-        l <- ts.length.result
-        p2 <- IsPinned
-        s2 <- GetSession
-        _ = p1 shouldBe true
-        _ = p2 shouldBe true
-        _ = s1 shouldBe s2
-      } yield ()).withPinnedSession
+      _ <-
+        (for {
+          p1 <- IsPinned
+          s1 <- GetSession
+          l <- ts.length.result
+          p2 <- IsPinned
+          s2 <- GetSession
+          _ = p1 shouldBe true
+          _ = p2 shouldBe true
+          _ = s1 shouldBe s2
+        } yield ()).withPinnedSession
       p3 <- IsPinned
       _ = p3 shouldBe false
     } yield ()
@@ -132,9 +134,10 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
     }
     val ts = TableQuery[T]
     for {
-      _ <- db.run {
-        ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
-      }
+      _ <-
+        db.run {
+          ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
+        }
       needFlatten = for (_ <- ts.result) yield ts.result
       result <- db.run(needFlatten.flatten)
       _ = result shouldBe Seq(2, 3, 1, 5, 4)
@@ -149,13 +152,15 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
     val ts = TableQuery[T]
 
     for {
-      _ <- db.run {
-        ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
-      }
+      _ <-
+        db.run {
+          ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
+        }
       q1 = ts.sortBy(_.a).map(_.a).take(1)
-      result <- db.run(q1.result.head.zipWith(q1.result.head)({
-        case (a, b) => a + b
-      }))
+      result <-
+        db.run(q1.result.head.zipWith(q1.result.head)({
+          case (a, b) => a + b
+        }))
       _ = result shouldBe 2
     } yield ()
   }
@@ -168,22 +173,25 @@ class ActionTest extends AsyncTest[RelationalTestDB] {
     }
     val ts = TableQuery[T]
     for {
-      _ <- db.run {
-        ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
-      }
+      _ <-
+        db.run {
+          ts.schema.create >> (ts ++= Seq(2, 3, 1, 5, 4))
+        }
       q1 = ts.sortBy(_.a).map(_.a).take(1)
-      result <- db.run(q1.result.headOption.collect {
-        case Some(a) => a
-      })
-      _ = result shouldBe 1
-      _ = result shouldFail { _ =>
-        val future = db.run(q1.result.headOption.collect {
-          case None => ()
+      result <-
+        db.run(q1.result.headOption.collect {
+          case Some(a) => a
         })
-        import scala.concurrent.duration.Duration
-        import scala.concurrent.Await
-        Await.result(future, Duration.Inf)
-      }
+      _ = result shouldBe 1
+      _ =
+        result shouldFail { _ =>
+          val future = db.run(q1.result.headOption.collect {
+            case None => ()
+          })
+          import scala.concurrent.duration.Duration
+          import scala.concurrent.Await
+          Await.result(future, Duration.Inf)
+        }
     } yield ()
   }
 }

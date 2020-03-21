@@ -259,26 +259,29 @@ trait WebHookPullRequestService extends WebHookService {
     import WebHookService._
     callWebHookOf(repository.owner, repository.name, WebHook.PullRequest) {
       for {
-        (issue, pullRequest) <- getPullRequest(
-          repository.owner,
-          repository.name,
-          issueId
-        )
-        users = getAccountsByUserNames(
-          Set(
+        (issue, pullRequest) <-
+          getPullRequest(
             repository.owner,
-            pullRequest.requestUserName,
-            issue.openedUserName
-          ),
-          Set(sender)
-        )
+            repository.name,
+            issueId
+          )
+        users =
+          getAccountsByUserNames(
+            Set(
+              repository.owner,
+              pullRequest.requestUserName,
+              issue.openedUserName
+            ),
+            Set(sender)
+          )
         baseOwner <- users.get(repository.owner)
         headOwner <- users.get(pullRequest.requestUserName)
         issueUser <- users.get(issue.openedUserName)
-        headRepo <- getRepository(
-          pullRequest.requestUserName,
-          pullRequest.requestRepositoryName
-        )
+        headRepo <-
+          getRepository(
+            pullRequest.requestUserName,
+            pullRequest.requestRepositoryName
+          )
       } yield {
         WebHookPullRequestPayload(
           action = action,
@@ -333,15 +336,17 @@ trait WebHookPullRequestService extends WebHookService {
       (
         (issue, issueUser, pullRequest, baseOwner, headOwner),
         webHooks
-      ) <- getPullRequestsByRequestForWebhook(
-        requestRepository.owner,
-        requestRepository.name,
-        requestBranch
-      )
-      baseRepo <- getRepository(
-        pullRequest.userName,
-        pullRequest.repositoryName
-      )
+      ) <-
+        getPullRequestsByRequestForWebhook(
+          requestRepository.owner,
+          requestRepository.name,
+          requestBranch
+        )
+      baseRepo <-
+        getRepository(
+          pullRequest.userName,
+          pullRequest.repositoryName
+        )
     } yield {
       val payload = WebHookPullRequestPayload(
         action = action,
@@ -380,26 +385,29 @@ trait WebHookPullRequestReviewCommentService extends WebHookService {
       WebHook.PullRequestReviewComment
     ) {
       for {
-        (issue, pullRequest) <- getPullRequest(
-          repository.owner,
-          repository.name,
-          issueId
-        )
-        users = getAccountsByUserNames(
-          Set(
+        (issue, pullRequest) <-
+          getPullRequest(
             repository.owner,
-            pullRequest.requestUserName,
-            issue.openedUserName
-          ),
-          Set(sender)
-        )
+            repository.name,
+            issueId
+          )
+        users =
+          getAccountsByUserNames(
+            Set(
+              repository.owner,
+              pullRequest.requestUserName,
+              issue.openedUserName
+            ),
+            Set(sender)
+          )
         baseOwner <- users.get(repository.owner)
         headOwner <- users.get(pullRequest.requestUserName)
         issueUser <- users.get(issue.openedUserName)
-        headRepo <- getRepository(
-          pullRequest.requestUserName,
-          pullRequest.requestRepositoryName
-        )
+        headRepo <-
+          getRepository(
+            pullRequest.requestUserName,
+            pullRequest.requestRepositoryName
+          )
       } yield {
         WebHookPullRequestReviewCommentPayload(
           action = action,
@@ -433,19 +441,21 @@ trait WebHookIssueCommentService extends WebHookPullRequestService {
   )(implicit s: Session, context: JsonFormat.Context): Unit = {
     callWebHookOf(repository.owner, repository.name, WebHook.IssueComment) {
       for {
-        issueComment <- getComment(
-          repository.owner,
-          repository.name,
-          issueCommentId.toString()
-        )
-        users = getAccountsByUserNames(
-          Set(
-            issue.openedUserName,
+        issueComment <-
+          getComment(
             repository.owner,
-            issueComment.commentedUserName
-          ),
-          Set(sender)
-        )
+            repository.name,
+            issueCommentId.toString()
+          )
+        users =
+          getAccountsByUserNames(
+            Set(
+              issue.openedUserName,
+              repository.owner,
+              issueComment.commentedUserName
+            ),
+            Set(sender)
+          )
         issueUser <- users.get(issue.openedUserName)
         repoOwner <- users.get(repository.owner)
         commenter <- users.get(issueComment.commentedUserName)

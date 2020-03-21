@@ -174,9 +174,10 @@ class PortsMatcher(
       if resourceSelector(resource) &&
         resource.getName == Resource.PORTS
       rangeInResource <- resource.getRanges.getRangeList.asScala
-      reservation = if (resource.hasReservation)
-        Option(resource.getReservation)
-      else None
+      reservation =
+        if (resource.hasReservation)
+          Option(resource.getReservation)
+        else None
     } yield PortRange(
       resource.getRole,
       rangeInResource.getBegin.toInt,

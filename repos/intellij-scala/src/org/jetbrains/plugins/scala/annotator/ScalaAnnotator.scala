@@ -726,10 +726,11 @@ class ScalaAnnotator
     for {
       lower <- sTypeParam.lowerBound
       upper <- sTypeParam.upperBound if !Conformance.conforms(upper, lower)
-      annotation = holder.createErrorAnnotation(
-        sTypeParam,
-        ScalaBundle.message("lower.bound.conform.to.upper", upper, lower)
-      )
+      annotation =
+        holder.createErrorAnnotation(
+          sTypeParam,
+          ScalaBundle.message("lower.bound.conform.to.upper", upper, lower)
+        )
     } annotation.setHighlightType(ProblemHighlightType.GENERIC_ERROR)
   }
 

@@ -1551,10 +1551,14 @@ class JsonSuite extends QueryTest with SharedSQLContext with TestJsonData {
     val result = df2.toJSON.collect()
     // scalastyle:off
     assert(
-      result(0) === "{\"f1\":1,\"f2\":\"A1\",\"f3\":true,\"f4\":[\"1\",\" A1\",\" true\",\" null\"]}"
+      result(
+        0
+      ) === "{\"f1\":1,\"f2\":\"A1\",\"f3\":true,\"f4\":[\"1\",\" A1\",\" true\",\" null\"]}"
     )
     assert(
-      result(3) === "{\"f1\":4,\"f2\":\"D4\",\"f3\":true,\"f4\":[\"4\",\" D4\",\" true\",\" 2147483644\"],\"f5\":2147483644}"
+      result(
+        3
+      ) === "{\"f1\":4,\"f2\":\"D4\",\"f3\":true,\"f4\":[\"4\",\" D4\",\" true\",\" 2147483644\"],\"f5\":2147483644}"
     )
     // scalastyle:on
 

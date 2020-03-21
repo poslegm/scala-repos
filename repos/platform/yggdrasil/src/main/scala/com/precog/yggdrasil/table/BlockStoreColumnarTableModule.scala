@@ -785,17 +785,19 @@ trait BlockStoreColumnarTableModule[M[+_]]
                 )
                 lemission map { e =>
                   for {
-                    nextLeftWriteState <- writeAlignedSlices(
-                      lkey,
-                      e,
-                      leftWriteState,
-                      "alignLeft",
-                      SortAscending
-                    )
-                    resultWriteStates <- next(
-                      nextLeftWriteState,
-                      rightWriteState
-                    )
+                    nextLeftWriteState <-
+                      writeAlignedSlices(
+                        lkey,
+                        e,
+                        leftWriteState,
+                        "alignLeft",
+                        SortAscending
+                      )
+                    resultWriteStates <-
+                      next(
+                        nextLeftWriteState,
+                        rightWriteState
+                      )
                   } yield resultWriteStates
                 } getOrElse {
                   next(leftWriteState, rightWriteState)
@@ -879,17 +881,19 @@ trait BlockStoreColumnarTableModule[M[+_]]
                 )
                 remission map { e =>
                   for {
-                    nextRightWriteState <- writeAlignedSlices(
-                      rkey,
-                      e,
-                      rightWriteState,
-                      "alignRight",
-                      SortAscending
-                    )
-                    resultWriteStates <- next(
-                      leftWriteState,
-                      nextRightWriteState
-                    )
+                    nextRightWriteState <-
+                      writeAlignedSlices(
+                        rkey,
+                        e,
+                        rightWriteState,
+                        "alignRight",
+                        SortAscending
+                      )
+                    resultWriteStates <-
+                      next(
+                        leftWriteState,
+                        nextRightWriteState
+                      )
                   } yield resultWriteStates
                 } getOrElse {
                   next(leftWriteState, rightWriteState)

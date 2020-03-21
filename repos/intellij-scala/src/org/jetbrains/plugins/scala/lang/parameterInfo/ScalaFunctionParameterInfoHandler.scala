@@ -241,9 +241,10 @@ class ScalaFunctionParameterInfoHandler
                         if (namedMode) buffer.append(namedPostfix)
                         assign.getRExpression match {
                           case Some(expr: ScExpression) =>
-                            for (exprType <- expr.getType(
-                                   TypingContext.empty
-                                 )) {
+                            for (exprType <-
+                                   expr.getType(
+                                     TypingContext.empty
+                                   )) {
                               val paramType = param._1.paramType
                               if (!exprType.conforms(paramType)) isGrey = true
                             }
@@ -677,9 +678,10 @@ class ScalaFunctionParameterInfoHandler
                             )
                           )
                       case _ =>
-                        for (typez <- call.getEffectiveInvokedExpr.getType(
-                               TypingContext.empty
-                             )) //todo: implicit conversions
+                        for (typez <-
+                               call.getEffectiveInvokedExpr.getType(
+                                 TypingContext.empty
+                               )) //todo: implicit conversions
                           { collectForType(typez) }
                     }
                   } else {
@@ -726,9 +728,10 @@ class ScalaFunctionParameterInfoHandler
                 case None =>
                   call match {
                     case call: ScMethodCall =>
-                      for (typez <- call.getEffectiveInvokedExpr.getType(
-                             TypingContext.empty
-                           )) {
+                      for (typez <-
+                             call.getEffectiveInvokedExpr.getType(
+                               TypingContext.empty
+                             )) {
                         //todo: implicit conversions
                         collectForType(typez)
                       }
@@ -762,11 +765,12 @@ class ScalaFunctionParameterInfoHandler
                               (String, PsiElement),
                               ScType
                             ]
-                            for (i <- 0 to Math.min(
-                                   tp.length,
-                                   typeArgs.length
-                                 ) -
-                                   1) {
+                            for (i <-
+                                   0 to Math.min(
+                                     tp.length,
+                                     typeArgs.length
+                                   ) -
+                                     1) {
                               map += ((tp(i), typeArgs(i).calcType))
                             }
                             val substitutor = new ScSubstitutor(
@@ -827,8 +831,9 @@ class ScalaFunctionParameterInfoHandler
                             (String, PsiElement),
                             ScType
                           ]
-                          for (i <- 0 to Math.min(tp.length, typeArgs.length) -
-                                 1) {
+                          for (i <-
+                                 0 to Math.min(tp.length, typeArgs.length) -
+                                   1) {
                             map += ((tp(i), typeArgs(i).calcType))
                           }
                           val substitutor = new ScSubstitutor(

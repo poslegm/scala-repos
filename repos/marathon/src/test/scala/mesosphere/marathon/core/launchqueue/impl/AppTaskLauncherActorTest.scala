@@ -358,12 +358,13 @@ class AppTaskLauncherActorTest extends MarathonSpec with GivenWhenThen {
     Mockito.verify(taskOpFactory).buildTaskOp(matchRequest)
   }
 
-  for (update <- Seq(
-         TaskStatusUpdateTestHelper.finished,
-         TaskStatusUpdateTestHelper.lost,
-         TaskStatusUpdateTestHelper.killed,
-         TaskStatusUpdateTestHelper.error
-       )) {
+  for (update <-
+         Seq(
+           TaskStatusUpdateTestHelper.finished,
+           TaskStatusUpdateTestHelper.lost,
+           TaskStatusUpdateTestHelper.killed,
+           TaskStatusUpdateTestHelper.error
+         )) {
     test(
       s"Remove terminated task (${update.wrapped.status.getClass.getSimpleName})"
     ) {
@@ -397,12 +398,13 @@ class AppTaskLauncherActorTest extends MarathonSpec with GivenWhenThen {
     }
   }
 
-  for (update <- Seq(
-         TaskStatusUpdateTestHelper.finished,
-         TaskStatusUpdateTestHelper.lost,
-         TaskStatusUpdateTestHelper.killed,
-         TaskStatusUpdateTestHelper.error
-       )) {
+  for (update <-
+         Seq(
+           TaskStatusUpdateTestHelper.finished,
+           TaskStatusUpdateTestHelper.lost,
+           TaskStatusUpdateTestHelper.killed,
+           TaskStatusUpdateTestHelper.error
+         )) {
     test(
       s"Revive offers if task with constraints terminates (${update.wrapped.status.getClass.getSimpleName})"
     ) {
@@ -445,10 +447,11 @@ class AppTaskLauncherActorTest extends MarathonSpec with GivenWhenThen {
     }
   }
 
-  for (update <- Seq(
-         TaskStatusUpdateTestHelper.staging,
-         TaskStatusUpdateTestHelper.running
-       )) {
+  for (update <-
+         Seq(
+           TaskStatusUpdateTestHelper.staging,
+           TaskStatusUpdateTestHelper.running
+         )) {
     test(
       s"DO NOT REMOVE running task (${update.wrapped.status.getClass.getSimpleName})"
     ) {

@@ -189,13 +189,15 @@ object StandardTestDBs {
     def dropSchema: DBIO[Unit] = {
       import ExecutionContext.Implicits.global
       for {
-        schema <- sql"select schemaname from syscat.schemata where schemaname = '#$schema'"
-          .as[String]
-          .headOption
-        _ <- if (schema.isDefined) {
-          println(s"[Dropping DB2 schema '$schema']")
-          sqlu"call sysproc.admin_drop_schema($schema, null, ${"ERRORSCHEMA"}, ${"ERRORTABLE"})"
-        } else DBIO.successful(())
+        schema <-
+          sql"select schemaname from syscat.schemata where schemaname = '#$schema'"
+            .as[String]
+            .headOption
+        _ <-
+          if (schema.isDefined) {
+            println(s"[Dropping DB2 schema '$schema']")
+            sqlu"call sysproc.admin_drop_schema($schema, null, ${"ERRORSCHEMA"}, ${"ERRORTABLE"})"
+          } else DBIO.successful(())
       } yield ()
     }
 
@@ -237,17 +239,18 @@ object StandardTestDBs {
     override def dropUserArtifacts(implicit session: profile.Backend#Session) =
       blockingRunOnSession { implicit ec =>
         for {
-          constraints <- sql"""select constraint_name, table_name from information_schema.table_constraints where constraint_type = 'FOREIGN KEY'"""
-            .as[(String, String)]
-          constraintStatements = constraints.collect {
-            case (c, t) if !c.startsWith("SQL") =>
-              sqlu"alter table #${profile.quoteIdentifier(t)} drop constraint #${profile.quoteIdentifier(c)}"
-          }
+          constraints <-
+            sql"""select constraint_name, table_name from information_schema.table_constraints where constraint_type = 'FOREIGN KEY'"""
+              .as[(String, String)]
+          constraintStatements =
+            constraints.collect {
+              case (c, t) if !c.startsWith("SQL") =>
+                sqlu"alter table #${profile.quoteIdentifier(t)} drop constraint #${profile.quoteIdentifier(c)}"
+            }
           _ <- DBIO.sequence(constraintStatements)
           tables <- localTables
-          tableStatements = tables.map(t =>
-            sqlu"drop table #${profile.quoteIdentifier(t)}"
-          )
+          tableStatements =
+            tables.map(t => sqlu"drop table #${profile.quoteIdentifier(t)}")
           _ <- DBIO.sequence(tableStatements)
         } yield ()
       }
@@ -310,15 +313,16 @@ class SQLiteTestDB(dburl: String, confName: String)
       for {
         tables <- localTables
         sequences <- localSequences
-        _ <- DBIO.seq(
-          (tables.map(t =>
-            sqlu"""drop table if exists #${profile.quoteIdentifier(t)}"""
-          ) ++ sequences
-            .map(t =>
-              sqlu"""drop sequence if exists #${profile
-                .quoteIdentifier(t)}"""
-            )): _*
-        )
+        _ <-
+          DBIO.seq(
+            (tables.map(t =>
+              sqlu"""drop table if exists #${profile.quoteIdentifier(t)}"""
+            ) ++ sequences
+              .map(t =>
+                sqlu"""drop sequence if exists #${profile
+                  .quoteIdentifier(t)}"""
+              )): _*
+          )
       } yield ()
     }
 }
@@ -341,27 +345,30 @@ abstract class DerbyDB(confName: String) extends InternalJdbcTestDB(confName) {
     try {
       blockingRunOnSession { implicit ec =>
         for {
-          _ <- sqlu"""create table "__derby_dummy"(x integer primary key)""".asTry
+          _ <-
+            sqlu"""create table "__derby_dummy"(x integer primary key)""".asTry
           constraints <- sql"""select c.constraintname, t.tablename
                              from sys.sysconstraints c, sys.sysschemas s, sys.systables t
                              where c.schemaid = s.schemaid and c.tableid = t.tableid and s.schemaname = 'APP'
                           """.as[(String, String)]
-          _ <- DBIO.seq(
-            (for ((c, t) <- constraints if !c.startsWith("SQL"))
-              yield sqlu"""alter table ${profile
-                .quoteIdentifier(t)} drop constraint ${profile
-                .quoteIdentifier(c)}"""): _*
-          )
+          _ <-
+            DBIO.seq(
+              (for ((c, t) <- constraints if !c.startsWith("SQL"))
+                yield sqlu"""alter table ${profile
+                  .quoteIdentifier(t)} drop constraint ${profile
+                  .quoteIdentifier(c)}"""): _*
+            )
           tables <- localTables
           sequences <- localSequences
-          _ <- DBIO.seq(
-            (tables.map(t =>
-              sqlu"""drop table #${profile.quoteIdentifier(t)}"""
-            ) ++ sequences
-              .map(t =>
-                sqlu"""drop sequence #${profile.quoteIdentifier(t)}"""
-              )): _*
-          )
+          _ <-
+            DBIO.seq(
+              (tables.map(t =>
+                sqlu"""drop table #${profile.quoteIdentifier(t)}"""
+              ) ++ sequences
+                .map(t =>
+                  sqlu"""drop sequence #${profile.quoteIdentifier(t)}"""
+                )): _*
+            )
         } yield ()
       }
     } catch {

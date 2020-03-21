@@ -94,9 +94,10 @@ class SecurityServiceHandlers(
       (request: HttpRequest[Future[JValue]]) =>
         Success { (authAPIKey: APIKey) =>
           for {
-            content <- request.content
-              .toSuccess(badRequest(missingContentMessage))
-              .sequence[Future, JValue]
+            content <-
+              request.content
+                .toSuccess(badRequest(missingContentMessage))
+                .sequence[Future, JValue]
             response <- content.map(create(authAPIKey, _)).sequence[Future, R]
           } yield {
             response.toEither.merge
@@ -249,11 +250,13 @@ class SecurityServiceHandlers(
           .get('apikey)
           .toSuccess(badRequest("Missing API key from request URL"))
         for {
-          contentV <- request.content
-            .toSuccess(badRequest("Missing body content for grant creation."))
-            .sequence[Future, JValue]
-          response <- (for (apiKey <- apiKeyV; content <- contentV)
-            yield create(apiKey, content)).sequence[Future, R]
+          contentV <-
+            request.content
+              .toSuccess(badRequest("Missing body content for grant creation."))
+              .sequence[Future, JValue]
+          response <-
+            (for (apiKey <- apiKeyV; content <- contentV)
+              yield create(apiKey, content)).sequence[Future, R]
         } yield response.toEither.merge
       }
 
@@ -426,12 +429,14 @@ class SecurityServiceHandlers(
           .get('grantId)
           .toSuccess(badRequest("Missing grant ID from request URL"))
         for {
-          contentV <- request.content
-            .toSuccess(badRequest("Missing body content for grant creation."))
-            .sequence[Future, JValue]
-          response <- (for (parentId <- parentIdV; content <- contentV)
-            yield create(authAPIKey, parentId, content))
-            .sequence[Future, R]
+          contentV <-
+            request.content
+              .toSuccess(badRequest("Missing body content for grant creation."))
+              .sequence[Future, JValue]
+          response <-
+            (for (parentId <- parentIdV; content <- contentV)
+              yield create(authAPIKey, parentId, content))
+              .sequence[Future, R]
         } yield response.toEither.merge
       }
 

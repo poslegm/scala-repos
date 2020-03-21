@@ -120,10 +120,11 @@ private[twitter] object ThriftUtil {
       for {
         baseName <- findRootWithSuffix(clsName, "$FutureIface")
         clientCls <- findClass[Iface](baseName + "$FinagledClient")
-        cons <- findConstructor(
-          clientCls,
-          scrooge3FinagleClientWithRepClassifierParamTypes: _*
-        )
+        cons <-
+          findConstructor(
+            clientCls,
+            scrooge3FinagleClientWithRepClassifierParamTypes: _*
+          )
       } yield cons.newInstance(
         underlying,
         protocolFactory,
@@ -150,12 +151,13 @@ private[twitter] object ThriftUtil {
       for {
         swiftClass <- findSwiftClass(cls)
         proxy <- findClass1("com.twitter.finagle.exp.swift.SwiftProxy")
-        meth <- findMethod(
-          proxy,
-          "newClient",
-          classOf[Service[_, _]],
-          classOf[ClassTag[_]]
-        )
+        meth <-
+          findMethod(
+            proxy,
+            "newClient",
+            classOf[Service[_, _]],
+            classOf[ClassTag[_]]
+          )
       } yield {
         val manifest = ClassTag(swiftClass).asInstanceOf[ClassTag[Iface]]
         meth.invoke(null, underlying, manifest).asInstanceOf[Iface]
@@ -191,13 +193,15 @@ private[twitter] object ThriftUtil {
 
     def tryScroogeFinagleService(iface: Class[_]): Option[BinaryService] =
       (for {
-        baseName <- findRootWithSuffix(
-          iface.getName,
-          "$FutureIface"
-        ) orElse Some(iface.getName)
-        serviceCls <- findClass[BinaryService](
-          baseName + "$FinagleService"
-        ) orElse findClass[BinaryService](baseName + "$FinagledService")
+        baseName <-
+          findRootWithSuffix(
+            iface.getName,
+            "$FutureIface"
+          ) orElse Some(iface.getName)
+        serviceCls <-
+          findClass[BinaryService](
+            baseName + "$FinagleService"
+          ) orElse findClass[BinaryService](baseName + "$FinagledService")
         baseClass <- findClass1(baseName)
       } yield {
         // The new constructor takes one more 'label' paramater than the old one, so we first try find
@@ -226,22 +230,25 @@ private[twitter] object ThriftUtil {
     // The legacy $FinagleService that doesn't take stats.
     def tryLegacyScroogeFinagleService(iface: Class[_]): Option[BinaryService] =
       for {
-        baseName <- findRootWithSuffix(
-          iface.getName,
-          "$FutureIface"
-        ) orElse Some(iface.getName)
-        serviceCls <- findClass[BinaryService](
-          baseName + "$FinagleService"
-        ) orElse findClass[BinaryService](baseName + "$FinagledService")
+        baseName <-
+          findRootWithSuffix(
+            iface.getName,
+            "$FutureIface"
+          ) orElse Some(iface.getName)
+        serviceCls <-
+          findClass[BinaryService](
+            baseName + "$FinagleService"
+          ) orElse findClass[BinaryService](baseName + "$FinagledService")
         cons <- findConstructor(serviceCls, iface, classOf[TProtocolFactory])
       } yield cons.newInstance(impl, protocolFactory)
 
     def trySwiftService(iface: Class[_]): Option[BinaryService] =
       for {
         _ <- findSwiftClass(iface)
-        swiftServiceCls <- findClass1(
-          "com.twitter.finagle.exp.swift.SwiftService"
-        )
+        swiftServiceCls <-
+          findClass1(
+            "com.twitter.finagle.exp.swift.SwiftService"
+          )
         const <- findConstructor(swiftServiceCls, classOf[Object])
       } yield const.newInstance(impl).asInstanceOf[BinaryService]
 

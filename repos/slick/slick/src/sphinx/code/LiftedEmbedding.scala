@@ -495,9 +495,10 @@ object LiftedEmbedding extends App {
 
       // Use the lifted function in a query to group by day of week
       val q1 = for {
-        (dow, q) <- salesPerDay
-          .map(s => (dayOfWeek(s.day), s.count))
-          .groupBy(_._1)
+        (dow, q) <-
+          salesPerDay
+            .map(s => (dayOfWeek(s.day), s.count))
+            .groupBy(_._1)
       } yield (dow, q.map(_._2).sum)
       //#simplefunction1
 
@@ -562,7 +563,9 @@ object LiftedEmbedding extends App {
 
       // A Shape implementation for Pair
       final class PairShape[
-          Level <: ShapeLevel, M <: Pair[_, _], U <: Pair[_, _]: ClassTag,
+          Level <: ShapeLevel,
+          M <: Pair[_, _],
+          U <: Pair[_, _]: ClassTag,
           P <: Pair[_, _]
       ](val shapes: Seq[Shape[_, _, _, _]])
           extends MappedScalaProductShape[Level, Pair[_, _], M, U, P] {

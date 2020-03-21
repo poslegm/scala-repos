@@ -232,8 +232,7 @@ class HiveQuerySuite extends HiveComparisonTest with BeforeAndAfter {
   test("constant null testing timestamp") {
     val r1 = sql(
       "SELECT IF(FALSE, CAST(NULL AS TIMESTAMP), CAST(1 AS TIMESTAMP)) AS COL20"
-    ).collect()
-      .head
+    ).collect().head
     assert(new Timestamp(1000) == r1.getTimestamp(0))
   }
 
@@ -938,8 +937,7 @@ class HiveQuerySuite extends HiveComparisonTest with BeforeAndAfter {
     assert(
       sql(
         "select a, b from (select stack(2, key, value, key, value) as (a, b) from src) t limit 5"
-      ).collect()
-        .size == 5
+      ).collect().size == 5
     )
   }
 

@@ -73,12 +73,13 @@ trait BlockAlignSpec[M[+_]]
       }
 
     val finalResults = for {
-      results <- Table.align(
-        fromJson(lstream),
-        SourceKey.Single,
-        fromJson(rstream),
-        SourceKey.Single
-      )
+      results <-
+        Table.align(
+          fromJson(lstream),
+          SourceKey.Single,
+          fromJson(rstream),
+          SourceKey.Single
+        )
       leftResult <- results._1.toJson
       rightResult <- results._2.toJson
       leftResult2 <- results._1.toJson

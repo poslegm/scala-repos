@@ -292,12 +292,13 @@ class JdbcMapperTest extends AsyncTest[JdbcTestDB] {
       r1: Set[(A, B)] <- q1.to[Set].result
       _ = r1 shouldBe Set((A(2, 2), B(2, Some("b"))))
       r2: Set[(A, Option[B])] <- q2.to[Set].result
-      _ = r2 shouldBe Set(
-        (A(1, 1), Some(B(1, Some("a")))),
-        (A(1, 1), Some(B(2, Some("b")))),
-        (A(2, 2), Some(B(1, Some("a")))),
-        (A(2, 2), Some(B(2, Some("b"))))
-      )
+      _ =
+        r2 shouldBe Set(
+          (A(1, 1), Some(B(1, Some("a")))),
+          (A(1, 1), Some(B(2, Some("b")))),
+          (A(2, 2), Some(B(1, Some("a")))),
+          (A(2, 2), Some(B(2, Some("b"))))
+        )
     } yield ()
   }
 
@@ -375,7 +376,9 @@ class JdbcMapperTest extends AsyncTest[JdbcTestDB] {
 
     // A Shape that maps Pair to a ProductNode
     final class PairShape[
-        Level <: ShapeLevel, M <: Pair[_, _], U <: Pair[_, _]: ClassTag,
+        Level <: ShapeLevel,
+        M <: Pair[_, _],
+        U <: Pair[_, _]: ClassTag,
         P <: Pair[_, _]
     ](val shapes: Seq[Shape[_, _, _, _]])
         extends MappedScalaProductShape[Level, Pair[_, _], M, U, P] {
@@ -509,11 +512,11 @@ class JdbcMapperTest extends AsyncTest[JdbcTestDB] {
       ares: String <- as.result.head
       _ = ares shouldBe "Foo"
       _ <- as.update("Foo")
-      _ <- as
-        .map(a => a :: a :: HNil)
-        .result
-        .head
-        .map(_ shouldBe "Foo" :: "Foo" :: HNil)
+      _ <-
+        as.map(a => a :: a :: HNil)
+          .result
+          .head
+          .map(_ shouldBe "Foo" :: "Foo" :: HNil)
       _ <- bs.schema.create
       _ <- bs += Tuple1("Foo")
       _ <- bs.update(Tuple1("Foo"))

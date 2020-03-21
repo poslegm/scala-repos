@@ -43,13 +43,14 @@ object Act {
       defaultConfigs: Option[ResolvedReference] => Seq[String],
       structure: BuildStructure
   ): KeysParser =
-    for (selected <- scopedKeySelected(
-           structure.index.aggregateKeyIndex,
-           current,
-           defaultConfigs,
-           structure.index.keyMap,
-           structure.data
-         ))
+    for (selected <-
+           scopedKeySelected(
+             structure.index.aggregateKeyIndex,
+             current,
+             defaultConfigs,
+             structure.index.keyMap,
+             structure.data
+           ))
       yield Aggregation.aggregate(selected.key, selected.mask, structure.extra)
 
   def scopedKeySelected(
@@ -90,12 +91,13 @@ object Act {
       rawProject <- optProjectRef(index, current)
       proj = resolveProject(rawProject, current)
       confAmb <- config(index configs proj)
-      partialMask = ScopeMask(
-        rawProject.isExplicit,
-        confAmb.isExplicit,
-        false,
-        false
-      )
+      partialMask =
+        ScopeMask(
+          rawProject.isExplicit,
+          confAmb.isExplicit,
+          false,
+          false
+        )
     } yield taskKeyExtra(proj, confAmb, partialMask)
   }
   def makeScopedKey(

@@ -407,32 +407,35 @@ trait BatchedStore[K, V] extends scalding.Store[K, V] { self =>
 
       // Get the total time we want to cover. If the lower bound of the requested timeSpan
       // is not the firstDeltaTimestamp, adjust it to that.
-      deltaTimes: Interval[Timestamp] = setLower(
-        InclusiveLower(firstDeltaTimestamp),
-        timeSpan
-      )
+      deltaTimes: Interval[Timestamp] =
+        setLower(
+          InclusiveLower(firstDeltaTimestamp),
+          timeSpan
+        )
 
       // Try to read the range covering the time we want; get the time we can completely
       // cover and the data from input in that range.
-      readTimeFlow <- fromEither(
-        batchOps.readAvailableTimes(deltaTimes, mode, input)
-      )
+      readTimeFlow <-
+        fromEither(
+          batchOps.readAvailableTimes(deltaTimes, mode, input)
+        )
 
       (readDeltaTimestamps, readFlow) = readTimeFlow
 
       // Make sure that the time we can read includes the time just after the last
       // snapshot. We can't roll the store forward without this.
-      _ <- fromEither[FactoryInput](
-        if (readDeltaTimestamps.contains(firstDeltaTimestamp)) Right(())
-        else
-          Left(
-            List(
-              "Cannot load initial timestamp " +
-                firstDeltaTimestamp.toString + " of deltas " + " at " +
-                this.toString + " only " + readDeltaTimestamps.toString
+      _ <-
+        fromEither[FactoryInput](
+          if (readDeltaTimestamps.contains(firstDeltaTimestamp)) Right(())
+          else
+            Left(
+              List(
+                "Cannot load initial timestamp " +
+                  firstDeltaTimestamp.toString + " of deltas " + " at " +
+                  this.toString + " only " + readDeltaTimestamps.toString
+              )
             )
-          )
-      )
+        )
 
       // Record the timespan we actually read.
       _ <- putState((readDeltaTimestamps, mode))
@@ -505,14 +508,15 @@ trait BatchedStore[K, V] extends scalding.Store[K, V] { self =>
       /**
         * Once we have read the last snapshot and the available batched blocks of delta, just merge
         */
-      merged = mergeBatched(
-        actualLast,
-        snapshot,
-        deltaFlow2Pipe,
-        tsRead,
-        commutativity,
-        reducers
-      )(sg)
+      merged =
+        mergeBatched(
+          actualLast,
+          snapshot,
+          deltaFlow2Pipe,
+          tsRead,
+          commutativity,
+          reducers
+        )(sg)
 
       prunedFlow = Scalding.limitTimes(tsRequested && tsRead, merged)
     } yield (prunedFlow)

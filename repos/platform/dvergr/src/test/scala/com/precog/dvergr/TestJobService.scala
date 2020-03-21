@@ -252,10 +252,11 @@ class JobServiceSpec extends TestJobService {
       val (state, job) = (for {
         res <- postJob(simpleJob, validAPIKey)
         Some(JString(jobId)) = res.content map (_ \ "id")
-        HttpResponse(HttpStatus(OK, _), _, Some(obj1), _) <- putState(
-          jobId,
-          startJob(Some(dt))
-        )
+        HttpResponse(HttpStatus(OK, _), _, Some(obj1), _) <-
+          putState(
+            jobId,
+            startJob(Some(dt))
+          )
         HttpResponse(_, _, Some(obj2), _) <- getJob(jobId)
       } yield (obj1, obj2)).copoint
 
@@ -270,10 +271,11 @@ class JobServiceSpec extends TestJobService {
         job <- postJob(simpleJob)
         Some(JString(jobId)) = job.content map (_ \ "id")
         _ <- putState(jobId, startJob())
-        res <- putState(
-          jobId,
-          JObject(JField("state", JString("cancelled")) :: Nil)
-        )
+        res <-
+          putState(
+            jobId,
+            JObject(JField("state", JString("cancelled")) :: Nil)
+          )
       } yield res).copoint must beLike {
         case HttpResponse(HttpStatus(BadRequest, _), _, _, _) => ok
       }
@@ -297,10 +299,11 @@ class JobServiceSpec extends TestJobService {
       val st = (for {
         jobId <- postJobAndGetId(simpleJob)
         _ <- putState(jobId, startJob())
-        HttpResponse(HttpStatus(OK, _), _, Some(st), _) <- putState(
-          jobId,
-          cancellation
-        )
+        HttpResponse(HttpStatus(OK, _), _, Some(st), _) <-
+          putState(
+            jobId,
+            cancellation
+          )
       } yield st).copoint
 
       st.validated[JobState] must beLike {
@@ -511,30 +514,33 @@ class JobServiceSpec extends TestJobService {
     "allow status updates to be conditional" in {
       (for {
         jobId <- postJobAndGetId(simpleJob)
-        id1 <- putStatusAndGetId(
-          jobId,
-          "Nearly there!",
-          99.999,
-          "%",
-          None,
-          None
-        )
-        id2 <- putStatusAndGetId(
-          jobId,
-          "Very nearly there!",
-          99.99999,
-          "%",
-          None,
-          Some(id1)
-        )
-        res <- putStatus(
-          jobId,
-          "Very nearly, almost there!",
-          99.9999999,
-          "%",
-          None,
-          Some(id2)
-        )
+        id1 <-
+          putStatusAndGetId(
+            jobId,
+            "Nearly there!",
+            99.999,
+            "%",
+            None,
+            None
+          )
+        id2 <-
+          putStatusAndGetId(
+            jobId,
+            "Very nearly there!",
+            99.99999,
+            "%",
+            None,
+            Some(id1)
+          )
+        res <-
+          putStatus(
+            jobId,
+            "Very nearly, almost there!",
+            99.9999999,
+            "%",
+            None,
+            Some(id2)
+          )
       } yield res).copoint must beLike {
         case HttpResponse(HttpStatus(OK, _), _, Some(obj), _) =>
           obj \ "value" \ "message" must_==
@@ -546,22 +552,24 @@ class JobServiceSpec extends TestJobService {
       (for {
         jobId <- postJobAndGetId(simpleJob)
         id <- putStatusAndGetId(jobId, "Nearly there!", 99.999, "%", None, None)
-        _ <- putStatusAndGetId(
-          jobId,
-          "Very nearly there!",
-          99.99999,
-          "%",
-          None,
-          Some(id)
-        )
-        res <- putStatus(
-          jobId,
-          "Very nearly there!",
-          99.99999,
-          "%",
-          None,
-          Some(id)
-        )
+        _ <-
+          putStatusAndGetId(
+            jobId,
+            "Very nearly there!",
+            99.99999,
+            "%",
+            None,
+            Some(id)
+          )
+        res <-
+          putStatus(
+            jobId,
+            "Very nearly there!",
+            99.99999,
+            "%",
+            None,
+            Some(id)
+          )
       } yield res).copoint must beLike {
         case HttpResponse(HttpStatus(Conflict, _), _, _, _) => ok
       }
@@ -571,27 +579,33 @@ class JobServiceSpec extends TestJobService {
       val (res1, res2, res3, res4) = (for {
         jobId <- postJobAndGetId(simpleJob)
         res1 <- putStatusRaw(jobId, None)(JObject(Nil))
-        res2 <- putStatusRaw(jobId, None)(
-          JObject(
-            JField("message", JString("a")) :: JField(
-              "unit",
-              JString("%")
-            ) :: Nil
+        res2 <-
+          putStatusRaw(jobId, None)(
+            JObject(
+              JField("message", JString("a")) :: JField(
+                "unit",
+                JString("%")
+              ) :: Nil
+            )
           )
-        )
-        res3 <- putStatusRaw(jobId, None)(
-          JObject(
-            JField("message", JString("a")) :: JField(
-              "progress",
-              JNum(99)
-            ) :: Nil
+        res3 <-
+          putStatusRaw(jobId, None)(
+            JObject(
+              JField("message", JString("a")) :: JField(
+                "progress",
+                JNum(99)
+              ) :: Nil
+            )
           )
-        )
-        res4 <- putStatusRaw(jobId, None)(
-          JObject(
-            JField("progress", JNum(99)) :: JField("unit", JString("%")) :: Nil
+        res4 <-
+          putStatusRaw(jobId, None)(
+            JObject(
+              JField("progress", JNum(99)) :: JField(
+                "unit",
+                JString("%")
+              ) :: Nil
+            )
           )
-        )
       } yield (res1, res2, res3, res4)).copoint
 
       def mustBeBad(res: HttpResponse[JValue]) =

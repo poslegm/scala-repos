@@ -98,9 +98,10 @@ object SyntheticMembersInjector {
   ): Seq[ScFunction] = {
     val buffer = new ArrayBuffer[ScFunction]()
     for {
-      injector <- EP_NAME.getExtensions.toSet ++ injectedExtensions(
-        source.getProject
-      ).toSet
+      injector <-
+        EP_NAME.getExtensions.toSet ++ injectedExtensions(
+          source.getProject
+        ).toSet
       template <- injector.injectFunctions(source)
     } try {
       val context = source match {
@@ -130,9 +131,10 @@ object SyntheticMembersInjector {
   def injectInners(source: ScTypeDefinition): Seq[ScTypeDefinition] = {
     val buffer = new ArrayBuffer[ScTypeDefinition]()
     for {
-      injector <- EP_NAME.getExtensions.toSet ++ injectedExtensions(
-        source.getProject
-      ).toSet
+      injector <-
+        EP_NAME.getExtensions.toSet ++ injectedExtensions(
+          source.getProject
+        ).toSet
       template <- injector.injectInners(source)
     } try {
       val context = (source match {

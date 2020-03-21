@@ -373,10 +373,9 @@ trait HashVectorOps extends HashVector_GenericOps {
   @expand
   implicit def canDot_HV_HV[@expand.args(Int, Long, Double, Float) T](implicit
       @expand.sequence[T](0, 0L, 0.0, 0f) zero: T
-  )
-      : breeze.linalg.operators.OpMulInner.Impl2[HashVector[T], HashVector[
-        T
-      ], T] = {
+  ): breeze.linalg.operators.OpMulInner.Impl2[HashVector[T], HashVector[
+    T
+  ], T] = {
     new breeze.linalg.operators.OpMulInner.Impl2[HashVector[T], HashVector[
       T
     ], T] {

@@ -488,12 +488,13 @@ object Scalding {
                 getOrElse(options, names, ljp, Reducers.default).count
               val res = for {
                 leftAndDelta <- leftPf.join(allDeltas)
-                joined = InternalService.doIndependentJoin[K, U, V](
-                  leftAndDelta._1,
-                  leftAndDelta._2,
-                  sg,
-                  Some(reducers)
-                )
+                joined =
+                  InternalService.doIndependentJoin[K, U, V](
+                    leftAndDelta._1,
+                    leftAndDelta._2,
+                    sg,
+                    Some(reducers)
+                  )
                 // read the latest state, which is the (time interval, mode)
                 maxAvailable <- StateWithError.getState
               } yield Scalding.limitTimes(maxAvailable._1, joined)
@@ -539,28 +540,30 @@ object Scalding {
               val res: PipeFactory[(K, (V, Option[U]))] = for {
                 // Handle the Option[Producer] return value from getLoopInputs properly.
                 // If there was no producer returned, pass an empty TypedPipe to the join for that part.
-                flowToPipe <- deltaLogOpt
-                  .map { del =>
-                    leftPf.join(del).map {
-                      case (ftpA, ftpB) =>
-                        Scalding.joinFP(
-                          ftpA,
-                          ftpB
-                        ) // extra producer for store, join the two FlowToPipes
+                flowToPipe <-
+                  deltaLogOpt
+                    .map { del =>
+                      leftPf.join(del).map {
+                        case (ftpA, ftpB) =>
+                          Scalding.joinFP(
+                            ftpA,
+                            ftpB
+                          ) // extra producer for store, join the two FlowToPipes
+                      }
                     }
+                    .getOrElse(leftPf.map { p =>
+                      p.map((_, TypedPipe.empty))
+                    }) // no extra producer for store
+                servOut =
+                  flowToPipe.map {
+                    case (lpipe, dpipe) =>
+                      InternalService.loopJoin[Timestamp, K, V, U](
+                        lpipe,
+                        dpipe,
+                        flatMapFn,
+                        Some(reducers)
+                      )
                   }
-                  .getOrElse(leftPf.map { p =>
-                    p.map((_, TypedPipe.empty))
-                  }) // no extra producer for store
-                servOut = flowToPipe.map {
-                  case (lpipe, dpipe) =>
-                    InternalService.loopJoin[Timestamp, K, V, U](
-                      lpipe,
-                      dpipe,
-                      flatMapFn,
-                      Some(reducers)
-                    )
-                }
                 // servOut is both the store output and the join output
                 plannedStore = servOut.map(_._1)
               } yield plannedStore
@@ -671,7 +674,8 @@ object Scalding {
             val merged = for {
               leftAndRight <- pfl.join(pfr)
               merged = Scalding.merge(leftAndRight._1, leftAndRight._2)
-              maxAvailable <- StateWithError.getState // read the latest state, which is the time
+              maxAvailable <-
+                StateWithError.getState // read the latest state, which is the time
             } yield Scalding.limitTimes(maxAvailable._1, merged)
             (merged, mr)
           }
@@ -687,7 +691,8 @@ object Scalding {
             val onlyRight = for {
               leftAndRight <- pfl.join(pfr)
               justRight = Scalding.also(leftAndRight._1, leftAndRight._2)
-              maxAvailable <- StateWithError.getState // read the latest state, which is the time
+              maxAvailable <-
+                StateWithError.getState // read the latest state, which is the time
             } yield Scalding.limitTimes(maxAvailable._1, justRight)
             (onlyRight, mr)
           }

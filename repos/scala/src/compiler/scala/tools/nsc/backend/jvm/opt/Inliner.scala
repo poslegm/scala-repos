@@ -154,10 +154,11 @@ class Inliner[BT <: BTypes](val btypes: BT) {
     // repository. If either of the two fails, the rewrite is not performed.
     val res = for {
       selfParamType <- selfParamTypeV
-      implMethodDescriptor = asm.Type.getMethodDescriptor(
-        asm.Type.getReturnType(callee.desc),
-        selfParamType.toASMType +: traitMethodArgumentTypes: _*
-      )
+      implMethodDescriptor =
+        asm.Type.getMethodDescriptor(
+          asm.Type.getReturnType(callee.desc),
+          selfParamType.toASMType +: traitMethodArgumentTypes: _*
+        )
       implClassMethod <- implClassMethodV(implMethodDescriptor)
       implClassBType = classBTypeFromParsedClassfile(implClassInternalName)
       selfTypeOk <- calleeDeclarationClass.isSubtypeOf(selfParamType)
@@ -948,18 +949,20 @@ class Inliner[BT <: BTypes](val btypes: BT) {
         case fi: FieldInsnNode =>
           val fieldRefClass = classBTypeFromParsedClassfile(fi.owner)
           for {
-            (fieldNode, fieldDeclClassNode) <- byteCodeRepository.fieldNode(
-              fieldRefClass.internalName,
-              fi.name,
-              fi.desc
-            ): Either[OptimizerWarning, (FieldNode, InternalName)]
+            (fieldNode, fieldDeclClassNode) <-
+              byteCodeRepository.fieldNode(
+                fieldRefClass.internalName,
+                fi.name,
+                fi.desc
+              ): Either[OptimizerWarning, (FieldNode, InternalName)]
             fieldDeclClass = classBTypeFromParsedClassfile(fieldDeclClassNode)
-            res <- memberIsAccessible(
-              fieldNode.access,
-              fieldDeclClass,
-              fieldRefClass,
-              destinationClass
-            )
+            res <-
+              memberIsAccessible(
+                fieldNode.access,
+                fieldDeclClass,
+                fieldRefClass,
+                destinationClass
+              )
           } yield {
             res
           }
@@ -994,21 +997,24 @@ class Inliner[BT <: BTypes](val btypes: BT) {
 
             val methodRefClass = classBTypeFromParsedClassfile(mi.owner)
             for {
-              (methodNode, methodDeclClassNode) <- byteCodeRepository
-                .methodNode(
-                  methodRefClass.internalName,
-                  mi.name,
-                  mi.desc
-                ): Either[OptimizerWarning, (MethodNode, InternalName)]
-              methodDeclClass = classBTypeFromParsedClassfile(
-                methodDeclClassNode
-              )
-              res <- canInlineCall(
-                mi.getOpcode,
-                methodNode.access,
-                methodDeclClass,
-                methodRefClass
-              )
+              (methodNode, methodDeclClassNode) <-
+                byteCodeRepository
+                  .methodNode(
+                    methodRefClass.internalName,
+                    mi.name,
+                    mi.desc
+                  ): Either[OptimizerWarning, (MethodNode, InternalName)]
+              methodDeclClass =
+                classBTypeFromParsedClassfile(
+                  methodDeclClassNode
+                )
+              res <-
+                canInlineCall(
+                  mi.getOpcode,
+                  methodNode.access,
+                  methodDeclClass,
+                  methodRefClass
+                )
             } yield {
               res
             }
@@ -1070,18 +1076,20 @@ class Inliner[BT <: BTypes](val btypes: BT) {
             implMethod.getOwner
           )
           for {
-            (methodNode, methodDeclClassNode) <- byteCodeRepository.methodNode(
-              methodRefClass.internalName,
-              implMethod.getName,
-              implMethod.getDesc
-            ): Either[OptimizerWarning, (MethodNode, InternalName)]
+            (methodNode, methodDeclClassNode) <-
+              byteCodeRepository.methodNode(
+                methodRefClass.internalName,
+                implMethod.getName,
+                implMethod.getDesc
+              ): Either[OptimizerWarning, (MethodNode, InternalName)]
             methodDeclClass = classBTypeFromParsedClassfile(methodDeclClassNode)
-            res <- memberIsAccessible(
-              methodNode.access,
-              methodDeclClass,
-              methodRefClass,
-              destinationClass
-            )
+            res <-
+              memberIsAccessible(
+                methodNode.access,
+                methodDeclClass,
+                methodRefClass,
+                destinationClass
+              )
           } yield {
             res
           }

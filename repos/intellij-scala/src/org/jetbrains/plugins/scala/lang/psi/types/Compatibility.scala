@@ -324,13 +324,14 @@ object Compatibility {
               Seq(param.expectedType)
             )
 
-            for (exprType <- expr
-                   .getTypeAfterImplicitConversion(
-                     checkWithImplicits,
-                     isShapesResolve,
-                     Some(expectedType)
-                   )
-                   .tr) yield {
+            for (exprType <-
+                   expr
+                     .getTypeAfterImplicitConversion(
+                       checkWithImplicits,
+                       isShapesResolve,
+                       Some(expectedType)
+                     )
+                     .tr) yield {
               val conforms =
                 Conformance.conforms(tp, exprType, checkWeak = true)
               if (!conforms) {
@@ -381,13 +382,14 @@ object Compatibility {
               case Some(expr: ScExpression) =>
                 val paramType = param.paramType
                 val expectedType = param.expectedType
-                for (exprType <- expr
-                       .getTypeAfterImplicitConversion(
-                         checkWithImplicits,
-                         isShapesResolve,
-                         Some(expectedType)
-                       )
-                       .tr) {
+                for (exprType <-
+                       expr
+                         .getTypeAfterImplicitConversion(
+                           checkWithImplicits,
+                           isShapesResolve,
+                           Some(expectedType)
+                         )
+                         .tr) {
                   val conforms =
                     Conformance.conforms(paramType, exprType, checkWeak = true)
                   if (!conforms) {
@@ -455,13 +457,14 @@ object Compatibility {
       val paramType: ScType = parameters.last.paramType
       val expectedType: ScType = parameters.last.expectedType
       while (k < exprs.length) {
-        for (exprType <- exprs(k)
-               .getTypeAfterImplicitConversion(
-                 checkWithImplicits,
-                 isShapesResolve,
-                 Some(expectedType)
-               )
-               ._1) {
+        for (exprType <-
+               exprs(k)
+                 .getTypeAfterImplicitConversion(
+                   checkWithImplicits,
+                   isShapesResolve,
+                   Some(expectedType)
+                 )
+                 ._1) {
           val conforms =
             Conformance.conforms(paramType, exprType, checkWeak = true)
           if (!conforms) {

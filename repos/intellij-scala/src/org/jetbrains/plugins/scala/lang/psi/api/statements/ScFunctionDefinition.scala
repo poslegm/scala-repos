@@ -41,9 +41,7 @@ trait ScFunctionDefinition extends ScFunction with ScControlFlowOwner {
         .depthFirst(!_.isInstanceOf[ScFunction])
         .filter(_.isInstanceOf[ScReturnStmt]) ++ exp.calculateReturns(
         withBooleanInfix
-      )).filter(_.getContainingFile == getContainingFile)
-        .toArray
-        .distinct
+      )).filter(_.getContainingFile == getContainingFile).toArray.distinct
     })
 
   def canBeTailRecursive =
@@ -93,9 +91,10 @@ trait ScFunctionDefinition extends ScFunction with ScControlFlowOwner {
     body match {
       case Some(body) =>
         for {
-          ref <- body.depthFirst
-            .filterByType(classOf[ScReferenceElement])
-            .toSeq if ref.isReferenceTo(this)
+          ref <-
+            body.depthFirst
+              .filterByType(classOf[ScReferenceElement])
+              .toSeq if ref.isReferenceTo(this)
         } yield {
           RecursiveReference(
             ref,

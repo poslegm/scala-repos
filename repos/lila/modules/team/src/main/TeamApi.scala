@@ -80,14 +80,15 @@ final class TeamApi(
   def join(teamId: String)(implicit ctx: UserContext): Fu[Option[Requesting]] =
     for {
       teamOption ← $find.byId[Team](teamId)
-      result ← ~(teamOption |@| ctx.me.filter(_.canTeam))({
-        case (team, user) if team.open =>
-          (doJoin(team, user.id) inject Joined(team).some): Fu[
-            Option[Requesting]
-          ]
-        case (team, user) =>
-          fuccess(Motivate(team).some: Option[Requesting])
-      })
+      result ←
+        ~(teamOption |@| ctx.me.filter(_.canTeam))({
+          case (team, user) if team.open =>
+            (doJoin(team, user.id) inject Joined(team).some): Fu[
+              Option[Requesting]
+            ]
+          case (team, user) =>
+            fuccess(Motivate(team).some: Option[Requesting])
+        })
     } yield result
 
   def requestable(teamId: String, user: User): Fu[Option[Team]] =
@@ -119,11 +120,12 @@ final class TeamApi(
       _ ← $remove(request)
       _ ← cached.nbRequests remove team.createdBy
       userOption ← $find.byId[User](request.user)
-      _ ← userOption
-        .filter(_ => accept)
-        .??(user =>
-          doJoin(team, user.id) >>- notifier.acceptRequest(team, request)
-        )
+      _ ←
+        userOption
+          .filter(_ => accept)
+          .??(user =>
+            doJoin(team, user.id) >>- notifier.acceptRequest(team, request)
+          )
     } yield ()
 
   def doJoin(team: Team, userId: String): Funit =
@@ -137,9 +139,10 @@ final class TeamApi(
   def quit(teamId: String)(implicit ctx: UserContext): Fu[Option[Team]] =
     for {
       teamOption ← $find.byId[Team](teamId)
-      result ← ~(teamOption |@| ctx.me)({
-        case (team, user) => doQuit(team, user.id) inject team.some
-      })
+      result ←
+        ~(teamOption |@| ctx.me)({
+          case (team, user) => doQuit(team, user.id) inject team.some
+        })
     } yield result
 
   def doQuit(team: Team, userId: String): Funit =

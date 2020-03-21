@@ -639,9 +639,10 @@ trait ColumnarTableModule[M[+_]]
       (for {
         source <- grouping.sources
         groupKeyProjections <- mkProjections(source.groupKeySpec)
-        disjunctGroupKeyTransSpecs = groupKeyProjections.map {
-          case (key, spec) => spec
-        }
+        disjunctGroupKeyTransSpecs =
+          groupKeyProjections.map {
+            case (key, spec) => spec
+          }
       } yield {
         TableIndex
           .createFromTable(
@@ -833,11 +834,12 @@ trait ColumnarTableModule[M[+_]]
       for {
         left0 <- left.sort(leftKeySpec)
         right0 <- right.sort(rightKeySpec)
-        cogrouped = left0.cogroup(leftKeySpec, rightKeySpec, right0)(
-          emptySpec,
-          emptySpec,
-          trans.WrapArray(joinSpec)
-        )
+        cogrouped =
+          left0.cogroup(leftKeySpec, rightKeySpec, right0)(
+            emptySpec,
+            emptySpec,
+            trans.WrapArray(joinSpec)
+          )
       } yield {
         JoinOrder.KeyOrder -> cogrouped.transform(
           trans.DerefArrayStatic(Leaf(Source), CPathIndex(0))
@@ -1908,7 +1910,8 @@ trait ColumnarTableModule[M[+_]]
             right.slices.uncons flatMap {
               case Some((rhead, rtail)) =>
                 for {
-                  lempty <- ltail.isEmpty //TODO: Scalaz result here is negated from what it should be!
+                  lempty <-
+                    ltail.isEmpty //TODO: Scalaz result here is negated from what it should be!
                   rempty <- rtail.isEmpty
 
                   back <- {

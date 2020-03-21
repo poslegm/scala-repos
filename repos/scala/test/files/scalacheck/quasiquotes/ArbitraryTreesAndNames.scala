@@ -50,17 +50,18 @@ trait ArbitraryTreesAndNames {
   def genModifiers = for (flagset <- genFlagSet) yield Modifiers(flagset)
 
   def genConstant =
-    for (value <- oneOf(
-           arbitrary[Byte],
-           arbitrary[Short],
-           arbitrary[Char],
-           arbitrary[Int],
-           arbitrary[Long],
-           arbitrary[Float],
-           arbitrary[Double],
-           arbitrary[Boolean],
-           arbitrary[String]
-         )) yield Constant(value)
+    for (value <-
+           oneOf(
+             arbitrary[Byte],
+             arbitrary[Short],
+             arbitrary[Char],
+             arbitrary[Int],
+             arbitrary[Long],
+             arbitrary[Float],
+             arbitrary[Double],
+             arbitrary[Boolean],
+             arbitrary[String]
+           )) yield Constant(value)
 
   def genAnnotated(size: Int, argGen: Int => Gen[Tree]) =
     for (annot <- genTree(size - 1); arg <- argGen(size - 1))
@@ -115,10 +116,11 @@ trait ArbitraryTreesAndNames {
 
   def genExistentialTypeTree(size: Int) =
     for (tpt <- genTree(size - 1);
-         where <- smallList(
-           size,
-           oneOf(genValDef(size - 1), genTypeDef(size - 1))
-         )) yield ExistentialTypeTree(tpt, where)
+         where <-
+           smallList(
+             size,
+             oneOf(genValDef(size - 1), genTypeDef(size - 1))
+           )) yield ExistentialTypeTree(tpt, where)
 
   def genFunction(size: Int) =
     for (vparams <- smallList(size, genValDef(size - 1));

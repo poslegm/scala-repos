@@ -42,10 +42,11 @@ abstract class AbstractSplitExpressionsFilesTest(pathName: String)
       val results = for {
         path <- allFiles
         lines = Source.fromFile(path).getLines().toList
-        comparison = SplitterComparison(
-          splitLines(path, oldSplitter, lines),
-          splitLines(path, newSplitter, lines)
-        )
+        comparison =
+          SplitterComparison(
+            splitLines(path, oldSplitter, lines),
+            splitLines(path, newSplitter, lines)
+          )
       } yield path -> comparison
 
       printResults(results)

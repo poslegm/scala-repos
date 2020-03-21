@@ -113,12 +113,14 @@ object Mod extends LilaController {
       OptionFuOk(UserRepo named username) { user =>
         for {
           povs <- lila.game.GameRepo.recentPovsByUser(user, 100)
-          chats <- povs
-            .map(p => Env.chat.api.playerChat findNonEmpty p.gameId)
-            .sequence
-          povWithChats = (povs zip chats) collect {
-            case (p, Some(c)) => p -> c
-          } take 9
+          chats <-
+            povs
+              .map(p => Env.chat.api.playerChat findNonEmpty p.gameId)
+              .sequence
+          povWithChats =
+            (povs zip chats) collect {
+              case (p, Some(c)) => p -> c
+            } take 9
           threads <- {
             lila.message.ThreadRepo.visibleByUser(user.id, 50) map {
               _ filter (_ hasPostsWrittenBy user.id) take 9

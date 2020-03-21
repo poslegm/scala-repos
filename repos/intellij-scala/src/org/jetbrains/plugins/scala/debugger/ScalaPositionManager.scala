@@ -81,10 +81,11 @@ class ScalaPositionManager(val debugProcess: DebugProcess)
 
     val position = for {
       loc <- location.toOption
-      psiFile <- getPsiFileByReferenceType(
-        debugProcess.getProject,
-        loc.declaringType
-      ).toOption
+      psiFile <-
+        getPsiFileByReferenceType(
+          debugProcess.getProject,
+          loc.declaringType
+        ).toOption
       lineNumber = exactLineNumber(location) if lineNumber >= 0
     } yield {
       calcPosition(psiFile, location, lineNumber).getOrElse {

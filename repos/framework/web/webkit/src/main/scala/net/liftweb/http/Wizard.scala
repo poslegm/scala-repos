@@ -247,9 +247,10 @@ trait Wizard extends StatefulSnippet with Factory with ScreenWizardRendered {
 
         for {
           screen <- VisitedScreens.is.toList
-          field <- screen.screenFields.collect {
-            case c: ConfirmField => c
-          } if field.show_? && field.onConfirm_?
+          field <-
+            screen.screenFields.collect {
+              case c: ConfirmField => c
+            } if field.show_? && field.onConfirm_?
         } yield ScreenFieldInfo(
           field,
           field.displayHtml,

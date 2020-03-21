@@ -41,7 +41,10 @@ import org.apache.spark.streaming.rdd.{MapWithStateRDD, MapWithStateRDDRecord}
   */
 @Experimental
 sealed abstract class MapWithStateDStream[
-    KeyType, ValueType, StateType, MappedType: ClassTag
+    KeyType,
+    ValueType,
+    StateType,
+    MappedType: ClassTag
 ](ssc: StreamingContext)
     extends DStream[MappedType](ssc) {
 

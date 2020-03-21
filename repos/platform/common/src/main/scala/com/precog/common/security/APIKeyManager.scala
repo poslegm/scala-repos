@@ -77,14 +77,15 @@ trait APIKeyManager[M[+_]] extends Logging { self =>
     for {
       rk <- rootAPIKey
       rg <- rootGrantId
-      ng <- createGrant(
-        name,
-        description,
-        rk,
-        Set(rg),
-        Account.newAccountPermissions(accountId, path),
-        None
-      )
+      ng <-
+        createGrant(
+          name,
+          description,
+          rk,
+          Set(rg),
+          Account.newAccountPermissions(accountId, path),
+          None
+        )
     } yield ng
 
   def newStandardAPIKeyRecord(
@@ -259,21 +260,23 @@ trait APIKeyManager[M[+_]] extends Logging { self =>
     ) flatMap { checks =>
       if (checks.forall(_ == true)) {
         for {
-          newGrants <- grantList traverse { g =>
-            deriveGrant(
-              g.name,
-              g.description,
+          newGrants <-
+            grantList traverse { g =>
+              deriveGrant(
+                g.name,
+                g.description,
+                issuerKey,
+                g.permissions,
+                g.expirationDate
+              )
+            }
+          newKey <-
+            createAPIKey(
+              name,
+              description,
               issuerKey,
-              g.permissions,
-              g.expirationDate
+              newGrants.flatMap(_.map(_.grantId))(collection.breakOut)
             )
-          }
-          newKey <- createAPIKey(
-            name,
-            description,
-            issuerKey,
-            newGrants.flatMap(_.map(_.grantId))(collection.breakOut)
-          )
         } yield some(newKey)
       } else {
         none[APIKeyRecord].point[M]

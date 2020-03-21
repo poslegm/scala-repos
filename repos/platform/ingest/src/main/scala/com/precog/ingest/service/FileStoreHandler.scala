@@ -95,13 +95,14 @@ class FileStoreHandler(
         for {
           fn0 <- fileName.toSuccess("X-File-Name header must be provided.")
           // if the filename after URL encoding is the same as before, accept it.
-          _ <- (URLEncoder.encode(fn0, "UTF-8") == fn0)
-            .unlessM[({ type λ[α] = Validation[String, α] })#λ, Unit] {
-              Failure(
-                "\"%s\" is not a valid file name; please do not use characters which require URL encoding."
-                  .format(fn0)
-              )
-            }
+          _ <-
+            (URLEncoder.encode(fn0, "UTF-8") == fn0)
+              .unlessM[({ type λ[α] = Validation[String, α] })#λ, Unit] {
+                Failure(
+                  "\"%s\" is not a valid file name; please do not use characters which require URL encoding."
+                    .format(fn0)
+                )
+              }
         } yield { (dir: Path) => dir / Path(fn0) }
 
       case AccessMode.Replace =>
@@ -145,51 +146,54 @@ class FileStoreHandler(
             ) { authorities =>
               request.content map { content =>
                 (for {
-                  jobId <- jobManager
-                    .createJob(
-                      apiKey,
-                      "ingest-" + path,
-                      "ingest",
-                      None,
-                      Some(timestamp)
-                    )
-                    .map(_.id)
-                    .leftMap { errors =>
-                      logger.error(
-                        "File creation failed due to errors in job service: " +
-                          errors
+                  jobId <-
+                    jobManager
+                      .createJob(
+                        apiKey,
+                        "ingest-" + path,
+                        "ingest",
+                        None,
+                        Some(timestamp)
                       )
-                      serverError(errors)
-                    }
-                  bytes <- EitherT {
-                    // FIXME: This should only read at most approximately the upload limit,
-                    // so we don't read GB of data into memory from users.
-                    ByteChunk.forceByteArray(content) map {
-                      // TODO: Raise/remove this limit
-                      case b if b.length > 614400 =>
+                      .map(_.id)
+                      .leftMap { errors =>
                         logger.error(
-                          "Rejecting excessive file upload of size %d"
-                            .format(b.length)
+                          "File creation failed due to errors in job service: " +
+                            errors
                         )
-                        -\/(
-                          badRequest(
-                            "File uploads are currently limited to 600KB"
+                        serverError(errors)
+                      }
+                  bytes <-
+                    EitherT {
+                      // FIXME: This should only read at most approximately the upload limit,
+                      // so we don't read GB of data into memory from users.
+                      ByteChunk.forceByteArray(content) map {
+                        // TODO: Raise/remove this limit
+                        case b if b.length > 614400 =>
+                          logger.error(
+                            "Rejecting excessive file upload of size %d"
+                              .format(b.length)
                           )
-                        )
+                          -\/(
+                            badRequest(
+                              "File uploads are currently limited to 600KB"
+                            )
+                          )
 
-                      case b =>
-                        \/-(b)
+                        case b =>
+                          \/-(b)
+                      }
                     }
-                  }
-                  storeFile = StoreFile(
-                    apiKey,
-                    fullPath,
-                    Some(authorities),
-                    jobId,
-                    FileContent(bytes, contentType),
-                    timestamp.toInstant,
-                    StreamRef.forWriteMode(storeMode, true)
-                  )
+                  storeFile =
+                    StoreFile(
+                      apiKey,
+                      fullPath,
+                      Some(authorities),
+                      jobId,
+                      FileContent(bytes, contentType),
+                      timestamp.toInstant,
+                      StreamRef.forWriteMode(storeMode, true)
+                    )
                   _ <- right(eventStore.save(storeFile, ingestTimeout))
                 } yield {
                   val resultsPath = (baseURI.path |+| Some(

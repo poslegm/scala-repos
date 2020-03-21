@@ -178,43 +178,47 @@ private[simul] final class SimulApi(
       pairing: SimulPairing
   ): Fu[(Game, chess.Color)] =
     for {
-      user ← UserRepo byId pairing.player.user flatten s"No user with id ${pairing.player.user}"
+      user ←
+        UserRepo byId pairing.player.user flatten s"No user with id ${pairing.player.user}"
       hostColor = simul.hostColor
       whiteUser = hostColor.fold(host, user)
       blackUser = hostColor.fold(user, host)
-      game1 = Game.make(
-        game = chess.Game(
-          board = chess.Board init pairing.player.variant,
-          clock = simul.clock.chessClockOf(hostColor).start.some
-        ),
-        whitePlayer = lila.game.Player.white,
-        blackPlayer = lila.game.Player.black,
-        mode = chess.Mode.Casual,
-        variant = pairing.player.variant,
-        source = lila.game.Source.Simul,
-        pgnImport = None
-      )
-      game2 = game1
-        .updatePlayer(
-          chess.White,
-          _.withUser(
-            whiteUser.id,
-            lila.game.PerfPicker.mainOrDefault(game1)(whiteUser.perfs)
-          )
+      game1 =
+        Game.make(
+          game = chess.Game(
+            board = chess.Board init pairing.player.variant,
+            clock = simul.clock.chessClockOf(hostColor).start.some
+          ),
+          whitePlayer = lila.game.Player.white,
+          blackPlayer = lila.game.Player.black,
+          mode = chess.Mode.Casual,
+          variant = pairing.player.variant,
+          source = lila.game.Source.Simul,
+          pgnImport = None
         )
-        .updatePlayer(
-          chess.Black,
-          _.withUser(
-            blackUser.id,
-            lila.game.PerfPicker.mainOrDefault(game1)(blackUser.perfs)
+      game2 =
+        game1
+          .updatePlayer(
+            chess.White,
+            _.withUser(
+              whiteUser.id,
+              lila.game.PerfPicker.mainOrDefault(game1)(whiteUser.perfs)
+            )
           )
-        )
-        .withSimulId(simul.id)
-        .withId(pairing.gameId)
-        .start
-      _ ← (GameRepo insertDenormalized game2) >>- onGameStart(
-        game2.id
-      ) >>- sendTo(simul.id, actorApi.StartGame(game2, simul.hostId))
+          .updatePlayer(
+            chess.Black,
+            _.withUser(
+              blackUser.id,
+              lila.game.PerfPicker.mainOrDefault(game1)(blackUser.perfs)
+            )
+          )
+          .withSimulId(simul.id)
+          .withId(pairing.gameId)
+          .start
+      _ ←
+        (GameRepo insertDenormalized game2) >>- onGameStart(
+          game2.id
+        ) >>- sendTo(simul.id, actorApi.StartGame(game2, simul.hostId))
     } yield game2 -> hostColor
 
   private def update(simul: Simul) =

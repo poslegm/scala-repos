@@ -147,9 +147,10 @@ trait ApiControllerBase extends ControllerBase {
     (for {
       branch <- params.get("branch")
       if repository.branchList.find(_ == branch).isDefined
-      protection <- extractFromJsonBody[
-        ApiBranchProtection.EnablingAndDisabling
-      ].map(_.protection)
+      protection <-
+        extractFromJsonBody[
+          ApiBranchProtection.EnablingAndDisabling
+        ].map(_.protection)
     } yield {
       if (protection.enabled) {
         enableBranchProtection(
@@ -183,11 +184,12 @@ trait ApiControllerBase extends ControllerBase {
     repository =>
       (for {
         issueId <- params("id").toIntOpt
-        comments = getCommentsForApi(
-          repository.owner,
-          repository.name,
-          issueId.toInt
-        )
+        comments =
+          getCommentsForApi(
+            repository.owner,
+            repository.name,
+            issueId.toInt
+          )
       } yield {
         JsonFormat(comments.map {
           case (issueComment, user, issue) =>
@@ -211,21 +213,23 @@ trait ApiControllerBase extends ControllerBase {
         issueId <- params("id").toIntOpt
         issue <- getIssue(repository.owner, repository.name, issueId.toString)
         body <- extractFromJsonBody[CreateAComment].map(_.body) if !body.isEmpty
-        action = params
-          .get("action")
-          .filter(_ =>
-            isEditable(
-              issue.userName,
-              issue.repositoryName,
-              issue.openedUserName
+        action =
+          params
+            .get("action")
+            .filter(_ =>
+              isEditable(
+                issue.userName,
+                issue.repositoryName,
+                issue.openedUserName
+              )
             )
-          )
         (issue, id) <- handleComment(issue, Some(body), repository, action)
-        issueComment <- getComment(
-          repository.owner,
-          repository.name,
-          id.toString()
-        )
+        issueComment <-
+          getComment(
+            repository.owner,
+            repository.name,
+            id.toString()
+          )
       } yield {
         JsonFormat(
           ApiComment(
@@ -397,26 +401,29 @@ trait ApiControllerBase extends ControllerBase {
     repository =>
       (for {
         issueId <- params("id").toIntOpt
-        (issue, pullRequest) <- getPullRequest(
-          repository.owner,
-          repository.name,
-          issueId
-        )
-        users = getAccountsByUserNames(
-          Set(
+        (issue, pullRequest) <-
+          getPullRequest(
             repository.owner,
-            pullRequest.requestUserName,
-            issue.openedUserName
-          ),
-          Set()
-        )
+            repository.name,
+            issueId
+          )
+        users =
+          getAccountsByUserNames(
+            Set(
+              repository.owner,
+              pullRequest.requestUserName,
+              issue.openedUserName
+            ),
+            Set()
+          )
         baseOwner <- users.get(repository.owner)
         headOwner <- users.get(pullRequest.requestUserName)
         issueUser <- users.get(issue.openedUserName)
-        headRepo <- getRepository(
-          pullRequest.requestUserName,
-          pullRequest.requestRepositoryName
-        )
+        headRepo <-
+          getRepository(
+            pullRequest.requestUserName,
+            pullRequest.requestRepositoryName
+          )
       } yield {
         JsonFormat(
           ApiPullRequest(
@@ -484,17 +491,18 @@ trait ApiControllerBase extends ControllerBase {
         data <- extractFromJsonBody[CreateAStatus] if data.isValid
         creator <- context.loginAccount
         state <- CommitState.valueOf(data.state)
-        statusId = createCommitStatus(
-          repository.owner,
-          repository.name,
-          sha,
-          data.context.getOrElse("default"),
-          state,
-          data.target_url,
-          data.description,
-          new java.util.Date(),
-          creator
-        )
+        statusId =
+          createCommitStatus(
+            repository.owner,
+            repository.name,
+            sha,
+            data.context.getOrElse("default"),
+            state,
+            data.target_url,
+            data.description,
+            new java.util.Date(),
+            creator
+          )
         status <- getCommitStatus(repository.owner, repository.name, statusId)
       } yield {
         JsonFormat(ApiCommitStatus(status, ApiUser(creator)))

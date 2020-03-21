@@ -127,10 +127,11 @@ object MongoAccountManagerSpec extends Specification with RealMongoSpecSupport {
     "properly generate and retrieve a reset token" in new AccountManager {
       (for {
         tokenId <- accountManager.generateResetToken(account)
-        resolvedAccount <- accountManager.findAccountByResetToken(
-          account.accountId,
-          tokenId
-        )
+        resolvedAccount <-
+          accountManager.findAccountByResetToken(
+            account.accountId,
+            tokenId
+          )
       } yield resolvedAccount).copoint must beLike {
         case \/-(resolvedAccount) =>
           resolvedAccount.accountId must_== account.accountId
@@ -139,14 +140,16 @@ object MongoAccountManagerSpec extends Specification with RealMongoSpecSupport {
 
     "not locate expired password reset tokens" in new AccountManager {
       (for {
-        tokenId <- accountManager.generateResetToken(
-          account,
-          (new DateTime).minusMinutes(5)
-        )
-        resolvedAccount <- accountManager.findAccountByResetToken(
-          account.accountId,
-          tokenId
-        )
+        tokenId <-
+          accountManager.generateResetToken(
+            account,
+            (new DateTime).minusMinutes(5)
+          )
+        resolvedAccount <-
+          accountManager.findAccountByResetToken(
+            account.accountId,
+            tokenId
+          )
       } yield resolvedAccount).copoint must beLike {
         case -\/(_) => ok
       }
@@ -156,11 +159,12 @@ object MongoAccountManagerSpec extends Specification with RealMongoSpecSupport {
       val newPassword = "bluemeanies"
       (for {
         tokenId <- accountManager.generateResetToken(account)
-        _ <- accountManager.resetAccountPassword(
-          account.accountId,
-          tokenId,
-          newPassword
-        )
+        _ <-
+          accountManager.resetAccountPassword(
+            account.accountId,
+            tokenId,
+            newPassword
+          )
         authResultBad <- accountManager.authAccount(account.email, origPassword)
         authResultGood <- accountManager.authAccount(account.email, newPassword)
       } yield (authResultBad, authResultGood)).copoint must beLike {
@@ -175,16 +179,18 @@ object MongoAccountManagerSpec extends Specification with RealMongoSpecSupport {
 
       (for {
         tokenId <- accountManager.generateResetToken(account)
-        _ <- accountManager.resetAccountPassword(
-          account.accountId,
-          tokenId,
-          newPassword
-        )
-        _ <- accountManager.resetAccountPassword(
-          account.accountId,
-          tokenId,
-          newPassword2
-        )
+        _ <-
+          accountManager.resetAccountPassword(
+            account.accountId,
+            tokenId,
+            newPassword
+          )
+        _ <-
+          accountManager.resetAccountPassword(
+            account.accountId,
+            tokenId,
+            newPassword2
+          )
         // We should still be able to authenticate with the *first* changed password
         authResult <- accountManager.authAccount(account.email, newPassword)
       } yield authResult).copoint must beLike[Validation[String, Account]] {

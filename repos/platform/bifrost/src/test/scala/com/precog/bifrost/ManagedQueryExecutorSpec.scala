@@ -92,21 +92,24 @@ class ManagedQueryExecutorSpec extends TestManagedPlatform with Specification {
         Duration(clock.duration * t, TimeUnit.MILLISECONDS)
       }
     val executionResult = for {
-      executor <- asyncExecutorFor(apiKey) leftMap {
-        EvaluationError.invalidState
-      }
-      ctx = EvaluationContext(
-        apiKey,
-        account,
-        Path("/\\\\/\\///\\/"),
-        Path.Root,
-        clock.now()
-      )
-      result <- executor.execute(
-        numTicks.toString,
-        ctx,
-        QueryOptions(timeout = timeout)
-      )
+      executor <-
+        asyncExecutorFor(apiKey) leftMap {
+          EvaluationError.invalidState
+        }
+      ctx =
+        EvaluationContext(
+          apiKey,
+          account,
+          Path("/\\\\/\\///\\/"),
+          Path.Root,
+          clock.now()
+        )
+      result <-
+        executor.execute(
+          numTicks.toString,
+          ctx,
+          QueryOptions(timeout = timeout)
+        )
     } yield result
 
     executionResult.valueOr(err => sys.error(err.toString))
@@ -137,12 +140,13 @@ class ManagedQueryExecutorSpec extends TestManagedPlatform with Specification {
     for {
       _ <- waitFor(1)
       Some(job) <- jobManager.findJob(jobId)
-      finalJob <- job.state match {
-        case NotStarted | Started(_, _) | Cancelled(_, _, _) =>
-          waitForJobCompletion(jobId)
-        case _ =>
-          Future(job)
-      }
+      finalJob <-
+        job.state match {
+          case NotStarted | Started(_, _) | Cancelled(_, _, _) =>
+            waitForJobCompletion(jobId)
+          case _ =>
+            Future(job)
+        }
     } yield finalJob
   }
 

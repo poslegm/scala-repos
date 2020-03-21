@@ -124,32 +124,35 @@ trait NIHDBIngestSupport
 
       val projection = {
         for {
-          _ <- M point {
-            vfs.unsecured
-              .writeAll(
-                Seq(
-                  (
-                    0,
-                    IngestMessage(
-                      apiKey,
-                      path,
-                      Authorities(accountId),
-                      records,
-                      None,
-                      clock.instant,
-                      StreamRef.Append
+          _ <-
+            M point {
+              vfs.unsecured
+                .writeAll(
+                  Seq(
+                    (
+                      0,
+                      IngestMessage(
+                        apiKey,
+                        path,
+                        Authorities(accountId),
+                        records,
+                        None,
+                        clock.instant,
+                        StreamRef.Append
+                      )
                     )
                   )
                 )
-              )
-              .unsafePerformIO
-          }
-          _ = logger.debug(
-            "Insert complete on //%s, waiting for cook".format(db)
-          )
-          projection <- vfs
-            .readProjection(apiKey, path, Version.Current, AccessMode.Read)
-            .run
+                .unsafePerformIO
+            }
+          _ =
+            logger.debug(
+              "Insert complete on //%s, waiting for cook".format(db)
+            )
+          projection <-
+            vfs
+              .readProjection(apiKey, path, Version.Current, AccessMode.Read)
+              .run
         } yield {
           (projection valueOr { err =>
             sys.error(

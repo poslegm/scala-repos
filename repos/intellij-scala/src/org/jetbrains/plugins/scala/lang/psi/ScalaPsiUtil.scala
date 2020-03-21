@@ -1104,8 +1104,9 @@ object ScalaPsiUtil {
             )
           case _ =>
             for {
-              (clazz: PsiClass, subst: ScSubstitutor) <- ScType
-                .extractClassType(tp, Some(project))
+              (clazz: PsiClass, subst: ScSubstitutor) <-
+                ScType
+                  .extractClassType(tp, Some(project))
               if !visited
                 .contains(clazz)
             } {
@@ -1621,10 +1622,11 @@ object ScalaPsiUtil {
       clazz: PsiClass,
       name: String
   ): Seq[PhysicalSignature] = {
-    for ((n: PhysicalSignature, _) <- TypeDefinitionMembers
-           .getSignatures(clazz)
-           .forName(name)
-           ._1 if clazz.isInstanceOf[ScObject] ||
+    for ((n: PhysicalSignature, _) <-
+           TypeDefinitionMembers
+             .getSignatures(clazz)
+             .forName(name)
+             ._1 if clazz.isInstanceOf[ScObject] ||
            !n.method.hasModifierProperty("static")) yield n
   }
 

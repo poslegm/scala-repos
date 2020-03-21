@@ -133,10 +133,11 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
       coffees.sortBy(_.price).take(3) join suppliers on (_.supID === _.id)
     def q1b =
       for {
-        (c, s) <- q1b_0
-          .sortBy(_._1.price)
-          .take(2)
-          .filter(_._1.name =!= "Colombian")
+        (c, s) <-
+          q1b_0
+            .sortBy(_._1.price)
+            .take(2)
+            .filter(_._1.name =!= "Colombian")
         (c2, s2) <- q1b_0
       } yield (c.name, s.city, c2.name)
 
@@ -240,11 +241,12 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
     // Map to tuple, then filter
     def q4 =
       for {
-        c <- coffees
-          .map(c => (c.name, c.price, 42))
-          .sortBy(_._1)
-          .take(2)
-          .filter(_._2 < 800)
+        c <-
+          coffees
+            .map(c => (c.name, c.price, 42))
+            .sortBy(_._1)
+            .take(2)
+            .filter(_._2 < 800)
       } yield (c._1, c._3)
 
     // Map to tuple, then filter, with self-join
@@ -257,41 +259,60 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
 
     def a3 =
       for {
-        _ <- q2.result.named("More elaborate query").map(_.toSet).map { r2 =>
-          r2 shouldBe Set(
-            ("Colombian", "Acme, Inc."),
-            ("French_Roast", "Superior Coffee"),
-            ("Colombian_Decaf", "Acme, Inc.")
-          )
-        }
-        _ <- q3.result.named("Lifting scalar values").map(_.toSet).map { r3 =>
-          r3 shouldBe Set(
-            ("Colombian_Decaf", "Acme, Inc.", "Colombian_Decaf", 0, 3396)
-          )
-        }
-        _ <- q3b.result
-          .named("Lifting scalar values, with extra tuple")
-          .map(_.toSet)
-          .map { r3b =>
-            r3b shouldBe Set(
-              ("Colombian", "Acme, Inc.", "Colombian", 0, 799, 42),
-              ("French_Roast", "Superior Coffee", "French_Roast", 0, 1598, 42),
-              ("Colombian_Decaf", "Acme, Inc.", "Colombian_Decaf", 0, 3396, 42)
+        _ <-
+          q2.result.named("More elaborate query").map(_.toSet).map { r2 =>
+            r2 shouldBe Set(
+              ("Colombian", "Acme, Inc."),
+              ("French_Roast", "Superior Coffee"),
+              ("Colombian_Decaf", "Acme, Inc.")
             )
           }
-        _ <- ifCap(rcap.pagingNested) {
-          mark("q4", q4.result)
-            .named("q4: Map to tuple, then filter")
-            .map(_.toSet shouldBe Set(("Colombian", 42)))
-        }
-        _ <- mark("q4b", q4b.result).map(
-          _.toSet shouldBe Set(
-            (("Colombian", 799, 42), ("Colombian", 799, 42)),
-            (("Colombian", 799, 42), ("French_Roast", 799, 42)),
-            (("French_Roast", 799, 42), ("Colombian", 799, 42)),
-            (("French_Roast", 799, 42), ("French_Roast", 799, 42))
+        _ <-
+          q3.result.named("Lifting scalar values").map(_.toSet).map { r3 =>
+            r3 shouldBe Set(
+              ("Colombian_Decaf", "Acme, Inc.", "Colombian_Decaf", 0, 3396)
+            )
+          }
+        _ <-
+          q3b.result
+            .named("Lifting scalar values, with extra tuple")
+            .map(_.toSet)
+            .map { r3b =>
+              r3b shouldBe Set(
+                ("Colombian", "Acme, Inc.", "Colombian", 0, 799, 42),
+                (
+                  "French_Roast",
+                  "Superior Coffee",
+                  "French_Roast",
+                  0,
+                  1598,
+                  42
+                ),
+                (
+                  "Colombian_Decaf",
+                  "Acme, Inc.",
+                  "Colombian_Decaf",
+                  0,
+                  3396,
+                  42
+                )
+              )
+            }
+        _ <-
+          ifCap(rcap.pagingNested) {
+            mark("q4", q4.result)
+              .named("q4: Map to tuple, then filter")
+              .map(_.toSet shouldBe Set(("Colombian", 42)))
+          }
+        _ <-
+          mark("q4b", q4b.result).map(
+            _.toSet shouldBe Set(
+              (("Colombian", 799, 42), ("Colombian", 799, 42)),
+              (("Colombian", 799, 42), ("French_Roast", 799, 42)),
+              (("French_Roast", 799, 42), ("Colombian", 799, 42)),
+              (("French_Roast", 799, 42), ("French_Roast", 799, 42))
+            )
           )
-        )
       } yield ()
 
     // Implicit self-join
@@ -350,9 +371,10 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
 
     // Union
     val q7 = for {
-      c <- coffees.filter(_.price < 800).map((_, 1)) union coffees
-        .filter(_.price > 950)
-        .map((_, 2))
+      c <-
+        coffees.filter(_.price < 800).map((_, 1)) union coffees
+          .filter(_.price > 950)
+          .map((_, 2))
     } yield (c._1.name, c._1.supID, c._2)
 
     // Transitive push-down without union
@@ -400,18 +422,20 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
 
     // Outer join
     val q8 = for {
-      (c1, c2) <- coffees.filter(_.price < 900) joinLeft coffees.filter(
-        _.price < 800
-      ) on (_.name === _.name)
+      (c1, c2) <-
+        coffees.filter(_.price < 900) joinLeft coffees.filter(
+          _.price < 800
+        ) on (_.name === _.name)
     } yield (c1.name, c2.map(_.name))
 
     // Nested outer join
     val q8b = for {
-      t <- coffees.sortBy(_.sales).take(1) joinLeft coffees
-        .sortBy(_.sales)
-        .take(2) on (_.name === _.name) joinLeft coffees
-        .sortBy(_.sales)
-        .take(4) on (_._1.supID === _.supID)
+      t <-
+        coffees.sortBy(_.sales).take(1) joinLeft coffees
+          .sortBy(_.sales)
+          .take(2) on (_.name === _.name) joinLeft coffees
+          .sortBy(_.sales)
+          .take(4) on (_._1.supID === _.supID)
     } yield (t._1, t._2)
 
     def a6 =
@@ -560,9 +584,8 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
       q0 = as.filter(_.id === 42.bind).length
       _ <- q0.result.named("q0").map(_ shouldBe 1)
 
-      q1 = Compiled { (n: Rep[Int]) =>
-        as.filter(_.id === n).map(a => as.length)
-      }
+      q1 =
+        Compiled { (n: Rep[Int]) => as.filter(_.id === n).map(a => as.length) }
       _ <- q1(42).result.named("q1(42)").map(_ shouldBe List(1))
 
       q2 = as.filter(_.id in as.sortBy(_.id).map(_.id))
@@ -582,32 +605,35 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
 
     for {
       _ <- as.schema.create
-      _ <- as.map(a => (a.id, a.a, a.b)) ++= Seq(
-        (1, "a1", "b1"),
-        (2, "a2", "b2"),
-        (3, "a3", "b3")
-      )
+      _ <-
+        as.map(a => (a.id, a.a, a.b)) ++= Seq(
+          (1, "a1", "b1"),
+          (2, "a2", "b2"),
+          (3, "a3", "b3")
+        )
 
       q1 = as.map(identity).filter(_.b === "b3")
       _ <- q1.result.named("q1").map(r1 => r1.toSet shouldBe Set((3, "a3")))
 
       q2a = as.sortBy(_.a) join as on (_.b === _.b)
-      q2 = for {
-        (c, s) <- q2a
-        c2 <- as
-      } yield (c.id, c2.a)
+      q2 =
+        for {
+          (c, s) <- q2a
+          c2 <- as
+        } yield (c.id, c2.a)
       r2 <- q2.result.named("q2").map(_.toSet)
-      _ = r2 shouldBe Set(
-        (1, "a1"),
-        (1, "a2"),
-        (1, "a3"),
-        (2, "a1"),
-        (2, "a2"),
-        (2, "a3"),
-        (3, "a1"),
-        (3, "a2"),
-        (3, "a3")
-      )
+      _ =
+        r2 shouldBe Set(
+          (1, "a1"),
+          (1, "a2"),
+          (1, "a3"),
+          (2, "a1"),
+          (2, "a2"),
+          (2, "a3"),
+          (3, "a1"),
+          (3, "a2"),
+          (3, "a3")
+        )
     } yield ()
   }
 
@@ -722,27 +748,30 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
       _ <- mark("q1", q1.result).map(_.toSet shouldBe data.zip(data))
       _ <- mark("q2", q2.result).map(_.toSet shouldBe data.zip(data).zip(data))
       _ <- mark("q3", q3.result).map(_.toSet shouldBe data)
-      _ <- mark("q4", q4.result).map(
-        _.toSet shouldBe data
-          .filter(_._3 == "b")
-          .map { case t @ (id, _, _) => (id, t) }
-      )
+      _ <-
+        mark("q4", q4.result).map(
+          _.toSet shouldBe data
+            .filter(_._3 == "b")
+            .map { case t @ (id, _, _) => (id, t) }
+        )
       _ <- mark("q5a", q5a.result).map(_ shouldBe Set(2, 3))
       _ <- mark("q5b", q5b.result).map(_ shouldBe Set(2, 3))
       _ <- mark("q5c", q5c.result).map(_ shouldBe Set(2, 3))
-      _ <- mark("q6", q6.result).map(
-        _.toSet shouldBe Set(
-          (("c", "b"), 3, 3, 3, Some(3), 3),
-          (("a", "a"), 3, 3, 3, Some(1), 3),
-          (("a", "b"), 3, 3, 3, Some(2), 3)
+      _ <-
+        mark("q6", q6.result).map(
+          _.toSet shouldBe Set(
+            (("c", "b"), 3, 3, 3, Some(3), 3),
+            (("a", "a"), 3, 3, 3, Some(1), 3),
+            (("a", "b"), 3, 3, 3, Some(2), 3)
+          )
         )
-      )
       _ <- mark("q7", q7.result).map(_.toSet shouldBe Set(1, 2))
       _ <- mark("q8", q8.result).map(_ shouldBe Seq("c", "a", "a"))
       _ <- mark("q9a", q9a.result).map(_ shouldBe Seq(3, 1, 2))
       _ <- mark("q9b", q9b.result).map(_ shouldBe Seq(3, 1, 2))
-      _ <- mark("q10", q10.result)
-        .map(_ shouldBe Seq(1, 2, 3, 4, 5, 6, 7, 8, 9))
+      _ <-
+        mark("q10", q10.result)
+          .map(_ shouldBe Seq(1, 2, 3, 4, 5, 6, 7, 8, 9))
       _ <- mark("q11a", q11a.result).map(_ shouldBe Seq(1, 2, 3, 4, 5))
       _ <- mark("q11b", q11b.result).map(_ shouldBe Seq(1, 2, 3))
       _ <- mark("q11c", q11c.result).map(_ shouldBe Seq(2, 3))
@@ -754,24 +783,27 @@ class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
       _ <- mark("q14", q14.result).map(_ shouldBe Set(1, 3))
       _ <- mark("q15", q15.result).map(_ shouldBe Set(1, 3))
       _ <- mark("q16", q16.result).map(_ shouldBe Set(1, 3))
-      _ <- ifCap(rcap.zip)(
-        mark("q17", q17.result).map(_ shouldBe Seq((1, 0), (2, 1)))
-      )
+      _ <-
+        ifCap(rcap.zip)(
+          mark("q17", q17.result).map(_ shouldBe Seq((1, 0), (2, 1)))
+        )
       _ <- mark("q18", q18.result).map(_ shouldBe Seq(Some((3, "c", "b"))))
-      _ <- mark("q19", q19.result).map(
-        _.toSet shouldBe Set(
-          Some((1, "a", "a")),
-          Some((2, "a", "b")),
-          Some((3, "c", "b"))
+      _ <-
+        mark("q19", q19.result).map(
+          _.toSet shouldBe Set(
+            Some((1, "a", "a")),
+            Some((2, "a", "b")),
+            Some((3, "c", "b"))
+          )
         )
-      )
-      _ <- mark("q19b", q19b.result).map(
-        _.toSet shouldBe Set(
-          Some((1, "a", "a")),
-          Some((2, "a", "b")),
-          Some((3, "c", "b"))
+      _ <-
+        mark("q19b", q19b.result).map(
+          _.toSet shouldBe Set(
+            Some((1, "a", "a")),
+            Some((2, "a", "b")),
+            Some((3, "c", "b"))
+          )
         )
-      )
     } yield ()
   }
 }

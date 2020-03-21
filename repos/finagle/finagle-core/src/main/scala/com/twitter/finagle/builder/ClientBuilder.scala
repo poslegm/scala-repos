@@ -284,7 +284,11 @@ private[builder] final class ClientConfig[
   *      for information on the preferred `with`-style APIs insead.
   */
 class ClientBuilder[
-    Req, Rep, HasCluster, HasCodec, HasHostConnectionLimit
+    Req,
+    Rep,
+    HasCluster,
+    HasCodec,
+    HasHostConnectionLimit
 ] private[finagle] (
     client: StackBasedClient[Req, Rep]
 ) {

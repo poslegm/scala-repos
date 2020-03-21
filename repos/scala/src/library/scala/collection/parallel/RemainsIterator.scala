@@ -513,8 +513,9 @@ trait IterableSplitter[+T]
     )(taker: (PI, Int) => PI) = {
       val sizes = sq.scanLeft(0)(_ + _.remaining)
       val shortened =
-        for ((it, (from, until)) <- sq zip
-               (sizes.init zip sizes.tail))
+        for ((it, (from, until)) <-
+               sq zip
+                 (sizes.init zip sizes.tail))
           yield if (until < remaining) it else taker(it, remaining - from)
       shortened filter { _.remaining > 0 }
     }

@@ -141,13 +141,14 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
           .traverseS(s) { n =>
             for {
               sum <- State.get[Int]
-              r <- if (sum >= size) {
-                State.state[Int, Option[Int]](None)
-              } else if ((sum + n) > size) {
-                State((s: Int) => (s + n) -> Option(size - sum))
-              } else {
-                State((s: Int) => (s + n) -> Option(n))
-              }
+              r <-
+                if (sum >= size) {
+                  State.state[Int, Option[Int]](None)
+                } else if ((sum + n) > size) {
+                  State((s: Int) => (s + n) -> Option(size - sum))
+                } else {
+                  State((s: Int) => (s + n) -> Option(n))
+                }
             } yield r
           }
           .eval(0)
@@ -206,12 +207,13 @@ object ScalazArbitrary extends ScalazArbitraryPlatform {
       b = size - a
       aa <- Gen.choose(1, a)
       ba <- Gen.choose(0, b)
-      t <- Apply[Gen].apply4(
-        treeGenSized[A](aa),
-        forest(a - aa),
-        forest(ba),
-        withSize(b - ba)(parent)
-      )(TreeLoc.apply[A])
+      t <-
+        Apply[Gen].apply4(
+          treeGenSized[A](aa),
+          forest(a - aa),
+          forest(ba),
+          withSize(b - ba)(parent)
+        )(TreeLoc.apply[A])
     } yield t
   }
 

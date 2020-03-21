@@ -307,8 +307,9 @@ class InlinerTest extends ClearAfterClass {
     ) // f is inlined into g, g invokes itself recursively
 
     assert(callGraph.callsites.size == 3, callGraph.callsites)
-    for (callsite <- callGraph.callsites.valuesIterator
-           .flatMap(_.valuesIterator)
+    for (callsite <-
+           callGraph.callsites.valuesIterator
+             .flatMap(_.valuesIterator)
          if methods.contains(callsite.callsiteMethod)) {
       checkCallsite(callsite, g)
     }
@@ -339,8 +340,9 @@ class InlinerTest extends ClearAfterClass {
       callGraph.callsites.valuesIterator.flatMap(_.valuesIterator).size == 7,
       callGraph.callsites
     )
-    for (callsite <- callGraph.callsites.valuesIterator
-           .flatMap(_.valuesIterator)
+    for (callsite <-
+           callGraph.callsites.valuesIterator
+             .flatMap(_.valuesIterator)
          if methods.contains(callsite.callsiteMethod)) {
       checkCallsite(callsite, g)
     }

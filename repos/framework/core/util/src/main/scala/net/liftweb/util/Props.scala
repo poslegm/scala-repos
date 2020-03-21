@@ -46,9 +46,10 @@ private[util] trait Props extends Logger {
     }
 
     val interpolated = for {
-      interpolateRegex(before, key, after) <- interpolateRegex.findAllMatchIn(
-        value.toString
-      )
+      interpolateRegex(before, key, after) <-
+        interpolateRegex.findAllMatchIn(
+          value.toString
+        )
     } yield {
       val lookedUp = lookup(key).getOrElse(("${" + key + "}"))
 

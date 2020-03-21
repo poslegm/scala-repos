@@ -229,9 +229,10 @@ private[http] object RenderVersion {
   def doWith[T](v: String)(f: => T): T = {
     val ret: Box[T] = for {
       sess <- S.session
-      func <- sess.findFunc(v).collect {
-        case f: S.PageStateHolder => f
-      }
+      func <-
+        sess.findFunc(v).collect {
+          case f: S.PageStateHolder => f
+        }
     } yield {
       val tret = ver.doWith(v) {
         val ret = func.runInContext(f)
@@ -1319,25 +1320,28 @@ class LiftSession(
       case n: java.util.Iterator[_] =>
         for {
           i <- n.toSeq;
-          nodes <- currentSourceContext.doWith(i)(
-            processSurroundAndInclude("Source", xform(ns))
-          )
+          nodes <-
+            currentSourceContext.doWith(i)(
+              processSurroundAndInclude("Source", xform(ns))
+            )
         } yield nodes
       case en: java.util.Enumeration[_] =>
         for {
           i <- en.toSeq;
-          nodes <- currentSourceContext.doWith(i)(
-            processSurroundAndInclude("Source", xform(ns))
-          )
+          nodes <-
+            currentSourceContext.doWith(i)(
+              processSurroundAndInclude("Source", xform(ns))
+            )
         } yield nodes
       case se: scala.collection.Iterable[_] =>
         runSourceContext(se.iterator, xform, ns)
       case se: scala.collection.Iterator[_] =>
         for {
           i <- se.toSeq;
-          nodes <- currentSourceContext.doWith(i)(
-            processSurroundAndInclude("Source", xform(ns))
-          )
+          nodes <-
+            currentSourceContext.doWith(i)(
+              processSurroundAndInclude("Source", xform(ns))
+            )
         } yield nodes
       case a: Array[_] => runSourceContext(a.toList, xform, ns)
       case x =>
@@ -1548,11 +1552,13 @@ class LiftSession(
       }.headOption
 
     for {
-      template <- Templates(name, S.locale) ?~
-        ("Template " + name + " not found")
-      res <- findElem(
-        processSurroundAndInclude(name.mkString("/", "/", ""), template)
-      )
+      template <-
+        Templates(name, S.locale) ?~
+          ("Template " + name + " not found")
+      res <-
+        findElem(
+          processSurroundAndInclude(name.mkString("/", "/", ""), template)
+        )
     } yield res
   }
 
@@ -1838,156 +1844,156 @@ class LiftSession(
                 snippet
               )).openOr(S.locateSnippet(snippet).map(_(kids)) openOr {
 
-                  (locateAndCacheSnippet(cls)) match {
-                    // deal with a stateless request when a snippet has
-                    // different behavior in stateless mode
-                    case Full(inst: StatelessBehavior) if !stateful_? =>
-                      if (inst.statelessDispatch.isDefinedAt(method))
-                        inst.statelessDispatch(method)(kids)
-                      else NodeSeq.Empty
+                (locateAndCacheSnippet(cls)) match {
+                  // deal with a stateless request when a snippet has
+                  // different behavior in stateless mode
+                  case Full(inst: StatelessBehavior) if !stateful_? =>
+                    if (inst.statelessDispatch.isDefinedAt(method))
+                      inst.statelessDispatch(method)(kids)
+                    else NodeSeq.Empty
 
-                    case Full(inst: StatefulSnippet) if !stateful_? =>
+                  case Full(inst: StatefulSnippet) if !stateful_? =>
+                    reportSnippetError(
+                      page,
+                      snippetName,
+                      LiftRules.SnippetFailures.StateInStateless,
+                      NodeSeq.Empty,
+                      wholeTag
+                    )
+
+                  case Full(inst: StatefulSnippet) =>
+                    if (inst.dispatch.isDefinedAt(method)) {
+                      val res = inst.dispatch(method)(kids)
+
+                      inst.mergeIntoForm(
+                        isForm,
+                        res,
+                        SHtml.hidden(() => inst.registerThisSnippet)
+                      )
+                      /* (if (isForm && !res.isEmpty) SHtml.hidden(() => inst.registerThisSnippet) else NodeSeq.Empty) ++
+                      res*/
+                    } else
                       reportSnippetError(
                         page,
                         snippetName,
-                        LiftRules.SnippetFailures.StateInStateless,
+                        LiftRules.SnippetFailures.StatefulDispatchNotMatched,
                         NodeSeq.Empty,
                         wholeTag
                       )
 
-                    case Full(inst: StatefulSnippet) =>
-                      if (inst.dispatch.isDefinedAt(method)) {
-                        val res = inst.dispatch(method)(kids)
+                  case Full(inst: DispatchSnippet) =>
+                    if (inst.dispatch.isDefinedAt(method))
+                      inst.dispatch(method)(kids)
+                    else
+                      reportSnippetError(
+                        page,
+                        snippetName,
+                        LiftRules.SnippetFailures.StatefulDispatchNotMatched,
+                        NodeSeq.Empty,
+                        wholeTag
+                      )
 
-                        inst.mergeIntoForm(
-                          isForm,
-                          res,
-                          SHtml.hidden(() => inst.registerThisSnippet)
-                        )
-                        /* (if (isForm && !res.isEmpty) SHtml.hidden(() => inst.registerThisSnippet) else NodeSeq.Empty) ++
-                      res*/
-                      } else
-                        reportSnippetError(
-                          page,
-                          snippetName,
-                          LiftRules.SnippetFailures.StatefulDispatchNotMatched,
-                          NodeSeq.Empty,
-                          wholeTag
-                        )
+                  case Full(inst) => {
+                    def gotIt: Box[NodeSeq] =
+                      for {
+                        meth <- tryo(inst.getClass.getMethod(method))
+                        if classOf[CssBindFunc]
+                          .isAssignableFrom(meth.getReturnType)
+                      } yield meth
+                        .invoke(inst)
+                        .asInstanceOf[CssBindFunc]
+                        .apply(kids)
 
-                    case Full(inst: DispatchSnippet) =>
-                      if (inst.dispatch.isDefinedAt(method))
-                        inst.dispatch(method)(kids)
-                      else
-                        reportSnippetError(
-                          page,
-                          snippetName,
-                          LiftRules.SnippetFailures.StatefulDispatchNotMatched,
-                          NodeSeq.Empty,
-                          wholeTag
-                        )
+                    import java.lang.reflect.{Type, ParameterizedType}
 
-                    case Full(inst) => {
-                      def gotIt: Box[NodeSeq] =
-                        for {
-                          meth <- tryo(inst.getClass.getMethod(method))
-                          if classOf[CssBindFunc]
-                            .isAssignableFrom(meth.getReturnType)
-                        } yield meth
-                          .invoke(inst)
-                          .asInstanceOf[CssBindFunc]
-                          .apply(kids)
-
-                      import java.lang.reflect.{Type, ParameterizedType}
-
-                      def isFunc1(tpe: Type): Boolean =
-                        tpe match {
-                          case null => false
-                          case c: Class[_] =>
-                            classOf[Function1[_, _]] isAssignableFrom c
-                          case _ => false
-                        }
-
-                      def isNodeSeq(tpe: Type): Boolean =
-                        tpe match {
-                          case null => false
-                          case c: Class[_] =>
-                            classOf[NodeSeq] isAssignableFrom c
-                          case _ => false
-                        }
-
-                      def testGeneric(tpe: Type): Boolean =
-                        tpe match {
-                          case null => false
-                          case pt: ParameterizedType =>
-                            if (isFunc1(pt.getRawType) &&
-                                pt.getActualTypeArguments.length == 2 &&
-                                isNodeSeq(pt.getActualTypeArguments()(0)) &&
-                                isNodeSeq(pt.getActualTypeArguments()(1))) true
-                            else testGeneric(pt.getRawType)
-
-                          case clz: Class[_] =>
-                            if (clz == classOf[Object]) false
-                            else
-                              clz.getGenericInterfaces.find(testGeneric) match {
-                                case Some(_) => true
-                                case _       => testGeneric(clz.getSuperclass)
-                              }
-
-                          case _ => false
-                        }
-
-                      def isFuncNodeSeq(meth: Method): Boolean = {
-                        (classOf[
-                          Function1[_, _]
-                        ] isAssignableFrom meth.getReturnType) &&
-                        testGeneric(meth.getGenericReturnType)
+                    def isFunc1(tpe: Type): Boolean =
+                      tpe match {
+                        case null => false
+                        case c: Class[_] =>
+                          classOf[Function1[_, _]] isAssignableFrom c
+                        case _ => false
                       }
 
-                      def nodeSeqFunc: Box[NodeSeq] =
-                        for {
-                          meth <- tryo(inst.getClass.getMethod(method))
-                          if isFuncNodeSeq(meth)
-                        } yield meth
-                          .invoke(inst)
-                          .asInstanceOf[Function1[NodeSeq, NodeSeq]]
-                          .apply(kids)
+                    def isNodeSeq(tpe: Type): Boolean =
+                      tpe match {
+                        case null => false
+                        case c: Class[_] =>
+                          classOf[NodeSeq] isAssignableFrom c
+                        case _ => false
+                      }
 
-                      (gotIt or nodeSeqFunc) openOr {
+                    def testGeneric(tpe: Type): Boolean =
+                      tpe match {
+                        case null => false
+                        case pt: ParameterizedType =>
+                          if (isFunc1(pt.getRawType) &&
+                              pt.getActualTypeArguments.length == 2 &&
+                              isNodeSeq(pt.getActualTypeArguments()(0)) &&
+                              isNodeSeq(pt.getActualTypeArguments()(1))) true
+                          else testGeneric(pt.getRawType)
 
-                        val ar: Array[AnyRef] = List(Group(kids)).toArray
-                        ((Helpers.invokeMethod(
-                          inst.getClass,
-                          inst,
-                          method,
-                          ar,
-                          Array(classOf[NodeSeq])
-                        )) or Helpers
-                          .invokeMethod(inst.getClass, inst, method)) match {
-                          case CheckNodeSeq(md) => md
-                          case it =>
-                            val intersection =
-                              if (Props.devMode) {
-                                val methodNames = inst.getClass
-                                  .getMethods()
-                                  .map(_.getName)
-                                  .toList
-                                  .distinct
-                                val methodAlts =
-                                  List(
-                                    method,
-                                    Helpers.camelify(method),
-                                    Helpers.camelifyMethod(method)
-                                  )
-                                methodNames intersect methodAlts
-                              } else Nil
+                        case clz: Class[_] =>
+                          if (clz == classOf[Object]) false
+                          else
+                            clz.getGenericInterfaces.find(testGeneric) match {
+                              case Some(_) => true
+                              case _       => testGeneric(clz.getSuperclass)
+                            }
 
-                            reportSnippetError(
-                              page,
-                              snippetName,
-                              LiftRules.SnippetFailures.MethodNotFound,
-                              if (intersection.isEmpty) NodeSeq.Empty
-                              else <div>There are possible matching methods (
+                        case _ => false
+                      }
+
+                    def isFuncNodeSeq(meth: Method): Boolean = {
+                      (classOf[
+                        Function1[_, _]
+                      ] isAssignableFrom meth.getReturnType) &&
+                      testGeneric(meth.getGenericReturnType)
+                    }
+
+                    def nodeSeqFunc: Box[NodeSeq] =
+                      for {
+                        meth <- tryo(inst.getClass.getMethod(method))
+                        if isFuncNodeSeq(meth)
+                      } yield meth
+                        .invoke(inst)
+                        .asInstanceOf[Function1[NodeSeq, NodeSeq]]
+                        .apply(kids)
+
+                    (gotIt or nodeSeqFunc) openOr {
+
+                      val ar: Array[AnyRef] = List(Group(kids)).toArray
+                      ((Helpers.invokeMethod(
+                        inst.getClass,
+                        inst,
+                        method,
+                        ar,
+                        Array(classOf[NodeSeq])
+                      )) or Helpers
+                        .invokeMethod(inst.getClass, inst, method)) match {
+                        case CheckNodeSeq(md) => md
+                        case it =>
+                          val intersection =
+                            if (Props.devMode) {
+                              val methodNames = inst.getClass
+                                .getMethods()
+                                .map(_.getName)
+                                .toList
+                                .distinct
+                              val methodAlts =
+                                List(
+                                  method,
+                                  Helpers.camelify(method),
+                                  Helpers.camelifyMethod(method)
+                                )
+                              methodNames intersect methodAlts
+                            } else Nil
+
+                          reportSnippetError(
+                            page,
+                            snippetName,
+                            LiftRules.SnippetFailures.MethodNotFound,
+                            if (intersection.isEmpty) NodeSeq.Empty
+                            else <div>There are possible matching methods (
                                 {intersection}
                                 ),
                                 but none has the required signature:
@@ -1995,31 +2001,31 @@ class LiftSession(
                                   {method}
                                   (in: NodeSeq): NodeSeq</pre>
                               </div>,
-                              wholeTag
-                            )
-                        }
+                            wholeTag
+                          )
                       }
                     }
-                    case Failure(_, Full(exception), _) =>
-                      logger.warn("Snippet instantiation error", exception)
-                      reportSnippetError(
-                        page,
-                        snippetName,
-                        LiftRules.SnippetFailures.InstantiationException,
-                        NodeSeq.Empty,
-                        wholeTag
-                      )
-
-                    case _ =>
-                      reportSnippetError(
-                        page,
-                        snippetName,
-                        LiftRules.SnippetFailures.ClassNotFound,
-                        NodeSeq.Empty,
-                        wholeTag
-                      )
                   }
-                })
+                  case Failure(_, Full(exception), _) =>
+                    logger.warn("Snippet instantiation error", exception)
+                    reportSnippetError(
+                      page,
+                      snippetName,
+                      LiftRules.SnippetFailures.InstantiationException,
+                      NodeSeq.Empty,
+                      wholeTag
+                    )
+
+                  case _ =>
+                    reportSnippetError(
+                      page,
+                      snippetName,
+                      LiftRules.SnippetFailures.ClassNotFound,
+                      NodeSeq.Empty,
+                      wholeTag
+                    )
+                }
+              })
             })
           }
           .openOr {
@@ -3056,32 +3062,36 @@ class LiftSession(
             JString(name) <- in \ "name"
             func <- map.get(name)
             payload = in \ "payload"
-            reified <- if (func.manifest == jvmanifest) Some(payload)
-            else {
-              try {
-                Some(payload.extract(defaultFormats, func.manifest))
-              } catch {
-                case e: Exception =>
-                  logger.error(
-                    "Failed to extract " + payload +
-                      " as " + func.manifest,
-                    e
-                  )
-                  ca ! FailMsg(
-                    guid,
-                    "Failed to extract payload as " +
-                      func.manifest + " exception " +
-                      e.getMessage
-                  )
-                  None
+            reified <-
+              if (func.manifest == jvmanifest) Some(payload)
+              else {
+                try {
+                  Some(payload.extract(defaultFormats, func.manifest))
+                } catch {
+                  case e: Exception =>
+                    logger.error(
+                      "Failed to extract " + payload +
+                        " as " + func.manifest,
+                      e
+                    )
+                    ca ! FailMsg(
+                      guid,
+                      "Failed to extract payload as " +
+                        func.manifest + " exception " +
+                        e.getMessage
+                    )
+                    None
+                }
               }
-            }
           } {
             func match {
               case StreamRoundTrip(_, func) =>
                 try {
-                  for (v <- func
-                         .asInstanceOf[Function1[Any, Stream[Any]]](reified)) {
+                  for (v <-
+                         func
+                           .asInstanceOf[Function1[Any, Stream[Any]]](
+                             reified
+                           )) {
                     v match {
                       case jsCmd: JsCmd => ca ! jsCmd
                       case jsExp: JsExp => ca ! jsExp
@@ -3303,9 +3313,10 @@ private object SnippetNode {
 
       case elm: Elem => {
         for {
-          SnippetInformation(snippetName, lift) <- snippetInformationForElement(
-            elm
-          )
+          SnippetInformation(snippetName, lift) <-
+            snippetInformationForElement(
+              elm
+            )
         } yield {
           val (par, nonLift) = liftAttrsAndParallel(elm.attributes)
           val newElm = new Elem(

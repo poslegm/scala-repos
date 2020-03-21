@@ -197,16 +197,17 @@ abstract class JdbcTestDB(val confName: String) extends SqlTestDB {
       for {
         tables <- localTables
         sequences <- localSequences
-        _ <- DBIO.seq(
-          (tables.map(t =>
-            sqlu"""drop table if exists #${profile
-              .quoteIdentifier(t)} cascade"""
-          ) ++ sequences
-            .map(t =>
-              sqlu"""drop sequence if exists #${profile
+        _ <-
+          DBIO.seq(
+            (tables.map(t =>
+              sqlu"""drop table if exists #${profile
                 .quoteIdentifier(t)} cascade"""
-            )): _*
-        )
+            ) ++ sequences
+              .map(t =>
+                sqlu"""drop sequence if exists #${profile
+                  .quoteIdentifier(t)} cascade"""
+              )): _*
+          )
       } yield ()
     }
   def assertTablesExist(tables: String*) =

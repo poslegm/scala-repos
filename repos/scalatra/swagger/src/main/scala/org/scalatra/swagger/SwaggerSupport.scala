@@ -663,8 +663,9 @@ trait SwaggerSupportSyntax extends Initializable with CorsSupport {
     for {
       (method, routes) ← routes.methodRoutes
       route ← routes if (route.metadata.keySet & Symbols.AllSymbols).nonEmpty
-      endpoint = route.metadata.get(Symbols.Endpoint) map
-        (_.asInstanceOf[String]) getOrElse inferSwaggerEndpoint(route)
+      endpoint =
+        route.metadata.get(Symbols.Endpoint) map
+          (_.asInstanceOf[String]) getOrElse inferSwaggerEndpoint(route)
       operation = extract(route, method)
     } yield Entry(endpoint, operation)
 }

@@ -35,7 +35,8 @@ object Test {
            a,
            b,
            c
-         ) <- Date findFirstMatchIn "1/1/2001 marks the start of the millennium. 31/12/2000 doesn't.") {
+         ) <-
+           Date findFirstMatchIn "1/1/2001 marks the start of the millennium. 31/12/2000 doesn't.") {
       assert(a == "1")
       assert(b == "1")
       assert(c == "2001")
@@ -44,7 +45,8 @@ object Test {
            a,
            b,
            c
-         ) <- (Date findAllIn "1/1/2001 marks the start of the millennium. 31/12/2000 doesn't.").matchData) {
+         ) <-
+           (Date findAllIn "1/1/2001 marks the start of the millennium. 31/12/2000 doesn't.").matchData) {
       assert(a == "1" || a == "31")
       assert(b == "1" || b == "12")
       assert(c == "2001" || c == "2000")

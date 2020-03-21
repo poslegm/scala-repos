@@ -1351,9 +1351,10 @@ trait ScreenWizardRendered extends Loggable {
       for {
         field <- fields
         bindingInfo <- field.binding
-        custom <- Some(bindingInfo.bindingStyle) collect {
-          case c: Custom => c
-        }
+        custom <-
+          Some(bindingInfo.bindingStyle) collect {
+            case c: Custom => c
+          }
       } yield traceInline(
         "Binding custom field %s to %s"
           .format(bindingInfo.selector(formName), custom.template),
@@ -1364,9 +1365,10 @@ trait ScreenWizardRendered extends Loggable {
       for {
         field <- fields
         bindingInfo <- field.binding
-        dynamic <- Some(bindingInfo.bindingStyle) collect {
-          case d: Dynamic => d
-        }
+        dynamic <-
+          Some(bindingInfo.bindingStyle) collect {
+            case d: Dynamic => d
+          }
       } yield {
         val template = dynamic.func()
         traceInline(

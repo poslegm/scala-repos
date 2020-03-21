@@ -12,20 +12,21 @@ private[forum] final class CategApi(env: Env) {
   def list(teams: Set[String], troll: Boolean): Fu[List[CategView]] =
     for {
       categs ← CategRepo withTeams teams
-      views ← (categs map { categ =>
-        env.postApi get (categ lastPostId troll) map { topicPost =>
-          CategView(
-            categ,
-            topicPost map {
-              _ match {
-                case (topic, post) =>
-                  (topic, post, env.postApi lastPageOf topic)
-              }
-            },
-            troll
-          )
-        }
-      }).sequenceFu
+      views ←
+        (categs map { categ =>
+          env.postApi get (categ lastPostId troll) map { topicPost =>
+            CategView(
+              categ,
+              topicPost map {
+                _ match {
+                  case (topic, post) =>
+                    (topic, post, env.postApi lastPageOf topic)
+                }
+              },
+              troll
+            )
+          }
+        }).sequenceFu
     } yield views
 
   def teamNbPosts(slug: String): Fu[Int] = CategRepo nbPosts teamSlug(slug)
@@ -91,16 +92,17 @@ private[forum] final class CategApi(env: Env) {
       topicIdsTroll = topicsTroll map (_.id)
       nbPostsTroll ← PostRepoTroll countByTopics topicIdsTroll
       lastPostTroll ← PostRepoTroll lastByTopics topicIdsTroll
-      _ ← $update(
-        categ.copy(
-          nbTopics = topics.size,
-          nbPosts = nbPosts,
-          lastPostId = lastPost ?? (_.id),
-          nbTopicsTroll = topicsTroll.size,
-          nbPostsTroll = nbPostsTroll,
-          lastPostIdTroll = lastPostTroll ?? (_.id)
+      _ ←
+        $update(
+          categ.copy(
+            nbTopics = topics.size,
+            nbPosts = nbPosts,
+            lastPostId = lastPost ?? (_.id),
+            nbTopicsTroll = topicsTroll.size,
+            nbPostsTroll = nbPostsTroll,
+            lastPostIdTroll = lastPostTroll ?? (_.id)
+          )
         )
-      )
     } yield ()
 
   def denormalize: Funit =
