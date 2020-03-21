@@ -43,7 +43,9 @@ import org.apache.spark.internal.Logging
   * }}}
   */
 class OrderedRDDFunctions[
-    K: Ordering: ClassTag, V: ClassTag, P <: Product2[K, V]: ClassTag
+    K: Ordering: ClassTag,
+    V: ClassTag,
+    P <: Product2[K, V]: ClassTag
 ] @DeveloperApi() (self: RDD[P])
     extends Logging
     with Serializable {

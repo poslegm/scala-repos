@@ -1023,9 +1023,9 @@ private[kafka] class ZookeeperConsumerConnector(
                       collection.mutable
                         .Map(partitionOwnershipForTopicScalaMap.toSeq: _*)
                     ).asInstanceOf[java.util.Map[
-                        java.lang.Integer,
-                        ConsumerThreadId
-                      ]]
+                      java.lang.Integer,
+                      ConsumerThreadId
+                    ]]
                 })
               consumerRebalanceListener.beforeStartingFetchers(
                 consumerIdString,

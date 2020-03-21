@@ -69,7 +69,9 @@ object ObservableArray {
   * @param delegate Wrapped JavaFX $OA instance providing implementation.
   */
 abstract class ObservableArray[
-    V: ClassTag, T <: ObservableArray[V, T, D], D <: jfxc.ObservableArray[D]
+    V: ClassTag,
+    T <: ObservableArray[V, T, D],
+    D <: jfxc.ObservableArray[D]
 ](override val delegate: D)
     extends ArrayLike[V, T]
     with Builder[V, T]

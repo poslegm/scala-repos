@@ -1074,7 +1074,8 @@ object hlist {
     * @author Ievgen Garkusha
     */
   @annotation.implicitNotFound(
-    msg = "Field types set of ${S} is not fully contained in type definition of ${L}"
+    msg =
+      "Field types set of ${S} is not fully contained in type definition of ${L}"
   )
   trait SelectAll[L <: HList, S <: HList] extends DepFn1[L] with Serializable {
     type Out = S

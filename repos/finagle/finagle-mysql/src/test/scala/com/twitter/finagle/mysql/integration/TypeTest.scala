@@ -259,7 +259,8 @@ class BlobTypeTest extends FunSuite with IntegrationClient {
 class DateTimeTypeTest extends FunSuite with IntegrationClient {
   for (c <- client) {
     Await.ready(
-      c.query("""CREATE TEMPORARY TABLE `datetime` (
+      c.query(
+        """CREATE TEMPORARY TABLE `datetime` (
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
         `date` date NOT NULL,
         `datetime` datetime NOT NULL,
@@ -267,7 +268,8 @@ class DateTimeTypeTest extends FunSuite with IntegrationClient {
         `time` time NOT NULL,
         `year` year(4) NOT NULL,
         PRIMARY KEY (`id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;""")
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
+      )
     )
 
     Await.ready(c.query("""INSERT INTO `datetime`

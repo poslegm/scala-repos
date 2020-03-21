@@ -32,7 +32,8 @@ object sized {
 }
 
 final class SizedConv[
-    A, Repr <% GenTraversableLike[A, Repr]: AdditiveCollection
+    A,
+    Repr <% GenTraversableLike[A, Repr]: AdditiveCollection
 ](r: Repr) {
   import ops.nat._
   import Sized._
