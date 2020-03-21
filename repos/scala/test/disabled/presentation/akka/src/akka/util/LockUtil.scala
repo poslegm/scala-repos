@@ -23,7 +23,9 @@ final class ReentrantGuard {
   }
 
   final def tryWithGuard[T](body: => T): T = {
-    while (!lock.tryLock) { Thread.sleep(10) } // wait on the monitor to be unlocked
+    while (!lock.tryLock) {
+      Thread.sleep(10)
+    } // wait on the monitor to be unlocked
     try {
       body
     } finally {
@@ -164,33 +166,38 @@ class Switch(startAsOn: Boolean = false) {
     } else false
   }
 
-  def whileOnYield[T](action: => T): Option[T] = synchronized {
-    if (switch.get) Some(action)
-    else None
-  }
+  def whileOnYield[T](action: => T): Option[T] =
+    synchronized {
+      if (switch.get) Some(action)
+      else None
+    }
 
-  def whileOffYield[T](action: => T): Option[T] = synchronized {
-    if (!switch.get) Some(action)
-    else None
-  }
+  def whileOffYield[T](action: => T): Option[T] =
+    synchronized {
+      if (!switch.get) Some(action)
+      else None
+    }
 
-  def whileOn(action: => Unit): Boolean = synchronized {
-    if (switch.get) {
-      action
-      true
-    } else false
-  }
+  def whileOn(action: => Unit): Boolean =
+    synchronized {
+      if (switch.get) {
+        action
+        true
+      } else false
+    }
 
-  def whileOff(action: => Unit): Boolean = synchronized {
-    if (switch.get) {
-      action
-      true
-    } else false
-  }
+  def whileOff(action: => Unit): Boolean =
+    synchronized {
+      if (switch.get) {
+        action
+        true
+      } else false
+    }
 
-  def ifElseYield[T](on: => T)(off: => T) = synchronized {
-    if (switch.get) on else off
-  }
+  def ifElseYield[T](on: => T)(off: => T) =
+    synchronized {
+      if (switch.get) on else off
+    }
 
   def isOn = switch.get
   def isOff = !isOn

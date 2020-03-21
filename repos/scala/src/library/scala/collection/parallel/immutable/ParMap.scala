@@ -29,7 +29,8 @@ import scala.collection.parallel.Combiner
   */
 trait ParMap[K, +V]
     extends scala.collection /*.immutable*/ .GenMap[K, V]
-    with GenericParMapTemplate[K, V, ParMap] with parallel.ParMap[K, V]
+    with GenericParMapTemplate[K, V, ParMap]
+    with parallel.ParMap[K, V]
     with ParIterable[(K, V)]
     with ParMapLike[K, V, ParMap[K, V], scala.collection.immutable.Map[K, V]] {
   self =>
@@ -57,7 +58,8 @@ trait ParMap[K, +V]
     *  @return      a wrapper of the map with a default value
     */
   def withDefault[U >: V](
-      d: K => U): scala.collection.parallel.immutable.ParMap[K, U] =
+      d: K => U
+  ): scala.collection.parallel.immutable.ParMap[K, U] =
     new ParMap.WithDefault[K, U](this, d)
 
   /** The same map with a given default value.
@@ -68,7 +70,8 @@ trait ParMap[K, +V]
     *  @return      a wrapper of the map with a default value
     */
   def withDefaultValue[U >: V](
-      d: U): scala.collection.parallel.immutable.ParMap[K, U] =
+      d: U
+  ): scala.collection.parallel.immutable.ParMap[K, U] =
     new ParMap.WithDefault[K, U](this, x => d)
 }
 

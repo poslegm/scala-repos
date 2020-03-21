@@ -9,7 +9,7 @@ import com.typesafe.config.Config
 /**
   * Public API but not intended for subclassing
   */
-abstract class RoutingSettings private[akka]()
+abstract class RoutingSettings private[akka] ()
     extends akka.http.javadsl.settings.RoutingSettings {
   self: RoutingSettingsImpl ⇒
   def verboseErrorMessages: Boolean
@@ -30,24 +30,28 @@ abstract class RoutingSettings private[akka]()
   def getFileIODispatcher: String = fileIODispatcher
 
   override def withVerboseErrorMessages(
-      verboseErrorMessages: Boolean): RoutingSettings =
+      verboseErrorMessages: Boolean
+  ): RoutingSettings =
     self.copy(verboseErrorMessages = verboseErrorMessages)
   override def withFileGetConditional(
-      fileGetConditional: Boolean): RoutingSettings =
+      fileGetConditional: Boolean
+  ): RoutingSettings =
     self.copy(fileGetConditional = fileGetConditional)
   override def withRenderVanityFooter(
-      renderVanityFooter: Boolean): RoutingSettings =
+      renderVanityFooter: Boolean
+  ): RoutingSettings =
     self.copy(renderVanityFooter = renderVanityFooter)
   override def withRangeCountLimit(rangeCountLimit: Int): RoutingSettings =
     self.copy(rangeCountLimit = rangeCountLimit)
   override def withRangeCoalescingThreshold(
-      rangeCoalescingThreshold: Long): RoutingSettings =
+      rangeCoalescingThreshold: Long
+  ): RoutingSettings =
     self.copy(rangeCoalescingThreshold = rangeCoalescingThreshold)
   override def withDecodeMaxBytesPerChunk(
-      decodeMaxBytesPerChunk: Int): RoutingSettings =
+      decodeMaxBytesPerChunk: Int
+  ): RoutingSettings =
     self.copy(decodeMaxBytesPerChunk = decodeMaxBytesPerChunk)
-  override def withFileIODispatcher(
-      fileIODispatcher: String): RoutingSettings =
+  override def withFileIODispatcher(fileIODispatcher: String): RoutingSettings =
     self.copy(fileIODispatcher = fileIODispatcher)
 }
 

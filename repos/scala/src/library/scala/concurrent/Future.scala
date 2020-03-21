@@ -105,14 +105,20 @@ trait Future[+T] extends Awaitable[T] {
     *  $callbackInContext
     */
   @deprecated(
-      "use `foreach` or `onComplete` instead (keep in mind that they take total rather than partial functions)",
-      "2.12")
-  def onSuccess[U](pf: PartialFunction[T, U])(
-      implicit executor: ExecutionContext): Unit = onComplete {
-    case Success(v) =>
-      pf.applyOrElse[T, Any](v, Predef.conforms[T]) // Exploiting the cached function to avoid MatchError
-    case _ =>
-  }
+    "use `foreach` or `onComplete` instead (keep in mind that they take total rather than partial functions)",
+    "2.12"
+  )
+  def onSuccess[U](
+      pf: PartialFunction[T, U]
+  )(implicit executor: ExecutionContext): Unit =
+    onComplete {
+      case Success(v) =>
+        pf.applyOrElse[T, Any](
+          v,
+          Predef.conforms[T]
+        ) // Exploiting the cached function to avoid MatchError
+      case _ =>
+    }
 
   /** When this future is completed with a failure (i.e., with a throwable),
     *  apply the provided callback to the throwable.
@@ -129,15 +135,20 @@ trait Future[+T] extends Awaitable[T] {
     *  $callbackInContext
     */
   @deprecated(
-      "use `onComplete` or `failed.foreach` instead (keep in mind that they take total rather than partial functions)",
-      "2.12")
+    "use `onComplete` or `failed.foreach` instead (keep in mind that they take total rather than partial functions)",
+    "2.12"
+  )
   def onFailure[U](
-      @deprecatedName('callback) pf: PartialFunction[Throwable, U])(
-      implicit executor: ExecutionContext): Unit = onComplete {
-    case Failure(t) =>
-      pf.applyOrElse[Throwable, Any](t, Predef.conforms[Throwable]) // Exploiting the cached function to avoid MatchError
-    case _ =>
-  }
+      @deprecatedName('callback) pf: PartialFunction[Throwable, U]
+  )(implicit executor: ExecutionContext): Unit =
+    onComplete {
+      case Failure(t) =>
+        pf.applyOrElse[Throwable, Any](
+          t,
+          Predef.conforms[Throwable]
+        ) // Exploiting the cached function to avoid MatchError
+      case _ =>
+    }
 
   /** When this future is completed, either through an exception, or a value,
     *  apply the provided function.
@@ -152,8 +163,9 @@ trait Future[+T] extends Awaitable[T] {
     * @tparam U    only used to accept any return type of the given callback function
     * @param f     the function to be executed when this `Future` completes
     */
-  def onComplete[U](@deprecatedName('func) f: Try[T] => U)(
-      implicit executor: ExecutionContext): Unit
+  def onComplete[U](@deprecatedName('func) f: Try[T] => U)(implicit
+      executor: ExecutionContext
+  ): Unit
 
   /* Miscellaneous */
 
@@ -192,8 +204,11 @@ trait Future[+T] extends Awaitable[T] {
     transform({
       case Failure(t) => Success(t)
       case Success(v) =>
-        Failure(new NoSuchElementException(
-                "Future.failed not completed with a throwable."))
+        Failure(
+          new NoSuchElementException(
+            "Future.failed not completed with a throwable."
+          )
+        )
     })(internalExecutor)
 
   /* Monadic operations */
@@ -221,8 +236,9 @@ trait Future[+T] extends Awaitable[T] {
     *  @param  f  function that transforms a failure of the receiver into a failure of the returned future
     *  @return    a `Future` that will be completed with the transformed value
     */
-  def transform[S](s: T => S, f: Throwable => Throwable)(
-      implicit executor: ExecutionContext): Future[S] =
+  def transform[S](s: T => S, f: Throwable => Throwable)(implicit
+      executor: ExecutionContext
+  ): Future[S] =
     transform {
       case Success(r) => Try(s(r))
       case Failure(t) => Try(throw f(t)) // will throw fatal errors!
@@ -236,8 +252,9 @@ trait Future[+T] extends Awaitable[T] {
     *  @param  f  function that transforms the result of this future
     *  @return    a `Future` that will be completed with the transformed value
     */
-  def transform[S](f: Try[T] => Try[S])(
-      implicit executor: ExecutionContext): Future[S]
+  def transform[S](f: Try[T] => Try[S])(implicit
+      executor: ExecutionContext
+  ): Future[S]
 
   /** Creates a new Future by applying the specified function, which produces a Future, to the result
     * of this Future. If there is any non-fatal exception thrown when 'f'
@@ -247,8 +264,9 @@ trait Future[+T] extends Awaitable[T] {
     *  @param  f  function that transforms the result of this future
     *  @return    a `Future` that will be completed with the transformed value
     */
-  def transformWith[S](f: Try[T] => Future[S])(
-      implicit executor: ExecutionContext): Future[S]
+  def transformWith[S](f: Try[T] => Future[S])(implicit
+      executor: ExecutionContext
+  ): Future[S]
 
   /** Creates a new future by applying a function to the successful result of
     *  this future. If this future is completed with an exception then the new
@@ -261,8 +279,8 @@ trait Future[+T] extends Awaitable[T] {
     *  val g = f map { x: String => x + " is now!" }
     *  }}}
     *
-    *  Note that a for comprehension involving a `Future` 
-    *  may expand to include a call to `map` and or `flatMap` 
+    *  Note that a for comprehension involving a `Future`
+    *  may expand to include a call to `map` and or `flatMap`
     *  and `withFilter`.  See [[scala.concurrent.Future#flatMap]] for an example of such a comprehension.
     *
     *
@@ -284,11 +302,13 @@ trait Future[+T] extends Awaitable[T] {
     *  @param f   the function which will be applied to the successful result of this `Future`
     *  @return    a `Future` which will be completed with the result of the application of the function
     */
-  def flatMap[S](f: T => Future[S])(
-      implicit executor: ExecutionContext): Future[S] = transformWith {
-    case Success(s) => f(s)
-    case Failure(_) => this.asInstanceOf[Future[S]]
-  }
+  def flatMap[S](
+      f: T => Future[S]
+  )(implicit executor: ExecutionContext): Future[S] =
+    transformWith {
+      case Success(s) => f(s)
+      case Failure(_) => this.asInstanceOf[Future[S]]
+    }
 
   /** Creates a new future with one level of nesting flattened, this method is equivalent
     *  to `flatMap(identity)`.
@@ -317,19 +337,22 @@ trait Future[+T] extends Awaitable[T] {
     *  @param p   the predicate to apply to the successful result of this `Future`
     *  @return    a `Future` which will hold the successful result of this `Future` if it matches the predicate or a `NoSuchElementException`
     */
-  def filter(@deprecatedName('pred) p: T => Boolean)(
-      implicit executor: ExecutionContext): Future[T] =
+  def filter(
+      @deprecatedName('pred) p: T => Boolean
+  )(implicit executor: ExecutionContext): Future[T] =
     map { r =>
       if (p(r)) r
       else
         throw new NoSuchElementException(
-            "Future.filter predicate is not satisfied")
+          "Future.filter predicate is not satisfied"
+        )
     }
 
   /** Used by for-comprehensions.
     */
-  final def withFilter(p: T => Boolean)(
-      implicit executor: ExecutionContext): Future[T] = filter(p)(executor)
+  final def withFilter(p: T => Boolean)(implicit
+      executor: ExecutionContext
+  ): Future[T] = filter(p)(executor)
 
   /** Creates a new future by mapping the value of the current future, if the given partial function is defined at that value.
     *
@@ -355,14 +378,17 @@ trait Future[+T] extends Awaitable[T] {
     *  @param pf    the `PartialFunction` to apply to the successful result of this `Future`
     *  @return      a `Future` holding the result of application of the `PartialFunction` or a `NoSuchElementException`
     */
-  def collect[S](pf: PartialFunction[T, S])(
-      implicit executor: ExecutionContext): Future[S] =
+  def collect[S](
+      pf: PartialFunction[T, S]
+  )(implicit executor: ExecutionContext): Future[S] =
     map { r =>
       pf.applyOrElse(
-          r,
-          (t: T) =>
-            throw new NoSuchElementException(
-                "Future.collect partial function is not defined at: " + t))
+        r,
+        (t: T) =>
+          throw new NoSuchElementException(
+            "Future.collect partial function is not defined at: " + t
+          )
+      )
     }
 
   /** Creates a new future that will handle any matching throwable that this
@@ -381,8 +407,9 @@ trait Future[+T] extends Awaitable[T] {
     *  @param pf    the `PartialFunction` to apply if this `Future` fails
     *  @return      a `Future` with the successful value of this `Future` or the result of the `PartialFunction`
     */
-  def recover[U >: T](pf: PartialFunction[Throwable, U])(
-      implicit executor: ExecutionContext): Future[U] =
+  def recover[U >: T](
+      pf: PartialFunction[Throwable, U]
+  )(implicit executor: ExecutionContext): Future[U] =
     transform { _ recover pf }
 
   /** Creates a new future that will handle any matching throwable that this
@@ -402,8 +429,9 @@ trait Future[+T] extends Awaitable[T] {
     *  @param pf    the `PartialFunction` to apply if this `Future` fails
     *  @return      a `Future` with the successful value of this `Future` or the outcome of the `Future` returned by the `PartialFunction`
     */
-  def recoverWith[U >: T](pf: PartialFunction[Throwable, Future[U]])(
-      implicit executor: ExecutionContext): Future[U] =
+  def recoverWith[U >: T](
+      pf: PartialFunction[Throwable, Future[U]]
+  )(implicit executor: ExecutionContext): Future[U] =
     transformWith {
       case Failure(t) => pf.applyOrElse(t, (_: Throwable) => this)
       case Success(_) => this
@@ -423,9 +451,7 @@ trait Future[+T] extends Awaitable[T] {
     */
   def zip[U](that: Future[U]): Future[(T, U)] = {
     implicit val ec = internalExecutor
-    flatMap { r1 =>
-      that.map(r2 => (r1, r2))
-    }
+    flatMap { r1 => that.map(r2 => (r1, r2)) }
   }
 
   /** Zips the values of `this` and `that` future using a function `f`,
@@ -444,8 +470,9 @@ trait Future[+T] extends Awaitable[T] {
     *  @param f       the function to apply to the results of `this` and `that`
     *  @return        a `Future` with the result of the application of `f` to the results of `this` and `that`
     */
-  def zipWith[U, R](that: Future[U])(f: (T, U) => R)(
-      implicit executor: ExecutionContext): Future[R] =
+  def zipWith[U, R](
+      that: Future[U]
+  )(f: (T, U) => R)(implicit executor: ExecutionContext): Future[R] =
     flatMap(r1 => that.map(r2 => f(r1, r2)))(internalExecutor)
 
   /** Creates a new future which holds the result of this future if it was completed successfully, or, if not,
@@ -517,10 +544,12 @@ trait Future[+T] extends Awaitable[T] {
     *  @param pf     a `PartialFunction` which will be conditionally applied to the outcome of this `Future`
     *  @return       a `Future` which will be completed with the exact same outcome as this `Future` but after the `PartialFunction` has been executed.
     */
-  def andThen[U](pf: PartialFunction[Try[T], U])(
-      implicit executor: ExecutionContext): Future[T] =
+  def andThen[U](
+      pf: PartialFunction[Try[T], U]
+  )(implicit executor: ExecutionContext): Future[T] =
     transform { result =>
-      try pf.applyOrElse[Try[T], Any](result, Predef.conforms[Try[T]]) catch {
+      try pf.applyOrElse[Try[T], Any](result, Predef.conforms[Try[T]])
+      catch {
         case NonFatal(t) => executor reportFailure t
       }
 
@@ -536,15 +565,15 @@ trait Future[+T] extends Awaitable[T] {
 object Future {
 
   private[concurrent] val toBoxed = Map[Class[_], Class[_]](
-      classOf[Boolean] -> classOf[java.lang.Boolean],
-      classOf[Byte] -> classOf[java.lang.Byte],
-      classOf[Char] -> classOf[java.lang.Character],
-      classOf[Short] -> classOf[java.lang.Short],
-      classOf[Int] -> classOf[java.lang.Integer],
-      classOf[Long] -> classOf[java.lang.Long],
-      classOf[Float] -> classOf[java.lang.Float],
-      classOf[Double] -> classOf[java.lang.Double],
-      classOf[Unit] -> classOf[scala.runtime.BoxedUnit]
+    classOf[Boolean] -> classOf[java.lang.Boolean],
+    classOf[Byte] -> classOf[java.lang.Byte],
+    classOf[Char] -> classOf[java.lang.Character],
+    classOf[Short] -> classOf[java.lang.Short],
+    classOf[Int] -> classOf[java.lang.Integer],
+    classOf[Long] -> classOf[java.lang.Long],
+    classOf[Float] -> classOf[java.lang.Float],
+    classOf[Double] -> classOf[java.lang.Double],
+    classOf[Unit] -> classOf[scala.runtime.BoxedUnit]
   )
 
   /** A Future which is never completed.
@@ -553,13 +582,13 @@ object Future {
 
     @throws(classOf[TimeoutException])
     @throws(classOf[InterruptedException])
-    override def ready(atMost: Duration)(
-        implicit permit: CanAwait): this.type = {
+    override def ready(
+        atMost: Duration
+    )(implicit permit: CanAwait): this.type = {
       atMost match {
         case e if e eq Duration.Undefined =>
-          throw new IllegalArgumentException(
-              "cannot wait for Undefined period")
-        case Duration.Inf => new CountDownLatch(1).await()
+          throw new IllegalArgumentException("cannot wait for Undefined period")
+        case Duration.Inf      => new CountDownLatch(1).await()
         case Duration.MinusInf => // Drop out
         case f: FiniteDuration =>
           if (f > Duration.Zero)
@@ -569,50 +598,66 @@ object Future {
     }
 
     @throws(classOf[Exception])
-    override def result(atMost: Duration)(implicit permit: CanAwait): Nothing = {
+    override def result(
+        atMost: Duration
+    )(implicit permit: CanAwait): Nothing = {
       ready(atMost)
       throw new TimeoutException(s"Future timed out after [$atMost]")
     }
 
-    override def onSuccess[U](pf: PartialFunction[Nothing, U])(
-        implicit executor: ExecutionContext): Unit = ()
-    override def onFailure[U](pf: PartialFunction[Throwable, U])(
-        implicit executor: ExecutionContext): Unit = ()
-    override def onComplete[U](f: Try[Nothing] => U)(
-        implicit executor: ExecutionContext): Unit = ()
+    override def onSuccess[U](pf: PartialFunction[Nothing, U])(implicit
+        executor: ExecutionContext
+    ): Unit = ()
+    override def onFailure[U](pf: PartialFunction[Throwable, U])(implicit
+        executor: ExecutionContext
+    ): Unit = ()
+    override def onComplete[U](f: Try[Nothing] => U)(implicit
+        executor: ExecutionContext
+    ): Unit = ()
     override def isCompleted: Boolean = false
     override def value: Option[Try[Nothing]] = None
     override def failed: Future[Throwable] = this
-    override def foreach[U](f: Nothing => U)(
-        implicit executor: ExecutionContext): Unit = ()
+    override def foreach[U](f: Nothing => U)(implicit
+        executor: ExecutionContext
+    ): Unit = ()
     override def transform[S](s: Nothing => S, f: Throwable => Throwable)(
-        implicit executor: ExecutionContext): Future[S] = this
-    override def transform[S](f: Try[Nothing] => Try[S])(
-        implicit executor: ExecutionContext): Future[S] = this
-    override def transformWith[S](f: Try[Nothing] => Future[S])(
-        implicit executor: ExecutionContext): Future[S] = this
-    override def map[S](f: Nothing => S)(
-        implicit executor: ExecutionContext): Future[S] = this
-    override def flatMap[S](f: Nothing => Future[S])(
-        implicit executor: ExecutionContext): Future[S] = this
+        implicit executor: ExecutionContext
+    ): Future[S] = this
+    override def transform[S](f: Try[Nothing] => Try[S])(implicit
+        executor: ExecutionContext
+    ): Future[S] = this
+    override def transformWith[S](f: Try[Nothing] => Future[S])(implicit
+        executor: ExecutionContext
+    ): Future[S] = this
+    override def map[S](f: Nothing => S)(implicit
+        executor: ExecutionContext
+    ): Future[S] = this
+    override def flatMap[S](f: Nothing => Future[S])(implicit
+        executor: ExecutionContext
+    ): Future[S] = this
     override def flatten[S](implicit ev: Nothing <:< Future[S]): Future[S] =
       this
-    override def filter(p: Nothing => Boolean)(
-        implicit executor: ExecutionContext): Future[Nothing] = this
-    override def collect[S](pf: PartialFunction[Nothing, S])(
-        implicit executor: ExecutionContext): Future[S] = this
+    override def filter(p: Nothing => Boolean)(implicit
+        executor: ExecutionContext
+    ): Future[Nothing] = this
+    override def collect[S](pf: PartialFunction[Nothing, S])(implicit
+        executor: ExecutionContext
+    ): Future[S] = this
     override def recover[U >: Nothing](pf: PartialFunction[Throwable, U])(
-        implicit executor: ExecutionContext): Future[U] = this
+        implicit executor: ExecutionContext
+    ): Future[U] = this
     override def recoverWith[U >: Nothing](
-        pf: PartialFunction[Throwable, Future[U]])(
-        implicit executor: ExecutionContext): Future[U] = this
+        pf: PartialFunction[Throwable, Future[U]]
+    )(implicit executor: ExecutionContext): Future[U] = this
     override def zip[U](that: Future[U]): Future[(Nothing, U)] = this
-    override def zipWith[U, R](that: Future[U])(f: (Nothing, U) => R)(
-        implicit executor: ExecutionContext): Future[R] = this
+    override def zipWith[U, R](that: Future[U])(f: (Nothing, U) => R)(implicit
+        executor: ExecutionContext
+    ): Future[R] = this
     override def fallbackTo[U >: Nothing](that: Future[U]): Future[U] = this
     override def mapTo[S](implicit tag: ClassTag[S]): Future[S] = this
-    override def andThen[U](pf: PartialFunction[Try[Nothing], U])(
-        implicit executor: ExecutionContext): Future[Nothing] = this
+    override def andThen[U](pf: PartialFunction[Try[Nothing], U])(implicit
+        executor: ExecutionContext
+    ): Future[Nothing] = this
 
     override def toString: String = "Future(<never>)"
   }
@@ -655,9 +700,9 @@ object Future {
     *  @param executor  the execution context on which the future is run
     *  @return          the `Future` holding the result of the computation
     */
-  def apply[T](body: => T)(
-      implicit @deprecatedName('execctx) executor: ExecutionContext)
-    : Future[T] =
+  def apply[T](
+      body: => T
+  )(implicit @deprecatedName('execctx) executor: ExecutionContext): Future[T] =
     unit.map(_ => body)
 
   /** Simple version of `Future.traverse`. Asynchronously and non-blockingly transforms a `TraversableOnce[Future[A]]`
@@ -668,9 +713,10 @@ object Future {
     * @param in        the `TraversableOnce` of Futures which will be sequenced
     * @return          the `Future` of the `TraversableOnce` of results
     */
-  def sequence[A, M[X] <: TraversableOnce[X]](in: M[Future[A]])(
-      implicit cbf: CanBuildFrom[M[Future[A]], A, M[A]],
-      executor: ExecutionContext): Future[M[A]] = {
+  def sequence[A, M[X] <: TraversableOnce[X]](in: M[Future[A]])(implicit
+      cbf: CanBuildFrom[M[Future[A]], A, M[A]],
+      executor: ExecutionContext
+  ): Future[M[A]] = {
     in.foldLeft(successful(cbf(in))) { (fr, fa) =>
         for (r <- fr; a <- fa) yield (r += a)
       }
@@ -684,8 +730,9 @@ object Future {
     * @param futures   the `TraversableOnce` of Futures in which to find the first completed
     * @return          the `Future` holding the result of the future that is first to be completed
     */
-  def firstCompletedOf[T](futures: TraversableOnce[Future[T]])(
-      implicit executor: ExecutionContext): Future[T] = {
+  def firstCompletedOf[T](
+      futures: TraversableOnce[Future[T]]
+  )(implicit executor: ExecutionContext): Future[T] = {
     val p = Promise[T]()
     val completeFirst: Try[T] => Unit = p tryComplete _
     futures foreach { _ onComplete completeFirst }
@@ -701,12 +748,14 @@ object Future {
     * @return          the `Future` holding the optional result of the search
     */
   @deprecated(
-      "Use the overloaded version of this method that takes a scala.collection.immutable.Iterable instead",
-      "2.12")
+    "Use the overloaded version of this method that takes a scala.collection.immutable.Iterable instead",
+    "2.12"
+  )
   def find[T](
-      @deprecatedName('futurestravonce) futures: TraversableOnce[Future[T]])(
-      @deprecatedName('predicate) p: T => Boolean)(
-      implicit executor: ExecutionContext): Future[Option[T]] = {
+      @deprecatedName('futurestravonce) futures: TraversableOnce[Future[T]]
+  )(
+      @deprecatedName('predicate) p: T => Boolean
+  )(implicit executor: ExecutionContext): Future[Option[T]] = {
     val futuresBuffer = futures.toBuffer
     if (futuresBuffer.isEmpty) successful[Option[T]](None)
     else {
@@ -716,13 +765,13 @@ object Future {
         try {
           v match {
             case Success(r) if p(r) => result tryComplete Success(Some(r))
-            case _ =>
+            case _                  =>
           }
         } finally {
           if (ref.decrementAndGet == 0) {
             result tryComplete Success(None)
           }
-      }
+        }
 
       futuresBuffer.foreach(_ onComplete search)
 
@@ -738,15 +787,15 @@ object Future {
     * @param p         the predicate which indicates if it's a match
     * @return          the `Future` holding the optional result of the search
     */
-  def find[T](futures: scala.collection.immutable.Iterable[Future[T]])(
-      p: T => Boolean)(
-      implicit executor: ExecutionContext): Future[Option[T]] = {
+  def find[T](
+      futures: scala.collection.immutable.Iterable[Future[T]]
+  )(p: T => Boolean)(implicit executor: ExecutionContext): Future[Option[T]] = {
     def searchNext(i: Iterator[Future[T]]): Future[Option[T]] =
       if (!i.hasNext) successful[Option[T]](None)
       else {
         i.next().transformWith {
           case Success(r) if p(r) => successful(Some(r))
-          case other => searchNext(i)
+          case other              => searchNext(i)
         }
       }
     searchNext(futures.iterator)
@@ -771,18 +820,18 @@ object Future {
     * @return         the `Future` holding the result of the fold
     */
   def foldLeft[T, R](
-      futures: scala.collection.immutable.Iterable[Future[T]])(zero: R)(
-      op: (R, T) => R)(implicit executor: ExecutionContext): Future[R] =
+      futures: scala.collection.immutable.Iterable[Future[T]]
+  )(zero: R)(op: (R, T) => R)(implicit executor: ExecutionContext): Future[R] =
     foldNext(futures.iterator, zero, op)
 
   private[this] def foldNext[T, R](
-      i: Iterator[Future[T]], prevValue: R, op: (R, T) => R)(
-      implicit executor: ExecutionContext): Future[R] =
+      i: Iterator[Future[T]],
+      prevValue: R,
+      op: (R, T) => R
+  )(implicit executor: ExecutionContext): Future[R] =
     if (!i.hasNext) successful(prevValue)
     else
-      i.next().flatMap { value =>
-        foldNext(i, op(prevValue, value), op)
-      }
+      i.next().flatMap { value => foldNext(i, op(prevValue, value), op) }
 
   /** A non-blocking, asynchronous fold over the specified futures, with the start value of the given zero.
     *  The fold is performed on the thread where the last future is completed,
@@ -802,9 +851,9 @@ object Future {
     * @return         the `Future` holding the result of the fold
     */
   @deprecated("Use Future.foldLeft instead", "2.12")
-  def fold[T, R](futures: TraversableOnce[Future[T]])(
-      zero: R)(@deprecatedName('foldFun) op: (R, T) => R)(
-      implicit executor: ExecutionContext): Future[R] = {
+  def fold[T, R](futures: TraversableOnce[Future[T]])(zero: R)(
+      @deprecatedName('foldFun) op: (R, T) => R
+  )(implicit executor: ExecutionContext): Future[R] = {
     if (futures.isEmpty) successful(zero)
     else sequence(futures).map(_.foldLeft(zero)(op))
   }
@@ -823,11 +872,11 @@ object Future {
     * @return         the `Future` holding the result of the reduce
     */
   @deprecated("Use Future.reduceLeft instead", "2.12")
-  def reduce[T, R >: T](futures: TraversableOnce[Future[T]])(op: (R, T) => R)(
-      implicit executor: ExecutionContext): Future[R] = {
+  def reduce[T, R >: T](
+      futures: TraversableOnce[Future[T]]
+  )(op: (R, T) => R)(implicit executor: ExecutionContext): Future[R] = {
     if (futures.isEmpty)
-      failed(
-          new NoSuchElementException("reduce attempted on empty collection"))
+      failed(new NoSuchElementException("reduce attempted on empty collection"))
     else sequence(futures).map(_ reduceLeft op)
   }
 
@@ -845,17 +894,15 @@ object Future {
     * @return         the `Future` holding the result of the reduce
     */
   def reduceLeft[T, R >: T](
-      futures: scala.collection.immutable.Iterable[Future[T]])(
-      op: (R, T) => R)(implicit executor: ExecutionContext): Future[R] = {
+      futures: scala.collection.immutable.Iterable[Future[T]]
+  )(op: (R, T) => R)(implicit executor: ExecutionContext): Future[R] = {
     val i = futures.iterator
     if (!i.hasNext)
       failed(
-          new NoSuchElementException(
-              "reduceLeft attempted on empty collection"))
+        new NoSuchElementException("reduceLeft attempted on empty collection")
+      )
     else
-      i.next() flatMap { v =>
-        foldNext(i, v, op)
-      }
+      i.next() flatMap { v => foldNext(i, v, op) }
   }
 
   /** Asynchronously and non-blockingly transforms a `TraversableOnce[A]` into a `Future[TraversableOnce[B]]`
@@ -873,9 +920,12 @@ object Future {
     * @param fn        the function to apply to the `TraversableOnce` of Futures to produce the results
     * @return          the `Future` of the `TraversableOnce` of results
     */
-  def traverse[A, B, M[X] <: TraversableOnce[X]](in: M[A])(fn: A => Future[B])(
-      implicit cbf: CanBuildFrom[M[A], B, M[B]],
-      executor: ExecutionContext): Future[M[B]] =
+  def traverse[A, B, M[X] <: TraversableOnce[X]](
+      in: M[A]
+  )(fn: A => Future[B])(implicit
+      cbf: CanBuildFrom[M[A], B, M[B]],
+      executor: ExecutionContext
+  ): Future[M[B]] =
     in.foldLeft(successful(cbf(in))) { (fr, a) =>
         val fb = fn(a)
         for (r <- fr; b <- fb) yield (r += b)
@@ -902,12 +952,15 @@ object Future {
   // doesn't need to create defaultExecutionContext as
   // a side effect.
   private[concurrent] object InternalCallbackExecutor
-      extends ExecutionContext with BatchingExecutor {
+      extends ExecutionContext
+      with BatchingExecutor {
     override protected def unbatchedExecute(r: Runnable): Unit =
       r.run()
     override def reportFailure(t: Throwable): Unit =
       throw new IllegalStateException(
-          "problem in scala.concurrent internal callback", t)
+        "problem in scala.concurrent internal callback",
+        t
+      )
   }
 }
 
@@ -916,5 +969,4 @@ object Future {
   * All callbacks provided to a `Future` end up going through `onComplete`, so this allows an
   * `ExecutionContext` to special-case callbacks that were executed by `Future` if desired.
   */
-trait OnCompleteRunnable { self: Runnable =>
-}
+trait OnCompleteRunnable { self: Runnable => }

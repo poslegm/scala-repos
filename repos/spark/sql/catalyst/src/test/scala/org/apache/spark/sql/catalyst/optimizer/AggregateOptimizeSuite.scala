@@ -28,7 +28,11 @@ class AggregateOptimizeSuite extends PlanTest {
 
   object Optimize extends RuleExecutor[LogicalPlan] {
     val batches =
-      Batch("Aggregate", FixedPoint(100), RemoveLiteralFromGroupExpressions) :: Nil
+      Batch(
+        "Aggregate",
+        FixedPoint(100),
+        RemoveLiteralFromGroupExpressions
+      ) :: Nil
   }
 
   test("remove literals in grouping expression") {

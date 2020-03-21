@@ -36,8 +36,8 @@ trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {
 
   /** The next size value at which to resize (capacity * load factor).
     */
-  @transient protected var threshold: Int = newThreshold(
-      _loadFactor, initialCapacity)
+  @transient protected var threshold: Int =
+    newThreshold(_loadFactor, initialCapacity)
 
   /** The array keeping track of number of elements in 32 element blocks.
     */
@@ -110,18 +110,20 @@ trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {
 
   /** Finds an entry in the hash table if such an element exists. */
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def findEntry(elem: A): Option[A] =
     findElemImpl(elem) match {
-      case null => None
+      case null  => None
       case entry => Some(entryToElem(entry))
     }
 
   /** Checks whether an element is contained in the hash table. */
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def containsElem(elem: A): Boolean = {
     null != findElemImpl(elem)
   }
@@ -205,16 +207,18 @@ trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {
     false
   }
 
-  protected def iterator: Iterator[A] = new AbstractIterator[A] {
-    private var i = 0
-    def hasNext: Boolean = {
-      while (i < table.length && (null == table(i))) i += 1
-      i < table.length
+  protected def iterator: Iterator[A] =
+    new AbstractIterator[A] {
+      private var i = 0
+      def hasNext: Boolean = {
+        while (i < table.length && (null == table(i))) i += 1
+        i < table.length
+      }
+      def next(): A =
+        if (hasNext) { i += 1; entryToElem(table(i - 1)) }
+        else
+          Iterator.empty.next()
     }
-    def next(): A =
-      if (hasNext) { i += 1; entryToElem(table(i - 1)) } else
-        Iterator.empty.next()
-  }
 
   private def growTable() {
     val oldtable = table
@@ -233,9 +237,10 @@ trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {
   }
 
   private def checkConsistent() {
-    for (i <- 0 until table.length) if (table(i) != null &&
-                                        !containsElem(entryToElem(table(i))))
-      assert(assertion = false, i + " " + table(i) + " " + table.mkString)
+    for (i <- 0 until table.length)
+      if (table(i) != null &&
+          !containsElem(entryToElem(table(i))))
+        assert(assertion = false, i + " " + table(i) + " " + table.mkString)
   }
 
   /* Size map handling code */
@@ -254,50 +259,59 @@ trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {
    *
    */
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
-  protected def nnSizeMapAdd(h: Int) = if (sizemap ne null) {
-    val p = h >> sizeMapBucketBitSize
-    sizemap(p) += 1
-  }
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
+  protected def nnSizeMapAdd(h: Int) =
+    if (sizemap ne null) {
+      val p = h >> sizeMapBucketBitSize
+      sizemap(p) += 1
+    }
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
-  protected def nnSizeMapRemove(h: Int) = if (sizemap ne null) {
-    sizemap(h >> sizeMapBucketBitSize) -= 1
-  }
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
+  protected def nnSizeMapRemove(h: Int) =
+    if (sizemap ne null) {
+      sizemap(h >> sizeMapBucketBitSize) -= 1
+    }
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
-  protected def nnSizeMapReset(tableLength: Int) = if (sizemap ne null) {
-    val nsize = calcSizeMapSize(tableLength)
-    if (sizemap.length != nsize) sizemap = new Array[Int](nsize)
-    else java.util.Arrays.fill(sizemap, 0)
-  }
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
+  protected def nnSizeMapReset(tableLength: Int) =
+    if (sizemap ne null) {
+      val nsize = calcSizeMapSize(tableLength)
+      if (sizemap.length != nsize) sizemap = new Array[Int](nsize)
+      else java.util.Arrays.fill(sizemap, 0)
+    }
 
   private[collection] final def totalSizeMapBuckets =
     (table.length - 1) / sizeMapBucketSize + 1
 
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def calcSizeMapSize(tableLength: Int) =
     (tableLength >> sizeMapBucketBitSize) + 1
 
   // discards the previous sizemap and only allocates a new one
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def sizeMapInit(tableLength: Int) {
     sizemap = new Array[Int](calcSizeMapSize(tableLength))
   }
 
   // discards the previous sizemap and populates the new one
   @deprecatedOverriding(
-      "Internal implementation does not admit sensible overriding of this method.",
-      "2.11.0")
+    "Internal implementation does not admit sensible overriding of this method.",
+    "2.11.0"
+  )
   protected def sizeMapInitAndRebuild() {
     // first allocate
     sizeMapInit(table.length)
@@ -364,14 +378,15 @@ trait FlatHashTable[A] extends FlatHashTable.HashUtils[A] {
     nnSizeMapReset(table.length)
   }
 
-  private[collection] def hashTableContents = new FlatHashTable.Contents[A](
+  private[collection] def hashTableContents =
+    new FlatHashTable.Contents[A](
       _loadFactor,
       table,
       tableSize,
       threshold,
       seedvalue,
       sizemap
-  )
+    )
 
   protected def initWithContents(c: FlatHashTable.Contents[A]) = {
     if (c != null) {
@@ -394,9 +409,10 @@ private[collection] object FlatHashTable {
     *
     *  See SI-5293.
     */
-  final def seedGenerator = new ThreadLocal[scala.util.Random] {
-    override def initialValue = new scala.util.Random
-  }
+  final def seedGenerator =
+    new ThreadLocal[scala.util.Random] {
+      override def initialValue = new scala.util.Random
+    }
 
   private object NullSentinel {
     override def hashCode = 0

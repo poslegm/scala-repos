@@ -13,9 +13,11 @@ import org.scalatest.junit.JUnitRunner
 final class ListClientServerIntegrationSuite
     extends RedisClientServerIntegrationTest {
 
-  test("LLEN should return the length of the list",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LLEN should return the length of the list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
@@ -27,9 +29,11 @@ final class ListClientServerIntegrationSuite
     }
   }
 
-  test("LINDEX should get an element from a list by its index",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LINDEX should get an element from a list by its index",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
@@ -44,21 +48,25 @@ final class ListClientServerIntegrationSuite
   }
 
   test(
-      "LINSERT should insert an element before or after another element in a list",
-      ClientServerTest,
-      RedisTest) {
+    "LINSERT should insert an element before or after another element in a list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
       assert(
-          Await.result(client(LInsert(foo, "BEFORE", bar, moo))) == IntegerReply(
-              2))
+        Await
+          .result(client(LInsert(foo, "BEFORE", bar, moo))) == IntegerReply(2)
+      )
     }
   }
 
-  test("LPOP should remove and get the first element in a list",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LPOP should remove and get the first element in a list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
@@ -70,9 +78,11 @@ final class ListClientServerIntegrationSuite
     }
   }
 
-  test("LPUSH should prepend one or multiple values to a list",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LPUSH should prepend one or multiple values to a list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
@@ -96,9 +106,11 @@ final class ListClientServerIntegrationSuite
     }
   }
 
-  test("LSET should et the value of an element in a list by its index",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LSET should et the value of an element in a list by its index",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
@@ -106,27 +118,35 @@ final class ListClientServerIntegrationSuite
 
       assert(Await.result(client(LSet(foo, 1, baz))) == OKStatusReply)
 
-      assertMBulkReply(client(LRange(foo, 0, -1)),
-                       List(chanBuf2String(bar), chanBuf2String(baz)))
+      assertMBulkReply(
+        client(LRange(foo, 0, -1)),
+        List(chanBuf2String(bar), chanBuf2String(baz))
+      )
     }
   }
 
-  test("LRANGE should get a range of elements from a list",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LRANGE should get a range of elements from a list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(2))
 
-      assertMBulkReply(client(LRange(foo, 0, -1)),
-                       List(chanBuf2String(bar), chanBuf2String(bar)))
+      assertMBulkReply(
+        client(LRange(foo, 0, -1)),
+        List(chanBuf2String(bar), chanBuf2String(bar))
+      )
     }
   }
 
-  test("RPOP should remove and get the last element in a list",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "RPOP should remove and get the last element in a list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(bar)))) == IntegerReply(1))
 
@@ -138,9 +158,11 @@ final class ListClientServerIntegrationSuite
     }
   }
 
-  test("RPUSH should append one or multiple values to a list",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "RPUSH should append one or multiple values to a list",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(RPush(foo, List(moo)))) == IntegerReply(1))
 
@@ -148,9 +170,11 @@ final class ListClientServerIntegrationSuite
     }
   }
 
-  test("LTRIM should trim a list to the specified range",
-       ClientServerTest,
-       RedisTest) {
+  test(
+    "LTRIM should trim a list to the specified range",
+    ClientServerTest,
+    RedisTest
+  ) {
     withRedisClient { client =>
       assert(Await.result(client(LPush(foo, List(moo)))) == IntegerReply(1))
 
@@ -164,8 +188,10 @@ final class ListClientServerIntegrationSuite
 
       assert(Await.result(client(LTrim(foo, 0, 1))) == OKStatusReply)
 
-      assertMBulkReply(client(LRange(foo, 0, -1)),
-                       List(chanBuf2String(bar), chanBuf2String(baz)))
+      assertMBulkReply(
+        client(LRange(foo, 0, -1)),
+        List(chanBuf2String(bar), chanBuf2String(baz))
+      )
     }
   }
 }

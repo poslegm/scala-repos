@@ -18,9 +18,10 @@ import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
   */
 class ScTypeAliasStubImpl[ParentPsi <: PsiElement](
     parent: StubElement[ParentPsi],
-    elemType: IStubElementType[
-        _ <: StubElement[_ <: PsiElement], _ <: PsiElement])
-    extends StubBaseWrapper[ScTypeAlias](parent, elemType)
+    elemType: IStubElementType[_ <: StubElement[
+      _ <: PsiElement
+    ], _ <: PsiElement]
+) extends StubBaseWrapper[ScTypeAlias](parent, elemType)
     with ScTypeAliasStub {
   private var name: StringRef = _
   private var declaration: Boolean = false
@@ -33,20 +34,24 @@ class ScTypeAliasStubImpl[ParentPsi <: PsiElement](
   private var local: Boolean = false
   private var _stableQualifier: Boolean = false
 
-  def this(parent: StubElement[ParentPsi],
-           elemType: IStubElementType[
-               _ <: StubElement[_ <: PsiElement], _ <: PsiElement],
-           name: String,
-           isDeclaration: Boolean,
-           typeElementText: String,
-           lowerTypeElementText: String,
-           upperTypeElementText: String,
-           isLocal: Boolean,
-           stableQualifier: Boolean) = {
+  def this(
+      parent: StubElement[ParentPsi],
+      elemType: IStubElementType[_ <: StubElement[
+        _ <: PsiElement
+      ], _ <: PsiElement],
+      name: String,
+      isDeclaration: Boolean,
+      typeElementText: String,
+      lowerTypeElementText: String,
+      upperTypeElementText: String,
+      isLocal: Boolean,
+      stableQualifier: Boolean
+  ) = {
     this(
-        parent,
-        elemType
-          .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]])
+      parent,
+      elemType
+        .asInstanceOf[IStubElementType[StubElement[PsiElement], PsiElement]]
+    )
     this.name = StringRef.fromString(name)
     this.declaration = isDeclaration
     this.typeElementText = StringRef.fromString(typeElementText)
@@ -70,7 +75,10 @@ class ScTypeAliasStubImpl[ParentPsi <: PsiElement](
     }
     if (getTypeElementText == "") return null
     val res: ScTypeElement = ScalaPsiElementFactory.createTypeElementFromText(
-        getTypeElementText, getPsi, null)
+      getTypeElementText,
+      getPsi,
+      null
+    )
     myTypeElement = new SofterReference[ScTypeElement](res)
     res
   }
@@ -85,7 +93,10 @@ class ScTypeAliasStubImpl[ParentPsi <: PsiElement](
     }
     if (getUpperBoundElementText == "") return null
     val res: ScTypeElement = ScalaPsiElementFactory.createTypeElementFromText(
-        getUpperBoundElementText, getPsi, null)
+      getUpperBoundElementText,
+      getPsi,
+      null
+    )
     myUpperTypeElement = new SofterReference[ScTypeElement](res)
     res
   }
@@ -100,7 +111,10 @@ class ScTypeAliasStubImpl[ParentPsi <: PsiElement](
     }
     if (getLowerBoundElementText == "") return null
     val res: ScTypeElement = ScalaPsiElementFactory.createTypeElementFromText(
-        getLowerBoundElementText, getPsi, null)
+      getLowerBoundElementText,
+      getPsi,
+      null
+    )
     myLowerTypeElement = new SofterReference[ScTypeElement](res)
     res
   }

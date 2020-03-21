@@ -22,8 +22,9 @@ import org.I0Itec.zkclient.{IZkStateListener, IZkChildListener, ZkClient}
 import org.apache.zookeeper.Watcher.Event.KeeperState
 
 class ZookeeperTopicEventWatcher(
-    val zkUtils: ZkUtils, val eventHandler: TopicEventHandler[String])
-    extends Logging {
+    val zkUtils: ZkUtils,
+    val eventHandler: TopicEventHandler[String]
+) extends Logging {
 
   val lock = new Object()
 
@@ -34,7 +35,8 @@ class ZookeeperTopicEventWatcher(
     zkUtils.makeSurePersistentPathExists(ZkUtils.BrokerTopicsPath)
 
     zkUtils.zkClient.subscribeStateChanges(
-        new ZkSessionExpireListener(topicEventListener))
+      new ZkSessionExpireListener(topicEventListener)
+    )
 
     val topics = zkUtils.zkClient
       .subscribeChildChanges(ZkUtils.BrokerTopicsPath, topicEventListener)
@@ -52,7 +54,9 @@ class ZookeeperTopicEventWatcher(
       if (zkUtils != null) {
         stopWatchingTopicEvents()
       } else {
-        warn("Cannot shutdown since the embedded zookeeper client has already closed.")
+        warn(
+          "Cannot shutdown since the embedded zookeeper client has already closed."
+        )
       }
     }
   }
@@ -87,9 +91,11 @@ class ZookeeperTopicEventWatcher(
     def handleNewSession() {
       lock.synchronized {
         if (zkUtils != null) {
-          info("ZK expired: resubscribing topic event listener to topic registry")
-          zkUtils.zkClient.subscribeChildChanges(
-              ZkUtils.BrokerTopicsPath, topicEventListener)
+          info(
+            "ZK expired: resubscribing topic event listener to topic registry"
+          )
+          zkUtils.zkClient
+            .subscribeChildChanges(ZkUtils.BrokerTopicsPath, topicEventListener)
         }
       }
     }

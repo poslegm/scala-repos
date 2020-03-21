@@ -2,7 +2,11 @@ package com.twitter.concurrent
 
 import com.twitter.conversions.time._
 import com.twitter.util._
-import java.util.concurrent.{ArrayBlockingQueue, CancellationException, RejectedExecutionException}
+import java.util.concurrent.{
+  ArrayBlockingQueue,
+  CancellationException,
+  RejectedExecutionException
+}
 import scala.annotation.tailrec
 
 // implicitly a rate of 1 token / `interval`
@@ -29,8 +33,9 @@ object AsyncMeter {
     *
     * This is equivalent to `AsyncMeter.newMeter(permits, 1.second, maxWaiters)`.
     */
-  def perSecond(permits: Int, maxWaiters: Int)(
-      implicit timer: Timer): AsyncMeter =
+  def perSecond(permits: Int, maxWaiters: Int)(implicit
+      timer: Timer
+  ): AsyncMeter =
     new AsyncMeter(permits, 1.second, maxWaiters)
 
   /**
@@ -50,8 +55,8 @@ object AsyncMeter {
       burstSize: Int,
       burstDuration: Duration,
       maxWaiters: Int
-  )(
-      implicit timer: Timer
+  )(implicit
+      timer: Timer
   ): AsyncMeter = new AsyncMeter(burstSize, burstDuration, maxWaiters)
 
   /**
@@ -73,9 +78,7 @@ object AsyncMeter {
         if (last == 0) seqWithoutLast else seqWithoutLast :+ meter.await(last)
       val result = Future.join(seq)
       result.onFailure { exc =>
-        seq.foreach { f: Future[Unit] =>
-          f.raise(exc)
-        }
+        seq.foreach { f: Future[Unit] => f.raise(exc) }
       }
       result
     } else meter.await(permits)
@@ -112,17 +115,24 @@ object AsyncMeter {
   * }
   * }}}
   */
-class AsyncMeter private[concurrent](private[concurrent] val burstSize: Int,
-                                     burstDuration: Duration,
-                                     maxWaiters: Int)(implicit timer: Timer) {
+class AsyncMeter private[concurrent] (
+    private[concurrent] val burstSize: Int,
+    burstDuration: Duration,
+    maxWaiters: Int
+)(implicit timer: Timer) {
 
-  require(burstSize > 0,
-          s"burst size of $burstSize, which is <= 0 doesn't make sense")
   require(
-      burstDuration > Duration.Zero,
-      s"burst duration of $burstDuration, which is <= 0 nanoseconds doesn't make sense")
-  require(maxWaiters > 0,
-          s"max waiters of $maxWaiters, which is <= 0 doesn't make sense")
+    burstSize > 0,
+    s"burst size of $burstSize, which is <= 0 doesn't make sense"
+  )
+  require(
+    burstDuration > Duration.Zero,
+    s"burst duration of $burstDuration, which is <= 0 nanoseconds doesn't make sense"
+  )
+  require(
+    maxWaiters > 0,
+    s"max waiters of $maxWaiters, which is <= 0 doesn't make sense"
+  )
 
   private[this] val period = Period.fromBurstiness(burstSize, burstDuration)
 
@@ -181,8 +191,11 @@ class AsyncMeter private[concurrent](private[concurrent] val burstSize: Int,
     */
   def await(permits: Int): Future[Unit] = {
     if (permits > burstSize)
-      return Future.exception(new IllegalArgumentException(
-              s"Tried to await on $permits permits, but the maximum burst size was $burstSize"))
+      return Future.exception(
+        new IllegalArgumentException(
+          s"Tried to await on $permits permits, but the maximum burst size was $burstSize"
+        )
+      )
 
     // don't jump the queue-this is racy, but the race here is indistinguishable
     // from the synchronized behavior
@@ -211,8 +224,11 @@ class AsyncMeter private[concurrent](private[concurrent] val burstSize: Int,
       restartTimerIfDead()
       p
     } else {
-      Future.exception(new RejectedExecutionException(
-              "Tried to wait when there were already the maximum number of waiters."))
+      Future.exception(
+        new RejectedExecutionException(
+          "Tried to wait when there were already the maximum number of waiters."
+        )
+      )
     }
   }
 
@@ -224,8 +240,7 @@ class AsyncMeter private[concurrent](private[concurrent] val burstSize: Int,
   // we refresh the bucket with as many tokens as we have accrued since we last
   // refreshed.
   private[this] def refreshTokens(): Unit =
-    bucket.put(
-        synchronized {
+    bucket.put(synchronized {
       val newTokens = period.numPeriods(elapsed())
       elapsed = Stopwatch.start()
       val num = newTokens + remainder
@@ -234,14 +249,15 @@ class AsyncMeter private[concurrent](private[concurrent] val burstSize: Int,
       floor.toInt
     })
 
-  private[this] def restartTimerIfDead(): Unit = synchronized {
-    if (!running) {
-      running = true
-      task = timer.schedule(interval) {
-        allow()
+  private[this] def restartTimerIfDead(): Unit =
+    synchronized {
+      if (!running) {
+        running = true
+        task = timer.schedule(interval) {
+          allow()
+        }
       }
     }
-  }
 
   // it's safe to race on allow, because polling loop is locked
   private[this] final def allow(): Unit = {
@@ -274,7 +290,7 @@ class AsyncMeter private[concurrent](private[concurrent] val burstSize: Int,
       }
       control match {
         case Some(p) => p.setValue(())
-        case None => return ()
+        case None    => return ()
       }
     }
   }

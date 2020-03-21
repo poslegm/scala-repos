@@ -34,12 +34,13 @@ object ScalaJSPartestOptions {
     def id: String
   }
   object OptMode {
-    def fromId(id: String): OptMode = id match {
-      case "none" => NoOpt
-      case "fast" => FastOpt
-      case "full" => FullOpt
-      case _ => sys.error(s"Unknown optimization mode: $id")
-    }
+    def fromId(id: String): OptMode =
+      id match {
+        case "none" => NoOpt
+        case "fast" => FastOpt
+        case "full" => FullOpt
+        case _      => sys.error(s"Unknown optimization mode: $id")
+      }
   }
   case object NoOpt extends OptMode {
     def shortStr: String = "None"
@@ -54,8 +55,10 @@ object ScalaJSPartestOptions {
     def id: String = "full"
   }
 
-  def apply(args: Array[String],
-            errorReporter: String => Unit): Option[ScalaJSPartestOptions] = {
+  def apply(
+      args: Array[String],
+      errorReporter: String => Unit
+  ): Option[ScalaJSPartestOptions] = {
 
     var failed = false
 
@@ -68,16 +71,18 @@ object ScalaJSPartestOptions {
       errorReporter(msg)
     }
 
-    def setFilter(newFilter: TestFilter) = (filter, newFilter) match {
-      case (Some(SomeTests(oldNames)), SomeTests(newNames)) =>
-        // Merge test names
-        filter = Some(SomeTests(oldNames ++ newNames))
-      case (Some(fil), newFilter) =>
-        error(
-            s"You cannot specify twice what tests to use (already specified: $fil, new: $newFilter)")
-      case (None, newFilter) =>
-        filter = Some(newFilter)
-    }
+    def setFilter(newFilter: TestFilter) =
+      (filter, newFilter) match {
+        case (Some(SomeTests(oldNames)), SomeTests(newNames)) =>
+          // Merge test names
+          filter = Some(SomeTests(oldNames ++ newNames))
+        case (Some(fil), newFilter) =>
+          error(
+            s"You cannot specify twice what tests to use (already specified: $fil, new: $newFilter)"
+          )
+        case (None, newFilter) =>
+          filter = Some(newFilter)
+      }
 
     for (arg <- args) arg match {
       case "--fastOpt" =>
@@ -104,7 +109,10 @@ object ScalaJSPartestOptions {
     else
       Some {
         new ScalaJSPartestOptions(
-            filter.getOrElse(WhitelistedTests), optMode, showDiff)
+          filter.getOrElse(WhitelistedTests),
+          optMode,
+          showDiff
+        )
       }
   }
 }

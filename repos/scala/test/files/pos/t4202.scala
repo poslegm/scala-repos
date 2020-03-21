@@ -3,7 +3,7 @@ object t4202_1 { () =>
     trait T {
       def t = ()
     }
-}
+  }
 }
 
 object t4202_2 { () =>
@@ -14,5 +14,5 @@ object t4202_2 { () =>
     object T2 extends T {
       t
     }
-}
+  }
 }

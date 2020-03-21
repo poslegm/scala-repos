@@ -25,10 +25,11 @@ private[twitter] trait MetricsRegistry extends StatsRegistry {
 
   private[this] val metrics = mutable.Map.empty[String, StatEntry]
 
-  def apply(): Map[String, StatEntry] = synchronized {
-    updateMetrics()
-    metrics.toMap
-  }
+  def apply(): Map[String, StatEntry] =
+    synchronized {
+      updateMetrics()
+      metrics.toMap
+    }
 
   private[this] def updateMetrics(): Unit =
     if (registry != null) {
@@ -37,7 +38,7 @@ private[twitter] trait MetricsRegistry extends StatsRegistry {
         val newValue = entry.getValue().doubleValue
         val newMetric = metrics.get(key) match {
           case Some(prev) => cumulative(newValue - prev.value, newValue)
-          case None => cumulative(newValue, newValue)
+          case None       => cumulative(newValue, newValue)
         }
         metrics.put(key, newMetric)
       }

@@ -35,10 +35,11 @@ import scalafx.scene.shape.Line
 
 class EnsembleLine extends EnsembleExample {
 
-  def getContent = new VBox {
-    spacing = 20
-    padding = Insets(20)
-    children = List(
+  def getContent =
+    new VBox {
+      spacing = 20
+      padding = Insets(20)
+      children = List(
         new Line {
           startX = 320
           startY = 120
@@ -57,6 +58,6 @@ class EnsembleLine extends EnsembleExample {
           stroke = Color.Orange
           strokeWidth = 10d
         }
-    )
-  }
+      )
+    }
 }

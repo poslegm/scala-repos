@@ -65,7 +65,8 @@ abstract class SymbolPairs {
   case class SymbolPair(base: Symbol, low: Symbol, high: Symbol) {
     def pos =
       if (low.owner == base) low.pos
-      else if (high.owner == base) high.pos else base.pos
+      else if (high.owner == base) high.pos
+      else base.pos
     def self: Type = base.thisType
     def rootType: Type = base.thisType
 
@@ -228,7 +229,10 @@ abstract class SymbolPairs {
     /** Implements `bs1 * bs2 * {0..n} != 0`.
       *  Used in hasCommonParentAsSubclass */
     private def intersectionContainsElementLeq(
-        bs1: BitSet, bs2: BitSet, n: Int): Boolean = {
+        bs1: BitSet,
+        bs2: BitSet,
+        n: Int
+    ): Boolean = {
       val nshifted = n >> 5
       val nmask = 1 << (n & 31)
       var i = 0
@@ -248,7 +252,10 @@ abstract class SymbolPairs {
         val index2 = index(sym2.owner)
         (index2 >= 0) && {
           intersectionContainsElementLeq(
-              subParents(index1), subParents(index2), index1 min index2)
+            subParents(index1),
+            subParents(index2),
+            index1 min index2
+          )
         }
       }
     }
@@ -259,7 +266,9 @@ abstract class SymbolPairs {
         if (nextEntry ne null) {
           val high = nextEntry.sym
           val isMatch =
-            matches(lowSymbol, high) && { visited addEntry nextEntry; true } // side-effect visited on all matches
+            matches(lowSymbol, high) && {
+              visited addEntry nextEntry; true
+            } // side-effect visited on all matches
 
           // skip nextEntry if a class in `parents` is a subclass of the
           // owners of both low and high.
@@ -287,10 +296,13 @@ abstract class SymbolPairs {
 
     def hasNext = curEntry ne null
     def currentPair = new SymbolPair(base, low, high)
-    def iterator = new Iterator[SymbolPair] {
-      def hasNext = cursor.hasNext
-      def next() = try cursor.currentPair finally cursor.next()
-    }
+    def iterator =
+      new Iterator[SymbolPair] {
+        def hasNext = cursor.hasNext
+        def next() =
+          try cursor.currentPair
+          finally cursor.next()
+      }
 
     // Note that next is called once during object initialization to
     // populate the fields tracking the current symbol pair.

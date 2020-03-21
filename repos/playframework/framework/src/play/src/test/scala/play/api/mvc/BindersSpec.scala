@@ -21,7 +21,10 @@ object BindersSpec extends Specification {
     }
     "Fail on unparseable UUID" in {
       subject.bind("key", "bad-uuid") must be_==(
-          Left("Cannot parse parameter key as UUID: Invalid UUID string: bad-uuid"))
+        Left(
+          "Cannot parse parameter key as UUID: Invalid UUID string: bad-uuid"
+        )
+      )
     }
   }
 
@@ -33,11 +36,17 @@ object BindersSpec extends Specification {
     }
     "Bind parameter to UUID" in {
       subject.bind("key", Map("key" -> Seq(uuid.toString))) must be_==(
-          Some(Right(uuid)))
+        Some(Right(uuid))
+      )
     }
     "Fail on unparseable UUID" in {
       subject.bind("key", Map("key" -> Seq("bad-uuid"))) must be_==(
-          Some(Left("Cannot parse parameter key as UUID: Invalid UUID string: bad-uuid")))
+        Some(
+          Left(
+            "Cannot parse parameter key as UUID: Invalid UUID string: bad-uuid"
+          )
+        )
+      )
     }
   }
 
@@ -69,9 +78,13 @@ object BindersSpec extends Specification {
 
     "propagate errors that occur during bind" in {
       implicit val brokenBinder: QueryStringBindable[String] = {
-        new QueryStringBindable.Parsing[String]({ x =>
-          if (x == "i" || x == "nantucket") x else sys.error(s"failed: ${x}")
-        }, identity, (key, ex) => s"failed to parse ${key}: ${ex.getMessage}")
+        new QueryStringBindable.Parsing[String](
+          { x =>
+            if (x == "i" || x == "nantucket") x else sys.error(s"failed: ${x}")
+          },
+          identity,
+          (key, ex) => s"failed to parse ${key}: ${ex.getMessage}"
+        )
       }
       val brokenSeqBinder = implicitly[QueryStringBindable[Seq[String]]]
       val err = s"""failed to parse q: failed: once
@@ -102,15 +115,26 @@ object BindersSpec extends Specification {
     }
     "Bind query string as char" in {
       subject.bind("key", Map("key" -> Seq(string))) must equalTo(
-          Some(Right(char)))
+        Some(Right(char))
+      )
     }
     "Fail on length > 1" in {
       subject.bind("key", Map("key" -> Seq("foo"))) must be_==(
-          Some(Left("Cannot parse parameter key with value 'foo' as Char: key must be exactly one digit in length.")))
+        Some(
+          Left(
+            "Cannot parse parameter key with value 'foo' as Char: key must be exactly one digit in length."
+          )
+        )
+      )
     }
     "Fail on empty" in {
       subject.bind("key", Map("key" -> Seq(""))) must be_==(
-          Some(Left("Cannot parse parameter key with value '' as Char: key must be exactly one digit in length.")))
+        Some(
+          Left(
+            "Cannot parse parameter key with value '' as Char: key must be exactly one digit in length."
+          )
+        )
+      )
     }
   }
 
@@ -127,11 +151,17 @@ object BindersSpec extends Specification {
     }
     "Fail on length > 1" in {
       subject.bind("key", "foo") must be_==(
-          Left("Cannot parse parameter key with value 'foo' as Char: key must be exactly one digit in length."))
+        Left(
+          "Cannot parse parameter key with value 'foo' as Char: key must be exactly one digit in length."
+        )
+      )
     }
     "Fail on empty" in {
       subject.bind("key", "") must be_==(
-          Left("Cannot parse parameter key with value '' as Char: key must be exactly one digit in length."))
+        Left(
+          "Cannot parse parameter key with value '' as Char: key must be exactly one digit in length."
+        )
+      )
     }
   }
 }

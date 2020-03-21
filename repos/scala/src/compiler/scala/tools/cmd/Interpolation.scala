@@ -18,16 +18,18 @@ trait Interpolation { self: Spec =>
   import reference._
 
   object interpolate {
-    def mapper: Map[String, () => String] = Map(
+    def mapper: Map[String, () => String] =
+      Map(
         "PROGRAM" -> (() => programInfo.runner),
         "ALLOPTIONS" -> (() => options.all mkString " "),
         "MAINCLASS" -> (() => programInfo.mainClass)
-    )
+      )
 
     private def mark(key: String) = "@@" + key + "@@"
-    def apply(template: String) = mapper.foldLeft(template) {
-      case (s, (key, f)) => s.replaceAll(mark(key), f())
-    }
+    def apply(template: String) =
+      mapper.foldLeft(template) {
+        case (s, (key, f)) => s.replaceAll(mark(key), f())
+      }
   }
 }
 

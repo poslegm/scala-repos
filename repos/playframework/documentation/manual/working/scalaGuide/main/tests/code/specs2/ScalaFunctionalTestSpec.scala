@@ -20,7 +20,9 @@ import play.api.test.Helpers.{GET => GET_REQUEST, _}
 import play.api.Application
 
 trait ExampleSpecification
-    extends Specification with DefaultAwaitTimeout with FutureAwaits
+    extends Specification
+    with DefaultAwaitTimeout
+    with FutureAwaits
     with Results
 
 class ScalaFunctionalTestSpec extends ExampleSpecification {
@@ -49,7 +51,9 @@ class ScalaFunctionalTestSpec extends ExampleSpecification {
       .build()
 
     // #scalafunctionaltest-respondtoroute
-    "respond to the index Action" in new WithApplication(applicationWithRouter) {
+    "respond to the index Action" in new WithApplication(
+      applicationWithRouter
+    ) {
       // ###replace: val Some(result) = route(app, FakeRequest(GET, "/Bob"))
       val Some(result) = route(app, FakeRequest(GET_REQUEST, "/Bob"))
 
@@ -109,7 +113,9 @@ class ScalaFunctionalTestSpec extends ExampleSpecification {
         .build()
 
     "run in a browser" in new WithBrowser(
-        webDriver = WebDriverFactory(HTMLUNIT), app = applicationWithBrowser) {
+      webDriver = WebDriverFactory(HTMLUNIT),
+      app = applicationWithBrowser
+    ) {
       browser.goTo("/")
 
       // Check the page
@@ -126,16 +132,19 @@ class ScalaFunctionalTestSpec extends ExampleSpecification {
     val myPublicAddress = s"localhost:$testPort"
     val testPaymentGatewayURL = s"http://$myPublicAddress"
     // #scalafunctionaltest-testpaymentgateway
-    "test server logic" in new WithServer(app = applicationWithBrowser,
-                                          port = testPort) {
+    "test server logic" in new WithServer(
+      app = applicationWithBrowser,
+      port = testPort
+    ) {
       // The test payment gateway requires a callback to this server before it returns a result...
       val callbackURL = s"http://$myPublicAddress/callback"
 
       // await is from play.api.test.FutureAwaits
-      val response = await(WS
-            .url(testPaymentGatewayURL)
-            .withQueryString("callbackURL" -> callbackURL)
-            .get())
+      val response = await(
+        WS.url(testPaymentGatewayURL)
+          .withQueryString("callbackURL" -> callbackURL)
+          .get()
+      )
 
       response.status must equalTo(OK)
     }

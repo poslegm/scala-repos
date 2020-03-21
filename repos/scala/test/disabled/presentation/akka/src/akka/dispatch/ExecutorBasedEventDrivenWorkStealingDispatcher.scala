@@ -8,7 +8,13 @@ import akka.util.{ReflectiveAccess, Switch}
 
 import java.util.Queue
 import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
-import java.util.concurrent.{TimeUnit, ExecutorService, RejectedExecutionException, ConcurrentLinkedQueue, LinkedBlockingQueue}
+import java.util.concurrent.{
+  TimeUnit,
+  ExecutorService,
+  RejectedExecutionException,
+  ConcurrentLinkedQueue,
+  LinkedBlockingQueue
+}
 import util.DynamicVariable
 
 /**
@@ -32,50 +38,69 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
     throughput: Int = Dispatchers.THROUGHPUT,
     throughputDeadlineTime: Int = Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
     mailboxType: MailboxType = Dispatchers.MAILBOX_TYPE,
-    config: ThreadPoolConfig = ThreadPoolConfig())
-    extends ExecutorBasedEventDrivenDispatcher(
-        _name, throughput, throughputDeadlineTime, mailboxType, config) {
+    config: ThreadPoolConfig = ThreadPoolConfig()
+) extends ExecutorBasedEventDrivenDispatcher(
+      _name,
+      throughput,
+      throughputDeadlineTime,
+      mailboxType,
+      config
+    ) {
 
-  def this(_name: String,
-           throughput: Int,
-           throughputDeadlineTime: Int,
-           mailboxType: MailboxType) =
-    this(_name,
-         throughput,
-         throughputDeadlineTime,
-         mailboxType,
-         ThreadPoolConfig()) // Needed for Java API usage
+  def this(
+      _name: String,
+      throughput: Int,
+      throughputDeadlineTime: Int,
+      mailboxType: MailboxType
+  ) =
+    this(
+      _name,
+      throughput,
+      throughputDeadlineTime,
+      mailboxType,
+      ThreadPoolConfig()
+    ) // Needed for Java API usage
 
   def this(_name: String, throughput: Int, mailboxType: MailboxType) =
-    this(_name,
-         throughput,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         mailboxType) // Needed for Java API usage
+    this(
+      _name,
+      throughput,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      mailboxType
+    ) // Needed for Java API usage
 
   def this(_name: String, throughput: Int) =
-    this(_name,
-         throughput,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE) // Needed for Java API usage
+    this(
+      _name,
+      throughput,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE
+    ) // Needed for Java API usage
 
   def this(_name: String, _config: ThreadPoolConfig) =
-    this(_name,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE,
-         _config)
+    this(
+      _name,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE,
+      _config
+    )
 
   def this(_name: String, memberType: Class[_ <: Actor]) =
-    this(_name,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         Dispatchers.MAILBOX_TYPE) // Needed for Java API usage
+    this(
+      _name,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      Dispatchers.MAILBOX_TYPE
+    ) // Needed for Java API usage
 
   def this(_name: String, mailboxType: MailboxType) =
-    this(_name,
-         Dispatchers.THROUGHPUT,
-         Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
-         mailboxType) // Needed for Java API usage
+    this(
+      _name,
+      Dispatchers.THROUGHPUT,
+      Dispatchers.THROUGHPUT_DEADLINE_TIME_MILLIS,
+      mailboxType
+    ) // Needed for Java API usage
 
   @volatile
   private var actorType: Option[Class[_]] = None
@@ -90,10 +115,12 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
       case Some(aType) =>
         if (aType != actorRef.actor.getClass)
           throw new IllegalActorStateException(
-              String.format(
-                  "Can't register actor %s in a work stealing dispatcher which already knows actors of type %s",
-                  actorRef,
-                  aType))
+            String.format(
+              "Can't register actor %s in a work stealing dispatcher which already knows actors of type %s",
+              actorRef,
+              aType
+            )
+          )
     }
 
     synchronized { members :+= actorRef } //Update members
@@ -118,10 +145,13 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
   }
 
   override private[akka] def reRegisterForExecution(
-      mbox: MessageQueue with ExecutableMailbox): Unit = {
+      mbox: MessageQueue with ExecutableMailbox
+  ): Unit = {
     try {
       donationInProgress.value = true
-      while (donateFrom(mbox)) {} //When we reregister, first donate messages to another actor
+      while (donateFrom(
+               mbox
+             )) {} //When we reregister, first donate messages to another actor
     } finally { donationInProgress.value = false }
 
     if (!mbox.isEmpty) //If we still have messages left to process, reschedule for execution
@@ -132,7 +162,8 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
     * Returns true if it successfully donated a message
     */
   protected def donateFrom(
-      donorMbox: MessageQueue with ExecutableMailbox): Boolean = {
+      donorMbox: MessageQueue with ExecutableMailbox
+  ): Boolean = {
     val actors =
       members // copy to prevent concurrent modifications having any impact
 
@@ -140,10 +171,11 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
     // the dispatcher is being shut down...
     // Starts at is seeded by current time
     doFindDonorRecipient(
-        donorMbox,
-        actors,
-        (System.currentTimeMillis % actors.size).asInstanceOf[Int]) match {
-      case null => false
+      donorMbox,
+      actors,
+      (System.currentTimeMillis % actors.size).asInstanceOf[Int]
+    ) match {
+      case null      => false
       case recipient => donate(donorMbox.dequeue, recipient)
     }
   }
@@ -153,16 +185,18 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
     */
   protected def attemptDonationOf(
       message: MessageInvocation,
-      donorMbox: MessageQueue with ExecutableMailbox): Boolean =
+      donorMbox: MessageQueue with ExecutableMailbox
+  ): Boolean =
     try {
       donationInProgress.value = true
       val actors =
         members // copy to prevent concurrent modifications having any impact
       doFindDonorRecipient(
-          donorMbox,
-          actors,
-          System.identityHashCode(message) % actors.size) match {
-        case null => false
+        donorMbox,
+        actors,
+        System.identityHashCode(message) % actors.size
+      ) match {
+        case null      => false
         case recipient => donate(message, recipient)
       }
     } finally { donationInProgress.value = false }
@@ -172,11 +206,17 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
     * returns true if the message is non-null
     */
   protected def donate(
-      organ: MessageInvocation, recipient: ActorRef): Boolean = {
+      organ: MessageInvocation,
+      recipient: ActorRef
+  ): Boolean = {
     if (organ ne null) {
       if (organ.senderFuture.isDefined)
         recipient.postMessageToMailboxAndCreateFutureResultWithTimeout[Any](
-            organ.message, recipient.timeout, organ.sender, organ.senderFuture)
+          organ.message,
+          recipient.timeout,
+          organ.sender,
+          organ.senderFuture
+        )
       else if (organ.sender.isDefined)
         recipient.postMessageToMailbox(organ.message, organ.sender)
       else recipient.postMessageToMailbox(organ.message, None)
@@ -190,12 +230,13 @@ class ExecutorBasedEventDrivenWorkStealingDispatcher(
   protected def doFindDonorRecipient(
       donorMbox: MessageQueue with ExecutableMailbox,
       potentialRecipients: Vector[ActorRef],
-      startIndex: Int): ActorRef = {
+      startIndex: Int
+  ): ActorRef = {
     val prSz = potentialRecipients.size
     var i = 0
     var recipient: ActorRef = null
 
-    while ( (i < prSz) && (recipient eq null)) {
+    while ((i < prSz) && (recipient eq null)) {
       val actor =
         potentialRecipients((i + startIndex) % prSz) //Wrap-around, one full lap
       val mbox = getMailbox(actor)

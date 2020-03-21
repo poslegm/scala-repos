@@ -41,13 +41,14 @@ import scalafx.testutil.SimpleSFXDelegateSpec
   */
 @RunWith(classOf[JUnitRunner])
 class ScheduledServiceSpec[T]
-    extends SimpleSFXDelegateSpec[
-        jfxc.ScheduledService[T], ScheduledService[T]](
-        classOf[jfxc.ScheduledService[T]], classOf[ScheduledService[T]]) {
+    extends SimpleSFXDelegateSpec[jfxc.ScheduledService[T], ScheduledService[
+      T
+    ]](classOf[jfxc.ScheduledService[T]], classOf[ScheduledService[T]]) {
 
   override protected def getScalaClassInstance = ScheduledService[T](null)
 
-  override protected def getJavaClassInstance = new jfxc.ScheduledService[T] {
-    protected def createTask = null
-  }
+  override protected def getJavaClassInstance =
+    new jfxc.ScheduledService[T] {
+      protected def createTask = null
+    }
 }

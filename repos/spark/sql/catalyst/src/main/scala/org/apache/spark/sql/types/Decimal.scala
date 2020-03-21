@@ -75,7 +75,8 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   def set(unscaled: Long, precision: Int, scale: Int): Decimal = {
     if (setOrNull(unscaled, precision, scale) == null) {
       throw new IllegalArgumentException(
-          "Unscaled value too large for precision")
+        "Unscaled value too large for precision"
+      )
     }
     this
   }
@@ -112,8 +113,9 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   def set(decimal: BigDecimal, precision: Int, scale: Int): Decimal = {
     this.decimalVal = decimal.setScale(scale, ROUND_HALF_UP)
     require(
-        decimalVal.precision <= precision,
-        s"Decimal precision ${decimalVal.precision} exceeds max precision $precision")
+      decimalVal.precision <= precision,
+      s"Decimal precision ${decimalVal.precision} exceeds max precision $precision"
+    )
     this.longVal = 0L
     this._precision = precision
     this._scale = scale
@@ -212,7 +214,8 @@ final class Decimal extends Ordered[Decimal] with Serializable {
   private[sql] def changePrecision(
       precision: Int,
       scale: Int,
-      roundMode: BigDecimal.RoundingMode.Value): Boolean = {
+      roundMode: BigDecimal.RoundingMode.Value
+  ): Boolean = {
     // fast path for UnsafeProjection
     if (precision == this.precision && scale == this.scale) {
       return true
@@ -271,18 +274,20 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     if (decimalVal.eq(null) && other.decimalVal.eq(null) &&
         _scale == other._scale) {
       if (longVal < other.longVal) -1
-      else if (longVal == other.longVal) 0 else 1
+      else if (longVal == other.longVal) 0
+      else 1
     } else {
       toBigDecimal.compare(other.toBigDecimal)
     }
   }
 
-  override def equals(other: Any): Boolean = other match {
-    case d: Decimal =>
-      compare(d) == 0
-    case _ =>
-      false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case d: Decimal =>
+        compare(d) == 0
+      case _ =>
+        false
+    }
 
   override def hashCode(): Int = toBigDecimal.hashCode()
 
@@ -293,7 +298,10 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     if (decimalVal.eq(null) && that.decimalVal.eq(null) &&
         scale == that.scale) {
       Decimal(
-          longVal + that.longVal, Math.max(precision, that.precision), scale)
+        longVal + that.longVal,
+        Math.max(precision, that.precision),
+        scale
+      )
     } else {
       Decimal(toBigDecimal + that.toBigDecimal)
     }
@@ -303,7 +311,10 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     if (decimalVal.eq(null) && that.decimalVal.eq(null) &&
         scale == that.scale) {
       Decimal(
-          longVal - that.longVal, Math.max(precision, that.precision), scale)
+        longVal - that.longVal,
+        Math.max(precision, that.precision),
+        scale
+      )
     } else {
       Decimal(toBigDecimal - that.toBigDecimal)
     }
@@ -339,9 +350,10 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     else {
       val value = this.clone()
       value.changePrecision(
-          DecimalType.bounded(precision - scale + 1, 0).precision,
-          0,
-          ROUND_FLOOR)
+        DecimalType.bounded(precision - scale + 1, 0).precision,
+        0,
+        ROUND_FLOOR
+      )
       value
     }
 
@@ -350,9 +362,10 @@ final class Decimal extends Ordered[Decimal] with Serializable {
     else {
       val value = this.clone()
       value.changePrecision(
-          DecimalType.bounded(precision - scale + 1, 0).precision,
-          0,
-          ROUND_CEILING)
+        DecimalType.bounded(precision - scale + 1, 0).precision,
+        0,
+        ROUND_CEILING
+      )
       value
     }
 }
@@ -373,8 +386,8 @@ object Decimal {
 
   private val BIG_DEC_ZERO = BigDecimal(0)
 
-  private val MATH_CONTEXT = new MathContext(
-      DecimalType.MAX_PRECISION, RoundingMode.HALF_UP)
+  private val MATH_CONTEXT =
+    new MathContext(DecimalType.MAX_PRECISION, RoundingMode.HALF_UP)
 
   private[sql] val ZERO = Decimal(0)
   private[sql] val ONE = Decimal(1)
@@ -431,13 +444,15 @@ object Decimal {
 
   /** A [[scala.math.Fractional]] evidence parameter for Decimals. */
   private[sql] object DecimalIsFractional
-      extends DecimalIsConflicted with Fractional[Decimal] {
+      extends DecimalIsConflicted
+      with Fractional[Decimal] {
     override def div(x: Decimal, y: Decimal): Decimal = x / y
   }
 
   /** A [[scala.math.Integral]] evidence parameter for Decimals. */
   private[sql] object DecimalAsIfIntegral
-      extends DecimalIsConflicted with Integral[Decimal] {
+      extends DecimalIsConflicted
+      with Integral[Decimal] {
     override def quot(x: Decimal, y: Decimal): Decimal = x / y
     override def rem(x: Decimal, y: Decimal): Decimal = x % y
   }

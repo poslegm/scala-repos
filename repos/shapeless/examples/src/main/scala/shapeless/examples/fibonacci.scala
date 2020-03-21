@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-14 Miles Sabin 
+ * Copyright (c) 2011-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package shapeless.examples
 
 /**
   * Type-level encoding of the Fibonacci numbers.
-  * 
+  *
   * @author Miles Sabin
   */
 object FibonacciExamples {
@@ -38,15 +38,17 @@ object FibonacciExamples {
     implicit val fib0 = Fibonacci(0, 0)
     implicit val fib1 = Fibonacci(1, 1)
 
-    implicit def fibN[I <: Nat, L <: Nat, M <: Nat](
-        implicit l: Fibonacci[I, L],
+    implicit def fibN[I <: Nat, L <: Nat, M <: Nat](implicit
+        l: Fibonacci[I, L],
         m: Fibonacci[Succ[I], M],
-        sum: Sum[L, M]) =
+        sum: Sum[L, M]
+    ) =
       new Fibonacci[Succ[Succ[I]], sum.Out]
   }
 
-  def fibonacci[N <: Nat](i: Nat)(
-      implicit fib: Fibonacci[i.N, N], wn: Witness.Aux[N]): N = wn.value
+  def fibonacci[N <: Nat](
+      i: Nat
+  )(implicit fib: Fibonacci[i.N, N], wn: Witness.Aux[N]): N = wn.value
 
   val f0 = fibonacci(0)
   typed[_0](f0)
@@ -79,19 +81,24 @@ object FibonacciExamples {
   }
 
   object Fibs {
-    implicit def fibs0 = new Fibs[_0, HNil] {
-      def apply() = HNil
-    }
+    implicit def fibs0 =
+      new Fibs[_0, HNil] {
+        def apply() = HNil
+      }
 
-    implicit def fibsN[N <: Nat, H <: Nat, T <: HList](
-        implicit fib: Fibonacci[N, H], h: Witness.Aux[H], fibs: Fibs[N, T]) =
+    implicit def fibsN[N <: Nat, H <: Nat, T <: HList](implicit
+        fib: Fibonacci[N, H],
+        h: Witness.Aux[H],
+        fibs: Fibs[N, T]
+    ) =
       new Fibs[Succ[N], H :: T] {
         def apply() = h.value :: fibs()
       }
   }
 
-  def fibs[L <: HList](n: Nat)(
-      implicit fibs: Fibs[n.N, L], reverse: Reverse[L]) = fibs().reverse
+  def fibs[L <: HList](
+      n: Nat
+  )(implicit fibs: Fibs[n.N, L], reverse: Reverse[L]) = fibs().reverse
 
   val l0 = fibs(0)
   typed[HNil](l0)

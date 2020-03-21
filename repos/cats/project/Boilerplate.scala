@@ -22,20 +22,21 @@ object Boilerplate {
   }
 
   val templates: Seq[Template] = Seq(
-      GenCartesianBuilders,
-      GenCartesianArityFunctions,
-      GenApplyArityFunctions
+    GenCartesianBuilders,
+    GenCartesianArityFunctions,
+    GenApplyArityFunctions
   )
 
   val header =
     "// auto-generated boilerplate" // TODO: put something meaningful here?
 
   /** Returns a seq of the generated files.  As a side-effect, it actually generates them... */
-  def gen(dir: File) = for (t <- templates) yield {
-    val tgtFile = t.filename(dir)
-    IO.write(tgtFile, t.body)
-    tgtFile
-  }
+  def gen(dir: File) =
+    for (t <- templates) yield {
+      val tgtFile = t.filename(dir)
+      IO.write(tgtFile, t.body)
+      tgtFile
+    }
 
   val maxArity = 22
 
@@ -72,7 +73,7 @@ object Boilerplate {
         rawContents flatMap { _ filter (_ startsWith "-") map (_.tail) }
       val postBody =
         rawContents.head dropWhile (_ startsWith "|") dropWhile
-        (_ startsWith "-") map (_.tail)
+          (_ startsWith "-") map (_.tail)
       (headerLines ++ preBody ++ instances ++ postBody) mkString "\n"
     }
   }
@@ -100,9 +101,7 @@ object Boilerplate {
       import tv._
 
       val tpes =
-        synTypes map { tpe =>
-          s"F[$tpe]"
-        }
+        synTypes map { tpe => s"F[$tpe]" }
       val tpesString = synTypes mkString ", "
       val params =
         (synVals zip tpes) map { case (v, t) => s"$v:$t" } mkString ", "
@@ -113,7 +112,8 @@ object Boilerplate {
           ""
         }
 
-      val n = if (arity == 1) { "" } else { arity.toString }
+      val n = if (arity == 1) { "" }
+      else { arity.toString }
 
       val map =
         if (arity == 1)
@@ -169,9 +169,7 @@ object Boilerplate {
       import tv._
 
       val tpes =
-        synTypes map { tpe =>
-          s"F[$tpe]"
-        }
+        synTypes map { tpe => s"F[$tpe]" }
       val fargs = (0 until arity) map { "f" + _ }
       val fparams =
         (fargs zip tpes) map { case (v, t) => s"$v:$t" } mkString ", "
@@ -182,14 +180,12 @@ object Boilerplate {
       val fArgsA = (0 until a) map { "f" + _ } mkString ","
       val fArgsB = (a until arity) map { "f" + _ } mkString ","
       val argsA =
-        (0 until a) map { n =>
-          "a" + n + ":A" + n
-        } mkString ","
+        (0 until a) map { n => "a" + n + ":A" + n } mkString ","
       val argsB =
-        (a until arity) map { n =>
-          "a" + n + ":A" + n
-        } mkString ","
-      def apN(n: Int) = if (n == 1) { "ap" } else { s"ap$n" }
+        (a until arity) map { n => "a" + n + ":A" + n } mkString ","
+      def apN(n: Int) =
+        if (n == 1) { "ap" }
+        else { s"ap$n" }
       def allArgs = (0 until arity) map { "a" + _ } mkString ","
 
       val apply = block"""
@@ -217,9 +213,7 @@ object Boilerplate {
       import tv._
 
       val tpes =
-        synTypes map { tpe =>
-          s"F[$tpe]"
-        }
+        synTypes map { tpe => s"F[$tpe]" }
       val fargs = (0 until arity) map { "f" + _ }
       val fparams =
         (fargs zip tpes) map { case (v, t) => s"$v:$t" } mkString ", "
@@ -227,9 +221,12 @@ object Boilerplate {
 
       val nestedProducts = (0 until (arity - 2))
         .foldRight(s"cartesian.product(f${arity - 2}, f${arity - 1})")(
-          (i, acc) => s"cartesian.product(f$i, $acc)")
-      val `nested (a..n)` = (0 until (arity - 2)).foldRight(
-          s"(a${arity - 2}, a${arity - 1})")((i, acc) => s"(a$i, $acc)")
+          (i, acc) => s"cartesian.product(f$i, $acc)"
+        )
+      val `nested (a..n)` =
+        (0 until (arity - 2)).foldRight(s"(a${arity - 2}, a${arity - 1})")(
+          (i, acc) => s"(a$i, $acc)"
+        )
 
       block"""
          |package cats

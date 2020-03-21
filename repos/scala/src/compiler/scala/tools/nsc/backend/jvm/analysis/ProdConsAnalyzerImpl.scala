@@ -71,7 +71,9 @@ trait ProdConsAnalyzerImpl {
     * This method simply returns the producer information computed by the SourceValue analysis.
     */
   def producersForValueAt(
-      insn: AbstractInsnNode, slot: Int): Set[AbstractInsnNode] = {
+      insn: AbstractInsnNode,
+      slot: Int
+  ): Set[AbstractInsnNode] = {
     frameAt(insn).getValue(slot).insns.asScala.toSet
   }
 
@@ -80,18 +82,17 @@ trait ProdConsAnalyzerImpl {
     * This is the counterpart of `producersForValueAt`.
     */
   def consumersOfValueAt(
-      insn: AbstractInsnNode, slot: Int): Set[AbstractInsnNode] = {
-    producersForValueAt(insn, slot).flatMap(
-        prod =>
-          {
-        val outputNumber = outputValueSlots(prod).indexOf(slot)
-        _consumersOfOutputsFrom
-          .get(prod)
-          .map(v =>
-                {
-              v(outputNumber)
-          })
-          .getOrElse(Set.empty)
+      insn: AbstractInsnNode,
+      slot: Int
+  ): Set[AbstractInsnNode] = {
+    producersForValueAt(insn, slot).flatMap(prod => {
+      val outputNumber = outputValueSlots(prod).indexOf(slot)
+      _consumersOfOutputsFrom
+        .get(prod)
+        .map(v => {
+          v(outputNumber)
+        })
+        .getOrElse(Set.empty)
     })
   }
 
@@ -113,8 +114,9 @@ trait ProdConsAnalyzerImpl {
         _consumersOfOutputsFrom
           .get(insn)
           .map(v =>
-                v.indices.flatMap(v.apply)(collection.breakOut): Set[
-                    AbstractInsnNode])
+            v.indices
+              .flatMap(v.apply)(collection.breakOut): Set[AbstractInsnNode]
+          )
           .getOrElse(Set.empty)
     }
 
@@ -126,21 +128,27 @@ trait ProdConsAnalyzerImpl {
     * returned instead.
     */
   def initialProducersForValueAt(
-      insn: AbstractInsnNode, slot: Int): Set[AbstractInsnNode] = {
+      insn: AbstractInsnNode,
+      slot: Int
+  ): Set[AbstractInsnNode] = {
     def initialProducers(
-        insn: AbstractInsnNode, producedSlot: Int): Set[AbstractInsnNode] = {
+        insn: AbstractInsnNode,
+        producedSlot: Int
+    ): Set[AbstractInsnNode] = {
       if (isCopyOperation(insn)) {
         val key = (insn, producedSlot)
-        _initialProducersCache.getOrElseUpdate(key, {
-          // prevent infinite recursion if an instruction is its own producer or consumer
-          // see cyclicProdCons in ProdConsAnalyzerTest
-          _initialProducersCache(key) = Set.empty
-          val (sourceValue, sourceValueSlot) =
-            copyOperationSourceValue(insn, producedSlot)
-          sourceValue.insns.iterator.asScala
-            .flatMap(initialProducers(_, sourceValueSlot))
-            .toSet
-        })
+        _initialProducersCache.getOrElseUpdate(
+          key, {
+            // prevent infinite recursion if an instruction is its own producer or consumer
+            // see cyclicProdCons in ProdConsAnalyzerTest
+            _initialProducersCache(key) = Set.empty
+            val (sourceValue, sourceValueSlot) =
+              copyOperationSourceValue(insn, producedSlot)
+            sourceValue.insns.iterator.asScala
+              .flatMap(initialProducers(_, sourceValueSlot))
+              .toSet
+          }
+        )
       } else {
         Set(insn)
       }
@@ -153,21 +161,28 @@ trait ProdConsAnalyzerImpl {
     * tracked through copying operations such as SOTRE and LOAD.
     */
   def ultimateConsumersOfValueAt(
-      insn: AbstractInsnNode, slot: Int): Set[AbstractInsnNode] = {
+      insn: AbstractInsnNode,
+      slot: Int
+  ): Set[AbstractInsnNode] = {
     def ultimateConsumers(
-        insn: AbstractInsnNode, consumedSlot: Int): Set[AbstractInsnNode] = {
+        insn: AbstractInsnNode,
+        consumedSlot: Int
+    ): Set[AbstractInsnNode] = {
       if (isCopyOperation(insn)) {
         val key = (insn, consumedSlot)
-        _ultimateConsumersCache.getOrElseUpdate(key, {
-          // prevent infinite recursion if an instruction is its own producer or consumer
-          // see cyclicProdCons in ProdConsAnalyzerTest
-          _ultimateConsumersCache(key) = Set.empty
-          for {
-            producedSlot <- copyOperationProducedValueSlots(insn, consumedSlot)
-            consumer <- consumersOfValueAt(insn.getNext, producedSlot)
-            ultimateConsumer <- ultimateConsumers(consumer, producedSlot)
-          } yield ultimateConsumer
-        })
+        _ultimateConsumersCache.getOrElseUpdate(
+          key, {
+            // prevent infinite recursion if an instruction is its own producer or consumer
+            // see cyclicProdCons in ProdConsAnalyzerTest
+            _ultimateConsumersCache(key) = Set.empty
+            for {
+              producedSlot <-
+                copyOperationProducedValueSlots(insn, consumedSlot)
+              consumer <- consumersOfValueAt(insn.getNext, producedSlot)
+              ultimateConsumer <- ultimateConsumers(consumer, producedSlot)
+            } yield ultimateConsumer
+          }
+        )
       } else {
         Set(insn)
       }
@@ -176,25 +191,28 @@ trait ProdConsAnalyzerImpl {
   }
 
   def initialProducersForInputsOf(
-      insn: AbstractInsnNode): Set[AbstractInsnNode] = {
+      insn: AbstractInsnNode
+  ): Set[AbstractInsnNode] = {
     inputValueSlots(insn)
       .flatMap(slot => initialProducersForValueAt(insn, slot))
       .toSet
   }
 
   def ultimateConsumersOfOutputsFrom(
-      insn: AbstractInsnNode): Set[AbstractInsnNode] = insn match {
-    case _: UninitializedLocalProducer => Set.empty
-    case _ =>
-      lazy val next = insn match {
-        case _: ParameterProducer => methodNode.instructions.getFirst
-        case ExceptionProducer(handlerLabel, _) => handlerLabel
-        case _ => insn.getNext
-      }
-      outputValueSlots(insn)
-        .flatMap(slot => ultimateConsumersOfValueAt(next, slot))
-        .toSet
-  }
+      insn: AbstractInsnNode
+  ): Set[AbstractInsnNode] =
+    insn match {
+      case _: UninitializedLocalProducer => Set.empty
+      case _ =>
+        lazy val next = insn match {
+          case _: ParameterProducer               => methodNode.instructions.getFirst
+          case ExceptionProducer(handlerLabel, _) => handlerLabel
+          case _                                  => insn.getNext
+        }
+        outputValueSlots(insn)
+          .flatMap(slot => ultimateConsumersOfValueAt(next, slot))
+          .toSet
+    }
 
   private def isCopyOperation(insn: AbstractInsnNode): Boolean = {
     isLoadOrStore(insn) || {
@@ -216,7 +234,9 @@ trait ProdConsAnalyzerImpl {
     *   - the result is the value at slot 2 in the frame of `copyOp`
     */
   private def copyOperationSourceValue(
-      copyOp: AbstractInsnNode, producedSlot: Int): (SourceValue, Int) = {
+      copyOp: AbstractInsnNode,
+      producedSlot: Int
+  ): (SourceValue, Int) = {
     val frame = frameAt(copyOp)
 
     // Index of the produced value. Example: DUP_X1 produces 3 values, so producedIndex is 0, 1 or 2,
@@ -228,36 +248,41 @@ trait ProdConsAnalyzerImpl {
 
     def stackValue(n: Int) = (frame.peekStack(n), frame.stackTop - n)
 
-    def dupX1Case = (producedIndex(2): @switch) match {
-      case 0 | 2 => stackValue(0)
-      case 1 => stackValue(1)
-    }
+    def dupX1Case =
+      (producedIndex(2): @switch) match {
+        case 0 | 2 => stackValue(0)
+        case 1     => stackValue(1)
+      }
 
     // Form 1 of dup_x2
-    def dupX2Case = (producedIndex(3): @switch) match {
-      case 0 | 3 => stackValue(0)
-      case 1 => stackValue(2)
-      case 2 => stackValue(1)
-    }
+    def dupX2Case =
+      (producedIndex(3): @switch) match {
+        case 0 | 3 => stackValue(0)
+        case 1     => stackValue(2)
+        case 2     => stackValue(1)
+      }
 
     // Form 1 of dup2_x1
-    def dup2X1Case = (producedIndex(3): @switch) match {
-      case 0 | 3 => stackValue(1)
-      case 1 | 4 => stackValue(0)
-      case 2 => stackValue(2)
-    }
+    def dup2X1Case =
+      (producedIndex(3): @switch) match {
+        case 0 | 3 => stackValue(1)
+        case 1 | 4 => stackValue(0)
+        case 2     => stackValue(2)
+      }
 
     if (isLoad(copyOp)) {
       val slot = copyOp
         .asInstanceOf[VarInsnNode]
         .`var`
-        (frame.getLocal(slot), slot)
+      (frame.getLocal(slot), slot)
     } else if (isStore(copyOp)) {
       stackValue(0)
     } else
       (copyOp.getOpcode: @switch) match {
         case DUP =>
-          stackValue(0) // the current stack top is the source of both produced values
+          stackValue(
+            0
+          ) // the current stack top is the source of both produced values
 
         case DUP_X1 =>
           dupX1Case
@@ -293,8 +318,8 @@ trait ProdConsAnalyzerImpl {
               (producedIndex(4): @switch) match {
                 case 0 | 4 => stackValue(1)
                 case 1 | 5 => stackValue(0)
-                case 2 => stackValue(3)
-                case 3 => stackValue(2)
+                case 2     => stackValue(3)
+                case 3     => stackValue(2)
               }
             }
           }
@@ -317,7 +342,9 @@ trait ProdConsAnalyzerImpl {
     *   - if consumedSlot == 3, the result is Set(2, 4)
     */
   private def copyOperationProducedValueSlots(
-      copyOp: AbstractInsnNode, consumedSlot: Int): Set[Int] = {
+      copyOp: AbstractInsnNode,
+      consumedSlot: Int
+  ): Set[Int] = {
     if (isStore(copyOp)) Set(copyOp.asInstanceOf[VarInsnNode].`var`)
     else {
       val nextFrame = frameAt(copyOp.getNext)
@@ -330,22 +357,25 @@ trait ProdConsAnalyzerImpl {
         consumedSlot - (numUsedSlotsAfterCopy - numProduced)
       }
 
-      def dupX1Case = (consumedIndex(3): @switch) match {
-        case 0 => Set(top - 1)
-        case 1 => Set(top - 2, top)
-      }
+      def dupX1Case =
+        (consumedIndex(3): @switch) match {
+          case 0 => Set(top - 1)
+          case 1 => Set(top - 2, top)
+        }
 
-      def dupX2Case = (consumedIndex(4): @switch) match {
-        case 0 => Set(top - 2)
-        case 1 => Set(top - 1)
-        case 2 => Set(top - 3, top)
-      }
+      def dupX2Case =
+        (consumedIndex(4): @switch) match {
+          case 0 => Set(top - 2)
+          case 1 => Set(top - 1)
+          case 2 => Set(top - 3, top)
+        }
 
-      def dup2X1Case = (consumedIndex(5): @switch) match {
-        case 0 => Set(top - 2)
-        case 1 => Set(top - 4, top - 1)
-        case 2 => Set(top - 3, top)
-      }
+      def dup2X1Case =
+        (consumedIndex(5): @switch) match {
+          case 0 => Set(top - 2)
+          case 1 => Set(top - 4, top - 1)
+          case 2 => Set(top - 3, top)
+        }
 
       if (isLoad(copyOp)) Set(top)
       else
@@ -424,28 +454,29 @@ trait ProdConsAnalyzerImpl {
   }
 
   /** Returns the frame slots holding the values produced by executing `insn`. */
-  private def outputValueSlots(insn: AbstractInsnNode): Seq[Int] = insn match {
-    case ParameterProducer(local) => Seq(local)
-    case UninitializedLocalProducer(local) => Seq(local)
-    case ExceptionProducer(_, frame) => Seq(frame.stackTop)
-    case _ =>
-      if (insn.getOpcode == -1) return Seq.empty
-      if (isStore(insn)) {
-        Seq(insn.asInstanceOf[VarInsnNode].`var`)
-      } else if (insn.getOpcode == IINC) {
-        Seq(insn.asInstanceOf[IincInsnNode].`var`)
-      } else {
-        val frame = frameAt(insn)
-        val prodCons = InstructionStackEffect.forAsmAnalysis(insn, frame)
-        val nextFrame = frameAt(insn.getNext)
-        val stackSize = nextFrame.getLocals + nextFrame.getStackSize
-        (stackSize - InstructionStackEffect.prod(prodCons)) until stackSize
-      }
-  }
+  private def outputValueSlots(insn: AbstractInsnNode): Seq[Int] =
+    insn match {
+      case ParameterProducer(local)          => Seq(local)
+      case UninitializedLocalProducer(local) => Seq(local)
+      case ExceptionProducer(_, frame)       => Seq(frame.stackTop)
+      case _ =>
+        if (insn.getOpcode == -1) return Seq.empty
+        if (isStore(insn)) {
+          Seq(insn.asInstanceOf[VarInsnNode].`var`)
+        } else if (insn.getOpcode == IINC) {
+          Seq(insn.asInstanceOf[IincInsnNode].`var`)
+        } else {
+          val frame = frameAt(insn)
+          val prodCons = InstructionStackEffect.forAsmAnalysis(insn, frame)
+          val nextFrame = frameAt(insn.getNext)
+          val stackSize = nextFrame.getLocals + nextFrame.getStackSize
+          (stackSize - InstructionStackEffect.prod(prodCons)) until stackSize
+        }
+    }
 
   /** For each instruction, a set of potential consumers of the produced values. */
-  private lazy val _consumersOfOutputsFrom: Map[
-      AbstractInsnNode, Vector[Set[AbstractInsnNode]]] = {
+  private lazy val _consumersOfOutputsFrom
+      : Map[AbstractInsnNode, Vector[Set[AbstractInsnNode]]] = {
     var res = Map.empty[AbstractInsnNode, Vector[Set[AbstractInsnNode]]]
     for {
       insn <- methodNode.instructions.iterator.asScala
@@ -455,20 +486,25 @@ trait ProdConsAnalyzerImpl {
     } {
       val producedSlots = outputValueSlots(producer)
       val currentConsumers = res.getOrElse(
-          producer,
-          Vector.fill(producedSlots.size)(Set.empty[AbstractInsnNode]))
+        producer,
+        Vector.fill(producedSlots.size)(Set.empty[AbstractInsnNode])
+      )
       val outputIndex = producedSlots.indexOf(i)
-      res = res.updated(producer,
-                        currentConsumers.updated(
-                            outputIndex, currentConsumers(outputIndex) + insn))
+      res = res.updated(
+        producer,
+        currentConsumers
+          .updated(outputIndex, currentConsumers(outputIndex) + insn)
+      )
     }
     res
   }
 
-  private val _initialProducersCache: mutable.AnyRefMap[
-      (AbstractInsnNode, Int), Set[AbstractInsnNode]] = mutable.AnyRefMap.empty
-  private val _ultimateConsumersCache: mutable.AnyRefMap[
-      (AbstractInsnNode, Int), Set[AbstractInsnNode]] = mutable.AnyRefMap.empty
+  private val _initialProducersCache
+      : mutable.AnyRefMap[(AbstractInsnNode, Int), Set[AbstractInsnNode]] =
+    mutable.AnyRefMap.empty
+  private val _ultimateConsumersCache
+      : mutable.AnyRefMap[(AbstractInsnNode, Int), Set[AbstractInsnNode]] =
+    mutable.AnyRefMap.empty
 }
 
 /**
@@ -495,8 +531,7 @@ trait ProdConsAnalyzerImpl {
   */
 abstract class InitialProducer extends AbstractInsnNode(-1) {
   override def getType: Int = throw new UnsupportedOperationException
-  override def clone(
-      labels: util.Map[LabelNode, LabelNode]): AbstractInsnNode =
+  override def clone(labels: util.Map[LabelNode, LabelNode]): AbstractInsnNode =
     throw new UnsupportedOperationException
   override def accept(cv: MethodVisitor): Unit =
     throw new UnsupportedOperationException
@@ -505,12 +540,16 @@ abstract class InitialProducer extends AbstractInsnNode(-1) {
 case class ParameterProducer(local: Int) extends InitialProducer
 case class UninitializedLocalProducer(local: Int) extends InitialProducer
 case class ExceptionProducer[V <: Value](
-    handlerLabel: LabelNode, handlerFrame: Frame[V])
-    extends InitialProducer
+    handlerLabel: LabelNode,
+    handlerFrame: Frame[V]
+) extends InitialProducer
 
 class InitialProducerSourceInterpreter extends SourceInterpreter {
   override def newParameterValue(
-      isInstanceMethod: Boolean, local: Int, tp: Type): SourceValue = {
+      isInstanceMethod: Boolean,
+      local: Int,
+      tp: Type
+  ): SourceValue = {
     new SourceValue(tp.getSize, ParameterProducer(local))
   }
 
@@ -518,10 +557,14 @@ class InitialProducerSourceInterpreter extends SourceInterpreter {
     new SourceValue(1, UninitializedLocalProducer(local))
   }
 
-  override def newExceptionValue(tryCatchBlockNode: TryCatchBlockNode,
-                                 handlerFrame: Frame[_ <: Value],
-                                 exceptionType: Type): SourceValue = {
+  override def newExceptionValue(
+      tryCatchBlockNode: TryCatchBlockNode,
+      handlerFrame: Frame[_ <: Value],
+      exceptionType: Type
+  ): SourceValue = {
     new SourceValue(
-        1, ExceptionProducer(tryCatchBlockNode.handler, handlerFrame))
+      1,
+      ExceptionProducer(tryCatchBlockNode.handler, handlerFrame)
+    )
   }
 }

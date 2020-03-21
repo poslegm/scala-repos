@@ -511,4 +511,5 @@ class BarOK(
     _251: Int,
     _252: Int,
     _253: Int,
-    _254: Int)
+    _254: Int
+)

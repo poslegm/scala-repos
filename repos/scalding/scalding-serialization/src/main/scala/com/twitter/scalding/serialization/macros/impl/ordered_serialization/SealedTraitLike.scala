@@ -35,9 +35,11 @@ object SealedTraitLike {
     */
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def compareBinary(c: Context)(
-      inputStreamA: c.TermName, inputStreamB: c.TermName)(
-      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
+  def compareBinary(
+      c: Context
+  )(inputStreamA: c.TermName, inputStreamB: c.TermName)(
+      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]
+  ): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
     val valueA = freshT("valueA")
@@ -84,8 +86,9 @@ object SealedTraitLike {
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def hash(c: Context)(element: c.TermName)(
-      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
+  def hash(c: Context)(
+      element: c.TermName
+  )(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -123,7 +126,8 @@ object SealedTraitLike {
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(
-      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
+      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]
+  ): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -161,8 +165,8 @@ object SealedTraitLike {
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def length(c: Context)(element: c.Tree)(
-      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])])
-    : CompileTimeLengthTypes[c.type] = {
+      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]
+  ): CompileTimeLengthTypes[c.type] = {
     import CompileTimeLengthTypes._
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -226,8 +230,9 @@ object SealedTraitLike {
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def get(c: Context)(inputStream: c.TermName)(
-      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
+  def get(c: Context)(
+      inputStream: c.TermName
+  )(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -267,9 +272,11 @@ object SealedTraitLike {
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def compare(c: Context)(
-      cmpType: c.Type, elementA: c.TermName, elementB: c.TermName)(
-      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
+  def compare(
+      c: Context
+  )(cmpType: c.Type, elementA: c.TermName, elementB: c.TermName)(
+      subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]
+  ): c.Tree = {
     import c.universe._
 
     def freshT(id: String) = newTermName(c.fresh(id))

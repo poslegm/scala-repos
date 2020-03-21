@@ -54,7 +54,9 @@ object RightAction {
   * 5. `g |+|> p === p <|+| g.inverse`.
   */
 trait Action[@sp(Int) P, G]
-    extends Any with LeftAction[P, G] with RightAction[P, G]
+    extends Any
+    with LeftAction[P, G]
+    with RightAction[P, G]
 
 object Action {
   @inline def apply[P, G](G: Action[P, G]): Action[P, G] = G
@@ -66,20 +68,22 @@ object Action {
 }
 
 trait AdditiveAction[@sp(Int) P, G] extends Any { self =>
-  def additive: Action[P, G] = new Action[P, G] {
-    def actl(g: G, p: P): P = self.gplusl(g, p)
-    def actr(p: P, g: G): P = self.gplusr(p, g)
-  }
+  def additive: Action[P, G] =
+    new Action[P, G] {
+      def actl(g: G, p: P): P = self.gplusl(g, p)
+      def actr(p: P, g: G): P = self.gplusr(p, g)
+    }
 
   def gplusl(g: G, p: P): P
   def gplusr(p: P, g: G): P
 }
 
 trait MultiplicativeAction[@sp(Int) P, G] extends Any { self =>
-  def multiplicative: Action[P, G] = new Action[P, G] {
-    def actl(g: G, p: P): P = self.gtimesl(g, p)
-    def actr(p: P, g: G): P = self.gtimesr(p, g)
-  }
+  def multiplicative: Action[P, G] =
+    new Action[P, G] {
+      def actl(g: G, p: P): P = self.gtimesl(g, p)
+      def actr(p: P, g: G): P = self.gtimesr(p, g)
+    }
 
   def gtimesl(g: G, p: P): P
   def gtimesr(p: P, g: G): P

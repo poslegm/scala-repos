@@ -109,17 +109,21 @@ object Pregel extends Logging {
     * @return the resulting graph at the end of the computation
     *
     */
-  def apply[VD : ClassTag, ED : ClassTag, A : ClassTag](
+  def apply[VD: ClassTag, ED: ClassTag, A: ClassTag](
       graph: Graph[VD, ED],
       initialMsg: A,
       maxIterations: Int = Int.MaxValue,
-      activeDirection: EdgeDirection = EdgeDirection.Either)(
+      activeDirection: EdgeDirection = EdgeDirection.Either
+  )(
       vprog: (VertexId, VD, A) => VD,
       sendMsg: EdgeTriplet[VD, ED] => Iterator[(VertexId, A)],
-      mergeMsg: (A, A) => A): Graph[VD, ED] = {
-    require(maxIterations > 0,
-            s"Maximum of iterations must be greater than 0," +
-            s" but got ${maxIterations}")
+      mergeMsg: (A, A) => A
+  ): Graph[VD, ED] = {
+    require(
+      maxIterations > 0,
+      s"Maximum of iterations must be greater than 0," +
+        s" but got ${maxIterations}"
+    )
 
     var g =
       graph.mapVertices((vid, vdata) => vprog(vid, vdata, initialMsg)).cache()
@@ -140,7 +144,11 @@ object Pregel extends Logging {
       // iteration.
       messages = GraphXUtils
         .mapReduceTriplets(
-            g, sendMsg, mergeMsg, Some((oldMessages, activeDirection)))
+          g,
+          sendMsg,
+          mergeMsg,
+          Some((oldMessages, activeDirection))
+        )
         .cache()
       // The call to count() materializes `messages` and the vertices of `g`. This hides oldMessages
       // (depended on by the vertices of g) and the vertices of prevG (depended on by oldMessages

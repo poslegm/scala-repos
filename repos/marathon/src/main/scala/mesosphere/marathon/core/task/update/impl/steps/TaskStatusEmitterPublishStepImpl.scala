@@ -14,15 +14,19 @@ import scala.concurrent.Future
 /**
   * Forward the update to the taskStatusEmitter.
   */
-class TaskStatusEmitterPublishStepImpl @Inject()(
-    taskStatusEmitter: TaskStatusEmitter)
-    extends TaskStatusUpdateStep {
+class TaskStatusEmitterPublishStepImpl @Inject() (
+    taskStatusEmitter: TaskStatusEmitter
+) extends TaskStatusUpdateStep {
   override def name: String = "emitUpdate"
 
   override def processUpdate(
-      timestamp: Timestamp, task: Task, status: TaskStatus): Future[_] = {
+      timestamp: Timestamp,
+      task: Task,
+      status: TaskStatus
+  ): Future[_] = {
     taskStatusEmitter.publish(
-        TaskStatusUpdate(timestamp, task.taskId, MarathonTaskStatus(status)))
+      TaskStatusUpdate(timestamp, task.taskId, MarathonTaskStatus(status))
+    )
     Future.successful(())
   }
 }

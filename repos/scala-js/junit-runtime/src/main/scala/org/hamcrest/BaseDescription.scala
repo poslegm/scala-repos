@@ -52,10 +52,12 @@ abstract class BaseDescription extends Description {
     }
   }
 
-  override def appendValueList[T](start: String,
-                                  separator: String,
-                                  end: String,
-                                  values: T*): Description = {
+  override def appendValueList[T](
+      start: String,
+      separator: String,
+      end: String,
+      values: T*
+  ): Description = {
     appendValueList(start, separator, end, Arrays.asList(values))
   }
 
@@ -63,7 +65,8 @@ abstract class BaseDescription extends Description {
       start: String,
       separator: String,
       end: String,
-      values: java.lang.Iterable[T]): Description = {
+      values: java.lang.Iterable[T]
+  ): Description = {
     appendValueList(start, separator, end, values.iterator())
   }
 
@@ -71,16 +74,22 @@ abstract class BaseDescription extends Description {
       start: String,
       separator: String,
       end: String,
-      values: java.util.Iterator[T]): Description = {
+      values: java.util.Iterator[T]
+  ): Description = {
     appendList(
-        start, separator, end, new SelfDescribingValueIterator[T](values))
+      start,
+      separator,
+      end,
+      new SelfDescribingValueIterator[T](values)
+    )
   }
 
   override def appendList(
       start: String,
       separator: String,
       end: String,
-      values: java.lang.Iterable[SelfDescribing]): Description = {
+      values: java.lang.Iterable[SelfDescribing]
+  ): Description = {
     appendList(start, separator, end, values.iterator())
   }
 
@@ -88,7 +97,8 @@ abstract class BaseDescription extends Description {
       start: String,
       separator: String,
       end: String,
-      i: java.util.Iterator[SelfDescribing]): Description = {
+      i: java.util.Iterator[SelfDescribing]
+  ): Description = {
     @tailrec
     def appendElems(separate: Boolean): Unit = {
       if (i.hasNext) {
@@ -114,11 +124,11 @@ abstract class BaseDescription extends Description {
 
   private def toJavaSyntax(ch: Char): String = {
     ch match {
-      case '"' => "\\\""
+      case '"'  => "\\\""
       case '\n' => "\\n"
       case '\r' => "\\r"
       case '\t' => "\\t"
-      case _ => ch.toString
+      case _    => ch.toString
     }
   }
 }

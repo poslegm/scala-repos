@@ -26,7 +26,9 @@ import org.apache.spark.sql.test.SharedSQLContext
 import org.apache.spark.util.Utils
 
 class CreateTableAsSelectSuite
-    extends DataSourceTest with SharedSQLContext with BeforeAndAfter {
+    extends DataSourceTest
+    with SharedSQLContext
+    with BeforeAndAfter {
   protected override lazy val sql = caseInsensitiveContext.sql _
   private var path: File = null
 
@@ -34,7 +36,8 @@ class CreateTableAsSelectSuite
     super.beforeAll()
     path = Utils.createTempDir()
     val rdd = sparkContext.parallelize(
-        (1 to 10).map(i => s"""{"a":$i, "b":"str${i}"}"""))
+      (1 to 10).map(i => s"""{"a":$i, "b":"str${i}"}""")
+    )
     caseInsensitiveContext.read.json(rdd).registerTempTable("jt")
   }
 
@@ -60,14 +63,17 @@ class CreateTableAsSelectSuite
         |SELECT a, b FROM jt
       """.stripMargin)
 
-    checkAnswer(sql("SELECT a, b FROM jsonTable"),
-                sql("SELECT a, b FROM jt").collect())
+    checkAnswer(
+      sql("SELECT a, b FROM jsonTable"),
+      sql("SELECT a, b FROM jt").collect()
+    )
 
     caseInsensitiveContext.dropTempTable("jsonTable")
   }
 
   test(
-      "CREATE TEMPORARY TABLE AS SELECT based on the file without write permission") {
+    "CREATE TEMPORARY TABLE AS SELECT based on the file without write permission"
+  ) {
     val childPath = new File(path.toString, "child")
     path.mkdir()
     childPath.createNewFile()
@@ -99,8 +105,10 @@ class CreateTableAsSelectSuite
         |SELECT a, b FROM jt
       """.stripMargin)
 
-    checkAnswer(sql("SELECT a, b FROM jsonTable"),
-                sql("SELECT a, b FROM jt").collect())
+    checkAnswer(
+      sql("SELECT a, b FROM jsonTable"),
+      sql("SELECT a, b FROM jt").collect()
+    )
 
     val message = intercept[AnalysisException] {
       sql(s"""
@@ -113,9 +121,11 @@ class CreateTableAsSelectSuite
       """.stripMargin)
     }.getMessage
     assert(
-        message.contains(
-            s"a CREATE TEMPORARY TABLE statement does not allow IF NOT EXISTS clause."),
-        "CREATE TEMPORARY TABLE IF NOT EXISTS should not be allowed.")
+      message.contains(
+        s"a CREATE TEMPORARY TABLE statement does not allow IF NOT EXISTS clause."
+      ),
+      "CREATE TEMPORARY TABLE IF NOT EXISTS should not be allowed."
+    )
 
     // Overwrite the temporary table.
     sql(s"""
@@ -127,7 +137,9 @@ class CreateTableAsSelectSuite
         |SELECT a * 4 FROM jt
       """.stripMargin)
     checkAnswer(
-        sql("SELECT * FROM jsonTable"), sql("SELECT a * 4 FROM jt").collect())
+      sql("SELECT * FROM jsonTable"),
+      sql("SELECT a * 4 FROM jt").collect()
+    )
 
     caseInsensitiveContext.dropTempTable("jsonTable")
     // Explicitly delete the data.
@@ -143,7 +155,9 @@ class CreateTableAsSelectSuite
       """.stripMargin)
 
     checkAnswer(
-        sql("SELECT * FROM jsonTable"), sql("SELECT b FROM jt").collect())
+      sql("SELECT * FROM jsonTable"),
+      sql("SELECT b FROM jt").collect()
+    )
 
     caseInsensitiveContext.dropTempTable("jsonTable")
   }
@@ -160,9 +174,11 @@ class CreateTableAsSelectSuite
       """.stripMargin)
     }.getMessage
     assert(
-        message.contains(
-            "a CREATE TEMPORARY TABLE statement does not allow IF NOT EXISTS clause."),
-        "CREATE TEMPORARY TABLE IF NOT EXISTS should not be allowed.")
+      message.contains(
+        "a CREATE TEMPORARY TABLE statement does not allow IF NOT EXISTS clause."
+      ),
+      "CREATE TEMPORARY TABLE IF NOT EXISTS should not be allowed."
+    )
   }
 
   test("a CTAS statement with column definitions is not allowed") {
@@ -198,7 +214,9 @@ class CreateTableAsSelectSuite
         |SELECT a, b FROM jsonTable
       """.stripMargin)
     }.getMessage
-    assert(message.contains("Cannot overwrite table "),
-           "Writing to a table while querying it should not be allowed.")
+    assert(
+      message.contains("Cannot overwrite table "),
+      "Writing to a table while querying it should not be allowed."
+    )
   }
 }

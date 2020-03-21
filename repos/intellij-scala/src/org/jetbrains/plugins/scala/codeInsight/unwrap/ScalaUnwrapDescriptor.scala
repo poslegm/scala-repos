@@ -8,7 +8,8 @@ import com.intellij.codeInsight.unwrap.UnwrapDescriptorBase
   * 2014-06-26
   */
 class ScalaUnwrapDescriptor extends UnwrapDescriptorBase {
-  override def createUnwrappers() = Array(
+  override def createUnwrappers() =
+    Array(
       new ScalaInfixUnwrapper,
       new ScalaMethodCallArgUnwrapper,
       new ScalaTupleUnwrapper,
@@ -24,5 +25,5 @@ class ScalaUnwrapDescriptor extends UnwrapDescriptorBase {
       new ScalaElseRemover,
       new ScalaBracesUnwrapper,
       new ScalaInterpolatedStringUnwrapper
-  )
+    )
 }

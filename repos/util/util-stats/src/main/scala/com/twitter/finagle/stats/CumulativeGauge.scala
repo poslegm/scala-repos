@@ -53,21 +53,22 @@ private[finagle] abstract class CumulativeGauge {
       if (underlying.isEmpty) deregister()
     }
 
-  def addGauge(f: => Float): Gauge = synchronized {
-    val shouldRegister = underlying.isEmpty
-    if (!shouldRegister)
-      removeGauge(null) // there is at least 1 gauge that may need to be cleaned
-    val underlyingGauge = UnderlyingGauge(() => f)
-    underlying :+= new WeakReference(underlyingGauge)
-    if (shouldRegister) register()
-    underlyingGauge
-  }
+  def addGauge(f: => Float): Gauge =
+    synchronized {
+      val shouldRegister = underlying.isEmpty
+      if (!shouldRegister)
+        removeGauge(
+          null
+        ) // there is at least 1 gauge that may need to be cleaned
+      val underlyingGauge = UnderlyingGauge(() => f)
+      underlying :+= new WeakReference(underlyingGauge)
+      if (shouldRegister) register()
+      underlyingGauge
+    }
 
   def getValue: Float = {
     var sum = 0f
-    get().foreach { g =>
-      sum += g.f()
-    }
+    get().foreach { g => sum += g.f() }
     sum
   }
 
@@ -89,27 +90,28 @@ trait StatsReceiverWithCumulativeGauges extends StatsReceiver { self =>
 
   def registerLargeGaugeLinter(rules: Rules): Unit = {
     rules.add(
-        Rule(
-            Category.Performance,
-            "Large CumulativeGauges",
-            "Identifies CumulativeGauges which are backed by very large numbers (100k+) " +
-            "of Gauges. Indicative of a leak or code registering the same gauge more " +
-            s"often than expected. (For $toString)"
-        ) {
-      val largeCgs = gauges.asScala.flatMap {
-        case (ks, cg) =>
-          if (cg.totalSize >= 100000) Some(ks -> cg.totalSize)
-          else None
+      Rule(
+        Category.Performance,
+        "Large CumulativeGauges",
+        "Identifies CumulativeGauges which are backed by very large numbers (100k+) " +
+          "of Gauges. Indicative of a leak or code registering the same gauge more " +
+          s"often than expected. (For $toString)"
+      ) {
+        val largeCgs = gauges.asScala.flatMap {
+          case (ks, cg) =>
+            if (cg.totalSize >= 100000) Some(ks -> cg.totalSize)
+            else None
+        }
+        if (largeCgs.isEmpty) {
+          Nil
+        } else {
+          largeCgs.map {
+            case (ks, size) =>
+              Issue(ks.mkString("/") + "=" + size)
+          }.toSeq
+        }
       }
-      if (largeCgs.isEmpty) {
-        Nil
-      } else {
-        largeCgs.map {
-          case (ks, size) =>
-            Issue(ks.mkString("/") + "=" + size)
-        }.toSeq
-      }
-    })
+    )
   }
 
   /**
@@ -123,14 +125,16 @@ trait StatsReceiverWithCumulativeGauges extends StatsReceiver { self =>
     var cumulativeGauge = gauges.get(name)
     if (cumulativeGauge == null) {
       val insert = new CumulativeGauge {
-        override def register(): Unit = synchronized {
-          self.registerGauge(name, getValue)
-        }
+        override def register(): Unit =
+          synchronized {
+            self.registerGauge(name, getValue)
+          }
 
-        override def deregister(): Unit = synchronized {
-          gauges.remove(name)
-          self.deregisterGauge(name)
-        }
+        override def deregister(): Unit =
+          synchronized {
+            gauges.remove(name)
+            self.deregisterGauge(name)
+          }
       }
       val prev = gauges.putIfAbsent(name, insert)
       cumulativeGauge = if (prev == null) insert else prev

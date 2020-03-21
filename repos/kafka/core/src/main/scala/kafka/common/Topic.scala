@@ -27,25 +27,30 @@ object Topic {
   def validate(topic: String) {
     if (topic.length <= 0)
       throw new org.apache.kafka.common.errors.InvalidTopicException(
-          "topic name is illegal, can't be empty")
+        "topic name is illegal, can't be empty"
+      )
     else if (topic.equals(".") || topic.equals(".."))
       throw new org.apache.kafka.common.errors.InvalidTopicException(
-          "topic name cannot be \".\" or \"..\"")
+        "topic name cannot be \".\" or \"..\""
+      )
     else if (topic.length > maxNameLength)
       throw new org.apache.kafka.common.errors.InvalidTopicException(
-          "topic name is illegal, can't be longer than " + maxNameLength +
-          " characters")
+        "topic name is illegal, can't be longer than " + maxNameLength +
+          " characters"
+      )
 
     rgx.findFirstIn(topic) match {
       case Some(t) =>
         if (!t.equals(topic))
           throw new org.apache.kafka.common.errors.InvalidTopicException(
-              "topic name " + topic +
-              " is illegal, contains a character other than ASCII alphanumerics, '.', '_' and '-'")
+            "topic name " + topic +
+              " is illegal, contains a character other than ASCII alphanumerics, '.', '_' and '-'"
+          )
       case None =>
         throw new org.apache.kafka.common.errors.InvalidTopicException(
-            "topic name " + topic +
-            " is illegal,  contains a character other than ASCII alphanumerics, '.', '_' and '-'")
+          "topic name " + topic +
+            " is illegal,  contains a character other than ASCII alphanumerics, '.', '_' and '-'"
+        )
     }
   }
 

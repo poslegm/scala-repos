@@ -27,10 +27,11 @@ import com.codahale.metrics.graphite.{Graphite, GraphiteReporter, GraphiteUDP}
 import org.apache.spark.SecurityManager
 import org.apache.spark.metrics.MetricsSystem
 
-private[spark] class GraphiteSink(val property: Properties,
-                                  val registry: MetricRegistry,
-                                  securityMgr: SecurityManager)
-    extends Sink {
+private[spark] class GraphiteSink(
+    val property: Properties,
+    val registry: MetricRegistry,
+    securityMgr: SecurityManager
+) extends Sink {
   val GRAPHITE_DEFAULT_PERIOD = 10
   val GRAPHITE_DEFAULT_UNIT = "SECONDS"
   val GRAPHITE_DEFAULT_PREFIX = ""
@@ -58,12 +59,12 @@ private[spark] class GraphiteSink(val property: Properties,
 
   val pollPeriod = propertyToOption(GRAPHITE_KEY_PERIOD) match {
     case Some(s) => s.toInt
-    case None => GRAPHITE_DEFAULT_PERIOD
+    case None    => GRAPHITE_DEFAULT_PERIOD
   }
 
   val pollUnit: TimeUnit = propertyToOption(GRAPHITE_KEY_UNIT) match {
     case Some(s) => TimeUnit.valueOf(s.toUpperCase())
-    case None => TimeUnit.valueOf(GRAPHITE_DEFAULT_UNIT)
+    case None    => TimeUnit.valueOf(GRAPHITE_DEFAULT_UNIT)
   }
 
   val prefix =

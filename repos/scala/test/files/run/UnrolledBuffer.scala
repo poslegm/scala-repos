@@ -32,9 +32,7 @@ object Test {
     assert(u1 == UnrolledBuffer(1, 3, 5, 7, 9))
 
     val u2 =
-      u1 map { x =>
-        (x - 1) / 2
-      }
+      u1 map { x => (x - 1) / 2 }
     assert(u2 == UnrolledBuffer(0, 1, 2, 3, 4))
 
     u1.clear
@@ -58,9 +56,7 @@ object Test {
     assertCorrect(u1)
 
     val u3 =
-      u1 map { x =>
-        x
-      }
+      u1 map { x => x }
     var i = 0
     for (elem <- u1) {
       assert(elem == u3(i))
@@ -118,10 +114,7 @@ object Test {
     for (i <- 0 until sz) u1(i) = store(i)
     for (i <- 0 until sz) assert(store(i) == u1(i))
 
-    assert(
-        (u1 map { x =>
-          x
-        }) == u1)
+    assert((u1 map { x => x }) == u1)
     assert(u1.iterator.toSeq.size == u1.size)
   }
 }

@@ -14,10 +14,11 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScTemplateBod
   */
 class ScalaBracesUnwrapper extends ScalaUnwrapper {
 
-  override def isApplicableTo(e: PsiElement) = e match {
-    case b: ScBlock if b.hasRBrace && canBeUnwrapped(b) => true
-    case _ => false
-  }
+  override def isApplicableTo(e: PsiElement) =
+    e match {
+      case b: ScBlock if b.hasRBrace && canBeUnwrapped(b) => true
+      case _                                              => false
+    }
 
   override def doUnwrap(element: PsiElement, context: ScalaUnwrapContext) =
     element match {
@@ -31,15 +32,19 @@ class ScalaBracesUnwrapper extends ScalaUnwrapper {
     CodeInsightBundle.message("unwrap.braces")
 
   override def collectAffectedElements(
-      e: PsiElement, toExtract: util.List[PsiElement]) = e match {
-    case b: ScBlock if b.hasRBrace && canBeUnwrapped(b) =>
-      super.collectAffectedElements(e, toExtract)
-      b.getParent
-    case _ => e
-  }
+      e: PsiElement,
+      toExtract: util.List[PsiElement]
+  ) =
+    e match {
+      case b: ScBlock if b.hasRBrace && canBeUnwrapped(b) =>
+        super.collectAffectedElements(e, toExtract)
+        b.getParent
+      case _ => e
+    }
 
-  private def canBeUnwrapped(block: ScBlock): Boolean = block.getParent match {
-    case _: ScBlock | _: ScTemplateBody => true
-    case _ => false
-  }
+  private def canBeUnwrapped(block: ScBlock): Boolean =
+    block.getParent match {
+      case _: ScBlock | _: ScTemplateBody => true
+      case _                              => false
+    }
 }

@@ -51,12 +51,14 @@ private[streams] object SubscriberIteratee {
 import SubscriberIteratee._
 
 private[streams] class SubscriberIteratee[T](subscriber: Subscriber[T])
-    extends StateMachine[State](NotSubscribed) with Subscription
+    extends StateMachine[State](NotSubscribed)
+    with Subscription
     with Iteratee[T, Unit] {
   self =>
 
-  def fold[B](folder: (Step[T, Unit]) => Future[B])(
-      implicit ec: ExecutionContext): Future[B] = {
+  def fold[B](
+      folder: (Step[T, Unit]) => Future[B]
+  )(implicit ec: ExecutionContext): Future[B] = {
     val promise = Promise[B]()
     val pec = ec.prepare()
     exclusive {
@@ -67,7 +69,8 @@ private[streams] class SubscriberIteratee[T](subscriber: Subscriber[T])
         state = awaitDemand(promise, folder, pec)
       case AwaitingDemand(_, _) =>
         throw new IllegalStateException(
-            "fold invoked while already waiting for demand")
+          "fold invoked while already waiting for demand"
+        )
       case Demand(n) =>
         if (n == 1) {
           state = NoDemand
@@ -82,19 +85,24 @@ private[streams] class SubscriberIteratee[T](subscriber: Subscriber[T])
     promise.future
   }
 
-  private def awaitDemand[B](promise: Promise[B],
-                             folder: (Step[T, Unit]) => Future[B],
-                             ec: ExecutionContext): AwaitingDemand = {
-    AwaitingDemand(() => demand(promise, folder, ec),
-                   () => cancelled(promise, folder, ec))
+  private def awaitDemand[B](
+      promise: Promise[B],
+      folder: (Step[T, Unit]) => Future[B],
+      ec: ExecutionContext
+  ): AwaitingDemand = {
+    AwaitingDemand(
+      () => demand(promise, folder, ec),
+      () => cancelled(promise, folder, ec)
+    )
   }
 
-  private def demand[B](promise: Promise[B],
-                        folder: (Step[T, Unit]) => Future[B],
-                        ec: ExecutionContext): Unit = {
+  private def demand[B](
+      promise: Promise[B],
+      folder: (Step[T, Unit]) => Future[B],
+      ec: ExecutionContext
+  ): Unit = {
     Future {
-      promise.completeWith(
-          folder(Step.Cont[T, Unit] {
+      promise.completeWith(folder(Step.Cont[T, Unit] {
         case Input.EOF =>
           subscriber.onComplete()
           Done(())
@@ -107,38 +115,43 @@ private[streams] class SubscriberIteratee[T](subscriber: Subscriber[T])
     }(ec)
   }
 
-  private def cancelled[B](promise: Promise[B],
-                           folder: (Step[T, Unit]) => Future[B],
-                           ec: ExecutionContext): Unit = {
+  private def cancelled[B](
+      promise: Promise[B],
+      folder: (Step[T, Unit]) => Future[B],
+      ec: ExecutionContext
+  ): Unit = {
     Future {
       promise.completeWith(folder(Step.Done((), Input.Empty)))
     }(ec)
   }
 
-  def cancel() = exclusive {
-    case AwaitingDemand(_, cancelled) =>
-      cancelled()
-      state = Cancelled
-    case _ =>
-      state = Cancelled
-  }
+  def cancel() =
+    exclusive {
+      case AwaitingDemand(_, cancelled) =>
+        cancelled()
+        state = Cancelled
+      case _ =>
+        state = Cancelled
+    }
 
-  def request(n: Long) = exclusive {
-    case NoDemand =>
-      state = Demand(n)
-    case AwaitingDemand(demand, _) =>
-      demand()
-      if (n == 1) {
-        state = NoDemand
-      } else {
-        state = Demand(n - 1)
-      }
-    case Demand(old) =>
-      state = Demand(old + n)
-    case Cancelled =>
-    // nop, 3.6 of reactive streams spec
-    case NotSubscribed =>
-      throw new IllegalStateException(
-          "Demand requested before subscription made")
-  }
+  def request(n: Long) =
+    exclusive {
+      case NoDemand =>
+        state = Demand(n)
+      case AwaitingDemand(demand, _) =>
+        demand()
+        if (n == 1) {
+          state = NoDemand
+        } else {
+          state = Demand(n - 1)
+        }
+      case Demand(old) =>
+        state = Demand(old + n)
+      case Cancelled =>
+      // nop, 3.6 of reactive streams spec
+      case NotSubscribed =>
+        throw new IllegalStateException(
+          "Demand requested before subscription made"
+        )
+    }
 }

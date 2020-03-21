@@ -4,7 +4,7 @@ package psi
 package api
 package expr
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   */
 trait ScTryStmt extends ScExpression {
@@ -17,7 +17,8 @@ trait ScTryStmt extends ScExpression {
 }
 
 object ScTryStmt {
-  def unapply(tryStmt: ScTryStmt)
-    : Option[(ScTryBlock, Option[ScCatchBlock], Option[ScFinallyBlock])] =
+  def unapply(
+      tryStmt: ScTryStmt
+  ): Option[(ScTryBlock, Option[ScCatchBlock], Option[ScFinallyBlock])] =
     Some((tryStmt.tryBlock, tryStmt.catchBlock, tryStmt.finallyBlock))
 }

@@ -13,16 +13,17 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 class WriteFailedException(ps: Seq[PersistentRepr])
-    extends TestException(
-        s"write failed for payloads = [${ps.map(_.payload)}]")
+    extends TestException(s"write failed for payloads = [${ps.map(_.payload)}]")
 
 class ReplayFailedException(ps: Seq[PersistentRepr])
     extends TestException(
-        s"recovery failed after replaying payloads = [${ps.map(_.payload)}]")
+      s"recovery failed after replaying payloads = [${ps.map(_.payload)}]"
+    )
 
 class ReadHighestFailedException
     extends TestException(
-        s"recovery failed when reading highest sequence number")
+      s"recovery failed when reading highest sequence number"
+    )
 
 /**
   * Keep [[ChaosJournal]] state in an external singleton so that it survives journal restarts.
@@ -43,7 +44,8 @@ class ChaosJournal extends AsyncWriteJournal {
   def random = ThreadLocalRandom.current
 
   override def asyncWriteMessages(
-      messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] =
+      messages: immutable.Seq[AtomicWrite]
+  ): Future[immutable.Seq[Try[Unit]]] =
     try Future.successful {
       if (shouldFail(writeFailureRate))
         throw new WriteFailedException(messages.flatMap(_.payload))
@@ -57,21 +59,22 @@ class ChaosJournal extends AsyncWriteJournal {
     }
 
   override def asyncDeleteMessagesTo(
-      persistenceId: String, toSequenceNr: Long): Future[Unit] = {
+      persistenceId: String,
+      toSequenceNr: Long
+  ): Future[Unit] = {
     try Future.successful {
-      (1L to toSequenceNr).foreach { snr ⇒
-        del(persistenceId, snr)
-      }
+      (1L to toSequenceNr).foreach { snr ⇒ del(persistenceId, snr) }
     } catch {
       case NonFatal(e) ⇒ Future.failed(e)
     }
   }
 
-  def asyncReplayMessages(persistenceId: String,
-                          fromSequenceNr: Long,
-                          toSequenceNr: Long,
-                          max: Long)(
-      replayCallback: (PersistentRepr) ⇒ Unit): Future[Unit] =
+  def asyncReplayMessages(
+      persistenceId: String,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(replayCallback: (PersistentRepr) ⇒ Unit): Future[Unit] =
     if (shouldFail(replayFailureRate)) {
       val rm = read(persistenceId, fromSequenceNr, toSequenceNr, max)
       val sm = rm.take(random.nextInt(rm.length + 1))
@@ -79,12 +82,15 @@ class ChaosJournal extends AsyncWriteJournal {
       Future.failed(new ReplayFailedException(sm))
     } else {
       read(persistenceId, fromSequenceNr, toSequenceNr, max).foreach(
-          replayCallback)
+        replayCallback
+      )
       Future.successful(())
     }
 
   def asyncReadHighestSequenceNr(
-      persistenceId: String, fromSequenceNr: Long): Future[Long] =
+      persistenceId: String,
+      fromSequenceNr: Long
+  ): Future[Long] =
     if (shouldFail(readHighestFailureRate))
       Future.failed(new ReadHighestFailedException)
     else Future.successful(highestSequenceNr(persistenceId))

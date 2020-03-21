@@ -32,9 +32,10 @@ package object codegen {
       Batch("CleanExpressions", FixedPoint(20), CleanExpressions) :: Nil
 
     object CleanExpressions extends rules.Rule[Expression] {
-      def apply(e: Expression): Expression = e transform {
-        case Alias(c, _) => c
-      }
+      def apply(e: Expression): Expression =
+        e transform {
+          case Alias(c, _) => c
+        }
     }
   }
 
@@ -57,7 +58,9 @@ package object codegen {
       if (!packageDir.exists()) { packageDir.mkdir() }
 
       val classFile = new java.io.File(
-          packageDir, generatedClass.getName.split("\\.").last + ".class")
+        packageDir,
+        generatedClass.getName.split("\\.").last + ".class"
+      )
 
       val outfile = new java.io.FileOutputStream(classFile)
       outfile.write(generatedBytes)
@@ -65,7 +68,8 @@ package object codegen {
 
       // scalastyle:off println
       println(
-          s"javap -p -v -classpath ${dumpDirectory.getCanonicalPath} ${generatedClass.getName}".!!)
+        s"javap -p -v -classpath ${dumpDirectory.getCanonicalPath} ${generatedClass.getName}".!!
+      )
       // scalastyle:on println
     }
   }

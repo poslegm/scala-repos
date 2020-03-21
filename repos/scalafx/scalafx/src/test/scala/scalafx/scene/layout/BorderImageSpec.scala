@@ -43,12 +43,15 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class BorderImageSpec
     extends SimpleSFXDelegateSpec[jfxsl.BorderImage, BorderImage](
-        classOf[jfxsl.BorderImage], classOf[BorderImage]) {
+      classOf[jfxsl.BorderImage],
+      classOf[BorderImage]
+    ) {
 
   override protected def getScalaClassInstance =
     new BorderImage(getJavaClassInstance) {}
 
-  override protected def getJavaClassInstance = new jfxsl.BorderImage(
+  override protected def getJavaClassInstance =
+    new jfxsl.BorderImage(
       new jfxsi.Image(this.getClass.getResourceAsStream("")),
       BorderWidths.Default,
       Insets.Empty,
@@ -56,5 +59,5 @@ class BorderImageSpec
       true,
       BorderRepeat.Repeat,
       BorderRepeat.Repeat
-  )
+    )
 }

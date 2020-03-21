@@ -29,7 +29,8 @@ class TestConductorMultiJvmNode1 extends TestConductorSpec
 class TestConductorMultiJvmNode2 extends TestConductorSpec
 
 class TestConductorSpec
-    extends MultiNodeSpec(TestConductorMultiJvmSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(TestConductorMultiJvmSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   import TestConductorMultiJvmSpec._
@@ -45,11 +46,14 @@ class TestConductorSpec
 
     "enter a barrier" taggedAs LongRunningTest in {
       runOn(master) {
-        system.actorOf(Props(new Actor {
-          def receive = {
-            case x ⇒ testActor ! x; sender() ! x
-          }
-        }).withDeploy(Deploy.local), "echo")
+        system.actorOf(
+          Props(new Actor {
+            def receive = {
+              case x ⇒ testActor ! x; sender() ! x
+            }
+          }).withDeploy(Deploy.local),
+          "echo"
+        )
       }
 
       enterBarrier("name")

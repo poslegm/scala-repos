@@ -13,7 +13,11 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScExpression
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScTemplateDefinition
 import org.jetbrains.plugins.scala.lang.psi.types.StdType
-import org.jetbrains.plugins.scala.lang.refactoring.introduceField.{IntroduceFieldContext, IntroduceFieldSettings, ScalaIntroduceFieldFromExpressionHandler}
+import org.jetbrains.plugins.scala.lang.refactoring.introduceField.{
+  IntroduceFieldContext,
+  IntroduceFieldSettings,
+  ScalaIntroduceFieldFromExpressionHandler
+}
 import org.jetbrains.plugins.scala.lang.refactoring.util.ScalaRefactoringUtil
 import org.jetbrains.plugins.scala.util.ScalaUtils
 import org.junit.Assert._
@@ -36,21 +40,25 @@ abstract class IntroduceFieldTestBase()
   protected def doTest() {
     val filePath = folderPath + getTestName(false) + ".scala"
     val file = LocalFileSystem.getInstance.findFileByPath(
-        filePath.replace(File.separatorChar, '/'))
+      filePath.replace(File.separatorChar, '/')
+    )
     assert(file != null, "file " + filePath + " not found")
-    var fileText = StringUtil.convertLineSeparators(FileUtil.loadFile(
-            new File(file.getCanonicalPath), CharsetToolkit.UTF8))
+    var fileText = StringUtil.convertLineSeparators(
+      FileUtil.loadFile(new File(file.getCanonicalPath), CharsetToolkit.UTF8)
+    )
 
     val startOffset = fileText.indexOf(startMarker)
     assert(
-        startOffset != -1,
-        "Not specified start marker in test case. Use /*start*/ in scala file for this.")
+      startOffset != -1,
+      "Not specified start marker in test case. Use /*start*/ in scala file for this."
+    )
     fileText = fileText.replace(startMarker, "")
 
     val endOffset = fileText.indexOf(endMarker)
     assert(
-        endOffset != -1,
-        "Not specified end marker in test case. Use /*end*/ in scala file for this.")
+      endOffset != -1,
+      "Not specified end marker in test case. Use /*end*/ in scala file for this."
+    )
     fileText = fileText.replace(endMarker, "")
 
     configureFromFileTextAdapter(getTestName(false) + ".scala", fileText)
@@ -80,12 +88,23 @@ abstract class IntroduceFieldTestBase()
     try {
       val handler = new ScalaIntroduceFieldFromExpressionHandler
       val Some((expr, types)) = ScalaRefactoringUtil.getExpression(
-          getProjectAdapter, editor, scalaFile, startOffset, endOffset)
+        getProjectAdapter,
+        editor,
+        scalaFile,
+        startOffset,
+        endOffset
+      )
       val aClass = expr.parents.toList
         .filter(_.isInstanceOf[ScTemplateDefinition])(selectedClassNumber)
         .asInstanceOf[ScTemplateDefinition]
       val ifc = new IntroduceFieldContext[ScExpression](
-          getProjectAdapter, editor, scalaFile, expr, types, aClass)
+        getProjectAdapter,
+        editor,
+        scalaFile,
+        expr,
+        types,
+        aClass
+      )
       val settings = new IntroduceFieldSettings[ScExpression](ifc)
       settings.replaceAll = replaceAll
       initInDecl.foreach(settings.initInDeclaration = _)
@@ -93,18 +112,24 @@ abstract class IntroduceFieldTestBase()
       settings.name = "i"
       settings.explicitType = true
       settings.scType = StdType.QualNameToType("scala.Int")
-      ScalaUtils.runWriteActionDoNotRequestConfirmation(new Runnable {
-        def run() {
-          handler.runRefactoring(ifc, settings)
-          UsefulTestCase.doPostponedFormatting(getProjectAdapter)
-        }
-      }, getProjectAdapter, "Test")
+      ScalaUtils.runWriteActionDoNotRequestConfirmation(
+        new Runnable {
+          def run() {
+            handler.runRefactoring(ifc, settings)
+            UsefulTestCase.doPostponedFormatting(getProjectAdapter)
+          }
+        },
+        getProjectAdapter,
+        "Test"
+      )
       res = scalaFile.getText.substring(0, lastPsi.getTextOffset).trim
     } catch {
       case e: Exception =>
-        assert(assertion = false,
-               message = e.getMessage + "\n" +
-                 e.getStackTrace.map(_.toString).mkString("  \n"))
+        assert(
+          assertion = false,
+          message = e.getMessage + "\n" +
+            e.getStackTrace.map(_.toString).mkString("  \n")
+        )
     }
 
     val text = lastPsi.getText

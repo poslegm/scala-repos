@@ -25,7 +25,8 @@ object ThreadPoolsSpec extends PlaySpecification {
     "make a global thread pool available" in new WithApplication() {
       val controller = app.injector.instanceOf[Samples]
       contentAsString(controller.someAsyncAction(FakeRequest())) must startWith(
-          "The response code was")
+        "The response code was"
+      )
     }
 
     "have a global configuration" in {
@@ -92,7 +93,7 @@ object ThreadPoolsSpec extends PlaySpecification {
     }
 
     "allow configuring a custom thread pool" in runningWithConfig(
-        """#my-context-config
+      """#my-context-config
         my-context {
           fork-join-executor {
             parallelism-factor = 20.0
@@ -106,8 +107,9 @@ object ThreadPoolsSpec extends PlaySpecification {
       val myExecutionContext: ExecutionContext =
         akkaSystem.dispatchers.lookup("my-context")
       //#my-context-usage
-      await(Future(Thread.currentThread().getName)(myExecutionContext)) must startWith(
-          "application-my-context")
+      await(
+        Future(Thread.currentThread().getName)(myExecutionContext)
+      ) must startWith("application-my-context")
 
       //#my-context-explicit
       Future {
@@ -136,7 +138,8 @@ object ThreadPoolsSpec extends PlaySpecification {
 
     "allow a synchronous thread pool" in {
       val config =
-        ConfigFactory.parseString("""#highly-synchronous
+        ConfigFactory.parseString(
+          """#highly-synchronous
       akka {
         actor {
           default-dispatcher {
@@ -148,7 +151,8 @@ object ThreadPoolsSpec extends PlaySpecification {
           }
         }
       }
-      #highly-synchronous """)
+      #highly-synchronous """
+        )
 
       val actorSystem = ActorSystem("test", config.getConfig("akka"))
       actorSystem.terminate()
@@ -156,7 +160,7 @@ object ThreadPoolsSpec extends PlaySpecification {
     }
 
     "allow configuring many custom thread pools" in runningWithConfig(
-        """ #many-specific-config
+      """ #many-specific-config
       contexts {
         simple-db-lookups {
           executor = "thread-pool-executor"
@@ -202,7 +206,8 @@ object ThreadPoolsSpec extends PlaySpecification {
       //#many-specific-contexts
       def test(context: ExecutionContext, name: String) = {
         await(Future(Thread.currentThread().getName)(context)) must startWith(
-            "application-contexts." + name)
+          "application-contexts." + name
+        )
       }
       test(Contexts.simpleDbLookups, "simple-db-lookups")
       test(Contexts.expensiveDbLookups, "expensive-db-lookups")
@@ -211,28 +216,31 @@ object ThreadPoolsSpec extends PlaySpecification {
     }
   }
 
-  def runningWithConfig[T : AsResult](config: String)(
-      block: Application => T) = {
+  def runningWithConfig[T: AsResult](
+      config: String
+  )(block: Application => T) = {
     val parsed: java.util.Map[String, Object] =
       ConfigFactory.parseString(config).root.unwrapped
     running(_.configure(Configuration(ConfigFactory.parseString(config))))(
-        block)
+      block
+    )
   }
 }
 
 // since specs provides defaultContext, implicitly importing it doesn't work
-class Samples @Inject()(wsClient: WSClient) {
+class Samples @Inject() (wsClient: WSClient) {
 
   //#global-thread-pool
   import play.api.libs.concurrent.Execution.Implicits._
 
-  def someAsyncAction = Action.async {
-    wsClient.url("http://www.playframework.com").get().map { response =>
-      // This code block is executed in the imported default execution context
-      // which happens to be the same thread pool in which the outer block of
-      // code in this action will be executed.
-      Results.Ok("The response code was " + response.status)
+  def someAsyncAction =
+    Action.async {
+      wsClient.url("http://www.playframework.com").get().map { response =>
+        // This code block is executed in the imported default execution context
+        // which happens to be the same thread pool in which the outer block of
+        // code in this action will be executed.
+        Results.Ok("The response code was " + response.status)
+      }
     }
-  }
   //#global-thread-pool
 }

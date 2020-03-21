@@ -28,19 +28,22 @@ import scala.util.control.NonFatal
   * The same as ParquetScroogeScheme, but sets the record convert to Parquet346ScroogeRecordConverter
   */
 class Parquet346ScroogeScheme[T <: ThriftStruct](
-    config: ParquetValueScheme.Config[T])
-    extends ParquetScroogeScheme[T](config) {
+    config: ParquetValueScheme.Config[T]
+) extends ParquetScroogeScheme[T](config) {
 
   override def sourceConfInit(
       fp: FlowProcess[JobConf],
       tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-      jobConf: JobConf): Unit = {
+      jobConf: JobConf
+  ): Unit = {
 
     super.sourceConfInit(fp, tap, jobConf)
 
     // Use the fixed record converter instead of the one set in super
     ThriftReadSupport.setRecordConverterClass(
-        jobConf, classOf[Parquet346ScroogeRecordConverter[_]])
+      jobConf,
+      classOf[Parquet346ScroogeRecordConverter[_]]
+    )
   }
 }
 
@@ -71,18 +74,21 @@ object Parquet346ScroogeRecordConverter {
   * used.
   */
 class Parquet346ScroogeRecordConverter[T <: ThriftStruct](
-    thriftClass: Class[T], parquetSchema: MessageType, thriftType: StructType)
-    extends ThriftRecordConverter[T](
-        // this is a little confusing because it's all being passed to the super constructor
+    thriftClass: Class[T],
+    parquetSchema: MessageType,
+    thriftType: StructType
+) extends ThriftRecordConverter[T](
+      // this is a little confusing because it's all being passed to the super constructor
 
-        // this thrift reader is the same as what's in ScroogeRecordConverter's constructor
-        new ThriftReader[T] {
-          val codec: ThriftStructCodec[T] =
-            Parquet346ScroogeRecordConverter.getCodec(thriftClass)
-          def readOneRecord(protocol: TProtocol): T = codec.decode(protocol)
-        },
-        thriftClass.getSimpleName,
-        parquetSchema,
-        // this is the fix -- we add in the missing structOrUnionType metadata
-        // before passing it along
-        Parquet346StructTypeRepairer.repair(thriftType))
+      // this thrift reader is the same as what's in ScroogeRecordConverter's constructor
+      new ThriftReader[T] {
+        val codec: ThriftStructCodec[T] =
+          Parquet346ScroogeRecordConverter.getCodec(thriftClass)
+        def readOneRecord(protocol: TProtocol): T = codec.decode(protocol)
+      },
+      thriftClass.getSimpleName,
+      parquetSchema,
+      // this is the fix -- we add in the missing structOrUnionType metadata
+      // before passing it along
+      Parquet346StructTypeRepairer.repair(thriftType)
+    )

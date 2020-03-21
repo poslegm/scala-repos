@@ -11,7 +11,9 @@ import java.net.{InetSocketAddress, SocketAddress}
   * relinquishes resources that are associated with the server.
   */
 trait ListeningServer
-    extends Closable with Awaitable[Unit] with Group[SocketAddress] {
+    extends Closable
+    with Awaitable[Unit]
+    with Group[SocketAddress] {
 
   /**
     * The address to which this server is bound.
@@ -28,26 +30,28 @@ trait ListeningServer
   /**
     * Announce the given address and return a future to the announcement
     */
-  def announce(addr: String): Future[Announcement] = synchronized {
-    val public = InetSocketAddressUtil
-      .toPublic(boundAddress)
-      .asInstanceOf[InetSocketAddress]
-    if (isClosed)
-      Future.exception(new Exception("Cannot announce on a closed server"))
-    else {
-      val ann = Announcer.announce(public, addr)
-      announcements ::= ann
-      ann
+  def announce(addr: String): Future[Announcement] =
+    synchronized {
+      val public = InetSocketAddressUtil
+        .toPublic(boundAddress)
+        .asInstanceOf[InetSocketAddress]
+      if (isClosed)
+        Future.exception(new Exception("Cannot announce on a closed server"))
+      else {
+        val ann = Announcer.announce(public, addr)
+        announcements ::= ann
+        ann
+      }
     }
-  }
 
-  final def close(deadline: Time): Future[Unit] = synchronized {
-    isClosed = true
-    val collected = Future.collect(announcements)
-    collected flatMap { list =>
-      Closable.all(list: _*).close(deadline) before closeServer(deadline)
+  final def close(deadline: Time): Future[Unit] =
+    synchronized {
+      isClosed = true
+      val collected = Future.collect(announcements)
+      collected flatMap { list =>
+        Closable.all(list: _*).close(deadline) before closeServer(deadline)
+      }
     }
-  }
 }
 
 /**
@@ -108,7 +112,9 @@ trait Server[Req, Rep] {
 
   /** $addr */
   def serve(
-      addr: SocketAddress, service: ServiceFactory[Req, Rep]): ListeningServer
+      addr: SocketAddress,
+      service: ServiceFactory[Req, Rep]
+  ): ListeningServer
 
   /** $addr */
   def serve(addr: SocketAddress, service: Service[Req, Rep]): ListeningServer =
@@ -153,18 +159,24 @@ trait Server[Req, Rep] {
   }
 
   /** $serveAndAnnounce */
-  def serveAndAnnounce(name: String,
-                       addr: String,
-                       service: Service[Req, Rep]): ListeningServer =
+  def serveAndAnnounce(
+      name: String,
+      addr: String,
+      service: Service[Req, Rep]
+  ): ListeningServer =
     serveAndAnnounce(name, addr, ServiceFactory.const(service))
 
   /** $serveAndAnnounce */
   def serveAndAnnounce(
-      name: String, service: ServiceFactory[Req, Rep]): ListeningServer =
+      name: String,
+      service: ServiceFactory[Req, Rep]
+  ): ListeningServer =
     serveAndAnnounce(name, ":*", service)
 
   /** $serveAndAnnounce */
   def serveAndAnnounce(
-      name: String, service: Service[Req, Rep]): ListeningServer =
+      name: String,
+      service: Service[Req, Rep]
+  ): ListeningServer =
     serveAndAnnounce(name, ServiceFactory.const(service))
 }

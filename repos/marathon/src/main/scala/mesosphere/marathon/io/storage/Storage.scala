@@ -75,9 +75,7 @@ trait StorageItem {
     * Store this item with given item input.
     */
   def store(from: StorageItem): StorageItem = {
-    IO.using(from.inputStream()) { in =>
-      store(out => IO.transfer(in, out))
-    }
+    IO.using(from.inputStream()) { in => store(out => IO.transfer(in, out)) }
   }
 
   /**
@@ -103,29 +101,31 @@ object StorageProvider {
     config.artifactStore.get.getOrElse("") match {
       case HDFS(uri, base) =>
         new HDFSStorageProvider(
-            new URI(uri),
-            if (base.isEmpty) "/" else base,
-            new Configuration()
+          new URI(uri),
+          if (base.isEmpty) "/" else base,
+          new Configuration()
         )
 
       case FILE(base) =>
         new FileStorageProvider(
-            s"http://${config.hostname.get.get}:${http.httpPort.get.get}/v2/artifacts",
-            new File(base)
+          s"http://${config.hostname.get.get}:${http.httpPort.get.get}/v2/artifacts",
+          new File(base)
         )
 
       case _ =>
         new NoStorageProvider()
     }
 
-  def isValidUrl(url: String): Boolean = url match {
-    case HDFS(_, _) => true
-    case FILE(_) => true
-    case _ => false
-  }
+  def isValidUrl(url: String): Boolean =
+    url match {
+      case HDFS(_, _) => true
+      case FILE(_)    => true
+      case _          => false
+    }
 
-  def examples: Map[String, String] = Map(
+  def examples: Map[String, String] =
+    Map(
       "hdfs" -> "hdfs://localhost:54310/path/to/store",
       "file" -> "file:///var/log/store"
-  )
+    )
 }

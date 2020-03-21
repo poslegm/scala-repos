@@ -33,22 +33,29 @@ class ReachingDefsTest extends LightCodeInsightFixtureTestCase {
     myFixture.configureByText(ScalaFileType.SCALA_FILE_TYPE, input.get(0))
     val file: ScalaFile = myFixture.getFile.asInstanceOf[ScalaFile]
     val model: SelectionModel = myFixture.getEditor.getSelectionModel
-    val start: PsiElement = file.findElementAt(
-        if (model.hasSelection) model.getSelectionStart else 0)
-    val end: PsiElement = file.findElementAt(if (model.hasSelection)
-          model.getSelectionEnd - 1 else file.getTextLength - 1)
+    val start: PsiElement =
+      file.findElementAt(if (model.hasSelection) model.getSelectionStart else 0)
+    val end: PsiElement = file.findElementAt(
+      if (model.hasSelection)
+        model.getSelectionEnd - 1
+      else file.getTextLength - 1
+    )
     val owner: ScControlFlowOwner = PsiTreeUtil.getParentOfType(
-        PsiTreeUtil.findCommonParent(start, end),
-        classOf[ScControlFlowOwner],
-        false)
-    val builder: ScalaControlFlowBuilder = new ScalaControlFlowBuilder(
-        null, null)
+      PsiTreeUtil.findCommonParent(start, end),
+      classOf[ScControlFlowOwner],
+      false
+    )
+    val builder: ScalaControlFlowBuilder =
+      new ScalaControlFlowBuilder(null, null)
     val instructions = builder.buildControlflow(owner)
 
     import org.jetbrains.plugins.scala.lang.psi.dataFlow.impl.reachingDefs.ReachingDefinitions._
 
     val engine = new DfaEngine(
-        instructions, ReachingDefinitionsInstance, ReachingDefinitionsLattice)
+      instructions,
+      ReachingDefinitionsInstance,
+      ReachingDefinitionsLattice
+    )
     val markup: mutable.Map[Instruction, Set[Instruction]] = engine.performDFA
 
     val cf: String = dumpDataFlow(markup)
@@ -56,7 +63,8 @@ class ReachingDefsTest extends LightCodeInsightFixtureTestCase {
   }
 
   protected def dumpDataFlow(
-      markup: mutable.Map[Instruction, Set[Instruction]]): String = {
+      markup: mutable.Map[Instruction, Set[Instruction]]
+  ): String = {
     var builder: StringBuilder = new StringBuilder
     for (instruction <- markup.keySet.toSeq.sortBy(_.num)) {
       builder.append(instruction.toString)

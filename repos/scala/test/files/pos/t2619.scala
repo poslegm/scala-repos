@@ -5,7 +5,7 @@ abstract class AbstractModule {
   def as: List[AnyRef]
   def ms: List[AbstractModule]
   def fs: List[F] = Nil
-  def rs(x: Int): List[AnyRef] = fs.map(_ (x))
+  def rs(x: Int): List[AnyRef] = fs.map(_(x))
 }
 abstract class ModuleType1 extends AbstractModule {}
 abstract class ModuleType2 extends AbstractModule {}
@@ -32,17 +32,18 @@ object ModuleAK extends ModuleType2 {
 }
 object ModuleAL extends ModuleType1 {
   def as = Nil
-  def ms = List(
+  def ms =
+    List(
       ModuleAG,
       ModuleAI
-  )
+    )
 }
 object ModuleAM extends ModuleType1 {
   def as = Nil
   def ms =
     List(
-        ModuleAL,
-        ModuleAE
+      ModuleAL,
+      ModuleAE
     ) ::: List(ModuleAK)
 }
 object ModuleBE extends ModuleType1 {
@@ -67,16 +68,17 @@ object ModuleBK extends ModuleType2 {
 }
 object ModuleBL extends ModuleType1 {
   def as = Nil
-  def ms = List(
+  def ms =
+    List(
       ModuleBG,
       ModuleBI
-  )
+    )
 }
 object ModuleBM extends ModuleType1 {
   def as = Nil
   def ms =
     List(
-        ModuleBL,
-        ModuleBE
+      ModuleBL,
+      ModuleBE
     ) ::: List(ModuleBK)
 }

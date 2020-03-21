@@ -48,14 +48,15 @@ object Axis {
 
   object TickMark {
     implicit def sfxTickMark2jfx[T](
-        v: Axis.TickMark[T]): jfxsc.Axis.TickMark[T] =
+        v: Axis.TickMark[T]
+    ): jfxsc.Axis.TickMark[T] =
       if (v != null) v.delegate else null
   }
 
   class TickMark[T](
-      override val delegate: jfxsc.Axis.TickMark[T] = new jfxsc.Axis.TickMark[
-            T]())
-      extends SFXDelegate[jfxsc.Axis.TickMark[T]] {
+      override val delegate: jfxsc.Axis.TickMark[T] =
+        new jfxsc.Axis.TickMark[T]()
+  ) extends SFXDelegate[jfxsc.Axis.TickMark[T]] {
 
     def label: StringExpression = delegate.labelProperty
     def label_=(value: String) {
@@ -80,7 +81,8 @@ object Axis {
 }
 
 abstract class Axis[T](override val delegate: jfxsc.Axis[T])
-    extends Region(delegate) with SFXDelegate[jfxsc.Axis[T]] {
+    extends Region(delegate)
+    with SFXDelegate[jfxsc.Axis[T]] {
 
   def animated: BooleanProperty = delegate.animatedProperty
   def animated_=(v: Boolean) {

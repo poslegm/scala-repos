@@ -34,7 +34,9 @@ import scalafx.delegate.{SFXEnumDelegate, SFXEnumDelegateCompanion}
 /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/text/FontSmoothingType.html javafx.scene.text.FontSmoothingType]] */
 object FontSmoothingType
     extends SFXEnumDelegateCompanion[
-        jfxst.FontSmoothingType, FontSmoothingType] {
+      jfxst.FontSmoothingType,
+      FontSmoothingType
+    ] {
 
   val Gray = new FontSmoothingType(jfxst.FontSmoothingType.GRAY)
   @deprecated("Use Gray; GRAY will be removed in a future release", "2.2.60")
@@ -46,5 +48,5 @@ object FontSmoothingType
 }
 
 sealed case class FontSmoothingType(
-    override val delegate: jfxst.FontSmoothingType)
-    extends SFXEnumDelegate[jfxst.FontSmoothingType]
+    override val delegate: jfxst.FontSmoothingType
+) extends SFXEnumDelegate[jfxst.FontSmoothingType]

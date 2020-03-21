@@ -6,8 +6,10 @@ import com.github.fommil.netlib.LAPACK.{getInstance => lapack}
 import spire.implicits.{cforRange, cforRange2}
 
 sealed private[this] trait QRMode
-private[this] case object CompleteQR extends QRMode // Q and R have dimensions (m, m), (m, n)
-private[this] case object ReducedQR extends QRMode // Q and R have dimensions (m, k), (k, n) with k = min(m, n)
+private[this] case object CompleteQR
+    extends QRMode // Q and R have dimensions (m, m), (m, n)
+private[this] case object ReducedQR
+    extends QRMode // Q and R have dimensions (m, k), (k, n) with k = min(m, n)
 
 /**
   * QR Factorization
@@ -69,8 +71,9 @@ object qr extends UFunc {
       }
     }
 
-    implicit def canJustQIfWeCanQR[T, M](
-        implicit qrImpl: qr.Impl[T, QR[M]]): Impl[T, M] = {
+    implicit def canJustQIfWeCanQR[T, M](implicit
+        qrImpl: qr.Impl[T, QR[M]]
+    ): Impl[T, M] = {
       new Impl[T, M] {
         def apply(v: T): M = qrImpl(v).r
       }
@@ -82,8 +85,9 @@ object qr extends UFunc {
     */
   object justQ extends UFunc {
 
-    implicit def canJustQIfWeCanQR[T, M](
-        implicit qrImpl: qr.Impl[T, QR[M]]): Impl[T, M] = {
+    implicit def canJustQIfWeCanQR[T, M](implicit
+        qrImpl: qr.Impl[T, QR[M]]
+    ): Impl[T, M] = {
       new Impl[T, M] {
         def apply(v: T): M = qrImpl(v).q
       }
@@ -130,8 +134,9 @@ object qr extends UFunc {
         }
       }
 
-      implicit def canJustQIfWeCanQR[T, M](
-          implicit qrImpl: qr.reduced.Impl[T, QR[M]]): Impl[T, M] = {
+      implicit def canJustQIfWeCanQR[T, M](implicit
+          qrImpl: qr.reduced.Impl[T, QR[M]]
+      ): Impl[T, M] = {
         new Impl[T, M] {
           def apply(v: T): M = qrImpl(v).r
         }
@@ -142,8 +147,9 @@ object qr extends UFunc {
       * QR that just returns Q with reduced size.
       */
     object justQ extends UFunc {
-      implicit def canJustQIfWeCanQR[T, M](
-          implicit qrImpl: qr.reduced.Impl[T, QR[M]]): Impl[T, M] = {
+      implicit def canJustQIfWeCanQR[T, M](implicit
+          qrImpl: qr.reduced.Impl[T, QR[M]]
+      ): Impl[T, M] = {
         new Impl[T, M] {
           def apply(v: T): M = qrImpl(v).q
         }
@@ -152,7 +158,8 @@ object qr extends UFunc {
   }
 
   private def doQr(M: DenseMatrix[Double], skipQ: Boolean)(
-      mode: QRMode): (DenseMatrix[Double], DenseMatrix[Double]) = {
+      mode: QRMode
+  ): (DenseMatrix[Double], DenseMatrix[Double]) = {
 
     val A = M.copy
 
@@ -203,9 +210,7 @@ object qr extends UFunc {
 
       // Upper triangle
       cforRange(0 until mc) { i =>
-        cforRange(0 until min(i, A.cols)) { j =>
-          A(i, j) = 0.0
-        }
+        cforRange(0 until min(i, A.cols)) { j => A(i, j) = 0.0 }
       }
 
       (Q(::, 0 until mc), A(0 until mc, ::))
@@ -213,7 +218,8 @@ object qr extends UFunc {
   }
 
   private def doQr_Float(M: DenseMatrix[Float], skipQ: Boolean)(
-      mode: QRMode): (DenseMatrix[Float], DenseMatrix[Float]) = {
+      mode: QRMode
+  ): (DenseMatrix[Float], DenseMatrix[Float]) = {
 
     val A = M.copy
 
@@ -264,9 +270,7 @@ object qr extends UFunc {
 
       // Upper triangle
       cforRange(0 until mc) { i =>
-        cforRange(0 until min(i, A.cols)) { j =>
-          A(i, j) = 0.0f
-        }
+        cforRange(0 until min(i, A.cols)) { j => A(i, j) = 0.0f }
       }
 
       (Q(::, 0 until mc), A(0 until mc, ::))
@@ -286,7 +290,11 @@ object qr extends UFunc {
   */
 object qrp extends UFunc {
   case class QRP[M, PivotMatrix](
-      q: M, r: M, pivotMatrix: PivotMatrix, pivotIndices: Array[Int])
+      q: M,
+      r: M,
+      pivotMatrix: PivotMatrix,
+      pivotIndices: Array[Int]
+  )
 
   type DenseQRP = QRP[DenseMatrix[Double], DenseMatrix[Int]]
 
@@ -302,7 +310,16 @@ object qrp extends UFunc {
       lapack.dgeqrf(m, n, scratch, m, scratch, work, -1, info)
       val lwork1 = if (info.`val` != 0) n else work(0).toInt
       lapack.dorgqr(
-          m, m, scala.math.min(m, n), scratch, m, scratch, work, -1, info)
+        m,
+        m,
+        scala.math.min(m, n),
+        scratch,
+        m,
+        scratch,
+        work,
+        -1,
+        info
+      )
       val lwork2 = if (info.`val` != 0) n else work(0).toInt
       //allocate workspace mem. as max of lwork1 and lwork3
       val workspace = new Array[Double](scala.math.max(lwork1, lwork2))
@@ -313,12 +330,19 @@ object qrp extends UFunc {
       val pvt = new Array[Int](n)
       val tau = new Array[Double](scala.math.min(m, n))
 
-      cforRange2(0 until m, 0 until n) { (r, c) =>
-        AFact(r, c) = A(r, c)
-      }
+      cforRange2(0 until m, 0 until n) { (r, c) => AFact(r, c) = A(r, c) }
 
       lapack.dgeqp3(
-          m, n, AFact.data, m, pvt, tau, workspace, workspace.length, info)
+        m,
+        n,
+        AFact.data,
+        m,
+        pvt,
+        tau,
+        workspace,
+        workspace.length,
+        info
+      )
 
       //Error check
       if (info.`val` > 0)
@@ -329,22 +353,22 @@ object qrp extends UFunc {
       val R = DenseMatrix.zeros[Double](m, n)
 
       cforRange(0 until min(n, maxd)) { c =>
-        cforRange(0 to min(m, c)) { r =>
-          R(r, c) = AFact(r, c)
-        }
+        cforRange(0 to min(m, c)) { r => R(r, c) = AFact(r, c) }
       }
 
       //Get Q from the matrix returned by dgep3
       val Q = DenseMatrix.zeros[Double](m, m)
-      lapack.dorgqr(m,
-                    m,
-                    scala.math.min(m, n),
-                    AFact.data,
-                    m,
-                    tau,
-                    workspace,
-                    workspace.length,
-                    info)
+      lapack.dorgqr(
+        m,
+        m,
+        scala.math.min(m, n),
+        AFact.data,
+        m,
+        tau,
+        workspace,
+        workspace.length,
+        info
+      )
 
       cforRange2(0 until m, 0 until min(m, maxd)) { (r, c) =>
         Q(r, c) = AFact(r, c)
@@ -360,9 +384,7 @@ object qrp extends UFunc {
       pvt -= 1
       val P = DenseMatrix.zeros[Int](n, n)
 
-      cforRange(0 until n) { i =>
-        P(pvt(i), i) = 1
-      }
+      cforRange(0 until n) { i => P(pvt(i), i) = 1 }
 
       QRP(Q, R, P, pvt)
     }

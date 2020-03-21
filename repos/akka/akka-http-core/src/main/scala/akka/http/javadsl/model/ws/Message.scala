@@ -33,10 +33,11 @@ sealed abstract class Message {
 }
 
 object Message {
-  def adapt(msg: sm.ws.Message): Message = msg match {
-    case t: sm.ws.TextMessage ⇒ TextMessage.adapt(t)
-    case b: sm.ws.BinaryMessage ⇒ BinaryMessage.adapt(b)
-  }
+  def adapt(msg: sm.ws.Message): Message =
+    msg match {
+      case t: sm.ws.TextMessage ⇒ TextMessage.adapt(t)
+      case b: sm.ws.BinaryMessage ⇒ BinaryMessage.adapt(b)
+    }
 }
 
 /**
@@ -91,16 +92,18 @@ object TextMessage {
       def isStrict: Boolean = false
       def getStrictText: String =
         throw new IllegalStateException(
-            "Cannot get strict text for streamed message.")
+          "Cannot get strict text for streamed message."
+        )
       def getStreamedText: Source[String, _] = textStream
 
       def asScala: sm.ws.TextMessage = sm.ws.TextMessage(textStream.asScala)
     }
 
-  def adapt(msg: sm.ws.TextMessage): TextMessage = msg match {
-    case sm.ws.TextMessage.Strict(text) ⇒ create(text)
-    case tm: sm.ws.TextMessage ⇒ create(tm.textStream.asJava)
-  }
+  def adapt(msg: sm.ws.TextMessage): TextMessage =
+    msg match {
+      case sm.ws.TextMessage.Strict(text) ⇒ create(text)
+      case tm: sm.ws.TextMessage ⇒ create(tm.textStream.asJava)
+    }
 }
 
 /**
@@ -152,15 +155,17 @@ object BinaryMessage {
       def isStrict: Boolean = false
       def getStrictData: ByteString =
         throw new IllegalStateException(
-            "Cannot get strict data for streamed message.")
+          "Cannot get strict data for streamed message."
+        )
       def getStreamedData: Source[ByteString, _] = dataStream
 
       def asScala: sm.ws.BinaryMessage =
         sm.ws.BinaryMessage(dataStream.asScala)
     }
 
-  def adapt(msg: sm.ws.BinaryMessage): BinaryMessage = msg match {
-    case sm.ws.BinaryMessage.Strict(data) ⇒ create(data)
-    case bm: sm.ws.BinaryMessage ⇒ create(bm.dataStream.asJava)
-  }
+  def adapt(msg: sm.ws.BinaryMessage): BinaryMessage =
+    msg match {
+      case sm.ws.BinaryMessage.Strict(data) ⇒ create(data)
+      case bm: sm.ws.BinaryMessage ⇒ create(bm.dataStream.asJava)
+    }
 }

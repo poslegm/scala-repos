@@ -45,7 +45,8 @@ abstract class ParallelHashMapCheck[K, V](tp: String)
 
 class IntIntParallelHashMapCheck(val tasksupport: TaskSupport)
     extends ParallelHashMapCheck[Int, Int]("Int, Int")
-    with PairOperators[Int, Int] with PairValues[Int, Int] {
+    with PairOperators[Int, Int]
+    with PairValues[Int, Int] {
   def intvalues = new IntValues {}
   def kvalues = intvalues.values
   def vvalues = intvalues.values
@@ -54,12 +55,13 @@ class IntIntParallelHashMapCheck(val tasksupport: TaskSupport)
   def voperators = intoperators
   def koperators = intoperators
 
-  override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
-    case pm: ParHashMap[k, v] =>
-      pm.printDebugInfo
-    case _ =>
-      println("could not match data structure type: " + ds.getClass)
-  }
+  override def printDataStructureDebugInfo(ds: AnyRef) =
+    ds match {
+      case pm: ParHashMap[k, v] =>
+        pm.printDebugInfo
+      case _ =>
+        println("could not match data structure type: " + ds.getClass)
+    }
 }
 
 abstract class ParallelHashSetCheck[T](tp: String)
@@ -93,24 +95,28 @@ abstract class ParallelHashSetCheck[T](tp: String)
     phs
   }
 
-  override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
-    case pm: ParHashSet[t] =>
-      println("Parallel hash set")
-    case _ =>
-      println("could not match data structure type: " + ds.getClass)
-  }
+  override def printDataStructureDebugInfo(ds: AnyRef) =
+    ds match {
+      case pm: ParHashSet[t] =>
+        println("Parallel hash set")
+      case _ =>
+        println("could not match data structure type: " + ds.getClass)
+    }
 }
 
 class IntParallelHashSetCheck(val tasksupport: TaskSupport)
-    extends ParallelHashSetCheck[Int]("Int") with IntOperators with IntValues {
+    extends ParallelHashSetCheck[Int]("Int")
+    with IntOperators
+    with IntValues {
   def intvalues = new IntValues {}
   def kvalues = intvalues.values
   def vvalues = intvalues.values
 
-  override def printDataStructureDebugInfo(ds: AnyRef) = ds match {
-    case pm: ParHashMap[k, v] =>
-      pm.printDebugInfo
-    case _ =>
-      println("could not match data structure type: " + ds.getClass)
-  }
+  override def printDataStructureDebugInfo(ds: AnyRef) =
+    ds match {
+      case pm: ParHashMap[k, v] =>
+        pm.printDebugInfo
+      case _ =>
+        println("could not match data structure type: " + ds.getClass)
+    }
 }

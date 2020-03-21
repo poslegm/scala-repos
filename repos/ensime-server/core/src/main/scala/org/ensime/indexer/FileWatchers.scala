@@ -36,10 +36,10 @@ trait Watcher {
 class ClassfileWatcher(
     config: EnsimeConfig,
     listeners: Seq[FileChangeListener]
-)(
-    implicit vfs: EnsimeVFS
-)
-    extends Actor with SLF4JLogging {
+)(implicit
+    vfs: EnsimeVFS
+) extends Actor
+    with SLF4JLogging {
 
   private val impls =
     if (config.disableClassMonitoring) Nil
@@ -63,10 +63,10 @@ class ClassfileWatcher(
 class SourceWatcher(
     config: EnsimeConfig,
     listeners: Seq[FileChangeListener]
-)(
-    implicit vfs: EnsimeVFS
-)
-    extends Watcher with SLF4JLogging {
+)(implicit
+    vfs: EnsimeVFS
+) extends Watcher
+    with SLF4JLogging {
   private val impls =
     if (config.disableSourceMonitoring) Nil
     else
@@ -88,10 +88,10 @@ private class ApachePollingFileWatcher(
     selector: ExtSelector,
     recursive: Boolean,
     listeners: Seq[FileChangeListener]
-)(
-    implicit vfs: EnsimeVFS
-)
-    extends Watcher with SLF4JLogging {
+)(implicit
+    vfs: EnsimeVFS
+) extends Watcher
+    with SLF4JLogging {
   private val base = vfs.vfile(watched).getName.getURI
 
   @volatile private var fm: DefaultFileMonitor = create()

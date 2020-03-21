@@ -19,4 +19,6 @@ package kafka.server
 import kafka.message.MessageSet
 
 case class FetchDataInfo(
-    fetchOffsetMetadata: LogOffsetMetadata, messageSet: MessageSet)
+    fetchOffsetMetadata: LogOffsetMetadata,
+    messageSet: MessageSet
+)

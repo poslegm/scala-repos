@@ -38,15 +38,16 @@ trait SourcedException extends Exception with HasRemoteInfo {
 object SourcedException {
   val UnspecifiedServiceName = "unspecified"
 
-  def unapply(t: Throwable): Option[String] = t match {
-    case sourced: SourcedException
-        if sourced.serviceName != SourcedException.UnspecifiedServiceName =>
-      Some(sourced.serviceName)
-    case sourced: Failure =>
-      sourced.getSource(Failure.Source.Service).map(_.toString)
-    case _ =>
-      None
-  }
+  def unapply(t: Throwable): Option[String] =
+    t match {
+      case sourced: SourcedException
+          if sourced.serviceName != SourcedException.UnspecifiedServiceName =>
+        Some(sourced.serviceName)
+      case sourced: Failure =>
+        sourced.getSource(Failure.Source.Service).map(_.toString)
+      case _ =>
+        None
+    }
 }
 
 /**
@@ -68,7 +69,8 @@ trait NoStacktrace extends Exception {
 
 object NoStacktrace {
   val NoStacktraceArray = Array(
-      new StackTraceElement("com.twitter.finagle", "NoStacktrace", null, -1))
+    new StackTraceElement("com.twitter.finagle", "NoStacktrace", null, -1)
+  )
 }
 
 /**
@@ -76,7 +78,9 @@ object NoStacktrace {
   * before a request could be successfully serviced.
   */
 class RequestException(message: String, cause: Throwable)
-    extends Exception(message, cause) with NoStacktrace with SourcedException {
+    extends Exception(message, cause)
+    with NoStacktrace
+    with SourcedException {
   def this() = this(null, null)
   def this(cause: Throwable) = this(null, cause)
   override def getStackTrace =
@@ -107,8 +111,8 @@ trait TimeoutException extends SourcedException { self: Exception =>
 class RequestTimeoutException(
     protected val timeout: Duration,
     protected val explanation: String
-)
-    extends RequestException with TimeoutException
+) extends RequestException
+    with TimeoutException
 
 /**
   * Indicates that a single Finagle-level request timed out. In contrast to
@@ -118,8 +122,9 @@ class RequestTimeoutException(
   */
 class IndividualRequestTimeoutException(timeout: Duration)
     extends RequestTimeoutException(
-        timeout,
-        "waiting for a response for an individual request, excluding retries")
+      timeout,
+      "waiting for a response for an individual request, excluding retries"
+    )
 
 /**
   * Indicates that a request timed out, where "request" comprises a full RPC
@@ -129,8 +134,9 @@ class IndividualRequestTimeoutException(timeout: Duration)
   */
 class GlobalRequestTimeoutException(timeout: Duration)
     extends RequestTimeoutException(
-        timeout,
-        "waiting for a response for the request, including retries (if applicable)")
+      timeout,
+      "waiting for a response for the request, including retries (if applicable)"
+    )
 
 /**
   * Indicates that a request failed because no servers were available. The
@@ -155,8 +161,7 @@ class NoBrokersAvailableException(
     val name: String,
     val baseDtab: Dtab,
     val localDtab: Dtab
-)
-    extends RequestException {
+) extends RequestException {
   def this(name: String = "unknown") = this(name, Dtab.empty, Dtab.empty)
 
   override def exceptionMessage =
@@ -218,7 +223,8 @@ class CancelledConnectionException(cause: Throwable)
   *      for additional details.
   */
 class FailedFastException(message: String)
-    extends RequestException(message, cause = null) with WriteException {
+    extends RequestException(message, cause = null)
+    with WriteException {
   def this() = this(null)
 }
 
@@ -268,7 +274,9 @@ object ChannelException {
   * An exception encountered within the context of a given socket channel.
   */
 class ChannelException(underlying: Throwable, val remoteAddress: SocketAddress)
-    extends Exception(underlying) with SourcedException with HasLogLevel {
+    extends Exception(underlying)
+    with SourcedException
+    with HasLogLevel {
   def this(underlying: Throwable) = this(underlying, null)
   def this() = this(null, null)
   override def exceptionMessage = {
@@ -292,8 +300,10 @@ class ChannelException(underlying: Throwable, val remoteAddress: SocketAddress)
   * particular category of connection failure.
   */
 class ConnectionFailedException(
-    underlying: Throwable, remoteAddress: SocketAddress)
-    extends ChannelException(underlying, remoteAddress) with NoStacktrace {
+    underlying: Throwable,
+    remoteAddress: SocketAddress
+) extends ChannelException(underlying, remoteAddress)
+    with NoStacktrace {
   def this() = this(null, null)
 }
 
@@ -302,8 +312,10 @@ class ConnectionFailedException(
   * was reset by a peer or a proxy.
   */
 class ChannelClosedException(
-    underlying: Throwable, remoteAddress: SocketAddress)
-    extends ChannelException(underlying, remoteAddress) with NoStacktrace {
+    underlying: Throwable,
+    remoteAddress: SocketAddress
+) extends ChannelException(underlying, remoteAddress)
+    with NoStacktrace {
   def this(remoteAddress: SocketAddress) = this(null, remoteAddress)
   def this() = this(null, null)
 }
@@ -332,8 +344,9 @@ class InconsistentStateException(remoteAddress: SocketAddress)
   * [[com.twitter.finagle.ChannelException ChannelExceptions]].
   */
 case class UnknownChannelException(
-    underlying: Throwable, override val remoteAddress: SocketAddress)
-    extends ChannelException(underlying, remoteAddress) {
+    underlying: Throwable,
+    override val remoteAddress: SocketAddress
+) extends ChannelException(underlying, remoteAddress) {
   def this() = this(null, null)
 }
 
@@ -341,10 +354,11 @@ object WriteException {
   def apply(underlying: Throwable): WriteException =
     ChannelWriteException(underlying)
 
-  def unapply(t: Throwable): Option[Throwable] = t match {
-    case we: WriteException => Some(we.getCause)
-    case _ => None
-  }
+  def unapply(t: Throwable): Option[Throwable] =
+    t match {
+      case we: WriteException => Some(we.getCause)
+      case _                  => None
+    }
 }
 
 /**
@@ -361,7 +375,8 @@ trait WriteException extends Exception with SourcedException
   * Default implementation for [[WriteException]] that wraps an underlying exception.
   */
 case class ChannelWriteException(underlying: Throwable)
-    extends ChannelException(underlying) with WriteException
+    extends ChannelException(underlying)
+    with WriteException
     with NoStacktrace {
   override def fillInStackTrace: NoStacktrace = this
   override def getStackTrace: Array[StackTraceElement] =
@@ -373,8 +388,9 @@ case class ChannelWriteException(underlying: Throwable)
   * with a server at a given `remoteAddress`.
   */
 case class SslHandshakeException(
-    underlying: Throwable, override val remoteAddress: SocketAddress)
-    extends ChannelException(underlying, remoteAddress) {
+    underlying: Throwable,
+    override val remoteAddress: SocketAddress
+) extends ChannelException(underlying, remoteAddress) {
   def this() = this(null, null)
 }
 
@@ -389,8 +405,7 @@ case class SslHostVerificationException(principal: String)
 /**
   * Indicates that connecting to a given `remoteAddress` was refused.
   */
-case class ConnectionRefusedException(
-    override val remoteAddress: SocketAddress)
+case class ConnectionRefusedException(override val remoteAddress: SocketAddress)
     extends ChannelException(null, remoteAddress) {
   def this() = this(null)
 }
@@ -442,10 +457,12 @@ class ServiceNotAvailableException extends ServiceException
   * This type of exception should generally be safe to retry.
   */
 class ServiceTimeoutException(override protected val timeout: Duration)
-    extends WriteException with ServiceException with TimeoutException {
+    extends WriteException
+    with ServiceException
+    with TimeoutException {
   override protected def explanation =
     "creating a service/connection or reserving a service/connection from the service/connection pool " +
-    serviceName
+      serviceName
 }
 
 /**

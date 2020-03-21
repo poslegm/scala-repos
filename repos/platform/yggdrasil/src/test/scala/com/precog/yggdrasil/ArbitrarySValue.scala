@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -47,9 +47,7 @@ object CValueGenerators {
       val current =
         data.head.flattenWithPath flatMap {
           case (path, jv) =>
-            CType.forJValue(jv) map { ct =>
-              (path, ct)
-            }
+            CType.forJValue(jv) map { ct => (path, ct) }
         }
 
       (current ++ inferSchema(data.tail)).distinct
@@ -99,11 +97,10 @@ trait CValueGenerators extends ArbitraryBigDecimal {
     }
   }
 
-  def leafSchema: Gen[JSchema] = ctype map { t =>
-    (JPath.Identity -> t) :: Nil
-  }
+  def leafSchema: Gen[JSchema] = ctype map { t => (JPath.Identity -> t) :: Nil }
 
-  def ctype: Gen[CType] = oneOf(
+  def ctype: Gen[CType] =
+    oneOf(
       CString,
       CBoolean,
       CLong,
@@ -112,29 +109,28 @@ trait CValueGenerators extends ArbitraryBigDecimal {
       CNull,
       CEmptyObject,
       CEmptyArray
-  )
+    )
 
   // FIXME: TODO Should this provide some form for CDate?
-  def jvalue(ctype: CType): Gen[JValue] = ctype match {
-    case CString => alphaStr map (JString(_))
-    case CBoolean => arbitrary[Boolean] map (JBool(_))
-    case CLong =>
-      arbitrary[Long] map { ln =>
-        JNum(BigDecimal(ln, MathContext.UNLIMITED))
-      }
-    case CDouble =>
-      arbitrary[Double] map { d =>
-        JNum(BigDecimal(d, MathContext.UNLIMITED))
-      }
-    case CNum =>
-      arbitrary[BigDecimal] map { bd =>
-        JNum(bd)
-      }
-    case CNull => JNull
-    case CEmptyObject => JObject.empty
-    case CEmptyArray => JArray.empty
-    case CUndefined => JUndefined
-  }
+  def jvalue(ctype: CType): Gen[JValue] =
+    ctype match {
+      case CString  => alphaStr map (JString(_))
+      case CBoolean => arbitrary[Boolean] map (JBool(_))
+      case CLong =>
+        arbitrary[Long] map { ln =>
+          JNum(BigDecimal(ln, MathContext.UNLIMITED))
+        }
+      case CDouble =>
+        arbitrary[Double] map { d =>
+          JNum(BigDecimal(d, MathContext.UNLIMITED))
+        }
+      case CNum =>
+        arbitrary[BigDecimal] map { bd => JNum(bd) }
+      case CNull        => JNull
+      case CEmptyObject => JObject.empty
+      case CEmptyArray  => JArray.empty
+      case CUndefined   => JUndefined
+    }
 
   def jvalue(schema: Seq[(JPath, CType)]): Gen[JValue] = {
     schema.foldLeft(Gen.value[JValue](JUndefined)) {
@@ -148,33 +144,48 @@ trait CValueGenerators extends ArbitraryBigDecimal {
     }
   }
 
-  def genEventColumns(jschema: JSchema)
-    : Gen[(Int, Stream[(Identities, Seq[(JPath, JValue)])])] =
+  def genEventColumns(
+      jschema: JSchema
+  ): Gen[(Int, Stream[(Identities, Seq[(JPath, JValue)])])] =
     for {
       idCount <- choose(1, 3)
       dataSize <- choose(0, 20)
-      ids <- containerOfN[Set, List[Long]](
-          dataSize, containerOfN[List, Long](idCount, posNum[Long]))
-      values <- containerOfN[List, Seq[(JPath, JValue)]](
-          dataSize, Gen.sequence[List, (JPath, JValue)](jschema map {
-        case (jpath, ctype) => jvalue(ctype).map(jpath ->)
-      }))
+      ids <-
+        containerOfN[Set, List[Long]](
+          dataSize,
+          containerOfN[List, Long](idCount, posNum[Long])
+        )
+      values <-
+        containerOfN[List, Seq[(JPath, JValue)]](
+          dataSize,
+          Gen.sequence[List, (JPath, JValue)](jschema map {
+            case (jpath, ctype) => jvalue(ctype).map(jpath ->)
+          })
+        )
 
       falseDepth <- choose(1, 3)
       falseSchema <- schema(falseDepth)
       falseSize <- choose(0, 5)
-      falseIds <- containerOfN[Set, List[Long]](
-          falseSize, containerOfN[List, Long](idCount, posNum[Long]))
-      falseValues <- containerOfN[List, Seq[(JPath, JValue)]](
-          falseSize, Gen.sequence[List, (JPath, JValue)](falseSchema map {
-        case (jpath, ctype) => jvalue(ctype).map(jpath ->)
-      }))
+      falseIds <-
+        containerOfN[Set, List[Long]](
+          falseSize,
+          containerOfN[List, Long](idCount, posNum[Long])
+        )
+      falseValues <-
+        containerOfN[List, Seq[(JPath, JValue)]](
+          falseSize,
+          Gen.sequence[List, (JPath, JValue)](falseSchema map {
+            case (jpath, ctype) => jvalue(ctype).map(jpath ->)
+          })
+        )
 
       falseIds2 = falseIds -- ids // distinct ids
     } yield {
-      (idCount,
-       (ids.map(_.toArray) zip values).toStream ++
-       (falseIds2.map(_.toArray) zip falseValues).toStream)
+      (
+        idCount,
+        (ids.map(_.toArray) zip values).toStream ++
+          (falseIds2.map(_.toArray) zip falseValues).toStream
+      )
     }
 
   def assemble(parts: Seq[(JPath, JValue)]): JValue = {
@@ -216,7 +227,8 @@ trait SValueGenerators extends ArbitraryBigDecimal {
     } yield SArray(Vector(l: _*))
   }
 
-  def sleaf: Gen[SValue] = oneOf(
+  def sleaf: Gen[SValue] =
+    oneOf(
       alphaStr map (SString(_: String)),
       arbitrary[Boolean] map (SBoolean(_: Boolean)),
       arbitrary[Long] map (l => SDecimal(BigDecimal(l))),
@@ -225,7 +237,7 @@ trait SValueGenerators extends ArbitraryBigDecimal {
         SDecimal(bd)
       }, //scalacheck's BigDecimal gen will overflow at random
       value(SNull)
-  )
+    )
 
   def sevent(idCount: Int, vdepth: Int): Gen[SEvent] = {
     for {
@@ -235,15 +247,13 @@ trait SValueGenerators extends ArbitraryBigDecimal {
   }
 
   def chunk(size: Int, idCount: Int, vdepth: Int): Gen[Vector[SEvent]] =
-    listOfN(size, sevent(idCount, vdepth)) map { l =>
-      Vector(l: _*)
-    }
+    listOfN(size, sevent(idCount, vdepth)) map { l => Vector(l: _*) }
 }
 
 case class LimitList[A](values: List[A])
 
 object LimitList {
-  def genLimitList[A : Gen](size: Int): Gen[LimitList[A]] =
+  def genLimitList[A: Gen](size: Int): Gen[LimitList[A]] =
     for {
       i <- choose(0, size)
       l <- listOfN(i, implicitly[Gen[A]])
@@ -272,13 +282,14 @@ trait ArbitraryBigDecimal {
       mantissa <- arbitrary[Long]
       exponent <- Gen.chooseNum(-MAX_EXPONENT, MAX_EXPONENT)
 
-      adjusted = if (exponent.toLong +
-                     mantissa.toString.length >= Int.MaxValue.toLong)
-        exponent - mantissa.toString.length
-      else if (exponent.toLong -
-               mantissa.toString.length <= Int.MinValue.toLong)
-        exponent + mantissa.toString.length
-      else exponent
+      adjusted =
+        if (exponent.toLong +
+              mantissa.toString.length >= Int.MaxValue.toLong)
+          exponent - mantissa.toString.length
+        else if (exponent.toLong -
+                   mantissa.toString.length <= Int.MinValue.toLong)
+          exponent + mantissa.toString.length
+        else exponent
     } yield BigDecimal(mantissa, adjusted, java.math.MathContext.UNLIMITED))
 }
 // vim: set ts=4 sw=4 et:

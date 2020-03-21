@@ -20,17 +20,25 @@ class RecipeGlobalRateLimit extends RecipeSpec {
 
       case object ReplenishTokens
 
-      def props(maxAvailableTokens: Int,
-                tokenRefreshPeriod: FiniteDuration,
-                tokenRefreshAmount: Int): Props =
-        Props(new Limiter(
-                maxAvailableTokens, tokenRefreshPeriod, tokenRefreshAmount))
+      def props(
+          maxAvailableTokens: Int,
+          tokenRefreshPeriod: FiniteDuration,
+          tokenRefreshAmount: Int
+      ): Props =
+        Props(
+          new Limiter(
+            maxAvailableTokens,
+            tokenRefreshPeriod,
+            tokenRefreshAmount
+          )
+        )
     }
 
-    class Limiter(val maxAvailableTokens: Int,
-                  val tokenRefreshPeriod: FiniteDuration,
-                  val tokenRefreshAmount: Int)
-        extends Actor {
+    class Limiter(
+        val maxAvailableTokens: Int,
+        val tokenRefreshPeriod: FiniteDuration,
+        val tokenRefreshAmount: Int
+    ) extends Actor {
       import Limiter._
       import context.dispatcher
       import akka.actor.Status
@@ -38,17 +46,19 @@ class RecipeGlobalRateLimit extends RecipeSpec {
       private var waitQueue = immutable.Queue.empty[ActorRef]
       private var permitTokens = maxAvailableTokens
       private val replenishTimer =
-        system.scheduler.schedule(initialDelay = tokenRefreshPeriod,
-                                  interval = tokenRefreshPeriod,
-                                  receiver = self,
-                                  ReplenishTokens)
+        system.scheduler.schedule(
+          initialDelay = tokenRefreshPeriod,
+          interval = tokenRefreshPeriod,
+          receiver = self,
+          ReplenishTokens
+        )
 
       override def receive: Receive = open
 
       val open: Receive = {
         case ReplenishTokens =>
-          permitTokens = math.min(
-              permitTokens + tokenRefreshAmount, maxAvailableTokens)
+          permitTokens =
+            math.min(permitTokens + tokenRefreshAmount, maxAvailableTokens)
         case WantToPass =>
           permitTokens -= 1
           sender() ! MayPass
@@ -57,8 +67,8 @@ class RecipeGlobalRateLimit extends RecipeSpec {
 
       val closed: Receive = {
         case ReplenishTokens =>
-          permitTokens = math.min(
-              permitTokens + tokenRefreshAmount, maxAvailableTokens)
+          permitTokens =
+            math.min(permitTokens + tokenRefreshAmount, maxAvailableTokens)
           releaseWaiting()
         case WantToPass =>
           waitQueue = waitQueue.enqueue(sender())
@@ -75,7 +85,7 @@ class RecipeGlobalRateLimit extends RecipeSpec {
       override def postStop(): Unit = {
         replenishTimer.cancel()
         waitQueue foreach
-        (_ ! Status.Failure(new IllegalStateException("limiter stopped")))
+          (_ ! Status.Failure(new IllegalStateException("limiter stopped")))
       }
     }
     //#global-limiter-actor
@@ -85,15 +95,15 @@ class RecipeGlobalRateLimit extends RecipeSpec {
       //#global-limiter-flow
       def limitGlobal[T](
           limiter: ActorRef,
-          maxAllowedWait: FiniteDuration): Flow[T, T, NotUsed] = {
+          maxAllowedWait: FiniteDuration
+      ): Flow[T, T, NotUsed] = {
         import akka.pattern.ask
         import akka.util.Timeout
-        Flow[T].mapAsync(4)((element: T) =>
-              {
-            import system.dispatcher
-            implicit val triggerTimeout = Timeout(maxAllowedWait)
-            val limiterTriggerFuture = limiter ? Limiter.WantToPass
-            limiterTriggerFuture.map((_) => element)
+        Flow[T].mapAsync(4)((element: T) => {
+          import system.dispatcher
+          implicit val triggerTimeout = Timeout(maxAllowedWait)
+          val limiterTriggerFuture = limiter ? Limiter.WantToPass
+          limiterTriggerFuture.map((_) => element)
         })
       }
       //#global-limiter-flow

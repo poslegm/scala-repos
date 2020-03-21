@@ -11,7 +11,8 @@ import breeze.numerics.log
   * @author dlwh
   **/
 case class Wald(mean: Double, shape: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] {
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double] {
   lazy val mode: Double = {
     // wiki
     val adjustment = {
@@ -44,8 +45,9 @@ case class Wald(mean: Double, shape: Double)(implicit rand: RandBasis = Rand)
     nu <- rand.gaussian(0, 1)
     y = nu * nu
     x =
-    (mean + mean * mean * y * 0.5 / shape - 0.5 * mean / shape * math.sqrt(
-            4 * mean * shape * y + mean * mean * y * y))
+      (mean + mean * mean * y * 0.5 / shape - 0.5 * mean / shape * math.sqrt(
+        4 * mean * shape * y + mean * mean * y * y
+      ))
     z <- rand.uniform
   } yield {
     if (z <= mean / (mean + x)) x

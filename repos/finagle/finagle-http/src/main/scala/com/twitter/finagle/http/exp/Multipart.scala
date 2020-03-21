@@ -17,8 +17,10 @@ import scala.collection.mutable
   * Note: This is an _experimental API_, which will likely be changed in future to support
   * streaming HTTP requests.
   **/
-case class Multipart(attributes: Map[String, Seq[String]],
-                     files: Map[String, Seq[Multipart.FileUpload]])
+case class Multipart(
+    attributes: Map[String, Seq[String]],
+    files: Map[String, Seq[Multipart.FileUpload]]
+)
 
 /**
   * An _experimental_ set ot utility classes and methods for decoding HTTP POST requests with
@@ -56,20 +58,22 @@ object Multipart {
   /**
     * A variant of [[FileUpload]] that is already in memory and represented as [[Buf]].
     */
-  final case class InMemoryFileUpload(content: Buf,
-                                      contentType: String,
-                                      fileName: String,
-                                      contentTransferEncoding: String)
-      extends FileUpload
+  final case class InMemoryFileUpload(
+      content: Buf,
+      contentType: String,
+      fileName: String,
+      contentTransferEncoding: String
+  ) extends FileUpload
 
   /**
     * A variant of [[FileUpload]] that is stored on disk and represented as [[File]].
     */
-  final case class OnDiskFileUpload(content: File,
-                                    contentType: String,
-                                    fileName: String,
-                                    contentTransferEncoding: String)
-      extends FileUpload
+  final case class OnDiskFileUpload(
+      content: File,
+      contentType: String,
+      fileName: String,
+      contentTransferEncoding: String
+  ) extends FileUpload
 
   /**
     * Decodes the _non-chunked_ (a complete) HTTP `request` with `multipart/form-data`
@@ -86,8 +90,9 @@ object Multipart {
     require(request.method == Method.Post)
 
     val decoder = new multipart.HttpPostRequestDecoder(
-        new multipart.DefaultHttpDataFactory(MaxInMemoryFileSize.inBytes),
-        request.httpRequest)
+      new multipart.DefaultHttpDataFactory(MaxInMemoryFileSize.inBytes),
+      request.httpRequest
+    )
     val attrs = new mutable.HashMap[String, mutable.ListBuffer[String]]()
     val files = new mutable.HashMap[String, mutable.ListBuffer[FileUpload]]()
 
@@ -102,17 +107,17 @@ object Multipart {
           files.getOrElseUpdate(fu.getName, mutable.ListBuffer[FileUpload]())
         if (fu.isInMemory) {
           buf += InMemoryFileUpload(
-              Buf.ByteArray.Owned(fu.get()),
-              fu.getContentType,
-              fu.getFilename,
-              fu.getContentTransferEncoding
+            Buf.ByteArray.Owned(fu.get()),
+            fu.getContentType,
+            fu.getFilename,
+            fu.getContentTransferEncoding
           )
         } else {
           buf += OnDiskFileUpload(
-              fu.getFile,
-              fu.getContentType,
-              fu.getFilename,
-              fu.getContentTransferEncoding
+            fu.getFile,
+            fu.getContentType,
+            fu.getFilename,
+            fu.getContentTransferEncoding
           )
         }
 

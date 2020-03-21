@@ -50,7 +50,8 @@ class ImplicitSuite {
 
   def testRddToSequenceFileRDDFunctionsWithWritable(): Unit = {
     val rdd: org.apache.spark.rdd.RDD[
-        (org.apache.hadoop.io.IntWritable, org.apache.hadoop.io.Text)] =
+      (org.apache.hadoop.io.IntWritable, org.apache.hadoop.io.Text)
+    ] =
       mockRDD
     rdd.saveAsSequenceFile("/a/test/path")
   }
@@ -92,7 +93,7 @@ class ImplicitSuite {
 
   def testFloatAccumulatorParam(): Unit = {
     val sc = mockSparkContext
-    sc.accumulator(123F)
+    sc.accumulator(123f)
   }
 
   def testIntWritableConverter(): Unit = {
@@ -133,6 +134,7 @@ class ImplicitSuite {
   def testWritableWritableConverter(): Unit = {
     val sc = mockSparkContext
     sc.sequenceFile[org.apache.hadoop.io.Text, org.apache.hadoop.io.Text](
-        "/a/test/path")
+      "/a/test/path"
+    )
   }
 }

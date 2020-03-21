@@ -59,27 +59,34 @@ class ExternalAppendOnlyMap[K, V, C](
     mergeCombiners: (C, C) => C,
     serializer: Serializer = SparkEnv.get.serializer,
     blockManager: BlockManager = SparkEnv.get.blockManager,
-    context: TaskContext = TaskContext.get())
-    extends Iterable[(K, C)] with Serializable with Logging
+    context: TaskContext = TaskContext.get()
+) extends Iterable[(K, C)]
+    with Serializable
+    with Logging
     with Spillable[SizeTracker] {
 
   if (context == null) {
     throw new IllegalStateException(
-        "Spillable collections should not be instantiated outside of tasks")
+      "Spillable collections should not be instantiated outside of tasks"
+    )
   }
 
   // Backwards-compatibility constructor for binary compatibility
-  def this(createCombiner: V => C,
-           mergeValue: (C, V) => C,
-           mergeCombiners: (C, C) => C,
-           serializer: Serializer,
-           blockManager: BlockManager) {
-    this(createCombiner,
-         mergeValue,
-         mergeCombiners,
-         serializer,
-         blockManager,
-         TaskContext.get())
+  def this(
+      createCombiner: V => C,
+      mergeValue: (C, V) => C,
+      mergeCombiners: (C, C) => C,
+      serializer: Serializer,
+      blockManager: BlockManager
+  ) {
+    this(
+      createCombiner,
+      mergeValue,
+      mergeCombiners,
+      serializer,
+      blockManager,
+      TaskContext.get()
+    )
   }
 
   override protected[this] def taskMemoryManager: TaskMemoryManager =
@@ -145,15 +152,15 @@ class ExternalAppendOnlyMap[K, V, C](
   def insertAll(entries: Iterator[Product2[K, V]]): Unit = {
     if (currentMap == null) {
       throw new IllegalStateException(
-          "Cannot insert new elements into a map after calling iterator")
+        "Cannot insert new elements into a map after calling iterator"
+      )
     }
     // An update function for the map that we reuse across entries to avoid allocating
     // a new closure each time
     var curEntry: Product2[K, V] = null
-    val update: (Boolean, C) => C = (hadVal, oldVal) =>
-      {
-        if (hadVal) mergeValue(oldVal, curEntry._2)
-        else createCombiner(curEntry._2)
+    val update: (Boolean, C) => C = (hadVal, oldVal) => {
+      if (hadVal) mergeValue(oldVal, curEntry._2)
+      else createCombiner(curEntry._2)
     }
 
     while (entries.hasNext) {
@@ -190,7 +197,12 @@ class ExternalAppendOnlyMap[K, V, C](
     val (blockId, file) = diskBlockManager.createTempLocalBlock()
     curWriteMetrics = new ShuffleWriteMetrics()
     var writer = blockManager.getDiskWriter(
-        blockId, file, ser, fileBufferSize, curWriteMetrics)
+      blockId,
+      file,
+      ser,
+      fileBufferSize,
+      curWriteMetrics
+    )
     var objectsWritten = 0
 
     // List of batch sizes (bytes) in the order they are written to disk
@@ -218,7 +230,12 @@ class ExternalAppendOnlyMap[K, V, C](
           flush()
           curWriteMetrics = new ShuffleWriteMetrics()
           writer = blockManager.getDiskWriter(
-              blockId, file, ser, fileBufferSize, curWriteMetrics)
+            blockId,
+            file,
+            ser,
+            fileBufferSize,
+            curWriteMetrics
+          )
         }
       }
       if (objectsWritten > 0) {
@@ -254,11 +271,14 @@ class ExternalAppendOnlyMap[K, V, C](
   override def iterator: Iterator[(K, C)] = {
     if (currentMap == null) {
       throw new IllegalStateException(
-          "ExternalAppendOnlyMap.iterator is destructive and should only be called once.")
+        "ExternalAppendOnlyMap.iterator is destructive and should only be called once."
+      )
     }
     if (spilledMaps.isEmpty) {
       CompletionIterator[(K, C), Iterator[(K, C)]](
-          currentMap.iterator, freeCurrentMap())
+        currentMap.iterator,
+        freeCurrentMap()
+      )
     } else {
       new ExternalIterator()
     }
@@ -281,7 +301,9 @@ class ExternalAppendOnlyMap[K, V, C](
     // Input streams are derived both from the in-memory map and spilled maps on disk
     // The in-memory map is sorted in place, while the spilled maps are already in sorted order
     private val sortedMap = CompletionIterator[(K, C), Iterator[(K, C)]](
-        currentMap.destructiveSortedIterator(keyComparator), freeCurrentMap())
+      currentMap.destructiveSortedIterator(keyComparator),
+      freeCurrentMap()
+    )
     private val inputStreams =
       (Seq(sortedMap) ++ spilledMaps).map(it => it.buffered)
 
@@ -303,7 +325,9 @@ class ExternalAppendOnlyMap[K, V, C](
       * @param buf buffer to write the results into
       */
     private def readNextHashCode(
-        it: BufferedIterator[(K, C)], buf: ArrayBuffer[(K, C)]): Unit = {
+        it: BufferedIterator[(K, C)],
+        buf: ArrayBuffer[(K, C)]
+    ): Unit = {
       if (it.hasNext) {
         var kc = it.next()
         buf += kc
@@ -320,7 +344,10 @@ class ExternalAppendOnlyMap[K, V, C](
       * baseCombiner and remove the corresponding (K, C) pair from the buffer.
       */
     private def mergeIfKeyExists(
-        key: K, baseCombiner: C, buffer: StreamBuffer): C = {
+        key: K,
+        baseCombiner: C,
+        buffer: StreamBuffer
+    ): C = {
       var i = 0
       while (i < buffer.pairs.length) {
         val pair = buffer.pairs(i)
@@ -343,7 +370,8 @@ class ExternalAppendOnlyMap[K, V, C](
       */
     private def removeFromBuffer[T](buffer: ArrayBuffer[T], index: Int): T = {
       val elem = buffer(index)
-      buffer(index) = buffer(buffer.size - 1) // This also works if index == buffer.size - 1
+      buffer(index) =
+        buffer(buffer.size - 1) // This also works if index == buffer.size - 1
       buffer.reduceToSize(buffer.size - 1)
       elem
     }
@@ -402,9 +430,10 @@ class ExternalAppendOnlyMap[K, V, C](
       * StreamBuffers are ordered by the minimum key hash currently available in their stream so
       * that we can put them into a heap and sort that.
       */
-    private class StreamBuffer(val iterator: BufferedIterator[(K, C)],
-                               val pairs: ArrayBuffer[(K, C)])
-        extends Comparable[StreamBuffer] {
+    private class StreamBuffer(
+        val iterator: BufferedIterator[(K, C)],
+        val pairs: ArrayBuffer[(K, C)]
+    ) extends Comparable[StreamBuffer] {
 
       def isEmpty: Boolean = pairs.length == 0
 
@@ -417,7 +446,8 @@ class ExternalAppendOnlyMap[K, V, C](
       override def compareTo(other: StreamBuffer): Int = {
         // descending order because mutable.PriorityQueue dequeues the max, not the min
         if (other.minKeyHash < minKeyHash) -1
-        else if (other.minKeyHash == minKeyHash) 0 else 1
+        else if (other.minKeyHash == minKeyHash) 0
+        else 1
       }
     }
   }
@@ -426,15 +456,19 @@ class ExternalAppendOnlyMap[K, V, C](
     * An iterator that returns (K, C) pairs in sorted order from an on-disk map
     */
   private class DiskMapIterator(
-      file: File, blockId: BlockId, batchSizes: ArrayBuffer[Long])
-      extends Iterator[(K, C)] {
+      file: File,
+      blockId: BlockId,
+      batchSizes: ArrayBuffer[Long]
+  ) extends Iterator[(K, C)] {
     private val batchOffsets =
       batchSizes.scanLeft(0L)(_ + _) // Size will be batchSize.length + 1
-    assert(file.length() == batchOffsets.last,
-           "File length is not equal to the last batch offset:\n" +
-           s"    file length = ${file.length}\n" +
-           s"    last batch offset = ${batchOffsets.last}\n" +
-           s"    all batch offsets = ${batchOffsets.mkString(",")}")
+    assert(
+      file.length() == batchOffsets.last,
+      "File length is not equal to the last batch offset:\n" +
+        s"    file length = ${file.length}\n" +
+        s"    last batch offset = ${batchOffsets.last}\n" +
+        s"    all batch offsets = ${batchOffsets.mkString(",")}"
+    )
 
     private var batchIndex = 0 // Which batch we're in
     private var fileStream: FileInputStream = null
@@ -466,12 +500,15 @@ class ExternalAppendOnlyMap[K, V, C](
 
         val end = batchOffsets(batchIndex)
 
-        assert(end >= start,
-               "start = " + start + ", end = " + end + ", batchOffsets = " +
-               batchOffsets.mkString("[", ", ", "]"))
+        assert(
+          end >= start,
+          "start = " + start + ", end = " + end + ", batchOffsets = " +
+            batchOffsets.mkString("[", ", ", "]")
+        )
 
         val bufferedStream = new BufferedInputStream(
-            ByteStreams.limit(fileStream, end - start))
+          ByteStreams.limit(fileStream, end - start)
+        )
         val compressedStream =
           blockManager.wrapForCompression(blockId, bufferedStream)
         ser.deserializeStream(compressedStream)

@@ -37,13 +37,14 @@ import org.apache.spark.util.Utils
   * Each WebUI represents a collection of tabs, each of which in turn represents a collection of
   * pages. The use of tabs is optional, however; a WebUI may choose to include pages directly.
   */
-private[spark] abstract class WebUI(val securityManager: SecurityManager,
-                                    val sslOptions: SSLOptions,
-                                    port: Int,
-                                    conf: SparkConf,
-                                    basePath: String = "",
-                                    name: String = "")
-    extends Logging {
+private[spark] abstract class WebUI(
+    val securityManager: SecurityManager,
+    val sslOptions: SSLOptions,
+    port: Int,
+    conf: SparkConf,
+    basePath: String = "",
+    name: String = ""
+) extends Logging {
 
   protected val tabs = ArrayBuffer[WebUITab]()
   protected val handlers = ArrayBuffer[ServletContextHandler]()
@@ -79,17 +80,19 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
   def attachPage(page: WebUIPage) {
     val pagePath = "/" + page.prefix
     val renderHandler = createServletHandler(
-        pagePath,
-        (request: HttpServletRequest) => page.render(request),
-        securityManager,
-        conf,
-        basePath)
+      pagePath,
+      (request: HttpServletRequest) => page.render(request),
+      securityManager,
+      conf,
+      basePath
+    )
     val renderJsonHandler = createServletHandler(
-        pagePath.stripSuffix("/") + "/json",
-        (request: HttpServletRequest) => page.renderJson(request),
-        securityManager,
-        conf,
-        basePath)
+      pagePath.stripSuffix("/") + "/json",
+      (request: HttpServletRequest) => page.renderJson(request),
+      securityManager,
+      conf,
+      basePath
+    )
     attachHandler(renderHandler)
     attachHandler(renderJsonHandler)
     pageToHandlers
@@ -143,15 +146,19 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
 
   /** Bind to the HTTP server behind this web interface. */
   def bind() {
-    assert(!serverInfo.isDefined,
-           "Attempted to bind %s more than once!".format(className))
+    assert(
+      !serverInfo.isDefined,
+      "Attempted to bind %s more than once!".format(className)
+    )
     try {
       var host = Option(conf.getenv("SPARK_LOCAL_IP")).getOrElse("0.0.0.0")
       serverInfo = Some(
-          startJettyServer(host, port, sslOptions, handlers, conf, name))
+        startJettyServer(host, port, sslOptions, handlers, conf, name)
+      )
       logInfo(
-          "Bound %s to %s, and started at http://%s:%d".format(
-              className, host, publicHostName, boundPort))
+        "Bound %s to %s, and started at http://%s:%d"
+          .format(className, host, publicHostName, boundPort)
+      )
     } catch {
       case e: Exception =>
         logError("Failed to bind %s".format(className), e)
@@ -165,8 +172,9 @@ private[spark] abstract class WebUI(val securityManager: SecurityManager,
   /** Stop the server behind this web interface. Only valid after bind(). */
   def stop() {
     assert(
-        serverInfo.isDefined,
-        "Attempted to stop %s before binding to a server!".format(className))
+      serverInfo.isDefined,
+      "Attempted to stop %s before binding to a server!".format(className)
+    )
     serverInfo.get.server.stop()
   }
 }

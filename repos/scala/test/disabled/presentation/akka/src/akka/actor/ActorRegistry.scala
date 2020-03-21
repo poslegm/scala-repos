@@ -34,7 +34,7 @@ case class ActorUnregistered(actor: ActorRef) extends ActorRegistryEvent
   *
   * @author <a href="http://jonasboner.com">Jonas Bon&#233;r</a>
   */
-final class ActorRegistry private[actor]() extends ListenerManagement {
+final class ActorRegistry private[actor] () extends ListenerManagement {
 
   private val actorsByUUID = new ConcurrentHashMap[Uuid, ActorRef]
   private val actorsById = new Index[String, ActorRef]
@@ -74,12 +74,13 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   /**
     * Finds all actors that are subtypes of the class passed in as the ClassTag argument and supporting passed message.
     */
-  def actorsFor[T <: Actor](message: Any)(
-      implicit classTag: ClassTag[T]): Array[ActorRef] =
-    filter(
-        a =>
-          classTag.erasure.isAssignableFrom(a.actor.getClass) &&
-          a.isDefinedAt(message))
+  def actorsFor[T <: Actor](
+      message: Any
+  )(implicit classTag: ClassTag[T]): Array[ActorRef] =
+    filter(a =>
+      classTag.erasure.isAssignableFrom(a.actor.getClass) &&
+        a.isDefinedAt(message)
+    )
 
   /**
     * Finds all actors that satisfy a predicate.
@@ -105,8 +106,7 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
     */
   def actorFor[T <: Actor](implicit classTag: ClassTag[T]): Option[ActorRef] =
     find({
-      case a: ActorRef
-          if classTag.erasure.isAssignableFrom(a.actor.getClass) =>
+      case a: ActorRef if classTag.erasure.isAssignableFrom(a.actor.getClass) =>
         a
     })
 
@@ -174,8 +174,9 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   /**
     * Finds all typed actors that are subtypes of the class passed in as the ClassTag argument.
     */
-  def typedActorsFor[T <: AnyRef](
-      implicit classTag: ClassTag[T]): Array[AnyRef] = {
+  def typedActorsFor[T <: AnyRef](implicit
+      classTag: ClassTag[T]
+  ): Array[AnyRef] = {
     TypedActorModule.ensureEnabled
     typedActorsFor[T](classTag.erasure.asInstanceOf[Class[T]])
   }
@@ -183,8 +184,9 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   /**
     * Finds any typed actor that matches T.
     */
-  def typedActorFor[T <: AnyRef](
-      implicit classTag: ClassTag[T]): Option[AnyRef] = {
+  def typedActorFor[T <: AnyRef](implicit
+      classTag: ClassTag[T]
+  ): Option[AnyRef] = {
     TypedActorModule.ensureEnabled
     def predicate(proxy: AnyRef): Boolean = {
       val actorRef =
@@ -291,7 +293,7 @@ final class ActorRegistry private[actor]() extends ListenerManagement {
   *
   * @author Viktor Klang
   */
-class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
+class Index[K <: AnyRef, V <: AnyRef: ArrayTag] {
   private val Naught = Array[V]() //Nil for Arrays
   private val container = new ConcurrentHashMap[K, JSet[V]]
   private val emptySet = new ConcurrentSkipListSet[V]
@@ -311,7 +313,8 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
       if (set ne null) {
         set.synchronized {
           if (set.isEmpty)
-            retry = true //IF the set is empty then it has been removed, so signal retry
+            retry =
+              true //IF the set is empty then it has been removed, so signal retry
           else {
             //Else add the value to the set and signal that retry is not needed
             added = set add v
@@ -327,7 +330,8 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
         if (oldSet ne null) {
           oldSet.synchronized {
             if (oldSet.isEmpty)
-              retry = true //IF the set is empty then it has been removed, so signal retry
+              retry =
+                true //IF the set is empty then it has been removed, so signal retry
             else {
               //Else try to add the value to the set and signal that retry is not needed
               added = oldSet add v
@@ -369,9 +373,7 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
     */
   def foreach(fun: (K, V) => Unit) {
     import scala.collection.JavaConversions._
-    container.entrySet foreach { (e) =>
-      e.getValue.foreach(fun(e.getKey, _))
-    }
+    container.entrySet foreach { (e) => e.getValue.foreach(fun(e.getKey, _)) }
   }
 
   /**
@@ -386,7 +388,10 @@ class Index[K <: AnyRef, V <: AnyRef : ArrayTag] {
         if (set.remove(value)) {
           //If we can remove the value
           if (set.isEmpty) //and the set becomes empty
-            container.remove(key, emptySet) //We try to remove the key if it's mapped to an empty set
+            container.remove(
+              key,
+              emptySet
+            ) //We try to remove the key if it's mapped to an empty set
 
           true //Remove succeeded
         } else false //Remove failed

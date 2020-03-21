@@ -25,13 +25,12 @@ import scala.reflect.ClassTag
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.apache.spark.streaming.{StreamingContext, Time}
 
-private[streaming] class QueueInputDStream[T : ClassTag](
+private[streaming] class QueueInputDStream[T: ClassTag](
     ssc: StreamingContext,
     val queue: Queue[RDD[T]],
     oneAtATime: Boolean,
     defaultRDD: RDD[T]
-)
-    extends InputDStream[T](ssc) {
+) extends InputDStream[T](ssc) {
 
   override def start() {}
 
@@ -39,8 +38,9 @@ private[streaming] class QueueInputDStream[T : ClassTag](
 
   private def readObject(in: ObjectInputStream): Unit = {
     throw new NotSerializableException(
-        "queueStream doesn't support checkpointing. " +
-        "Please don't use queueStream when checkpointing is enabled.")
+      "queueStream doesn't support checkpointing. " +
+        "Please don't use queueStream when checkpointing is enabled."
+    )
   }
 
   private def writeObject(oos: ObjectOutputStream): Unit = {

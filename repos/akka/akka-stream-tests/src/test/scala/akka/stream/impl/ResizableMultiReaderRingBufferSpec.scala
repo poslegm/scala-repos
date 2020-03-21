@@ -11,16 +11,27 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
 
   "A ResizableMultiReaderRingBuffer" should {
 
-    "initially be empty (1)" in new Test(iSize = 2, mSize = 4, cursorCount = 1) {
+    "initially be empty (1)" in new Test(
+      iSize = 2,
+      mSize = 4,
+      cursorCount = 1
+    ) {
       inspect shouldEqual "0 0 (size=0, writeIx=0, readIx=0, cursors=1)"
     }
 
-    "initially be empty (2)" in new Test(iSize = 4, mSize = 4, cursorCount = 3) {
+    "initially be empty (2)" in new Test(
+      iSize = 4,
+      mSize = 4,
+      cursorCount = 3
+    ) {
       inspect shouldEqual "0 0 0 0 (size=0, writeIx=0, readIx=0, cursors=3)"
     }
 
     "fail reads if nothing can be read" in new Test(
-        iSize = 4, mSize = 4, cursorCount = 3) {
+      iSize = 4,
+      mSize = 4,
+      cursorCount = 3
+    ) {
       write(1) shouldEqual true
       write(2) shouldEqual true
       write(3) shouldEqual true
@@ -43,7 +54,10 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
     }
 
     "fail writes if there is no more space" in new Test(
-        iSize = 4, mSize = 4, cursorCount = 2) {
+      iSize = 4,
+      mSize = 4,
+      cursorCount = 2
+    ) {
       write(1) shouldEqual true
       write(2) shouldEqual true
       write(3) shouldEqual true
@@ -84,7 +98,10 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
     }
 
     "automatically grow if possible" in new Test(
-        iSize = 2, mSize = 8, cursorCount = 2) {
+      iSize = 2,
+      mSize = 8,
+      cursorCount = 2
+    ) {
       write(1) shouldEqual true
       inspect shouldEqual "1 0 (size=1, writeIx=1, readIx=0, cursors=2)"
       write(2) shouldEqual true
@@ -138,17 +155,20 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
             log("OK\n")
             if (x != counter)
               fail(
-                  s"""|Run $run, cursorNr $cursorNr, counter $counter: got unexpected $x
+                s"""|Run $run, cursorNr $cursorNr, counter $counter: got unexpected $x
                          |  Buf: ${buf.inspect}
                          |  Cursors: ${buf.cursors.cursors.mkString(
-                     "\n           ")}
+                     "\n           "
+                   )}
                          |Log:\n$sb
-                      """.stripMargin)
+                      """.stripMargin
+              )
             counter += 1
             counter == COUNTER_LIMIT
           } catch {
             case NothingToReadException ⇒
-              log("FAILED\n"); false // ok, we currently can't read, try again later
+              log("FAILED\n");
+              false // ok, we currently can't read, try again later
           }
         }
         override def toString: String =
@@ -165,9 +185,13 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
           .tabulate(random.nextInt(8) + 1)(new StressTestCursor(_, 1 << bit))
         var stillWriting =
           2 // give writing a slight bias, so as to somewhat "stretch" the buffer
-        val buf = new TestBuffer(1, 1 << bit, new Cursors {
-          def cursors = activeCursors
-        })
+        val buf = new TestBuffer(
+          1,
+          1 << bit,
+          new Cursors {
+            def cursors = activeCursors
+          }
+        )
         sb.setLength(0)
         while (activeCursors.nonEmpty) {
           log(s"Buf: ${buf.inspect}\n")
@@ -203,7 +227,8 @@ class ResizableMultiReaderRingBufferSpec extends WordSpec with ShouldMatchers {
   class Test(iSize: Int, mSize: Int, cursorCount: Int)
       extends TestBuffer(iSize, mSize, new SimpleCursors(cursorCount)) {
     def read(cursorIx: Int): Integer =
-      try read(cursors.cursors(cursorIx)) catch {
+      try read(cursors.cursors(cursorIx))
+      catch {
         case NothingToReadException ⇒ null
       }
   }

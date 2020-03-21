@@ -60,17 +60,19 @@ object rot90 extends UFunc {
     new Impl2[DenseMatrix[T], Int, DenseMatrix[T]] {
       def apply(v: DenseMatrix[T], k: Int): DenseMatrix[T] = {
         (k % 4) match {
-          case 0 => v.copy
+          case 0      => v.copy
           case 1 | -3 => fliplr(v).t
           case 2 | -2 => fliplr(flipud(v))
           case 3 | -1 => fliplr(v.t)
-          case _ => sys.error("Shouldn't be here!")
+          case _      => sys.error("Shouldn't be here!")
         }
       }
     }
 
-  implicit def impl1fromImpl2[T, R](
-      implicit impl2: Impl2[T, Int, R]): Impl[T, R] = new Impl[T, R] {
-    def apply(v: T): R = impl2(v, 1)
-  }
+  implicit def impl1fromImpl2[T, R](implicit
+      impl2: Impl2[T, Int, R]
+  ): Impl[T, R] =
+    new Impl[T, R] {
+      def apply(v: T): R = impl2(v, 1)
+    }
 }

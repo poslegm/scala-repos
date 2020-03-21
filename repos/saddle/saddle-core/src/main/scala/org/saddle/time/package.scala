@@ -34,14 +34,16 @@ package object time {
   /**
     * Convenience factory for constructing a DateTime instance
     */
-  def datetime(y: Int = 0,
-               m: Int = 0,
-               d: Int = 0,
-               h: Int = 0,
-               t: Int = 0,
-               s: Int = 0,
-               ms: Int = 0,
-               zone: DateTimeZone = TZ_LOCAL): DateTime = {
+  def datetime(
+      y: Int = 0,
+      m: Int = 0,
+      d: Int = 0,
+      h: Int = 0,
+      t: Int = 0,
+      s: Int = 0,
+      ms: Int = 0,
+      zone: DateTimeZone = TZ_LOCAL
+  ): DateTime = {
 
     val dt = new DateTime(zone)
 
@@ -80,7 +82,10 @@ package object time {
     * Class providing time accessor methods for Vec and Index containing DateTimes
     */
   protected[saddle] class TimeAccessors[T](
-      times: Vec[Long], chrono: Chronology, cast: Vec[Int] => T) {
+      times: Vec[Long],
+      chrono: Chronology,
+      cast: Vec[Int] => T
+  ) {
     def millisOfSecond = cast(extractor(1L, 1000L))
     def secondOfMinute = cast(extractor(1000L, 60L))
     def minuteOfHour = cast(extractor(60000L, 60L))
@@ -94,28 +99,37 @@ package object time {
     def secondOfDay = cast(_secondOfDay)
     def minuteOfDay =
       cast(
-          getField(
-              DateTimeFieldType.minuteOfDay.getField(chrono), isTime = true))
+        getField(DateTimeFieldType.minuteOfDay.getField(chrono), isTime = true)
+      )
     def clockhourOfDay =
       cast(
-          getField(DateTimeFieldType.clockhourOfDay.getField(chrono),
-                   isTime = true))
+        getField(
+          DateTimeFieldType.clockhourOfDay.getField(chrono),
+          isTime = true
+        )
+      )
     def hourOfHalfday =
       cast(
-          getField(
-              DateTimeFieldType.hourOfHalfday.getField(chrono), isTime = true))
+        getField(
+          DateTimeFieldType.hourOfHalfday.getField(chrono),
+          isTime = true
+        )
+      )
     def clockhourOfHalfday =
       cast(
-          getField(DateTimeFieldType.clockhourOfHalfday.getField(chrono),
-                   isTime = true))
+        getField(
+          DateTimeFieldType.clockhourOfHalfday.getField(chrono),
+          isTime = true
+        )
+      )
     def halfdayOfDay =
       cast(
-          getField(
-              DateTimeFieldType.halfdayOfDay.getField(chrono), isTime = true))
+        getField(DateTimeFieldType.halfdayOfDay.getField(chrono), isTime = true)
+      )
     def hourOfDay =
       cast(
-          getField(
-              DateTimeFieldType.hourOfDay.getField(chrono), isTime = true))
+        getField(DateTimeFieldType.hourOfDay.getField(chrono), isTime = true)
+      )
 
     def dayOfWeek =
       cast(getField(DateTimeFieldType.dayOfWeek.getField(chrono)))
@@ -140,20 +154,21 @@ package object time {
     def era = cast(getField(DateTimeFieldType.era.getField(chrono)))
 
     protected def getField(
-        field: DateTimeField, isTime: Boolean = false): Vec[Int] =
+        field: DateTimeField,
+        isTime: Boolean = false
+    ): Vec[Int] =
       if (chrono != ISO_CHRONO_UTC || !isTime)
-        times.map { (ms: Long) =>
-          field.get(ms)
-        } else getFieldFast(field)
+        times.map { (ms: Long) => field.get(ms) }
+      else getFieldFast(field)
 
-    protected def extractor(unit: Long, range: Long): Vec[Int] = times.map {
-      (t: Long) =>
+    protected def extractor(unit: Long, range: Long): Vec[Int] =
+      times.map { (t: Long) =>
         if (t >= 0L) {
           ((t / unit) % range).toInt
         } else {
           (range - 1L + (((t + 1L) / unit) % range)).toInt
         }
-    }
+      }
 
     /**
       * Using Joda time's PreciseDateTimeField logic directly allows much faster extraction of the
@@ -176,8 +191,8 @@ package object time {
     val (times, chrono: Chronology) = vec match {
       case tv: VecTime => (tv.times, tv.chrono)
       case _ => {
-          val tmp = new VecTime(vec.map(_.getMillis)); (tmp.times, tmp.chrono)
-        }
+        val tmp = new VecTime(vec.map(_.getMillis)); (tmp.times, tmp.chrono)
+      }
     }
     new TimeAccessors(times, chrono, identity)
   }
@@ -186,13 +201,14 @@ package object time {
     * Enrichment methods for Index[DateTime]
     */
   implicit def indexTimeAccessors(
-      ix: Index[DateTime]): TimeAccessors[Index[Int]] = {
+      ix: Index[DateTime]
+  ): TimeAccessors[Index[Int]] = {
     val (times, chrono: Chronology) = ix match {
       case tv: IndexTime => (tv.times.toVec, tv.chrono)
       case _ => {
-          val tmp = new IndexTime(ix.map(_.getMillis));
-          (tmp.times.toVec, tmp.chrono)
-        }
+        val tmp = new IndexTime(ix.map(_.getMillis));
+        (tmp.times.toVec, tmp.chrono)
+      }
     }
 
     new TimeAccessors(times, chrono, Index(_))
@@ -206,9 +222,10 @@ package object time {
   /**
     * Provides an implicit ordering for DateTime
     */
-  implicit def dtOrdering = new Ordering[DateTime] {
-    def compare(x: DateTime, y: DateTime) = x.compareTo(y)
-  }
+  implicit def dtOrdering =
+    new Ordering[DateTime] {
+      def compare(x: DateTime, y: DateTime) = x.compareTo(y)
+    }
 
   // Convenience methods for constructing ReadablePeriod instances
 

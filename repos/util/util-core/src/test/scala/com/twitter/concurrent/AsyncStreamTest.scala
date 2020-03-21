@@ -132,14 +132,10 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
     s.uncons
     assert(!p.isDefined)
 
-    s.foldRight(Future.Done) { (_, _) =>
-      Future.Done
-    }
+    s.foldRight(Future.Done) { (_, _) => Future.Done }
     assert(!p.isDefined)
 
-    s.scanLeft(Future.Done) { (_, _) =>
-      Future.Done
-    }
+    s.scanLeft(Future.Done) { (_, _) => Future.Done }
     assert(!p.isDefined)
 
     s ++ s
@@ -175,11 +171,7 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
     new Ctx(s => s.withFilter(_ => true))
     new Ctx(s => s.take(2))
     new Ctx(s => s.takeWhile(_ => true))
-    new Ctx(
-        s =>
-          s.scanLeft(Future.Done) { (_, _) =>
-        Future.Done
-    })
+    new Ctx(s => s.scanLeft(Future.Done) { (_, _) => Future.Done })
     new Ctx(s => s ++ s)
   }
 
@@ -290,9 +282,7 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
   }
 
   test("head") {
-    forAll { (a: List[Int]) =>
-      assert(await(fromSeq(a).head) == a.headOption)
-    }
+    forAll { (a: List[Int]) => assert(await(fromSeq(a).head) == a.headOption) }
   }
 
   test("isEmpty") {
@@ -306,7 +296,7 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
       val tail = await(fromSeq(a).tail)
       a.tail match {
         case Nil => assert(tail == None)
-        case _ => assert(toSeq(tail.get) == a.tail)
+        case _   => assert(toSeq(tail.get) == a.tail)
       }
     }
   }
@@ -347,9 +337,7 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
   }
 
   test("toSeq") {
-    forAll { (as: List[Int]) =>
-      assert(await(fromSeq(as).toSeq()) == as)
-    }
+    forAll { (as: List[Int]) => assert(await(fromSeq(as).toSeq()) == as) }
   }
 
   test("identity") {
@@ -391,8 +379,10 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
   test("buffer() has the same properties as take() and drop()") {
     // We need items to be non-empty, because AsyncStream.empty ++
     // <something> forces the future to be created.
-    val gen = Gen.zip(Gen.nonEmptyListOf(Arbitrary.arbitrary[Char]),
-                      Arbitrary.arbitrary[Int])
+    val gen = Gen.zip(
+      Gen.nonEmptyListOf(Arbitrary.arbitrary[Char]),
+      Arbitrary.arbitrary[Int]
+    )
 
     forAll(gen) {
       case (items, n) =>
@@ -446,7 +436,7 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
       // the same exception message)
       (actual, expected) match {
         case (Throw(e1), Throw(e2)) => assert(e1.getClass == e2.getClass)
-        case _ => assert(actual == expected)
+        case _                      => assert(actual == expected)
       }
     }
   }
@@ -485,7 +475,10 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
   test("mapConcurrent preserves items") {
     forAll(Arbitrary.arbitrary[List[Int]], Gen.choose(1, 10)) { (xs, conc) =>
       assert(
-          toSeq(AsyncStream.fromSeq(xs).mapConcurrent(conc)(Future.value)).sorted == xs.sorted)
+        toSeq(
+          AsyncStream.fromSeq(xs).mapConcurrent(conc)(Future.value)
+        ).sorted == xs.sorted
+      )
     }
   }
 
@@ -575,11 +568,12 @@ class AsyncStreamTest extends FunSuite with GeneratorDrivenPropertyChecks {
   }
 
   test(
-      "mapConcurrent makes progress, even with blocking streams and blocking work") {
+    "mapConcurrent makes progress, even with blocking streams and blocking work"
+  ) {
     val gen = Gen.zip(
-        Gen.choose(0, 10).label("numActions"),
-        Gen.choose(0, 10).flatMap(Gen.listOfN(_, Arbitrary.arbitrary[Int])),
-        Gen.choose(1, 11).label("concurrency")
+      Gen.choose(0, 10).label("numActions"),
+      Gen.choose(0, 10).flatMap(Gen.listOfN(_, Arbitrary.arbitrary[Int])),
+      Gen.choose(1, 11).label("concurrency")
     )
 
     forAll(gen) {
@@ -693,7 +687,7 @@ private object AsyncStreamTest {
   def fromSeq[A](s: Seq[A]): AsyncStream[A] =
     // Test all AsyncStream constructors: Empty, FromFuture, Cons, Embed.
     s match {
-      case Nil => AsyncStream.empty
+      case Nil      => AsyncStream.empty
       case a +: Nil => AsyncStream.of(a)
       case a +: b +: Nil =>
         AsyncStream.embed(Future.value(a +:: AsyncStream.of(b)))

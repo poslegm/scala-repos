@@ -7,7 +7,10 @@ import akka.stream.Materializer
 import akka.stream.scaladsl._
 import org.reactivestreams._
 import play.api.libs.iteratee._
-import play.api.libs.streams.impl.{SubscriberPublisherProcessor, SubscriberIteratee}
+import play.api.libs.streams.impl.{
+  SubscriberPublisherProcessor,
+  SubscriberIteratee
+}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 /**
@@ -71,7 +74,8 @@ object Streams {
     * to "consume" events, even if the Iteratee doesn't.
     */
   def iterateeToSubscriber[T, U](
-      iter: Iteratee[T, U]): (Subscriber[T], Iteratee[T, U]) = {
+      iter: Iteratee[T, U]
+  ): (Subscriber[T], Iteratee[T, U]) = {
     val subr = new impl.IterateeSubscriber(iter)
     val resultIter = subr.result
     (subr, resultIter)
@@ -107,12 +111,16 @@ object Streams {
     * Iteratee.
     */
   def iterateeDoneToPublisher[T, U](iter: Iteratee[T, U]): Publisher[U] = {
-    iterateeFoldToPublisher[T, U, U](iter, {
-      case Step.Done(x, _) => Future.successful(x)
-      case notDone: Step[T, U] =>
-        Future.failed(
-            new Exception(s"Can only get value from Done iteratee: $notDone"))
-    })(Execution.trampoline)
+    iterateeFoldToPublisher[T, U, U](
+      iter,
+      {
+        case Step.Done(x, _) => Future.successful(x)
+        case notDone: Step[T, U] =>
+          Future.failed(
+            new Exception(s"Can only get value from Done iteratee: $notDone")
+          )
+      }
+    )(Execution.trampoline)
   }
 
   /**
@@ -120,8 +128,9 @@ object Streams {
     * by iterateeDoneToPublisher to extract the value of a Done iteratee.
     */
   private def iterateeFoldToPublisher[T, U, V](
-      iter: Iteratee[T, U], f: Step[T, U] => Future[V])(
-      implicit ec: ExecutionContext): Publisher[V] = {
+      iter: Iteratee[T, U],
+      f: Step[T, U] => Future[V]
+  )(implicit ec: ExecutionContext): Publisher[V] = {
     val fut: Future[V] = iter.fold(f)(ec.prepare)
     val pubr: Publisher[V] = futureToPublisher(fut)
     pubr
@@ -155,7 +164,9 @@ object Streams {
     * with the value x.
     */
   def enumeratorToPublisher[T](
-      enum: Enumerator[T], emptyElement: Option[T] = None): Publisher[T] =
+      enum: Enumerator[T],
+      emptyElement: Option[T] = None
+  ): Publisher[T] =
     new impl.EnumeratorPublisher(enum, emptyElement)
 
   /**
@@ -170,7 +181,8 @@ object Streams {
     * Adapt an Enumeratee to a Processor.
     */
   def enumerateeToProcessor[A, B](
-      enumeratee: Enumeratee[A, B]): Processor[A, B] = {
+      enumeratee: Enumeratee[A, B]
+  ): Processor[A, B] = {
     val (iter, enum) = Concurrent.joined[A]
     val (subr, _) = iterateeToSubscriber(iter)
     val pubr = enumeratorToPublisher(enum &> enumeratee)
@@ -181,16 +193,16 @@ object Streams {
     * Adapt a Processor to an Enumeratee.
     */
   def processorToEnumeratee[A, B](
-      processor: Processor[A, B]): Enumeratee[A, B] = {
+      processor: Processor[A, B]
+  ): Enumeratee[A, B] = {
     val iter = subscriberToIteratee(processor)
     val enum = publisherToEnumerator(processor)
     new Enumeratee[A, B] {
       override def applyOn[U](
-          inner: Iteratee[B, U]): Iteratee[A, Iteratee[B, U]] = {
+          inner: Iteratee[B, U]
+      ): Iteratee[A, Iteratee[B, U]] = {
         import play.api.libs.iteratee.Execution.Implicits.trampoline
-        iter.map { _ =>
-          Iteratee.flatten(enum(inner))
-        }
+        iter.map { _ => Iteratee.flatten(enum(inner)) }
       }
     }
   }
@@ -228,11 +240,13 @@ object Streams {
     * the subscriber, however it does not materialize the subscriber until the
     * iteratees fold method has been invoked.
     */
-  def accumulatorToIteratee[T, U](accumulator: Accumulator[T, U])(
-      implicit mat: Materializer): Iteratee[T, U] = {
+  def accumulatorToIteratee[T, U](
+      accumulator: Accumulator[T, U]
+  )(implicit mat: Materializer): Iteratee[T, U] = {
     new Iteratee[T, U] {
-      def fold[B](folder: (Step[T, U]) => Future[B])(
-          implicit ec: ExecutionContext) = {
+      def fold[B](
+          folder: (Step[T, U]) => Future[B]
+      )(implicit ec: ExecutionContext) = {
         Source.asSubscriber
           .toMat(accumulator.toSink) { (subscriber, result) =>
             import play.api.libs.iteratee.Execution.Implicits.trampoline

@@ -84,8 +84,10 @@ object PopupControl {
   * @param delegate JavaFX PopupControl to be wrapped. It defaul value is a new JavaFX PopupControl
   */
 class PopupControl(
-    override val delegate: jfxsc.PopupControl = new jfxsc.PopupControl)
-    extends PopupWindow(delegate) with Styleable with Skinnable
+    override val delegate: jfxsc.PopupControl = new jfxsc.PopupControl
+) extends PopupWindow(delegate)
+    with Styleable
+    with Skinnable
     with SFXDelegate[jfxsc.PopupControl] {
 
   /**

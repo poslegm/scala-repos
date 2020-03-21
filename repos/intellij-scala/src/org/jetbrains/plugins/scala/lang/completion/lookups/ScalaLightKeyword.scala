@@ -16,11 +16,13 @@ class ScalaLightKeyword private (manager: PsiManager, text: String)
     extends LightElement(manager, ScalaFileType.SCALA_LANGUAGE)
     with ScalaPsiElement {
   protected def findChildrenByClassScala[T >: Null <: ScalaPsiElement](
-      clazz: Class[T]): Array[T] =
+      clazz: Class[T]
+  ): Array[T] =
     findChildrenByClass[T](clazz)
 
   protected def findChildByClassScala[T >: Null <: ScalaPsiElement](
-      clazz: Class[T]): T = findChildByClass[T](clazz)
+      clazz: Class[T]
+  ): T = findChildByClass[T](clazz)
 
   override def getText: String = text
 

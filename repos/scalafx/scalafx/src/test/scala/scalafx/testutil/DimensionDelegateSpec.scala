@@ -40,7 +40,9 @@ trait DimensionDelegateSpec[D <: DimensionDelegate[_]] extends FlatSpec {
   val dimensionDelegate: D
 
   private def testDoublePropertyUpdate(
-      testedProperty: DoubleProperty, propertyName: String) {
+      testedProperty: DoubleProperty,
+      propertyName: String
+  ) {
     var moved = false
     val observerDouble = new DoubleProperty(dimensionDelegate, propertyName)
 

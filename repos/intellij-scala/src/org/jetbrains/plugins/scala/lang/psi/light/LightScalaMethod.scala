@@ -5,7 +5,12 @@ import java.util
 import com.intellij.psi.impl.PsiSuperMethodImplUtil
 import com.intellij.psi.impl.light.LightMethod
 import com.intellij.psi.util.MethodSignatureBackedByPsiMethod
-import com.intellij.psi.{HierarchicalMethodSignature, PsiClass, PsiManager, PsiMethod}
+import com.intellij.psi.{
+  HierarchicalMethodSignature,
+  PsiClass,
+  PsiManager,
+  PsiMethod
+}
 
 /**
   * @author Alefas
@@ -14,9 +19,15 @@ import com.intellij.psi.{HierarchicalMethodSignature, PsiClass, PsiManager, PsiM
 trait LightScalaMethod
 
 class LightMethodAdapter(
-    manager: PsiManager, method: PsiMethod, containingClass: PsiClass)
-    extends LightMethod(
-        manager, method, containingClass, containingClass.getLanguage) {
+    manager: PsiManager,
+    method: PsiMethod,
+    containingClass: PsiClass
+) extends LightMethod(
+      manager,
+      method,
+      containingClass,
+      containingClass.getLanguage
+    ) {
 
   override def findDeepestSuperMethods(): Array[PsiMethod] =
     PsiSuperMethodImplUtil.findDeepestSuperMethods(this)
@@ -34,9 +45,12 @@ class LightMethodAdapter(
     PsiSuperMethodImplUtil.findSuperMethods(this, parentClass)
 
   override def findSuperMethodSignaturesIncludingStatic(
-      checkAccess: Boolean): util.List[MethodSignatureBackedByPsiMethod] =
+      checkAccess: Boolean
+  ): util.List[MethodSignatureBackedByPsiMethod] =
     PsiSuperMethodImplUtil.findSuperMethodSignaturesIncludingStatic(
-        this, checkAccess)
+      this,
+      checkAccess
+    )
 
   override def getHierarchicalMethodSignature: HierarchicalMethodSignature =
     PsiSuperMethodImplUtil.getHierarchicalMethodSignature(this)

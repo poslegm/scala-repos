@@ -10,7 +10,8 @@ object Test {
 
   def main(args: Array[String]): Unit = {
     assert(
-        s2 eq s3,
-        ((s2, System.identityHashCode(s2), s3, System.identityHashCode(s3))))
+      s2 eq s3,
+      ((s2, System.identityHashCode(s2), s3, System.identityHashCode(s3)))
+    )
   }
 }

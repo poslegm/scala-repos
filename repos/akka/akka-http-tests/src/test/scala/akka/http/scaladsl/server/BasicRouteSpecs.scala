@@ -48,9 +48,7 @@ class BasicRouteSpecs extends RoutingSpec {
 
     "work for two elements" in {
       Get("/abc") ~> {
-        dirStringInt { (str, i) ⇒
-          complete(s"$str ${i + 1}")
-        }
+        dirStringInt { (str, i) ⇒ complete(s"$str ${i + 1}") }
       } ~> check { responseAs[String] shouldEqual "The cat 43" }
     }
     "work for 2 + 1" in {
@@ -137,9 +135,10 @@ class BasicRouteSpecs extends RoutingSpec {
     "re-execute inner routes every time" in {
       var a = ""
       val dynamicRoute = get { a += "x"; complete(a) }
-      def expect(route: Route, s: String) = Get() ~> route ~> check {
-        responseAs[String] shouldEqual s
-      }
+      def expect(route: Route, s: String) =
+        Get() ~> route ~> check {
+          responseAs[String] shouldEqual s
+        }
 
       expect(dynamicRoute, "x")
       expect(dynamicRoute, "xx")
@@ -151,17 +150,17 @@ class BasicRouteSpecs extends RoutingSpec {
   case object MyException extends RuntimeException
   "Route sealing" should {
     "catch route execution exceptions" in EventFilter[MyException.type](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       Get("/abc") ~> Route.seal {
-        get { ctx ⇒
-          throw MyException
-        }
+        get { ctx ⇒ throw MyException }
       } ~> check {
         status shouldEqual StatusCodes.InternalServerError
       }
     }
     "catch route building exceptions" in EventFilter[MyException.type](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       Get("/abc") ~> Route.seal {
         get {
           throw MyException
@@ -171,7 +170,8 @@ class BasicRouteSpecs extends RoutingSpec {
       }
     }
     "convert all rejections to responses" in EventFilter[RuntimeException](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       object MyRejection extends Rejection
       Get("/abc") ~> Route.seal {
         get {
@@ -186,7 +186,9 @@ class BasicRouteSpecs extends RoutingSpec {
         post { completeOk } ~ authorize(false) { completeOk }
       } ~> check {
         status shouldEqual StatusCodes.MethodNotAllowed
-        responseAs[String] shouldEqual "HTTP method not allowed, supported methods: POST"
+        responseAs[
+          String
+        ] shouldEqual "HTTP method not allowed, supported methods: POST"
       }
 
       Get("/abc") ~> Route.seal {

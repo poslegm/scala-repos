@@ -8,7 +8,7 @@ object ULong extends ULongInstances {
 
   final def apply(s: String): ULong = fromBigInt(BigInt(s))
 
-  final def fromInt(n: Int): ULong = new ULong(n & 0xffffffffL)
+  final def fromInt(n: Int): ULong = new ULong(n & 0xFFFFFFFFL)
   final def fromLong(n: Long): ULong = new ULong(n)
 
   final def fromBigInt(n: BigInt): ULong =
@@ -194,11 +194,15 @@ private[math] trait ULongIsSigned extends Signed[ULong] {
 }
 
 private[math] trait ULongIsReal
-    extends IsIntegral[ULong] with ULongOrder with ULongIsSigned {
+    extends IsIntegral[ULong]
+    with ULongOrder
+    with ULongIsSigned {
   def toDouble(n: ULong): Double = n.toDouble
   def toBigInt(n: ULong): BigInt = n.toBigInt
 }
 
 @SerialVersionUID(0L)
 private[math] class ULongAlgebra
-    extends ULongIsRig with ULongIsReal with Serializable
+    extends ULongIsRig
+    with ULongIsReal
+    with Serializable

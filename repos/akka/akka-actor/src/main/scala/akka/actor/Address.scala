@@ -18,10 +18,12 @@ import scala.collection.immutable
   * information with an address, then this must be done externally.
   */
 @SerialVersionUID(1L)
-final case class Address private (protocol: String,
-                                  system: String,
-                                  host: Option[String],
-                                  port: Option[Int]) {
+final case class Address private (
+    protocol: String,
+    system: String,
+    host: Option[String],
+    port: Option[Int]
+) {
   // Please note that local/non-local distinction must be preserved:
   // host.isDefined == hasGlobalScope
   // host.isEmpty == hasLocalScope
@@ -126,7 +128,8 @@ object RelativeActorPath extends PathUtils {
   */
 object AddressFromURIString {
   def unapply(addr: String): Option[Address] =
-    try unapply(new URI(addr)) catch { case _: URISyntaxException ⇒ None }
+    try unapply(new URI(addr))
+    catch { case _: URISyntaxException ⇒ None }
 
   def unapply(uri: URI): Option[Address] =
     if (uri eq null) None
@@ -141,19 +144,20 @@ object AddressFromURIString {
       if (uri.getHost == null || uri.getPort == -1) None
       else
         Some(
-            if (uri.getUserInfo == null) Address(uri.getScheme, uri.getHost)
-            else
-              Address(
-                  uri.getScheme, uri.getUserInfo, uri.getHost, uri.getPort))
+          if (uri.getUserInfo == null) Address(uri.getScheme, uri.getHost)
+          else
+            Address(uri.getScheme, uri.getUserInfo, uri.getHost, uri.getPort)
+        )
     }
 
   /**
     * Try to construct an Address from the given String or throw a java.net.MalformedURLException.
     */
-  def apply(addr: String): Address = addr match {
-    case AddressFromURIString(address) ⇒ address
-    case _ ⇒ throw new MalformedURLException(addr)
-  }
+  def apply(addr: String): Address =
+    addr match {
+      case AddressFromURIString(address) ⇒ address
+      case _ ⇒ throw new MalformedURLException(addr)
+    }
 
   /**
     * Java API: Try to construct an Address from the given String or throw a java.net.MalformedURLException.

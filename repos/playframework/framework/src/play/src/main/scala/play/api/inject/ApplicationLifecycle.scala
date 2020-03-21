@@ -63,10 +63,9 @@ trait ApplicationLifecycle {
     * immediately and return a successful future.
     */
   def addStopHook(hook: Callable[_ <: CompletionStage[_]]): Unit = {
-    addStopHook(
-        () =>
-          FutureConverters.toScala(
-              hook.call().asInstanceOf[CompletionStage[_]]))
+    addStopHook(() =>
+      FutureConverters.toScala(hook.call().asInstanceOf[CompletionStage[_]])
+    )
   }
 }
 
@@ -78,9 +77,10 @@ class DefaultApplicationLifecycle extends ApplicationLifecycle {
   private val mutex = new Object()
   @volatile private var hooks = List.empty[() => Future[_]]
 
-  def addStopHook(hook: () => Future[_]) = mutex.synchronized {
-    hooks = hook :: hooks
-  }
+  def addStopHook(hook: () => Future[_]) =
+    mutex.synchronized {
+      hooks = hook :: hooks
+    }
 
   /**
     * Call to shutdown the application.

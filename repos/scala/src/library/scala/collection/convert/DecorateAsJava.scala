@@ -74,7 +74,8 @@ trait DecorateAsJava {
     * @return An object with an `asJava` method that returns a Java `Iterator` view of the argument.
     */
   implicit def asJavaIteratorConverter[A](
-      i: Iterator[A]): AsJava[ju.Iterator[A]] =
+      i: Iterator[A]
+  ): AsJava[ju.Iterator[A]] =
     new AsJava(asJavaIterator(i))
 
   /**
@@ -93,7 +94,8 @@ trait DecorateAsJava {
     *         `Enumeration` view of the argument.
     */
   implicit def asJavaEnumerationConverter[A](
-      i: Iterator[A]): AsJavaEnumeration[A] =
+      i: Iterator[A]
+  ): AsJavaEnumeration[A] =
     new AsJavaEnumeration(i)
 
   /**
@@ -113,7 +115,8 @@ trait DecorateAsJava {
     *         `Iterable` view of the argument.
     */
   implicit def asJavaIterableConverter[A](
-      i: Iterable[A]): AsJava[jl.Iterable[A]] =
+      i: Iterable[A]
+  ): AsJava[jl.Iterable[A]] =
     new AsJava(asJavaIterable(i))
 
   /**
@@ -129,7 +132,8 @@ trait DecorateAsJava {
     *         `Collection` view of the argument.
     */
   implicit def asJavaCollectionConverter[A](
-      i: Iterable[A]): AsJavaCollection[A] =
+      i: Iterable[A]
+  ): AsJavaCollection[A] =
     new AsJavaCollection(i)
 
   /**
@@ -149,7 +153,8 @@ trait DecorateAsJava {
     *         of the argument.
     */
   implicit def bufferAsJavaListConverter[A](
-      b: mutable.Buffer[A]): AsJava[ju.List[A]] =
+      b: mutable.Buffer[A]
+  ): AsJava[ju.List[A]] =
     new AsJava(bufferAsJavaList(b))
 
   /**
@@ -169,7 +174,8 @@ trait DecorateAsJava {
     *         view of the argument.
     */
   implicit def mutableSeqAsJavaListConverter[A](
-      b: mutable.Seq[A]): AsJava[ju.List[A]] =
+      b: mutable.Seq[A]
+  ): AsJava[ju.List[A]] =
     new AsJava(mutableSeqAsJavaList(b))
 
   /**
@@ -208,7 +214,8 @@ trait DecorateAsJava {
     *         of the argument.
     */
   implicit def mutableSetAsJavaSetConverter[A](
-      s: mutable.Set[A]): AsJava[ju.Set[A]] =
+      s: mutable.Set[A]
+  ): AsJava[ju.Set[A]] =
     new AsJava(mutableSetAsJavaSet(s))
 
   /**
@@ -247,7 +254,8 @@ trait DecorateAsJava {
     *         of the argument.
     */
   implicit def mutableMapAsJavaMapConverter[A, B](
-      m: mutable.Map[A, B]): AsJava[ju.Map[A, B]] =
+      m: mutable.Map[A, B]
+  ): AsJava[ju.Map[A, B]] =
     new AsJava(mutableMapAsJavaMap(m))
 
   /**
@@ -267,7 +275,8 @@ trait DecorateAsJava {
     *         Java `Dictionary` view of the argument.
     */
   implicit def asJavaDictionaryConverter[A, B](
-      m: mutable.Map[A, B]): AsJavaDictionary[A, B] =
+      m: mutable.Map[A, B]
+  ): AsJavaDictionary[A, B] =
     new AsJavaDictionary(m)
 
   /**
@@ -286,8 +295,7 @@ trait DecorateAsJava {
     * @return An object with an `asJava` method that returns a Java `Map` view
     *         of the argument.
     */
-  implicit def mapAsJavaMapConverter[A, B](
-      m: Map[A, B]): AsJava[ju.Map[A, B]] =
+  implicit def mapAsJavaMapConverter[A, B](m: Map[A, B]): AsJava[ju.Map[A, B]] =
     new AsJava(mapAsJavaMap(m))
 
   /**
@@ -307,6 +315,7 @@ trait DecorateAsJava {
     *         `ConcurrentMap` view of the argument.
     */
   implicit def mapAsJavaConcurrentMapConverter[A, B](
-      m: concurrent.Map[A, B]): AsJava[juc.ConcurrentMap[A, B]] =
+      m: concurrent.Map[A, B]
+  ): AsJava[juc.ConcurrentMap[A, B]] =
     new AsJava(mapAsJavaConcurrentMap(m))
 }

@@ -82,15 +82,16 @@ object ScriptSourceFile {
       if (matcher.find) matcher.end
       else
         throw new IOException(
-            "script file does not close its header with !# or ::!#")
+          "script file does not close its header with !# or ::!#"
+        )
     } else 0
   }
 
   def apply(file: AbstractFile, content: Array[Char]) = {
     val underlying = new BatchSourceFile(file, content)
     val headerLen = headerLength(content)
-    val stripped = new ScriptSourceFile(
-        underlying, content drop headerLen, headerLen)
+    val stripped =
+      new ScriptSourceFile(underlying, content drop headerLen, headerLen)
 
     stripped
   }
@@ -98,13 +99,18 @@ object ScriptSourceFile {
   def apply(underlying: BatchSourceFile) = {
     val headerLen = headerLength(underlying.content)
     new ScriptSourceFile(
-        underlying, underlying.content drop headerLen, headerLen)
+      underlying,
+      underlying.content drop headerLen,
+      headerLen
+    )
   }
 }
 
 class ScriptSourceFile(
-    underlying: BatchSourceFile, content: Array[Char], override val start: Int)
-    extends BatchSourceFile(underlying.file, content) {
+    underlying: BatchSourceFile,
+    content: Array[Char],
+    override val start: Int
+) extends BatchSourceFile(underlying.file, content) {
   override def isSelfContained = false
 
   override def positionInUltimateSource(pos: Position) =
@@ -144,7 +150,7 @@ class BatchSourceFile(val file: AbstractFile, content0: Array[Char])
     // don't identify the CR in CR LF as a line break, since LF will do.
     def notCRLF0 =
       content(idx) != CR || !content.isDefinedAt(idx + 1) ||
-      content(idx + 1) != LF
+        content(idx + 1) != LF
 
     idx < length && notCRLF0 && p(content(idx))
   }
@@ -158,10 +164,11 @@ class BatchSourceFile(val file: AbstractFile, content0: Array[Char])
     }
 
   /** True if the index is end of an EOL sequence. */
-  def isAtEndOfLine(idx: Int) = charAtIsEOL(idx) {
-    case CR | LF => true
-    case _ => false
-  }
+  def isAtEndOfLine(idx: Int) =
+    charAtIsEOL(idx) {
+      case CR | LF => true
+      case _       => false
+    }
 
   def calculateLineIndices(cs: Array[Char]) = {
     val buf = new ArrayBuffer[Int]
@@ -192,10 +199,11 @@ class BatchSourceFile(val file: AbstractFile, content0: Array[Char])
     lastLine
   }
 
-  override def equals(that: Any) = that match {
-    case that: BatchSourceFile =>
-      file.path == that.file.path && start == that.start
-    case _ => false
-  }
+  override def equals(that: Any) =
+    that match {
+      case that: BatchSourceFile =>
+        file.path == that.file.path && start == that.start
+      case _ => false
+    }
   override def hashCode = file.path.## + start.##
 }

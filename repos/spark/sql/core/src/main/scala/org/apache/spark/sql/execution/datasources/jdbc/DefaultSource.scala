@@ -20,7 +20,11 @@ package org.apache.spark.sql.execution.datasources.jdbc
 import java.util.Properties
 
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider}
+import org.apache.spark.sql.sources.{
+  BaseRelation,
+  DataSourceRegister,
+  RelationProvider
+}
 
 class DefaultSource extends RelationProvider with DataSourceRegister {
 
@@ -29,11 +33,14 @@ class DefaultSource extends RelationProvider with DataSourceRegister {
   /** Returns a new base relation with the given parameters. */
   override def createRelation(
       sqlContext: SQLContext,
-      parameters: Map[String, String]): BaseRelation = {
+      parameters: Map[String, String]
+  ): BaseRelation = {
     val url =
       parameters.getOrElse("url", sys.error("Option 'url' not specified"))
     val table = parameters.getOrElse(
-        "dbtable", sys.error("Option 'dbtable' not specified"))
+      "dbtable",
+      sys.error("Option 'dbtable' not specified")
+    )
     val partitionColumn = parameters.getOrElse("partitionColumn", null)
     val lowerBound = parameters.getOrElse("lowerBound", null)
     val upperBound = parameters.getOrElse("upperBound", null)
@@ -48,10 +55,12 @@ class DefaultSource extends RelationProvider with DataSourceRegister {
       if (partitionColumn == null) {
         null
       } else {
-        JDBCPartitioningInfo(partitionColumn,
-                             lowerBound.toLong,
-                             upperBound.toLong,
-                             numPartitions.toInt)
+        JDBCPartitioningInfo(
+          partitionColumn,
+          lowerBound.toLong,
+          upperBound.toLong,
+          numPartitions.toInt
+        )
       }
     val parts = JDBCRelation.columnPartition(partitionInfo)
     val properties =

@@ -20,18 +20,23 @@ final class Env(config: Config, system: ActorSystem, db: lila.db.Env) {
 
   lazy val api = new BookmarkApi(cached = cached, paginator = paginator)
 
-  system.actorOf(Props(new Actor {
-    def receive = {
-      case Toggle(gameId, userId) => api.toggle(gameId, userId)
-      case Remove(gameId) => api removeByGameId gameId
-    }
-  }), name = ActorName)
+  system.actorOf(
+    Props(new Actor {
+      def receive = {
+        case Toggle(gameId, userId) => api.toggle(gameId, userId)
+        case Remove(gameId)         => api removeByGameId gameId
+      }
+    }),
+    name = ActorName
+  )
 }
 
 object Env {
 
   lazy val current =
-    "bookmark" boot new Env(config = lila.common.PlayApp loadConfig "bookmark",
-                            system = lila.common.PlayApp.system,
-                            db = lila.db.Env.current)
+    "bookmark" boot new Env(
+      config = lila.common.PlayApp loadConfig "bookmark",
+      system = lila.common.PlayApp.system,
+      db = lila.db.Env.current
+    )
 }

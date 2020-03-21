@@ -17,8 +17,8 @@ private[akka] object HttpAttributes {
   import Attributes._
 
   private[akka] final case class RemoteAddress(
-      address: Option[InetSocketAddress])
-      extends Attribute
+      address: Option[InetSocketAddress]
+  ) extends Attribute
 
   private[akka] def remoteAddress(address: Option[InetSocketAddress]) =
     Attributes(RemoteAddress(address))

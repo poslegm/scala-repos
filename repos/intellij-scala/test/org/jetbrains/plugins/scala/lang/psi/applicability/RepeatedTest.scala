@@ -139,8 +139,11 @@ class RepeatedTest extends ApplicabilityTestBase {
       case ExpansionForNonRepeatedParameter(Expression("Seq(B): _*")) :: Nil =>
     }
     assertProblems("(a: A, b: B)", "(Seq(A): _*, Seq(B): _*)") {
-      case ExpansionForNonRepeatedParameter(Expression("Seq(A): _*")) :: ExpansionForNonRepeatedParameter(
-          Expression("Seq(B): _*")) :: Nil =>
+      case ExpansionForNonRepeatedParameter(
+            Expression("Seq(A): _*")
+          ) :: ExpansionForNonRepeatedParameter(
+            Expression("Seq(B): _*")
+          ) :: Nil =>
     }
     assertProblems("(a: A, b: B*)", "(Seq(A): _*, B)") {
       case ExpansionForNonRepeatedParameter(Expression("Seq(A): _*")) :: Nil =>

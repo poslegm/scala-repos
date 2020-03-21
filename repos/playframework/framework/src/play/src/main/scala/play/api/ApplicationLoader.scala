@@ -43,21 +43,26 @@ object ApplicationLoader {
     *                             configuration used by the application, as the ApplicationLoader may, through it's own
     *                             mechanisms, modify it or completely ignore it.
     */
-  final case class Context(environment: Environment,
-                           sourceMapper: Option[SourceMapper],
-                           webCommands: WebCommands,
-                           initialConfiguration: Configuration)
+  final case class Context(
+      environment: Environment,
+      sourceMapper: Option[SourceMapper],
+      webCommands: WebCommands,
+      initialConfiguration: Configuration
+  )
 
   /**
     * Locate and instantiate the ApplicationLoader.
     */
   def apply(context: Context): ApplicationLoader = {
     Reflect.configuredClass[
-        ApplicationLoader, play.ApplicationLoader, GuiceApplicationLoader](
-        context.environment,
-        PlayConfig(context.initialConfiguration),
-        "play.application.loader",
-        classOf[GuiceApplicationLoader].getName
+      ApplicationLoader,
+      play.ApplicationLoader,
+      GuiceApplicationLoader
+    ](
+      context.environment,
+      PlayConfig(context.initialConfiguration),
+      "play.application.loader",
+      classOf[GuiceApplicationLoader].getName
     ) match {
       case None =>
         new GuiceApplicationLoader
@@ -95,7 +100,8 @@ object ApplicationLoader {
       environment: Environment,
       initialSettings: Map[String, AnyRef] = Map.empty[String, AnyRef],
       sourceMapper: Option[SourceMapper] = None,
-      webCommands: WebCommands = new DefaultWebCommands) = {
+      webCommands: WebCommands = new DefaultWebCommands
+  ) = {
     val configuration = Configuration.load(environment, initialSettings)
     Context(environment, sourceMapper, webCommands, configuration)
   }

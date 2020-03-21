@@ -16,8 +16,9 @@ class TupleOps[T](val tuple: T) extends AnyVal {
   /**
     * Left-Folds over the tuple using the given binary poly-function.
     */
-  def foldLeft[In](zero: In)(op: BinaryPolyFunc)(
-      implicit fold: FoldLeft[In, T, op.type]): fold.Out = fold(zero, tuple)
+  def foldLeft[In](zero: In)(op: BinaryPolyFunc)(implicit
+      fold: FoldLeft[In, T, op.type]
+  ): fold.Out = fold(zero, tuple)
 
   /**
     * Appends the given tuple to the underlying tuple producing a tuple of arity n + m.
@@ -27,7 +28,7 @@ class TupleOps[T](val tuple: T) extends AnyVal {
 }
 
 object TupleOps {
-  implicit def enhanceTuple[T : Tuple](tuple: T): TupleOps[T] =
+  implicit def enhanceTuple[T: Tuple](tuple: T): TupleOps[T] =
     new TupleOps(tuple)
 
   trait AppendOne[P, S] {
@@ -56,14 +57,16 @@ object TupleOps {
       }
     // we implement the join by folding over the suffix with the prefix as growing accumulator
     object Fold extends BinaryPolyFunc {
-      implicit def step[T, A](implicit append: AppendOne[T, A])
-        : BinaryPolyFunc.Case[T, A, Fold.type] { type Out = append.Out } =
+      implicit def step[T, A](implicit
+          append: AppendOne[T, A]
+      ): BinaryPolyFunc.Case[T, A, Fold.type] { type Out = append.Out } =
         at[T, A](append(_, _))
     }
   }
   sealed abstract class LowLevelJoinImplicits {
-    implicit def join[P, S](implicit fold: FoldLeft[P, S, Join.Fold.type])
-      : JoinAux[P, S, fold.Out] =
+    implicit def join[P, S](implicit
+        fold: FoldLeft[P, S, Join.Fold.type]
+    ): JoinAux[P, S, fold.Out] =
       new Join[P, S] {
         type Out = fold.Out
         def apply(prefix: P, suffix: S): Out = fold(prefix, suffix)

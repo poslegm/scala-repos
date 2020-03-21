@@ -17,10 +17,11 @@ import akka.stream.Materializer
 private object PoolGateway {
 
   sealed trait State
-  final case class Running(interfaceActorRef: ActorRef,
-                           shutdownStartedPromise: Promise[Done],
-                           shutdownCompletedPromise: Promise[Done])
-      extends State
+  final case class Running(
+      interfaceActorRef: ActorRef,
+      shutdownStartedPromise: Promise[Done],
+      shutdownCompletedPromise: Promise[Done]
+  ) extends State
   final case class IsShutdown(shutdownCompleted: Future[Done]) extends State
   final case class NewIncarnation(gatewayFuture: Future[PoolGateway])
       extends State
@@ -39,11 +40,15 @@ private object PoolGateway {
   * Removal of cache entries for terminated pools is also supported, because old gateway references that
   * get reused will automatically forward requests directed at them to the latest pool incarnation from the cache.
   */
-private[http] class PoolGateway(hcps: HostConnectionPoolSetup,
-                                _shutdownStartedPromise: Promise[Done])(
+private[http] class PoolGateway(
+    hcps: HostConnectionPoolSetup,
+    _shutdownStartedPromise: Promise[Done]
+)(
     // constructor arg only
-    implicit system: ActorSystem,
-    fm: Materializer) {
+    implicit
+    system: ActorSystem,
+    fm: Materializer
+) {
   import PoolGateway._
   import fm.executionContext
 
@@ -54,13 +59,16 @@ private[http] class PoolGateway(hcps: HostConnectionPoolSetup,
         .withDeploy(Deploy.local)
     val ref = system.actorOf(props, PoolInterfaceActor.name.next())
     new AtomicReference[State](
-        Running(ref, _shutdownStartedPromise, shutdownCompletedPromise))
+      Running(ref, _shutdownStartedPromise, shutdownCompletedPromise)
+    )
   }
 
   def currentState: Any = state.get() // enables test access
 
-  def apply(request: HttpRequest,
-            previousIncarnation: PoolGateway = null): Future[HttpResponse] =
+  def apply(
+      request: HttpRequest,
+      previousIncarnation: PoolGateway = null
+  ): Future[HttpResponse] =
     state.get match {
       case Running(ref, _, _) ⇒
         val responsePromise = Promise[HttpResponse]()
@@ -79,7 +87,7 @@ private[http] class PoolGateway(hcps: HostConnectionPoolSetup,
       case x @ NewIncarnation(newGatewayFuture) ⇒
         if (previousIncarnation != null)
           previousIncarnation.state.set(x) // collapse incarnation chain
-        newGatewayFuture.flatMap(_ (request, this))
+        newGatewayFuture.flatMap(_(request, this))
     }
 
   // triggers a shutdown of the current pool, even if it is already a later incarnation
@@ -87,7 +95,9 @@ private[http] class PoolGateway(hcps: HostConnectionPoolSetup,
     state.get match {
       case x @ Running(ref, shutdownStartedPromise, shutdownCompletedPromise) ⇒
         if (state.compareAndSet(
-                x, IsShutdown(shutdownCompletedPromise.future))) {
+              x,
+              IsShutdown(shutdownCompletedPromise.future)
+            )) {
           shutdownStartedPromise.success(Done) // trigger cache removal
           ref ! PoolInterfaceActor.Shutdown
           shutdownCompletedPromise.future

@@ -13,17 +13,23 @@ import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunction
   */
 class ScalaMethodNameMacro extends Macro {
   override def calculateResult(
-      params: Array[Expression], context: ExpressionContext): Result =
-    Option(PsiTreeUtil.getParentOfType(
-            context.getPsiElementAtStartOffset, classOf[ScFunction]))
-      .map(scFun => new TextResult(scFun.getName))
+      params: Array[Expression],
+      context: ExpressionContext
+  ): Result =
+    Option(
+      PsiTreeUtil.getParentOfType(
+        context.getPsiElementAtStartOffset,
+        classOf[ScFunction]
+      )
+    ).map(scFun => new TextResult(scFun.getName))
       .orNull
 
   override def getName: String = MacroUtil.scalaIdPrefix + "methodName"
 
   override def getPresentableName: String =
     MacroUtil.scalaPresentablePrefix + CodeInsightBundle.message(
-        "macro.methodname")
+      "macro.methodname"
+    )
 
   override def getDefaultValue = "a"
 

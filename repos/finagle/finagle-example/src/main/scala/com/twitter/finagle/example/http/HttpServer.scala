@@ -49,7 +49,8 @@ object HttpServer {
         continue(request)
       } else {
         Future.exception(
-            new IllegalArgumentException("You don't know the secret"))
+          new IllegalArgumentException("You don't know the secret")
+        )
       }
     }
   }

@@ -16,16 +16,21 @@ private[sbt] object Execute {
   def idMap[A, B]: Map[A, B] =
     JavaConversions.mapAsScalaMap(new java.util.IdentityHashMap[A, B])
   def pMap[A[_], B[_]]: PMap[A, B] = new DelegatingPMap[A, B](idMap)
-  private[sbt] def completed(p: => Unit): Completed = new Completed {
-    def process(): Unit = p
-  }
+  private[sbt] def completed(p: => Unit): Completed =
+    new Completed {
+      def process(): Unit = p
+    }
   def noTriggers[A[_]] = new Triggers[A](Map.empty, Map.empty, idFun)
 
-  def config(checkCycles: Boolean,
-             overwriteNode: Incomplete => Boolean = const(false)): Config =
+  def config(
+      checkCycles: Boolean,
+      overwriteNode: Incomplete => Boolean = const(false)
+  ): Config =
     new Config(checkCycles, overwriteNode)
-  final class Config private[sbt](
-      val checkCycles: Boolean, val overwriteNode: Incomplete => Boolean)
+  final class Config private[sbt] (
+      val checkCycles: Boolean,
+      val overwriteNode: Incomplete => Boolean
+  )
 
   final val checkPreAndPostConditions = sys.props
     .get("sbt.execute.extrachecks")
@@ -38,13 +43,17 @@ private[sbt] trait NodeView[A[_]] {
   def apply[T](a: A[T]): Node[A, T]
   def inline[T](a: A[T]): Option[() => T]
 }
-final class Triggers[A[_]](val runBefore: collection.Map[A[_], Seq[A[_]]],
-                           val injectFor: collection.Map[A[_], Seq[A[_]]],
-                           val onComplete: RMap[A, Result] => RMap[A, Result])
+final class Triggers[A[_]](
+    val runBefore: collection.Map[A[_], Seq[A[_]]],
+    val injectFor: collection.Map[A[_], Seq[A[_]]],
+    val onComplete: RMap[A, Result] => RMap[A, Result]
+)
 
 private[sbt] final class Execute[A[_] <: AnyRef](
-    config: Config, triggers: Triggers[A], progress: ExecuteProgress[A])(
-    implicit view: NodeView[A]) {
+    config: Config,
+    triggers: Triggers[A],
+    progress: ExecuteProgress[A]
+)(implicit view: NodeView[A]) {
   type Strategy = CompletionService[A[_], Completed]
 
   private[this] val forward = idMap[A[_], IDSet[A[_]]]
@@ -55,10 +64,11 @@ private[sbt] final class Execute[A[_] <: AnyRef](
   private[this] val results = pMap[A, Result]
 
   private[this] val getResult: A ~> Result = new (A ~> Result) {
-    def apply[T](a: A[T]): Result[T] = view.inline(a) match {
-      case Some(v) => Value(v())
-      case None => results(a)
-    }
+    def apply[T](a: A[T]): Result[T] =
+      view.inline(a) match {
+        case Some(v) => Value(v())
+        case None    => results(a)
+      }
   }
   private[this] var progressState: progress.S = progress.initial
 
@@ -70,10 +80,11 @@ private[sbt] final class Execute[A[_] <: AnyRef](
 
   def dump: String =
     "State: " + state.toString + "\n\nResults: " + results + "\n\nCalls: " +
-    callers + "\n\n"
+      callers + "\n\n"
 
   def run[T](root: A[T])(implicit strategy: Strategy): Result[T] =
-    try { runKeep(root)(strategy)(root) } catch {
+    try { runKeep(root)(strategy)(root) }
+    catch {
       case i: Incomplete => Inc(i)
     }
   def runKeep[T](root: A[T])(implicit strategy: Strategy): RMap[A, Result] = {
@@ -94,9 +105,10 @@ private[sbt] final class Execute[A[_] <: AnyRef](
         if (!state.values.exists(_ == Running)) {
           snapshotCycleCheck()
           assert(
-              false,
-              "Internal task engine error: nothing running.  This usually indicates a cycle in tasks.\n  Calling tasks (internal task engine state):\n" +
-              dumpCalling)
+            false,
+            "Internal task engine error: nothing running.  This usually indicates a cycle in tasks.\n  Calling tasks (internal task engine state):\n" +
+              dumpCalling
+          )
         }
       }
 
@@ -137,8 +149,9 @@ private[sbt] final class Execute[A[_] <: AnyRef](
     }
   }
 
-  def retire[T](node: A[T], result: Result[T])(
-      implicit strategy: Strategy): Unit = {
+  def retire[T](node: A[T], result: Result[T])(implicit
+      strategy: Strategy
+  ): Unit = {
     pre {
       assert(running(node) | calling(node))
       readyInv(node)
@@ -147,15 +160,11 @@ private[sbt] final class Execute[A[_] <: AnyRef](
     results(node) = result
     state(node) = Done
     progressState = progress.completed(progressState, node, result)
-    remove(reverse, node) foreach { dep =>
-      notifyDone(node, dep)
-    }
+    remove(reverse, node) foreach { dep => notifyDone(node, dep) }
     callers.remove(node).toList.flatten.foreach { c =>
       retire(c, callerResult(c, result))
     }
-    triggeredBy(node) foreach { t =>
-      addChecked(t)
-    }
+    triggeredBy(node) foreach { t => addChecked(t) }
 
     post {
       assert(done(node))
@@ -173,8 +182,9 @@ private[sbt] final class Execute[A[_] <: AnyRef](
         Inc(Incomplete(Some(node), tpe = i.tpe, causes = i :: Nil))
     }
 
-  def notifyDone(node: A[_], dependent: A[_])(
-      implicit strategy: Strategy): Unit = {
+  def notifyDone(node: A[_], dependent: A[_])(implicit
+      strategy: Strategy
+  ): Unit = {
     val f = forward(dependent)
     f -= node
     if (f.isEmpty) {
@@ -206,10 +216,11 @@ private[sbt] final class Execute[A[_] <: AnyRef](
     val deps = dependencies(v) ++ runBefore(node)
     val active = IDSet[A[_]](deps filter notDone)
     progressState = progress.registered(
-        progressState,
-        node,
-        deps,
-        active.toList /** active is mutable, so take a snapshot */ )
+      progressState,
+      node,
+      deps,
+      active.toList /** active is mutable, so take a snapshot */
+    )
 
     if (active.isEmpty) ready(node)
     else {
@@ -265,8 +276,9 @@ private[sbt] final class Execute[A[_] <: AnyRef](
     * Evaluates the computation 'f' for 'node'.
     * This returns a Completed instance, which contains the post-processing to perform after the result is retrieved from the Strategy.
     */
-  def work[T](node: A[T], f: => Either[A[T], T])(
-      implicit strategy: Strategy): Completed = {
+  def work[T](node: A[T], f: => Either[A[T], T])(implicit
+      strategy: Strategy
+  ): Completed = {
     progress.workStarting(node)
     val rawResult = wideConvert(f).left.map {
       case i: Incomplete =>
@@ -277,16 +289,17 @@ private[sbt] final class Execute[A[_] <: AnyRef](
     progress.workFinished(node, result)
     completed {
       result match {
-        case Right(v) => retire(node, v)
+        case Right(v)     => retire(node, v)
         case Left(target) => call(node, target)
       }
     }
   }
-  private[this] def rewrap[T](rawResult: Either[Incomplete, Either[A[T], T]])
-    : Either[A[T], Result[T]] =
+  private[this] def rewrap[T](
+      rawResult: Either[Incomplete, Either[A[T], T]]
+  ): Either[A[T], Result[T]] =
     rawResult match {
-      case Left(i) => Right(Inc(i))
-      case Right(Right(v)) => Right(Value(v))
+      case Left(i)             => Right(Inc(i))
+      case Right(Right(v))     => Right(Value(v))
       case Right(Left(target)) => Left(target)
     }
 
@@ -317,9 +330,10 @@ private[sbt] final class Execute[A[_] <: AnyRef](
   }
   def dependencyCheck(node: A[_]): Unit = {
     dependencies(node) foreach { dep =>
-      def onOpt[T](o: Option[T])(f: T => Boolean) = o match {
-        case None => false; case Some(x) => f(x)
-      }
+      def onOpt[T](o: Option[T])(f: T => Boolean) =
+        o match {
+          case None => false; case Some(x) => f(x)
+        }
       def checkForward = onOpt(forward.get(node)) { _ contains dep }
       def checkReverse = onOpt(reverse.get(dep)) { _.exists(_ == node) }
       assert(done(dep) ^ (checkForward && checkReverse))
@@ -362,26 +376,30 @@ private[sbt] final class Execute[A[_] <: AnyRef](
   // cyclic reference checking
 
   def snapshotCycleCheck(): Unit =
-    for ((called: A[c], callers) <- callers.toSeq; caller <- callers) cycleCheck(
-        caller.asInstanceOf[A[c]], called)
+    for ((called: A[c], callers) <- callers.toSeq; caller <- callers)
+      cycleCheck(caller.asInstanceOf[A[c]], called)
 
   def cycleCheck[T](node: A[T], target: A[T]): Unit = {
     if (node eq target) cyclic(node, target, "Cannot call self")
     val all = IDSet.create[A[T]]
-    def allCallers(n: A[T]): Unit = (all process n)(()) {
-      callers.get(n).toList.flatten.foreach(allCallers)
-    }
+    def allCallers(n: A[T]): Unit =
+      (all process n)(()) {
+        callers.get(n).toList.flatten.foreach(allCallers)
+      }
     allCallers(node)
     if (all contains target) cyclic(node, target, "Cyclic reference")
   }
   def cyclic[T](caller: A[T], target: A[T], msg: String) =
     throw new Incomplete(
-        Some(caller),
-        message = Some(msg),
-        directCause = Some(new CyclicException(caller, target, msg)))
+      Some(caller),
+      message = Some(msg),
+      directCause = Some(new CyclicException(caller, target, msg))
+    )
   final class CyclicException[T](
-      val caller: A[T], val target: A[T], msg: String)
-      extends Exception(msg)
+      val caller: A[T],
+      val target: A[T],
+      msg: String
+  ) extends Exception(msg)
 
   // state testing
 

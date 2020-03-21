@@ -2,9 +2,9 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Plus` */
-final class PlusOps[F[_], A] private[syntax](val self: F[A])(
-    implicit val F: Plus[F])
-    extends Ops[F[A]] {
+final class PlusOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: Plus[F]
+) extends Ops[F[A]] {
   ////
 
   final def <+>(other: => F[A]) = F.plus(self, other)

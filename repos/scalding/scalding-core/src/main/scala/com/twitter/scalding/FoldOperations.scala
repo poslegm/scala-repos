@@ -23,7 +23,8 @@ import cascading.tuple.Fields
   * in each operation.
   */
 trait FoldOperations[+Self <: FoldOperations[Self]]
-    extends ReduceOperations[Self] with Sortable[Self] {
+    extends ReduceOperations[Self]
+    with Sortable[Self] {
   /*
    *  prefer reduce or mapReduceMap. foldLeft will force all work to be
    *  done on the reducers.  If your function is not associative and
@@ -32,17 +33,17 @@ trait FoldOperations[+Self <: FoldOperations[Self]]
    *  NOTE: init needs to be serializable with Kryo (because we copy it for each
    *    grouping to avoid possible errors using a mutable init object).
    */
-  def foldLeft[X, T](fieldDef: (Fields, Fields))(init: X)(fn: (X, T) => X)(
-      implicit setter: TupleSetter[X], conv: TupleConverter[T]): Self
+  def foldLeft[X, T](fieldDef: (Fields, Fields))(init: X)(
+      fn: (X, T) => X
+  )(implicit setter: TupleSetter[X], conv: TupleConverter[T]): Self
 
   //If there is an ordering, we need to reverse the list
-  override def mapList[T, R](fieldDef: (Fields, Fields))(fn: (List[T]) => R)(
-      implicit conv: TupleConverter[T], setter: TupleSetter[R]): Self = {
+  override def mapList[T, R](fieldDef: (Fields, Fields))(
+      fn: (List[T]) => R
+  )(implicit conv: TupleConverter[T], setter: TupleSetter[R]): Self = {
     if (sorting.isDefined) {
       //the list is built in reverse order so we need to reverse it here
-      super.mapList[T, R](fieldDef) { l =>
-        fn(l.reverse)
-      }(conv, setter)
+      super.mapList[T, R](fieldDef) { l => fn(l.reverse) }(conv, setter)
     } else {
       // Ordering doesn't matter, so skip the reversal
       super.mapList[T, R](fieldDef)(fn)(conv, setter)

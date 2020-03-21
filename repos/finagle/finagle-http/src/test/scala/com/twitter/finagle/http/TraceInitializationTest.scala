@@ -18,8 +18,7 @@ class TraceInitializationTest extends FunSuite {
   def req = RequestBuilder().url("http://foo/this/is/a/uri/path").buildGet()
 
   def assertAnnotationsInOrder(records: Seq[Record], annos: Seq[Annotation]) {
-    assert(
-        records.collect {
+    assert(records.collect {
       case Record(_, _, ann, _) if annos.contains(ann) => ann
     } == annos)
   }
@@ -29,26 +28,31 @@ class TraceInitializationTest extends FunSuite {
     * Ensure core annotations are present and properly ordered
     */
   def testTraces(
-      f: (Tracer, Tracer) => (Service[Request, Response], Closable)) {
+      f: (Tracer, Tracer) => (Service[Request, Response], Closable)
+  ) {
     val tracer = new BufferingTracer
 
     val (svc, closable) = f(tracer, tracer)
-    try Await.result(svc(req)) finally {
+    try Await.result(svc(req))
+    finally {
       Closable.all(svc, closable).close()
     }
 
     assertAnnotationsInOrder(
-        tracer.toSeq,
-        Seq(Annotation.Rpc("GET"),
-            Annotation.BinaryAnnotation("http.uri", "/this/is/a/uri/path"),
-            Annotation.ServiceName("theClient"),
-            Annotation.ClientSend(),
-            Annotation.Rpc("GET"),
-            Annotation.BinaryAnnotation("http.uri", "/this/is/a/uri/path"),
-            Annotation.ServiceName("theServer"),
-            Annotation.ServerRecv(),
-            Annotation.ServerSend(),
-            Annotation.ClientRecv()))
+      tracer.toSeq,
+      Seq(
+        Annotation.Rpc("GET"),
+        Annotation.BinaryAnnotation("http.uri", "/this/is/a/uri/path"),
+        Annotation.ServiceName("theClient"),
+        Annotation.ClientSend(),
+        Annotation.Rpc("GET"),
+        Annotation.BinaryAnnotation("http.uri", "/this/is/a/uri/path"),
+        Annotation.ServiceName("theServer"),
+        Annotation.ServerRecv(),
+        Annotation.ServerSend(),
+        Annotation.ClientRecv()
+      )
+    )
 
     assert(tracer.map(_.traceId).toSet.size == 1)
   }
@@ -64,7 +68,7 @@ class TraceInitializationTest extends FunSuite {
       val client = finagle.Http.client
         .configured(param.Tracer(clientTracer))
         .newService(":" + port, "theClient")
-        (client, server)
+      (client, server)
     }
   }
 
@@ -85,7 +89,7 @@ class TraceInitializationTest extends FunSuite {
         .hostConnectionLimit(1)
         .tracer(clientTracer)
         .build()
-        (client, server)
+      (client, server)
     }
   }
 
@@ -106,9 +110,7 @@ class TraceInitializationTest extends FunSuite {
         .hostConnectionLimit(1)
         .build()
       try {
-        0.until(2).foreach { _ =>
-          Await.result(client(req))
-        }
+        0.until(2).foreach { _ => Await.result(client(req)) }
 
         assert(tracer.map(_.traceId).toSet.size == 2)
       } finally client.close()

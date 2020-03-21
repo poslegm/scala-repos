@@ -23,34 +23,38 @@ object StablePriorityDispatcherSpec {
     """
 
   class Unbounded(settings: ActorSystem.Settings, config: Config)
-      extends UnboundedStablePriorityMailbox(
-          PriorityGenerator({
+      extends UnboundedStablePriorityMailbox(PriorityGenerator({
         case i: Int if i <= 100 ⇒ i // Small integers have high priority
         case i: Int ⇒ 101 // Don't care for other integers
         case 'Result ⇒ Int.MaxValue
       }: Any ⇒ Int))
 
   class Bounded(settings: ActorSystem.Settings, config: Config)
-      extends BoundedStablePriorityMailbox(PriorityGenerator({
-        case i: Int if i <= 100 ⇒ i // Small integers have high priority
-        case i: Int ⇒ 101 // Don't care for other integers
-        case 'Result ⇒ Int.MaxValue
-      }: Any ⇒ Int), 1000, 10 seconds)
+      extends BoundedStablePriorityMailbox(
+        PriorityGenerator({
+          case i: Int if i <= 100 ⇒ i // Small integers have high priority
+          case i: Int ⇒ 101 // Don't care for other integers
+          case 'Result ⇒ Int.MaxValue
+        }: Any ⇒ Int),
+        1000,
+        10 seconds
+      )
 }
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class StablePriorityDispatcherSpec
-    extends AkkaSpec(StablePriorityDispatcherSpec.config) with DefaultTimeout {
+    extends AkkaSpec(StablePriorityDispatcherSpec.config)
+    with DefaultTimeout {
 
   "A StablePriorityDispatcher" must {
     "Order its messages according to the specified comparator while preserving FIFO for equal priority messages, " +
-    "using an unbounded mailbox" in {
+      "using an unbounded mailbox" in {
       val dispatcherKey = "unbounded-stable-prio-dispatcher"
       testOrdering(dispatcherKey)
     }
 
     "Order its messages according to the specified comparator while preserving FIFO for equal priority messages, " +
-    "using a bounded mailbox" in {
+      "using a bounded mailbox" in {
       val dispatcherKey = "bounded-stable-prio-dispatcher"
       testOrdering(dispatcherKey)
     }
@@ -68,9 +72,7 @@ class StablePriorityDispatcherSpec
 
           val acc = scala.collection.mutable.ListBuffer[Int]()
 
-          shuffled foreach { m ⇒
-            self ! m
-          }
+          shuffled foreach { m ⇒ self ! m }
 
           self.tell('Result, testActor)
 

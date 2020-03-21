@@ -63,7 +63,8 @@ private[kinesis] class KinesisTestUtils extends Logging {
 
   private lazy val dynamoDB = {
     val dynamoDBClient = new AmazonDynamoDBClient(
-        new DefaultAWSCredentialsProviderChain())
+      new DefaultAWSCredentialsProviderChain()
+    )
     dynamoDBClient.setRegion(RegionUtils.getRegion(regionName))
     new DynamoDB(dynamoDBClient)
   }
@@ -73,13 +74,16 @@ private[kinesis] class KinesisTestUtils extends Logging {
       new SimpleDataGenerator(kinesisClient)
     } else {
       throw new UnsupportedOperationException(
-          "Aggregation is not supported through this code path")
+        "Aggregation is not supported through this code path"
+      )
     }
   }
 
   def streamName: String = {
-    require(streamCreated,
-            "Stream not yet created, call createStream() to create one")
+    require(
+      streamCreated,
+      "Stream not yet created, call createStream() to create one"
+    )
     _streamName
   }
 
@@ -104,10 +108,14 @@ private[kinesis] class KinesisTestUtils extends Logging {
     * Push data to Kinesis stream and return a map of
     * shardId -> seq of (data, seq number) pushed to corresponding shard
     */
-  def pushData(testData: Seq[Int],
-               aggregate: Boolean): Map[String, Seq[(Int, String)]] = {
-    require(streamCreated,
-            "Stream not yet created, call createStream() to create one")
+  def pushData(
+      testData: Seq[Int],
+      aggregate: Boolean
+  ): Map[String, Seq[(Int, String)]] = {
+    require(
+      streamCreated,
+      "Stream not yet created, call createStream() to create one"
+    )
     val producer = getProducer(aggregate)
     val shardIdToSeqNumbers = producer.sendData(streamName, testData)
     logInfo(s"Pushed $testData:\n\t ${shardIdToSeqNumbers.mkString("\n\t")}")
@@ -144,7 +152,8 @@ private[kinesis] class KinesisTestUtils extends Logging {
   }
 
   private def describeStream(
-      streamNameToDescribe: String): Option[StreamDescription] = {
+      streamNameToDescribe: String
+  ): Option[StreamDescription] = {
     try {
       val describeStreamRequest =
         new DescribeStreamRequest().withStreamName(streamNameToDescribe)
@@ -225,8 +234,9 @@ private[kinesis] object KinesisTestUtils {
 
   def getAWSCredentials(): AWSCredentials = {
     assert(
-        shouldRunTests,
-        "Kinesis test not enabled, should not attempt to get AWS credentials")
+      shouldRunTests,
+      "Kinesis test not enabled, should not attempt to get AWS credentials"
+    )
     Try { new DefaultAWSCredentialsProviderChain().getCredentials() } match {
       case Success(cred) => cred
       case Failure(e) =>
@@ -245,13 +255,17 @@ private[kinesis] trait KinesisDataGenerator {
 
   /** Sends the data to Kinesis and returns the metadata for everything that has been sent. */
   def sendData(
-      streamName: String, data: Seq[Int]): Map[String, Seq[(Int, String)]]
+      streamName: String,
+      data: Seq[Int]
+  ): Map[String, Seq[(Int, String)]]
 }
 
 private[kinesis] class SimpleDataGenerator(client: AmazonKinesisClient)
     extends KinesisDataGenerator {
   override def sendData(
-      streamName: String, data: Seq[Int]): Map[String, Seq[(Int, String)]] = {
+      streamName: String,
+      data: Seq[Int]
+  ): Map[String, Seq[(Int, String)]] = {
     val shardIdToSeqNumbers =
       new mutable.HashMap[String, ArrayBuffer[(Int, String)]]()
     data.foreach { num =>
@@ -266,7 +280,9 @@ private[kinesis] class SimpleDataGenerator(client: AmazonKinesisClient)
       val shardId = putRecordResult.getShardId
       val seqNumber = putRecordResult.getSequenceNumber()
       val sentSeqNumbers = shardIdToSeqNumbers.getOrElseUpdate(
-          shardId, new ArrayBuffer[(Int, String)]())
+        shardId,
+        new ArrayBuffer[(Int, String)]()
+      )
       sentSeqNumbers += ((num, seqNumber))
     }
 

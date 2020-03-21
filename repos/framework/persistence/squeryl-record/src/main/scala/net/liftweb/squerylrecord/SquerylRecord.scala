@@ -49,16 +49,18 @@ object SquerylRecord extends Loggable {
     SessionFactory.concreteFactory = Some(() => sessionFactory)
   }
 
-  def buildLoanWrapper() = new LoanWrapper {
-    override def apply[T](f: => T): T = inTransaction {
-      f
+  def buildLoanWrapper() =
+    new LoanWrapper {
+      override def apply[T](f: => T): T =
+        inTransaction {
+          f
+        }
     }
-  }
 
-  /** 
-    * 
+  /**
+    *
     * NOTE: Remove this along with the deprecated method below
-    * Keep track of the current Squeryl Session we've created using DB 
+    * Keep track of the current Squeryl Session we've created using DB
     * */
   private object currentSession extends DynoVar[Session]
 }

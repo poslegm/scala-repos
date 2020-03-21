@@ -60,7 +60,9 @@ class RDDOperationGraphListenerSuite extends SparkFunSuite {
     assert(listener.jobIdToStageIds(startingJobId + 1).size === 2)
     assert(listener.jobIdToStageIds(startingJobId + 2).size === 3)
     assert(listener.jobIdToSkippedStageIds.size === 3)
-    assert(listener.jobIdToSkippedStageIds.values.forall(_.isEmpty)) // no skipped stages
+    assert(
+      listener.jobIdToSkippedStageIds.values.forall(_.isEmpty)
+    ) // no skipped stages
     assert(listener.stageIdToJobId.size === 6)
     assert(listener.stageIdToJobId(startingStageId) === startingJobId)
     assert(listener.stageIdToJobId(startingStageId + 1) === startingJobId + 1)
@@ -94,7 +96,9 @@ class RDDOperationGraphListenerSuite extends SparkFunSuite {
     assert(listener.jobIdToSkippedStageIds.size === 3)
     assert(listener.jobIdToSkippedStageIds(startingJobId).size === 1)
     assert(listener.jobIdToSkippedStageIds(startingJobId + 1).size === 2)
-    assert(listener.jobIdToSkippedStageIds(startingJobId + 2).size === 1) // 2 stages not skipped
+    assert(
+      listener.jobIdToSkippedStageIds(startingJobId + 2).size === 1
+    ) // 2 stages not skipped
     assert(listener.completedStageIds.size === 2)
 
     // The rest should be the same as before
@@ -127,11 +131,9 @@ class RDDOperationGraphListenerSuite extends SparkFunSuite {
       val jobId = startJob(numStages, listener)
       // End some, but not all, stages that belong to this job
       // This is to ensure that we have both completed and skipped stages
-      (startingStageIdForJob until stageIdCounter).filter { i =>
-        i % 2 == 0
-      }.foreach { i =>
-        endStage(i, listener)
-      }
+      (startingStageIdForJob until stageIdCounter)
+        .filter { i => i % 2 == 0 }
+        .foreach { i => endStage(i, listener) }
       // End all jobs
       endJob(jobId, listener)
     }
@@ -174,14 +176,10 @@ class RDDOperationGraphListenerSuite extends SparkFunSuite {
     startJob(5, listener)
     startJob(1, listener)
     startJob(2, listener)
-    (0 until 8).foreach { i =>
-      startStage(i + startingStageId, listener)
-    }
+    (0 until 8).foreach { i => startStage(i + startingStageId, listener) }
     endStage(startingStageId + 3, listener)
     endStage(startingStageId + 4, listener)
-    (0 until 3).foreach { i =>
-      endJob(i + startingJobId, listener)
-    }
+    (0 until 3).foreach { i => endJob(i + startingJobId, listener) }
 
     // First, assert the old stuff
     assert(listener.jobIdToStageIds.size === 3)
@@ -210,7 +208,9 @@ class RDDOperationGraphListenerSuite extends SparkFunSuite {
 
   /** Start a job with the specified number of stages. */
   private def startJob(
-      numStages: Int, listener: RDDOperationGraphListener): Int = {
+      numStages: Int,
+      listener: RDDOperationGraphListener
+  ): Int = {
     assert(numStages > 0, "I will not run a job with 0 stages for you.")
     val stageInfos = (0 until numStages).map { _ =>
       val stageInfo =
@@ -221,26 +221,26 @@ class RDDOperationGraphListenerSuite extends SparkFunSuite {
     val jobId = jobIdCounter
     listener.onJobStart(new SparkListenerJobStart(jobId, 0, stageInfos))
     // Also start all stages that belong to this job
-    stageInfos.map(_.stageId).foreach { sid =>
-      startStage(sid, listener)
-    }
+    stageInfos.map(_.stageId).foreach { sid => startStage(sid, listener) }
     jobIdCounter += 1
     jobId
   }
 
   /** Start the stage specified by the given ID. */
   private def startStage(
-      stageId: Int, listener: RDDOperationGraphListener): Unit = {
-    val stageInfo = new StageInfo(
-        stageId, 0, "s", 0, Seq.empty, Seq.empty, "d")
+      stageId: Int,
+      listener: RDDOperationGraphListener
+  ): Unit = {
+    val stageInfo = new StageInfo(stageId, 0, "s", 0, Seq.empty, Seq.empty, "d")
     listener.onStageSubmitted(new SparkListenerStageSubmitted(stageInfo))
   }
 
   /** Finish the stage specified by the given ID. */
   private def endStage(
-      stageId: Int, listener: RDDOperationGraphListener): Unit = {
-    val stageInfo = new StageInfo(
-        stageId, 0, "s", 0, Seq.empty, Seq.empty, "d")
+      stageId: Int,
+      listener: RDDOperationGraphListener
+  ): Unit = {
+    val stageInfo = new StageInfo(stageId, 0, "s", 0, Seq.empty, Seq.empty, "d")
     listener.onStageCompleted(new SparkListenerStageCompleted(stageInfo))
   }
 

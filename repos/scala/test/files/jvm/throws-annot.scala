@@ -29,10 +29,12 @@ object TestThrows {
   def checkMethod(cls: Class[_], name: String) {
     val method = cls.getMethod(name)
     println(
-        name + " throws: " + method.getExceptionTypes.mkString("", ", ", ""))
+      name + " throws: " + method.getExceptionTypes.mkString("", ", ", "")
+    )
     println(
-        name + " annotations: " +
-        method.getDeclaredAnnotations.mkString("", ", ", ""))
+      name + " annotations: " +
+        method.getDeclaredAnnotations.mkString("", ", ", "")
+    )
   }
 
   def run(cls: Class[_]) {

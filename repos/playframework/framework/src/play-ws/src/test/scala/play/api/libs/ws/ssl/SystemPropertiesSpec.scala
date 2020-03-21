@@ -47,44 +47,54 @@ object SystemPropertiesSpec extends Specification with After {
 
     // @see http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html
     "allowLegacyHelloMessages is not set" in {
-      val config = WSClientConfig(ssl = SSLConfig(
-                loose = SSLLooseConfig(allowLegacyHelloMessages = None)))
+      val config = WSClientConfig(ssl =
+        SSLConfig(loose = SSLLooseConfig(allowLegacyHelloMessages = None))
+      )
 
       sp.configure(config)
 
-      System.getProperty("sun.security.ssl.allowLegacyHelloMessages") must beNull
+      System.getProperty(
+        "sun.security.ssl.allowLegacyHelloMessages"
+      ) must beNull
     }
 
     // @see http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html
     "allowLegacyHelloMessages is set" in {
-      val config = WSClientConfig(ssl = SSLConfig(
-                loose = SSLLooseConfig(allowLegacyHelloMessages = Some(true))))
+      val config = WSClientConfig(ssl =
+        SSLConfig(loose = SSLLooseConfig(allowLegacyHelloMessages = Some(true)))
+      )
 
       sp.configure(config)
 
       System.getProperty("sun.security.ssl.allowLegacyHelloMessages") must be(
-          "true")
+        "true"
+      )
     }
 
     // @see http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html
     "allowUnsafeRenegotiation not set" in {
-      val config = WSClientConfig(ssl = SSLConfig(
-                loose = SSLLooseConfig(allowUnsafeRenegotiation = None)))
+      val config = WSClientConfig(ssl =
+        SSLConfig(loose = SSLLooseConfig(allowUnsafeRenegotiation = None))
+      )
 
       sp.configure(config)
 
-      System.getProperty("sun.security.ssl.allowUnsafeRenegotiation") must beNull
+      System.getProperty(
+        "sun.security.ssl.allowUnsafeRenegotiation"
+      ) must beNull
     }
 
     // @see http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html
     "allowUnsafeRenegotiation is set" in {
-      val config = WSClientConfig(ssl = SSLConfig(
-                loose = SSLLooseConfig(allowUnsafeRenegotiation = Some(true))))
+      val config = WSClientConfig(ssl =
+        SSLConfig(loose = SSLLooseConfig(allowUnsafeRenegotiation = Some(true)))
+      )
 
       sp.configure(config)
 
       System.getProperty("sun.security.ssl.allowUnsafeRenegotiation") must be(
-          "true")
+        "true"
+      )
     }
   }
 }

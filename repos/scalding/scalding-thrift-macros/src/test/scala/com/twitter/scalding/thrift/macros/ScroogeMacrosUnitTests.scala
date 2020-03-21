@@ -23,7 +23,9 @@ import org.scalatest.{Matchers, WordSpec}
 import scala.language.experimental.macros
 
 class ScroogeMacrosUnitTests
-    extends WordSpec with Matchers with PropertyChecks {
+    extends WordSpec
+    with Matchers
+    with PropertyChecks {
   import ScroogeGenerators._
   import TestHelper._
   import Macros._
@@ -39,16 +41,16 @@ class ScroogeMacrosUnitTests
     }
 
     "Should RT" in {
-      forAll { a1: TestLists =>
-        assert(oBufCompare(rt(a1), a1) == 0)
-      }
+      forAll { a1: TestLists => assert(oBufCompare(rt(a1), a1) == 0) }
     }
 
     "Should Compare Equal" in {
       val x1 = ScroogeGenerators.dataProvider[TestLists](1)
       val x2 = ScroogeGenerators.dataProvider[TestLists](1)
       compareSerialized(x1, x2) shouldEqual OrderedSerialization.Equal
-      compareSerialized(x1, x2)(Macros.scroogeOrdSer[TestLists]) shouldEqual OrderedSerialization.Equal
+      compareSerialized(x1, x2)(
+        Macros.scroogeOrdSer[TestLists]
+      ) shouldEqual OrderedSerialization.Equal
     }
 
     "Should Compare Not Equal" in {

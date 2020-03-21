@@ -24,7 +24,9 @@ class SexpCompactPrinterSpec extends EnsimeSpec {
 
   it should "output lists of lists" in {
     assertPrinter(
-        SexpList(SexpList(foo), SexpList(foo)), """(("foo") ("foo"))""")
+      SexpList(SexpList(foo), SexpList(foo)),
+      """(("foo") ("foo"))"""
+    )
   }
 
   it should "output cons" in {

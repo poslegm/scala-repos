@@ -11,18 +11,20 @@ private[http] object ReaderUtils {
   /**
     * Serialize an HttpChunk into a Buf.
     */
-  def readChunk(chunk: Any): Future[Option[Buf]] = chunk match {
-    case chunk: HttpChunk if chunk.isLast =>
-      Future.None
+  def readChunk(chunk: Any): Future[Option[Buf]] =
+    chunk match {
+      case chunk: HttpChunk if chunk.isLast =>
+        Future.None
 
-    case chunk: HttpChunk =>
-      Future.value(Some(ChannelBufferBuf.Owned(chunk.getContent.duplicate)))
+      case chunk: HttpChunk =>
+        Future.value(Some(ChannelBufferBuf.Owned(chunk.getContent.duplicate)))
 
-    case invalid =>
-      val exc = new IllegalArgumentException(
-          "invalid message \"%s\"".format(invalid))
-      Future.exception(exc)
-  }
+      case invalid =>
+        val exc = new IllegalArgumentException(
+          "invalid message \"%s\"".format(invalid)
+        )
+        Future.exception(exc)
+    }
 
   /**
     * Translates a Buf into HttpChunk. Beware: an empty buffer indicates end
@@ -46,7 +48,7 @@ private[http] object ReaderUtils {
       case Some(buf) =>
         trans.write(chunkOfBuf(buf)) transform {
           case Return(_) => streamChunks(trans, r, bufSize)
-          case _ => Future(r.discard())
+          case _         => Future(r.discard())
         }
     }
   }

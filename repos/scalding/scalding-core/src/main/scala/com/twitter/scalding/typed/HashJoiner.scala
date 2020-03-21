@@ -25,16 +25,18 @@ import scala.collection.JavaConverters._
 /**
   * Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
   */
-class HashJoiner[K, V, W, R](rightGetter: (K, Iterator[CTuple],
-                             Seq[Iterable[CTuple]]) => Iterator[W],
-                             joiner: (K, V, Iterable[W]) => Iterator[R])
-    extends CJoiner {
+class HashJoiner[K, V, W, R](
+    rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[W],
+    joiner: (K, V, Iterable[W]) => Iterator[R]
+) extends CJoiner {
 
   override def getIterator(jc: JoinerClosure) = {
     // The left one cannot be iterated multiple times on Hadoop:
     val leftIt = jc.getIterator(0).asScala // should only be 0 or 1 here
     if (leftIt.isEmpty) {
-      (Iterator.empty: Iterator[CTuple]).asJava // java is not covariant so we need this
+      (Iterator.empty: Iterator[
+        CTuple
+      ]).asJava // java is not covariant so we need this
     } else {
       val left = leftIt.buffered
       // There must be at least one item on the left in a hash-join

@@ -23,9 +23,9 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
       jobTest.source(source, data)
   }
 
-  class SimpleTypeTestSourceWithoutSchema[T](val data: Iterable[T])(
-      implicit setter: TupleSetter[T])
-      extends TestSourceWithoutSchema {
+  class SimpleTypeTestSourceWithoutSchema[T](val data: Iterable[T])(implicit
+      setter: TupleSetter[T]
+  ) extends TestSourceWithoutSchema {
     def addSourceToJob(jobTest: JobTest, source: Source): JobTest =
       jobTest.source[T](source, data)(setter)
   }
@@ -33,8 +33,9 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
   implicit def fromProductDataToSourceWithoutSchema(data: Iterable[Product]) =
     new ProductTestSourceWithoutSchema(data)
 
-  implicit def fromSimpleTypeDataToSourceWithoutSchema[T](data: Iterable[T])(
-      implicit setter: TupleSetter[T]) =
+  implicit def fromSimpleTypeDataToSourceWithoutSchema[T](
+      data: Iterable[T]
+  )(implicit setter: TupleSetter[T]) =
     new SimpleTypeTestSourceWithoutSchema(data)(setter)
 
   class TestSource(data: TestSourceWithoutSchema, schema: Fields) {
@@ -63,7 +64,10 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
   }
 
   case class TestCaseGiven3(
-      source: TestSource, other: TestSource, third: TestSource) {
+      source: TestSource,
+      other: TestSource,
+      third: TestSource
+  ) {
     def And(next: TestSource) =
       TestCaseGivenList(List(source, other, third, next))
 
@@ -79,8 +83,9 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
   }
 
   case class TestCaseWhen(sources: List[TestSource], operation: PipeOperation) {
-    def Then[OutputType](assertion: Buffer[OutputType] => Unit)(
-        implicit conv: TupleConverter[OutputType]): Unit = {
+    def Then[OutputType](
+        assertion: Buffer[OutputType] => Unit
+    )(implicit conv: TupleConverter[OutputType]): Unit = {
       CompleteTestCase(sources, operation, assertion).run()
     }
   }
@@ -88,8 +93,8 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
   case class CompleteTestCase[OutputType](
       sources: List[TestSource],
       operation: PipeOperation,
-      assertion: Buffer[OutputType] => Unit)(
-      implicit conv: TupleConverter[OutputType]) {
+      assertion: Buffer[OutputType] => Unit
+  )(implicit conv: TupleConverter[OutputType]) {
 
     class DummyJob(args: Args) extends Job(args) {
       val inputPipes: List[RichPipe] =

@@ -21,25 +21,8 @@ object Conneg {
     def entry: Parser[Option[T]]
 
     val Separators: Set[Char] = {
-      Set('(',
-          ')',
-          '<',
-          '>',
-          '@',
-          ',',
-          ';',
-          ':',
-          '\\',
-          '"',
-          '/',
-          '[',
-          ']',
-          '?',
-          '=',
-          '{',
-          '}',
-          ' ',
-          '\t')
+      Set('(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?',
+        '=', '{', '}', ' ', '\t')
     }
 
     // - Base elements -------------------------------------------------------------------------------------------------
@@ -84,27 +67,30 @@ object Conneg {
     private val qFormat: DecimalFormat = new DecimalFormat("0.###")
 
     /** Parser for a single conneg value. */
-    def conneg: Parser[Option[Conneg[T]]] = entry ~ qValue ^^ {
-      case Some(entry) ~ q => Some(new Conneg(entry, q))
-      case _ => None
-    }
+    def conneg: Parser[Option[Conneg[T]]] =
+      entry ~ qValue ^^ {
+        case Some(entry) ~ q => Some(new Conneg(entry, q))
+        case _               => None
+      }
 
     /** Parser for a list of conneg values. */
     def connegs: Parser[List[Option[Conneg[T]]]] = repsep(conneg, ",")
 
     /** Parser for the content-negotiation `q` parameter. */
     def qValue: Parser[Float] = {
-      opt(paramSep ~> ("q" ~ valueSep) ~> """[0-1](\.[0-9]{1,3})?""".r ^^
-          (_.toFloat)) ^^ {
+      opt(
+        paramSep ~> ("q" ~ valueSep) ~> """[0-1](\.[0-9]{1,3})?""".r ^^
+          (_.toFloat)
+      ) ^^ {
         case Some(q) => q
-        case _ => 1.0f
+        case _       => 1.0f
       }
     }
 
     def values(raw: String): List[Conneg[T]] = {
       parseAll(connegs, raw) match {
         case Success(a, _) => a.collect { case Some(v) => v }
-        case _ => List()
+        case _             => List()
       }
     }
   }
@@ -120,24 +106,23 @@ object Conneg {
     * Additionally, this method swallows errors silently. An invalid header value will yield an empty list rather than
     * an exception.
     */
-  def values[T](name: String)(
-      implicit req: HttpServletRequest, format: Format[T]): List[Conneg[T]] = {
+  def values[T](
+      name: String
+  )(implicit req: HttpServletRequest, format: Format[T]): List[Conneg[T]] = {
     val header = req.getHeader(name)
     if (header == null) List()
     else format.values(header.trim())
   }
 
   /** Retrieves the preferred supported value for the specified content-negotiation header. */
-  def preferredValue[T](name: String)(
-      implicit req: HttpServletRequest, format: Format[T]): Option[T] = {
+  def preferredValue[T](
+      name: String
+  )(implicit req: HttpServletRequest, format: Format[T]): Option[T] = {
     val all = values(name)
 
     if (all.isEmpty) None
     else
-      Some(
-          all.reduce { (a, b) =>
-        if (a.q < b.q) b else a
-      }.value)
+      Some(all.reduce { (a, b) => if (a.q < b.q) b else a }.value)
   }
 
   // - Encoding --------------------------------------------------------------------------------------------------------
@@ -149,11 +134,13 @@ object Conneg {
       token ^^ ContentEncoding.forName
   }
 
-  def preferredEncoding(
-      implicit req: HttpServletRequest): Option[ContentEncoding] =
+  def preferredEncoding(implicit
+      req: HttpServletRequest
+  ): Option[ContentEncoding] =
     preferredValue(AcceptEncoding)
-  def acceptedEncodings(
-      implicit req: HttpServletRequest): List[Conneg[ContentEncoding]] =
+  def acceptedEncodings(implicit
+      req: HttpServletRequest
+  ): List[Conneg[ContentEncoding]] =
     values(AcceptEncoding)
 
   // - Charset ---------------------------------------------------------------------------------------------------------
@@ -161,14 +148,13 @@ object Conneg {
   val AcceptCharset: String = "Accept-Charset"
 
   implicit object CharsetFormat extends Format[Charset] {
-    override def entry = token ^^ { s =>
-      Try(Charset.forName(s)).toOption
-    }
+    override def entry = token ^^ { s => Try(Charset.forName(s)).toOption }
   }
 
   def preferredCharset(implicit req: HttpServletRequest): Option[Charset] =
     preferredValue[Charset](AcceptCharset)
-  def acceptedCharsets(
-      implicit req: HttpServletRequest): List[Conneg[Charset]] =
+  def acceptedCharsets(implicit
+      req: HttpServletRequest
+  ): List[Conneg[Charset]] =
     values(AcceptCharset)
 }

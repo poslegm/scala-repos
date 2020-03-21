@@ -50,7 +50,8 @@ object TranslateTransition extends AnimationStatics {
     * @return JavaFX $TT extracted from `v`.
     */
   implicit def sfxTranslateTransition2jfx(
-      v: TranslateTransition): jfxa.TranslateTransition =
+      v: TranslateTransition
+  ): jfxa.TranslateTransition =
     if (v != null) v.delegate else null
 }
 
@@ -66,9 +67,11 @@ object TranslateTransition extends AnimationStatics {
   * @define DV Default value:
   */
 class TranslateTransition(
-    override val delegate: jfxa.TranslateTransition = new jfxa.TranslateTransition(
-          ))
-    extends Transition(delegate) with SFXDelegate[jfxa.TranslateTransition] {
+    override val delegate: jfxa.TranslateTransition =
+      new jfxa.TranslateTransition(
+        )
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.TranslateTransition] {
 
   // CONSTRUCTORS
 

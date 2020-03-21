@@ -48,7 +48,8 @@ object TableFocusModel {
     *            the underlying UI control (e.g. [[scalafx.scene.control.TableColumn]] or `TreeTableColumn`).
     */
   implicit def sfxTableFocusModel2jfx[T, TC <: jfxsc.TableColumnBase[T, _]](
-      tfm: TableFocusModel[T, TC]): jfxsc.TableFocusModel[T, TC] =
+      tfm: TableFocusModel[T, TC]
+  ): jfxsc.TableFocusModel[T, TC] =
     if (tfm != null) tfm.delegate else null
 }
 
@@ -63,8 +64,8 @@ object TableFocusModel {
   * @since 8.0
   */
 abstract class TableFocusModel[T, TC <: jfxsc.TableColumnBase[T, _]](
-    override val delegate: jfxsc.TableFocusModel[T, TC])
-    extends FocusModel[T](delegate)
+    override val delegate: jfxsc.TableFocusModel[T, TC]
+) extends FocusModel[T](delegate)
     with SFXDelegate[jfxsc.TableFocusModel[T, TC]] {
 
   /**

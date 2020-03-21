@@ -5,7 +5,8 @@ package akka.stream
 
 package object javadsl {
   def combinerToScala[M1, M2, M](
-      f: akka.japi.function.Function2[M1, M2, M]): (M1, M2) ⇒ M =
+      f: akka.japi.function.Function2[M1, M2, M]
+  ): (M1, M2) ⇒ M =
     f match {
       case x if x eq Keep.left ⇒ scaladsl.Keep.left.asInstanceOf[(M1, M2) ⇒ M]
       case x if x eq Keep.right ⇒

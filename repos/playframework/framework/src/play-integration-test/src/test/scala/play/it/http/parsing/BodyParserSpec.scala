@@ -18,7 +18,9 @@ import org.specs2.ScalaCheck
 import org.scalacheck.{Arbitrary, Gen}
 
 object BodyParserSpec
-    extends PlaySpecification with ExecutionSpecification with ScalaCheck {
+    extends PlaySpecification
+    with ExecutionSpecification
+    with ScalaCheck {
 
   def run[A](bodyParser: BodyParser[A]) = {
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,21 +40,17 @@ object BodyParserSpec
   }
 
   def constant[A](a: A): BodyParser[A] =
-    BodyParser("constant") { request =>
-      Accumulator.done(Right(a))
-    }
+    BodyParser("constant") { request => Accumulator.done(Right(a)) }
 
   def simpleResult(s: Result): BodyParser[Any] =
-    BodyParser("simple result") { request =>
-      Accumulator.done(Left(s))
-    }
+    BodyParser("simple result") { request => Accumulator.done(Left(s)) }
 
   implicit val arbResult: Arbitrary[Result] = Arbitrary {
     Gen.oneOf(
-        Results.Ok,
-        Results.BadRequest,
-        Results.NotFound,
-        Results.InternalServerError
+      Results.Ok,
+      Results.BadRequest,
+      Results.NotFound,
+      Results.InternalServerError
     )
   }
 
@@ -125,9 +123,7 @@ object BodyParserSpec
         run {
           constant(x).mapM(inc)(mapMEC).mapM(dbl)(mapMEC)
         } must_== run {
-          constant(x).mapM { y =>
-            inc(y).flatMap(dbl)(flatMapPEC)
-          }(mapMEC)
+          constant(x).mapM { y => inc(y).flatMap(dbl)(flatMapPEC) }(mapMEC)
         }
       }
     }
@@ -162,9 +158,7 @@ object BodyParserSpec
         run {
           constant(x).validate(inc).validate(dbl)
         } must_== run {
-          constant(x).validate { y =>
-            inc(y).right.flatMap(dbl)
-          }
+          constant(x).validate { y => inc(y).right.flatMap(dbl) }
         }
       }
     }
@@ -182,9 +176,7 @@ object BodyParserSpec
       mustExecute(1) { implicit ec =>
         // one execution from `validate`
         run {
-          simpleResult(s1).validate { _ =>
-            Left(s2)
-          }
+          simpleResult(s1).validate { _ => Left(s2) }
         } must beLeft(s1)
       }
     }
@@ -193,9 +185,7 @@ object BodyParserSpec
       mustExecute(1) { implicit ec =>
         // one execution from `validate`
         run {
-          constant(0).validate { _ =>
-            Left(s)
-          }
+          constant(0).validate { _ => Left(s) }
         } must beLeft(s)
       }
     }
@@ -221,9 +211,7 @@ object BodyParserSpec
         run {
           constant(x).validateM(inc).validateM(dbl)
         } must_== run {
-          constant(x).validateM { y =>
-            Future.successful(Right((y + 1) * 2))
-          }
+          constant(x).validateM { y => Future.successful(Right((y + 1) * 2)) }
         }
       }
     }
@@ -232,9 +220,7 @@ object BodyParserSpec
       mustExecute(1) { implicit ec =>
         // one execution from `validateM`
         run {
-          simpleResult(s).validateM { x =>
-            Future.successful(Right(x))
-          }
+          simpleResult(s).validateM { x => Future.successful(Right(x)) }
         } must beLeft(s)
       }
     }
@@ -243,9 +229,7 @@ object BodyParserSpec
       mustExecute(1) { implicit ec =>
         // one execution from `validateM`
         run {
-          simpleResult(s1).validateM { _ =>
-            Future.successful(Left(s2))
-          }
+          simpleResult(s1).validateM { _ => Future.successful(Left(s2)) }
         } must beLeft(s1)
       }
     }
@@ -254,9 +238,7 @@ object BodyParserSpec
       mustExecute(1) { implicit ec =>
         // one execution from `validateM`
         run {
-          constant(0).validateM { _ =>
-            Future.successful(Left(s))
-          }
+          constant(0).validateM { _ => Future.successful(Left(s)) }
         } must beLeft(s)
       }
     }

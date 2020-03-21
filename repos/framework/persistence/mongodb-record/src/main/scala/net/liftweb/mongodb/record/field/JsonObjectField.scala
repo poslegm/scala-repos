@@ -28,10 +28,13 @@ import net.liftweb.util.Helpers.tryo
 
 import com.mongodb.DBObject
 
-abstract class JsonObjectField[OwnerType <: BsonRecord[OwnerType],
-                               JObjectType <: JsonObject[JObjectType]](
-    rec: OwnerType, valueMeta: JsonObjectMeta[JObjectType])
-    extends Field[JObjectType, OwnerType] with MandatoryTypedField[JObjectType]
+abstract class JsonObjectField[OwnerType <: BsonRecord[
+  OwnerType
+], JObjectType <: JsonObject[JObjectType]](
+    rec: OwnerType,
+    valueMeta: JsonObjectMeta[JObjectType]
+) extends Field[JObjectType, OwnerType]
+    with MandatoryTypedField[JObjectType]
     with MongoFieldFlavor[JObjectType] {
 
   def owner = rec
@@ -50,34 +53,36 @@ abstract class JsonObjectField[OwnerType <: BsonRecord[OwnerType],
    * Decode the JValue and set the field to the decoded value.
    * Returns Empty or Failure if the value could not be set
    */
-  def setFromJValue(jvalue: JValue): Box[JObjectType] = jvalue match {
-    case JNothing | JNull if optional_? => setBox(Empty)
-    case o: JObject => setBox(tryo(valueMeta.create(o)))
-    case other => setBox(FieldHelpers.expectedA("JObject", other))
-  }
+  def setFromJValue(jvalue: JValue): Box[JObjectType] =
+    jvalue match {
+      case JNothing | JNull if optional_? => setBox(Empty)
+      case o: JObject                     => setBox(tryo(valueMeta.create(o)))
+      case other                          => setBox(FieldHelpers.expectedA("JObject", other))
+    }
 
-  def setFromAny(in: Any): Box[JObjectType] = in match {
-    case dbo: DBObject => setFromDBObject(dbo)
-    case value: JsonObject[_] => setBox(Full(value.asInstanceOf[JObjectType]))
-    case Some(value: JsonObject[_]) =>
-      setBox(Full(value.asInstanceOf[JObjectType]))
-    case Full(value: JsonObject[_]) =>
-      setBox(Full(value.asInstanceOf[JObjectType]))
-    case (value: JsonObject[_]) :: _ =>
-      setBox(Full(value.asInstanceOf[JObjectType]))
-    case s: String => setFromString(s)
-    case Some(s: String) => setFromString(s)
-    case Full(s: String) => setFromString(s)
-    case null | None | Empty => setBox(defaultValueBox)
-    case f: Failure => setBox(f)
-    case o => setFromString(o.toString)
-  }
+  def setFromAny(in: Any): Box[JObjectType] =
+    in match {
+      case dbo: DBObject        => setFromDBObject(dbo)
+      case value: JsonObject[_] => setBox(Full(value.asInstanceOf[JObjectType]))
+      case Some(value: JsonObject[_]) =>
+        setBox(Full(value.asInstanceOf[JObjectType]))
+      case Full(value: JsonObject[_]) =>
+        setBox(Full(value.asInstanceOf[JObjectType]))
+      case (value: JsonObject[_]) :: _ =>
+        setBox(Full(value.asInstanceOf[JObjectType]))
+      case s: String           => setFromString(s)
+      case Some(s: String)     => setFromString(s)
+      case Full(s: String)     => setFromString(s)
+      case null | None | Empty => setBox(defaultValueBox)
+      case f: Failure          => setBox(f)
+      case o                   => setFromString(o.toString)
+    }
 
   // parse String into a JObject
   def setFromString(in: String): Box[JObjectType] =
     tryo(JsonParser.parse(in)) match {
       case Full(jv: JValue) => setFromJValue(jv)
-      case f: Failure => setBox(f)
+      case f: Failure       => setBox(f)
       case other =>
         setBox(Failure("Error parsing String into a JValue: " + in))
     }

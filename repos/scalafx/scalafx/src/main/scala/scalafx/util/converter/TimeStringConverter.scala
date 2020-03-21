@@ -34,14 +34,16 @@ import scala.language.implicitConversions
 
 object TimeStringConverter {
   implicit def sfxTimeStringConverter2jfx(
-      c: TimeStringConverter): jfxuc.TimeStringConverter =
+      c: TimeStringConverter
+  ): jfxuc.TimeStringConverter =
     if (c != null) c.delegate else null
 }
 
 class TimeStringConverter(
-    delegate: jfxuc.TimeStringConverter = new jfxuc.TimeStringConverter)
-    extends DateTimeStringConverterDelegate[jfxuc.TimeStringConverter](
-        delegate) {
+    delegate: jfxuc.TimeStringConverter = new jfxuc.TimeStringConverter
+) extends DateTimeStringConverterDelegate[jfxuc.TimeStringConverter](
+      delegate
+    ) {
 
   def this(locale: Locale) = this(new jfxuc.TimeStringConverter(locale))
 

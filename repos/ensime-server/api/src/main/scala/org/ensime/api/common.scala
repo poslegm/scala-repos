@@ -57,11 +57,12 @@ case object NoteError extends NoteSeverity
 case object NoteWarn extends NoteSeverity
 case object NoteInfo extends NoteSeverity
 object NoteSeverity {
-  def apply(severity: Int) = severity match {
-    case 2 => NoteError
-    case 1 => NoteWarn
-    case 0 => NoteInfo
-  }
+  def apply(severity: Int) =
+    severity match {
+      case 2 => NoteError
+      case 1 => NoteWarn
+      case 0 => NoteInfo
+    }
 }
 
 sealed abstract class RefactorLocation(val symbol: Symbol)
@@ -87,12 +88,14 @@ object RefactorType {
   case object AddImport extends RefactorType('addImport)
 
   def allTypes =
-    Seq(Rename,
-        ExtractMethod,
-        ExtractLocal,
-        InlineLocal,
-        OrganizeImports,
-        AddImport)
+    Seq(
+      Rename,
+      ExtractMethod,
+      ExtractLocal,
+      InlineLocal,
+      OrganizeImports,
+      AddImport
+    )
 }
 
 case class SourceFileInfo(

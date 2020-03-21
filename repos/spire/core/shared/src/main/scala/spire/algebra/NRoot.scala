@@ -26,8 +26,9 @@ trait NRoot[@sp(Double, Float, Int, Long) A] extends Any {
 import spire.math.{ConvertableTo, ConvertableFrom, Number}
 
 object NRoot {
-  @inline final def apply[@sp(Int, Long, Float, Double) A](
-      implicit ev: NRoot[A]): NRoot[A] = ev
+  @inline final def apply[@sp(Int, Long, Float, Double) A](implicit
+      ev: NRoot[A]
+  ): NRoot[A] = ev
 
   /**
     * This will return the largest integer that meets some criteria. Specifically,
@@ -118,7 +119,11 @@ object NRoot {
       val maxSize = (ctxt.getPrecision + 8) / 9 + 2
 
       def findRoot(
-          digits: Stream[Int], y: BigInt, r: BigInt, i: Int): (Int, BigInt) = {
+          digits: Stream[Int],
+          y: BigInt,
+          r: BigInt,
+          i: Int
+      ): (Int, BigInt) = {
         val y_ = y * radix
         val a = undigitize(digits take k, radix)
         // Note: target grows quite fast (so I imagine (y_ + b) pow k does too).

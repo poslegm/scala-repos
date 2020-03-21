@@ -32,7 +32,10 @@ object TestingUtils {
     * the relative tolerance is meaningless, so the exception will be raised to warn users.
     */
   private def RelativeErrorComparison(
-      x: Double, y: Double, eps: Double): Boolean = {
+      x: Double,
+      y: Double,
+      eps: Double
+  ): Boolean = {
     val absX = math.abs(x)
     val absY = math.abs(y)
     val diff = math.abs(x - y)
@@ -41,8 +44,9 @@ object TestingUtils {
     } else if (absX < Double.MinPositiveValue ||
                absY < Double.MinPositiveValue) {
       throw new TestFailedException(
-          s"$x or $y is extremely close to zero, so the relative tolerance is meaningless.",
-          0)
+        s"$x or $y is extremely close to zero, so the relative tolerance is meaningless.",
+        0
+      )
     } else {
       diff < eps * math.min(absX, absY)
     }
@@ -52,14 +56,19 @@ object TestingUtils {
     * Private helper function for comparing two values using absolute tolerance.
     */
   private def AbsoluteErrorComparison(
-      x: Double, y: Double, eps: Double): Boolean = {
+      x: Double,
+      y: Double,
+      eps: Double
+  ): Boolean = {
     math.abs(x - y) < eps
   }
 
-  case class CompareDoubleRightSide(fun: (Double, Double, Double) => Boolean,
-                                    y: Double,
-                                    eps: Double,
-                                    method: String)
+  case class CompareDoubleRightSide(
+      fun: (Double, Double, Double) => Boolean,
+      y: Double,
+      eps: Double,
+      method: String
+  )
 
   /**
     * Implicit class for comparing two double values using relative tolerance or absolute tolerance.
@@ -83,7 +92,9 @@ object TestingUtils {
     def ~==(r: CompareDoubleRightSide): Boolean = {
       if (!r.fun(x, r.y, r.eps)) {
         throw new TestFailedException(
-            s"Expected $x and ${r.y} to be within ${r.eps}${r.method}.", 0)
+          s"Expected $x and ${r.y} to be within ${r.eps}${r.method}.",
+          0
+        )
       }
       true
     }
@@ -94,8 +105,9 @@ object TestingUtils {
     def !~==(r: CompareDoubleRightSide): Boolean = {
       if (r.fun(x, r.y, r.eps)) {
         throw new TestFailedException(
-            s"Did not expect $x and ${r.y} to be within ${r.eps}${r.method}.",
-            0)
+          s"Did not expect $x and ${r.y} to be within ${r.eps}${r.method}.",
+          0
+        )
       }
       true
     }
@@ -115,10 +127,12 @@ object TestingUtils {
     override def toString: String = x.toString
   }
 
-  case class CompareVectorRightSide(fun: (Vector, Vector, Double) => Boolean,
-                                    y: Vector,
-                                    eps: Double,
-                                    method: String)
+  case class CompareVectorRightSide(
+      fun: (Vector, Vector, Double) => Boolean,
+      y: Vector,
+      eps: Double,
+      method: String
+  )
 
   /**
     * Implicit class for comparing two vectors using relative tolerance or absolute tolerance.
@@ -142,8 +156,9 @@ object TestingUtils {
     def ~==(r: CompareVectorRightSide): Boolean = {
       if (!r.fun(x, r.y, r.eps)) {
         throw new TestFailedException(
-            s"Expected $x and ${r.y} to be within ${r.eps}${r.method} for all elements.",
-            0)
+          s"Expected $x and ${r.y} to be within ${r.eps}${r.method} for all elements.",
+          0
+        )
       }
       true
     }
@@ -154,8 +169,9 @@ object TestingUtils {
     def !~==(r: CompareVectorRightSide): Boolean = {
       if (r.fun(x, r.y, r.eps)) {
         throw new TestFailedException(
-            s"Did not expect $x and ${r.y} to be within ${r.eps}${r.method} for all elements.",
-            0)
+          s"Did not expect $x and ${r.y} to be within ${r.eps}${r.method} for all elements.",
+          0
+        )
       }
       true
     }
@@ -165,13 +181,13 @@ object TestingUtils {
       */
     def absTol(eps: Double): CompareVectorRightSide =
       CompareVectorRightSide(
-          (x: Vector, y: Vector, eps: Double) =>
-            {
-              x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 absTol eps)
-          },
-          x,
-          eps,
-          ABS_TOL_MSG)
+        (x: Vector, y: Vector, eps: Double) => {
+          x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 absTol eps)
+        },
+        x,
+        eps,
+        ABS_TOL_MSG
+      )
 
     /**
       * Comparison using relative tolerance. Note that comparing against sparse vector
@@ -180,21 +196,23 @@ object TestingUtils {
       */
     def relTol(eps: Double): CompareVectorRightSide =
       CompareVectorRightSide(
-          (x: Vector, y: Vector, eps: Double) =>
-            {
-              x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 relTol eps)
-          },
-          x,
-          eps,
-          REL_TOL_MSG)
+        (x: Vector, y: Vector, eps: Double) => {
+          x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 relTol eps)
+        },
+        x,
+        eps,
+        REL_TOL_MSG
+      )
 
     override def toString: String = x.toString
   }
 
-  case class CompareMatrixRightSide(fun: (Matrix, Matrix, Double) => Boolean,
-                                    y: Matrix,
-                                    eps: Double,
-                                    method: String)
+  case class CompareMatrixRightSide(
+      fun: (Matrix, Matrix, Double) => Boolean,
+      y: Matrix,
+      eps: Double,
+      method: String
+  )
 
   /**
     * Implicit class for comparing two matrices using relative tolerance or absolute tolerance.
@@ -218,8 +236,9 @@ object TestingUtils {
     def ~==(r: CompareMatrixRightSide): Boolean = {
       if (!r.fun(x, r.y, r.eps)) {
         throw new TestFailedException(
-            s"Expected \n$x\n and \n${r.y}\n to be within ${r.eps}${r.method} for all elements.",
-            0)
+          s"Expected \n$x\n and \n${r.y}\n to be within ${r.eps}${r.method} for all elements.",
+          0
+        )
       }
       true
     }
@@ -230,9 +249,10 @@ object TestingUtils {
     def !~==(r: CompareMatrixRightSide): Boolean = {
       if (r.fun(x, r.y, r.eps)) {
         throw new TestFailedException(
-            s"Did not expect \n$x\n and \n${r.y}\n to be within " +
+          s"Did not expect \n$x\n and \n${r.y}\n to be within " +
             "${r.eps}${r.method} for all elements.",
-            0)
+          0
+        )
       }
       true
     }
@@ -242,13 +262,13 @@ object TestingUtils {
       */
     def absTol(eps: Double): CompareMatrixRightSide =
       CompareMatrixRightSide(
-          (x: Matrix, y: Matrix, eps: Double) =>
-            {
-              x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 absTol eps)
-          },
-          x,
-          eps,
-          ABS_TOL_MSG)
+        (x: Matrix, y: Matrix, eps: Double) => {
+          x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 absTol eps)
+        },
+        x,
+        eps,
+        ABS_TOL_MSG
+      )
 
     /**
       * Comparison using relative tolerance. Note that comparing against sparse vector
@@ -257,13 +277,13 @@ object TestingUtils {
       */
     def relTol(eps: Double): CompareMatrixRightSide =
       CompareMatrixRightSide(
-          (x: Matrix, y: Matrix, eps: Double) =>
-            {
-              x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 relTol eps)
-          },
-          x,
-          eps,
-          REL_TOL_MSG)
+        (x: Matrix, y: Matrix, eps: Double) => {
+          x.toArray.zip(y.toArray).forall(x => x._1 ~= x._2 relTol eps)
+        },
+        x,
+        eps,
+        REL_TOL_MSG
+      )
 
     override def toString: String = x.toString
   }

@@ -13,8 +13,8 @@ import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestFramework
 class ScalaTestTestFramework extends AbstractTestFramework {
 
   def getDefaultSuperClass: String = {
-    val project = CommonDataKeys.PROJECT.getData(
-        DataManager.getInstance().getDataContext())
+    val project =
+      CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext())
     val scalaProjectSettings = ScalaProjectSettings.getInstance(project)
     scalaProjectSettings.getScalaTestDefaultSuperClass
   }
@@ -26,20 +26,32 @@ class ScalaTestTestFramework extends AbstractTestFramework {
   def getMnemonic: Char = 'c'
 
   override protected def getLibraryDependencies(
-      scalaVersion: Option[String]): Seq[String] = scalaVersion match {
-    case Some(v) if v.startsWith("2.11") =>
-      Seq("\"org.scalatest\" % \"scalatest_2.11\" % \"latest.integration\" % \"test\"")
-    case Some(v) if v.startsWith("2.10") =>
-      Seq("\"org.scalatest\" % \"scalatest_2.10\" % \"latest.integration\" % \"test\"")
-    case Some(v) if v.startsWith("2.9") =>
-      Seq("\"org.scalatest\" % \"scalatest_2.9\" % \"latest.integration\" % \"test\"")
-    case _ =>
-      Seq("\"org.scalatest\" %% \"scalatest\" % \"latest.integration\" % \"test\"")
-  }
+      scalaVersion: Option[String]
+  ): Seq[String] =
+    scalaVersion match {
+      case Some(v) if v.startsWith("2.11") =>
+        Seq(
+          "\"org.scalatest\" % \"scalatest_2.11\" % \"latest.integration\" % \"test\""
+        )
+      case Some(v) if v.startsWith("2.10") =>
+        Seq(
+          "\"org.scalatest\" % \"scalatest_2.10\" % \"latest.integration\" % \"test\""
+        )
+      case Some(v) if v.startsWith("2.9") =>
+        Seq(
+          "\"org.scalatest\" % \"scalatest_2.9\" % \"latest.integration\" % \"test\""
+        )
+      case _ =>
+        Seq(
+          "\"org.scalatest\" %% \"scalatest\" % \"latest.integration\" % \"test\""
+        )
+    }
 
   override protected def getLibraryResolvers(
-      scalaVersion: Option[String]): Seq[String] = Seq()
+      scalaVersion: Option[String]
+  ): Seq[String] = Seq()
 
   override protected def getAdditionalBuildCommands(
-      scalaVersion: Option[String]): Seq[String] = Seq()
+      scalaVersion: Option[String]
+  ): Seq[String] = Seq()
 }

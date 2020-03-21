@@ -54,18 +54,20 @@ class ByteCode(val bytes: Array[Byte], val pos: Int, val length: Int) {
 
   override def toString = length + " bytes"
 
-  def toInt = fold(0) { (x, b) =>
-    {
-      if (b >= 0) (x << 8) + b.toInt
-      else (x << 8) + b.toInt + 256
+  def toInt =
+    fold(0) { (x, b) =>
+      {
+        if (b >= 0) (x << 8) + b.toInt
+        else (x << 8) + b.toInt + 256
+      }
     }
-  }
-  def toLong = fold(0L) { (x, b) =>
-    {
-      if (b >= 0) (x << 8) + b.toLong
-      else (x << 8) + b.toLong + 256L
+  def toLong =
+    fold(0L) { (x, b) =>
+      {
+        if (b >= 0) (x << 8) + b.toLong
+        else (x << 8) + b.toLong + 256L
+      }
     }
-  }
 
   /**
     * Transforms array subsequence of the current buffer into the UTF8 String and
@@ -99,11 +101,10 @@ trait ByteCodeReader extends RulesWithState {
 
   val u1 =
     byte ^^
-    (b =>
-          {
-            if (b >= 0) b.toInt
-            else b.toInt + 256
-        })
+      (b => {
+        if (b >= 0) b.toInt
+        else b.toInt + 256
+      })
   val u2 = bytes(2) ^^ (_.toInt)
   val u4 = bytes(4) ^^ (_.toInt) // should map to Long??
 
@@ -121,72 +122,55 @@ object ClassFileParser extends ByteCodeReader {
   // NOTE currently most constants just evaluate to a string description
   // TODO evaluate to useful values
   val utf8String =
-    (u2 >> bytes) ^^ add1 { raw => pool =>
-      raw.toUTF8StringAndBytes
-    }
+    (u2 >> bytes) ^^ add1 { raw => pool => raw.toUTF8StringAndBytes }
   val intConstant =
-    u4 ^^ add1 { x => pool =>
-      x
-    }
+    u4 ^^ add1 { x => pool => x }
   val floatConstant =
-    bytes(4) ^^ add1 { raw => pool =>
-      "Float: TODO"
-    }
+    bytes(4) ^^ add1 { raw => pool => "Float: TODO" }
   val longConstant =
-    bytes(8) ^^ add2 { raw => pool =>
-      raw.toLong
-    }
+    bytes(8) ^^ add2 { raw => pool => raw.toLong }
   val doubleConstant =
-    bytes(8) ^^ add2 { raw => pool =>
-      "Double: TODO"
-    }
+    bytes(8) ^^ add2 { raw => pool => "Double: TODO" }
   val classRef =
-    u2 ^^ add1 { x => pool =>
-      "Class: " + pool(x)
-    }
+    u2 ^^ add1 { x => pool => "Class: " + pool(x) }
   val stringRef =
-    u2 ^^ add1 { x => pool =>
-      "String: " + pool(x)
-    }
+    u2 ^^ add1 { x => pool => "String: " + pool(x) }
   val fieldRef = memberRef("Field")
   val methodRef = memberRef("Method")
   val interfaceMethodRef = memberRef("InterfaceMethod")
   val nameAndType =
     u2 ~ u2 ^^ add1 {
       case name ~ descriptor =>
-        pool =>
-          "NameAndType: " + pool(name) + ", " + pool(descriptor)
+        pool => "NameAndType: " + pool(name) + ", " + pool(descriptor)
     }
   val methodHandle =
     u1 ~ u2 ^^ add1 {
       case refKind ~ refIndex =>
-        pool =>
-          "MethodHandle: " + pool(refIndex)
+        pool => "MethodHandle: " + pool(refIndex)
     }
   val methodType =
     u2 ^^ add1 {
       case descriptorIndex =>
-        pool =>
-          "MethodType: " + pool(descriptorIndex)
+        pool => "MethodType: " + pool(descriptorIndex)
     }
   val invokeDynamic =
     u2 ~ u2 ^^ add1 {
       case bootstrapMethodIndex ~ nameAndTypeIndex =>
         pool =>
           "InvokeDynamic: " + pool(bootstrapMethodIndex) + ", " +
-          pool(nameAndTypeIndex)
+            pool(nameAndTypeIndex)
     }
 
   val constantPoolEntry =
     u1 >> {
-      case 1 => utf8String
-      case 3 => intConstant
-      case 4 => floatConstant
-      case 5 => longConstant
-      case 6 => doubleConstant
-      case 7 => classRef
-      case 8 => stringRef
-      case 9 => fieldRef
+      case 1  => utf8String
+      case 3  => intConstant
+      case 4  => floatConstant
+      case 5  => longConstant
+      case 6  => doubleConstant
+      case 7  => classRef
+      case 8  => stringRef
+      case 9  => fieldRef
       case 10 => methodRef
       case 11 => interfaceMethodRef
       case 12 => nameAndType
@@ -208,24 +192,28 @@ object ClassFileParser extends ByteCodeReader {
   // parse runtime-visible annotations
   abstract class ElementValue
   case class AnnotationElement(
-      elementNameIndex: Int, elementValue: ElementValue)
+      elementNameIndex: Int,
+      elementValue: ElementValue
+  )
   case class ConstValueIndex(index: Int) extends ElementValue
   case class EnumConstValue(typeNameIndex: Int, constNameIndex: Int)
       extends ElementValue
   case class ClassInfoIndex(index: Int) extends ElementValue
   case class Annotation(
-      typeIndex: Int, elementValuePairs: Seq[AnnotationElement])
-      extends ElementValue
+      typeIndex: Int,
+      elementValuePairs: Seq[AnnotationElement]
+  ) extends ElementValue
   case class ArrayValue(values: Seq[ElementValue]) extends ElementValue
 
-  def element_value: Parser[ElementValue] = u1 >> {
-    case 'B' | 'C' | 'D' | 'F' | 'I' | 'J' | 'S' | 'Z' | 's' =>
-      u2 ^^ ConstValueIndex
-    case 'e' => u2 ~ u2 ^~^ EnumConstValue
-    case 'c' => u2 ^^ ClassInfoIndex
-    case '@' => annotation //nested annotation
-    case '[' => u2 >> element_value.times ^^ ArrayValue
-  }
+  def element_value: Parser[ElementValue] =
+    u1 >> {
+      case 'B' | 'C' | 'D' | 'F' | 'I' | 'J' | 'S' | 'Z' | 's' =>
+        u2 ^^ ConstValueIndex
+      case 'e' => u2 ~ u2 ^~^ EnumConstValue
+      case 'c' => u2 ^^ ClassInfoIndex
+      case '@' => annotation //nested annotation
+      case '[' => u2 >> element_value.times ^^ ArrayValue
+    }
 
   val element_value_pair = u2 ~ element_value ^~^ AnnotationElement
   val annotation: Parser[Annotation] =
@@ -243,24 +231,27 @@ object ClassFileParser extends ByteCodeReader {
   val classFile = header ~ fields ~ methods ~ attributes ~- !u1 ^~~~^ ClassFile
 
   // TODO create a useful object, not just a string
-  def memberRef(description: String) = u2 ~ u2 ^^ add1 {
-    case classReference ~ nameAndTypeRef =>
-      pool =>
-        description + ": " + pool(classReference) + ", " + pool(nameAndTypeRef)
-  }
+  def memberRef(description: String) =
+    u2 ~ u2 ^^ add1 {
+      case classReference ~ nameAndTypeRef =>
+        pool =>
+          description + ": " + pool(classReference) + ", " + pool(
+            nameAndTypeRef
+          )
+    }
 
   def add1[T](f: T => ConstantPool => Any)(raw: T)(pool: ConstantPool) =
     pool add f(raw)
   def add2[T](f: T => ConstantPool => Any)(raw: T)(pool: ConstantPool) =
-    pool add f(raw) add { pool =>
-      "<empty>"
-    }
+    pool add f(raw) add { pool => "<empty>" }
 }
 
-case class ClassFile(header: ClassFileHeader,
-                     fields: Seq[Field],
-                     methods: Seq[Method],
-                     attributes: Seq[Attribute]) {
+case class ClassFile(
+    header: ClassFileHeader,
+    fields: Seq[Field],
+    methods: Seq[Method],
+    attributes: Seq[Attribute]
+) {
 
   def majorVersion = header.major
   def minorVersion = header.minor
@@ -269,16 +260,16 @@ case class ClassFile(header: ClassFileHeader,
   def superClass = constant(header.superClassIndex)
   def interfaces = header.interfaces.map(constant)
 
-  def constant(index: Int) = header.constants(index) match {
-    case StringBytesPair(str, _) => str
-    case z => z
-  }
+  def constant(index: Int) =
+    header.constants(index) match {
+      case StringBytesPair(str, _) => str
+      case z                       => z
+    }
 
   def constantWrapped(index: Int) = header.constants(index)
 
-  def attribute(name: String) = attributes.find { attrib =>
-    constant(attrib.nameIndex) == name
-  }
+  def attribute(name: String) =
+    attributes.find { attrib => constant(attrib.nameIndex) == name }
 
   val RUNTIME_VISIBLE_ANNOTATIONS = "RuntimeVisibleAnnotations"
   def annotations =
@@ -287,27 +278,34 @@ case class ClassFile(header: ClassFileHeader,
       .map(attr => ClassFileParser.parseAnnotations(attr.byteCode))
 
   def annotation(name: String) =
-    annotations.flatMap(
-        seq => seq.find(annot => constant(annot.typeIndex) == name))
+    annotations.flatMap(seq =>
+      seq.find(annot => constant(annot.typeIndex) == name)
+    )
 }
 
 case class Attribute(nameIndex: Int, byteCode: ByteCode)
-case class Field(flags: Int,
-                 nameIndex: Int,
-                 descriptorIndex: Int,
-                 attributes: Seq[Attribute])
-case class Method(flags: Int,
-                  nameIndex: Int,
-                  descriptorIndex: Int,
-                  attributes: Seq[Attribute])
+case class Field(
+    flags: Int,
+    nameIndex: Int,
+    descriptorIndex: Int,
+    attributes: Seq[Attribute]
+)
+case class Method(
+    flags: Int,
+    nameIndex: Int,
+    descriptorIndex: Int,
+    attributes: Seq[Attribute]
+)
 
-case class ClassFileHeader(minor: Int,
-                           major: Int,
-                           constants: ConstantPool,
-                           flags: Int,
-                           classIndex: Int,
-                           superClassIndex: Int,
-                           interfaces: Seq[Int]) {
+case class ClassFileHeader(
+    minor: Int,
+    major: Int,
+    constants: ConstantPool,
+    flags: Int,
+    classIndex: Int,
+    superClassIndex: Int,
+    interfaces: Seq[Int]
+) {
 
   def constant(index: Int) = constants(index)
 }

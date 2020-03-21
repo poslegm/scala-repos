@@ -37,14 +37,18 @@ object KeyCombination {
 
   object ModifierValue
       extends SFXEnumDelegateCompanion[
-          jfxsi.KeyCombination.ModifierValue, ModifierValue] {
+        jfxsi.KeyCombination.ModifierValue,
+        ModifierValue
+      ] {
 
     /**
       * Constant which indicates that the modifier key can be either up or down.
       */
     val Any = new ModifierValue(jfxsi.KeyCombination.ModifierValue.ANY)
     @deprecated(
-        "Use Any; ANY will be removed in a future release", "8.0.60-R10")
+      "Use Any; ANY will be removed in a future release",
+      "8.0.60-R10"
+    )
     val ANY = Any
 
     /**
@@ -52,7 +56,9 @@ object KeyCombination {
       */
     val Down = new ModifierValue(jfxsi.KeyCombination.ModifierValue.DOWN)
     @deprecated(
-        "Use Down; DOWN will be removed in a future release", "8.0.60-R10")
+      "Use Down; DOWN will be removed in a future release",
+      "8.0.60-R10"
+    )
     val DOWN = Down
 
     /**
@@ -70,8 +76,8 @@ object KeyCombination {
     * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/input/KeyCombination.ModifierValue.html]]
     */
   sealed case class ModifierValue(
-      override val delegate: jfxsi.KeyCombination.ModifierValue)
-      extends SFXEnumDelegate[jfxsi.KeyCombination.ModifierValue]
+      override val delegate: jfxsi.KeyCombination.ModifierValue
+  ) extends SFXEnumDelegate[jfxsi.KeyCombination.ModifierValue]
 
   object Modifier {
     implicit def sfxModifier2jfx(m: Modifier): jfxsi.KeyCombination.Modifier =
@@ -92,8 +98,7 @@ object KeyCombination {
     def value: ModifierValue = ModifierValue.jfxEnum2sfx(delegate.getValue)
   }
 
-  implicit def sfxKeyCombination2jfx(
-      kc: KeyCombination): jfxsi.KeyCombination =
+  implicit def sfxKeyCombination2jfx(kc: KeyCombination): jfxsi.KeyCombination =
     if (kc != null) kc.delegate else null
 
   /**
@@ -166,8 +171,8 @@ object KeyCombination {
 }
 
 abstract class KeyCombination protected (
-    override val delegate: jfxsi.KeyCombination)
-    extends SFXDelegate[jfxsi.KeyCombination] {
+    override val delegate: jfxsi.KeyCombination
+) extends SFXDelegate[jfxsi.KeyCombination] {
 
   /**
     * The state of the alt key in this key combination.

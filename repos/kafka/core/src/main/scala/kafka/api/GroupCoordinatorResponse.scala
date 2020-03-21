@@ -24,7 +24,8 @@ object GroupCoordinatorResponse {
   val CurrentVersion = 0
 
   private val NoBrokerEndpointOpt = Some(
-      BrokerEndPoint(id = -1, host = "", port = -1))
+    BrokerEndPoint(id = -1, host = "", port = -1)
+  )
 
   def readFrom(buffer: ByteBuffer) = {
     val correlationId = buffer.getInt
@@ -38,10 +39,11 @@ object GroupCoordinatorResponse {
   }
 }
 
-case class GroupCoordinatorResponse(coordinatorOpt: Option[BrokerEndPoint],
-                                    errorCode: Short,
-                                    correlationId: Int)
-    extends RequestOrResponse() {
+case class GroupCoordinatorResponse(
+    coordinatorOpt: Option[BrokerEndPoint],
+    errorCode: Short,
+    correlationId: Int
+) extends RequestOrResponse() {
 
   def sizeInBytes =
     4 + /* correlationId */

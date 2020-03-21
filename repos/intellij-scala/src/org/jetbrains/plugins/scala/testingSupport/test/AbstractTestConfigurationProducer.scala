@@ -20,36 +20,46 @@ trait AbstractTestConfigurationProducer {
 
   def suitePaths: List[String]
 
-  def createConfigurationByElement(location: Location[_ <: PsiElement],
-                                   context: ConfigurationContext)
-    : Option[(PsiElement, RunnerAndConfigurationSettings)] = {
+  def createConfigurationByElement(
+      location: Location[_ <: PsiElement],
+      context: ConfigurationContext
+  ): Option[(PsiElement, RunnerAndConfigurationSettings)] = {
     if (context.getModule == null) return null
     val scope: GlobalSearchScope =
       GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(
-          context.getModule, true)
+        context.getModule,
+        true
+      )
     if (suitePaths.forall(suitePath =>
-              ScalaPsiManager
-                .instance(context.getProject)
-                .getCachedClass(scope, suitePath)
-                .orNull == null)) return null
+          ScalaPsiManager
+            .instance(context.getProject)
+            .getCachedClass(scope, suitePath)
+            .orNull == null
+        )) return null
     myPsiElement = location.getPsiElement
-    createConfigurationByLocation(location) //.asInstanceOf[RunnerAndConfigurationSettingsImpl]
+    createConfigurationByLocation(
+      location
+    ) //.asInstanceOf[RunnerAndConfigurationSettingsImpl]
   }
 
   def findExistingByElement(
       location: Location[_ <: PsiElement],
       existingConfigurations: Array[RunnerAndConfigurationSettings],
-      context: ConfigurationContext): RunnerAndConfigurationSettings = {
+      context: ConfigurationContext
+  ): RunnerAndConfigurationSettings = {
     existingConfigurations
       .find(c => isConfigurationByLocation(c.getConfiguration, location))
       .orNull
   }
 
-  def createConfigurationByLocation(location: Location[_ <: PsiElement])
-    : Option[(PsiElement, RunnerAndConfigurationSettings)]
+  def createConfigurationByLocation(
+      location: Location[_ <: PsiElement]
+  ): Option[(PsiElement, RunnerAndConfigurationSettings)]
 
-  def isConfigurationByLocation(configuration: RunConfiguration,
-                                location: Location[_ <: PsiElement]): Boolean
+  def isConfigurationByLocation(
+      configuration: RunConfiguration,
+      location: Location[_ <: PsiElement]
+  ): Boolean
 
   protected def escapeAndConcatTestNames(testNames: List[String]) = {
     val res = testNames.map(TestConfigurationUtil.escapeTestName)

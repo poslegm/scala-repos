@@ -14,10 +14,10 @@ import org.ensime.util.map._
 // mutable: lookup of user's source files are atomically updated
 class SourceResolver(
     config: EnsimeConfig
-)(
-    implicit vfs: EnsimeVFS
-)
-    extends FileChangeListener with SLF4JLogging {
+)(implicit
+    vfs: EnsimeVFS
+) extends FileChangeListener
+    with SLF4JLogging {
 
   // it's not worth doing incremental updates - this is cheap
   // (but it would be nice to have a "debounce" throttler)
@@ -33,9 +33,9 @@ class SourceResolver(
         all.get(clazz) flatMap {
           _.find(_.getName.getBaseName == filename)
         } match {
-          case s @ Some(_) => s
+          case s @ Some(_)               => s
           case None if clazz.path == Nil => None
-          case _ => resolve(clazz.parent, source)
+          case _                         => resolve(clazz.parent, source)
         }
     }
 
@@ -44,10 +44,11 @@ class SourceResolver(
     all = recalculate
   }
 
-  private def scan(f: FileObject) = f.findFiles(SourceSelector) match {
-    case null => Nil
-    case res => res.toList
-  }
+  private def scan(f: FileObject) =
+    f.findFiles(SourceSelector) match {
+      case null => Nil
+      case res  => res.toList
+    }
 
   private val depSources = {
     val srcJars =

@@ -19,7 +19,8 @@ import scala.concurrent.duration._
 object ActorsLeakSpec {
 
   val config =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
       | akka.actor.provider = "akka.remote.RemoteActorRefProvider"
       | #akka.loglevel = DEBUG
       | akka.remote.netty.tcp.applied-adapters = ["trttl"]
@@ -29,7 +30,8 @@ object ActorsLeakSpec {
       | akka.remote.quarantine-after-silence = 3 s
       | akka.test.filter-leeway = 10 s
       |
-      |""".stripMargin)
+      |""".stripMargin
+    )
 
   def collectLiveActors(root: ActorRef): immutable.Seq[ActorRef] = {
 
@@ -40,7 +42,10 @@ object ActorsLeakSpec {
 
           cell.childrenRefs match {
             case ChildrenContainer.TerminatingChildrenContainer(
-                _, toDie, reason) ⇒
+                  _,
+                  toDie,
+                  reason
+                ) ⇒
               Nil
             case x @ (ChildrenContainer.TerminatedChildrenContainer |
                 ChildrenContainer.EmptyChildrenContainer) ⇒
@@ -66,7 +71,8 @@ object ActorsLeakSpec {
 }
 
 class ActorsLeakSpec
-    extends AkkaSpec(ActorsLeakSpec.config) with ImplicitSender {
+    extends AkkaSpec(ActorsLeakSpec.config)
+    with ImplicitSender {
   import ActorsLeakSpec._
 
   "Remoting" must {
@@ -88,10 +94,12 @@ class ActorsLeakSpec
       for (_ ← 1 to 3) {
 
         val remoteSystem =
-          ActorSystem("remote",
-                      ConfigFactory
-                        .parseString("akka.remote.netty.tcp.port = 0")
-                        .withFallback(config))
+          ActorSystem(
+            "remote",
+            ConfigFactory
+              .parseString("akka.remote.netty.tcp.port = 0")
+              .withFallback(config)
+          )
 
         try {
           val probe = TestProbe()(remoteSystem)
@@ -109,10 +117,12 @@ class ActorsLeakSpec
       for (_ ← 1 to 3) {
 
         val remoteSystem =
-          ActorSystem("remote",
-                      ConfigFactory
-                        .parseString("akka.remote.netty.tcp.port = 0")
-                        .withFallback(config))
+          ActorSystem(
+            "remote",
+            ConfigFactory
+              .parseString("akka.remote.netty.tcp.port = 0")
+              .withFallback(config)
+          )
         val remoteAddress = RARP(remoteSystem).provider.getDefaultAddress
 
         try {
@@ -122,9 +132,11 @@ class ActorsLeakSpec
           probe.expectMsgType[ActorIdentity].ref.nonEmpty should be(true)
 
           // This will make sure that no SHUTDOWN message gets through
-          Await.ready(RARP(system).provider.transport
-                        .managementCommand(ForceDisassociate(remoteAddress)),
-                      3.seconds)
+          Await.ready(
+            RARP(system).provider.transport
+              .managementCommand(ForceDisassociate(remoteAddress)),
+            3.seconds
+          )
         } finally {
           remoteSystem.terminate()
         }
@@ -138,10 +150,12 @@ class ActorsLeakSpec
 
       // Remote idle for too long case
       val remoteSystem =
-        ActorSystem("remote",
-                    ConfigFactory
-                      .parseString("akka.remote.netty.tcp.port = 0")
-                      .withFallback(config))
+        ActorSystem(
+          "remote",
+          ConfigFactory
+            .parseString("akka.remote.netty.tcp.port = 0")
+            .withFallback(config)
+        )
       val remoteAddress = RARP(remoteSystem).provider.getDefaultAddress
 
       remoteSystem.actorOf(Props[StoppableActor], "stoppable")
@@ -154,7 +168,8 @@ class ActorsLeakSpec
 
         // Watch a remote actor - this results in system message traffic
         system.actorSelection(
-            RootActorPath(remoteAddress) / "user" / "stoppable") ! Identify(1)
+          RootActorPath(remoteAddress) / "user" / "stoppable"
+        ) ! Identify(1)
         val remoteActor = expectMsgType[ActorIdentity].ref.get
         watch(remoteActor)
         remoteActor ! "stop"
@@ -162,9 +177,11 @@ class ActorsLeakSpec
         // All system messages has been acked now on this side
 
         // This will make sure that no SHUTDOWN message gets through
-        Await.ready(RARP(system).provider.transport
-                      .managementCommand(ForceDisassociate(remoteAddress)),
-                    3.seconds)
+        Await.ready(
+          RARP(system).provider.transport
+            .managementCommand(ForceDisassociate(remoteAddress)),
+          3.seconds
+        )
       } finally {
         remoteSystem.terminate()
       }
@@ -181,7 +198,7 @@ class ActorsLeakSpec
         .flatMap(collectLiveActors)
         .toSet
 
-        (finalActors diff initialActors) should be(Set.empty)
+      (finalActors diff initialActors) should be(Set.empty)
     }
   }
 }

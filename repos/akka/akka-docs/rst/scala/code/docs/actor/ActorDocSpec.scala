@@ -27,7 +27,7 @@ class MyActor extends Actor {
 
   def receive = {
     case "test" => log.info("received test")
-    case _ => log.info("received unknown message")
+    case _      => log.info("received unknown message")
   }
 }
 //#my-actor
@@ -95,7 +95,7 @@ class ActorWithMessagesWrapper {
     import MyActor._
     def receive = {
       case Greeting(greeter) => log.info(s"I was greeted by $greeter.")
-      case Goodbye => log.info("Someone said goodbye to me.")
+      case Goodbye           => log.info("Someone said goodbye to me.")
     }
   }
   //#messages-in-companion
@@ -195,11 +195,14 @@ class Swapper extends Actor {
   def receive = {
     case Swap =>
       log.info("Hi")
-      become({
-        case Swap =>
-          log.info("Ho")
-          unbecome() // resets the latest 'become' (just for fun)
-      }, discardOld = false) // push on top instead of replace
+      become(
+        {
+          case Swap =>
+            log.info("Ho")
+            unbecome() // resets the latest 'become' (just for fun)
+        },
+        discardOld = false
+      ) // push on top instead of replace
   }
 }
 
@@ -247,7 +250,9 @@ class Consumer extends Actor with ActorLogging with ConsumerBehavior {
 }
 
 class ProducerConsumer
-    extends Actor with ActorLogging with ProducerBehavior
+    extends Actor
+    with ActorLogging
+    with ProducerBehavior
     with ConsumerBehavior {
 
   def receive = producerBehavior.orElse[Any, Unit](consumerBehavior)
@@ -290,7 +295,7 @@ class ActorDocSpec extends AkkaSpec("""
     // TODO: convert docs to AkkaSpec(Map(...))
     val filter = EventFilter.custom {
       case e: Logging.Info => true
-      case _ => false
+      case _               => false
     }
     system.eventStream.publish(TestEvent.Mute(filter))
     system.eventStream.subscribe(testActor, classOf[Logging.Info])
@@ -367,8 +372,9 @@ class ActorDocSpec extends AkkaSpec("""
       }
 
       val actorRef = system.actorOf(
-          Props(classOf[DependencyInjector], applicationContext, "hello"),
-          "helloBean")
+        Props(classOf[DependencyInjector], applicationContext, "hello"),
+        "helloBean"
+      )
       //#creating-indirectly
     }
     val actorRef = {
@@ -460,13 +466,16 @@ class ActorDocSpec extends AkkaSpec("""
       def receive = {
         case "open" =>
           unstashAll()
-          context.become({
-            case "write" => // do writing...
-            case "close" =>
-              unstashAll()
-              context.unbecome()
-            case msg => stash()
-          }, discardOld = false) // stack on top instead of replacing
+          context.become(
+            {
+              case "write" => // do writing...
+              case "close" =>
+                unstashAll()
+                context.unbecome()
+              case msg => stash()
+            },
+            discardOld = false
+          ) // stack on top instead of replacing
         case msg => stash()
       }
     }
@@ -480,7 +489,9 @@ class ActorDocSpec extends AkkaSpec("""
 
       class WatchActor extends Actor {
         val child = context.actorOf(Props.empty, "child")
-        context.watch(child) // <-- this is the only call needed for registration
+        context.watch(
+          child
+        ) // <-- this is the only call needed for registration
         var lastSender = system.deadLetters
 
         def receive = {
@@ -590,7 +601,9 @@ class ActorDocSpec extends AkkaSpec("""
       case ref: ActorRef =>
         //#reply-with-sender
         sender().tell("reply", context.parent) // replies will go back to parent
-        sender().!("reply")(context.parent) // alternative syntax (beware of the parens!)
+        sender().!("reply")(
+          context.parent
+        ) // alternative syntax (beware of the parens!)
       //#reply-with-sender
       case x =>
         //#reply-without-sender
@@ -614,12 +627,13 @@ class ActorDocSpec extends AkkaSpec("""
 
   "using ActorDSL outside of akka.actor package" in {
     import akka.actor.ActorDSL._
-    actor(
-        new Act {
-      superviseWith(
-          OneForOneStrategy() { case _ => Stop; Restart; Resume; Escalate })
-      superviseWith(
-          AllForOneStrategy() { case _ => Stop; Restart; Resume; Escalate })
+    actor(new Act {
+      superviseWith(OneForOneStrategy() {
+        case _ => Stop; Restart; Resume; Escalate
+      })
+      superviseWith(AllForOneStrategy() {
+        case _ => Stop; Restart; Resume; Escalate
+      })
     })
   }
 }

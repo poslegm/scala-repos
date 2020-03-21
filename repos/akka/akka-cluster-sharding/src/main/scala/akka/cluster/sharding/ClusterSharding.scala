@@ -137,7 +137,8 @@ import akka.dispatch.Dispatchers
   *
   */
 object ClusterSharding
-    extends ExtensionId[ClusterSharding] with ExtensionIdProvider {
+    extends ExtensionId[ClusterSharding]
+    with ExtensionIdProvider {
   override def get(system: ActorSystem): ClusterSharding = super.get(system)
 
   override def lookup = ClusterSharding
@@ -167,14 +168,16 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
       case id ⇒ id
     }
     system.systemActorOf(
-        Props[ClusterShardingGuardian].withDispatcher(dispatcher),
-        guardianName)
+      Props[ClusterShardingGuardian].withDispatcher(dispatcher),
+      guardianName
+    )
   }
 
   private[akka] def requireClusterRole(role: Option[String]): Unit =
     require(
-        role.forall(cluster.selfRoles.contains),
-        s"This cluster member [${cluster.selfAddress}] doesn't have the role [$role]")
+      role.forall(cluster.selfRoles.contains),
+      s"This cluster member [${cluster.selfAddress}] doesn't have the role [$role]"
+    )
 
   /**
     * Scala API: Register a named entity type by defining the [[akka.actor.Props]] of the entity actor
@@ -198,23 +201,27 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     *   for a rebalance or graceful shutdown of a `ShardRegion`, e.g. `PoisonPill`.
     * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
     */
-  def start(typeName: String,
-            entityProps: Props,
-            settings: ClusterShardingSettings,
-            extractEntityId: ShardRegion.ExtractEntityId,
-            extractShardId: ShardRegion.ExtractShardId,
-            allocationStrategy: ShardAllocationStrategy,
-            handOffStopMessage: Any): ActorRef = {
+  def start(
+      typeName: String,
+      entityProps: Props,
+      settings: ClusterShardingSettings,
+      extractEntityId: ShardRegion.ExtractEntityId,
+      extractShardId: ShardRegion.ExtractShardId,
+      allocationStrategy: ShardAllocationStrategy,
+      handOffStopMessage: Any
+  ): ActorRef = {
 
     requireClusterRole(settings.role)
     implicit val timeout = system.settings.CreationTimeout
-    val startMsg = Start(typeName,
-                         entityProps,
-                         settings,
-                         extractEntityId,
-                         extractShardId,
-                         allocationStrategy,
-                         handOffStopMessage)
+    val startMsg = Start(
+      typeName,
+      entityProps,
+      settings,
+      extractEntityId,
+      extractShardId,
+      allocationStrategy,
+      handOffStopMessage
+    )
     val Started(shardRegion) =
       Await.result(guardian ? startMsg, timeout.duration)
     regions.put(typeName, shardRegion)
@@ -242,23 +249,28 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     *   that passed the `extractEntityId` will be used
     * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
     */
-  def start(typeName: String,
-            entityProps: Props,
-            settings: ClusterShardingSettings,
-            extractEntityId: ShardRegion.ExtractEntityId,
-            extractShardId: ShardRegion.ExtractShardId): ActorRef = {
+  def start(
+      typeName: String,
+      entityProps: Props,
+      settings: ClusterShardingSettings,
+      extractEntityId: ShardRegion.ExtractEntityId,
+      extractShardId: ShardRegion.ExtractShardId
+  ): ActorRef = {
 
     val allocationStrategy = new LeastShardAllocationStrategy(
-        settings.tuningParameters.leastShardAllocationRebalanceThreshold,
-        settings.tuningParameters.leastShardAllocationMaxSimultaneousRebalance)
+      settings.tuningParameters.leastShardAllocationRebalanceThreshold,
+      settings.tuningParameters.leastShardAllocationMaxSimultaneousRebalance
+    )
 
-    start(typeName,
-          entityProps,
-          settings,
-          extractEntityId,
-          extractShardId,
-          allocationStrategy,
-          PoisonPill)
+    start(
+      typeName,
+      entityProps,
+      settings,
+      extractEntityId,
+      extractShardId,
+      allocationStrategy,
+      PoisonPill
+    )
   }
 
   /**
@@ -280,24 +292,27 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     *   for a rebalance or graceful shutdown of a `ShardRegion`, e.g. `PoisonPill`.
     * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
     */
-  def start(typeName: String,
-            entityProps: Props,
-            settings: ClusterShardingSettings,
-            messageExtractor: ShardRegion.MessageExtractor,
-            allocationStrategy: ShardAllocationStrategy,
-            handOffStopMessage: Any): ActorRef = {
+  def start(
+      typeName: String,
+      entityProps: Props,
+      settings: ClusterShardingSettings,
+      messageExtractor: ShardRegion.MessageExtractor,
+      allocationStrategy: ShardAllocationStrategy,
+      handOffStopMessage: Any
+  ): ActorRef = {
 
-    start(typeName,
-          entityProps,
-          settings,
-          extractEntityId = {
-            case msg if messageExtractor.entityId(msg) ne null ⇒
-              (messageExtractor.entityId(msg),
-               messageExtractor.entityMessage(msg))
-          },
-          extractShardId = msg ⇒ messageExtractor.shardId(msg),
-          allocationStrategy = allocationStrategy,
-          handOffStopMessage = handOffStopMessage)
+    start(
+      typeName,
+      entityProps,
+      settings,
+      extractEntityId = {
+        case msg if messageExtractor.entityId(msg) ne null ⇒
+          (messageExtractor.entityId(msg), messageExtractor.entityMessage(msg))
+      },
+      extractShardId = msg ⇒ messageExtractor.shardId(msg),
+      allocationStrategy = allocationStrategy,
+      handOffStopMessage = handOffStopMessage
+    )
   }
 
   /**
@@ -318,21 +333,26 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     *   entity from the incoming message
     * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
     */
-  def start(typeName: String,
-            entityProps: Props,
-            settings: ClusterShardingSettings,
-            messageExtractor: ShardRegion.MessageExtractor): ActorRef = {
+  def start(
+      typeName: String,
+      entityProps: Props,
+      settings: ClusterShardingSettings,
+      messageExtractor: ShardRegion.MessageExtractor
+  ): ActorRef = {
 
     val allocationStrategy = new LeastShardAllocationStrategy(
-        settings.tuningParameters.leastShardAllocationRebalanceThreshold,
-        settings.tuningParameters.leastShardAllocationMaxSimultaneousRebalance)
+      settings.tuningParameters.leastShardAllocationRebalanceThreshold,
+      settings.tuningParameters.leastShardAllocationMaxSimultaneousRebalance
+    )
 
-    start(typeName,
-          entityProps,
-          settings,
-          messageExtractor,
-          allocationStrategy,
-          PoisonPill)
+    start(
+      typeName,
+      entityProps,
+      settings,
+      messageExtractor,
+      allocationStrategy,
+      PoisonPill
+    )
   }
 
   /**
@@ -354,15 +374,17 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     *   that passed the `extractEntityId` will be used
     * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
     */
-  def startProxy(typeName: String,
-                 role: Option[String],
-                 extractEntityId: ShardRegion.ExtractEntityId,
-                 extractShardId: ShardRegion.ExtractShardId): ActorRef = {
+  def startProxy(
+      typeName: String,
+      role: Option[String],
+      extractEntityId: ShardRegion.ExtractEntityId,
+      extractShardId: ShardRegion.ExtractShardId
+  ): ActorRef = {
 
     implicit val timeout = system.settings.CreationTimeout
     val settings = ClusterShardingSettings(system).withRole(role)
-    val startMsg = StartProxy(
-        typeName, settings, extractEntityId, extractShardId)
+    val startMsg =
+      StartProxy(typeName, settings, extractEntityId, extractShardId)
     val Started(shardRegion) =
       Await.result(guardian ? startMsg, timeout.duration)
     regions.put(typeName, shardRegion)
@@ -385,14 +407,21 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     *   entity from the incoming message
     * @return the actor ref of the [[ShardRegion]] that is to be responsible for the shard
     */
-  def startProxy(typeName: String,
-                 role: Optional[String],
-                 messageExtractor: ShardRegion.MessageExtractor): ActorRef = {
+  def startProxy(
+      typeName: String,
+      role: Optional[String],
+      messageExtractor: ShardRegion.MessageExtractor
+  ): ActorRef = {
 
-    startProxy(typeName, Option(role.orElse(null)), extractEntityId = {
-      case msg if messageExtractor.entityId(msg) ne null ⇒
-        (messageExtractor.entityId(msg), messageExtractor.entityMessage(msg))
-    }, extractShardId = msg ⇒ messageExtractor.shardId(msg))
+    startProxy(
+      typeName,
+      Option(role.orElse(null)),
+      extractEntityId = {
+        case msg if messageExtractor.entityId(msg) ne null ⇒
+          (messageExtractor.entityId(msg), messageExtractor.entityMessage(msg))
+      },
+      extractShardId = msg ⇒ messageExtractor.shardId(msg)
+    )
   }
 
   /**
@@ -400,12 +429,14 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
     * The entity type must be registered with the [[#start]] method before it can be used here.
     * Messages to the entity is always sent via the `ShardRegion`.
     */
-  def shardRegion(typeName: String): ActorRef = regions.get(typeName) match {
-    case null ⇒
-      throw new IllegalArgumentException(
-          s"Shard type [$typeName] must be started first")
-    case ref ⇒ ref
-  }
+  def shardRegion(typeName: String): ActorRef =
+    regions.get(typeName) match {
+      case null ⇒
+        throw new IllegalArgumentException(
+          s"Shard type [$typeName] must be started first"
+        )
+      case ref ⇒ ref
+    }
 }
 
 /**
@@ -413,19 +444,21 @@ class ClusterSharding(system: ExtendedActorSystem) extends Extension {
   */
 private[akka] object ClusterShardingGuardian {
   import ShardCoordinator.ShardAllocationStrategy
-  final case class Start(typeName: String,
-                         entityProps: Props,
-                         settings: ClusterShardingSettings,
-                         extractEntityId: ShardRegion.ExtractEntityId,
-                         extractShardId: ShardRegion.ExtractShardId,
-                         allocationStrategy: ShardAllocationStrategy,
-                         handOffStopMessage: Any)
-      extends NoSerializationVerificationNeeded
-  final case class StartProxy(typeName: String,
-                              settings: ClusterShardingSettings,
-                              extractEntityId: ShardRegion.ExtractEntityId,
-                              extractShardId: ShardRegion.ExtractShardId)
-      extends NoSerializationVerificationNeeded
+  final case class Start(
+      typeName: String,
+      entityProps: Props,
+      settings: ClusterShardingSettings,
+      extractEntityId: ShardRegion.ExtractEntityId,
+      extractShardId: ShardRegion.ExtractShardId,
+      allocationStrategy: ShardAllocationStrategy,
+      handOffStopMessage: Any
+  ) extends NoSerializationVerificationNeeded
+  final case class StartProxy(
+      typeName: String,
+      settings: ClusterShardingSettings,
+      extractEntityId: ShardRegion.ExtractEntityId,
+      extractShardId: ShardRegion.ExtractShardId
+  ) extends NoSerializationVerificationNeeded
   final case class Started(shardRegion: ActorRef)
       extends NoSerializationVerificationNeeded
 }
@@ -445,16 +478,20 @@ private[akka] class ClusterShardingGuardian extends Actor {
     encName + "Coordinator"
 
   private def coordinatorPath(encName: String): String =
-    (self.path / coordinatorSingletonManagerName(encName) / "singleton" / "coordinator").toStringWithoutAddress
+    (self.path / coordinatorSingletonManagerName(
+      encName
+    ) / "singleton" / "coordinator").toStringWithoutAddress
 
   def receive = {
-    case Start(typeName,
-               entityProps,
-               settings,
-               extractEntityId,
-               extractShardId,
-               allocationStrategy,
-               handOffStopMessage) ⇒
+    case Start(
+          typeName,
+          entityProps,
+          settings,
+          extractEntityId,
+          extractShardId,
+          allocationStrategy,
+          handOffStopMessage
+        ) ⇒
       import settings.role
       import settings.tuningParameters.coordinatorFailureBackoff
 
@@ -467,36 +504,46 @@ private[akka] class ClusterShardingGuardian extends Actor {
             if (settings.stateStoreMode == "persistence")
               ShardCoordinator.props(typeName, settings, allocationStrategy)
             else
-              ShardCoordinator.props(
-                  typeName, settings, allocationStrategy, replicator)
+              ShardCoordinator
+                .props(typeName, settings, allocationStrategy, replicator)
           val singletonProps = BackoffSupervisor
-            .props(childProps = coordinatorProps,
-                   childName = "coordinator",
-                   minBackoff = coordinatorFailureBackoff,
-                   maxBackoff = coordinatorFailureBackoff * 5,
-                   randomFactor = 0.2)
+            .props(
+              childProps = coordinatorProps,
+              childName = "coordinator",
+              minBackoff = coordinatorFailureBackoff,
+              maxBackoff = coordinatorFailureBackoff * 5,
+              randomFactor = 0.2
+            )
             .withDeploy(Deploy.local)
           val singletonSettings = settings.coordinatorSingletonSettings
             .withSingletonName("singleton")
             .withRole(role)
-          context.actorOf(ClusterSingletonManager
-                            .props(singletonProps,
-                                   terminationMessage = PoisonPill,
-                                   singletonSettings)
-                            .withDispatcher(context.props.dispatcher),
-                          name = cName)
+          context.actorOf(
+            ClusterSingletonManager
+              .props(
+                singletonProps,
+                terminationMessage = PoisonPill,
+                singletonSettings
+              )
+              .withDispatcher(context.props.dispatcher),
+            name = cName
+          )
         }
 
-        context.actorOf(ShardRegion
-                          .props(typeName = typeName,
-                                 entityProps = entityProps,
-                                 settings = settings,
-                                 coordinatorPath = cPath,
-                                 extractEntityId = extractEntityId,
-                                 extractShardId = extractShardId,
-                                 handOffStopMessage = handOffStopMessage)
-                          .withDispatcher(context.props.dispatcher),
-                        name = encName)
+        context.actorOf(
+          ShardRegion
+            .props(
+              typeName = typeName,
+              entityProps = entityProps,
+              settings = settings,
+              coordinatorPath = cPath,
+              extractEntityId = extractEntityId,
+              extractShardId = extractShardId,
+              handOffStopMessage = handOffStopMessage
+            )
+            .withDispatcher(context.props.dispatcher),
+          name = encName
+        )
       }
       sender() ! Started(shardRegion)
 
@@ -505,14 +552,18 @@ private[akka] class ClusterShardingGuardian extends Actor {
       val cName = coordinatorSingletonManagerName(encName)
       val cPath = coordinatorPath(encName)
       val shardRegion = context.child(encName).getOrElse {
-        context.actorOf(ShardRegion
-                          .proxyProps(typeName = typeName,
-                                      settings = settings,
-                                      coordinatorPath = cPath,
-                                      extractEntityId = extractEntityId,
-                                      extractShardId = extractShardId)
-                          .withDispatcher(context.props.dispatcher),
-                        name = encName)
+        context.actorOf(
+          ShardRegion
+            .proxyProps(
+              typeName = typeName,
+              settings = settings,
+              coordinatorPath = cPath,
+              extractEntityId = extractEntityId,
+              extractShardId = extractShardId
+            )
+            .withDispatcher(context.props.dispatcher),
+          name = encName
+        )
       }
       sender() ! Started(shardRegion)
   }

@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -33,14 +33,13 @@ import scalaz.syntax.monad._
 import scalaz.syntax.comonad._
 
 class InMemoryFileStorageSpec extends Specification {
-  include(
-      new FileStorageSpec[Need] {
+  include(new FileStorageSpec[Need] {
     val M: Monad[Need] with Comonad[Need] = Need.need
     val fs = new InMemoryFileStorage[Need]
   })
 }
 
-trait FileStorageSpec[M[+ _]] extends Specification {
+trait FileStorageSpec[M[+_]] extends Specification {
   lazy val TEXT = MimeTypes.text / plain
   lazy val HTML = MimeTypes.text / html
 
@@ -50,9 +49,7 @@ trait FileStorageSpec[M[+ _]] extends Specification {
   lazy val data1: FileData[M] = {
     val strings = "Hello" :: "," :: " " :: "world!" :: StreamT.empty[M, String]
     val data =
-      strings map { s =>
-        s.getBytes("UTF-8")
-      }
+      strings map { s => s.getBytes("UTF-8") }
     FileData(Some(TEXT), data)
   }
 
@@ -60,16 +57,12 @@ trait FileStorageSpec[M[+ _]] extends Specification {
     val strings =
       "Goodbye" :: "," :: " " :: "cruel world." :: StreamT.empty[M, String]
     val data =
-      strings map { s =>
-        s.getBytes("UTF-8")
-      }
+      strings map { s => s.getBytes("UTF-8") }
     FileData(Some(HTML), data)
   }
 
-  def encode(s: StreamT[M, Array[Byte]]): M[String] = s.foldLeft("") {
-    (acc, bytes) =>
-      acc + new String(bytes, "UTF-8")
-  }
+  def encode(s: StreamT[M, Array[Byte]]): M[String] =
+    s.foldLeft("") { (acc, bytes) => acc + new String(bytes, "UTF-8") }
 
   "File storage" should {
     "save (and load) arbitrary file" in {

@@ -40,7 +40,10 @@ abstract class BinaryOutput {
   protected val chunk = Array.ofDim[Byte](chunkSize)
 
   protected def putArrayByChunk[T <: AnyVal](
-      arr: Array[T], offset: Long, eltSize: Int) {
+      arr: Array[T],
+      offset: Long,
+      eltSize: Int
+  ) {
     val nbrElt = arr.length
     putInt(nbrElt)
     var srcOffset = offset //UnsafeMemory.byteArrayOffset
@@ -48,7 +51,12 @@ abstract class BinaryOutput {
     while (toCopy > 0) {
       val byteLen = math.min(chunkSize, toCopy)
       UnsafeMemory.unsafe.copyMemory(
-          arr, srcOffset, chunk, UnsafeMemory.byteArrayOffset, byteLen)
+        arr,
+        srcOffset,
+        chunk,
+        UnsafeMemory.byteArrayOffset,
+        byteLen
+      )
       toCopy -= byteLen
       srcOffset += byteLen
       putBytes(chunk, byteLen)
@@ -187,12 +195,20 @@ class FixedByteArrayOutput(capacity: Int) extends BinaryOutput {
 
   //a single chunk
   override protected def putArrayByChunk[T <: AnyVal](
-      arr: Array[T], offset: Long, eltSize: Int) {
+      arr: Array[T],
+      offset: Long,
+      eltSize: Int
+  ) {
     val nbrElt = arr.length
     var byteLen = nbrElt * eltSize
     putInt(nbrElt)
     UnsafeMemory.unsafe.copyMemory(
-        arr, offset, head, UnsafeMemory.byteArrayOffset + pos, byteLen)
+      arr,
+      offset,
+      head,
+      UnsafeMemory.byteArrayOffset + pos,
+      byteLen
+    )
     pos += byteLen
   }
 }
@@ -352,13 +368,21 @@ class FastByteArrayOutput(initialCapacity: Int = 10 * 1024 * 1024)
 
   //a single chunk
   override protected def putArrayByChunk[T <: AnyVal](
-      arr: Array[T], offset: Long, eltSize: Int) {
+      arr: Array[T],
+      offset: Long,
+      eltSize: Int
+  ) {
     val nbrElt = arr.length
     var byteLen = nbrElt * eltSize
     ensureCapacity(byteLen + 4)
     putInt(nbrElt)
     UnsafeMemory.unsafe.copyMemory(
-        arr, offset, head, UnsafeMemory.byteArrayOffset + pos, byteLen)
+      arr,
+      offset,
+      head,
+      UnsafeMemory.byteArrayOffset + pos,
+      byteLen
+    )
     pos += byteLen
   }
 }

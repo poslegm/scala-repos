@@ -38,5 +38,7 @@ abstract class MappedEmail[T <: Mapper[T]](owner: T, maxLen: Int)
   override def validate =
     (if (MappedEmail.emailPattern.matcher(i_is_!).matches) Nil
      else
-       List(FieldError(this, Text(S.?("invalid.email.address"))))) ::: super.validate
+       List(
+         FieldError(this, Text(S.?("invalid.email.address")))
+       )) ::: super.validate
 }

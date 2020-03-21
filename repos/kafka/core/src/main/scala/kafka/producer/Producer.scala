@@ -21,22 +21,29 @@ import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 
 import kafka.common.{AppInfo, QueueFullException}
 import kafka.metrics._
-import kafka.producer.async.{DefaultEventHandler, EventHandler, ProducerSendThread}
+import kafka.producer.async.{
+  DefaultEventHandler,
+  EventHandler,
+  ProducerSendThread
+}
 import kafka.serializer.Encoder
 import kafka.utils._
 
 @deprecated(
-    "This class has been deprecated and will be removed in a future release. " +
+  "This class has been deprecated and will be removed in a future release. " +
     "Please use org.apache.kafka.clients.producer.KafkaProducer instead.",
-    "0.10.0.0")
+  "0.10.0.0"
+)
 class Producer[K, V](
     val config: ProducerConfig,
-    private val eventHandler: EventHandler[K, V]) // only for unit testing
+    private val eventHandler: EventHandler[K, V]
+) // only for unit testing
     extends Logging {
 
   private val hasShutdown = new AtomicBoolean(false)
   private val queue = new LinkedBlockingQueue[KeyedMessage[K, V]](
-      config.queueBufferingMaxMessages)
+    config.queueBufferingMaxMessages
+  )
 
   private var sync: Boolean = true
   private var producerSendThread: ProducerSendThread[K, V] = null
@@ -47,12 +54,13 @@ class Producer[K, V](
     case "async" =>
       sync = false
       producerSendThread = new ProducerSendThread[K, V](
-          "ProducerSendThread-" + config.clientId,
-          queue,
-          eventHandler,
-          config.queueBufferingMaxMs,
-          config.batchNumMessages,
-          config.clientId)
+        "ProducerSendThread-" + config.clientId,
+        queue,
+        eventHandler,
+        config.queueBufferingMaxMs,
+        config.batchNumMessages,
+        config.clientId
+      )
       producerSendThread.start()
   }
 
@@ -63,16 +71,19 @@ class Producer[K, V](
   AppInfo.registerInfo()
 
   def this(config: ProducerConfig) =
-    this(config,
-         new DefaultEventHandler[K, V](
-             config,
-             CoreUtils.createObject[Partitioner](
-                 config.partitionerClass, config.props),
-             CoreUtils.createObject[Encoder[V]](config.serializerClass,
-                                                config.props),
-             CoreUtils.createObject[Encoder[K]](
-                 config.keySerializerClass, config.props),
-             new ProducerPool(config)))
+    this(
+      config,
+      new DefaultEventHandler[K, V](
+        config,
+        CoreUtils
+          .createObject[Partitioner](config.partitionerClass, config.props),
+        CoreUtils
+          .createObject[Encoder[V]](config.serializerClass, config.props),
+        CoreUtils
+          .createObject[Encoder[K]](config.keySerializerClass, config.props),
+        new ProducerPool(config)
+      )
+    )
 
   /**
     * Sends the data, partitioned by key to the topic using either the
@@ -84,7 +95,7 @@ class Producer[K, V](
       if (hasShutdown.get) throw new ProducerClosedException
       recordStats(messages)
       sync match {
-        case true => eventHandler.handle(messages)
+        case true  => eventHandler.handle(messages)
         case false => asyncSend(messages)
       }
     }
@@ -109,9 +120,11 @@ class Producer[K, V](
                 queue.put(message)
                 true
               case _ =>
-                queue.offer(message,
-                            config.queueEnqueueTimeoutMs,
-                            TimeUnit.MILLISECONDS)
+                queue.offer(
+                  message,
+                  config.queueEnqueueTimeoutMs,
+                  TimeUnit.MILLISECONDS
+                )
             }
           } catch {
             case e: InterruptedException =>
@@ -125,8 +138,9 @@ class Producer[K, V](
           .mark()
         producerTopicStats.getProducerAllTopicsStats.droppedMessageRate.mark()
         throw new QueueFullException(
-            "Event queue is full of unsent messages, could not send event: " +
-            message.toString)
+          "Event queue is full of unsent messages, could not send event: " +
+            message.toString
+        )
       } else {
         trace("Added to send queue an event: " + message.toString)
         trace("Remaining queue size: " + queue.remainingCapacity)
@@ -147,8 +161,10 @@ class Producer[K, V](
         KafkaMetricsGroup.removeAllProducerMetrics(config.clientId)
         if (producerSendThread != null) producerSendThread.shutdown
         eventHandler.close
-        info("Producer shutdown completed in " +
-            (System.nanoTime() - startTime) / 1000000 + " ms")
+        info(
+          "Producer shutdown completed in " +
+            (System.nanoTime() - startTime) / 1000000 + " ms"
+        )
       }
     }
   }

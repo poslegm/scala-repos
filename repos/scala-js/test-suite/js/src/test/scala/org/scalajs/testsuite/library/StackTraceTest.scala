@@ -18,8 +18,9 @@ import org.scalajs.testsuite.utils.Platform._
 class StackTraceTest {
   import StackTraceTest._
 
-  private def verifyClassMethodNames(places: (String, String)*)(
-      body: => Any): Unit = {
+  private def verifyClassMethodNames(
+      places: (String, String)*
+  )(body: => Any): Unit = {
     try {
       body
       throw new AssertionError("body should have thrown an exception")
@@ -27,8 +28,7 @@ class StackTraceTest {
       case e: IllegalArgumentException =>
         val trace = e.getStackTrace()
         for ((className, methodName) <- places) {
-          assertTrue(
-              trace exists { elem =>
+          assertTrue(trace exists { elem =>
             /* We use startsWith for class name because some VMs will add
              * additional information at the end of the class name, for some
              * reason + there can be a '$class' suffix for methods in impl
@@ -36,7 +36,7 @@ class StackTraceTest {
              */
             val prefix = "org.scalajs.testsuite.library.StackTraceTest$"
             (elem.getClassName.startsWith(prefix + className) &&
-                elem.getMethodName == methodName)
+            elem.getMethodName == methodName)
           })
         }
     }
@@ -64,14 +64,19 @@ class StackTraceTest {
       }
 
       verifyClassMethodNames(
-          "Foo" -> "f", "FooTrait" -> "h", "Baz" -> "<init>") {
+        "Foo" -> "f",
+        "FooTrait" -> "h",
+        "Baz" -> "<init>"
+      ) {
         new Baz()
       }
 
-      verifyClassMethodNames("Foo" -> "f",
-                             "Bar" -> "g",
-                             "Foobar$" -> "<clinit>",
-                             "Foobar$" -> "<init>") {
+      verifyClassMethodNames(
+        "Foo" -> "f",
+        "Bar" -> "g",
+        "Foobar$" -> "<clinit>",
+        "Foobar$" -> "<init>"
+      ) {
         Foobar.z
       }
     } finally {

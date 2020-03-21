@@ -44,7 +44,8 @@ import mocks.MockHttpServletRequest
   * is to just point this at your Boostrap.boot method.
   */
 abstract class WebSpec(boot: () => Any = () => {})
-    extends Specification with XmlMatchers {
+    extends Specification
+    with XmlMatchers {
 
   /**
     * This is our private spec instance of Liftrules. Everything we run will
@@ -65,9 +66,11 @@ abstract class WebSpec(boot: () => Any = () => {})
     * creation of a new Session.
     */
   class WebSpecBridge(description: String) {
-    def withSFor(url: String,
-                 session: Box[LiftSession] = Empty,
-                 contextPath: String = "") =
+    def withSFor(
+        url: String,
+        session: Box[LiftSession] = Empty,
+        contextPath: String = ""
+    ) =
       new SessionSpecification(description, url, session, contextPath)
 
     def withSFor(url: String, session: LiftSession): SessionSpecification =
@@ -88,9 +91,11 @@ abstract class WebSpec(boot: () => Any = () => {})
     def withReqFor(req: HttpServletRequest) =
       new ReqSpecification(description, req)
 
-    def withTemplateFor(url: String,
-                        session: Box[LiftSession] = Empty,
-                        contextPath: String = "") =
+    def withTemplateFor(
+        url: String,
+        session: Box[LiftSession] = Empty,
+        contextPath: String = ""
+    ) =
       new TemplateSpecification(description, url, session, contextPath)
 
     def withTemplateFor(url: String, session: LiftSession) =
@@ -137,18 +142,20 @@ abstract class WebSpec(boot: () => Any = () => {})
     /**
       * Modifies the request to POST the given request body JSON.
       */
-    def withPost(jval: JValue) = withMods { mockReq =>
-      mockReq.body = jval
-      mockReq.method = "POST"
-    }
+    def withPost(jval: JValue) =
+      withMods { mockReq =>
+        mockReq.body = jval
+        mockReq.method = "POST"
+      }
 
     /**
       * Modifies the request to POST the given request body XML.
       */
-    def withPost(node: NodeSeq) = withMods { mockReq =>
-      mockReq.body = node
-      mockReq.method = "POST"
-    }
+    def withPost(node: NodeSeq) =
+      withMods { mockReq =>
+        mockReq.body = node
+        mockReq.method = "POST"
+      }
 
     /**
       * Modifies the request to PUT the given request body text. Optionally,
@@ -164,49 +171,57 @@ abstract class WebSpec(boot: () => Any = () => {})
     /**
       * Modifies the request to PUT the given request body JSON.
       */
-    def withPut(jval: JValue) = withMods { mockReq =>
-      mockReq.body = jval
-      mockReq.method = "PUT"
-    }
+    def withPut(jval: JValue) =
+      withMods { mockReq =>
+        mockReq.body = jval
+        mockReq.method = "PUT"
+      }
 
     /**
       * Modifies the request to PUT the given request body XML.
       */
-    def withPut(node: NodeSeq) = withMods { mockReq =>
-      mockReq.body = node
-      mockReq.method = "PUT"
-    }
+    def withPut(node: NodeSeq) =
+      withMods { mockReq =>
+        mockReq.body = node
+        mockReq.method = "PUT"
+      }
 
     /**
       * Allows you to specify your own modification function for the servlet request
       * prior to initialization.
       */
-    def withMods(f: MockHttpServletRequest => Unit): T = req match {
-      case r: MockHttpServletRequest => f(r); this
-      case _ =>
-        throw new IllegalArgumentException(
-            "We can only mutate MockHttpServletRequest instances")
-    }
+    def withMods(f: MockHttpServletRequest => Unit): T =
+      req match {
+        case r: MockHttpServletRequest => f(r); this
+        case _ =>
+          throw new IllegalArgumentException(
+            "We can only mutate MockHttpServletRequest instances"
+          )
+      }
   }
 
   /**
     * This class provides a wrapper to test methods that require an
     * initialized S.
     */
-  class SessionSpecification(description: String,
-                             val req: HttpServletRequest,
-                             session: Box[LiftSession])
-      extends ModifiableRequest[SessionSpecification] {
-    def this(description: String,
-             url: String,
-             session: Box[LiftSession],
-             contextPath: String) = {
+  class SessionSpecification(
+      description: String,
+      val req: HttpServletRequest,
+      session: Box[LiftSession]
+  ) extends ModifiableRequest[SessionSpecification] {
+    def this(
+        description: String,
+        url: String,
+        session: Box[LiftSession],
+        contextPath: String
+    ) = {
       this(description, new MockHttpServletRequest(url, contextPath), session)
     }
 
     def in(expectations: => Result) = {
       addFragments(
-          fragmentFactory.example(description, {
+        fragmentFactory.example(
+          description, {
             LiftRulesMocker.devTestLiftRulesInstance.doWith(liftRules) {
               MockWeb.useLiftRules.doWith(true) {
                 MockWeb.testS(req, session) {
@@ -214,7 +229,8 @@ abstract class WebSpec(boot: () => Any = () => {})
                 }
               }
             }
-          }) ^ fragmentFactory.break
+          }
+        ) ^ fragmentFactory.break
       )
     }
   }
@@ -230,13 +246,15 @@ abstract class WebSpec(boot: () => Any = () => {})
 
     def in(expectations: Req => Result) = {
       addFragments(
-          fragmentFactory.example(description, {
+        fragmentFactory.example(
+          description, {
             LiftRulesMocker.devTestLiftRulesInstance.doWith(liftRules) {
               MockWeb.useLiftRules.doWith(true) {
                 MockWeb.testReq(req)(expectations)
               }
             }
-          }) ^ fragmentFactory.break
+          }
+        ) ^ fragmentFactory.break
       )
     }
   }
@@ -245,19 +263,23 @@ abstract class WebSpec(boot: () => Any = () => {})
     * This class provides a wrapper to test methods that require
     * a processed template.
     */
-  class TemplateSpecification(description: String,
-                              val req: HttpServletRequest,
-                              session: Box[LiftSession])
-      extends ModifiableRequest[TemplateSpecification] {
-    def this(description: String,
-             url: String,
-             session: Box[LiftSession],
-             contextPath: String) =
+  class TemplateSpecification(
+      description: String,
+      val req: HttpServletRequest,
+      session: Box[LiftSession]
+  ) extends ModifiableRequest[TemplateSpecification] {
+    def this(
+        description: String,
+        url: String,
+        session: Box[LiftSession],
+        contextPath: String
+    ) =
       this(description, new MockHttpServletRequest(url, contextPath), session)
 
     def in(expectations: Box[NodeSeq] => Result) = {
       addFragments(
-          fragmentFactory.example(description, {
+        fragmentFactory.example(
+          description, {
             LiftRulesMocker.devTestLiftRulesInstance.doWith(liftRules) {
               MockWeb.useLiftRules.doWith(true) {
                 MockWeb.testS(req, session) {
@@ -266,13 +288,15 @@ abstract class WebSpec(boot: () => Any = () => {})
                       expectations(S.runTemplate(sReq.path.partPath))
                     case other =>
                       failure(
-                          "Error: withTemplateFor call did not result in " +
-                          "request initialization (S.request = " + other + ")")
+                        "Error: withTemplateFor call did not result in " +
+                          "request initialization (S.request = " + other + ")"
+                      )
                   }
                 }
               }
             }
-          }) ^ fragmentFactory.break
+          }
+        ) ^ fragmentFactory.break
       )
     }
   }

@@ -63,9 +63,7 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
       Box(List(1, 2, 3)) must_== Full(1)
     }
     "be used as an iterable" in {
-      Full(1) reduceLeft { (x: Int, y: Int) =>
-        x + y
-      } must_== 1
+      Full(1) reduceLeft { (x: Int, y: Int) => x + y } must_== 1
     }
     "be used as an Option" in {
       Full(1) orElse Some(2) must_== Some(1)
@@ -164,9 +162,8 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
     }
     "define a 'pass' method passing the can to a function and returning itself (alias: $)" in {
       var empty = false
-      def emptyString(s: Box[String]) = s foreach { c: String =>
-        empty = c.isEmpty
-      }
+      def emptyString(s: Box[String]) =
+        s foreach { c: String => empty = c.isEmpty }
       Full("") $ emptyString _
       empty must beTrue
     }
@@ -203,7 +200,7 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
     }
 
     "define a 'asA' method must work with Double" in {
-      Full(44d).asA[Double] must_== Full(44D)
+      Full(44d).asA[Double] must_== Full(44d)
       Full(44d).asA[Boolean] must_== Empty
     }
 
@@ -238,7 +235,8 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
     "throw an exception if opened" in {
       {
         Empty.openOrThrowException(
-            "See what happens?, at least we expect it in this case :)"); ()
+          "See what happens?, at least we expect it in this case :)"
+        ); ()
       } must throwA[NullPointerException]
     }
     "return a default value if opened with openOr" in {
@@ -277,9 +275,7 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
       Empty map { _.toString } must beEmpty
     }
     "define a 'flatMap' method returning Empty" in {
-      Empty flatMap { x: Int =>
-        Full("full")
-      } must beEmpty
+      Empty flatMap { x: Int => Full("full") } must beEmpty
     }
     "define an 'elements' method returning an empty iterator" in {
       Empty.elements.hasNext must beFalse
@@ -307,13 +303,19 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
   "A Failure is an Empty Box which" can {
     "return its cause as an exception" in {
       case class LiftException(m: String) extends Exception
-      Failure("error", Full(new LiftException("broken")), Empty).exception must_==
+      Failure(
+        "error",
+        Full(new LiftException("broken")),
+        Empty
+      ).exception must_==
         Full(new LiftException("broken"))
     }
     "return a chained list of causes" in {
-      Failure("error",
-              Full(new Exception("broken")),
-              Full(Failure("nested cause", Empty, Empty))).chain must_==
+      Failure(
+        "error",
+        Full(new Exception("broken")),
+        Full(Failure("nested cause", Empty, Empty))
+      ).chain must_==
         Full(Failure("nested cause", Empty, Empty))
     }
     "be converted to a ParamFailure" in {
@@ -339,26 +341,24 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
         Failure("error2", Empty, Full(Failure("error", Empty, Empty)))
     }
     "return false for exist method" in {
-      Failure("error", Empty, Empty) exists { _ =>
-        true
-      } must beFalse
+      Failure("error", Empty, Empty) exists { _ => true } must beFalse
     }
     "return true for forall method" in {
-      Failure("error", Empty, Empty) forall { _ =>
-        false
-      } must beTrue
+      Failure("error", Empty, Empty) forall { _ => false } must beTrue
     }
   }
 
   "A ParamFailure is a failure which" should {
     "appear in the chain when ~> is invoked on it" in {
       Failure("Apple") ~> 404 ~> "apple" must_==
-        ParamFailure("Apple",
-                     Empty,
-                     Full(
-                         ParamFailure("Apple", Empty, Empty, 404)
-                     ),
-                     "apple")
+        ParamFailure(
+          "Apple",
+          Empty,
+          Full(
+            ParamFailure("Apple", Empty, Empty, 404)
+          ),
+          "apple"
+        )
     }
   }
 
@@ -367,7 +367,7 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
     "return true with comparing two identical Box messages" in prop {
       (c1: Box[Int], c2: Box[Int]) =>
         (c1, c2) match {
-          case (Empty, Empty) => c1 must_== c2
+          case (Empty, Empty)     => c1 must_== c2
           case (Full(x), Full(y)) => (c1 == c2) must_== (x == y)
           case (Failure(m1, e1, l1), Failure(m2, e2, l2)) =>
             (c1 == c2) must_== ((m1, e1, l1) == (m2, e2, l2))
@@ -417,20 +417,28 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
     }
 
     "chain the ParamFailure to the failures in the list when any are Failure" in {
-      val someBoxes: List[Box[String]] = List(Full("bacon"),
-                                              Failure("I HATE BACON"),
-                                              Full("sammich"),
-                                              Failure("MORE BACON FAIL"),
-                                              Failure("BACON WHY U BACON"))
+      val someBoxes: List[Box[String]] = List(
+        Full("bacon"),
+        Failure("I HATE BACON"),
+        Full("sammich"),
+        Failure("MORE BACON FAIL"),
+        Failure("BACON WHY U BACON")
+      )
 
       val singleBox = someBoxes.toSingleBox("Failure.")
 
       val expectedChain =
-        Failure("I HATE BACON",
-                Empty,
-                Full(Failure("MORE BACON FAIL",
-                             Empty,
-                             Full(Failure("BACON WHY U BACON")))))
+        Failure(
+          "I HATE BACON",
+          Empty,
+          Full(
+            Failure(
+              "MORE BACON FAIL",
+              Empty,
+              Full(Failure("BACON WHY U BACON"))
+            )
+          )
+        )
 
       singleBox must beLike {
         case ParamFailure(_, _, chain, _) =>
@@ -442,17 +450,18 @@ class BoxSpec extends Specification with ScalaCheck with BoxGenerator {
 
 trait BoxGenerator {
 
-  implicit def genThrowable: Arbitrary[Throwable] = Arbitrary[Throwable] {
-    case object UserException extends Throwable
-    const(UserException)
-  }
+  implicit def genThrowable: Arbitrary[Throwable] =
+    Arbitrary[Throwable] {
+      case object UserException extends Throwable
+      const(UserException)
+    }
 
   implicit def genBox[T](implicit a: Arbitrary[T]): Arbitrary[Box[T]] =
     Arbitrary[Box[T]] {
       frequency(
-          (3, const(Empty)),
-          (3, a.arbitrary.map(Full[T])),
-          (1, genFailureBox)
+        (3, const(Empty)),
+        (3, a.arbitrary.map(Full[T])),
+        (1, genFailureBox)
       )
     }
 
@@ -462,7 +471,6 @@ trait BoxGenerator {
       msg <- listOfN(msgLen, alphaChar)
       exception <- const(Full(new Exception("")))
       chainLen <- choose(1, 5)
-      chain <- frequency(
-          (1, listOfN(chainLen, genFailureBox)), (3, const(Nil)))
+      chain <- frequency((1, listOfN(chainLen, genFailureBox)), (3, const(Nil)))
     } yield Failure(msg.mkString, exception, Box(chain.headOption))
 }

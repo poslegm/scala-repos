@@ -30,14 +30,16 @@ object Unwrapped extends UnwrappedInstances {
 }
 
 trait UnwrappedInstances extends LowPriorityUnwrappedInstances {
-  implicit def unwrapAnyVal[W <: AnyVal, Repr, UI, UF](
-      implicit gen: Generic.Aux[W, Repr],
+  implicit def unwrapAnyVal[W <: AnyVal, Repr, UI, UF](implicit
+      gen: Generic.Aux[W, Repr],
       avh: AnyValHelper.Aux[Repr, UI],
-      chain: Strict[Unwrapped.Aux[UI, UF]]) = new Unwrapped[W] {
-    type U = UF
-    def unwrap(w: W): U = chain.value.unwrap(avh.unwrap(gen.to(w)))
-    def wrap(u: U): W = gen.from(avh.wrap(chain.value.wrap(u)))
-  }
+      chain: Strict[Unwrapped.Aux[UI, UF]]
+  ) =
+    new Unwrapped[W] {
+      type U = UF
+      def unwrap(w: W): U = chain.value.unwrap(avh.unwrap(gen.to(w)))
+      def wrap(u: U): W = gen.from(avh.wrap(chain.value.wrap(u)))
+    }
 
   sealed trait AnyValHelper[Repr] extends Serializable {
     type U
@@ -55,8 +57,9 @@ trait UnwrappedInstances extends LowPriorityUnwrappedInstances {
     }
   }
 
-  implicit def newtypeUnwrapped[UI, Ops, UF](
-      implicit chain: Strict[Unwrapped.Aux[UI, UF]]) =
+  implicit def newtypeUnwrapped[UI, Ops, UF](implicit
+      chain: Strict[Unwrapped.Aux[UI, UF]]
+  ) =
     chain.value.asInstanceOf[Unwrapped.Aux[Newtype[UI, Ops], UF]]
 }
 

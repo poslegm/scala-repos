@@ -29,8 +29,8 @@ class StreamProgress {
     currentOffsets
       .get(source)
       .foreach(old =>
-            assert(
-                newOffset > old, s"Stream going backwards $newOffset -> $old"))
+        assert(newOffset > old, s"Stream going backwards $newOffset -> $old")
+      )
     currentOffsets.put(source, newOffset)
   }
 
@@ -67,10 +67,11 @@ class StreamProgress {
   override def toString: String =
     currentOffsets.map { case (k, v) => s"$k: $v" }.mkString("{", ",", "}")
 
-  override def equals(other: Any): Boolean = other match {
-    case s: StreamProgress => currentOffsets == s.currentOffsets
-    case _ => false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case s: StreamProgress => currentOffsets == s.currentOffsets
+      case _                 => false
+    }
 
   override def hashCode: Int = currentOffsets.hashCode()
 }

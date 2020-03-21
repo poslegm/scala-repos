@@ -82,7 +82,10 @@ package TypeClassAux {
       def emptyProduct = EmptyProduct
 
       def coproduct[L, R <: Coproduct](
-          name: String, l: => Image[L], r: => Image[R]) = Sum(l, name, r)
+          name: String,
+          l: => Image[L],
+          r: => Image[R]
+      ) = Sum(l, name, r)
 
       def emptyCoproduct = EmptyCoproduct
 
@@ -98,13 +101,15 @@ class ProductTypeClassTests {
 
   case class Foo(i: Int, s: String)
   val fooResult = Project(
-      Product(Atom("int"), "i", Product(Atom("string"), "s", EmptyProduct)))
+    Product(Atom("int"), "i", Product(Atom("string"), "s", EmptyProduct))
+  )
 
   case class Bar()
   val barResult = Project(EmptyProduct)
 
   val tupleResult = Project(
-      Product(Atom("int"), "_1", Product(Atom("string"), "_2", EmptyProduct)))
+    Product(Atom("int"), "_1", Product(Atom("string"), "_2", EmptyProduct))
+  )
   val unitResult = Project(EmptyProduct)
 
   sealed trait Cases[A, B]
@@ -165,13 +170,15 @@ class TypeClassTests {
 
   case class Foo(i: Int, s: String)
   val fooResult = Project(
-      Product(Atom("int"), "i", Product(Atom("string"), "s", EmptyProduct)))
+    Product(Atom("int"), "i", Product(Atom("string"), "s", EmptyProduct))
+  )
 
   case class Bar()
   val barResult = Project(EmptyProduct)
 
   val tupleResult = Project(
-      Product(Atom("int"), "_1", Product(Atom("string"), "_2", EmptyProduct)))
+    Product(Atom("int"), "_1", Product(Atom("string"), "_2", EmptyProduct))
+  )
   val unitResult = Project(EmptyProduct)
 
   sealed trait Cases[A, B]
@@ -179,17 +186,21 @@ class TypeClassTests {
   case class CaseB[A, B](b1: B, b2: B) extends Cases[A, B]
 
   val casesResult = Project(
+    Sum(
+      Project(Product(Atom("int"), "a", EmptyProduct)),
+      "CaseA",
       Sum(
-          Project(Product(Atom("int"), "a", EmptyProduct)),
-          "CaseA",
-          Sum(
-              Project(Product(Atom("string"),
-                              "b1",
-                              Product(Atom("string"), "b2", EmptyProduct))),
-              "CaseB",
-              EmptyCoproduct
+        Project(
+          Product(
+            Atom("string"),
+            "b1",
+            Product(Atom("string"), "b2", EmptyProduct)
           )
+        ),
+        "CaseB",
+        EmptyCoproduct
       )
+    )
   )
 
   @Test

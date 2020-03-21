@@ -42,16 +42,18 @@ trait DoubleTypedField extends NumericTypedField[Double] {
 
   def asJValue: JValue = valueBox.map(JDouble) openOr (JNothing: JValue)
 
-  def setFromJValue(jvalue: JValue) = jvalue match {
-    case JNothing | JNull if optional_? => setBox(Empty)
-    case JDouble(d) => setBox(Full(d))
-    case JInt(i) => setBox(Full(i.toDouble))
-    case other => setBox(FieldHelpers.expectedA("JDouble", other))
-  }
+  def setFromJValue(jvalue: JValue) =
+    jvalue match {
+      case JNothing | JNull if optional_? => setBox(Empty)
+      case JDouble(d)                     => setBox(Full(d))
+      case JInt(i)                        => setBox(Full(i.toDouble))
+      case other                          => setBox(FieldHelpers.expectedA("JDouble", other))
+    }
 }
 
 class DoubleField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[Double, OwnerType] with MandatoryTypedField[Double]
+    extends Field[Double, OwnerType]
+    with MandatoryTypedField[Double]
     with DoubleTypedField {
 
   def this(rec: OwnerType, value: Double) = {
@@ -63,7 +65,8 @@ class DoubleField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 }
 
 class OptionalDoubleField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[Double, OwnerType] with OptionalTypedField[Double]
+    extends Field[Double, OwnerType]
+    with OptionalTypedField[Double]
     with DoubleTypedField {
 
   def this(rec: OwnerType, value: Box[Double]) = {

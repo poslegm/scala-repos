@@ -26,10 +26,12 @@ object svdr extends UFunc {
 
   implicit object SvdR_DM_Impl4
       extends Impl4[DenseMatrix[Double], Int, Int, Int, DenseSVD] {
-    def apply(M: DenseMatrix[Double],
-              k: Int,
-              nOversamples: Int,
-              nIter: Int): DenseSVD =
+    def apply(
+        M: DenseMatrix[Double],
+        k: Int,
+        nOversamples: Int,
+        nIter: Int
+    ): DenseSVD =
       doSVDR_Double(M, k, nOversamples, nIter)
   }
 
@@ -52,14 +54,17 @@ object svdr extends UFunc {
     * approximate matrix decompositions
     * Halko, et al., 2009 [[http://arxiv.org/abs/arXiv:0909.4061]]
     */
-  private def doSVDR_Double(M: DenseMatrix[Double],
-                            k: Int,
-                            nOversamples: Int = 10,
-                            nIter: Int = 0): DenseSVD = {
+  private def doSVDR_Double(
+      M: DenseMatrix[Double],
+      k: Int,
+      nOversamples: Int = 10,
+      nIter: Int = 0
+  ): DenseSVD = {
 
     require(
-        k <= (M.rows min M.cols),
-        "Number of singular values should be less than min(M.rows, M.cols)")
+      k <= (M.rows min M.cols),
+      "Number of singular values should be less than min(M.rows, M.cols)"
+    )
 
     val nRandom = k + nOversamples
 
@@ -90,14 +95,14 @@ object svdr extends UFunc {
     * Stochastic algorithms for constructing approximate matrix decompositions"
     * Halko, et al., 2009 (arXiv:909) [[http://arxiv.org/pdf/0909.4061]]
     */
-  private def randomizedStateFinder(M: DenseMatrix[Double],
-                                    size: Int,
-                                    nIter: Int): DenseMatrix[Double] = {
+  private def randomizedStateFinder(
+      M: DenseMatrix[Double],
+      size: Int,
+      nIter: Int
+  ): DenseMatrix[Double] = {
     val R = DenseMatrix.rand(M.cols, size, rand = Rand.gaussian)
     val Y = M * R
-    cforRange(0 until nIter) { _ =>
-      Y := M * (M.t * Y)
-    }
+    cforRange(0 until nIter) { _ => Y := M * (M.t * Y) }
     val q = qr.reduced.justQ(Y)
     q
   }
@@ -111,16 +116,15 @@ object svdr extends UFunc {
     */
   private def flipSVDSigns(
       u: DenseMatrix[Double],
-      v: DenseMatrix[Double]): (DenseMatrix[Double], DenseMatrix[Double]) = {
+      v: DenseMatrix[Double]
+  ): (DenseMatrix[Double], DenseMatrix[Double]) = {
     import DenseMatrix.canMapValues
     val abs_u = abs(u)
     val max_abs_cols = (0 until u.cols).map(c => argmax(abs_u(::, c)))
     val signs = max_abs_cols.zipWithIndex.map(e => signum(u(e._1, e._2)))
-    signs.zipWithIndex.foreach(
-        s =>
-          {
-        u(::, s._2) :*= s._1
-        v(s._2, ::) :*= s._1
+    signs.zipWithIndex.foreach(s => {
+      u(::, s._2) :*= s._1
+      v(s._2, ::) :*= s._1
     })
     (u, v)
   }

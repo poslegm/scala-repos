@@ -17,53 +17,49 @@ package scalaguide.http.scalaactions {
     "A scala action" should {
       "allow writing a simple echo action" in {
         //#echo-action
-        def echo = Action { request =>
-          Ok("Got request [" + request + "]")
-        }
+        def echo = Action { request => Ok("Got request [" + request + "]") }
         //#echo-action
         testAction(echo)
       }
 
       "support zero arg actions" in {
         testAction(
-            //#zero-arg-action
-            Action {
-              Ok("Hello world")
-            }
-            //#zero-arg-action
+          //#zero-arg-action
+          Action {
+            Ok("Hello world")
+          }
+          //#zero-arg-action
         )
       }
 
       "pass the request to the action" in {
         testAction(
-            //#request-action
-            Action { request =>
-              Ok("Got request [" + request + "]")
-            }
-            //#request-action
+          //#request-action
+          Action { request => Ok("Got request [" + request + "]") }
+          //#request-action
         )
       }
 
       "pass the request implicitly to the action" in {
         testAction(
-            //#implicit-request-action
-            Action { implicit request =>
-              Ok("Got request [" + request + "]")
-            }
-            //#implicit-request-action
+          //#implicit-request-action
+          Action { implicit request => Ok("Got request [" + request + "]") }
+          //#implicit-request-action
         )
       }
 
       "allow specifying a parser" in {
-        testAction(action = //#json-parser-action
-                     Action(parse.json) { implicit request =>
-                     Ok("Got request [" + request + "]")
-                   }
-                   //#json-parser-action
-                   ,
-                   request = FakeRequest()
-                       .withBody(Json.obj())
-                       .withHeaders(CONTENT_TYPE -> "application/json"))
+        testAction(
+          action = //#json-parser-action
+            Action(parse.json) { implicit request =>
+              Ok("Got request [" + request + "]")
+            }
+          //#json-parser-action
+          ,
+          request = FakeRequest()
+            .withBody(Json.obj())
+            .withHeaders(CONTENT_TYPE -> "application/json")
+        )
       }
 
       "work for a full controller class" in {
@@ -72,9 +68,10 @@ package scalaguide.http.scalaactions {
 
       "support an action with parameters" in {
         //#parameter-action
-        def hello(name: String) = Action {
-          Ok("Hello " + name)
-        }
+        def hello(name: String) =
+          Action {
+            Ok("Hello " + name)
+          }
         //#parameter-action
 
         assertAction(hello("world")) { result =>
@@ -86,13 +83,14 @@ package scalaguide.http.scalaactions {
         //#simple-result-action
         import play.api.http.HttpEntity
 
-        def index = Action {
-          Result(
+        def index =
+          Action {
+            Result(
               header = ResponseHeader(200, Map.empty),
-              body = HttpEntity.Strict(ByteString("Hello world!"),
-                                       Some("text/plain"))
-          )
-        }
+              body = HttpEntity
+                .Strict(ByteString("Hello world!"), Some("text/plain"))
+            )
+          }
         //#simple-result-action
         assertAction(index) { result =>
           contentAsString(result) must_== "Hello world!"
@@ -101,9 +99,10 @@ package scalaguide.http.scalaactions {
 
       "support ok helper" in {
         //#ok-result-action
-        def index = Action {
-          Ok("Hello world!")
-        }
+        def index =
+          Action {
+            Ok("Hello world!")
+          }
         //#ok-result-action
         testAction(index)
       }
@@ -125,9 +124,10 @@ package scalaguide.http.scalaactions {
 
       "support redirects" in {
         //#redirect-action
-        def index = Action {
-          Redirect("/user/home")
-        }
+        def index =
+          Action {
+            Redirect("/user/home")
+          }
         //#redirect-action
         assertAction(index, expectedResponse = SEE_OTHER) { result =>
           header(LOCATION, result) must be some "/user/home"
@@ -136,9 +136,10 @@ package scalaguide.http.scalaactions {
 
       "support other redirects" in {
         //#moved-permanently-action
-        def index = Action {
-          Redirect("/user/home", MOVED_PERMANENTLY)
-        }
+        def index =
+          Action {
+            Redirect("/user/home", MOVED_PERMANENTLY)
+          }
         //#moved-permanently-action
         assertAction(index, expectedResponse = MOVED_PERMANENTLY) { result =>
           header(LOCATION, result) must be some "/user/home"
@@ -153,18 +154,19 @@ package scalaguide.http.scalaactions {
       }
     }
 
-    def testAction[A](action: Action[A],
-                      expectedResponse: Int = OK,
-                      request: Request[A] = FakeRequest()) = {
-      assertAction(action, expectedResponse, request) { result =>
-        success
-      }
+    def testAction[A](
+        action: Action[A],
+        expectedResponse: Int = OK,
+        request: Request[A] = FakeRequest()
+    ) = {
+      assertAction(action, expectedResponse, request) { result => success }
     }
 
-    def assertAction[A, T : AsResult](action: Action[A],
-                                      expectedResponse: Int = OK,
-                                      request: Request[A] = FakeRequest())(
-        assertions: Future[Result] => T) = {
+    def assertAction[A, T: AsResult](
+        action: Action[A],
+        expectedResponse: Int = OK,
+        request: Request[A] = FakeRequest()
+    )(assertions: Future[Result] => T) = {
       running() { _ =>
         val result = action(request)
         status(result) must_== expectedResponse
@@ -189,9 +191,10 @@ package scalaguide.http.scalaactions.full {
 
   class Application extends Controller {
 
-    def index = Action {
-      Ok("It works!")
-    }
+    def index =
+      Action {
+        Ok("It works!")
+      }
   }
 //#full-controller
 }

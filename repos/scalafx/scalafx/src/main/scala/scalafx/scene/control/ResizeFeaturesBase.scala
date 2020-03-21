@@ -47,7 +47,8 @@ object ResizeFeaturesBase {
     * @tparam S The type of the UI control (e.g. the type of the 'row').
     */
   implicit def sfxResizeFeaturesBase2jfx[S](
-      rfb: ResizeFeaturesBase[S]): jfxsc.ResizeFeaturesBase[S] =
+      rfb: ResizeFeaturesBase[S]
+  ): jfxsc.ResizeFeaturesBase[S] =
     if (rfb != null) rfb.delegate else null
 }
 

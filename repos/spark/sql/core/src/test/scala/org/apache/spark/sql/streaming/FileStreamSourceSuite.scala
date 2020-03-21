@@ -31,8 +31,11 @@ class FileStreamSourceTest extends StreamTest with SharedSQLContext {
   import testImplicits._
 
   case class AddTextFileData(
-      source: FileStreamSource, content: String, src: File, tmp: File)
-      extends AddData {
+      source: FileStreamSource,
+      content: String,
+      src: File,
+      tmp: File
+  ) extends AddData {
 
     override def addData(): Offset = {
       source.withBatchingLocked {
@@ -43,11 +46,12 @@ class FileStreamSourceTest extends StreamTest with SharedSQLContext {
     }
   }
 
-  case class AddParquetFileData(source: FileStreamSource,
-                                content: Seq[String],
-                                src: File,
-                                tmp: File)
-      extends AddData {
+  case class AddParquetFileData(
+      source: FileStreamSource,
+      content: Seq[String],
+      src: File,
+      tmp: File
+  ) extends AddData {
 
     override def addData(): Offset = {
       source.withBatchingLocked {
@@ -63,7 +67,8 @@ class FileStreamSourceTest extends StreamTest with SharedSQLContext {
   def createFileStreamSource(
       format: String,
       path: String,
-      schema: Option[StructType] = None): FileStreamSource = {
+      schema: Option[StructType] = None
+  ): FileStreamSource = {
     val reader =
       if (schema.isDefined) {
         sqlContext.read.format(format).schema(schema.get)
@@ -81,15 +86,15 @@ class FileStreamSourceTest extends StreamTest with SharedSQLContext {
   val valueSchema = new StructType().add("value", StringType)
 }
 
-class FileStreamSourceSuite
-    extends FileStreamSourceTest with SharedSQLContext {
+class FileStreamSourceSuite extends FileStreamSourceTest with SharedSQLContext {
 
   import testImplicits._
 
   private def createFileStreamSourceAndGetSchema(
       format: Option[String],
       path: Option[String],
-      schema: Option[StructType] = None): StructType = {
+      schema: Option[StructType] = None
+  ): StructType = {
     val reader = sqlContext.read
     format.foreach(reader.format)
     schema.foreach(reader.schema)
@@ -99,15 +104,21 @@ class FileStreamSourceSuite
       } else {
         reader.stream()
       }
-    df.queryExecution.analyzed.collect {
-      case StreamingRelation(s: FileStreamSource, _) => s
-    }.head.schema
+    df.queryExecution.analyzed
+      .collect {
+        case StreamingRelation(s: FileStreamSource, _) => s
+      }
+      .head
+      .schema
   }
 
   test("FileStreamSource schema: no path") {
     val e = intercept[IllegalArgumentException] {
       createFileStreamSourceAndGetSchema(
-          format = None, path = None, schema = None)
+        format = None,
+        path = None,
+        schema = None
+      )
     }
     assert("'path' is not specified" === e.getMessage)
   }
@@ -115,16 +126,21 @@ class FileStreamSourceSuite
   test("FileStreamSource schema: path doesn't exist") {
     intercept[AnalysisException] {
       createFileStreamSourceAndGetSchema(
-          format = None, path = Some("/a/b/c"), schema = None)
+        format = None,
+        path = Some("/a/b/c"),
+        schema = None
+      )
     }
   }
 
   test("FileStreamSource schema: text, no existing files, no schema") {
     withTempDir { src =>
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("text"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = None)
+        createFileStreamSourceAndGetSchema(
+          format = Some("text"),
+          path = Some(src.getCanonicalPath),
+          schema = None
+        )
       assert(schema === new StructType().add("value", StringType))
     }
   }
@@ -133,9 +149,11 @@ class FileStreamSourceSuite
     withTempDir { src =>
       stringToFile(new File(src, "1"), "a\nb\nc")
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("text"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = None)
+        createFileStreamSourceAndGetSchema(
+          format = Some("text"),
+          path = Some(src.getCanonicalPath),
+          schema = None
+        )
       assert(schema === new StructType().add("value", StringType))
     }
   }
@@ -145,9 +163,11 @@ class FileStreamSourceSuite
       stringToFile(new File(src, "1"), "a\nb\nc")
       val userSchema = new StructType().add("userColumn", StringType)
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("text"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = Some(userSchema))
+        createFileStreamSourceAndGetSchema(
+          format = Some("text"),
+          path = Some(src.getCanonicalPath),
+          schema = Some(userSchema)
+        )
       assert(schema === userSchema)
     }
   }
@@ -156,12 +176,14 @@ class FileStreamSourceSuite
     withTempDir { src =>
       val e = intercept[AnalysisException] {
         createFileStreamSourceAndGetSchema(
-            format = Some("parquet"),
-            path = Some(new File(src, "1").getCanonicalPath),
-            schema = None)
+          format = Some("parquet"),
+          path = Some(new File(src, "1").getCanonicalPath),
+          schema = None
+        )
       }
       assert(
-          "Unable to infer schema.  It must be specified manually.;" === e.getMessage)
+        "Unable to infer schema.  It must be specified manually.;" === e.getMessage
+      )
     }
   }
 
@@ -174,9 +196,11 @@ class FileStreamSourceSuite
         .write
         .parquet(new File(src, "1").getCanonicalPath)
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("parquet"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = None)
+        createFileStreamSourceAndGetSchema(
+          format = Some("parquet"),
+          path = Some(src.getCanonicalPath),
+          schema = None
+        )
       assert(schema === new StructType().add("value", StringType))
     }
   }
@@ -191,9 +215,11 @@ class FileStreamSourceSuite
         .parquet(new File(src, "1").getCanonicalPath)
       val userSchema = new StructType().add("userColumn", StringType)
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("parquet"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = Some(userSchema))
+        createFileStreamSourceAndGetSchema(
+          format = Some("parquet"),
+          path = Some(src.getCanonicalPath),
+          schema = Some(userSchema)
+        )
       assert(schema === userSchema)
     }
   }
@@ -201,12 +227,15 @@ class FileStreamSourceSuite
   test("FileStreamSource schema: json, no existing files, no schema") {
     withTempDir { src =>
       val e = intercept[AnalysisException] {
-        createFileStreamSourceAndGetSchema(format = Some("json"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = None)
+        createFileStreamSourceAndGetSchema(
+          format = Some("json"),
+          path = Some(src.getCanonicalPath),
+          schema = None
+        )
       }
       assert(
-          "Unable to infer schema.  It must be specified manually.;" === e.getMessage)
+        "Unable to infer schema.  It must be specified manually.;" === e.getMessage
+      )
     }
   }
 
@@ -214,9 +243,11 @@ class FileStreamSourceSuite
     withTempDir { src =>
       stringToFile(new File(src, "1"), "{'c': '1'}\n{'c': '2'}\n{'c': '3'}")
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("json"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = None)
+        createFileStreamSourceAndGetSchema(
+          format = Some("json"),
+          path = Some(src.getCanonicalPath),
+          schema = None
+        )
       assert(schema === new StructType().add("c", StringType))
     }
   }
@@ -226,9 +257,11 @@ class FileStreamSourceSuite
       stringToFile(new File(src, "1"), "{'c': '1'}\n{'c': '2'}\n{'c', '3'}")
       val userSchema = new StructType().add("userColumn", StringType)
       val schema =
-        createFileStreamSourceAndGetSchema(format = Some("json"),
-                                           path = Some(src.getCanonicalPath),
-                                           schema = Some(userSchema))
+        createFileStreamSourceAndGetSchema(
+          format = Some("json"),
+          path = Some(src.getCanonicalPath),
+          schema = Some(userSchema)
+        )
       assert(schema === userSchema)
     }
   }
@@ -241,14 +274,14 @@ class FileStreamSourceSuite
     val filtered = textSource.toDF().filter($"value" contains "keep")
 
     testStream(filtered)(
-        AddTextFileData(textSource, "drop1\nkeep2\nkeep3", src, tmp),
-        CheckAnswer("keep2", "keep3"),
-        StopStream,
-        AddTextFileData(textSource, "drop4\nkeep5\nkeep6", src, tmp),
-        StartStream,
-        CheckAnswer("keep2", "keep3", "keep5", "keep6"),
-        AddTextFileData(textSource, "drop7\nkeep8\nkeep9", src, tmp),
-        CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
+      AddTextFileData(textSource, "drop1\nkeep2\nkeep3", src, tmp),
+      CheckAnswer("keep2", "keep3"),
+      StopStream,
+      AddTextFileData(textSource, "drop4\nkeep5\nkeep6", src, tmp),
+      StartStream,
+      CheckAnswer("keep2", "keep3", "keep5", "keep6"),
+      AddTextFileData(textSource, "drop7\nkeep8\nkeep9", src, tmp),
+      CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
     )
 
     Utils.deleteRecursively(src)
@@ -264,26 +297,29 @@ class FileStreamSourceSuite
     val filtered = textSource.toDF().filter($"value" contains "keep")
 
     testStream(filtered)(
-        AddTextFileData(
-            textSource,
-            "{'value': 'drop1'}\n{'value': 'keep2'}\n{'value': 'keep3'}",
-            src,
-            tmp),
-        CheckAnswer("keep2", "keep3"),
-        StopStream,
-        AddTextFileData(
-            textSource,
-            "{'value': 'drop4'}\n{'value': 'keep5'}\n{'value': 'keep6'}",
-            src,
-            tmp),
-        StartStream,
-        CheckAnswer("keep2", "keep3", "keep5", "keep6"),
-        AddTextFileData(
-            textSource,
-            "{'value': 'drop7'}\n{'value': 'keep8'}\n{'value': 'keep9'}",
-            src,
-            tmp),
-        CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
+      AddTextFileData(
+        textSource,
+        "{'value': 'drop1'}\n{'value': 'keep2'}\n{'value': 'keep3'}",
+        src,
+        tmp
+      ),
+      CheckAnswer("keep2", "keep3"),
+      StopStream,
+      AddTextFileData(
+        textSource,
+        "{'value': 'drop4'}\n{'value': 'keep5'}\n{'value': 'keep6'}",
+        src,
+        tmp
+      ),
+      StartStream,
+      CheckAnswer("keep2", "keep3", "keep5", "keep6"),
+      AddTextFileData(
+        textSource,
+        "{'value': 'drop7'}\n{'value': 'keep8'}\n{'value': 'keep9'}",
+        src,
+        tmp
+      ),
+      CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
     )
 
     Utils.deleteRecursively(src)
@@ -295,8 +331,10 @@ class FileStreamSourceSuite
     val tmp = Utils.createTempDir("streaming.tmp")
 
     // Add a file so that we can infer its schema
-    stringToFile(new File(src, "existing"),
-                 "{'c': 'drop1'}\n{'c': 'keep2'}\n{'c': 'keep3'}")
+    stringToFile(
+      new File(src, "existing"),
+      "{'c': 'drop1'}\n{'c': 'keep2'}\n{'c': 'keep3'}"
+    )
 
     val textSource = createFileStreamSource("json", src.getCanonicalPath)
 
@@ -304,11 +342,13 @@ class FileStreamSourceSuite
     val filtered = textSource.toDF().filter($"c" contains "keep")
 
     testStream(filtered)(
-        AddTextFileData(textSource,
-                        "{'c': 'drop4'}\n{'c': 'keep5'}\n{'c': 'keep6'}",
-                        src,
-                        tmp),
-        CheckAnswer("keep2", "keep3", "keep5", "keep6")
+      AddTextFileData(
+        textSource,
+        "{'c': 'drop4'}\n{'c': 'keep5'}\n{'c': 'keep6'}",
+        src,
+        tmp
+      ),
+      CheckAnswer("keep2", "keep3", "keep5", "keep6")
     )
 
     Utils.deleteRecursively(src)
@@ -319,22 +359,19 @@ class FileStreamSourceSuite
     val src = Utils.createTempDir("streaming.src")
     val tmp = Utils.createTempDir("streaming.tmp")
 
-    val fileSource = createFileStreamSource(
-        "parquet", src.getCanonicalPath, Some(valueSchema))
+    val fileSource =
+      createFileStreamSource("parquet", src.getCanonicalPath, Some(valueSchema))
     val filtered = fileSource.toDF().filter($"value" contains "keep")
 
     testStream(filtered)(
-        AddParquetFileData(
-            fileSource, Seq("drop1", "keep2", "keep3"), src, tmp),
-        CheckAnswer("keep2", "keep3"),
-        StopStream,
-        AddParquetFileData(
-            fileSource, Seq("drop4", "keep5", "keep6"), src, tmp),
-        StartStream,
-        CheckAnswer("keep2", "keep3", "keep5", "keep6"),
-        AddParquetFileData(
-            fileSource, Seq("drop7", "keep8", "keep9"), src, tmp),
-        CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
+      AddParquetFileData(fileSource, Seq("drop1", "keep2", "keep3"), src, tmp),
+      CheckAnswer("keep2", "keep3"),
+      StopStream,
+      AddParquetFileData(fileSource, Seq("drop4", "keep5", "keep6"), src, tmp),
+      StartStream,
+      CheckAnswer("keep2", "keep3", "keep5", "keep6"),
+      AddParquetFileData(fileSource, Seq("drop7", "keep8", "keep9"), src, tmp),
+      CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
     )
 
     Utils.deleteRecursively(src)
@@ -365,7 +402,7 @@ class FileStreamSourceSuite
           assert(b1.end === b2.end)
           assert(b1.data.as[String].collect() === b2.data.as[String].collect())
         case (None, None) =>
-        case _ => fail(s"batch ($batch1) is not equal to batch ($batch2)")
+        case _            => fail(s"batch ($batch1) is not equal to batch ($batch2)")
       }
     }
 
@@ -376,14 +413,14 @@ class FileStreamSourceSuite
     val filtered = textSource.toDF().filter($"value" contains "keep")
 
     testStream(filtered)(
-        AddTextFileData(textSource, "drop1\nkeep2\nkeep3", src, tmp),
-        CheckAnswer("keep2", "keep3"),
-        StopStream,
-        AddTextFileData(textSource, "drop4\nkeep5\nkeep6", src, tmp),
-        StartStream,
-        CheckAnswer("keep2", "keep3", "keep5", "keep6"),
-        AddTextFileData(textSource, "drop7\nkeep8\nkeep9", src, tmp),
-        CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
+      AddTextFileData(textSource, "drop1\nkeep2\nkeep3", src, tmp),
+      CheckAnswer("keep2", "keep3"),
+      StopStream,
+      AddTextFileData(textSource, "drop4\nkeep5\nkeep6", src, tmp),
+      StartStream,
+      CheckAnswer("keep2", "keep3", "keep5", "keep6"),
+      AddTextFileData(textSource, "drop7\nkeep8\nkeep9", src, tmp),
+      CheckAnswer("keep2", "keep3", "keep5", "keep6", "keep8", "keep9")
     )
 
     val textSource2 = createFileStreamSource("text", src.getCanonicalPath)
@@ -391,8 +428,10 @@ class FileStreamSourceSuite
     assertBatch(textSource2.getNextBatch(None), textSource.getNextBatch(None))
     for (f <- 0L to textSource.currentOffset.offset) {
       val offset = LongOffset(f)
-      assertBatch(textSource2.getNextBatch(Some(offset)),
-                  textSource.getNextBatch(Some(offset)))
+      assertBatch(
+        textSource2.getNextBatch(Some(offset)),
+        textSource.getNextBatch(Some(offset))
+      )
     }
 
     Utils.deleteRecursively(src)
@@ -401,7 +440,8 @@ class FileStreamSourceSuite
 }
 
 class FileStreamSourceStressTestSuite
-    extends FileStreamSourceTest with SharedSQLContext {
+    extends FileStreamSourceTest
+    with SharedSQLContext {
 
   import testImplicits._
 
@@ -412,11 +452,11 @@ class FileStreamSourceStressTestSuite
     val textSource = createFileStreamSource("text", src.getCanonicalPath)
     val ds = textSource.toDS[String]().map(_.toInt + 1)
     runStressTest(
-        ds,
-        data =>
-          {
-            AddTextFileData(textSource, data.mkString("\n"), src, tmp)
-        })
+      ds,
+      data => {
+        AddTextFileData(textSource, data.mkString("\n"), src, tmp)
+      }
+    )
 
     Utils.deleteRecursively(src)
     Utils.deleteRecursively(tmp)

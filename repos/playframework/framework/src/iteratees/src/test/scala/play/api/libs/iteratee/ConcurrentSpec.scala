@@ -13,7 +13,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 object ConcurrentSpec
-    extends Specification with IterateeSpecification
+    extends Specification
+    with IterateeSpecification
     with ExecutionSpecification {
 
   "Concurrent.broadcast (0-arg)" should {
@@ -21,18 +22,19 @@ object ConcurrentSpec
       mustExecute(38) { foldEC =>
         val (broadcaster, pushHere) = Concurrent.broadcast[String]
         val results = Future.sequence(
-            Range(1, 20)
-              .map(_ =>
-                    Iteratee.fold[String, String]("") { (s, e) =>
-              s + e
-            }(foldEC))
-              .map(broadcaster.apply)
-              .map(_.flatMap(_.run)))
+          Range(1, 20)
+            .map(_ =>
+              Iteratee.fold[String, String]("") { (s, e) => s + e }(foldEC)
+            )
+            .map(broadcaster.apply)
+            .map(_.flatMap(_.run))
+        )
         pushHere.push("beep")
         pushHere.push("beep")
         pushHere.eofAndEnd()
         Await.result(results, Duration.Inf) must equalTo(
-            Range(1, 20).map(_ => "beepbeep"))
+          Range(1, 20).map(_ => "beepbeep")
+        )
       }
     }
     "allow invoking end twice" in {
@@ -54,14 +56,16 @@ object ConcurrentSpec
       val result = broadcaster |>>> Iteratee.getChunks[String]
       pushHere.end(new RuntimeException("foo"))
       Await.result(result, Duration.Inf) must throwA[RuntimeException](
-          message = "foo")
+        message = "foo"
+      )
     }
     "update the end result after end is already called" in {
       val (broadcaster, pushHere) = Concurrent.broadcast[String]
       val result1 = broadcaster |>>> Iteratee.getChunks[String]
       pushHere.end(new RuntimeException("foo"))
       Await.result(result1, Duration.Inf) must throwA[RuntimeException](
-          message = "foo")
+        message = "foo"
+      )
       pushHere.end()
       val result2 = broadcaster |>>> Iteratee.getChunks[String]
       Await.result(result2, Duration.Inf) must_== Nil
@@ -108,7 +112,8 @@ object ConcurrentSpec
         val result = fastEnumerator &> Concurrent.buffer(7) |>>> stuckIteratee
 
         Await.result(result, Duration.Inf) must throwAn[Exception](
-            "buffer overflow")
+          "buffer overflow"
+        )
         foldEC.executionCount must equalTo(foldCount.get())
       }
     }
@@ -116,22 +121,28 @@ object ConcurrentSpec
     "drop intermediate unused input, swallow even the unused eof forcing u to pass it twice" in {
       testExecution { (flatMapEC, mapEC) =>
         val p = Promise[List[Long]]()
-        val slowIteratee = Iteratee.flatten(timeout(Cont[Long, List[Long]] {
-          case Input.El(e) => Done(List(e), Input.Empty)
-          case in =>
-            throw new MatchError(in) // Shouldn't occur, but here to suppress compiler warning
-        }, Duration(100, MILLISECONDS)))
+        val slowIteratee = Iteratee.flatten(
+          timeout(
+            Cont[Long, List[Long]] {
+              case Input.El(e) => Done(List(e), Input.Empty)
+              case in =>
+                throw new MatchError(
+                  in
+                ) // Shouldn't occur, but here to suppress compiler warning
+            },
+            Duration(100, MILLISECONDS)
+          )
+        )
         val fastEnumerator =
           Enumerator[Long](1, 2, 3, 4, 5, 6, 7, 8, 9, 10) >>> Enumerator.eof
         val preparedMapEC = mapEC.prepare()
         val result =
           fastEnumerator |>>> (Concurrent.buffer(20) &>> slowIteratee).flatMap {
-            l =>
-              Iteratee.getChunks.map(l ++ (_: List[Long]))(preparedMapEC)
+            l => Iteratee.getChunks.map(l ++ (_: List[Long]))(preparedMapEC)
           }(flatMapEC)
 
         Await.result(result, Duration.Inf) must not equalTo
-        (List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+          (List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
         flatMapEC.executionCount must beGreaterThan(0)
         mapEC.executionCount must equalTo(flatMapEC.executionCount)
       }
@@ -154,8 +165,12 @@ object ConcurrentSpec
       }
 
       val fastEnumerator = Enumerator((1 to 10): _*) >>> Enumerator.eof
-      val result = Try(await(fastEnumerator &> Concurrent.lazyAndErrIfNotReady(
-                  50) |>>> slowIteratee))
+      val result = Try(
+        await(
+          fastEnumerator &> Concurrent
+            .lazyAndErrIfNotReady(50) |>>> slowIteratee
+        )
+      )
       // We've got our result (hopefully a timeout), so let the iteratee
       // complete.
       gotResult.countDown()
@@ -172,16 +187,15 @@ object ConcurrentSpec
         val completeCount = new AtomicInteger()
         val errorCount = new AtomicInteger()
         val enumerator = Concurrent.unicast[String](
-            c =>
-              {
-                startCount.incrementAndGet()
-                c.push(a)
-                c.push(b)
-                c.eofAndEnd()
-            },
-            () => completeCount.incrementAndGet(),
-            (_: String,
-            _: Input[String]) => errorCount.incrementAndGet())(unicastEC)
+          c => {
+            startCount.incrementAndGet()
+            c.push(a)
+            c.push(b)
+            c.eofAndEnd()
+          },
+          () => completeCount.incrementAndGet(),
+          (_: String, _: Input[String]) => errorCount.incrementAndGet()
+        )(unicastEC)
         val promise =
           (enumerator |>> Iteratee.fold[String, String]("")(_ ++ _)(foldEC))
             .flatMap(_.run)
@@ -197,17 +211,20 @@ object ConcurrentSpec
       mustExecute(2) { unicastEC =>
         val completed = Promise[String]
 
-        val enumerator = Concurrent.unicast[String](onStart = { c =>
-          c.push("foo")
-          c.push("bar")
-        }, onComplete = {
-          completed.success("called")
-        })(unicastEC)
+        val enumerator = Concurrent.unicast[String](
+          onStart = { c =>
+            c.push("foo")
+            c.push("bar")
+          },
+          onComplete = {
+            completed.success("called")
+          }
+        )(unicastEC)
 
         val future =
           enumerator |>>> Cont {
             case Input.El(data) => Done(data)
-            case _ => Done("didn't get data")
+            case _              => Done("didn't get data")
           }
 
         Await.result(future, Duration.Inf) must_== "foo"
@@ -219,16 +236,17 @@ object ConcurrentSpec
       mustExecute(2) { unicastEC =>
         val error = Promise[String]
 
-        val enumerator = Concurrent.unicast[String](onStart = { c =>
-          c.push("foo")
-          c.push("bar")
-        }, onError = { (err, input) =>
-          error.success(err)
-        })(unicastEC)
+        val enumerator = Concurrent.unicast[String](
+          onStart = { c =>
+            c.push("foo")
+            c.push("bar")
+          },
+          onError = { (err, input) => error.success(err) }
+        )(unicastEC)
 
         enumerator |>> Cont {
           case Input.El(data) => Error(data, Input.Empty)
-          case in => Error("didn't get data", in)
+          case in             => Error("didn't get data", in)
         }
 
         Await.result(error.future, Duration.Inf) must_== "foo"
@@ -244,7 +262,10 @@ object ConcurrentSpec
           endInvokedTwice.countDown()
         })(unicastEC)
 
-        Await.result(enumerator |>>> Iteratee.getChunks[String], Duration.Inf) must_== Nil
+        Await.result(
+          enumerator |>>> Iteratee.getChunks[String],
+          Duration.Inf
+        ) must_== Nil
         endInvokedTwice.await(10, TimeUnit.SECONDS) must_== true
       }
     }
@@ -257,7 +278,8 @@ object ConcurrentSpec
 
         val result = enumerator |>>> Iteratee.getChunks[String]
         Await.result(result, Duration.Inf) must throwA[RuntimeException](
-            message = "foo")
+          message = "foo"
+        )
       }
     }
 
@@ -283,10 +305,13 @@ object ConcurrentSpec
         val (e0, c) = Concurrent.broadcast[Int]
         val interestCount = new AtomicInteger()
         val interestDone = new CountDownLatch(1)
-        val (e2, b) = Concurrent.broadcast(e0, { f =>
-          interestCount.incrementAndGet()
-          interestDone.countDown()
-        })(callbackEC)
+        val (e2, b) = Concurrent.broadcast(
+          e0,
+          { f =>
+            interestCount.incrementAndGet()
+            interestDone.countDown()
+          }
+        )(callbackEC)
         val i = e2 |>>> Iteratee.getChunks[Int]
         c.push(1)
         c.push(2)
@@ -303,11 +328,11 @@ object ConcurrentSpec
 
     "perform patching in the correct ExecutionContext" in {
       mustExecute(1) { ppEC =>
-        val e = Concurrent.patchPanel[Int] { pp =>
-          pp.patchIn(Enumerator.eof)
-        }(ppEC)
+        val e =
+          Concurrent.patchPanel[Int] { pp => pp.patchIn(Enumerator.eof) }(ppEC)
         Await.result(e |>>> Iteratee.getChunks[Int], Duration.Inf) must equalTo(
-            Nil)
+          Nil
+        )
       }
     }
   }
@@ -352,15 +377,18 @@ object ConcurrentSpec
   "Concurrent.runPartial" should {
     "redeem the iteratee with the result and the partial enumerator" in {
       val (a, remaining) =
-        await(Concurrent.runPartial(Enumerator("foo", "bar"),
-                                    Iteratee.head[String]))
+        await(
+          Concurrent.runPartial(Enumerator("foo", "bar"), Iteratee.head[String])
+        )
       a must beSome("foo")
       await(remaining |>>> Iteratee.getChunks[String]) must_== Seq("bar")
     }
     "work when there is no input left in the enumerator" in {
       val (a, remaining) =
-        await(Concurrent.runPartial(Enumerator("foo", "bar"),
-                                    Iteratee.getChunks[String]))
+        await(
+          Concurrent
+            .runPartial(Enumerator("foo", "bar"), Iteratee.getChunks[String])
+        )
       a must_== Seq("foo", "bar")
       await(remaining |>>> Iteratee.getChunks[String]) must_== Nil
     }

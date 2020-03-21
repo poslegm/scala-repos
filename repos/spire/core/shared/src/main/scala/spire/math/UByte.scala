@@ -12,12 +12,13 @@ object UByte extends UByteInstances {
 }
 
 class UByte(val signed: Byte)
-    extends AnyVal with scala.math.ScalaNumericAnyConversions {
+    extends AnyVal
+    with scala.math.ScalaNumericAnyConversions {
   override def toByte: Byte = signed
   override def toChar: Char = (signed & 0xff).toChar
   override def toShort: Short = (signed & 0xff).toShort
   override def toInt: Int = signed & 0xff
-  override def toLong: Long = signed & 0xffL
+  override def toLong: Long = signed & 0xFFL
   override def toFloat: Float = toInt.toFloat
   override def toDouble: Double = toInt.toDouble
   def toBigInt: BigInt = BigInt(toInt)
@@ -110,7 +111,9 @@ private[math] trait UByteIsSigned extends Signed[UByte] {
 }
 
 private[math] trait UByteIsReal
-    extends IsIntegral[UByte] with UByteOrder with UByteIsSigned {
+    extends IsIntegral[UByte]
+    with UByteOrder
+    with UByteIsSigned {
   def toDouble(n: UByte): Double = n.toDouble
   def toBigInt(n: UByte): BigInt = n.toBigInt
 }
@@ -151,4 +154,6 @@ private[math] class UByteBitString extends BitString[UByte] with Serializable {
 
 @SerialVersionUID(0L)
 private[math] class UByteAlgebra
-    extends UByteIsRig with UByteIsReal with Serializable
+    extends UByteIsRig
+    with UByteIsReal
+    with Serializable

@@ -1,6 +1,12 @@
 package com.twitter.finagle.service
 
-import com.twitter.finagle.{Status, ClientConnection, Service, ServiceFactory, Failure}
+import com.twitter.finagle.{
+  Status,
+  ClientConnection,
+  Service,
+  ServiceFactory,
+  Failure
+}
 import com.twitter.util._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -9,9 +15,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class DelayedFactoryTest extends FunSuite {
   trait DelayedHelper {
-    val service = Service.mk[Int, Int] { int: Int =>
-      Future.value(int)
-    }
+    val service = Service.mk[Int, Int] { int: Int => Future.value(int) }
     val future = Promise[ServiceFactory[Int, Int]]()
     val failed = new Exception("failed")
 
@@ -65,16 +69,14 @@ class DelayedFactoryTest extends FunSuite {
   def numWaitersCheckFactory(factory: ServiceFactory[Int, Int], num: Int) {
     factory.getClass.getDeclaredMethods
       .find(_.getName == "numWaiters")
-      .foreach { meth =>
-        assert(meth.invoke(factory) == num)
-      }
+      .foreach { meth => assert(meth.invoke(factory) == num) }
   }
 
   def testDelayedHelpers(helpers: Map[String, () => DelayedHelper]) {
     for ((name, helpFn) <- helpers) {
       test(
-          "%s: buffered factories' proxy services should buffer until the factory is ready"
-            .format(name)
+        "%s: buffered factories' proxy services should buffer until the factory is ready"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -90,8 +92,8 @@ class DelayedFactoryTest extends FunSuite {
       }
 
       test(
-          ("%s: an incomplete buffered factory should satisfy closures with exceptions if they're " +
-              "interrupted").format(name)
+        ("%s: an incomplete buffered factory should satisfy closures with exceptions if they're " +
+          "interrupted").format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -109,8 +111,8 @@ class DelayedFactoryTest extends FunSuite {
       }
 
       test(
-          "%s: an incomplete buffered factory should detach closures if they're interrupted"
-            .format(name)
+        "%s: an incomplete buffered factory should detach closures if they're interrupted"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -129,8 +131,8 @@ class DelayedFactoryTest extends FunSuite {
       }
 
       test(
-          "%s: an incomplete buffered factory should be OK with exceptions if they're interrupted"
-            .format(name)
+        "%s: an incomplete buffered factory should be OK with exceptions if they're interrupted"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -146,8 +148,8 @@ class DelayedFactoryTest extends FunSuite {
       }
 
       test(
-          "%s: a buffered factory that's completed with an exception should finish with an exception"
-            .format(name)
+        "%s: a buffered factory that's completed with an exception should finish with an exception"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -164,8 +166,8 @@ class DelayedFactoryTest extends FunSuite {
       }
 
       test(
-          "%s: a factory that's completed with an exception should finish with an exception"
-            .format(name)
+        "%s: a factory that's completed with an exception should finish with an exception"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -183,11 +185,12 @@ class DelayedFactoryTest extends FunSuite {
   }
 
   def testClosingDelayedHelpers(
-      helpers: Map[String, () => ClosingDelayedHelper]) {
+      helpers: Map[String, () => ClosingDelayedHelper]
+  ) {
     for ((name, helpFn) <- helpers) {
       test(
-          "%s: a closed buffered factory should close the underlying factory once it's ready"
-            .format(name)
+        "%s: a closed buffered factory should close the underlying factory once it's ready"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -201,8 +204,8 @@ class DelayedFactoryTest extends FunSuite {
       }
 
       test(
-          "%s: an unclosed buffered factory should get ready then get closed properly"
-            .format(name)
+        "%s: an unclosed buffered factory should get ready then get closed properly"
+          .format(name)
       ) {
         val ctx = helpFn()
         import ctx._
@@ -215,8 +218,10 @@ class DelayedFactoryTest extends FunSuite {
         assert(!factory.isAvailable)
       }
 
-      test("%s: a factory that's closed prematurely should still close".format(
-              name)) {
+      test(
+        "%s: a factory that's closed prematurely should still close"
+          .format(name)
+      ) {
         val ctx = helpFn()
         import ctx._
 
@@ -229,8 +234,10 @@ class DelayedFactoryTest extends FunSuite {
         assert(!underlying.isAvailable)
       }
 
-      test("%s: a factory that's closed prematurely should close the underlying on satisfaction"
-            .format(name)) {
+      test(
+        "%s: a factory that's closed prematurely should close the underlying on satisfaction"
+          .format(name)
+      ) {
         val ctx = helpFn()
         import ctx._
 
@@ -244,13 +251,15 @@ class DelayedFactoryTest extends FunSuite {
   }
 
   testDelayedHelpers(
-      Map(
-          "Normal" -> (() => new BareDelayedHelper {}),
-          "Swapping" -> (() => new SwapOnBareHelper {})
-      ))
+    Map(
+      "Normal" -> (() => new BareDelayedHelper {}),
+      "Swapping" -> (() => new SwapOnBareHelper {})
+    )
+  )
   testClosingDelayedHelpers(
-      Map(
-          "Normal" -> (() => new DefaultClosingHelper {}),
-          "Swapping" -> (() => new SwapOnCloseHelper {})
-      ))
+    Map(
+      "Normal" -> (() => new DefaultClosingHelper {}),
+      "Swapping" -> (() => new SwapOnCloseHelper {})
+    )
+  )
 }

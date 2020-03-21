@@ -26,13 +26,15 @@ object ActivatorRepoProcessor {
   def templateFileName(id: String) = s"$id.zip"
   def calculateHash(id: String): String = id.take(2) + "/" + id.take(6) + "/"
 
-  case class DocData(id: String,
-                     title: String,
-                     author: String,
-                     src: String,
-                     category: String,
-                     desc: String,
-                     tags: String) {
+  case class DocData(
+      id: String,
+      title: String,
+      author: String,
+      src: String,
+      category: String,
+      desc: String,
+      tags: String
+  ) {
     override def toString: String = title
   }
 
@@ -51,14 +53,18 @@ object ActivatorRepoProcessor {
     val DESCRIPTION = new Key("description")
 
     def from(doc: Document) =
-      (NAME getValue doc,
-       DocData(TEMPLATE_ID getValue doc,
-               TITLE getValue doc,
-               AUTHOR_NAME getValue doc,
-               SOURCE_LINK getValue doc,
-               CATEGORY getValue doc,
-               DESCRIPTION getValue doc,
-               TAGS getValue doc))
+      (
+        NAME getValue doc,
+        DocData(
+          TEMPLATE_ID getValue doc,
+          TITLE getValue doc,
+          AUTHOR_NAME getValue doc,
+          SOURCE_LINK getValue doc,
+          CATEGORY getValue doc,
+          DESCRIPTION getValue doc,
+          TAGS getValue doc
+        )
+      )
   }
 
   def downloadStringFromRepo(url: String): Option[String] = {
@@ -72,8 +78,9 @@ object ActivatorRepoProcessor {
       val status = connection.getResponseMessage
       if (status != null && status.trim.startsWith("OK")) {
         val text = StreamUtil.readText(
-            connection.getInputStream,
-            "utf-8" /*connection.getContentEncoding*/ )
+          connection.getInputStream,
+          "utf-8" /*connection.getContentEncoding*/
+        )
         Some(text)
       } else None
     } catch {
@@ -83,10 +90,12 @@ object ActivatorRepoProcessor {
     }
   }
 
-  def downloadFile(url: String,
-                   toFile: String,
-                   onError: String => Unit,
-                   indicator: ProgressIndicator = null): Boolean = {
+  def downloadFile(
+      url: String,
+      toFile: String,
+      onError: String => Unit,
+      indicator: ProgressIndicator = null
+  ): Boolean = {
     try {
       val file = new File(toFile)
       if (!file.exists()) return false
@@ -101,10 +110,12 @@ object ActivatorRepoProcessor {
     }
   }
 
-  def downloadTemplateFromRepo(id: String,
-                               pathTo: File,
-                               onError: String => Unit,
-                               indicator: ProgressIndicator = null) {
+  def downloadTemplateFromRepo(
+      id: String,
+      pathTo: File,
+      onError: String => Unit,
+      indicator: ProgressIndicator = null
+  ) {
     try {
       val url =
         s"$REPO_URI/$TEMPLATES_DIR/${calculateHash(id)}${templateFileName(id)}"

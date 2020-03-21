@@ -9,7 +9,10 @@ import com.intellij.psi.{PsiElement, PsiMethod}
 import org.jetbrains.plugins.scala.lang.lexer.ScalaTokenTypes
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScPrimaryConstructor
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameters
-import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScFunction, ScParameterOwner}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.{
+  ScFunction,
+  ScParameterOwner
+}
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 
 /**
@@ -27,10 +30,11 @@ trait ScClass extends ScTypeDefinition with ScParameterOwner {
     (secondaryConstructors ++ constructor.toSeq).toArray
   }
 
-  def clauses: Option[ScParameters] = constructor match {
-    case Some(x: ScPrimaryConstructor) => Some(x.parameterList)
-    case None => None
-  }
+  def clauses: Option[ScParameters] =
+    constructor match {
+      case Some(x: ScPrimaryConstructor) => Some(x.parameterList)
+      case None                          => None
+    }
 
   def addEmptyParens() {
     clauses match {
@@ -67,15 +71,16 @@ trait ScClass extends ScTypeDefinition with ScParameterOwner {
               val params = clauses.head.parameters
               if (params.isEmpty) "scala.Boolean"
               else {
-                val strings = params.map(
-                    p =>
-                      (if (p.isRepeatedParameter) "scala.Seq[" else "") +
-                      p.typeElement.fold("scala.Any")(_.getText) +
-                      (if (p.isRepeatedParameter) "]" else ""))
+                val strings = params.map(p =>
+                  (if (p.isRepeatedParameter) "scala.Seq[" else "") +
+                    p.typeElement.fold("scala.Any")(_.getText) +
+                    (if (p.isRepeatedParameter) "]" else "")
+                )
                 strings.mkString(
-                    "scala.Option[" + (if (strings.length > 1) "(" else ""),
-                    ", ",
-                    (if (strings.length > 1) ")" else "") + "]")
+                  "scala.Option[" + (if (strings.length > 1) "(" else ""),
+                  ", ",
+                  (if (strings.length > 1) ")" else "") + "]"
+                )
               }
             }
           case None => "scala.Boolean"
@@ -89,7 +94,8 @@ trait ScClass extends ScTypeDefinition with ScParameterOwner {
           case None => "unapply"
         }
         Option(
-            s"def $unapplyName$typeParamString(x$$0: $name$typeParamStringRes): $paramStringRes = throw new Error()")
+          s"def $unapplyName$typeParamString(x$$0: $name$typeParamStringRes): $paramStringRes = throw new Error()"
+        )
       }
 
     val apply: Option[String] =
@@ -98,26 +104,33 @@ trait ScClass extends ScTypeDefinition with ScParameterOwner {
         val paramString = constructor match {
           case Some(x: ScPrimaryConstructor) =>
             (if (x.parameterList.clauses.length == 1 &&
-                 x.parameterList.clauses.head.isImplicit) "()" else "") +
-            x.parameterList.clauses
-              .map(
-                  c =>
-                    c.parameters
-                      .map(p =>
-                            p.name + " : " +
-                            p.typeElement.fold("Any")(_.getText) +
-                            (if (p.isDefaultParam)
-                               " = " +
-                               p.getDefaultExpression.fold("{}")(_.getText)
-                             else if (p.isRepeatedParameter) "*" else ""))
-                      .mkString(
-                          if (c.isImplicit) "(implicit " else "(", ", ", ")"))
-              .mkString("")
+                 x.parameterList.clauses.head.isImplicit) "()"
+             else "") +
+              x.parameterList.clauses
+                .map(c =>
+                  c.parameters
+                    .map(p =>
+                      p.name + " : " +
+                        p.typeElement.fold("Any")(_.getText) +
+                        (if (p.isDefaultParam)
+                           " = " +
+                             p.getDefaultExpression.fold("{}")(_.getText)
+                         else if (p.isRepeatedParameter) "*"
+                         else "")
+                    )
+                    .mkString(
+                      if (c.isImplicit) "(implicit " else "(",
+                      ", ",
+                      ")"
+                    )
+                )
+                .mkString("")
           case None => ""
         }
 
         Option(
-            s"def apply$typeParamString$paramString: $name$typeParamStringRes = throw new Error()")
+          s"def apply$typeParamString$paramString: $name$typeParamStringRes = throw new Error()"
+        )
       }
 
     List(apply, unapply).flatten

@@ -20,8 +20,9 @@ package mutable
   *  @since   1
   */
 @deprecated(
-    "Proxying is deprecated due to lack of use and compiler-level support.",
-    "2.11.0")
+  "Proxying is deprecated due to lack of use and compiler-level support.",
+  "2.11.0"
+)
 trait StackProxy[A] extends Stack[A] with Proxy {
 
   def self: Stack[A]
@@ -103,7 +104,8 @@ trait StackProxy[A] extends Stack[A] with Proxy {
     *
     *  @return  a stack with the same elements.
     */
-  override def clone(): Stack[A] = new StackProxy[A] {
-    def self = StackProxy.this.self.clone()
-  }
+  override def clone(): Stack[A] =
+    new StackProxy[A] {
+      def self = StackProxy.this.self.clone()
+    }
 }

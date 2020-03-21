@@ -39,6 +39,7 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class AccessibleActionSpec
     extends SFXEnumDelegateSpec[jfxs.AccessibleAction, AccessibleAction](
-        javaClass = classOf[jfxs.AccessibleAction],
-        scalaClass = classOf[AccessibleAction],
-        companion = AccessibleAction)
+      javaClass = classOf[jfxs.AccessibleAction],
+      scalaClass = classOf[AccessibleAction],
+      companion = AccessibleAction
+    )

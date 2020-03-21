@@ -5,8 +5,7 @@ import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCa
 /**
   * @author ghik
   */
-class HoconHighlightUsagesTest
-    extends LightPlatformCodeInsightFixtureTestCase {
+class HoconHighlightUsagesTest extends LightPlatformCodeInsightFixtureTestCase {
 
   import org.junit.Assert._
 
@@ -27,7 +26,8 @@ class HoconHighlightUsagesTest
     assertEquals(expectedHighlights.toSet, actualHighlights.toSet)
   }
 
-  def testSimple() = testUsages(
+  def testSimple() =
+    testUsages(
       (0, 0, 3),
       (1, 0, 3),
       (2, 0, 3),
@@ -35,26 +35,29 @@ class HoconHighlightUsagesTest
       (6, 0, 3),
       (7, 0, 3),
       (9, 12, 3)
-  )
+    )
 
-  def testNested() = testUsages(
+  def testNested() =
+    testUsages(
       (4, 2, 3),
       (7, 4, 3),
       (10, 16, 3)
-  )
+    )
 
-  def testInArrayElement() = testUsages(
+  def testInArrayElement() =
+    testUsages(
       (6, 3, 3),
       (6, 13, 3)
-  )
+    )
 
-  def testDifferentTexts() = testUsages(
+  def testDifferentTexts() =
+    testUsages(
       (0, 0, 3),
       (1, 0, 5),
       (2, 0, 5),
       (3, 0, 9),
       (4, 10, 7)
-  )
+    )
 
   def testSingle() = testUsages()
 }

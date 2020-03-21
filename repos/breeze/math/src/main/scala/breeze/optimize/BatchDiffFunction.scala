@@ -9,7 +9,8 @@ import breeze.linalg.support.CanCopy
   * A diff function that supports subsets of the data. By default it evaluates on all the data
   */
 trait BatchDiffFunction[T]
-    extends DiffFunction[T] with ((T, IndexedSeq[Int]) => Double) { outer =>
+    extends DiffFunction[T]
+    with ((T, IndexedSeq[Int]) => Double) { outer =>
 
   /**
     * Calculates the gradient of the function on a subset of the data
@@ -54,12 +55,13 @@ trait BatchDiffFunction[T]
   def withScanningBatches(size: Int): StochasticDiffFunction[T] =
     new StochasticDiffFunction[T] {
       var lastStop = 0
-      def nextBatch = synchronized {
-        val start = lastStop
-        lastStop += size
-        lastStop %= fullRange.size
-        Array.tabulate(size)(i => fullRange((i + start) % fullRange.size))
-      }
+      def nextBatch =
+        synchronized {
+          val start = lastStop
+          lastStop += size
+          lastStop %= fullRange.size
+          Array.tabulate(size)(i => fullRange((i + start) % fullRange.size))
+        }
 
       def calculate(x: T) = outer.calculate(x, nextBatch)
     }
@@ -67,9 +69,10 @@ trait BatchDiffFunction[T]
   def groupItems(groupSize: Int): BatchDiffFunction[T] =
     new BatchDiffFunction[T] {
       val numGroups = (outer.fullRange.size + groupSize - 1) / groupSize
-      val groups: Array[immutable.IndexedSeq[Int]] = Array.tabulate(numGroups)(
-          i =>
-            (i until outer.fullRange.length by numGroups).map(outer.fullRange))
+      val groups: Array[immutable.IndexedSeq[Int]] =
+        Array.tabulate(numGroups)(i =>
+          (i until outer.fullRange.length by numGroups).map(outer.fullRange)
+        )
 
       /**
         * Calculates the value and gradient of the function on a subset of the data
@@ -89,8 +92,9 @@ trait BatchDiffFunction[T]
       def fullRange: IndexedSeq[Int] = (0 until groups.length)
     }
 
-  override def throughLens[U](
-      implicit l: Isomorphism[T, U]): BatchDiffFunction[U] =
+  override def throughLens[U](implicit
+      l: Isomorphism[T, U]
+  ): BatchDiffFunction[U] =
     new BatchDiffFunction[U] {
 
       /**

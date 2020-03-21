@@ -16,10 +16,11 @@ package object optimize {
     * @tparam Vector
     * @return
     */
-  def minimize[Objective, Vector](fn: Objective,
-                                  init: Vector,
-                                  options: OptimizationOption*)(
-      implicit optimization: OptimizationPackage[Objective, Vector]) = {
+  def minimize[Objective, Vector](
+      fn: Objective,
+      init: Vector,
+      options: OptimizationOption*
+  )(implicit optimization: OptimizationPackage[Objective, Vector]) = {
     optimization.minimize(fn, init, options: _*)
   }
 
@@ -35,11 +36,13 @@ package object optimize {
     * @tparam Vector
     * @return
     */
-  def iterations[Objective, Vector, State](fn: Objective,
-                                           init: Vector,
-                                           options: OptimizationOption*)(
-      implicit optimization: IterableOptimizationPackage[
-          Objective, Vector, State]) = {
+  def iterations[Objective, Vector, State](
+      fn: Objective,
+      init: Vector,
+      options: OptimizationOption*
+  )(implicit
+      optimization: IterableOptimizationPackage[Objective, Vector, State]
+  ) = {
     optimization.iterations(fn, init, options: _*)
   }
 }

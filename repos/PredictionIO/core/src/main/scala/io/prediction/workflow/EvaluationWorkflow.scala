@@ -33,7 +33,8 @@ object EvaluationWorkflow {
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
-      params: WorkflowParams): R = {
+      params: WorkflowParams
+  ): R = {
     val engineEvalDataSet = engine.batchEval(sc, engineParamsList, params)
     evaluator.evaluateBase(sc, evaluation, engineEvalDataSet, params)
   }

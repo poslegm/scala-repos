@@ -29,28 +29,34 @@ private[persistence] trait LeveldbIdMapping extends Actor {
     * thread than the actor's thread. That is necessary for Future composition,
     * e.g. `asyncReadHighestSequenceNr` followed by `asyncReplayMessages`.
     */
-  def numericId(id: String): Int = idMapLock.synchronized {
-    idMap.get(id) match {
-      case None ⇒ writeIdMapping(id, idMap.size + idOffset)
-      case Some(v) ⇒ v
+  def numericId(id: String): Int =
+    idMapLock.synchronized {
+      idMap.get(id) match {
+        case None ⇒ writeIdMapping(id, idMap.size + idOffset)
+        case Some(v) ⇒ v
+      }
     }
-  }
 
-  def isNewPersistenceId(id: String): Boolean = idMapLock.synchronized {
-    !idMap.contains(id)
-  }
+  def isNewPersistenceId(id: String): Boolean =
+    idMapLock.synchronized {
+      !idMap.contains(id)
+    }
 
-  def allPersistenceIds: Set[String] = idMapLock.synchronized {
-    idMap.keySet
-  }
+  def allPersistenceIds: Set[String] =
+    idMapLock.synchronized {
+      idMap.keySet
+    }
 
-  private def readIdMap(): Map[String, Int] = withIterator { iter ⇒
-    iter.seek(keyToBytes(mappingKey(idOffset)))
-    readIdMap(Map.empty, iter)
-  }
+  private def readIdMap(): Map[String, Int] =
+    withIterator { iter ⇒
+      iter.seek(keyToBytes(mappingKey(idOffset)))
+      readIdMap(Map.empty, iter)
+    }
 
   private def readIdMap(
-      pathMap: Map[String, Int], iter: DBIterator): Map[String, Int] = {
+      pathMap: Map[String, Int],
+      iter: DBIterator
+  ): Map[String, Int] = {
     if (!iter.hasNext) pathMap
     else {
       val nextEntry = iter.next()

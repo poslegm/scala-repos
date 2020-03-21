@@ -15,7 +15,8 @@ object PlayLayoutPlugin extends AutoPlugin {
 
   override def trigger = AllRequirements
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       target := baseDirectory.value / "target",
       sourceDirectory in Compile := baseDirectory.value / "app",
       sourceDirectory in Test := baseDirectory.value / "test",
@@ -34,5 +35,5 @@ object PlayLayoutPlugin extends AutoPlugin {
       resourceDirectory in Assets := baseDirectory.value / "public",
       // Native packager
       sourceDirectory in Universal := baseDirectory.value / "dist"
-  )
+    )
 }

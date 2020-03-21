@@ -2,18 +2,18 @@ package breeze.optimize
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License")
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
  */
 
 import breeze.linalg._
@@ -33,17 +33,18 @@ import breeze.util.SerializableLogging
   *  * D.C. Liu and J. Nocedal. On the  Limited  mem  Method  for  Large
   *    Scale  Optimization  (1989),  Mathematical  Programming  B,  45,  3,
   *    pp. 503-528.
-  *  * 
-  * 
+  *  *
+  *
   * @param m: The memory of the search. 3 to 7 is usually sufficient.
   */
-class LBFGS[T](convergenceCheck: ConvergenceCheck[T], m: Int)(
-    implicit space: MutableInnerProductModule[T, Double])
-    extends FirstOrderMinimizer[T, DiffFunction[T]](convergenceCheck)
+class LBFGS[T](convergenceCheck: ConvergenceCheck[T], m: Int)(implicit
+    space: MutableInnerProductModule[T, Double]
+) extends FirstOrderMinimizer[T, DiffFunction[T]](convergenceCheck)
     with SerializableLogging {
 
-  def this(maxIter: Int = -1, m: Int = 7, tolerance: Double = 1E-9)(
-      implicit space: MutableInnerProductModule[T, Double]) =
+  def this(maxIter: Int = -1, m: Int = 7, tolerance: Double = 1e-9)(implicit
+      space: MutableInnerProductModule[T, Double]
+  ) =
     this(FirstOrderMinimizer.defaultConvergenceCheck(maxIter, tolerance), m)
   import space._
   require(m > 0)
@@ -61,16 +62,18 @@ class LBFGS[T](convergenceCheck: ConvergenceCheck[T], m: Int)(
     state.history * state.grad
   }
 
-  protected def updateHistory(newX: T,
-                              newGrad: T,
-                              newVal: Double,
-                              f: DiffFunction[T],
-                              oldState: State): History = {
+  protected def updateHistory(
+      newX: T,
+      newGrad: T,
+      newVal: Double,
+      f: DiffFunction[T],
+      oldState: State
+  ): History = {
     oldState.history.updated(newX - oldState.x, newGrad :- oldState.grad)
   }
 
   /**
-    * Given a direction, perform a line search to find 
+    * Given a direction, perform a line search to find
     * a direction to descend. At the moment, this just executes
     * backtracking, so it does not fulfill the wolfe conditions.
     *
@@ -85,12 +88,13 @@ class LBFGS[T](convergenceCheck: ConvergenceCheck[T], m: Int)(
 
     val ff = LineSearch.functionFromSearchDirection(f, x, dir)
     val search = new StrongWolfeLineSearch(
-        maxZoomIter = 10,
-        maxLineSearchIter = 10) // TODO: Need good default values here.
+      maxZoomIter = 10,
+      maxLineSearchIter = 10
+    ) // TODO: Need good default values here.
     val alpha =
       search.minimize(ff, if (state.iter == 0.0) 1.0 / norm(dir) else 1.0)
 
-    if (alpha * norm(grad) < 1E-10) throw new StepSizeUnderflow
+    if (alpha * norm(grad) < 1e-10) throw new StepSizeUnderflow
     alpha
   }
 }
@@ -99,8 +103,8 @@ object LBFGS {
   case class ApproximateInverseHessian[T](
       m: Int,
       private[LBFGS] val memStep: IndexedSeq[T] = IndexedSeq.empty,
-      private[LBFGS] val memGradDelta: IndexedSeq[T] = IndexedSeq.empty)(
-      implicit space: MutableInnerProductModule[T, Double])
+      private[LBFGS] val memGradDelta: IndexedSeq[T] = IndexedSeq.empty
+  )(implicit space: MutableInnerProductModule[T, Double])
       extends NumericOps[ApproximateInverseHessian[T]] {
 
     import space._
@@ -154,9 +158,9 @@ object LBFGS {
     }
   }
 
-  implicit def multiplyInverseHessian[T](
-      implicit vspace: MutableInnerProductModule[T, Double])
-    : OpMulMatrix.Impl2[ApproximateInverseHessian[T], T, T] = {
+  implicit def multiplyInverseHessian[T](implicit
+      vspace: MutableInnerProductModule[T, Double]
+  ): OpMulMatrix.Impl2[ApproximateInverseHessian[T], T, T] = {
     new OpMulMatrix.Impl2[ApproximateInverseHessian[T], T, T] {
       def apply(a: ApproximateInverseHessian[T], b: T): T = a * b
     }

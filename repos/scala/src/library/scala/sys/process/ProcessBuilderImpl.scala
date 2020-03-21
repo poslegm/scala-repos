@@ -23,8 +23,7 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
     final def run(io: ProcessIO): Process = underlying.run(io.daemonized())
   }
 
-  private[process] class Dummy(
-      override val toString: String, exitValue: => Int)
+  private[process] class Dummy(override val toString: String, exitValue: => Int)
       extends AbstractBuilder {
     override def run(io: ProcessIO): Process = new DummyProcess(exitValue)
     override def canPipeTo = true
@@ -36,37 +35,39 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
       extends IStreamBuilder(new FileInputStream(file), file.getAbsolutePath)
   private[process] class FileOutput(file: File, append: Boolean)
       extends OStreamBuilder(
-          new FileOutputStream(file, append), file.getAbsolutePath)
+        new FileOutputStream(file, append),
+        file.getAbsolutePath
+      )
 
   private[process] class OStreamBuilder(
       stream: => OutputStream,
       label: String
-  )
-      extends ThreadBuilder(label, _ writeInput protect(stream)) {
+  ) extends ThreadBuilder(label, _ writeInput protect(stream)) {
     override def hasExitValue = false
   }
 
   private[process] class IStreamBuilder(
       stream: => InputStream,
       label: String
-  )
-      extends ThreadBuilder(label, _ processOutput protect(stream)) {
+  ) extends ThreadBuilder(label, _ processOutput protect(stream)) {
     override def hasExitValue = false
   }
 
   private[process] abstract class ThreadBuilder(
       override val toString: String,
       runImpl: ProcessIO => Unit
-  )
-      extends AbstractBuilder {
+  ) extends AbstractBuilder {
 
     override def run(io: ProcessIO): Process = {
       val success = new SyncVar[Boolean]
       success put false
-      val t = Spawn({
-        runImpl(io)
-        success set true
-      }, io.daemonizeThreads)
+      val t = Spawn(
+        {
+          runImpl(io)
+          success set true
+        },
+        io.daemonizeThreads
+      )
 
       new ThreadProcess(t, success)
     }
@@ -80,8 +81,8 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
 
       // spawn threads that process the input, output, and error streams using the functions defined in `io`
       val inThread = Spawn(writeInput(process.getOutputStream), daemon = true)
-      val outThread = Spawn(
-          processOutput(process.getInputStream), daemonizeThreads)
+      val outThread =
+        Spawn(processOutput(process.getInputStream), daemonizeThreads)
       val errorThread =
         if (p.redirectErrorStream) Nil
         else
@@ -94,13 +95,14 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
   }
 
   private[scala] abstract class AbstractBuilder
-      extends ProcessBuilder with Sink with Source {
+      extends ProcessBuilder
+      with Sink
+      with Source {
     protected def toSource = this
     protected def toSink = this
 
     def #|(other: ProcessBuilder): ProcessBuilder = {
-      require(
-          other.canPipeTo, "Piping to multiple processes is not supported.")
+      require(other.canPipeTo, "Piping to multiple processes is not supported.")
       new PipedBuilder(this, other, false)
     }
     def #||(other: ProcessBuilder): ProcessBuilder = new OrBuilder(this, other)
@@ -146,7 +148,9 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
     def daemonized(): ProcessBuilder = new DaemonBuilder(this)
 
     private[this] def slurp(
-        log: Option[ProcessLogger], withIn: Boolean): String = {
+        log: Option[ProcessLogger],
+        withIn: Boolean
+    ): String = {
       val buffer = new StringBuffer
       val code = this ! BasicIO(withIn, buffer, log)
 
@@ -177,7 +181,9 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
     protected def toSource = new URLInput(url)
   }
   private[process] class FileImpl(base: File)
-      extends FileBuilder with Sink with Source {
+      extends FileBuilder
+      with Sink
+      with Source {
     protected def toSource = new FileInput(base)
     protected def toSink = new FileOutput(base, false)
 
@@ -204,8 +210,7 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
       a: ProcessBuilder,
       b: ProcessBuilder,
       operatorString: String
-  )
-      extends BasicBuilder {
+  ) extends BasicBuilder {
 
     checkNotThis(a)
     checkNotThis(b)
@@ -216,8 +221,7 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
       first: ProcessBuilder,
       second: ProcessBuilder,
       toError: Boolean
-  )
-      extends SequentialBuilder(first, second, if (toError) "#|!" else "#|") {
+  ) extends SequentialBuilder(first, second, if (toError) "#|!" else "#|") {
 
     override def createProcess(io: ProcessIO) =
       new PipedProcesses(first, second, io, toError)
@@ -226,8 +230,7 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
   private[process] class AndBuilder(
       first: ProcessBuilder,
       second: ProcessBuilder
-  )
-      extends SequentialBuilder(first, second, "#&&") {
+  ) extends SequentialBuilder(first, second, "#&&") {
     override def createProcess(io: ProcessIO) =
       new AndProcess(first, second, io)
   }
@@ -235,8 +238,7 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
   private[process] class OrBuilder(
       first: ProcessBuilder,
       second: ProcessBuilder
-  )
-      extends SequentialBuilder(first, second, "#||") {
+  ) extends SequentialBuilder(first, second, "#||") {
     override def createProcess(io: ProcessIO) =
       new OrProcess(first, second, io)
   }
@@ -244,8 +246,7 @@ private[process] trait ProcessBuilderImpl { self: ProcessBuilder.type =>
   private[process] class SequenceBuilder(
       first: ProcessBuilder,
       second: ProcessBuilder
-  )
-      extends SequentialBuilder(first, second, "###") {
+  ) extends SequentialBuilder(first, second, "###") {
     override def createProcess(io: ProcessIO) =
       new ProcessSequence(first, second, io)
   }

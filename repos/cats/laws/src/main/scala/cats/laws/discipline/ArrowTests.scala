@@ -8,16 +8,20 @@ import org.scalacheck.Prop
 import Prop._
 
 trait ArrowTests[F[_, _]]
-    extends CategoryTests[F] with SplitTests[F] with StrongTests[F] {
+    extends CategoryTests[F]
+    with SplitTests[F]
+    with StrongTests[F] {
   def laws: ArrowLaws[F]
 
-  def arrow[A : Arbitrary,
-            B : Arbitrary,
-            C : Arbitrary,
-            D : Arbitrary,
-            E : Arbitrary,
-            G : Arbitrary](
-      implicit ArbFAB: Arbitrary[F[A, B]],
+  def arrow[
+      A: Arbitrary,
+      B: Arbitrary,
+      C: Arbitrary,
+      D: Arbitrary,
+      E: Arbitrary,
+      G: Arbitrary
+  ](implicit
+      ArbFAB: Arbitrary[F[A, B]],
       ArbFBC: Arbitrary[F[B, C]],
       ArbFCD: Arbitrary[F[C, D]],
       ArbFDE: Arbitrary[F[D, E]],
@@ -34,16 +38,19 @@ trait ArrowTests[F[_, _]]
       EqFADCG: Eq[F[(A, D), (C, G)]],
       EqFAEDE: Eq[F[(A, E), (D, E)]],
       EqFEAED: Eq[F[(E, A), (E, D)]],
-      EqFACDBCD: Eq[F[((A, C), D), (B, (C, D))]]): RuleSet =
+      EqFACDBCD: Eq[F[((A, C), D), (B, (C, D))]]
+  ): RuleSet =
     new RuleSet {
       def name: String = "arrow"
       def bases: Seq[(String, RuleSet)] = Nil
-      def parents: Seq[RuleSet] = Seq(
+      def parents: Seq[RuleSet] =
+        Seq(
           category[A, B, C, D],
           split[A, B, C, D, E, G],
           strong[A, B, C, D, E, G]
-      )
-      def props: Seq[(String, Prop)] = Seq(
+        )
+      def props: Seq[(String, Prop)] =
+        Seq(
           "arrow identity" -> laws.arrowIdentity[A],
           "arrow composition" -> forAll(laws.arrowComposition[A, B, C] _),
           "arrow extension" -> forAll(laws.arrowExtension[A, B, C] _),
@@ -51,7 +58,7 @@ trait ArrowTests[F[_, _]]
           "arrow exchange" -> forAll(laws.arrowExchange[A, B, C, D] _),
           "arrow unit" -> forAll(laws.arrowUnit[A, B, C] _),
           "arrow association" -> forAll(laws.arrowAssociation[A, B, C, D] _)
-      )
+        )
     }
 }
 

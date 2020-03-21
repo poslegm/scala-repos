@@ -28,20 +28,21 @@ import LogDouble._;
 class LogDoubleTest extends FunSuite with Checkers {
 
   import Arbitrary.arbitrary;
-  implicit val ad: Arbitrary[Double] = Arbitrary(
-      for {
-    d <- arbitrary[Double](Arbitrary.arbDouble) map {
-      _ % 1000 abs
-    } suchThat {
-      _ > 0
-    }
+  implicit val ad: Arbitrary[Double] = Arbitrary(for {
+    d <-
+      arbitrary[Double](Arbitrary.arbDouble) map {
+        _ % 1000 abs
+      } suchThat {
+        _ > 0
+      }
   } yield {
     d
   });
 
-  implicit def ae(x: Double) = new {
-    def =~=(y: Double) = math.abs(x - y) / x < 1E-6;
-  }
+  implicit def ae(x: Double) =
+    new {
+      def =~=(y: Double) = math.abs(x - y) / x < 1e-6;
+    }
 
   test("addition") {
     check {

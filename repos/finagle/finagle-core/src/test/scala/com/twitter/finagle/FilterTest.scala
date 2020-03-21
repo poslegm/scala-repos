@@ -33,10 +33,9 @@ class FilterTest extends FunSuite {
   }
 
   test(
-      "Filter.andThen(Filter): lifts synchronous exceptions into Future.exception") {
-    val fail = Filter.mk[Int, Int, Int, Int] { (_, _) =>
-      throw new Exception
-    }
+    "Filter.andThen(Filter): lifts synchronous exceptions into Future.exception"
+  ) {
+    val fail = Filter.mk[Int, Int, Int, Int] { (_, _) => throw new Exception }
     val svc = (new PassThruFilter).andThen(fail).andThen(constSvc)
     val result = Await.result(svc(4).liftToTry)
     assert(result.isThrow)
@@ -50,7 +49,8 @@ class FilterTest extends FunSuite {
   }
 
   test(
-      "Filter.andThen(Service): lifts synchronous exceptions into Future.exception") {
+    "Filter.andThen(Service): lifts synchronous exceptions into Future.exception"
+  ) {
     val svc = (new PassThruFilter).andThen(NilService)
     val result = Await.result(svc(4).liftToTry)
     assert(result.isThrow)
@@ -100,7 +100,8 @@ class FilterTest extends FunSuite {
   }
 
   test(
-      "Filter.TypeAgnostic.toFilter distributes over Filter.TypeAgnostic.andThen") {
+    "Filter.TypeAgnostic.toFilter distributes over Filter.TypeAgnostic.andThen"
+  ) {
     val calls = List.newBuilder[(Any, Any)]
     class TestFilter extends Filter.TypeAgnostic {
       def toFilter[Req, Rep] =
@@ -139,7 +140,9 @@ class FilterTest extends FunSuite {
     assert(distributed == composed)
   }
 
-  test("Filter.TypeAgnostic.Identity is a left and right identity for andThen") {
+  test(
+    "Filter.TypeAgnostic.Identity is a left and right identity for andThen"
+  ) {
     // The property that we want is that it is a left and right identity
     // *for the filter that is produced by toFilter*. We don't care
     // whether it is an identity at the TypeAgnostic level, because

@@ -53,9 +53,13 @@ object StackServer {
     val stk =
       new StackBuilder[ServiceFactory[Req, Rep]](stack.nilStack[Req, Rep])
 
-    stk.push(Role.serverDestTracing,
-             ((next: ServiceFactory[Req, Rep]) =>
-               new ServerDestTracingProxy[Req, Rep](next)))
+    stk.push(
+      Role.serverDestTracing,
+      (
+          (next: ServiceFactory[Req, Rep]) =>
+            new ServerDestTracingProxy[Req, Rep](next)
+      )
+    )
     stk.push(TimeoutFilter.serverModule)
     // The DeadlineFilter is pushed after the stats filters so stats are
     // recorded for the request. If a server processing deadline is set in
@@ -72,9 +76,13 @@ object StackServer {
     stk.push(RequestSemaphoreFilter.module)
     stk.push(MaskCancelFilter.module)
     stk.push(ExceptionSourceFilter.module)
-    stk.push(Role.jvmTracing,
-             ((next: ServiceFactory[Req, Rep]) =>
-               newJvmFilter[Req, Rep]() andThen next))
+    stk.push(
+      Role.jvmTracing,
+      (
+          (next: ServiceFactory[Req, Rep]) =>
+            newJvmFilter[Req, Rep]() andThen next
+      )
+    )
     stk.push(ServerStatsFilter.module)
     stk.push(Role.protoTracing, identity[ServiceFactory[Req, Rep]](_))
     stk.push(ServerTracingFilter.module)
@@ -121,7 +129,7 @@ trait StackServer[Req, Rep]
 
   def withParams(ps: Stack.Params): StackServer[Req, Rep]
 
-  override def configured[P : Param](p: P): StackServer[Req, Rep]
+  override def configured[P: Param](p: P): StackServer[Req, Rep]
 
   override def configured[P](psp: (P, Param[P])): StackServer[Req, Rep]
 }
@@ -137,8 +145,10 @@ trait StackServer[Req, Rep]
   *      servers.
   */
 trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
-    extends StackServer[Req, Rep] with Stack.Parameterized[This]
-    with CommonParams[This] with WithServerTransport[This]
+    extends StackServer[Req, Rep]
+    with Stack.Parameterized[This]
+    with CommonParams[This]
+    with WithServerTransport[This]
     with WithServerAdmissionControl[This] {
   self =>
 
@@ -167,12 +177,14 @@ trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
     * @see [[com.twitter.finagle.dispatch.GenSerialServerDispatcher]]
     */
   protected def newDispatcher(
-      transport: Transport[In, Out], service: Service[Req, Rep]): Closable
+      transport: Transport[In, Out],
+      service: Service[Req, Rep]
+  ): Closable
 
   /**
     * Creates a new StackServer with parameter `p`.
     */
-  override def configured[P : Stack.Param](p: P): This =
+  override def configured[P: Stack.Param](p: P): This =
     withParams(params + p)
 
   /**
@@ -201,8 +213,10 @@ trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
       params: Stack.Params = this.params
   ): This { type In = self.In; type Out = self.Out }
 
-  def serve(addr: SocketAddress,
-            factory: ServiceFactory[Req, Rep]): ListeningServer =
+  def serve(
+      addr: SocketAddress,
+      factory: ServiceFactory[Req, Rep]
+  ): ListeningServer =
     new ListeningServer with CloseAwaitably {
       // Ensure that we have performed global initialization.
       com.twitter.finagle.Init()
@@ -222,17 +236,19 @@ trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
       // in-flight requests is expected to be managed by `newDispatcher`,
       // so we can simply `close` all connections here.
       val connections = Collections.newSetFromMap(
-          new ConcurrentHashMap[Closable, java.lang.Boolean])
+        new ConcurrentHashMap[Closable, java.lang.Boolean]
+      )
 
       // Hydrates a new ClientConnection with connection information from the
       // given `transport`. ClientConnection instances are used to
       // thread this through a finagle server stack.
-      def newConn(transport: Transport[In, Out]) = new ClientConnection {
-        val remoteAddress = transport.remoteAddress
-        val localAddress = transport.localAddress
-        def close(deadline: Time) = transport.close(deadline)
-        val onClose = transport.onClose.map(_ => ())
-      }
+      def newConn(transport: Transport[In, Out]) =
+        new ClientConnection {
+          val remoteAddress = transport.remoteAddress
+          val localAddress = transport.localAddress
+          def close(deadline: Time) = transport.close(deadline)
+          val onClose = transport.onClose.map(_ => ())
+        }
 
       val statsReceiver =
         if (serverLabel.isEmpty) stats
@@ -240,7 +256,8 @@ trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
 
       val serverParams =
         params + Label(serverLabel) + Stats(statsReceiver) + Monitor(
-            reporter(label, None) andThen monitor)
+          reporter(label, None) andThen monitor
+        )
 
       val serviceFactory =
         (stack ++ Stack.Leaf(Endpoint, factory)).make(serverParams)
@@ -262,9 +279,13 @@ trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
             // away. This allows protocols that support graceful shutdown to
             // also gracefully deny new sessions.
             val d = server.newDispatcher(
-                transport,
-                Service.const(Future.exception(Failure.rejected(
-                            "Terminating session and ignoring request", exc)))
+              transport,
+              Service.const(
+                Future.exception(
+                  Failure
+                    .rejected("Terminating session and ignoring request", exc)
+                )
+              )
             )
             connections.add(d)
             transport.onClose ensure connections.remove(d)
@@ -275,28 +296,32 @@ trait StdStackServer[Req, Rep, This <: StdStackServer[Req, Rep, This]]
       }
 
       ServerRegistry.register(
-          underlying.boundAddress.toString, server.stack, server.params)
+        underlying.boundAddress.toString,
+        server.stack,
+        server.params
+      )
 
-      protected def closeServer(deadline: Time) = closeAwaitably {
-        // Here be dragons
-        // We want to do four things here in this order:
-        // 1. close the listening socket
-        // 2. close the factory (not sure if ordering matters for this step)
-        // 3. drain pending requests for existing connections
-        // 4. close those connections when their requests complete
-        // closing `underlying` eventually calls Netty3Listener.close which has an
-        // interesting side-effect of synchronously closing #1
-        val ulClosed = underlying.close(deadline)
+      protected def closeServer(deadline: Time) =
+        closeAwaitably {
+          // Here be dragons
+          // We want to do four things here in this order:
+          // 1. close the listening socket
+          // 2. close the factory (not sure if ordering matters for this step)
+          // 3. drain pending requests for existing connections
+          // 4. close those connections when their requests complete
+          // closing `underlying` eventually calls Netty3Listener.close which has an
+          // interesting side-effect of synchronously closing #1
+          val ulClosed = underlying.close(deadline)
 
-        // However we don't want to wait on the above because it will only complete
-        // when #4 is finished.  So we ignore it and close everything else.  Note that
-        // closing the connections here will do #2 and drain them via the Dispatcher.
-        val everythingElse =
-          Seq[Closable](factory) ++ connections.asScala.toSeq
+          // However we don't want to wait on the above because it will only complete
+          // when #4 is finished.  So we ignore it and close everything else.  Note that
+          // closing the connections here will do #2 and drain them via the Dispatcher.
+          val everythingElse =
+            Seq[Closable](factory) ++ connections.asScala.toSeq
 
-        // and once they're drained we can then wait on the listener physically closing them
-        Closable.all(everythingElse: _*).close(deadline) before ulClosed
-      }
+          // and once they're drained we can then wait on the listener physically closing them
+          Closable.all(everythingElse: _*).close(deadline) before ulClosed
+        }
 
       def boundAddress = underlying.boundAddress
     }

@@ -1,5 +1,9 @@
 import scala.collection.parallel.{ParMap => PMap}
-import scala.collection.parallel.mutable.{ParHashSet => PMHashSet, ParHashMap => PMHashMap, ParArray}
+import scala.collection.parallel.mutable.{
+  ParHashSet => PMHashSet,
+  ParHashMap => PMHashMap,
+  ParArray
+}
 import scala.util.Random
 import scala.collection.parallel.CompositeThrowable
 
@@ -10,12 +14,8 @@ object Test {
     val M = 1500
     var unmatchedLeft = new PMHashSet[Int]
     var unmatchedRight = new PMHashSet[Int]
-    Range(0, N).foreach { x =>
-      unmatchedLeft += x
-    }
-    Range(0, M).foreach { x =>
-      unmatchedRight += x
-    }
+    Range(0, N).foreach { x => unmatchedLeft += x }
+    Range(0, M).foreach { x => unmatchedRight += x }
 
     try {
       val matches = unmatchedLeft.flatMap { lind: Int =>
@@ -27,8 +27,8 @@ object Test {
       }
     } catch {
       case c: CompositeThrowable =>
-        for (t <- c.throwables) println(
-            "\n%s\n%s".format(t, t.getStackTrace.mkString("\n")))
+        for (t <- c.throwables)
+          println("\n%s\n%s".format(t, t.getStackTrace.mkString("\n")))
     }
   }
 }

@@ -19,16 +19,21 @@ class MacrosheetFileHook(private val project: Project)
   override def projectOpened() {
     project.getMessageBus
       .connect(project)
-      .subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER,
-                 MacrosheetEditorListener)
+      .subscribe(
+        FileEditorManagerListener.FILE_EDITOR_MANAGER,
+        MacrosheetEditorListener
+      )
   }
 
   override def projectClosed() {
-    ApplicationManager.getApplication.invokeAndWait(new Runnable {
-      def run() {
-        WorksheetViewerInfo.invalidate()
-      }
-    }, ModalityState.any())
+    ApplicationManager.getApplication.invokeAndWait(
+      new Runnable {
+        def run() {
+          WorksheetViewerInfo.invalidate()
+        }
+      },
+      ModalityState.any()
+    )
   }
 
   override def disposeComponent() {}
@@ -91,17 +96,21 @@ class MacrosheetFileHook(private val project: Project)
 
     override def documentChanged(e: DocumentEvent) {
       myAlarm.cancelAllRequests()
-      myAlarm.addRequest(new Runnable {
-        override def run() {
-          val sourcEditor =
-            FileEditorManager.getInstance(project).getSelectedTextEditor
-          val macroEditor = WorksheetViewerInfo.getViewer(sourcEditor)
-          if (macroEditor != null &&
-              macroEditor.getDocument.getTextLength > 0) {
-            ScalaMacroDebuggingUtil.expandMacros(sourcEditor.getProject)
+      myAlarm.addRequest(
+        new Runnable {
+          override def run() {
+            val sourcEditor =
+              FileEditorManager.getInstance(project).getSelectedTextEditor
+            val macroEditor = WorksheetViewerInfo.getViewer(sourcEditor)
+            if (macroEditor != null &&
+                macroEditor.getDocument.getTextLength > 0) {
+              ScalaMacroDebuggingUtil.expandMacros(sourcEditor.getProject)
+            }
           }
-        }
-      }, RUN_DELAY_MS, true)
+        },
+        RUN_DELAY_MS,
+        true
+      )
     }
   }
 }

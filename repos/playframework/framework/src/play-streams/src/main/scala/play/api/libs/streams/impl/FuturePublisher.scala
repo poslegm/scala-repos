@@ -19,7 +19,8 @@ private[streams] trait FutureSubscriptionFactory[T]
 
   override def createSubscription[U >: T](
       subr: Subscriber[U],
-      onSubscriptionEnded: SubscriptionHandle[U] => Unit) = {
+      onSubscriptionEnded: SubscriptionHandle[U] => Unit
+  ) = {
     new FutureSubscription[T, U](fut, subr, onSubscriptionEnded)
   }
 }
@@ -28,7 +29,8 @@ private[streams] trait FutureSubscriptionFactory[T]
   * Adapts an Future to a Publisher.
   */
 private[streams] final class FuturePublisher[T](val fut: Future[T])
-    extends RelaxedPublisher[T] with FutureSubscriptionFactory[T]
+    extends RelaxedPublisher[T]
+    with FutureSubscriptionFactory[T]
 
 private[streams] object FutureSubscription {
 
@@ -65,9 +67,10 @@ import FutureSubscription._
 private[streams] class FutureSubscription[T, U >: T](
     fut: Future[T],
     subr: Subscriber[U],
-    onSubscriptionEnded: SubscriptionHandle[U] => Unit)
-    extends StateMachine[State](initialState = AwaitingRequest)
-    with Subscription with SubscriptionHandle[U] {
+    onSubscriptionEnded: SubscriptionHandle[U] => Unit
+) extends StateMachine[State](initialState = AwaitingRequest)
+    with Subscription
+    with SubscriptionHandle[U] {
 
   // SubscriptionHandle methods
 
@@ -81,10 +84,11 @@ private[streams] class FutureSubscription[T, U >: T](
     }
   }
 
-  override def isActive: Boolean = state match {
-    case AwaitingRequest | Requested => true
-    case Cancelled | Completed => false
-  }
+  override def isActive: Boolean =
+    state match {
+      case AwaitingRequest | Requested => true
+      case Cancelled | Completed       => false
+    }
 
   override def subscriber: Subscriber[U] = subr
 
@@ -93,7 +97,8 @@ private[streams] class FutureSubscription[T, U >: T](
   override def request(elements: Long): Unit = {
     if (elements <= 0)
       throw new IllegalArgumentException(
-          s"The number of requested elements must be > 0: requested $elements elements")
+        s"The number of requested elements must be > 0: requested $elements elements"
+      )
     exclusive {
       case AwaitingRequest =>
         state = Requested
@@ -112,40 +117,47 @@ private[streams] class FutureSubscription[T, U >: T](
     }
   }
 
-  override def cancel(): Unit = exclusive {
-    case AwaitingRequest =>
-      state = Cancelled
-    case Requested =>
-      state = Cancelled
-    case _ =>
-      ()
-  }
+  override def cancel(): Unit =
+    exclusive {
+      case AwaitingRequest =>
+        state = Cancelled
+      case Requested =>
+        state = Cancelled
+      case _ =>
+        ()
+    }
 
   /**
     * Called when both an element has been requested and the Future is
     * completed. Calls onNext/onComplete or onError on the Subscriber.
     */
-  private def onFutureCompleted(result: Try[T]): Unit = exclusive {
-    case AwaitingRequest =>
-      throw new IllegalStateException(
-          "onFutureCompleted shouldn't be called when in state AwaitingRequest")
-    case Requested =>
-      state = Completed
-      result match {
-        case Success(null) =>
-          subr.onError(new NullPointerException(
-                  "Future completed with a null value that cannot be sent by a Publisher"))
-        case Success(value) =>
-          subr.onNext(value)
-          subr.onComplete()
-        case Failure(t) =>
-          subr.onError(t)
-      }
-      onSubscriptionEnded(this)
-    case Cancelled =>
-      ()
-    case Completed =>
-      throw new IllegalStateException(
-          "onFutureCompleted shouldn't be called when already in state Completed")
-  }
+  private def onFutureCompleted(result: Try[T]): Unit =
+    exclusive {
+      case AwaitingRequest =>
+        throw new IllegalStateException(
+          "onFutureCompleted shouldn't be called when in state AwaitingRequest"
+        )
+      case Requested =>
+        state = Completed
+        result match {
+          case Success(null) =>
+            subr.onError(
+              new NullPointerException(
+                "Future completed with a null value that cannot be sent by a Publisher"
+              )
+            )
+          case Success(value) =>
+            subr.onNext(value)
+            subr.onComplete()
+          case Failure(t) =>
+            subr.onError(t)
+        }
+        onSubscriptionEnded(this)
+      case Cancelled =>
+        ()
+      case Completed =>
+        throw new IllegalStateException(
+          "onFutureCompleted shouldn't be called when already in state Completed"
+        )
+    }
 }

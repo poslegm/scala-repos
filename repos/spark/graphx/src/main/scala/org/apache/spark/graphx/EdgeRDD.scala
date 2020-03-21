@@ -40,16 +40,19 @@ abstract class EdgeRDD[ED](sc: SparkContext, deps: Seq[Dependency[_]])
     extends RDD[Edge[ED]](sc, deps) {
 
   // scalastyle:off structural.type
-  private[graphx] def partitionsRDD: RDD[(PartitionID, EdgePartition[ED, VD])] forSome {
-    type VD
-  }
+  private[graphx] def partitionsRDD
+      : RDD[(PartitionID, EdgePartition[ED, VD])] forSome {
+        type VD
+      }
   // scalastyle:on structural.type
 
   override protected def getPartitions: Array[Partition] =
     partitionsRDD.partitions
 
   override def compute(
-      part: Partition, context: TaskContext): Iterator[Edge[ED]] = {
+      part: Partition,
+      context: TaskContext
+  ): Iterator[Edge[ED]] = {
     val p =
       firstParent[(PartitionID, EdgePartition[ED, _])].iterator(part, context)
     if (p.hasNext) {
@@ -66,7 +69,7 @@ abstract class EdgeRDD[ED](sc: SparkContext, deps: Seq[Dependency[_]])
     * @param f the function from an edge to a new edge value
     * @return a new EdgeRDD containing the new edge values
     */
-  def mapValues[ED2 : ClassTag](f: Edge[ED] => ED2): EdgeRDD[ED2]
+  def mapValues[ED2: ClassTag](f: Edge[ED] => ED2): EdgeRDD[ED2]
 
   /**
     * Reverse all the edges in this RDD.
@@ -84,8 +87,9 @@ abstract class EdgeRDD[ED](sc: SparkContext, deps: Seq[Dependency[_]])
     * @return a new EdgeRDD containing only edges that appear in both `this` and `other`,
     *         with values supplied by `f`
     */
-  def innerJoin[ED2 : ClassTag, ED3 : ClassTag](other: EdgeRDD[ED2])(
-      f: (VertexId, VertexId, ED, ED2) => ED3): EdgeRDD[ED3]
+  def innerJoin[ED2: ClassTag, ED3: ClassTag](other: EdgeRDD[ED2])(
+      f: (VertexId, VertexId, ED, ED2) => ED3
+  ): EdgeRDD[ED3]
 
   /**
     * Changes the target storage level while preserving all other properties of the
@@ -95,7 +99,8 @@ abstract class EdgeRDD[ED](sc: SparkContext, deps: Seq[Dependency[_]])
     * [[org.apache.spark.graphx.EdgeRDD#cache]] on the returned EdgeRDD.
     */
   private[graphx] def withTargetStorageLevel(
-      targetStorageLevel: StorageLevel): EdgeRDD[ED]
+      targetStorageLevel: StorageLevel
+  ): EdgeRDD[ED]
 }
 
 object EdgeRDD {
@@ -106,13 +111,12 @@ object EdgeRDD {
     * @tparam ED the edge attribute type
     * @tparam VD the type of the vertex attributes that may be joined with the returned EdgeRDD
     */
-  def fromEdges[ED : ClassTag, VD : ClassTag](
-      edges: RDD[Edge[ED]]): EdgeRDDImpl[ED, VD] = {
+  def fromEdges[ED: ClassTag, VD: ClassTag](
+      edges: RDD[Edge[ED]]
+  ): EdgeRDDImpl[ED, VD] = {
     val edgePartitions = edges.mapPartitionsWithIndex { (pid, iter) =>
       val builder = new EdgePartitionBuilder[ED, VD]
-      iter.foreach { e =>
-        builder.add(e.srcId, e.dstId, e.attr)
-      }
+      iter.foreach { e => builder.add(e.srcId, e.dstId, e.attr) }
       Iterator((pid, builder.toEdgePartition))
     }
     EdgeRDD.fromEdgePartitions(edgePartitions)
@@ -124,9 +128,9 @@ object EdgeRDD {
     * @tparam ED the edge attribute type
     * @tparam VD the type of the vertex attributes that may be joined with the returned EdgeRDD
     */
-  private[graphx] def fromEdgePartitions[ED : ClassTag, VD : ClassTag](
-      edgePartitions: RDD[(Int, EdgePartition[ED, VD])])
-    : EdgeRDDImpl[ED, VD] = {
+  private[graphx] def fromEdgePartitions[ED: ClassTag, VD: ClassTag](
+      edgePartitions: RDD[(Int, EdgePartition[ED, VD])]
+  ): EdgeRDDImpl[ED, VD] = {
     new EdgeRDDImpl(edgePartitions)
   }
 }

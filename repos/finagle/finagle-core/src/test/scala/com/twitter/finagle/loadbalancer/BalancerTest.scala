@@ -1,7 +1,11 @@
 package com.twitter.finagle.loadbalancer
 
 import com.twitter.finagle._
-import com.twitter.finagle.stats.{InMemoryStatsReceiver, StatsReceiver, NullStatsReceiver}
+import com.twitter.finagle.stats.{
+  InMemoryStatsReceiver,
+  StatsReceiver,
+  NullStatsReceiver
+}
 import com.twitter.util.{Future, Time}
 import java.util.concurrent.atomic.AtomicInteger
 import org.junit.runner.RunWith
@@ -13,12 +17,15 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 @RunWith(classOf[JUnitRunner])
 private class BalancerTest
-    extends FunSuite with Conductors with IntegrationPatience
+    extends FunSuite
+    with Conductors
+    with IntegrationPatience
     with GeneratorDrivenPropertyChecks {
 
   private class TestBalancer(
-      protected val statsReceiver: InMemoryStatsReceiver = new InMemoryStatsReceiver)
-      extends Balancer[Unit, Unit] {
+      protected val statsReceiver: InMemoryStatsReceiver =
+        new InMemoryStatsReceiver
+  ) extends Balancer[Unit, Unit] {
     def maxEffort: Int = 5
     def emptyException: Throwable = ???
 
@@ -77,18 +84,19 @@ private class BalancerTest
     protected def initDistributor(): Distributor = Distributor(Vector.empty)
   }
 
-  def newFac(_status: Status = Status.Open) = new ServiceFactory[Unit, Unit] {
-    def apply(conn: ClientConnection) = Future.never
+  def newFac(_status: Status = Status.Open) =
+    new ServiceFactory[Unit, Unit] {
+      def apply(conn: ClientConnection) = Future.never
 
-    override def status = _status
+      override def status = _status
 
-    @volatile var ncloses = 0
+      @volatile var ncloses = 0
 
-    def close(deadline: Time) = {
-      synchronized { ncloses += 1 }
-      Future.Done
+      def close(deadline: Time) = {
+        synchronized { ncloses += 1 }
+        Future.Done
+      }
     }
-  }
 
   val genStatus = Gen.oneOf(Status.Open, Status.Busy, Status.Closed)
   val genSvcFac = genStatus.map(newFac)

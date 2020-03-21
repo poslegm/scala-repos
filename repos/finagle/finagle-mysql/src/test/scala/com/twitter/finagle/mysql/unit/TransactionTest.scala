@@ -16,7 +16,8 @@ class TransactionTest extends FunSuite with MockitoSugar with MustMatchers {
   private val sqlQuery = "SELECT * FROM FOO"
 
   test(
-      "transaction test uses a single service repeatedly and closes it upon completion") {
+    "transaction test uses a single service repeatedly and closes it upon completion"
+  ) {
     val service = new MockService()
     val factory = spy(new MockServiceFactory(service))
     val client = Client(factory)
@@ -30,12 +31,13 @@ class TransactionTest extends FunSuite with MockitoSugar with MustMatchers {
 
     Await.result(result) must equal("success")
     service.requests must equal(
-        List(
-            "START TRANSACTION",
-            sqlQuery,
-            sqlQuery,
-            "COMMIT"
-        ).map(QueryRequest(_)))
+      List(
+        "START TRANSACTION",
+        sqlQuery,
+        sqlQuery,
+        "COMMIT"
+      ).map(QueryRequest(_))
+    )
 
     verify(factory, times(1)).apply()
     verify(factory, times(0)).close(any[Time])
@@ -54,9 +56,7 @@ class TransactionTest extends FunSuite with MockitoSugar with MustMatchers {
             "first response object"
           }
           .flatMap { r2 =>
-            c.query(sqlQuery).map { r3 =>
-              "final response object"
-            }
+            c.query(sqlQuery).map { r3 => "final response object" }
           }
       }
     } catch {
@@ -64,11 +64,12 @@ class TransactionTest extends FunSuite with MockitoSugar with MustMatchers {
     }
 
     service.requests must equal(
-        List(
-            "START TRANSACTION",
-            sqlQuery,
-            "ROLLBACK"
-        ).map(QueryRequest(_)))
+      List(
+        "START TRANSACTION",
+        sqlQuery,
+        "ROLLBACK"
+      ).map(QueryRequest(_))
+    )
 
     verify(factory, times(1)).apply()
     verify(factory, times(0)).close(any[Time])

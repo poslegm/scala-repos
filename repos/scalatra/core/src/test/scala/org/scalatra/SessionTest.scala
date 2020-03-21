@@ -13,9 +13,7 @@ class SessionTestServlet extends ScalatraServlet {
   }
 
   get("/session-option") {
-    sessionOption map { _ =>
-      "Some"
-    } getOrElse "None"
+    sessionOption map { _ => "Some" } getOrElse "None"
   }
   get("/session-symbol") {
     session.getOrElse('val, "failure!")
@@ -42,7 +40,8 @@ class SessionTest extends ScalatraFunSuite {
   }
 
   test(
-      "GET /session with the session should return the data set in POST /session") {
+    "GET /session with the session should return the data set in POST /session"
+  ) {
     val data = "some data going in as symbol"
     session {
       post("/session", "val" -> data) {
@@ -55,7 +54,8 @@ class SessionTest extends ScalatraFunSuite {
   }
 
   test(
-      "GET /session with the session should return the data set in POST /session even via symbol") {
+    "GET /session with the session should return the data set in POST /session even via symbol"
+  ) {
     val data = "session_value"
     session {
       post("/session", "val" -> data) {

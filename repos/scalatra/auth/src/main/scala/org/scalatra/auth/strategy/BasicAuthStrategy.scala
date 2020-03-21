@@ -32,8 +32,10 @@ trait BasicAuthSupport[UserType <: AnyRef] {
 
   def realm: String
 
-  protected def basicAuth()(
-      implicit request: HttpServletRequest, response: HttpServletResponse) = {
+  protected def basicAuth()(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ) = {
     val baReq = new BasicAuthStrategy.BasicAuthRequest(request)
     if (!baReq.providesAuth) {
       response.setHeader("WWW-Authenticate", "Basic realm=\"%s\"" format realm)
@@ -48,10 +50,12 @@ trait BasicAuthSupport[UserType <: AnyRef] {
 
 object BasicAuthStrategy {
 
-  private val AUTHORIZATION_KEYS = List("Authorization",
-                                        "HTTP_AUTHORIZATION",
-                                        "X-HTTP_AUTHORIZATION",
-                                        "X_HTTP_AUTHORIZATION")
+  private val AUTHORIZATION_KEYS = List(
+    "Authorization",
+    "HTTP_AUTHORIZATION",
+    "X-HTTP_AUTHORIZATION",
+    "X_HTTP_AUTHORIZATION"
+  )
   class BasicAuthRequest(r: HttpServletRequest) {
 
     def parts =
@@ -63,9 +67,7 @@ object BasicAuthStrategy {
     private def authorizationKey =
       AUTHORIZATION_KEYS.find(r.getHeader(_) != null)
 
-    def isBasicAuth = (false /: scheme) { (_, sch) =>
-      sch == "basic"
-    }
+    def isBasicAuth = (false /: scheme) { (_, sch) => sch == "basic" }
     def providesAuth = authorizationKey.isDefined
 
     private[this] var _credentials: Option[(String, String)] = None
@@ -73,10 +75,9 @@ object BasicAuthStrategy {
       if (_credentials.isEmpty)
         _credentials = params map { p =>
           (null.asInstanceOf[(String, String)] /: new String(
-                  Base64.decode(p), Codec.UTF8.charSet).split(":", 2)) {
-            (t, l) =>
-              if (t == null) (l, null) else (t._1, l)
-          }
+            Base64.decode(p),
+            Codec.UTF8.charSet
+          ).split(":", 2)) { (t, l) => if (t == null) (l, null) else (t._1, l) }
         }
       _credentials
     }
@@ -85,8 +86,10 @@ object BasicAuthStrategy {
   }
 }
 abstract class BasicAuthStrategy[UserType <: AnyRef](
-    protected val app: ScalatraBase, realm: String)
-    extends ScentryStrategy[UserType] with RemoteAddress {
+    protected val app: ScalatraBase,
+    realm: String
+) extends ScentryStrategy[UserType]
+    with RemoteAddress {
 
   private[this] val REMOTE_USER = "REMOTE_USER"
 
@@ -98,29 +101,36 @@ abstract class BasicAuthStrategy[UserType <: AnyRef](
   override def isValid(implicit request: HttpServletRequest) =
     request.isBasicAuth && request.providesAuth
 
-  def authenticate()(
-      implicit request: HttpServletRequest, response: HttpServletResponse) =
+  def authenticate()(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ) =
     validate(request.username, request.password)
 
-  protected def getUserId(user: UserType)(
-      implicit request: HttpServletRequest,
-      response: HttpServletResponse): String
-  protected def validate(userName: String, password: String)(
-      implicit request: HttpServletRequest,
-      response: HttpServletResponse): Option[UserType]
+  protected def getUserId(
+      user: UserType
+  )(implicit request: HttpServletRequest, response: HttpServletResponse): String
+  protected def validate(userName: String, password: String)(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Option[UserType]
 
-  override def afterSetUser(user: UserType)(
-      implicit request: HttpServletRequest, response: HttpServletResponse) {
+  override def afterSetUser(
+      user: UserType
+  )(implicit request: HttpServletRequest, response: HttpServletResponse) {
     response.setHeader(REMOTE_USER, getUserId(user))
   }
 
-  override def unauthenticated()(
-      implicit request: HttpServletRequest, response: HttpServletResponse) {
+  override def unauthenticated()(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ) {
     app halt Unauthorized(headers = Map("WWW-Authenticate" -> challenge))
   }
 
-  override def afterLogout(user: UserType)(
-      implicit request: HttpServletRequest, response: HttpServletResponse) {
+  override def afterLogout(
+      user: UserType
+  )(implicit request: HttpServletRequest, response: HttpServletResponse) {
     response.setHeader(REMOTE_USER, "")
   }
 }

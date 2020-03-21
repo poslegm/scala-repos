@@ -34,7 +34,7 @@ object ScalarTagTime extends ScalarTagAny[DateTime] {
     while (i < sz) {
       larr(i) = Option(arr(i)) match {
         case Some(x) => x.getMillis
-        case None => ScalarTagLong.missing
+        case None    => ScalarTagLong.missing
       }
       i += 1
     }
@@ -44,8 +44,9 @@ object ScalarTagTime extends ScalarTagAny[DateTime] {
   override def makeVec(arr: Array[DateTime]): Vec[DateTime] =
     new VecTime(Vec(time2LongArray(arr)))
 
-  override def makeIndex(vec: Vec[DateTime])(
-      implicit ord: ORD[DateTime]): Index[DateTime] =
+  override def makeIndex(
+      vec: Vec[DateTime]
+  )(implicit ord: ORD[DateTime]): Index[DateTime] =
     new IndexTime(Index(time2LongArray(vec.toArray)))
 
   override def makeSorter(implicit ord: ORD[DateTime]): Sorter[DateTime] =

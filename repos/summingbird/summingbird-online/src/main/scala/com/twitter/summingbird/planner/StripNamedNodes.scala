@@ -22,12 +22,14 @@ import scala.collection.breakOut
 case class ProducerF[P <: Platform[P]](
     oldSources: List[Producer[P, Any]],
     oldRef: Producer[P, Any],
-    f: List[Producer[P, Any]] => Producer[P, Any])
+    f: List[Producer[P, Any]] => Producer[P, Any]
+)
 
 object StripNamedNode {
 
   private[this] def castTail[P <: Platform[P], T](
-      node: Producer[P, T]): TailProducer[P, T] =
+      node: Producer[P, T]
+  ): TailProducer[P, T] =
     node.asInstanceOf[TailProducer[P, T]]
 
   /**
@@ -35,28 +37,31 @@ object StripNamedNode {
     * This returns those
     */
   private def irreducible[P <: Platform[P]](
-      node: Producer[P, Any]): Option[Any] =
+      node: Producer[P, Any]
+  ): Option[Any] =
     node match {
-      case Source(src) => Some(src)
-      case OptionMappedProducer(_, fn) => Some(fn)
-      case FlatMappedProducer(_, fn) => Some(fn)
+      case Source(src)                    => Some(src)
+      case OptionMappedProducer(_, fn)    => Some(fn)
+      case FlatMappedProducer(_, fn)      => Some(fn)
       case ValueFlatMappedProducer(_, fn) => Some(fn)
-      case KeyFlatMappedProducer(_, fn) => Some(fn)
-      case LeftJoinedProducer(_, serv) => Some(serv)
-      case Summer(_, store, semi) => Some((store, semi))
-      case WrittenProducer(_, sink) => Some(sink)
+      case KeyFlatMappedProducer(_, fn)   => Some(fn)
+      case LeftJoinedProducer(_, serv)    => Some(serv)
+      case Summer(_, store, semi)         => Some((store, semi))
+      case WrittenProducer(_, sink)       => Some(sink)
       // The following have nothing to put options on:
-      case AlsoProducer(_, producer) => None
-      case NamedProducer(producer, _) => None
+      case AlsoProducer(_, producer)       => None
+      case NamedProducer(producer, _)      => None
       case IdentityKeyedProducer(producer) => None
-      case MergedProducer(l, r) => None
+      case MergedProducer(l, r)            => None
       case _ =>
         sys.error(
-            "Unreachable. Here to warn us if we add Producer subclasses but forget to update this")
+          "Unreachable. Here to warn us if we add Producer subclasses but forget to update this"
+        )
     }
 
-  def apply[P <: Platform[P], T](tail: TailProducer[P, T])
-    : (Map[Producer[P, Any], List[String]], TailProducer[P, T]) = {
+  def apply[P <: Platform[P], T](
+      tail: TailProducer[P, T]
+  ): (Map[Producer[P, Any], List[String]], TailProducer[P, T]) = {
     val dagOpt = new DagOptimizer[P] {}
     // It must be a tail, but the optimizer doesn't retain that information
     val newTail = castTail(dagOpt.optimize(tail, dagOpt.RemoveNames))
@@ -96,9 +101,10 @@ object StripNamedNode {
           case None =>
             val newLine = "\n"
             sys.error(
-                s"Node $n in the new node has no corresponding node in the original graph: ${tail}.\n" +
+              s"Node $n in the new node has no corresponding node in the original graph: ${tail}.\n" +
                 s"new: ${newNodeIrr}\n" +
-                s"old: ${oldIrrToNode.mkString(newLine)}")
+                s"old: ${oldIrrToNode.mkString(newLine)}"
+            )
         }
       }(breakOut)
     (newNames, newTail)

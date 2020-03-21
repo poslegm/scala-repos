@@ -245,16 +245,17 @@ object mon {
   }
   object fishnet {
     object client {
-      def result(client: String, skill: String) = new {
-        def success = apply("success")
-        def failure = apply("failure")
-        def timeout = apply("timeout")
-        def notFound = apply("not_found")
-        def notAcquired = apply("not_acquired")
-        def abort = apply("abort")
-        private def apply(r: String) =
-          inc(s"fishnet.client.result.$skill.$client.$r")
-      }
+      def result(client: String, skill: String) =
+        new {
+          def success = apply("success")
+          def failure = apply("failure")
+          def timeout = apply("timeout")
+          def notFound = apply("not_found")
+          def notAcquired = apply("not_acquired")
+          def abort = apply("abort")
+          private def apply(r: String) =
+            inc(s"fishnet.client.result.$skill.$client.$r")
+        }
       object status {
         val enabled = rec("fishnet.client.status.enabled")
         val disabled = rec("fishnet.client.status.disabled")
@@ -280,18 +281,19 @@ object mon {
       def post = rec(s"fishnet.move.post")
     }
     object analysis {
-      def by(client: String) = new {
-        def hash = rec(s"fishnet.analysis.hash.$client")
-        def threads = rec(s"fishnet.analysis.threads.$client")
-        def movetime = rec(s"fishnet.analysis.movetime.$client")
-        def node = rec(s"fishnet.analysis.node.$client")
-        def nps = rec(s"fishnet.analysis.nps.$client")
-        def depth = rec(s"fishnet.analysis.depth.$client")
-        def pvSize = rec(s"fishnet.analysis.pv_size.$client")
-        def totalMeganode = incX(s"fishnet.analysis.total.meganode.$client")
-        def totalSecond = incX(s"fishnet.analysis.total.second.$client")
-        def totalPosition = incX(s"fishnet.analysis.total.position.$client")
-      }
+      def by(client: String) =
+        new {
+          def hash = rec(s"fishnet.analysis.hash.$client")
+          def threads = rec(s"fishnet.analysis.threads.$client")
+          def movetime = rec(s"fishnet.analysis.movetime.$client")
+          def node = rec(s"fishnet.analysis.node.$client")
+          def nps = rec(s"fishnet.analysis.nps.$client")
+          def depth = rec(s"fishnet.analysis.depth.$client")
+          def pvSize = rec(s"fishnet.analysis.pv_size.$client")
+          def totalMeganode = incX(s"fishnet.analysis.total.meganode.$client")
+          def totalSecond = incX(s"fishnet.analysis.total.second.$client")
+          def totalPosition = incX(s"fishnet.analysis.total.position.$client")
+        }
       def post = rec(s"fishnet.analysis.post")
     }
   }
@@ -319,19 +321,17 @@ object mon {
   private def inc(name: String): Inc = metrics.counter(name).increment _
   private def incX(name: String): IncX = {
     val count = metrics.counter(name)
-    value =>
-      {
-        if (value < 0) logger.warn(s"Negative increment value: $name=$value")
-        else count.increment(value)
-      }
+    value => {
+      if (value < 0) logger.warn(s"Negative increment value: $name=$value")
+      else count.increment(value)
+    }
   }
   private def rec(name: String): Rec = {
     val hist = metrics.histogram(name)
-    value =>
-      {
-        if (value < 0) logger.warn(s"Negative histogram value: $name=$value")
-        else hist.record(value)
-      }
+    value => {
+      if (value < 0) logger.warn(s"Negative histogram value: $name=$value")
+      else hist.record(value)
+    }
   }
 
   private def nodots(s: String) = s.replace(".", "_")

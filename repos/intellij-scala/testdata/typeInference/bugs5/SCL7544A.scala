@@ -1,6 +1,6 @@
 object SCL7544A {
   trait Relationsz {
-    type ZeroOne [Int]
+    type ZeroOne[Int]
 
     implicit def zeroOneOps[T]: ZeroOneOps[T]
 
@@ -8,8 +8,9 @@ object SCL7544A {
       def seq(zo: ZeroOne[T]): Seq[T]
     }
 
-    implicit class ZeroOneSyntax[T](val _zo: ZeroOne[T])(
-        implicit ops: ZeroOneOps[T]) {
+    implicit class ZeroOneSyntax[T](val _zo: ZeroOne[T])(implicit
+        ops: ZeroOneOps[T]
+    ) {
       def seq = ops.seq(_zo)
     }
   }

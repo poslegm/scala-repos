@@ -35,7 +35,8 @@ object RawBodyParserSpec extends Specification with AfterAll {
   def parse(
       body: ByteString,
       memoryThreshold: Int = config.maxMemoryBuffer,
-      maxLength: Long = config.maxDiskBuffer): Either[Result, RawBuffer] = {
+      maxLength: Long = config.maxDiskBuffer
+  ): Either[Result, RawBuffer] = {
     val request = FakeRequest(method = "GET", "/x")
     val bodyParser = new BodyParsers {}
     val parser = bodyParser.parse.raw(memoryThreshold, maxLength)
@@ -58,9 +59,9 @@ object RawBodyParserSpec extends Specification with AfterAll {
       val body = ByteString("lorem ipsum")
       parse(body, memoryThreshold = 1) must beRight.like {
         case rawBuffer =>
-          rawBuffer.push(ByteString(
-                  "This fails because the stream was closed!")) must throwA[
-              IOException]
+          rawBuffer.push(
+            ByteString("This fails because the stream was closed!")
+          ) must throwA[IOException]
       }
     }
 

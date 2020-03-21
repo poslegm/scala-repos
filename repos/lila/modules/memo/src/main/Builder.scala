@@ -34,7 +34,8 @@ object Builder {
       .asInstanceOf[CacheBuilder[K, V]]
 
   implicit def functionToRemovalListener[K, V](
-      f: (K, V) => Unit): RemovalListener[K, V] =
+      f: (K, V) => Unit
+  ): RemovalListener[K, V] =
     new RemovalListener[K, V] {
       def onRemoval(notification: RemovalNotification[K, V]) =
         f(notification.getKey, notification.getValue)
@@ -45,8 +46,7 @@ object Builder {
       def apply(p1: T) = f(p1)
     }
 
-  implicit def functionToGoogleCacheLoader[T, R](
-      f: T => R): CacheLoader[T, R] =
+  implicit def functionToGoogleCacheLoader[T, R](f: T => R): CacheLoader[T, R] =
     new CacheLoader[T, R] {
       def load(p1: T) = f(p1)
     }

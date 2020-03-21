@@ -43,10 +43,11 @@ trait Buf { outer =>
 
   override def hashCode = Buf.hash(this)
 
-  override def equals(other: Any): Boolean = other match {
-    case other: Buf => Buf.equals(this, other)
-    case _ => false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case other: Buf => Buf.equals(this, other)
+      case _          => false
+    }
 
   def isEmpty = length == 0
 
@@ -54,12 +55,13 @@ trait Buf { outer =>
   protected def unsafeByteArrayBuf: Option[Buf.ByteArray]
 
   /** May require copying. */
-  protected def unsafeByteArray: Array[Byte] = unsafeByteArrayBuf match {
-    case Some(Buf.ByteArray.Owned(bytes, 0, end)) if end == bytes.length =>
-      bytes
-    case _ =>
-      copiedByteArray
-  }
+  protected def unsafeByteArray: Array[Byte] =
+    unsafeByteArrayBuf match {
+      case Some(Buf.ByteArray.Owned(bytes, 0, end)) if end == bytes.length =>
+        bytes
+      case _ =>
+        copiedByteArray
+    }
 
   /** Definitely requires copying. */
   protected def copiedByteArray: Array[Byte] = {
@@ -72,31 +74,33 @@ trait Buf { outer =>
 private[io] case class ConcatBuf(chain: Vector[Buf]) extends Buf {
   require(chain.length > 0)
 
-  override def concat(right: Buf): Buf = right match {
-    case buf if buf.isEmpty => this
-    case ConcatBuf(rightChain) => ConcatBuf(chain ++ rightChain)
-    case buf => ConcatBuf(chain :+ right)
-  }
+  override def concat(right: Buf): Buf =
+    right match {
+      case buf if buf.isEmpty    => this
+      case ConcatBuf(rightChain) => ConcatBuf(chain ++ rightChain)
+      case buf                   => ConcatBuf(chain :+ right)
+    }
 
   // Incrementally determine equality over each segment of the ConcatBuf.
   // TODO detect if the other Buf is a ConcatBuf and special-case.
-  override def equals(other: Any): Boolean = other match {
-    case other: Buf if isEmpty && other.isEmpty => true
+  override def equals(other: Any): Boolean =
+    other match {
+      case other: Buf if isEmpty && other.isEmpty => true
 
-    case other: Buf if other.length == length =>
-      var i = 0
-      var offset = 0
-      while (i < chain.length) {
-        val buf = chain(i)
-        val sz = buf.length
-        if (!buf.equals(other.slice(offset, offset + sz))) return false
-        offset += sz
-        i += 1
-      }
-      true
+      case other: Buf if other.length == length =>
+        var i = 0
+        var offset = 0
+        while (i < chain.length) {
+          val buf = chain(i)
+          val sz = buf.length
+          if (!buf.equals(other.slice(offset, offset + sz))) return false
+          offset += sz
+          i += 1
+        }
+        true
 
-    case _ => false
-  }
+      case _ => false
+    }
 
   def length: Int = {
     var i = 0
@@ -154,8 +158,10 @@ private[io] case class ConcatBuf(chain: Vector[Buf]) extends Buf {
       val first: Buf =
         if (startBegin == 0 && startEnd >= untrimmedFirst.length) null
         else untrimmedFirst.slice(startBegin, startEnd)
-      ConcatBuf(if (first == null) chain.slice(start, length)
-          else first +: chain.slice(start + 1, length))
+      ConcatBuf(
+        if (first == null) chain.slice(start, length)
+        else first +: chain.slice(start + 1, length)
+      )
     } else {
       val untrimmedFirst = chain(start)
       val first: Buf =
@@ -168,10 +174,11 @@ private[io] case class ConcatBuf(chain: Vector[Buf]) extends Buf {
         else untrimmedLast.slice(finishBegin, finishEnd)
 
       ConcatBuf(
-          if (first == null && last == null) chain.slice(start, finish + 1)
-          else if (first == null) chain.slice(start, finish) :+ last
-          else if (last == null) first +: chain.slice(start + 1, finish + 1)
-          else first +: chain.slice(start + 1, finish) :+ last)
+        if (first == null && last == null) chain.slice(start, finish + 1)
+        else if (first == null) chain.slice(start, finish) :+ last
+        else if (last == null) first +: chain.slice(start + 1, finish + 1)
+        else first +: chain.slice(start + 1, finish) :+ last
+      )
     }
   }
 
@@ -222,8 +229,7 @@ object Buf {
       private[Buf] val bytes: Array[Byte],
       private[Buf] val begin: Int,
       private[Buf] val end: Int
-  )
-      extends Buf {
+  ) extends Buf {
 
     def write(buf: Array[Byte], off: Int): Unit =
       System.arraycopy(bytes, begin, buf, off, length)
@@ -254,18 +260,19 @@ object Buf {
       true
     }
 
-    override def equals(other: Any): Boolean = other match {
-      case other: Buf.ByteArray if other.length == length =>
-        equalsBytes(other.bytes, other.begin)
-      case other: Buf if other.length == length =>
-        other.unsafeByteArrayBuf match {
-          case Some(other) =>
-            equalsBytes(other.bytes, other.begin)
-          case None =>
-            equalsBytes(other.copiedByteArray, 0)
-        }
-      case _ => false
-    }
+    override def equals(other: Any): Boolean =
+      other match {
+        case other: Buf.ByteArray if other.length == length =>
+          equalsBytes(other.bytes, other.begin)
+        case other: Buf if other.length == length =>
+          other.unsafeByteArrayBuf match {
+            case Some(other) =>
+              equalsBytes(other.bytes, other.begin)
+            case None =>
+              equalsBytes(other.copiedByteArray, 0)
+          }
+        case _ => false
+      }
 
     protected def unsafeByteArrayBuf: Option[Buf.ByteArray] = Some(this)
   }
@@ -281,16 +288,17 @@ object Buf {
       * Safely coerce a buffer to a Buf.ByteArray, potentially without copying its underlying
       * data.
       */
-    def coerce(buf: Buf): Buf.ByteArray = buf match {
-      case buf: Buf.ByteArray => buf
-      case buf =>
-        buf.unsafeByteArrayBuf match {
-          case Some(buf) => buf
-          case None =>
-            val bytes = buf.copiedByteArray
-            new ByteArray(bytes, 0, bytes.length)
-        }
-    }
+    def coerce(buf: Buf): Buf.ByteArray =
+      buf match {
+        case buf: Buf.ByteArray => buf
+        case buf =>
+          buf.unsafeByteArrayBuf match {
+            case Some(buf) => buf
+            case None =>
+              val bytes = buf.copiedByteArray
+              new ByteArray(bytes, 0, bytes.length)
+          }
+      }
 
     /** Owned non-copying constructors/extractors for Buf.ByteArray. */
     object Owned {
@@ -315,14 +323,15 @@ object Buf {
         *
         * A copy may be performed if necessary.
         */
-      def extract(buf: Buf): Array[Byte] = Buf.ByteArray.coerce(buf) match {
-        case Buf.ByteArray.Owned(bytes, 0, end) if end == bytes.length =>
-          bytes
-        case Buf.ByteArray.Shared(bytes) =>
-          // If the unsafe version included offsets, we need to create a new array
-          // containing only the relevant bytes.
-          bytes
-      }
+      def extract(buf: Buf): Array[Byte] =
+        Buf.ByteArray.coerce(buf) match {
+          case Buf.ByteArray.Owned(bytes, 0, end) if end == bytes.length =>
+            bytes
+          case Buf.ByteArray.Shared(bytes) =>
+            // If the unsafe version included offsets, we need to create a new array
+            // containing only the relevant bytes.
+            bytes
+        }
     }
 
     /** Safe copying constructors / extractors for Buf.ByteArray. */
@@ -382,12 +391,13 @@ object Buf {
       }
     }
 
-    override def equals(other: Any): Boolean = other match {
-      case ByteBuffer(otherBB) =>
-        underlying.equals(otherBB)
-      case buf: Buf => Buf.equals(this, buf)
-      case _ => false
-    }
+    override def equals(other: Any): Boolean =
+      other match {
+        case ByteBuffer(otherBB) =>
+          underlying.equals(otherBB)
+        case buf: Buf => Buf.equals(this, buf)
+        case _        => false
+      }
 
     protected def unsafeByteArrayBuf: Option[Buf.ByteArray] =
       if (underlying.hasArray) {
@@ -405,17 +415,18 @@ object Buf {
       Some(buf.underlying.asReadOnlyBuffer)
 
     /** Coerce a generic buffer to a Buf.ByteBuffer, potentially without copying data. */
-    def coerce(buf: Buf): ByteBuffer = buf match {
-      case buf: ByteBuffer => buf
-      case _ =>
-        val bb = buf.unsafeByteArrayBuf match {
-          case Some(ByteArray.Owned(bytes, begin, end)) =>
-            java.nio.ByteBuffer.wrap(bytes, begin, end - begin)
-          case None =>
-            java.nio.ByteBuffer.wrap(buf.copiedByteArray)
-        }
-        new ByteBuffer(bb)
-    }
+    def coerce(buf: Buf): ByteBuffer =
+      buf match {
+        case buf: ByteBuffer => buf
+        case _ =>
+          val bb = buf.unsafeByteArrayBuf match {
+            case Some(ByteArray.Owned(bytes, begin, end)) =>
+              java.nio.ByteBuffer.wrap(bytes, begin, end - begin)
+            case None =>
+              java.nio.ByteBuffer.wrap(buf.copiedByteArray)
+          }
+          new ByteBuffer(bb)
+      }
 
     /** Owned non-copying constructors/extractors for Buf.ByteBuffer. */
     object Owned {
@@ -475,7 +486,7 @@ object Buf {
   // Adapted from util-hashing.
   private[this] val UintMax: Long = 0xFFFFFFFFL
   private[this] val Fnv1a32Prime: Int = 16777619
-  private[this] val Fnv1a32Init: Long = 0x811c9dc5L
+  private[this] val Fnv1a32Init: Long = 0x811C9DC5L
   private[this] def finishHash(hash: Long): Int = (hash & UintMax).toInt
   private[this] def hashBuf(buf: Buf, init: Long = Fnv1a32Init): Long =
     buf match {
@@ -622,7 +633,7 @@ object Buf {
 
         val value =
           ((arr(0) & 0xff) << 24) | ((arr(1) & 0xff) << 16) |
-          ((arr(2) & 0xff) << 8) | ((arr(3) & 0xff))
+            ((arr(2) & 0xff) << 8) | ((arr(3) & 0xff))
         Some((value, rem))
       }
   }
@@ -657,9 +668,9 @@ object Buf {
 
         val value =
           ((arr(0) & 0xff).toLong << 56) | ((arr(1) & 0xff).toLong << 48) |
-          ((arr(2) & 0xff).toLong << 40) | ((arr(3) & 0xff).toLong << 32) |
-          ((arr(4) & 0xff).toLong << 24) | ((arr(5) & 0xff).toLong << 16) |
-          ((arr(6) & 0xff).toLong << 8) | ((arr(7) & 0xff).toLong)
+            ((arr(2) & 0xff).toLong << 40) | ((arr(3) & 0xff).toLong << 32) |
+            ((arr(4) & 0xff).toLong << 24) | ((arr(5) & 0xff).toLong << 16) |
+            ((arr(6) & 0xff).toLong << 8) | ((arr(7) & 0xff).toLong)
         Some((value, rem))
       }
   }
@@ -690,7 +701,7 @@ object Buf {
 
         val value =
           ((arr(0) & 0xff)) | ((arr(1) & 0xff) << 8) | ((arr(2) & 0xff) << 16) |
-          ((arr(3) & 0xff) << 24)
+            ((arr(3) & 0xff) << 24)
         Some((value, rem))
       }
   }
@@ -724,10 +735,10 @@ object Buf {
         val rem = buf.slice(8, buf.length)
 
         val value =
-          ( (arr(0) & 0xff).toLong) | ((arr(1) & 0xff).toLong << 8) |
-          ((arr(2) & 0xff).toLong << 16) | ((arr(3) & 0xff).toLong << 24) |
-          ((arr(4) & 0xff).toLong << 32) | ((arr(5) & 0xff).toLong << 40) |
-          ((arr(6) & 0xff).toLong << 48) | ((arr(7) & 0xff).toLong << 56)
+          ((arr(0) & 0xff).toLong) | ((arr(1) & 0xff).toLong << 8) |
+            ((arr(2) & 0xff).toLong << 16) | ((arr(3) & 0xff).toLong << 24) |
+            ((arr(4) & 0xff).toLong << 32) | ((arr(5) & 0xff).toLong << 40) |
+            ((arr(6) & 0xff).toLong << 48) | ((arr(7) & 0xff).toLong << 56)
         Some((value, rem))
       }
   }

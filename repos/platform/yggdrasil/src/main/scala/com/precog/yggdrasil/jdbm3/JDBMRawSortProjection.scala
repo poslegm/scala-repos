@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -43,15 +43,16 @@ import scalaz.syntax.monad._
   * A Projection wrapping a raw JDBM TreeMap index used for sorting. It's assumed that
   * the index has been created and filled prior to creating this wrapper.
   */
-class JDBMRawSortProjection[M[+ _]] private[yggdrasil](
+class JDBMRawSortProjection[M[+_]] private[yggdrasil] (
     dbFile: File,
     indexName: String,
     sortKeyRefs: Seq[ColumnRef],
     valRefs: Seq[ColumnRef],
     sortOrder: DesiredSortOrder,
     sliceSize: Int,
-    val length: Long)
-    extends ProjectionLike[M, Slice] with Logging {
+    val length: Long
+) extends ProjectionLike[M, Slice]
+    with Logging {
   import JDBMProjection._
   type Key = Array[Byte]
 
@@ -72,89 +73,96 @@ class JDBMRawSortProjection[M[+ _]] private[yggdrasil](
   val keyFormat = RowFormat.forSortingKey(sortKeyRefs)
 
   override def getBlockAfter(
-      id: Option[Array[Byte]], columns: Option[Set[ColumnRef]])(
-      implicit M: Monad[M])
-    : M[Option[BlockProjectionData[Array[Byte], Slice]]] = M.point {
-    // TODO: Make this far, far less ugly
-    if (columns.nonEmpty) {
-      throw new IllegalArgumentException(
-          "JDBM Sort Projections may not be constrained by column descriptor")
-    }
-
-    // At this point we have completed all valid writes, so we open readonly + no locks, allowing for concurrent use of sorted data
-    //println("opening: " + dbFile.getCanonicalPath)
-    val db = DBMaker
-      .openFile(dbFile.getCanonicalPath)
-      .readonly()
-      .disableLocking()
-      .make()
-    try {
-      val index: SortedMap[Array[Byte], Array[Byte]] = db.getTreeMap(indexName)
-
-      if (index == null) {
+      id: Option[Array[Byte]],
+      columns: Option[Set[ColumnRef]]
+  )(implicit M: Monad[M]): M[Option[BlockProjectionData[Array[Byte], Slice]]] =
+    M.point {
+      // TODO: Make this far, far less ugly
+      if (columns.nonEmpty) {
         throw new IllegalArgumentException(
-            "No such index in DB: %s:%s".format(dbFile, indexName))
+          "JDBM Sort Projections may not be constrained by column descriptor"
+        )
       }
 
-      val constrainedMap = id.map { idKey =>
-        index.tailMap(idKey)
-      }.getOrElse(index)
-      val iteratorSetup = () =>
-        {
+      // At this point we have completed all valid writes, so we open readonly + no locks, allowing for concurrent use of sorted data
+      //println("opening: " + dbFile.getCanonicalPath)
+      val db = DBMaker
+        .openFile(dbFile.getCanonicalPath)
+        .readonly()
+        .disableLocking()
+        .make()
+      try {
+        val index: SortedMap[Array[Byte], Array[Byte]] =
+          db.getTreeMap(indexName)
+
+        if (index == null) {
+          throw new IllegalArgumentException(
+            "No such index in DB: %s:%s".format(dbFile, indexName)
+          )
+        }
+
+        val constrainedMap =
+          id.map { idKey => index.tailMap(idKey) }.getOrElse(index)
+        val iteratorSetup = () => {
           val rawIterator = constrainedMap.entrySet.iterator.asScala
           // Since our key to retrieve after was the last key we retrieved, we know it exists,
           // so we can safely discard it
           if (id.isDefined && rawIterator.hasNext) rawIterator.next();
           rawIterator
-      }
+        }
 
-      // FIXME: this is brokenness in JDBM somewhere      
-      val iterator = {
-        var initial: Iterator[java.util.Map.Entry[Array[Byte], Array[Byte]]] =
-          null
-        var tries = 0
-        while (tries < MAX_SPINS && initial == null) {
-          try {
-            initial = iteratorSetup()
-          } catch {
-            case t: Throwable =>
-              logger.warn("Failure on load iterator initialization")
+        // FIXME: this is brokenness in JDBM somewhere
+        val iterator = {
+          var initial: Iterator[java.util.Map.Entry[Array[Byte], Array[Byte]]] =
+            null
+          var tries = 0
+          while (tries < MAX_SPINS && initial == null) {
+            try {
+              initial = iteratorSetup()
+            } catch {
+              case t: Throwable =>
+                logger.warn("Failure on load iterator initialization")
+            }
+            tries += 1
           }
-          tries += 1
+          if (initial == null) {
+            throw new VicciniException(
+              "Initial drop failed with too many concurrent mods."
+            )
+          } else {
+            initial
+          }
         }
-        if (initial == null) {
-          throw new VicciniException(
-              "Initial drop failed with too many concurrent mods.")
+
+        if (iterator.isEmpty) {
+          None
         } else {
-          initial
+          val keyColumns =
+            sortKeyRefs.map(JDBMSlice.columnFor(CPath("[0]"), sliceSize))
+          val valColumns =
+            valRefs.map(JDBMSlice.columnFor(CPath("[1]"), sliceSize))
+
+          val keyColumnDecoder =
+            keyFormat.ColumnDecoder(keyColumns.map(_._2)(collection.breakOut))
+          val valColumnDecoder =
+            rowFormat.ColumnDecoder(valColumns.map(_._2)(collection.breakOut))
+
+          val (firstKey, lastKey, rows) = JDBMSlice.load(
+            sliceSize,
+            iteratorSetup,
+            keyColumnDecoder,
+            valColumnDecoder
+          )
+
+          val slice = new Slice {
+            val size = rows
+            val columns = keyColumns.toMap ++ valColumns
+          }
+
+          Some(BlockProjectionData(firstKey, lastKey, slice))
         }
+      } finally {
+        db.close() // creating the slice should have already read contents into memory
       }
-
-      if (iterator.isEmpty) {
-        None
-      } else {
-        val keyColumns =
-          sortKeyRefs.map(JDBMSlice.columnFor(CPath("[0]"), sliceSize))
-        val valColumns =
-          valRefs.map(JDBMSlice.columnFor(CPath("[1]"), sliceSize))
-
-        val keyColumnDecoder =
-          keyFormat.ColumnDecoder(keyColumns.map(_._2)(collection.breakOut))
-        val valColumnDecoder =
-          rowFormat.ColumnDecoder(valColumns.map(_._2)(collection.breakOut))
-
-        val (firstKey, lastKey, rows) = JDBMSlice.load(
-            sliceSize, iteratorSetup, keyColumnDecoder, valColumnDecoder)
-
-        val slice = new Slice {
-          val size = rows
-          val columns = keyColumns.toMap ++ valColumns
-        }
-
-        Some(BlockProjectionData(firstKey, lastKey, slice))
-      }
-    } finally {
-      db.close() // creating the slice should have already read contents into memory
     }
-  }
 }

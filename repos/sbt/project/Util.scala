@@ -12,63 +12,70 @@ object Util {
 
   def crossBuild: Seq[Setting[_]] =
     Seq(
-        crossPaths :=
+      crossPaths :=
         (scalaBinaryVersion.value match {
-              case "2.11" => true
-              case _ => false
-            })
+          case "2.11" => true
+          case _      => false
+        })
     )
 
   lazy val javaOnlySettings =
     Seq[Setting[_]](
-        /*crossPaths := false, */ compileOrder := CompileOrder.JavaThenScala,
-        unmanagedSourceDirectories in Compile <<=
-          Seq(javaSource in Compile).join)
+      /*crossPaths := false, */ compileOrder := CompileOrder.JavaThenScala,
+      unmanagedSourceDirectories in Compile <<=
+        Seq(javaSource in Compile).join
+    )
   lazy val baseScalacOptions = Seq(
-      scalacOptions ++= Seq("-Xelide-below", "0"),
-      scalacOptions <++= scalaVersion map CrossVersion.partialVersion map {
-        case Some((2, 9)) | Some((2, 8)) =>
-          Nil // support 2.9 for some subprojects for the Scala Eclipse IDE
-        case _ =>
-          Seq("-feature",
-              "-language:implicitConversions",
-              "-language:postfixOps",
-              "-language:higherKinds",
-              "-language:existentials")
-      },
-      scalacOptions <++= scalaVersion map CrossVersion.partialVersion map {
-        case Some((2, 10)) => Seq("-deprecation", "-Xlint")
-        case _ => Seq()
-      }
+    scalacOptions ++= Seq("-Xelide-below", "0"),
+    scalacOptions <++= scalaVersion map CrossVersion.partialVersion map {
+      case Some((2, 9)) | Some((2, 8)) =>
+        Nil // support 2.9 for some subprojects for the Scala Eclipse IDE
+      case _ =>
+        Seq(
+          "-feature",
+          "-language:implicitConversions",
+          "-language:postfixOps",
+          "-language:higherKinds",
+          "-language:existentials"
+        )
+    },
+    scalacOptions <++= scalaVersion map CrossVersion.partialVersion map {
+      case Some((2, 10)) => Seq("-deprecation", "-Xlint")
+      case _             => Seq()
+    }
   )
 
-  def projectComponent = projectID <<= (projectID, componentID) { (pid, cid) =>
-    cid match {
-      case Some(id) => pid extra ("e:component" -> id); case None => pid
+  def projectComponent =
+    projectID <<= (projectID, componentID) { (pid, cid) =>
+      cid match {
+        case Some(id) => pid extra ("e:component" -> id); case None => pid
+      }
     }
-  }
 
   lazy val apiDefinitions = TaskKey[Seq[File]]("api-definitions")
 
-  def generateAPICached(defs: Seq[File],
-                        cp: Classpath,
-                        out: File,
-                        main: Option[String],
-                        run: ScalaRun,
-                        s: TaskStreams): Seq[File] = {
+  def generateAPICached(
+      defs: Seq[File],
+      cp: Classpath,
+      out: File,
+      main: Option[String],
+      run: ScalaRun,
+      s: TaskStreams
+  ): Seq[File] = {
     def gen() = generateAPI(defs, cp, out, main, run, s)
     val f = FileFunction.cached(s.cacheDirectory / "gen-api", FilesInfo.hash) {
-      _ =>
-        gen().toSet
+      _ => gen().toSet
     } // TODO: check if output directory changed
     f(defs.toSet).toSeq
   }
-  def generateAPI(defs: Seq[File],
-                  cp: Classpath,
-                  out: File,
-                  main: Option[String],
-                  run: ScalaRun,
-                  s: TaskStreams): Seq[File] = {
+  def generateAPI(
+      defs: Seq[File],
+      cp: Classpath,
+      out: File,
+      main: Option[String],
+      run: ScalaRun,
+      s: TaskStreams
+  ): Seq[File] = {
     IO.delete(out)
     IO.createDirectory(out)
     val args =
@@ -82,10 +89,12 @@ object Util {
     val lastCompilation = analysis.compilations.allCompilations.lastOption
     lastCompilation.map(_.startTime) getOrElse 0L
   }
-  def generateVersionFile(version: String,
-                          dir: File,
-                          s: TaskStreams,
-                          analysis: sbt.inc.Analysis): Seq[File] = {
+  def generateVersionFile(
+      version: String,
+      dir: File,
+      s: TaskStreams,
+      analysis: sbt.inc.Analysis
+  ): Seq[File] = {
     import java.util.{Date, TimeZone}
     val formatter = new java.text.SimpleDateFormat("yyyyMMdd'T'HHmmss")
     formatter.setTimeZone(TimeZone.getTimeZone("GMT"))
@@ -106,40 +115,42 @@ object Util {
   def binID = "compiler-interface-bin"
   def srcID = "compiler-interface-src"
 
-  def publishPomSettings: Seq[Setting[_]] = Seq(
+  def publishPomSettings: Seq[Setting[_]] =
+    Seq(
       publishArtifact in makePom := false,
       pomPostProcess := cleanPom _
-  )
+    )
 
   def cleanPom(pomNode: scala.xml.Node) = {
     import scala.xml._
-    def cleanNodes(nodes: Seq[Node]): Seq[Node] = nodes flatMap {
-      case elem @ Elem(prefix, "dependency", attributes, scope, children @ _ *)
-          if excludePomDependency(elem) =>
-        NodeSeq.Empty
-      case Elem(prefix, "classifier", attributes, scope, children @ _ *) =>
-        NodeSeq.Empty
-      case Elem(prefix, label, attributes, scope, children @ _ *) =>
-        val cleanedNodes = cleanNodes(children)
-        Elem(prefix,
-             label,
-             attributes,
-             scope,
-             cleanedNodes.isEmpty,
-             cleanedNodes: _*).theSeq
-      case other => other
-    }
+    def cleanNodes(nodes: Seq[Node]): Seq[Node] =
+      nodes flatMap {
+        case elem @ Elem(prefix, "dependency", attributes, scope, children @ _*)
+            if excludePomDependency(elem) =>
+          NodeSeq.Empty
+        case Elem(prefix, "classifier", attributes, scope, children @ _*) =>
+          NodeSeq.Empty
+        case Elem(prefix, label, attributes, scope, children @ _*) =>
+          val cleanedNodes = cleanNodes(children)
+          Elem(
+            prefix,
+            label,
+            attributes,
+            scope,
+            cleanedNodes.isEmpty,
+            cleanedNodes: _*
+          ).theSeq
+        case other => other
+      }
     cleanNodes(pomNode.theSeq)(0)
   }
 
-  def excludePomDependency(node: scala.xml.Node) = node \ "artifactId" exists {
-    n =>
-      excludePomArtifact(n.text)
-  }
+  def excludePomDependency(node: scala.xml.Node) =
+    node \ "artifactId" exists { n => excludePomArtifact(n.text) }
 
   def excludePomArtifact(artifactId: String) =
     (artifactId == "compiler-interface") ||
-    (artifactId startsWith "precompiled")
+      (artifactId startsWith "precompiled")
 
   val testExclusive = tags in test += ((ExclusiveTest, 1))
 
@@ -169,12 +180,13 @@ object %s {
   }
   def keywordsSettings: Seq[Setting[_]] =
     inConfig(Compile)(
-        Seq(
-            scalaKeywords := getScalaKeywords,
-            generateKeywords <<=
-              (sourceManaged, scalaKeywords) map writeScalaKeywords,
-            sourceGenerators <+= generateKeywords map (x => Seq(x))
-        ))
+      Seq(
+        scalaKeywords := getScalaKeywords,
+        generateKeywords <<=
+          (sourceManaged, scalaKeywords) map writeScalaKeywords,
+        sourceGenerators <+= generateKeywords map (x => Seq(x))
+      )
+    )
 }
 
 object Licensed {
@@ -194,18 +206,20 @@ object Licensed {
       .map(d => licensePath(base, d.group(1)))
       .toList
 
-  def settings: Seq[Setting[_]] = Seq(
+  def settings: Seq[Setting[_]] =
+    Seq(
       notice <<= baseDirectory(_ / "NOTICE"),
       unmanagedResources in Compile <++= (notice, extractLicenses) map {
         _ +: _
       },
       extractLicenses <<=
         (baseDirectory in ThisBuild, notice, streams) map extractLicenses0
-  )
+    )
   def extractLicenses0(base: File, note: File, s: TaskStreams): Seq[File] =
     if (!note.exists) Nil
     else
-      try { seePaths(base, IO.read(note)) } catch {
+      try { seePaths(base, IO.read(note)) }
+      catch {
         case e: Exception => s.log.warn("Could not read NOTICE"); Nil
       }
 }

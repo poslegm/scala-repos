@@ -19,15 +19,18 @@ class RandomSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
     "be able to shut down its instance" in {
       val stopLatch = new TestLatch(7)
 
-      val actor = system.actorOf(RandomPool(7).props(Props(new Actor {
-        def receive = {
-          case "hello" ⇒ sender() ! "world"
-        }
+      val actor = system.actorOf(
+        RandomPool(7).props(Props(new Actor {
+          def receive = {
+            case "hello" ⇒ sender() ! "world"
+          }
 
-        override def postStop() {
-          stopLatch.countDown()
-        }
-      })), "random-shutdown")
+          override def postStop() {
+            stopLatch.countDown()
+          }
+        })),
+        "random-shutdown"
+      )
 
       actor ! "hello"
       actor ! "hello"
@@ -54,15 +57,16 @@ class RandomSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
         replies = replies + (i -> 0)
       }
 
-      val actor = system.actorOf(RandomPool(connectionCount).props(
-                                     routeeProps = Props(new Actor {
-                                   lazy val id = counter.getAndIncrement()
-                                   def receive = {
-                                     case "hit" ⇒ sender() ! id
-                                     case "end" ⇒ doneLatch.countDown()
-                                   }
-                                 })),
-                                 name = "random")
+      val actor = system.actorOf(
+        RandomPool(connectionCount).props(routeeProps = Props(new Actor {
+          lazy val id = counter.getAndIncrement()
+          def receive = {
+            case "hit" ⇒ sender() ! id
+            case "end" ⇒ doneLatch.countDown()
+          }
+        })),
+        name = "random"
+      )
 
       for (i ← 0 until iterationCount) {
         for (k ← 0 until connectionCount) {
@@ -85,15 +89,18 @@ class RandomSpec extends AkkaSpec with DefaultTimeout with ImplicitSender {
       val stopLatch = new TestLatch(6)
 
       val actor =
-        system.actorOf(RandomPool(6).props(routeeProps = Props(new Actor {
-          def receive = {
-            case "hello" ⇒ helloLatch.countDown()
-          }
+        system.actorOf(
+          RandomPool(6).props(routeeProps = Props(new Actor {
+            def receive = {
+              case "hello" ⇒ helloLatch.countDown()
+            }
 
-          override def postStop() {
-            stopLatch.countDown()
-          }
-        })), "random-broadcast")
+            override def postStop() {
+              stopLatch.countDown()
+            }
+          })),
+          "random-broadcast"
+        )
 
       actor ! akka.routing.Broadcast("hello")
       Await.ready(helloLatch, 5 seconds)

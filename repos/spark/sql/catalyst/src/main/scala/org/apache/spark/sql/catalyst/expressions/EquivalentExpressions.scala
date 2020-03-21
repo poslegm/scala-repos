@@ -32,10 +32,11 @@ class EquivalentExpressions {
     * Wrapper around an Expression that provides semantic equality.
     */
   case class Expr(e: Expression) {
-    override def equals(o: Any): Boolean = o match {
-      case other: Expr => e.semanticEquals(other.e)
-      case _ => false
-    }
+    override def equals(o: Any): Boolean =
+      o match {
+        case other: Expr => e.semanticEquals(other.e)
+        case _           => false
+      }
     override val hashCode: Int = e.semanticHash()
   }
 
@@ -101,10 +102,10 @@ class EquivalentExpressions {
     sb.append("Equivalent expressions:\n")
     equivalenceMap.foreach {
       case (k, v) => {
-          if (all || v.length > 1) {
-            sb.append("  " + v.mkString(", ")).append("\n")
-          }
+        if (all || v.length > 1) {
+          sb.append("  " + v.mkString(", ")).append("\n")
         }
+      }
     }
     sb.toString()
   }

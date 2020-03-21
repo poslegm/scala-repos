@@ -33,14 +33,16 @@ import javafx.{collections => jfxc}
   */
 object ObservableIntegerArray
     extends ObservableArrayCompanionBase[
-        Int, ObservableIntegerArray, jfxc.ObservableIntegerArray] {
+      Int,
+      ObservableIntegerArray,
+      jfxc.ObservableIntegerArray
+    ] {
 
   /**
     * @inheritdoc
     */
   override def apply(v: Int*) =
-    new ObservableIntegerArray(
-        jfxc.FXCollections.observableIntegerArray(v: _*))
+    new ObservableIntegerArray(jfxc.FXCollections.observableIntegerArray(v: _*))
 
   /**
     * Returns an array containing equally spaced values in some integer interval.
@@ -70,9 +72,12 @@ object ObservableIntegerArray
   */
 class ObservableIntegerArray(
     delegate: jfxc.ObservableIntegerArray = jfxc.FXCollections
-        .observableIntegerArray())
-    extends ObservableArray[
-        Int, ObservableIntegerArray, jfxc.ObservableIntegerArray](delegate) {
+      .observableIntegerArray()
+) extends ObservableArray[
+      Int,
+      ObservableIntegerArray,
+      jfxc.ObservableIntegerArray
+    ](delegate) {
 
   /**
     * Create $OIA with specified capacity.
@@ -91,7 +96,11 @@ class ObservableIntegerArray(
     * @inheritdoc
     */
   override def copyTo(
-      srcIdx: Int, dest: Array[Int], destIdx: Int, length: Int) {
+      srcIdx: Int,
+      dest: Array[Int],
+      destIdx: Int,
+      length: Int
+  ) {
     delegate.copyTo(srcIdx, dest, destIdx, length)
   }
 
@@ -99,7 +108,11 @@ class ObservableIntegerArray(
     * @inheritdoc
     */
   override def copyTo(
-      srcIdx: Int, dest: ObservableIntegerArray, destIdx: Int, length: Int) {
+      srcIdx: Int,
+      dest: ObservableIntegerArray,
+      destIdx: Int,
+      length: Int
+  ) {
     delegate.copyTo(srcIdx, dest.delegate, destIdx, length)
   }
 
@@ -182,7 +195,11 @@ class ObservableIntegerArray(
     * @inheritdoc
     */
   override def set(
-      destIdx: Int, src: ObservableIntegerArray, srcIdx: Int, length: Int) {
+      destIdx: Int,
+      src: ObservableIntegerArray,
+      srcIdx: Int,
+      length: Int
+  ) {
     delegate.set(destIdx, src.delegate, srcIdx, length)
   }
 

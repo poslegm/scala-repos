@@ -24,8 +24,9 @@ import org.apache.spark.network.client.RpcResponseCallback
 import org.apache.spark.rpc.{RpcAddress, RpcCallContext}
 
 private[netty] abstract class NettyRpcCallContext(
-    override val senderAddress: RpcAddress)
-    extends RpcCallContext with Logging {
+    override val senderAddress: RpcAddress
+) extends RpcCallContext
+    with Logging {
 
   protected def send(message: Any): Unit
 
@@ -42,8 +43,9 @@ private[netty] abstract class NettyRpcCallContext(
   * If the sender and the receiver are in the same process, the reply can be sent back via `Promise`.
   */
 private[netty] class LocalNettyRpcCallContext(
-    senderAddress: RpcAddress, p: Promise[Any])
-    extends NettyRpcCallContext(senderAddress) {
+    senderAddress: RpcAddress,
+    p: Promise[Any]
+) extends NettyRpcCallContext(senderAddress) {
 
   override protected def send(message: Any): Unit = {
     p.success(message)
@@ -53,10 +55,11 @@ private[netty] class LocalNettyRpcCallContext(
 /**
   * A [[RpcCallContext]] that will call [[RpcResponseCallback]] to send the reply back.
   */
-private[netty] class RemoteNettyRpcCallContext(nettyEnv: NettyRpcEnv,
-                                               callback: RpcResponseCallback,
-                                               senderAddress: RpcAddress)
-    extends NettyRpcCallContext(senderAddress) {
+private[netty] class RemoteNettyRpcCallContext(
+    nettyEnv: NettyRpcEnv,
+    callback: RpcResponseCallback,
+    senderAddress: RpcAddress
+) extends NettyRpcCallContext(senderAddress) {
 
   override protected def send(message: Any): Unit = {
     val reply = nettyEnv.serialize(message)

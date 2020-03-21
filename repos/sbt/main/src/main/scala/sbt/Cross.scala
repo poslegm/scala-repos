@@ -45,7 +45,7 @@ object Cross {
 
         val (resolveVersion, homePath) = arg.split("=") match {
           case Array(v, h) => (v, h)
-          case _ => ("", arg)
+          case _           => ("", arg)
         }
         val home = IO.resolve(x.currentProject.base, new File(homePath))
         // Basic Algorithm.
@@ -57,34 +57,42 @@ object Cross {
         val (add, exclude) =
           if (home.exists) {
             val instance = ScalaInstance(home)(state.classLoaderCache.apply _)
-            state.log.info("Setting Scala home to " + home +
-                " with actual version " + instance.actualVersion)
+            state.log.info(
+              "Setting Scala home to " + home +
+                " with actual version " + instance.actualVersion
+            )
             val version =
               if (resolveVersion.isEmpty) instance.actualVersion
               else resolveVersion
             state.log.info(
-                "\tand using " + version + " for resolving dependencies.")
-            val settings = Seq(
-                scalaVersion in GlobalScope :== version,
-                scalaHome in GlobalScope :== Some(home),
-                scalaInstance in GlobalScope :== instance
+              "\tand using " + version + " for resolving dependencies."
             )
-            (settings,
-             excludeKeys(
-                 Set(scalaVersion.key, scalaHome.key, scalaInstance.key)))
+            val settings = Seq(
+              scalaVersion in GlobalScope :== version,
+              scalaHome in GlobalScope :== Some(home),
+              scalaInstance in GlobalScope :== instance
+            )
+            (
+              settings,
+              excludeKeys(
+                Set(scalaVersion.key, scalaHome.key, scalaInstance.key)
+              )
+            )
           } else if (!resolveVersion.isEmpty) {
             sys.error("Scala home directory did not exist: " + home)
           } else {
             state.log.info("Setting version to " + arg)
             val settings = Seq(
-                scalaVersion in GlobalScope :== arg,
-                scalaHome in GlobalScope :== None
+              scalaVersion in GlobalScope :== arg,
+              scalaHome in GlobalScope :== None
             )
             (settings, excludeKeys(Set(scalaVersion.key, scalaHome.key)))
           }
 
         val isForceGc =
-          getOpt(Keys.forcegc in Global) getOrElse GCUtil.defaultForceGarbageCollection
+          getOpt(
+            Keys.forcegc in Global
+          ) getOrElse GCUtil.defaultForceGarbageCollection
         // This is how to get the interval, but ignore it, and just forcegc
         // val gcInterval = getOpt(Keys.minForcegcInterval in Global) getOrElse GCUtil.defaultMinForcegcInterval
         if (isForceGc) {
@@ -106,14 +114,15 @@ object Cross {
   // Creates a delegate for a scoped key that pulls the setting from the global scope.
   private[this] def delegateToGlobal[T](key: ScopedKey[T]): Setting[_] =
     SettingKey[T](key.key) in key.scope :=
-    (SettingKey[T](key.key) in GlobalScope).value
+      (SettingKey[T](key.key) in GlobalScope).value
 
   @deprecated("No longer used.", "0.13.0")
   def crossExclude(s: Setting[_]): Boolean =
     excludeKeys(Set(scalaVersion.key, scalaHome.key))(s)
 
   private[this] def excludeKeys(
-      keys: Set[AttributeKey[_]]): Setting[_] => Boolean =
+      keys: Set[AttributeKey[_]]
+  ): Setting[_] => Boolean =
     _.key match {
       case ScopedKey(Scope(_, Global, Global, _), key) if keys.contains(key) =>
         true
@@ -131,7 +140,7 @@ object Cross {
       import x._
       val versions = crossVersions(state)
       val current = scalaVersion in currentRef get structure.data map
-      (SwitchCommand + " " + _) toList;
+        (SwitchCommand + " " + _) toList;
       if (versions.isEmpty) command :: state
       else {
         versions.map(v => s"$SwitchCommand $v $command") ::: current ::: state

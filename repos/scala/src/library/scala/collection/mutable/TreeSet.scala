@@ -30,8 +30,9 @@ object TreeSet extends MutableSortedSetFactory[TreeSet] {
   def empty[A](implicit ordering: Ordering[A]) = new TreeSet[A]()
 
   /** $sortedMapCanBuildFromInfo */
-  implicit def canBuildFrom[A](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, A, TreeSet[A]] =
+  implicit def canBuildFrom[A](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, A, TreeSet[A]] =
     new SortedSetCanBuildFrom[A]
 }
 
@@ -50,10 +51,13 @@ object TreeSet extends MutableSortedSetFactory[TreeSet] {
   */
 // Original API designed in part by Lucien Pereira
 @SerialVersionUID(-3642111301929493640L)
-sealed class TreeSet[A] private (
-    tree: RB.Tree[A, Null])(implicit val ordering: Ordering[A])
-    extends AbstractSortedSet[A] with SortedSet[A] with SetLike[A, TreeSet[A]]
-    with SortedSetLike[A, TreeSet[A]] with Serializable {
+sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit
+    val ordering: Ordering[A]
+) extends AbstractSortedSet[A]
+    with SortedSet[A]
+    with SetLike[A, TreeSet[A]]
+    with SortedSetLike[A, TreeSet[A]]
+    with Serializable {
 
   if (ordering eq null)
     throw new NullPointerException("ordering must not be null")
@@ -130,8 +134,8 @@ sealed class TreeSet[A] private (
     private[this] def pickLowerBound(newFrom: Option[A]): Option[A] =
       (from, newFrom) match {
         case (Some(fr), Some(newFr)) => Some(ordering.max(fr, newFr))
-        case (None, _) => newFrom
-        case _ => from
+        case (None, _)               => newFrom
+        case _                       => from
       }
 
     /**
@@ -140,8 +144,8 @@ sealed class TreeSet[A] private (
     private[this] def pickUpperBound(newUntil: Option[A]): Option[A] =
       (until, newUntil) match {
         case (Some(unt), Some(newUnt)) => Some(ordering.min(unt, newUnt))
-        case (None, _) => newUntil
-        case _ => until
+        case (None, _)                 => newUntil
+        case _                         => until
       }
 
     /**
@@ -174,7 +178,7 @@ sealed class TreeSet[A] private (
         if (from.isDefined) RB.minKeyAfter(tree, from.get) else RB.minKey(tree)
       (elem, until) match {
         case (Some(e), Some(unt)) if ordering.compare(e, unt) >= 0 => None
-        case _ => elem
+        case _                                                     => elem
       }
     }
 
@@ -185,7 +189,7 @@ sealed class TreeSet[A] private (
         else RB.maxKey(tree)
       (elem, from) match {
         case (Some(e), Some(fr)) if ordering.compare(e, fr) < 0 => None
-        case _ => elem
+        case _                                                  => elem
       }
     }
 

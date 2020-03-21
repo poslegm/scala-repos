@@ -11,7 +11,8 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 @RunWith(classOf[JUnitRunner])
 class MetricsStatsReceiverTest
-    extends FunSuite with GeneratorDrivenPropertyChecks {
+    extends FunSuite
+    with GeneratorDrivenPropertyChecks {
   import MetricsStatsReceiverTest._
 
   private[this] val rootReceiver = new MetricsStatsReceiver()
@@ -22,7 +23,8 @@ class MetricsStatsReceiverTest
   private[this] def readInRoot(name: String) = read(rootReceiver, name)
 
   test(
-      "MetricsStatsReceiver should store and read gauge into the root StatsReceiver") {
+    "MetricsStatsReceiver should store and read gauge into the root StatsReceiver"
+  ) {
     val x = 1.5f
     // gauges are weakly referenced by the registry so we need to keep a strong reference
     val g = rootReceiver.addGauge("my_gauge")(x)
@@ -40,7 +42,8 @@ class MetricsStatsReceiverTest
   }
 
   test(
-      "Ensure that we throw an exception with a counter and a gauge when rollup collides") {
+    "Ensure that we throw an exception with a counter and a gauge when rollup collides"
+  ) {
     val sr = new RollupStatsReceiver(rootReceiver)
     sr.counter("a", "b", "c").incr()
     intercept[MetricCollisionException] {
@@ -80,18 +83,14 @@ class MetricsStatsReceiverTest
     import MetricsStatsReceiver.CounterIncr
     def id(e: events.Event) =
       CounterIncr.serialize(e).flatMap(CounterIncr.deserialize).get
-    forAll(genCounterIncr) { event =>
-      assert(id(event) == event)
-    }
+    forAll(genCounterIncr) { event => assert(id(event) == event) }
   }
 
   test("StatAdd: serialize andThen deserialize = identity") {
     import MetricsStatsReceiver.StatAdd
     def id(e: events.Event) =
       StatAdd.serialize(e).flatMap(StatAdd.deserialize).get
-    forAll(genStatAdd) { event =>
-      assert(id(event) == event)
-    }
+    forAll(genStatAdd) { event => assert(id(event) == event) }
   }
 }
 
@@ -105,12 +104,14 @@ private[twitter] object MetricsStatsReceiverTest {
     tid <- arbitrary[Long]
     sid <- arbitrary[Long]
   } yield {
-    events.Event(CounterIncr,
-                 Time.now,
-                 longVal = value,
-                 objectVal = name,
-                 traceIdVal = tid,
-                 spanIdVal = sid)
+    events.Event(
+      CounterIncr,
+      Time.now,
+      longVal = value,
+      objectVal = name,
+      traceIdVal = tid,
+      spanIdVal = sid
+    )
   }
 
   val genStatAdd = for {
@@ -119,11 +120,13 @@ private[twitter] object MetricsStatsReceiverTest {
     tid <- arbitrary[Long]
     sid <- arbitrary[Long]
   } yield {
-    events.Event(StatAdd,
-                 Time.now,
-                 longVal = delta,
-                 objectVal = name,
-                 traceIdVal = tid,
-                 spanIdVal = sid)
+    events.Event(
+      StatAdd,
+      Time.now,
+      longVal = delta,
+      objectVal = name,
+      traceIdVal = tid,
+      spanIdVal = sid
+    )
   }
 }

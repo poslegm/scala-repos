@@ -11,35 +11,39 @@ import play.api.routing._
 
 class Application extends Controller {
   //#javascript-router-resource
-  def javascriptRoutes = Action { implicit request =>
-    Ok(
+  def javascriptRoutes =
+    Action { implicit request =>
+      Ok(
         JavaScriptReverseRouter("jsRoutes")(
-            routes.javascript.Users.list,
-            routes.javascript.Users.get
+          routes.javascript.Users.list,
+          routes.javascript.Users.get
         )
-    ).as("text/javascript")
-  }
+      ).as("text/javascript")
+    }
   //#javascript-router-resource
 
-  def javascriptRoutes2 = Action { implicit request =>
-    Ok(
+  def javascriptRoutes2 =
+    Action { implicit request =>
+      Ok(
         //#javascript-router-resource-custom-method
         JavaScriptReverseRouter("jsRoutes", Some("myAjaxFunction"))(
-            routes.javascript.Users.list,
-            routes.javascript.Users.get
+          routes.javascript.Users.list,
+          routes.javascript.Users.get
         )
         //#javascript-router-resource-custom-method
-    ).as("text/javascript")
-  }
+      ).as("text/javascript")
+    }
 }
 
 class Users extends Controller {
 
-  def list = Action {
-    Ok("List users")
-  }
+  def list =
+    Action {
+      Ok("List users")
+    }
 
-  def get(id: Long) = Action {
-    Ok(s"Get user with id $id")
-  }
+  def get(id: Long) =
+    Action {
+      Ok(s"Get user with id $id")
+    }
 }

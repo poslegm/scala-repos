@@ -89,7 +89,7 @@ import Path._
   *
   *  ''Note:  This library is considered experimental and should not be used unless you know what you are doing.''
   */
-class Path private[io](val jfile: JFile) {
+class Path private[io] (val jfile: JFile) {
   val separator = java.io.File.separatorChar
   val separatorStr = java.io.File.separator
 
@@ -140,11 +140,15 @@ class Path private[io](val jfile: JFile) {
   def resolve(other: Path) =
     if (other.isAbsolute || isEmpty) other else /(other)
   def relativize(other: Path) = {
-    assert(isAbsolute == other.isAbsolute,
-           "Paths not of same type: " + this + ", " + other)
+    assert(
+      isAbsolute == other.isAbsolute,
+      "Paths not of same type: " + this + ", " + other
+    )
 
     def createRelativePath(
-        baseSegs: List[String], otherSegs: List[String]): String = {
+        baseSegs: List[String],
+        otherSegs: List[String]
+    ): String = {
       (baseSegs, otherSegs) match {
         case (b :: bs, o :: os) if b == o => createRelativePath(bs, os)
         case (bs, os) =>
@@ -161,21 +165,23 @@ class Path private[io](val jfile: JFile) {
   /**
     * @return The path of the parent directory, or root if path is already root
     */
-  def parent: Directory = path match {
-    case "" | "." => Directory("..")
-    case _ =>
-      // the only solution <-- a comment which could have used elaboration
-      if (segments.nonEmpty && segments.last == "..") (path / "..").toDirectory
-      else
-        jfile.getParent match {
-          case null =>
-            if (isAbsolute)
-              toDirectory // it should be a root. BTW, don't need to worry about relative pathed root
-            else Directory(".") // a dir under pwd
-          case x =>
-            Directory(x)
-        }
-  }
+  def parent: Directory =
+    path match {
+      case "" | "." => Directory("..")
+      case _        =>
+        // the only solution <-- a comment which could have used elaboration
+        if (segments.nonEmpty && segments.last == "..")
+          (path / "..").toDirectory
+        else
+          jfile.getParent match {
+            case null =>
+              if (isAbsolute)
+                toDirectory // it should be a root. BTW, don't need to worry about relative pathed root
+              else Directory(".") // a dir under pwd
+            case x =>
+              Directory(x)
+          }
+    }
   def parents: List[Directory] = {
     val p = parent
     if (p isSame this) Nil else p :: p.parents
@@ -214,17 +220,20 @@ class Path private[io](val jfile: JFile) {
   def canWrite = jfile.canWrite()
   def exists = {
     if (Statistics.canEnable) Statistics.incCounter(IOStats.fileExistsCount)
-    try jfile.exists() catch { case ex: SecurityException => false }
+    try jfile.exists()
+    catch { case ex: SecurityException => false }
   }
 
   def isFile = {
     if (Statistics.canEnable) Statistics.incCounter(IOStats.fileIsFileCount)
-    try jfile.isFile() catch { case ex: SecurityException => false }
+    try jfile.isFile()
+    catch { case ex: SecurityException => false }
   }
   def isDirectory = {
     if (Statistics.canEnable)
       Statistics.incCounter(IOStats.fileIsDirectoryCount)
-    try jfile.isDirectory() catch {
+    try jfile.isDirectory()
+    catch {
       case ex: SecurityException => jfile.getPath == "."
     }
   }
@@ -242,7 +251,9 @@ class Path private[io](val jfile: JFile) {
 
   // creations
   def createDirectory(
-      force: Boolean = true, failIfExists: Boolean = false): Directory = {
+      force: Boolean = true,
+      failIfExists: Boolean = false
+  ): Directory = {
     val res = if (force) jfile.mkdirs() else jfile.mkdir()
     if (!res && failIfExists && exists)
       fail("Directory '%s' already exists." format name)
@@ -268,7 +279,7 @@ class Path private[io](val jfile: JFile) {
     if (f.isDirectory)
       f.listFiles match {
         case null =>
-        case xs => xs foreach deleteRecursively
+        case xs   => xs foreach deleteRecursively
       }
     f.delete()
   }
@@ -282,9 +293,10 @@ class Path private[io](val jfile: JFile) {
     }
 
   override def toString() = path
-  override def equals(other: Any) = other match {
-    case x: Path => path == x.path
-    case _ => false
-  }
+  override def equals(other: Any) =
+    other match {
+      case x: Path => path == x.path
+      case _       => false
+    }
   override def hashCode() = path.hashCode()
 }

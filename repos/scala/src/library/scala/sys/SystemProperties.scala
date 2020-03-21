@@ -42,7 +42,7 @@ class SystemProperties
 
   def names: Iterator[String] =
     wrapAccess(
-        System.getProperties().stringPropertyNames().asScala.iterator
+      System.getProperties().stringPropertyNames().asScala.iterator
     ) getOrElse Iterator.empty
 
   def get(key: String) =
@@ -58,7 +58,8 @@ class SystemProperties
   }
 
   def wrapAccess[T](body: => T): Option[T] =
-    try Some(body) catch { case _: AccessControlException => None }
+    try Some(body)
+    catch { case _: AccessControlException => None }
 }
 
 /** The values in SystemProperties can be used to access and manipulate
@@ -75,21 +76,23 @@ object SystemProperties {
   def exclusively[T](body: => T) = this synchronized body
 
   implicit def systemPropertiesToCompanion(
-      p: SystemProperties): SystemProperties.type = this
+      p: SystemProperties
+  ): SystemProperties.type = this
 
   private final val HeadlessKey = "java.awt.headless"
   private final val PreferIPv4StackKey = "java.net.preferIPv4Stack"
   private final val PreferIPv6AddressesKey = "java.net.preferIPv6Addresses"
   private final val NoTraceSuppressionKey = "scala.control.noTraceSuppression"
 
-  def help(key: String): String = key match {
-    case HeadlessKey => "system should not utilize a display device"
-    case PreferIPv4StackKey => "system should prefer IPv4 sockets"
-    case PreferIPv6AddressesKey => "system should prefer IPv6 addresses"
-    case NoTraceSuppressionKey =>
-      "scala should not suppress any stack trace creation"
-    case _ => ""
-  }
+  def help(key: String): String =
+    key match {
+      case HeadlessKey            => "system should not utilize a display device"
+      case PreferIPv4StackKey     => "system should prefer IPv4 sockets"
+      case PreferIPv6AddressesKey => "system should prefer IPv6 addresses"
+      case NoTraceSuppressionKey =>
+        "scala should not suppress any stack trace creation"
+      case _ => ""
+    }
 
   lazy val headless: BooleanProp = BooleanProp.keyExists(HeadlessKey)
   lazy val preferIPv4Stack: BooleanProp =

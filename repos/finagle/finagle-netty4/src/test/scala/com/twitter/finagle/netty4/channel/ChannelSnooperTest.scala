@@ -19,14 +19,14 @@ class ChannelSnooperTest extends FunSuite with MockitoSugar {
   test("ByteBufSnooper decodes and prints inbound and outbound messages") {
     var messageCount = 0
     val bbs = new ByteBufSnooper("bbs") {
-      override def dump(printer: (Channel, String) => Unit,
-                        ch: Channel,
-                        buf: ByteBuf): Unit = {
+      override def dump(
+          printer: (Channel, String) => Unit,
+          ch: Channel,
+          buf: ByteBuf
+      ): Unit = {
         messageCount += 1
         assert(buf == msgBuffer)
-        super.dump({ (_: Channel, m: String) =>
-          assert(msg == m)
-        }, ch, buf)
+        super.dump({ (_: Channel, m: String) => assert(msg == m) }, ch, buf)
       }
     }
 
@@ -133,10 +133,12 @@ class ChannelSnooperTest extends FunSuite with MockitoSugar {
   test("SimpleChannelSnooper snoops connect") {
     new InstrumentedSnooperCtx {
       assert(eventCount == 0)
-      scs.connect(ctx,
-                  new InetSocketAddress(0),
-                  new InetSocketAddress(0),
-                  mock[ChannelPromise])
+      scs.connect(
+        ctx,
+        new InetSocketAddress(0),
+        new InetSocketAddress(0),
+        mock[ChannelPromise]
+      )
       assert(eventCount == 1)
     }
   }

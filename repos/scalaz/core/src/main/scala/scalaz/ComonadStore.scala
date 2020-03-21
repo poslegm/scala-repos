@@ -19,8 +19,9 @@ trait ComonadStore[F[_], S] extends Comonad[F] { self =>
   def seeks[A](s: S => S, w: F[A]): F[A] =
     peeks(s, cojoin(w))
 
-  def experiment[G[_], A](s: S => G[S], w: F[A])(
-      implicit FG: Functor[G]): G[A] =
+  def experiment[G[_], A](s: S => G[S], w: F[A])(implicit
+      FG: Functor[G]
+  ): G[A] =
     FG.map(s(pos(w)))(peek(_, w))
   ////
 }

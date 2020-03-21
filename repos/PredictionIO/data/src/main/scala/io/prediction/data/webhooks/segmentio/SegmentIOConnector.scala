@@ -26,7 +26,7 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
   override def toEventJson(data: JObject): JObject = {
     try {
       val version: String = data.values("version").toString
-/*
+      /*
       if (!supportedAPI.contains(version)) {
         throw new ConnectorException(
           s"Supported segment.io API versions: [2]. got [$version]"
@@ -38,65 +38,66 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
         throw new ConnectorException(s"Failed to get segment.io API version.")
     }
 
-    val common = try {
-      data.extract[Common]
-    } catch {
-      case e: Throwable ⇒
-        throw new ConnectorException(
+    val common =
+      try {
+        data.extract[Common]
+      } catch {
+        case e: Throwable ⇒
+          throw new ConnectorException(
             s"Cannot extract Common field from $data. ${e.getMessage}",
             e
-        )
-    }
+          )
+      }
 
     try {
       common.`type` match {
         case "identify" ⇒
           toEventJson(
-              common = common,
-              identify = data.extract[Events.Identify]
+            common = common,
+            identify = data.extract[Events.Identify]
           )
 
         case "track" ⇒
           toEventJson(
-              common = common,
-              track = data.extract[Events.Track]
+            common = common,
+            track = data.extract[Events.Track]
           )
 
         case "alias" ⇒
           toEventJson(
-              common = common,
-              alias = data.extract[Events.Alias]
+            common = common,
+            alias = data.extract[Events.Alias]
           )
 
         case "page" ⇒
           toEventJson(
-              common = common,
-              page = data.extract[Events.Page]
+            common = common,
+            page = data.extract[Events.Page]
           )
 
         case "screen" ⇒
           toEventJson(
-              common = common,
-              screen = data.extract[Events.Screen]
+            common = common,
+            screen = data.extract[Events.Screen]
           )
 
         case "group" ⇒
           toEventJson(
-              common = common,
-              group = data.extract[Events.Group]
+            common = common,
+            group = data.extract[Events.Group]
           )
 
         case _ ⇒
           throw new ConnectorException(
-              s"Cannot convert unknown type ${common.`type`} to event JSON."
+            s"Cannot convert unknown type ${common.`type`} to event JSON."
           )
       }
     } catch {
       case e: ConnectorException => throw e
       case e: Exception =>
         throw new ConnectorException(
-            s"Cannot convert $data to event JSON. ${e.getMessage}",
-            e
+          s"Cannot convert $data to event JSON. ${e.getMessage}",
+          e
         )
     }
   }
@@ -153,8 +154,8 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
       } catch {
         case e: Throwable ⇒
           throw new ConnectorException(
-              s"Cannot convert $context to event JSON. ${e.getMessage}",
-              e
+            s"Cannot convert $context to event JSON. ${e.getMessage}",
+            e
           )
       }
     } getOrElse eventProps
@@ -168,11 +169,11 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
     common.user_id.orElse(common.anonymous_id) match {
       case Some(userId) ⇒
         ("event" → typ) ~ ("entityType" → "user") ~ ("entityId" → userId) ~
-        ("eventTime" → common.timestamp)
+          ("eventTime" → common.timestamp)
 
       case None ⇒
         throw new ConnectorException(
-            "there was no `userId` or `anonymousId` in the common fields."
+          "there was no `userId` or `anonymousId` in the common fields."
         )
     }
   }

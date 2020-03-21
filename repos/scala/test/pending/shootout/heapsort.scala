@@ -1,4 +1,4 @@
-/* The Computer Language Shootout 
+/* The Computer Language Shootout
    http://shootout.alioth.debian.org/
    contributed by Isaac Gouy (Scala novice)
  */
@@ -23,7 +23,8 @@ object heapsort {
     l = (n >> 1) + 1;
     ir = n;
     while (true) {
-      if (l > 1) { l = l - 1; rra = ra(l); } else {
+      if (l > 1) { l = l - 1; rra = ra(l); }
+      else {
         rra = ra(ir);
         ra(ir) = ra(1);
         ir = ir - 1;
@@ -57,7 +58,9 @@ object heapsort {
   }
 
   private def toPositiveInt(s: Array[String]) = {
-    val i = try { Integer.parseInt(s(0)); } catch { case _ => 1 }
+    val i =
+      try { Integer.parseInt(s(0)); }
+      catch { case _ => 1 }
     if (i > 0) i; else 1;
   }
 }

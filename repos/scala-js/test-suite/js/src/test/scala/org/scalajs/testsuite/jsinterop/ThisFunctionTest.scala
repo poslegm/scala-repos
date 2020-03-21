@@ -22,12 +22,11 @@ class ThisFunctionTest {
         var g = function(f, x) { return f.call(x, 42, x.foo); }; g;
     """)
       .asInstanceOf[js.Function2[js.ThisFunction2[ // scalastyle:ignore
-                                                  js.Dynamic,
-                                                  Int,
-                                                  String,
-                                                  String],
-                                 js.Dynamic,
-                                 String]]
+        js.Dynamic,
+        Int,
+        String,
+        String
+      ], js.Dynamic, String]]
 
     val f = { (thiz: js.Dynamic, v: Int, u: String) =>
       import js.DynamicImplicits.truthValue
@@ -49,23 +48,25 @@ class ThisFunctionTest {
         var g = function(f, x) { return f.call(x, 42, x.foo); }; g;
     """)
       .asInstanceOf[js.Function2[js.ThisFunction2[ // scalastyle:ignore
-                                                  js.Dynamic,
-                                                  Int,
-                                                  String,
-                                                  String],
-                                 js.Dynamic,
-                                 String]]
+        js.Dynamic,
+        Int,
+        String,
+        String
+      ], js.Dynamic, String]]
 
     val obj = js.Object().asInstanceOf[js.Dynamic]
     obj.foo = "foo"
     obj.foobar = "foobar"
-    val res = g({ (thiz: js.Dynamic, v: Int, u: String) =>
-      import js.DynamicImplicits.truthValue
-      assertTrue(thiz)
-      val thiz_foobar = thiz.foobar
-      assertEquals("foobar", thiz_foobar)
-      u + v
-    }, obj)
+    val res = g(
+      { (thiz: js.Dynamic, v: Int, u: String) =>
+        import js.DynamicImplicits.truthValue
+        assertTrue(thiz)
+        val thiz_foobar = thiz.foobar
+        assertEquals("foobar", thiz_foobar)
+        u + v
+      },
+      obj
+    )
     assertEquals("foo42", res)
   }
 

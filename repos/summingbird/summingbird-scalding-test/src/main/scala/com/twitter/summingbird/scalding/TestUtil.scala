@@ -31,11 +31,12 @@ object TestUtil {
   def simpleTimeExtractor[T <: (Long, _)]: TimeExtractor[T] =
     TimeExtractor(_._1)
 
-  def compareMaps[K, V : Group](original: Iterable[Any],
-                                inMemory: Map[K, V],
-                                produced: Map[K, V],
-                                name: String)(
-      implicit batcher: Batcher): Boolean = {
+  def compareMaps[K, V: Group](
+      original: Iterable[Any],
+      inMemory: Map[K, V],
+      produced: Map[K, V],
+      name: String
+  )(implicit batcher: Batcher): Boolean = {
     val diffMap = Group.minus(inMemory, produced)
     val wrong = Monoid.isNonZero(diffMap)
     if (wrong) {
@@ -50,10 +51,12 @@ object TestUtil {
     !wrong
   }
 
-  def compareMaps[K, V : Group](original: Iterable[Any],
-                                inMemory: Map[K, V],
-                                testStore: TestStore[K, V],
-                                name: String = ""): Boolean = {
+  def compareMaps[K, V: Group](
+      original: Iterable[Any],
+      inMemory: Map[K, V],
+      testStore: TestStore[K, V],
+      name: String = ""
+  ): Boolean = {
     val produced = testStore.lastToIterable.toMap
     val diffMap = Group.minus(inMemory, produced)
     val wrong = Monoid.isNonZero(diffMap)
@@ -62,13 +65,16 @@ object TestUtil {
       println("input: " + original)
       println("input size: " + original.size)
       println(
-          "input batches: " +
-          testStore.batcher.batchOf(Timestamp(original.size)))
+        "input batches: " +
+          testStore.batcher.batchOf(Timestamp(original.size))
+      )
       println("producer extra keys: " + (produced.keySet -- inMemory.keySet))
       println("producer missing keys: " + (inMemory.keySet -- produced.keySet))
       println("written batches: " + testStore.writtenBatches)
-      println("earliest unwritten time: " +
-          testStore.batcher.earliestTimeOf(testStore.writtenBatches.max.next))
+      println(
+        "earliest unwritten time: " +
+          testStore.batcher.earliestTimeOf(testStore.writtenBatches.max.next)
+      )
       println("Difference: " + diffMap)
     }
     !wrong
@@ -82,15 +88,18 @@ object TestUtil {
   def pruneToBatchCoveredWithTime[T](
       input: TraversableOnce[(Long, T)],
       inputRange: Interval[Timestamp],
-      batcher: Batcher): TraversableOnce[(Long, T)] = {
+      batcher: Batcher
+  ): TraversableOnce[(Long, T)] = {
     val batchRange = batcher.toTimestamp(batcher.batchesCoveredBy(inputRange))
     input.filter { case (ts, _) => batchRange.contains(Timestamp(ts)) }
   }
 
   /* keep just the values */
-  def pruneToBatchCovered[T](input: TraversableOnce[(Long, T)],
-                             inputRange: Interval[Timestamp],
-                             batcher: Batcher): TraversableOnce[T] = {
+  def pruneToBatchCovered[T](
+      input: TraversableOnce[(Long, T)],
+      inputRange: Interval[Timestamp],
+      batcher: Batcher
+  ): TraversableOnce[T] = {
     pruneToBatchCoveredWithTime(input, inputRange, batcher).map {
       case (ts, v) => v
     }
@@ -109,12 +118,13 @@ object TestUtil {
       else if (d.milliSinceEpoch >= 0L) BatchID(1)
       else BatchID(0)
 
-    def earliestTimeOf(batch: BatchID) = batch.id match {
-      case 0L => Timestamp.Min
-      case 1L => Timestamp(0)
-      case 2L => Timestamp.Max
-      case 3L => Timestamp.Max
-    }
+    def earliestTimeOf(batch: BatchID) =
+      batch.id match {
+        case 0L => Timestamp.Min
+        case 1L => Timestamp(0)
+        case 2L => Timestamp.Max
+        case 3L => Timestamp.Max
+      }
     // this is just for testing, it covers everything with batch 1
     override def cover(interval: Interval[Timestamp]): Interval[BatchID] =
       Interval.leftClosedRightOpen(BatchID(1), BatchID(2))

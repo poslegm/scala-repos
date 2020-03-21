@@ -25,8 +25,11 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
   override def alwaysInitSizeMap = true
 
   abstract class ParFlatHashTableIterator(
-      var idx: Int, val until: Int, val totalsize: Int)
-      extends IterableSplitter[T] with SizeMapUtils {
+      var idx: Int,
+      val until: Int,
+      val totalsize: Int
+  ) extends IterableSplitter[T]
+      with SizeMapUtils {
     import scala.collection.DebugUtils._
 
     private[this] var traversed = 0
@@ -40,8 +43,7 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
       }
     }
 
-    def newIterator(
-        index: Int, until: Int, totalsize: Int): IterableSplitter[T]
+    def newIterator(index: Int, until: Int, totalsize: Int): IterableSplitter[T]
 
     def remaining = totalsize - traversed
     def hasNext = traversed < totalsize
@@ -60,8 +62,8 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
 
         val fstidx = idx
         val fstuntil = divpt
-        val fsttotal = calcNumElems(
-            idx, divpt, itertable.length, sizeMapBucketSize)
+        val fsttotal =
+          calcNumElems(idx, divpt, itertable.length, sizeMapBucketSize)
         val fstit = newIterator(fstidx, fstuntil, fsttotal)
 
         val sndidx = divpt
@@ -72,17 +74,18 @@ trait ParFlatHashTable[T] extends scala.collection.mutable.FlatHashTable[T] {
         Seq(fstit, sndit)
       } else Seq(this)
 
-    override def debugInformation = buildString { append =>
-      append("Parallel flat hash table iterator")
-      append("---------------------------------")
-      append("Traversed/total: " + traversed + " / " + totalsize)
-      append("Table idx/until: " + idx + " / " + until)
-      append("Table length: " + itertable.length)
-      append("Table: ")
-      append(arrayString(itertable, 0, itertable.length))
-      append("Sizemap: ")
-      append(arrayString(sizemap, 0, sizemap.length))
-    }
+    override def debugInformation =
+      buildString { append =>
+        append("Parallel flat hash table iterator")
+        append("---------------------------------")
+        append("Traversed/total: " + traversed + " / " + totalsize)
+        append("Table idx/until: " + idx + " / " + until)
+        append("Table length: " + itertable.length)
+        append("Table: ")
+        append(arrayString(itertable, 0, itertable.length))
+        append("Sizemap: ")
+        append(arrayString(sizemap, 0, sizemap.length))
+      }
 
     protected def countElems(from: Int, until: Int) = {
       var count = 0

@@ -6,8 +6,8 @@ private[nio] final class TypedArrayShortBuffer private (
     override private[nio] val _typedArray: Int16Array,
     _initialPosition: Int,
     _initialLimit: Int,
-    _readOnly: Boolean)
-    extends ShortBuffer(_typedArray.length, null, -1) {
+    _readOnly: Boolean
+) extends ShortBuffer(_typedArray.length, null, -1) {
 
   position(_initialPosition)
   limit(_initialLimit)
@@ -86,12 +86,20 @@ private[nio] final class TypedArrayShortBuffer private (
 
   @inline
   override private[nio] def load(
-      startIndex: Int, dst: Array[Short], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      dst: Array[Short],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_load(startIndex, dst, offset, length)
 
   @inline
   override private[nio] def store(
-      startIndex: Int, src: Array[Short], offset: Int, length: Int): Unit =
+      startIndex: Int,
+      src: Array[Short],
+      offset: Int,
+      length: Int
+  ): Unit =
     GenBuffer(this).generic_store(startIndex, src, offset, length)
 }
 
@@ -100,17 +108,26 @@ private[nio] object TypedArrayShortBuffer {
       extends GenTypedArrayBuffer.NewTypedArrayBuffer[ShortBuffer] {
     def bytesPerElem: Int = 2
 
-    def apply(typedArray: Int16Array,
-              initialPosition: Int,
-              initialLimit: Int,
-              readOnly: Boolean): TypedArrayShortBuffer = {
+    def apply(
+        typedArray: Int16Array,
+        initialPosition: Int,
+        initialLimit: Int,
+        readOnly: Boolean
+    ): TypedArrayShortBuffer = {
       new TypedArrayShortBuffer(
-          typedArray, initialPosition, initialLimit, readOnly)
+        typedArray,
+        initialPosition,
+        initialLimit,
+        readOnly
+      )
     }
 
     @inline
     def newTypedArray(
-        buffer: ArrayBuffer, byteOffset: Int, length: Int): Int16Array = {
+        buffer: ArrayBuffer,
+        byteOffset: Int,
+        length: Int
+    ): Int16Array = {
       new Int16Array(buffer, byteOffset, length)
     }
   }

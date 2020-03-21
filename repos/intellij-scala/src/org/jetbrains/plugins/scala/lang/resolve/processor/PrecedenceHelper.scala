@@ -7,10 +7,17 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiClass, PsiElement, PsiPackage}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScTypeAliasDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.ScImportExpr
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.usages.{ImportExprUsed, ImportSelectorUsed, ImportWildcardSelectorUsed}
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.imports.usages.{
+  ImportExprUsed,
+  ImportSelectorUsed,
+  ImportWildcardSelectorUsed
+}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.packaging.ScPackaging
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScObject
-import org.jetbrains.plugins.scala.lang.resolve.{ResolveUtils, ScalaResolveResult}
+import org.jetbrains.plugins.scala.lang.resolve.{
+  ResolveUtils,
+  ScalaResolveResult
+}
 import org.jetbrains.plugins.scala.util.ScEquivalenceUtil
 
 import scala.collection.mutable
@@ -42,13 +49,16 @@ trait PrecedenceHelper[T] {
   private var fromHistory: Boolean = false
 
   protected def compareWithIgnoredSet(
-      set: mutable.HashSet[ScalaResolveResult]): Boolean = {
+      set: mutable.HashSet[ScalaResolveResult]
+  ): Boolean = {
     import scala.collection.JavaConversions._
     if (ignoredSet.nonEmpty && set.isEmpty) return false
     ignoredSet.forall { result =>
       set.forall { otherResult =>
         if (!ScEquivalenceUtil.smartEquivalence(
-                result.getActualElement, otherResult.getActualElement)) {
+              result.getActualElement,
+              otherResult.getActualElement
+            )) {
           (result.getActualElement, otherResult.getActualElement) match {
             case (ta: ScTypeAliasDefinition, cls: PsiClass) =>
               ta.isExactAliasFor(cls)
@@ -70,7 +80,7 @@ trait PrecedenceHelper[T] {
     fromHistory = true
     try {
       history.foreach {
-        case ChangedLevel => changedLevel
+        case ChangedLevel       => changedLevel
         case AddResult(results) => addResults(results)
       }
     } finally fromHistory = false
@@ -87,14 +97,17 @@ trait PrecedenceHelper[T] {
 
   private lazy val suspiciousPackages: Set[String] = {
     def collectPackages(
-        elem: PsiElement, res: Set[String] = Set.empty): Set[String] = {
+        elem: PsiElement,
+        res: Set[String] = Set.empty
+    ): Set[String] = {
       PsiTreeUtil.getContextOfType(elem, true, classOf[ScPackaging]) match {
-        case null => res
+        case null           => res
         case p: ScPackaging => collectPackages(p, res + p.fullPackageName)
       }
     }
     Set("scala", "java.lang", "scala", "scala.Predef") ++ collectPackages(
-        getPlace)
+      getPlace
+    )
   }
   protected def isSpecialResult(result: ScalaResolveResult): Boolean = {
     val importsUsed = result.importsUsed.toSeq
@@ -124,7 +137,9 @@ trait PrecedenceHelper[T] {
   protected def getTopPrecedence(result: ScalaResolveResult): Int
   protected def setTopPrecedence(result: ScalaResolveResult, i: Int)
   protected def filterNot(
-      p: ScalaResolveResult, n: ScalaResolveResult): Boolean = {
+      p: ScalaResolveResult,
+      n: ScalaResolveResult
+  ): Boolean = {
     getPrecedence(p) < getTopPrecedence(n)
   }
   protected def isCheckForEqualPrecedence = true
@@ -132,7 +147,8 @@ trait PrecedenceHelper[T] {
     levelQualifiedNamesSet.clear()
   }
   protected def getLevelSet(
-      result: ScalaResolveResult): util.HashSet[ScalaResolveResult] = levelSet
+      result: ScalaResolveResult
+  ): util.HashSet[ScalaResolveResult] = levelSet
 
   /**
     * Do not add ResolveResults through candidatesSet. It may break precedence. Use this method instead.
@@ -160,7 +176,7 @@ trait PrecedenceHelper[T] {
     else if (currentPrecedence == topPrecedence) {
       if (isCheckForEqualPrecedence && qualifiedName != null &&
           (levelQualifiedNamesSet.contains(qualifiedName) ||
-              qualifiedNamesSet.contains(qualifiedName))) {
+          qualifiedNamesSet.contains(qualifiedName))) {
         return false
       } else if (qualifiedName != null &&
                  qualifiedNamesSet.contains(qualifiedName)) return false

@@ -23,8 +23,9 @@ package mutable
   *  @define coll synchronized stack
   */
 @deprecated(
-    "Synchronization via selective overriding of methods is inherently unreliable.  Consider java.util.concurrent.LinkedBlockingDequeue instead.",
-    "2.11.0")
+  "Synchronization via selective overriding of methods is inherently unreliable.  Consider java.util.concurrent.LinkedBlockingDequeue instead.",
+  "2.11.0"
+)
 class SynchronizedStack[A] extends Stack[A] {
 
   /** Checks if the stack is empty.
@@ -37,9 +38,10 @@ class SynchronizedStack[A] extends Stack[A] {
     *
     *  @param  elem        the element to push onto the stack
     */
-  override def push(elem: A): this.type = synchronized[this.type] {
-    super.push(elem)
-  }
+  override def push(elem: A): this.type =
+    synchronized[this.type] {
+      super.push(elem)
+    }
 
   /** Push two or more elements onto the stack. The last element
     *  of the sequence will be on top of the new stack.

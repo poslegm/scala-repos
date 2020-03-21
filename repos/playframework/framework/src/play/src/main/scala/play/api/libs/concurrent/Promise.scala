@@ -25,10 +25,12 @@ object Promise {
     * @return a scheduled promise
     */
   @deprecated(
-      "Use akka.pattern.after(duration, actorSystem.scheduler)(Future(message)) instead",
-      since = "2.5.0")
+    "Use akka.pattern.after(duration, actorSystem.scheduler)(Future(message)) instead",
+    since = "2.5.0"
+  )
   def timeout[A](message: => A, duration: scala.concurrent.duration.Duration)(
-      implicit ec: ExecutionContext): Future[A] = {
+      implicit ec: ExecutionContext
+  ): Future[A] = {
     timeout(message, duration.toMillis)
   }
 
@@ -40,11 +42,14 @@ object Promise {
     * @return a scheduled promise
     */
   @deprecated(
-      "Use akka.pattern.after(duration, actorSystem.scheduler)(Future(message)) instead",
-      since = "2.5.0")
+    "Use akka.pattern.after(duration, actorSystem.scheduler)(Future(message)) instead",
+    since = "2.5.0"
+  )
   def timeout[A](
-      message: => A, duration: Long, unit: TimeUnit = TimeUnit.MILLISECONDS)(
-      implicit ec: ExecutionContext): Future[A] = {
+      message: => A,
+      duration: Long,
+      unit: TimeUnit = TimeUnit.MILLISECONDS
+  )(implicit ec: ExecutionContext): Future[A] = {
     val p = SPromise[A]()
     val app = play.api.Play.privateMaybeApplication.get
     app.actorSystem.scheduler.scheduleOnce(FiniteDuration(duration, unit)) {

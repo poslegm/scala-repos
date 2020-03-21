@@ -46,12 +46,13 @@ abstract class ParallelVectorCheck[T](tp: String)
 }
 
 class IntParallelVectorCheck(val tasksupport: TaskSupport)
-    extends ParallelVectorCheck[Int]("Int") with IntSeqOperators
+    extends ParallelVectorCheck[Int]("Int")
+    with IntSeqOperators
     with IntValues {
   override def instances(vals: Seq[Gen[Int]]) =
-    oneOf(super.instances(vals), sized { sz =>
-      (0 until sz).toArray.toSeq
-    }, sized { sz =>
-      (-sz until 0).toArray.toSeq
-    })
+    oneOf(
+      super.instances(vals),
+      sized { sz => (0 until sz).toArray.toSeq },
+      sized { sz => (-sz until 0).toArray.toSeq }
+    )
 }

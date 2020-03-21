@@ -20,8 +20,10 @@ class BadTest {
         .getClass
         .getName
     val expected = "scala.concurrent.Future$InternalCallbackExecutor$"
-    Assert.assertEquals("Failed to grab appropriate Akka name",
-                        expected,
-                        evilGetThreadExectionContextName)
+    Assert.assertEquals(
+      "Failed to grab appropriate Akka name",
+      expected,
+      evilGetThreadExectionContextName
+    )
   }
 }

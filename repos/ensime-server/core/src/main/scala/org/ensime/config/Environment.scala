@@ -4,7 +4,8 @@ package org.ensime
 package config
 
 object Environment {
-  def info: Seq[String] = Seq(
+  def info: Seq[String] =
+    Seq(
       "Environment:",
       s"  OS : $osVersion",
       s"  Java : $javaVersion",
@@ -14,7 +15,7 @@ object Environment {
       s"  Built with sbt version: ${BuildInfo.sbtVersion}",
       s"  Built from git sha: ${BuildInfo.gitSha}",
       s"  Built on: ${BuildInfo.builtAtString}"
-  )
+    )
 
   private def osVersion: String =
     System.getProperty("os.name")
@@ -22,10 +23,12 @@ object Environment {
   private def javaVersion: String = {
     val vmInfo =
       System.getProperty("java.vm.name") + " " + System.getProperty(
-          "java.vm.version")
+        "java.vm.version"
+      )
     val rtInfo =
       System.getProperty("java.runtime.name") + " " + System.getProperty(
-          "java.runtime.version")
+        "java.runtime.version"
+      )
     vmInfo + ", " + rtInfo
   }
 

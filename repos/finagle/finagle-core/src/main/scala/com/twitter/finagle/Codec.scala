@@ -1,13 +1,21 @@
 package com.twitter.finagle
 
-import com.twitter.finagle.dispatch.{GenSerialClientDispatcher, SerialClientDispatcher, SerialServerDispatcher}
+import com.twitter.finagle.dispatch.{
+  GenSerialClientDispatcher,
+  SerialClientDispatcher,
+  SerialServerDispatcher
+}
 import com.twitter.finagle.netty3.transport.ChannelTransport
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.tracing.TraceInitializerFilter
 import com.twitter.finagle.transport.Transport
 import com.twitter.util.Closable
 import java.net.{InetSocketAddress, SocketAddress}
-import org.jboss.netty.channel.{Channel, ChannelPipeline, ChannelPipelineFactory}
+import org.jboss.netty.channel.{
+  Channel,
+  ChannelPipeline,
+  ChannelPipelineFactory
+}
 
 /**
   * Codecs provide protocol encoding and decoding via netty pipelines
@@ -39,7 +47,8 @@ trait Codec[Req, Rep] {
     * to the service at the bottom of the stack (connection level).
     */
   final def prepareConnFactory(
-      underlying: ServiceFactory[Req, Rep]): ServiceFactory[Req, Rep] =
+      underlying: ServiceFactory[Req, Rep]
+  ): ServiceFactory[Req, Rep] =
     prepareConnFactory(underlying, Stack.Params.empty)
 
   def prepareConnFactory(
@@ -53,11 +62,14 @@ trait Codec[Req, Rep] {
     * Proceed with care.
     */
   def newClientTransport(
-      ch: Channel, statsReceiver: StatsReceiver): Transport[Any, Any] =
+      ch: Channel,
+      statsReceiver: StatsReceiver
+  ): Transport[Any, Any] =
     new ChannelTransport(ch)
 
   final def newClientDispatcher(
-      transport: Transport[Any, Any]): Service[Req, Rep] =
+      transport: Transport[Any, Any]
+  ): Service[Req, Rep] =
     newClientDispatcher(transport, Stack.Params.empty)
 
   def newClientDispatcher(
@@ -65,9 +77,9 @@ trait Codec[Req, Rep] {
       params: Stack.Params
   ): Service[Req, Rep] =
     new SerialClientDispatcher(
-        Transport.cast[Req, Rep](transport),
-        params[param.Stats].statsReceiver
-          .scope(GenSerialClientDispatcher.StatsScope)
+      Transport.cast[Req, Rep](transport),
+      params[param.Stats].statsReceiver
+        .scope(GenSerialClientDispatcher.StatsScope)
     )
 
   def newServerDispatcher(
@@ -75,7 +87,9 @@ trait Codec[Req, Rep] {
       service: Service[Req, Rep]
   ): Closable =
     new SerialServerDispatcher[Req, Rep](
-        Transport.cast[Rep, Req](transport), service)
+      Transport.cast[Rep, Req](transport),
+      service
+    )
 
   /**
     * Is this Codec OK for failfast? This is a temporary hack to
@@ -104,16 +118,19 @@ abstract class AbstractCodec[Req, Rep] extends Codec[Req, Rep]
 object Codec {
   def ofPipelineFactory[Req, Rep](makePipeline: => ChannelPipeline) =
     new Codec[Req, Rep] {
-      def pipelineFactory = new ChannelPipelineFactory {
-        def getPipeline = makePipeline
-      }
+      def pipelineFactory =
+        new ChannelPipelineFactory {
+          def getPipeline = makePipeline
+        }
     }
 
-  def ofPipeline[Req, Rep](p: ChannelPipeline) = new Codec[Req, Rep] {
-    def pipelineFactory = new ChannelPipelineFactory {
-      def getPipeline = p
+  def ofPipeline[Req, Rep](p: ChannelPipeline) =
+    new Codec[Req, Rep] {
+      def pipelineFactory =
+        new ChannelPipelineFactory {
+          def getPipeline = p
+        }
     }
-  }
 }
 
 /**
@@ -128,10 +145,11 @@ case class ClientCodecConfig(serviceName: String)
   * Servers
   */
 case class ServerCodecConfig(serviceName: String, boundAddress: SocketAddress) {
-  def boundInetSocketAddress = boundAddress match {
-    case ia: InetSocketAddress => ia
-    case _ => new InetSocketAddress(0)
-  }
+  def boundInetSocketAddress =
+    boundAddress match {
+      case ia: InetSocketAddress => ia
+      case _                     => new InetSocketAddress(0)
+    }
 }
 
 /**

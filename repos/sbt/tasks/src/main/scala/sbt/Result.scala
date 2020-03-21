@@ -28,15 +28,16 @@ object Result {
     def apply[T](r: Result[T]): T =
       r match {
         case Value(v) => v
-        case Inc(i) => throw i
+        case Inc(i)   => throw i
       }
   }
   def tryValues[S](r: Seq[Result[Unit]], v: Result[S]): S = {
     r foreach tryValue[Unit]
     tryValue[S](v)
   }
-  implicit def fromEither[T](e: Either[Incomplete, T]): Result[T] = e match {
-    case Left(i) => Inc(i)
-    case Right(v) => Value(v)
-  }
+  implicit def fromEither[T](e: Either[Incomplete, T]): Result[T] =
+    e match {
+      case Left(i)  => Inc(i)
+      case Right(v) => Value(v)
+    }
 }

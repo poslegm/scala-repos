@@ -45,22 +45,27 @@ class LazyStrictTestsJVM {
   object TC2 extends TCImplicits[Strict, Strict, Lazy]
   object TC3 extends TCImplicits[Strict, Strict, Strict]
 
-  trait TCImplicits[A[T] <: { def value: T },
-                    B[T] <: { def value: T },
-                    C[T] <: { def value: T }] {
+  trait TCImplicits[A[T] <: { def value: T }, B[T] <: { def value: T }, C[
+      T
+  ] <: { def value: T }] {
     implicit def listTC[T](implicit underlying: A[TC[T]]): TC[List[T]] =
       TC.instance(depth => s"List(${underlying.value.repr(depth - 1)})")
 
     implicit def hnilTC: TC[HNil] =
       TC.instance(_ => "HNil")
 
-    implicit def hconsTC[H, T <: HList](
-        implicit headTC: B[TC[H]], tailTC: TC[T]): TC[H :: T] =
-      TC.instance(
-          depth => s"${headTC.value.repr(depth - 1)} :: ${tailTC.repr(depth)}")
+    implicit def hconsTC[H, T <: HList](implicit
+        headTC: B[TC[H]],
+        tailTC: TC[T]
+    ): TC[H :: T] =
+      TC.instance(depth =>
+        s"${headTC.value.repr(depth - 1)} :: ${tailTC.repr(depth)}"
+      )
 
-    implicit def genericTC[F, G](
-        implicit gen: Generic.Aux[F, G], underlying: C[TC[G]]): TC[F] =
+    implicit def genericTC[F, G](implicit
+        gen: Generic.Aux[F, G],
+        underlying: C[TC[G]]
+    ): TC[F] =
       TC.instance(depth => s"Generic(${underlying.value.repr(depth - 1)})")
   }
 
@@ -85,11 +90,14 @@ class LazyStrictTestsJVM {
     val (ccTC3SO, genTC3SO, listTC3SO) = {
       import TC3._
       def throwsStackOverflow[T](f: => T): Boolean =
-        try { f; false } catch { case _: StackOverflowError => true }
+        try { f; false }
+        catch { case _: StackOverflowError => true }
 
-      (throwsStackOverflow(TC[CC]),
-       throwsStackOverflow(TC[List[CC] :: HNil]),
-       throwsStackOverflow(TC[List[CC]]))
+      (
+        throwsStackOverflow(TC[CC]),
+        throwsStackOverflow(TC[List[CC] :: HNil]),
+        throwsStackOverflow(TC[List[CC]])
+      )
     }
 
     val expectedCCRepr =

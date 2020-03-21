@@ -34,12 +34,17 @@ abstract class SpecLite extends Properties("") with SpecLitePlatform {
   class StringOps(s: String) {
     def should[A](a: => Any): Unit = {
       val saved = context
-      context = s; try a finally context = saved
+      context = s;
+      try a
+      finally context = saved
     }
     def ![A](a: => A)(implicit ev: (A) => Prop): Unit = in(a)
 
     def in[A](a: => A)(implicit ev: (A) => Prop): Unit =
-      property(context + ":" + s) = Prop(ev(a)(_)) // TODO sort out the laziness / implicit conversions properly
+      property(context + ":" + s) =
+        Prop(
+          ev(a)(_)
+        ) // TODO sort out the laziness / implicit conversions properly
   }
 
   implicit def enrichString(s: String) = new StringOps(s)
@@ -92,19 +97,22 @@ abstract class SpecLite extends Properties("") with SpecLitePlatform {
         case ex: Throwable =>
           if (!erasedClass.isInstance(ex))
             fail(
-                "wrong exception thrown, expected: " + erasedClass + " got: " +
-                ex)
+              "wrong exception thrown, expected: " + erasedClass + " got: " +
+                ex
+            )
       }
     }
   }
   implicit def enrichAny[A](actual: => A): AnyOps[A] = new AnyOps(actual)
 
-  def prop[T, R](result: T => R)(
-      implicit toProp: (=> R) => Prop, a: Arbitrary[T], s: Shrink[T]): Prop =
+  def prop[T, R](
+      result: T => R
+  )(implicit toProp: (=> R) => Prop, a: Arbitrary[T], s: Shrink[T]): Prop =
     check1(result)
   implicit def propToProp(p: => Prop): Prop = p
-  implicit def check1[T, R](result: T => R)(
-      implicit toProp: (=> R) => Prop, a: Arbitrary[T], s: Shrink[T]): Prop =
+  implicit def check1[T, R](
+      result: T => R
+  )(implicit toProp: (=> R) => Prop, a: Arbitrary[T], s: Shrink[T]): Prop =
     Prop.forAll((t: T) => toProp(result(t)))
   implicit def unitToProp(u: => Unit): Prop = booleanToProp({ u; true })
   implicit def unitToProp2(u: Unit): Prop = booleanToProp(true)
@@ -114,12 +122,14 @@ abstract class SpecLite extends Properties("") with SpecLitePlatform {
     * Most of our scalacheck tests use (Int => Int). This generator includes non-constant
     * functions (id, inc), to have a better chance at catching bugs.
     */
-  implicit def Function1IntInt[A](
-      implicit A: Arbitrary[Int]): Arbitrary[Int => Int] =
+  implicit def Function1IntInt[A](implicit
+      A: Arbitrary[Int]
+  ): Arbitrary[Int => Int] =
     Arbitrary(
-        Gen.frequency[Int => Int](
-            (1, Gen.const((x: Int) => x)),
-            (1, Gen.const((x: Int) => x + 1)),
-            (3, A.arbitrary.map(a => (_: Int) => a))
-        ))
+      Gen.frequency[Int => Int](
+        (1, Gen.const((x: Int) => x)),
+        (1, Gen.const((x: Int) => x + 1)),
+        (3, A.arbitrary.map(a => (_: Int) => a))
+      )
+    )
 }

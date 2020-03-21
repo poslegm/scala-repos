@@ -13,17 +13,20 @@ object KleisliTest extends SpecLite {
   type IntOr[A] = Int \/ A
   type KleisliEither[A] = Kleisli[IntOr, Int, A]
 
-  implicit def Function1IntOptInt[A](
-      implicit A: Arbitrary[Option[Int]]): Arbitrary[Int => Option[Int]] =
+  implicit def Function1IntOptInt[A](implicit
+      A: Arbitrary[Option[Int]]
+  ): Arbitrary[Int => Option[Int]] =
     Arbitrary(
-        Gen.frequency[Int => Option[Int]](
-            (1, Gen.const((x: Int) => Some(x))),
-            (1, Gen.const((x: Int) => Some(x + 1))),
-            (3, A.arbitrary.map(a => (_: Int) => a))
-        ))
+      Gen.frequency[Int => Option[Int]](
+        (1, Gen.const((x: Int) => Some(x))),
+        (1, Gen.const((x: Int) => Some(x + 1))),
+        (3, A.arbitrary.map(a => (_: Int) => a))
+      )
+    )
 
-  implicit def KleisliEqual[M[_]](
-      implicit M: Equal[M[Int]]): Equal[Kleisli[M, Int, Int]] =
+  implicit def KleisliEqual[M[_]](implicit
+      M: Equal[M[Int]]
+  ): Equal[Kleisli[M, Int, Int]] =
     new Equal[Kleisli[M, Int, Int]] {
       def equal(a1: Kleisli[M, Int, Int], a2: Kleisli[M, Int, Int]): Boolean = {
         val mb1: M[Int] = a1.run(0)
@@ -34,7 +37,7 @@ object KleisliTest extends SpecLite {
 
   "mapK" ! forAll { (f: Int => Option[Int], a: Int) =>
     Kleisli(f).mapK(_.toList.map(_.toString)).run(a) must_===
-    (f(a).toList.map(_.toString))
+      (f(a).toList.map(_.toString))
   }
 
   checkAll(monoid.laws[KleisliOptInt[Int]])
@@ -75,19 +78,19 @@ object KleisliTest extends SpecLite {
     def functor[F[_]: Apply, A] = Functor[Kleisli[F, A, ?]]
     def functor[F[_]: Applicative, A] = Functor[Kleisli[F, A, ?]]
     def functor[F[_]: BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Monad : BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: Applicative : BindRec, A] = Functor[Kleisli[F, A, ?]]
-    def functor[F[_]: ApplicativePlus : BindRec, A] = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Monad: BindRec, A] = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: Applicative: BindRec, A] = Functor[Kleisli[F, A, ?]]
+    def functor[F[_]: ApplicativePlus: BindRec, A] = Functor[Kleisli[F, A, ?]]
     def apply[F[_]: Monad, A] = Apply[Kleisli[F, A, ?]]
     def apply[F[_]: Bind, A] = Apply[Kleisli[F, A, ?]]
     def apply[F[_]: BindRec, A] = Apply[Kleisli[F, A, ?]]
     def apply[F[_]: Applicative, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: Monad : BindRec, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: Applicative : BindRec, A] = Apply[Kleisli[F, A, ?]]
-    def apply[F[_]: ApplicativePlus : BindRec, A] = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: Monad: BindRec, A] = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: Applicative: BindRec, A] = Apply[Kleisli[F, A, ?]]
+    def apply[F[_]: ApplicativePlus: BindRec, A] = Apply[Kleisli[F, A, ?]]
     def applicative[F[_]: Monad, A] = Applicative[Kleisli[F, A, ?]]
     def bind[F[_]: BindRec, A] = Bind[Kleisli[F, A, ?]]
-    def bind[F[_]: Monad : BindRec, A] = Bind[Kleisli[F, A, ?]]
+    def bind[F[_]: Monad: BindRec, A] = Bind[Kleisli[F, A, ?]]
     def plus[F[_]: PlusEmpty, A] = Plus[Kleisli[F, A, ?]]
     def empty[F[_]: MonadPlus, A] = PlusEmpty[Kleisli[F, A, ?]]
     def profunctor[F[_]: Applicative] = Profunctor[Kleisli[F, ?, ?]]

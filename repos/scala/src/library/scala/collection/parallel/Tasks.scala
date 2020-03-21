@@ -10,7 +10,11 @@ package scala
 package collection.parallel
 
 import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.{ForkJoinPool, RecursiveAction, ForkJoinWorkerThread}
+import java.util.concurrent.{
+  ForkJoinPool,
+  RecursiveAction,
+  ForkJoinWorkerThread
+}
 import scala.concurrent.ExecutionContext
 import scala.util.control.Breaks._
 import scala.annotation.unchecked.uncheckedVariance
@@ -47,7 +51,8 @@ trait Task[R, +Tp] {
     try {
       tryBreakable {
         leaf(lastres)
-        result = result // ensure that effects of `leaf` are visible to readers of `result`
+        result =
+          result // ensure that effects of `leaf` are visible to readers of `result`
       } catchBreak {
         signalAbort()
       }
@@ -87,9 +92,10 @@ trait Tasks {
   private[parallel] val debugMessages =
     scala.collection.mutable.ArrayBuffer[String]()
 
-  private[parallel] def debuglog(s: String) = synchronized {
-    debugMessages += s
-  }
+  private[parallel] def debuglog(s: String) =
+    synchronized {
+      debugMessages += s
+    }
 
   trait WrappedTask[R, +Tp] {
 
@@ -224,34 +230,37 @@ trait ThreadPoolTasks extends Tasks {
     @volatile var owned = false
     @volatile var completed = false
 
-    def start() = synchronized {
-      // debuglog("Starting " + body)
-      // utb: future = executor.submit(this)
-      executor.synchronized {
-        incrTasks()
-        executor.submit(this)
-      }
-    }
-    def sync() = synchronized {
-      // debuglog("Syncing on " + body)
-      // utb: future.get()
-      executor.synchronized {
-        val coresize = executor.getCorePoolSize
-        if (coresize < totaltasks) {
-          executor.setCorePoolSize(coresize + 1)
-          //assert(executor.getCorePoolSize == (coresize + 1))
+    def start() =
+      synchronized {
+        // debuglog("Starting " + body)
+        // utb: future = executor.submit(this)
+        executor.synchronized {
+          incrTasks()
+          executor.submit(this)
         }
       }
-      while (!completed) this.wait
-    }
-    def tryCancel() = synchronized {
-      // utb: future.cancel(false)
-      if (!owned) {
-        // debuglog("Cancelling " + body)
-        owned = true
-        true
-      } else false
-    }
+    def sync() =
+      synchronized {
+        // debuglog("Syncing on " + body)
+        // utb: future.get()
+        executor.synchronized {
+          val coresize = executor.getCorePoolSize
+          if (coresize < totaltasks) {
+            executor.setCorePoolSize(coresize + 1)
+            //assert(executor.getCorePoolSize == (coresize + 1))
+          }
+        }
+        while (!completed) this.wait
+      }
+    def tryCancel() =
+      synchronized {
+        // utb: future.cancel(false)
+        if (!owned) {
+          // debuglog("Cancelling " + body)
+          owned = true
+          true
+        } else false
+      }
     def run() = {
       // utb: compute
       var isOkToRun = false
@@ -269,14 +278,15 @@ trait ThreadPoolTasks extends Tasks {
         // debuglog("skipping body of " + body)
       }
     }
-    override def release() = synchronized {
-      //println("releasing: " + this + ", body: " + this.body)
-      completed = true
-      executor.synchronized {
-        decrTasks()
+    override def release() =
+      synchronized {
+        //println("releasing: " + this + ", body: " + this.body)
+        completed = true
+        executor.synchronized {
+          decrTasks()
+        }
+        this.notifyAll
       }
-      this.notifyAll
-    }
   }
 
   protected def newWrappedTask[R, Tp](b: Task[R, Tp]): WrappedTask[R, Tp]
@@ -286,13 +296,15 @@ trait ThreadPoolTasks extends Tasks {
   def queue = executor.getQueue.asInstanceOf[LinkedBlockingQueue[Runnable]]
   @volatile var totaltasks = 0
 
-  private def incrTasks() = synchronized {
-    totaltasks += 1
-  }
+  private def incrTasks() =
+    synchronized {
+      totaltasks += 1
+    }
 
-  private def decrTasks() = synchronized {
-    totaltasks -= 1
-  }
+  private def decrTasks() =
+    synchronized {
+      totaltasks -= 1
+    }
 
   def execute[R, Tp](task: Task[R, Tp]): () => R = {
     val t = newWrappedTask(task)
@@ -300,12 +312,11 @@ trait ThreadPoolTasks extends Tasks {
     // debuglog("-----------> Executing without wait: " + task)
     t.start()
 
-    () =>
-      {
-        t.sync()
-        t.body.forwardThrowable()
-        t.body.result
-      }
+    () => {
+      t.sync()
+      t.body.forwardThrowable()
+      t.body.result
+    }
   }
 
   def executeAndWaitResult[R, Tp](task: Task[R, Tp]): R = {
@@ -331,20 +342,20 @@ object ThreadPoolTasks {
   val tcount = new atomic.AtomicLong(0L)
 
   val defaultThreadPool = new ThreadPoolExecutor(
-      numCores,
-      Int.MaxValue,
-      60L,
-      TimeUnit.MILLISECONDS,
-      new LinkedBlockingQueue[Runnable],
-      new ThreadFactory {
-        def newThread(r: Runnable) = {
-          val t = new Thread(r)
-          t.setName("pc-thread-" + tcount.incrementAndGet)
-          t.setDaemon(true)
-          t
-        }
-      },
-      new ThreadPoolExecutor.CallerRunsPolicy
+    numCores,
+    Int.MaxValue,
+    60L,
+    TimeUnit.MILLISECONDS,
+    new LinkedBlockingQueue[Runnable],
+    new ThreadFactory {
+      def newThread(r: Runnable) = {
+        val t = new Thread(r)
+        t.setName("pc-thread-" + tcount.incrementAndGet)
+        t.setDaemon(true)
+        t
+      }
+    },
+    new ThreadPoolExecutor.CallerRunsPolicy
   )
 }
 
@@ -374,7 +385,8 @@ trait HavingForkJoinPool {
 trait ForkJoinTasks extends Tasks with HavingForkJoinPool {
 
   trait WrappedTask[R, +Tp]
-      extends RecursiveAction with super.WrappedTask[R, Tp] {
+      extends RecursiveAction
+      with super.WrappedTask[R, Tp] {
     def start() = fork
     def sync() = join
     def tryCancel = tryUnfork
@@ -401,12 +413,11 @@ trait ForkJoinTasks extends Tasks with HavingForkJoinPool {
       forkJoinPool.execute(fjtask)
     }
 
-    () =>
-      {
-        fjtask.sync()
-        fjtask.body.forwardThrowable()
-        fjtask.body.result
-      }
+    () => {
+      fjtask.sync()
+      fjtask.body.forwardThrowable()
+      fjtask.body.result
+    }
   }
 
   /** Executes a task on a fork/join pool and waits for it to finish.
@@ -441,11 +452,12 @@ object ForkJoinTasks {
 /* Some boilerplate due to no deep mixin composition. Not sure if it can be done differently without them.
  */
 trait AdaptiveWorkStealingForkJoinTasks
-    extends ForkJoinTasks with AdaptiveWorkStealingTasks {
+    extends ForkJoinTasks
+    with AdaptiveWorkStealingTasks {
 
   class WrappedTask[R, Tp](val body: Task[R, Tp])
-      extends super [ForkJoinTasks].WrappedTask[R, Tp]
-      with super [AdaptiveWorkStealingTasks].WrappedTask[R, Tp] {
+      extends super[ForkJoinTasks].WrappedTask[R, Tp]
+      with super[AdaptiveWorkStealingTasks].WrappedTask[R, Tp] {
     def split = body.split.map(b => newWrappedTask(b))
   }
 
@@ -454,11 +466,12 @@ trait AdaptiveWorkStealingForkJoinTasks
 
 @deprecated("Use `AdaptiveWorkStealingForkJoinTasks` instead.", "2.11.0")
 trait AdaptiveWorkStealingThreadPoolTasks
-    extends ThreadPoolTasks with AdaptiveWorkStealingTasks {
+    extends ThreadPoolTasks
+    with AdaptiveWorkStealingTasks {
 
   class WrappedTask[R, Tp](val body: Task[R, Tp])
-      extends super [ThreadPoolTasks].WrappedTask[R, Tp]
-      with super [AdaptiveWorkStealingTasks].WrappedTask[R, Tp] {
+      extends super[ThreadPoolTasks].WrappedTask[R, Tp]
+      with super[AdaptiveWorkStealingTasks].WrappedTask[R, Tp] {
     def split = body.split.map(b => newWrappedTask(b))
   }
 
@@ -489,8 +502,8 @@ private[parallel] final class FutureTasks(executor: ExecutionContext)
     def compute(task: Task[R, Tp], depth: Int): Future[Task[R, Tp]] = {
       if (task.shouldSplitFurther && depth < maxdepth) {
         val subtasks = task.split
-        val subfutures = for (subtask <- subtasks.iterator) yield
-          compute(subtask, depth + 1)
+        val subfutures =
+          for (subtask <- subtasks.iterator) yield compute(subtask, depth + 1)
         subfutures.reduceLeft { (firstFuture, nextFuture) =>
           for {
             firstTask <- firstFuture
@@ -521,9 +534,8 @@ private[parallel] final class FutureTasks(executor: ExecutionContext)
 
   def execute[R, Tp](task: Task[R, Tp]): () => R = {
     val future = exec(task)
-    val callback = () =>
-      {
-        Await.result(future, scala.concurrent.duration.Duration.Inf)
+    val callback = () => {
+      Await.result(future, scala.concurrent.duration.Duration.Inf)
     }
     callback
   }
@@ -536,7 +548,7 @@ private[parallel] final class FutureTasks(executor: ExecutionContext)
 }
 
 /** This tasks implementation uses execution contexts to spawn a parallel computation.
-  *  
+  *
   *  As an optimization, it internally checks whether the execution context is the
   *  standard implementation based on fork/join pools, and if it is, creates a
   *  `ForkJoinTaskSupport` that shares the same pool to forward its request to it.
@@ -550,7 +562,7 @@ trait ExecutionContextTasks extends Tasks {
   val environment: ExecutionContext
 
   /** A driver serves as a target for this proxy `Tasks` object.
-    *  
+    *
     *  If the execution context has the standard implementation and uses fork/join pools,
     *  the driver is `ForkJoinTaskSupport` with the same pool, as an optimization.
     *  Otherwise, the driver will be a Scala `Future`-based implementation.
@@ -559,7 +571,7 @@ trait ExecutionContextTasks extends Tasks {
     case eci: scala.concurrent.impl.ExecutionContextImpl =>
       eci.executor match {
         case fjp: ForkJoinPool => new ForkJoinTaskSupport(fjp)
-        case _ => new FutureTasks(environment)
+        case _                 => new FutureTasks(environment)
       }
     case _ => new FutureTasks(environment)
   }

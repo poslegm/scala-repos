@@ -47,9 +47,10 @@ import spire.math.ULong
   * passes through to java.io.RandomAccessFile. This is mainly because the java.io.RandomAccessFile.readXXX functions are
   * declared final, and cannot be overridden.
   */
-class RandomAccessFile(file: File, arg0: String = "r")(
-    implicit converter: ByteConverter = ByteConverterBigEndian)
-    extends DataInput with DataOutput
+class RandomAccessFile(file: File, arg0: String = "r")(implicit
+    converter: ByteConverter = ByteConverterBigEndian
+) extends DataInput
+    with DataOutput
     with Closeable /*extends java.io.RandomAccessFile(file, arg0)*/ {
 
   def this(filename: String, arg0: String)(implicit converter: ByteConverter) =
@@ -207,7 +208,9 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readInt16(n: Int): Array[Short] = {
     val ba = new Array[Byte](n * 2)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Short](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
@@ -292,7 +295,9 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readUInt16(n: Int): Array[Char] = {
     val ba = new Array[Byte](n * 2)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Char](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
@@ -405,13 +410,19 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readInt32(n: Int): Array[Int] = {
     val ba = new Array[Byte](n * 4)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Int](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       tr(c) = converter.bytesToInt32(
-          ba(c * 4), ba(c * 4 + 1), ba(c * 4 + 2), ba(c * 4 + 3))
+        ba(c * 4),
+        ba(c * 4 + 1),
+        ba(c * 4 + 2),
+        ba(c * 4 + 3)
+      )
       c += 1
     }
     //for(c <- 0 until n) tr(c) = bytesToInt16(ba(c), ba(c + 1))
@@ -480,13 +491,19 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readUInt32(n: Int): Array[Long] = {
     val ba = new Array[Byte](n * 4)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Long](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       tr(c) = converter.bytesToUInt32(
-          ba(c * 4), ba(c * 4 + 1), ba(c * 4 + 2), ba(c * 4 + 3))
+        ba(c * 4),
+        ba(c * 4 + 1),
+        ba(c * 4 + 2),
+        ba(c * 4 + 3)
+      )
       c += 1
     }
     //for(c <- 0 until n) tr(c) = bytesToInt16(ba(c), ba(c + 1))
@@ -522,7 +539,15 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   def readInt64(): Long = {
     val ba = readByte(8)
     converter.bytesToInt64(
-        ba(0), ba(1), ba(2), ba(3), ba(4), ba(5), ba(6), ba(7))
+      ba(0),
+      ba(1),
+      ba(2),
+      ba(3),
+      ba(4),
+      ba(5),
+      ba(6),
+      ba(7)
+    )
   }
 
   /** Tries to read n Int64s from the current getFilePointer().
@@ -531,20 +556,24 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readInt64(n: Int): Array[Long] = {
     val ba = new Array[Byte](n * 8)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Long](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       val c8 = c * 8
-      tr(c) = converter.bytesToInt64(ba(c8),
-                                     ba(c8 + 1),
-                                     ba(c8 + 2),
-                                     ba(c8 + 3),
-                                     ba(c8 + 4),
-                                     ba(c8 + 5),
-                                     ba(c8 + 6),
-                                     ba(c8 + 7))
+      tr(c) = converter.bytesToInt64(
+        ba(c8),
+        ba(c8 + 1),
+        ba(c8 + 2),
+        ba(c8 + 3),
+        ba(c8 + 4),
+        ba(c8 + 5),
+        ba(c8 + 6),
+        ba(c8 + 7)
+      )
       c += 1
     }
     //for(c <- 0 until n) tr(c) = bytesToInt16(ba(c), ba(c + 1))
@@ -606,7 +635,15 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   final def readUInt64(): ULong = {
     val ba = readByte(8)
     converter.bytesToUInt64(
-        ba(0), ba(1), ba(2), ba(3), ba(4), ba(5), ba(6), ba(7))
+      ba(0),
+      ba(1),
+      ba(2),
+      ba(3),
+      ba(4),
+      ba(5),
+      ba(6),
+      ba(7)
+    )
   }
 
   /** Tries to read n UInt64s from the current getFilePointer().
@@ -616,20 +653,24 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readUInt64(n: Int): Array[ULong] = {
     val ba = new Array[Byte](n * 8)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[ULong](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       val c8 = c * 8
-      tr(c) = converter.bytesToUInt64(ba(c8),
-                                      ba(c8 + 1),
-                                      ba(c8 + 2),
-                                      ba(c8 + 3),
-                                      ba(c8 + 4),
-                                      ba(c8 + 5),
-                                      ba(c8 + 6),
-                                      ba(c8 + 7))
+      tr(c) = converter.bytesToUInt64(
+        ba(c8),
+        ba(c8 + 1),
+        ba(c8 + 2),
+        ba(c8 + 3),
+        ba(c8 + 4),
+        ba(c8 + 5),
+        ba(c8 + 6),
+        ba(c8 + 7)
+      )
       c += 1
     }
     //for(c <- 0 until n) tr(c) = bytesToInt16(ba(c), ba(c + 1))
@@ -669,7 +710,15 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   final def readUInt64Shifted(): Long = {
     val ba = readByte(8)
     converter.bytesToUInt64Shifted(
-        ba(0), ba(1), ba(2), ba(3), ba(4), ba(5), ba(6), ba(7))
+      ba(0),
+      ba(1),
+      ba(2),
+      ba(3),
+      ba(4),
+      ba(5),
+      ba(6),
+      ba(7)
+    )
   }
 
   /** Tries to read n UInt64s, shifted down in value to fit into Int64/Longs from the current getFilePointer().
@@ -678,20 +727,24 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readUInt64Shifted(n: Int): Array[Long] = {
     val ba = new Array[Byte](n * 8)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Long](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       val c8 = c * 8
-      tr(c) = converter.bytesToUInt64Shifted(ba(c8),
-                                             ba(c8 + 1),
-                                             ba(c8 + 2),
-                                             ba(c8 + 3),
-                                             ba(c8 + 4),
-                                             ba(c8 + 5),
-                                             ba(c8 + 6),
-                                             ba(c8 + 7))
+      tr(c) = converter.bytesToUInt64Shifted(
+        ba(c8),
+        ba(c8 + 1),
+        ba(c8 + 2),
+        ba(c8 + 3),
+        ba(c8 + 4),
+        ba(c8 + 5),
+        ba(c8 + 6),
+        ba(c8 + 7)
+      )
       c += 1
     }
     //for(c <- 0 until n) tr(c) = bytesToInt16(ba(c), ba(c + 1))
@@ -742,21 +795,25 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readDouble(n: Int): Array[Double] = {
     val ba = new Array[Byte](n * 8)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Double](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       val c8 = c * 8
       tr(c) = java.lang.Double.longBitsToDouble(
-          converter.bytesToInt64(ba(c8),
-                                 ba(c8 + 1),
-                                 ba(c8 + 2),
-                                 ba(c8 + 3),
-                                 ba(c8 + 4),
-                                 ba(c8 + 5),
-                                 ba(c8 + 6),
-                                 ba(c8 + 7))
+        converter.bytesToInt64(
+          ba(c8),
+          ba(c8 + 1),
+          ba(c8 + 2),
+          ba(c8 + 3),
+          ba(c8 + 4),
+          ba(c8 + 5),
+          ba(c8 + 6),
+          ba(c8 + 7)
+        )
       )
       c += 1
     }
@@ -770,14 +827,16 @@ class RandomAccessFile(file: File, arg0: String = "r")(
   @throws(classOf[IOException])
   final def readFloat(n: Int): Array[Float] = {
     val ba = new Array[Byte](n * 4)
-    rafObj.readFully(ba) //reading is much faster if many bytes are read simultaneously
+    rafObj.readFully(
+      ba
+    ) //reading is much faster if many bytes are read simultaneously
     val tr = new Array[Float](n)
     //the following is a hack to avoid the heavier Scala for loop
     var c = 0
     while (c < n) {
       val c4 = c * 4
       tr(c) = java.lang.Float.intBitsToFloat(
-          converter.bytesToInt32(ba(c4), ba(c4 + 1), ba(c4 + 2), ba(c4 + 3))
+        converter.bytesToInt32(ba(c4), ba(c4 + 1), ba(c4 + 2), ba(c4 + 3))
       )
       c += 1
     }
@@ -939,44 +998,52 @@ abstract class ByteConverter {
   def bytesToUInt32(b0: Byte, b1: Byte, b2: Byte, b3: Byte): Long
 
   /**Takes 8 Bytes and returns a UInt64 (as ULong), throwing an error if it overflows Long, which is Int64*/
-  final def bytesToUInt64(b0: Byte,
-                          b1: Byte,
-                          b2: Byte,
-                          b3: Byte,
-                          b4: Byte,
-                          b5: Byte,
-                          b6: Byte,
-                          b7: Byte): ULong = {
+  final def bytesToUInt64(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ): ULong = {
     ULong(bytesToInt64(b0, b1, b2, b3, b4, b5, b6, b7))
   }
 
   /**Takes 8 Bytes and returns a Int64 (Long)*/
-  def bytesToInt64(b0: Byte,
-                   b1: Byte,
-                   b2: Byte,
-                   b3: Byte,
-                   b4: Byte,
-                   b5: Byte,
-                   b6: Byte,
-                   b7: Byte): Long
+  def bytesToInt64(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ): Long
 
   /**Takes 8 Bytes and returns a UInt64 shifted down to the range of Int64 (Long). The shifted number range runs from
     * -2^63 to 2^63-1, so that UInt64 can be represented in the JVM long (Int64). Addition and subtraction
     * are valid with these long representations, multiplication and division, naturally, are not.*/
-  def bytesToUInt64Shifted(b0: Byte,
-                           b1: Byte,
-                           b2: Byte,
-                           b3: Byte,
-                           b4: Byte,
-                           b5: Byte,
-                           b6: Byte,
-                           b7: Byte): Long
+  def bytesToUInt64Shifted(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ): Long
 
   ///// XXXToByte /////
   /**Takes an UInt8 (as Sort), and returns a bytes*/
   def uInt8ToByte(value: Short): Byte = {
-    require(value <= 255 && value >= 0,
-            "Value " + value + " is out of range of 1-byte unsigned integer.")
+    require(
+      value <= 255 && value >= 0,
+      "Value " + value + " is out of range of 1-byte unsigned integer."
+    )
     if (value >= 128) (value - 256.toShort).toByte else value.toByte
   }
 
@@ -1022,7 +1089,7 @@ object ByteConverterBigEndian extends ByteConverter {
 
   def bytesToUInt32(b0: Byte, b1: Byte, b2: Byte, b3: Byte): Long = {
     (b0.toLong & 0xFFL) << 24 | (b1.toLong & 0xFFL) << 16 | (b2.toLong & 0xFFL) << 8 |
-    (b3.toLong & 0xFFL)
+      (b3.toLong & 0xFFL)
   }
 
 //  def bytesToUInt64(b0: Byte, b1: Byte, b2: Byte, b3: Byte, b4: Byte, b5: Byte, b6: Byte, b7: Byte): ULong = {
@@ -1034,30 +1101,34 @@ object ByteConverterBigEndian extends ByteConverter {
 ////    }
 //  }
 
-  def bytesToInt64(b0: Byte,
-                   b1: Byte,
-                   b2: Byte,
-                   b3: Byte,
-                   b4: Byte,
-                   b5: Byte,
-                   b6: Byte,
-                   b7: Byte): Long = {
+  def bytesToInt64(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ): Long = {
     b0.toLong << 56 | (b1.toLong & 0xFFL) << 48 | (b2.toLong & 0xFFL) << 40 |
-    (b3.toLong & 0xFFL) << 32 | (b4.toLong & 0xFFL) << 24 | (b5.toLong & 0xFFL) << 16 |
-    (b6.toLong & 0xFFL) << 8 | (b7.toLong & 0xFFL)
+      (b3.toLong & 0xFFL) << 32 | (b4.toLong & 0xFFL) << 24 | (b5.toLong & 0xFFL) << 16 |
+      (b6.toLong & 0xFFL) << 8 | (b7.toLong & 0xFFL)
   }
 
-  def bytesToUInt64Shifted(b0: Byte,
-                           b1: Byte,
-                           b2: Byte,
-                           b3: Byte,
-                           b4: Byte,
-                           b5: Byte,
-                           b6: Byte,
-                           b7: Byte): Long = {
+  def bytesToUInt64Shifted(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ): Long = {
     (b0 ^ 0x80).toLong << 56 | (b1.toLong & 0xFFL) << 48 | (b2.toLong & 0xFFL) << 40 |
-    (b3.toLong & 0xFFL) << 32 | (b4.toLong & 0xFFL) << 24 | (b5.toLong & 0xFFL) << 16 |
-    (b6.toLong & 0xFFL) << 8 | (b7.toLong & 0xFFL)
+      (b3.toLong & 0xFFL) << 32 | (b4.toLong & 0xFFL) << 24 | (b5.toLong & 0xFFL) << 16 |
+      (b6.toLong & 0xFFL) << 8 | (b7.toLong & 0xFFL)
   }
   ///// XXXToByte /////
   def int16ToBytes(value: Short): Array[Byte] = {
@@ -1068,8 +1139,10 @@ object ByteConverterBigEndian extends ByteConverter {
   }
 
   def uInt16ToBytes(value: Char): Array[Byte] = {
-    require(value <= 65535 && value >= 0,
-            "Value " + value + " is out of range of 2-byte unsigned array.")
+    require(
+      value <= 65535 && value >= 0,
+      "Value " + value + " is out of range of 2-byte unsigned array."
+    )
 
     val tempret = new Array[Byte](2)
     tempret(0) = ((value >> 8) & 0xFF).toByte
@@ -1087,8 +1160,10 @@ object ByteConverterBigEndian extends ByteConverter {
   }
 
   def uInt32ToBytes(value: Long): Array[Byte] = {
-    require(value <= 4294967295L && value >= 0L,
-            "Value " + value + " is out of range of 4-byte unsigned array.")
+    require(
+      value <= 4294967295L && value >= 0L,
+      "Value " + value + " is out of range of 4-byte unsigned array."
+    )
 
     val tempret = new Array[Byte](4)
     tempret(0) = ((value >> 24) & 0xFF).toByte
@@ -1156,25 +1231,29 @@ object ByteConverterLittleEndian extends ByteConverter {
     ByteConverterBigEndian.bytesToInt32(b3, b2, b1, b0)
   override def bytesToUInt32(b0: Byte, b1: Byte, b2: Byte, b3: Byte) =
     ByteConverterBigEndian.bytesToUInt32(b3, b2, b1, b0)
-  override def bytesToInt64(b0: Byte,
-                            b1: Byte,
-                            b2: Byte,
-                            b3: Byte,
-                            b4: Byte,
-                            b5: Byte,
-                            b6: Byte,
-                            b7: Byte) =
+  override def bytesToInt64(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ) =
     ByteConverterBigEndian.bytesToInt64(b7, b6, b5, b4, b3, b2, b1, b0)
 //  override def bytesToUInt64(b0: Byte, b1 : Byte, b2 : Byte, b3 : Byte, b4 : Byte, b5 : Byte, b6 : Byte, b7 : Byte)
 //  = ByteConverterBigEndian.bytesToUInt64(b7, b6, b5, b4, b3, b2, b1, b0)
-  override def bytesToUInt64Shifted(b0: Byte,
-                                    b1: Byte,
-                                    b2: Byte,
-                                    b3: Byte,
-                                    b4: Byte,
-                                    b5: Byte,
-                                    b6: Byte,
-                                    b7: Byte) =
+  override def bytesToUInt64Shifted(
+      b0: Byte,
+      b1: Byte,
+      b2: Byte,
+      b3: Byte,
+      b4: Byte,
+      b5: Byte,
+      b6: Byte,
+      b7: Byte
+  ) =
     ByteConverterBigEndian.bytesToUInt64Shifted(b7, b6, b5, b4, b3, b2, b1, b0)
 
 //reverse is pretty slow, and a time hog. Therefore, unfortunately, the following code reuse is not practical
@@ -1195,8 +1274,10 @@ object ByteConverterLittleEndian extends ByteConverter {
   }
 
   def uInt16ToBytes(value: Char): Array[Byte] = {
-    require(value <= 65535 && value >= 0,
-            "Value " + value + " is out of range of 2-byte unsigned array.")
+    require(
+      value <= 65535 && value >= 0,
+      "Value " + value + " is out of range of 2-byte unsigned array."
+    )
 
     val tempret = new Array[Byte](2)
     tempret(1) = ((value >> 8) & 0xFF).toByte
@@ -1214,8 +1295,10 @@ object ByteConverterLittleEndian extends ByteConverter {
   }
 
   def uInt32ToBytes(value: Long): Array[Byte] = {
-    require(value <= 4294967295L && value >= 0L,
-            "Value " + value + " is out of range of 4-byte unsigned array.")
+    require(
+      value <= 4294967295L && value >= 0L,
+      "Value " + value + " is out of range of 4-byte unsigned array."
+    )
 
     val tempret = new Array[Byte](4)
     tempret(3) = ((value >> 24) & 0xFF).toByte

@@ -8,7 +8,8 @@ package algebra
   * with `op` as string concatenation, then `id = ""`.
   */
 trait Monoid[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A]
-    extends Any with Semigroup[A] {
+    extends Any
+    with Semigroup[A] {
 
   /**
     * Return the identity element for this monoid.
@@ -26,7 +27,8 @@ trait Monoid[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A]
   override def combinen(a: A, n: Int): A =
     if (n < 0)
       throw new IllegalArgumentException(
-          "Repeated combination for monoids must have repetitions >= 0")
+        "Repeated combination for monoids must have repetitions >= 0"
+      )
     else if (n == 0) id
     else if (n == 1) a
     else combinenAboveOne(a, n)
@@ -51,8 +53,9 @@ object Monoid {
     * If an implicit `MultiplicativeMonoid[A]` exists, then it is converted to a
     * plain `Monoid[A]`.
     */
-  @inline final def multiplicative[A](
-      implicit A: MultiplicativeMonoid[A]): Monoid[A] = A.multiplicative
+  @inline final def multiplicative[A](implicit
+      A: MultiplicativeMonoid[A]
+  ): Monoid[A] = A.multiplicative
 }
 
 /**
@@ -61,12 +64,15 @@ object Monoid {
   * A monoid is commutative if for all x and y, x |+| y === y |+| x.
   */
 trait CMonoid[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A]
-    extends Any with Monoid[A] with CSemigroup[A]
+    extends Any
+    with Monoid[A]
+    with CSemigroup[A]
 
 object CMonoid {
   @inline final def apply[A](implicit ev: CMonoid[A]): CMonoid[A] = ev
   @inline final def additive[A](implicit A: AdditiveCMonoid[A]): CMonoid[A] =
     A.additive
-  @inline final def multiplicative[A](
-      implicit A: MultiplicativeCMonoid[A]): CMonoid[A] = A.multiplicative
+  @inline final def multiplicative[A](implicit
+      A: MultiplicativeCMonoid[A]
+  ): CMonoid[A] = A.multiplicative
 }

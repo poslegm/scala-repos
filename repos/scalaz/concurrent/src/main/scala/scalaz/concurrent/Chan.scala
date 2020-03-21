@@ -23,22 +23,24 @@ object Chan {
 import Chan._
 private[this] case class ChItem[A](a: A, end: ChStream[A])
 private[this] class ChanImpl[A](
-    readVar: MVar[ChStream[A]], writeVar: MVar[ChStream[A]])
-    extends Chan[A] {
+    readVar: MVar[ChStream[A]],
+    writeVar: MVar[ChStream[A]]
+) extends Chan[A] {
   def read =
-    readVar.modify(
-        readEnd =>
-          for {
+    readVar.modify(readEnd =>
+      for {
         item <- readEnd.read
-      } yield (item.end, item.a))
+      } yield (item.end, item.a)
+    )
 
   def write(a: A) =
     for {
       newHole <- newEmptyMVar[ChItem[A]]
-      _ <- for {
-            oldHole <- writeVar.take
-            _ <- oldHole.put(ChItem(a, newHole))
-            _ <- writeVar.put(newHole)
-          } yield ()
+      _ <-
+        for {
+          oldHole <- writeVar.take
+          _ <- oldHole.put(ChItem(a, newHole))
+          _ <- writeVar.put(newHole)
+        } yield ()
     } yield ()
 }

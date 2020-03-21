@@ -51,7 +51,9 @@ trait AskParse extends AskCommand {
   }
 
   private def askParse(
-      src: SourceFile, keepLoaded: Boolean = true): Response[Tree] = {
+      src: SourceFile,
+      keepLoaded: Boolean = true
+  ): Response[Tree] = {
     ask {
       compiler.askParsedEntered(src, keepLoaded, _)
     }
@@ -62,8 +64,9 @@ trait AskParse extends AskCommand {
 trait AskReload extends AskCommand {
 
   /** Reload the given source files and wait for them to be reloaded. */
-  protected def askReload(sources: Seq[SourceFile])(
-      implicit reporter: Reporter): Response[Unit] = {
+  protected def askReload(
+      sources: Seq[SourceFile]
+  )(implicit reporter: Reporter): Response[Unit] = {
     val sortedSources = (sources map (_.file.name)).sorted
     reporter.println("reload: " + sortedSources.mkString(", "))
 
@@ -77,10 +80,13 @@ trait AskReload extends AskCommand {
 trait AskTypeCompletionAt extends AskCommand {
   import compiler.Member
 
-  private[tests] def askTypeCompletionAt(pos: Position)(
-      implicit reporter: Reporter): Response[List[Member]] = {
-    reporter.println("\naskTypeCompletion at " + pos.source.file.name +
-        ((pos.line, pos.column)))
+  private[tests] def askTypeCompletionAt(
+      pos: Position
+  )(implicit reporter: Reporter): Response[List[Member]] = {
+    reporter.println(
+      "\naskTypeCompletion at " + pos.source.file.name +
+        ((pos.line, pos.column))
+    )
 
     ask {
       compiler.askTypeCompletion(pos, _)
@@ -92,10 +98,13 @@ trait AskTypeCompletionAt extends AskCommand {
 trait AskScopeCompletionAt extends AskCommand {
   import compiler.Member
 
-  private[tests] def askScopeCompletionAt(pos: Position)(
-      implicit reporter: Reporter): Response[List[Member]] = {
-    reporter.println("\naskScopeCompletion at " + pos.source.file.name +
-        ((pos.line, pos.column)))
+  private[tests] def askScopeCompletionAt(
+      pos: Position
+  )(implicit reporter: Reporter): Response[List[Member]] = {
+    reporter.println(
+      "\naskScopeCompletion at " + pos.source.file.name +
+        ((pos.line, pos.column))
+    )
 
     ask {
       compiler.askScopeCompletion(pos, _)
@@ -107,10 +116,12 @@ trait AskScopeCompletionAt extends AskCommand {
 trait AskTypeAt extends AskCommand {
   import compiler.Tree
 
-  private[tests] def askTypeAt(pos: Position)(
-      implicit reporter: Reporter): Response[Tree] = {
+  private[tests] def askTypeAt(
+      pos: Position
+  )(implicit reporter: Reporter): Response[Tree] = {
     reporter.println(
-        "\naskType at " + pos.source.file.name + ((pos.line, pos.column)))
+      "\naskType at " + pos.source.file.name + ((pos.line, pos.column))
+    )
 
     ask {
       compiler.askTypeAt(pos, _)
@@ -121,9 +132,9 @@ trait AskTypeAt extends AskCommand {
 trait AskLoadedTyped extends AskCommand {
   import compiler.Tree
 
-  protected def askLoadedTyped(
-      source: SourceFile, keepLoaded: Boolean = false)(
-      implicit reporter: Reporter): Response[Tree] = {
+  protected def askLoadedTyped(source: SourceFile, keepLoaded: Boolean = false)(
+      implicit reporter: Reporter
+  ): Response[Tree] = {
     ask {
       compiler.askLoadedTyped(source, keepLoaded, _)
     }

@@ -4,7 +4,10 @@ package settings
 import java.util
 
 import com.intellij.openapi.components._
-import com.intellij.openapi.externalSystem.settings.{AbstractExternalSystemSettings, ExternalSystemSettingsListener}
+import com.intellij.openapi.externalSystem.settings.{
+  AbstractExternalSystemSettings,
+  ExternalSystemSettingsListener
+}
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -13,7 +16,12 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiElement
 import com.intellij.util.containers.ContainerUtilRt
 import com.intellij.util.xmlb.annotations.AbstractCollection
-import org.jetbrains.sbt.project.settings.{SbtProjectSettings, SbtProjectSettingsListener, SbtProjectSettingsListenerAdapter, SbtTopic}
+import org.jetbrains.sbt.project.settings.{
+  SbtProjectSettings,
+  SbtProjectSettingsListener,
+  SbtProjectSettingsListenerAdapter,
+  SbtTopic
+}
 
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
@@ -22,13 +30,15 @@ import scala.collection.JavaConverters._
   * @author Pavel Fatin
   */
 @State(
-    name = "ScalaSbtSettings",
-    storages = Array(new Storage("sbt.xml"))
+  name = "ScalaSbtSettings",
+  storages = Array(new Storage("sbt.xml"))
 )
 class SbtSystemSettings(project: Project)
     extends AbstractExternalSystemSettings[
-        SbtSystemSettings, SbtProjectSettings, SbtProjectSettingsListener](
-        SbtTopic, project)
+      SbtSystemSettings,
+      SbtProjectSettings,
+      SbtProjectSettingsListener
+    ](SbtTopic, project)
     with PersistentStateComponent[SbtSystemSettingsState] {
 
   @BeanProperty
@@ -58,11 +68,15 @@ class SbtSystemSettings(project: Project)
     }
     if (old.resolveClassifiers != current.resolveClassifiers) {
       getPublisher.onResolveClassifiersChanged(
-          old.resolveClassifiers, current.resolveClassifiers)
+        old.resolveClassifiers,
+        current.resolveClassifiers
+      )
     }
     if (old.resolveSbtClassifiers != current.resolveSbtClassifiers) {
       getPublisher.onResolveSbtClassifiersChanged(
-          old.resolveSbtClassifiers, current.resolveSbtClassifiers)
+        old.resolveSbtClassifiers,
+        current.resolveSbtClassifiers
+      )
     }
     if (old.sbtVersion != current.sbtVersion) {
       getPublisher.onSbtVersionChanged(old.sbtVersion, current.sbtVersion)
@@ -83,7 +97,7 @@ class SbtSystemSettings(project: Project)
   }
 
   def loadState(state: SbtSystemSettingsState) {
-    super [AbstractExternalSystemSettings].loadState(state)
+    super[AbstractExternalSystemSettings].loadState(state)
     customLauncherEnabled = state.customLauncherEnabled
     customLauncherPath = state.customLauncherPath
     maximumHeapSize = state.maximumHeapSize
@@ -105,23 +119,30 @@ class SbtSystemSettings(project: Project)
       .safeMap(getLinkedProjectSettings)
 
   def getLinkedProjectSettings(
-      element: PsiElement): Option[SbtProjectSettings] =
+      element: PsiElement
+  ): Option[SbtProjectSettings] =
     for {
-      virtualFile <- Option(element.getContainingFile)
-        .safeMap(_.getVirtualFile)
-      projectFileIndex = ProjectRootManager
-        .getInstance(element.getProject)
-        .getFileIndex
+      virtualFile <-
+        Option(element.getContainingFile)
+          .safeMap(_.getVirtualFile)
+      projectFileIndex =
+        ProjectRootManager
+          .getInstance(element.getProject)
+          .getFileIndex
       module <- Option(projectFileIndex.getModuleForFile(virtualFile))
-                   if project == element.getProject
+      if project == element.getProject
       projectSettings <- getLinkedProjectSettings(module)
     } yield projectSettings
 
   override def getLinkedProjectSettings(
-      linkedProjectPath: String): SbtProjectSettings =
+      linkedProjectPath: String
+  ): SbtProjectSettings =
     Option(super.getLinkedProjectSettings(linkedProjectPath))
-      .getOrElse(super.getLinkedProjectSettings(
-            ExternalSystemApiUtil.normalizePath(linkedProjectPath)))
+      .getOrElse(
+        super.getLinkedProjectSettings(
+          ExternalSystemApiUtil.normalizePath(linkedProjectPath)
+        )
+      )
 }
 
 object SbtSystemSettings {
@@ -155,14 +176,17 @@ class SbtSystemSettingsState
   @BeanProperty
   var customSbtStructureDir: String = ""
 
-  @AbstractCollection(surroundWithTag = false,
-                      elementTypes = Array(classOf[SbtProjectSettings]))
+  @AbstractCollection(
+    surroundWithTag = false,
+    elementTypes = Array(classOf[SbtProjectSettings])
+  )
   def getLinkedExternalProjectsSettings: util.Set[SbtProjectSettings] = {
     projectSettings
   }
 
   def setLinkedExternalProjectsSettings(
-      settings: util.Set[SbtProjectSettings]) {
+      settings: util.Set[SbtProjectSettings]
+  ) {
     if (settings != null) {
       projectSettings.addAll(settings)
     }

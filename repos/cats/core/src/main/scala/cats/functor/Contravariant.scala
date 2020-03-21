@@ -12,8 +12,9 @@ trait Contravariant[F[_]] extends Invariant[F] { self =>
   override def imap[A, B](fa: F[A])(f: A => B)(fi: B => A): F[B] =
     contramap(fa)(fi)
 
-  def compose[G[_]](
-      implicit G: Contravariant[G]): Functor[Lambda[X => F[G[X]]]] = {
+  def compose[G[_]](implicit
+      G: Contravariant[G]
+  ): Functor[Lambda[X => F[G[X]]]] = {
     val G0 = G
     new Contravariant.Composite[F, G] {
       def F: Contravariant[F] = self
@@ -21,8 +22,9 @@ trait Contravariant[F[_]] extends Invariant[F] { self =>
     }
   }
 
-  override def composeWithFunctor[G[_]](
-      implicit G: Functor[G]): Contravariant[Lambda[X => F[G[X]]]] = {
+  override def composeWithFunctor[G[_]](implicit
+      G: Functor[G]
+  ): Contravariant[Lambda[X => F[G[X]]]] = {
     val G0 = G
     new Contravariant.CovariantComposite[F, G] {
       def F: Contravariant[F] = self

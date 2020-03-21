@@ -91,9 +91,7 @@ case class IntCaseClass(firstValue: Int, secondValue: Int)
 
 class ContainerPopulationJob(args: Args) extends Job(args) {
   Tsv("input").read
-    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) =>
-      v
-    }
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) => v }
     .pack[IntContainer](('firstValue, 'secondValue) -> 'combined)
     .project('combined)
     .unpack[IntContainer]('combined -> ('firstValue, 'secondValue))
@@ -103,17 +101,13 @@ class ContainerPopulationJob(args: Args) extends Job(args) {
 
 class ContainerToPopulationJob(args: Args) extends Job(args) {
   Tsv("input").read
-    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) =>
-      v
-    }
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) => v }
     .packTo[IntContainer](('firstValue, 'secondValue) -> 'combined)
     .unpackTo[IntContainer]('combined -> ('firstValue, 'secondValue))
     .write(Tsv("output"))
 
   Tsv("input").read
-    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) =>
-      v
-    }
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) => v }
     .packTo[IntCaseClass](('firstValue, 'secondValue) -> 'combined)
     .unpackTo[IntCaseClass]('combined -> ('firstValue, 'secondValue))
     .write(Tsv("output-cc"))
@@ -121,9 +115,7 @@ class ContainerToPopulationJob(args: Args) extends Job(args) {
 
 class FatContainerPopulationJob(args: Args) extends Job(args) {
   Tsv("input").read
-    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) =>
-      v
-    }
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) => v }
     .map(('firstValue, 'secondValue) -> 'fatContainer) { v: (Int, Int) =>
       FatContainer.fromFibonacci(v._1, v._2)
     }
@@ -134,9 +126,7 @@ class FatContainerPopulationJob(args: Args) extends Job(args) {
 
 class FatContainerToPopulationJob(args: Args) extends Job(args) {
   Tsv("input").read
-    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) =>
-      v
-    }
+    .mapTo((0, 1) -> ('firstValue, 'secondValue)) { v: (Int, Int) => v }
     .map(('firstValue, 'secondValue) -> 'fatContainer) { v: (Int, Int) =>
       FatContainer.fromFibonacci(v._1, v._2)
     }
@@ -180,29 +170,8 @@ class PackTest extends WordSpec with Matchers {
   }
 
   val fatInputData = List((8, 13))
-  val fatCorrect = List(8,
-                        13,
-                        21,
-                        34,
-                        55,
-                        89,
-                        144,
-                        233,
-                        377,
-                        610,
-                        987,
-                        1597,
-                        2584,
-                        4181,
-                        6765,
-                        10946,
-                        17711,
-                        28657,
-                        46368,
-                        75025,
-                        121393,
-                        196418,
-                        317811)
+  val fatCorrect = List(8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597,
+    2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811)
 
   "A FatContainerPopulationJob" should {
     JobTest(new FatContainerPopulationJob(_))

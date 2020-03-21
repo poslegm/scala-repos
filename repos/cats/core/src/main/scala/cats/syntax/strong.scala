@@ -6,7 +6,8 @@ import cats.functor.Strong
 trait StrongSyntax {
   // TODO: use simulacrum instances eventually
   implicit def strongSyntax[F[_, _]: Strong, A, B](
-      fab: F[A, B]): StrongOps[F, A, B] =
+      fab: F[A, B]
+  ): StrongOps[F, A, B] =
     new StrongOps[F, A, B](fab)
 }
 

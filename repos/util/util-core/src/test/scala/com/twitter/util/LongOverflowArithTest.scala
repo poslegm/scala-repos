@@ -23,7 +23,8 @@ class LongOverflowArithTest extends WordSpec {
         if (bigC.abs > Long.MaxValue)
           intercept[LongOverflowException] {
             LongOverflowArith.add(a, b)
-          } else assert(LongOverflowArith.add(a, b) == bigC.toLong)
+          }
+        else assert(LongOverflowArith.add(a, b) == bigC.toLong)
       }
 
       for (i <- 0 until 1000) {
@@ -37,7 +38,8 @@ class LongOverflowArithTest extends WordSpec {
         if (bigC.abs > Long.MaxValue)
           intercept[LongOverflowException] {
             LongOverflowArith.sub(a, b)
-          } else assert(LongOverflowArith.sub(a, b) == bigC.toLong)
+          }
+        else assert(LongOverflowArith.sub(a, b) == bigC.toLong)
       }
 
       for (i <- 0 until 1000) {
@@ -92,7 +94,8 @@ class LongOverflowArithTest extends WordSpec {
         if (bigC.abs > Long.MaxValue)
           intercept[LongOverflowException] {
             LongOverflowArith.mul(a, b)
-          } else assert(LongOverflowArith.mul(a, b) == bigC.toLong)
+          }
+        else assert(LongOverflowArith.mul(a, b) == bigC.toLong)
       }
 
       for (i <- 0 until 1000) {
@@ -102,9 +105,9 @@ class LongOverflowArithTest extends WordSpec {
           test(a, b)
         } catch {
           case x: Throwable => {
-              println(a + " * " + b + " failed")
-              throw x
-            }
+            println(a + " * " + b + " failed")
+            throw x
+          }
         }
       }
     }

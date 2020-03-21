@@ -35,32 +35,35 @@ object JavaScriptContext {
 
     LiftRules.dataAttributeProcessor.append {
       case ("jssource", value, elem, session) =>
-        val (rule, v2): (NodeSeq => NodeSeq,
-        Box[String]) = value.roboSplit("\\#\\>") match {
-          case x :: Nil => (PassThru, Full(x))
-          case x :: "it" :: Nil => session.buildXformer(x, Nil) -> Empty
-          case x :: str :: Nil if str.startsWith("it.") =>
-            session.buildXformer(x, str.roboSplit("\\.").filter(_ != "it")) -> Empty
-          case x :: xs => session.buildXformer(x, Nil) -> Full(xs.mkString)
-          case _ => (PassThru, Full(value))
-        }
+        val (rule, v2): (NodeSeq => NodeSeq, Box[String]) =
+          value.roboSplit("\\#\\>") match {
+            case x :: Nil         => (PassThru, Full(x))
+            case x :: "it" :: Nil => session.buildXformer(x, Nil) -> Empty
+            case x :: str :: Nil if str.startsWith("it.") =>
+              session.buildXformer(
+                x,
+                str.roboSplit("\\.").filter(_ != "it")
+              ) -> Empty
+            case x :: xs => session.buildXformer(x, Nil) -> Full(xs.mkString)
+            case _       => (PassThru, Full(value))
+          }
 
         v2 match {
           case Full(v22) =>
             exec(v22) match {
               case fut: LAFuture[_] =>
                 val ret = new LAFuture[NodeSeq]
-                fut.foreach(
-                    v => ret.satisfy(session.runSourceContext(v, rule, elem)))
+                fut.foreach(v =>
+                  ret.satisfy(session.runSourceContext(v, rule, elem))
+                )
                 ret
 
               case func: Function0[_] =>
-                () =>
-                  {
-                    session.runSourceContext(func(), rule, elem)
-                  }
+                () => {
+                  session.runSourceContext(func(), rule, elem)
+                }
 
-                case x => session.runSourceContext(x, rule, elem)
+              case x => session.runSourceContext(x, rule, elem)
             }
 
           case _ => rule(elem)
@@ -101,12 +104,13 @@ object JavaScriptContext {
       if (initted) Context.exit()
     }
 
-    def exec(str: String): AnyRef = synchronized {
-      if (!initted) init()
-      context.evaluateString(scope, str, "Lift", 0, null) match {
-        case njo: NativeJavaObject => njo.unwrap()
-        case x => x
+    def exec(str: String): AnyRef =
+      synchronized {
+        if (!initted) init()
+        context.evaluateString(scope, str, "Lift", 0, null) match {
+          case njo: NativeJavaObject => njo.unwrap()
+          case x                     => x
+        }
       }
-    }
   }
 }

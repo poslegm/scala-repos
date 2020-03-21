@@ -13,10 +13,13 @@ import play.api.mvc._
 object ScalaCSRFActionSpec extends CSRFCommonSpecs {
 
   def buildCsrfCheckRequest(
-      sendUnauthorizedResult: Boolean, configuration: (String, String)*) =
+      sendUnauthorizedResult: Boolean,
+      configuration: (String, String)*
+  ) =
     new CsrfTester {
-      def apply[T](makeRequest: (WSRequest) => Future[WSResponse])(
-          handleResponse: (WSResponse) => T) =
+      def apply[T](
+          makeRequest: (WSRequest) => Future[WSResponse]
+      )(handleResponse: (WSResponse) => T) =
         withServer(configuration) {
           case _ =>
             if (sendUnauthorizedResult) {
@@ -27,27 +30,30 @@ object ScalaCSRFActionSpec extends CSRFCommonSpecs {
         } {
           import play.api.Play.current
           handleResponse(
-              await(makeRequest(WS.url("http://localhost:" + testServerPort))))
+            await(makeRequest(WS.url("http://localhost:" + testServerPort)))
+          )
         }
     }
 
-  def buildCsrfAddToken(configuration: (String, String)*) = new CsrfTester {
-    def apply[T](makeRequest: (WSRequest) => Future[WSResponse])(
-        handleResponse: (WSResponse) => T) =
-      withServer(configuration) {
-        case _ =>
-          csrfAddToken(
-              Action { implicit req =>
-            CSRF.getToken.map { token =>
-              Results.Ok(token.value)
-            } getOrElse Results.NotFound
-          })
-      } {
-        import play.api.Play.current
-        handleResponse(
-            await(makeRequest(WS.url("http://localhost:" + testServerPort))))
-      }
-  }
+  def buildCsrfAddToken(configuration: (String, String)*) =
+    new CsrfTester {
+      def apply[T](
+          makeRequest: (WSRequest) => Future[WSResponse]
+      )(handleResponse: (WSResponse) => T) =
+        withServer(configuration) {
+          case _ =>
+            csrfAddToken(Action { implicit req =>
+              CSRF.getToken.map { token =>
+                Results.Ok(token.value)
+              } getOrElse Results.NotFound
+            })
+        } {
+          import play.api.Play.current
+          handleResponse(
+            await(makeRequest(WS.url("http://localhost:" + testServerPort)))
+          )
+        }
+    }
 
   class CustomErrorHandler extends CSRF.ErrorHandler {
     import play.api.mvc.Results.Unauthorized

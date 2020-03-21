@@ -1,7 +1,12 @@
 package com.twitter.finagle.exp.mysql
 
 import com.twitter.concurrent.AsyncQueue
-import com.twitter.finagle.exp.mysql.transport.{Buffer, BufferReader, BufferWriter, Packet}
+import com.twitter.finagle.exp.mysql.transport.{
+  Buffer,
+  BufferReader,
+  BufferWriter,
+  Packet
+}
 import com.twitter.finagle.transport.{Transport, QueueTransport}
 import com.twitter.util.{Await, Future, Try}
 import org.junit.runner.RunWith
@@ -11,58 +16,9 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ClientDispatcherTest extends FunSuite {
   val rawInit = Array[Byte](
-      10,
-      53,
-      46,
-      53,
-      46,
-      50,
-      52,
-      0,
-      31,
-      0,
-      0,
-      0,
-      70,
-      38,
-      43,
-      66,
-      74,
-      48,
-      79,
-      126,
-      0,
-      -1,
-      -9,
-      33,
-      2,
-      0,
-      15,
-      -128,
-      21,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      76,
-      66,
-      70,
-      118,
-      67,
-      40,
-      63,
-      68,
-      120,
-      80,
-      103,
-      54,
-      0
+    10, 53, 46, 53, 46, 50, 52, 0, 31, 0, 0, 0, 70, 38, 43, 66, 74, 48, 79, 126,
+    0, -1, -9, 33, 2, 0, 15, -128, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 76, 66, 70,
+    118, 67, 40, 63, 68, 120, 80, 103, 54, 0
   )
   val initPacket = Packet(0, Buffer(rawInit))
   val init = HandshakeInit.decode(initPacket)
@@ -70,19 +26,20 @@ class ClientDispatcherTest extends FunSuite {
   val handshake = Handshake(Some("username"), Some("password"))
   val initReply = handshake(init)
 
-  def newCtx = new {
-    val clientq = new AsyncQueue[Packet]()
-    val serverq = new AsyncQueue[Packet]()
-    val trans = new QueueTransport[Packet, Packet](serverq, clientq)
-    val service = new ClientDispatcher(trans, handshake)
-    // authenticate
-    clientq.offer(initPacket)
-    val handshakeResponse = serverq.poll()
-    clientq.offer(okPacket)
-  }
+  def newCtx =
+    new {
+      val clientq = new AsyncQueue[Packet]()
+      val serverq = new AsyncQueue[Packet]()
+      val trans = new QueueTransport[Packet, Packet](serverq, clientq)
+      val service = new ClientDispatcher(trans, handshake)
+      // authenticate
+      clientq.offer(initPacket)
+      val handshakeResponse = serverq.poll()
+      clientq.offer(okPacket)
+    }
 
-  val okPacket = Packet(
-      1, Buffer(Array[Byte](0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00)))
+  val okPacket =
+    Packet(1, Buffer(Array[Byte](0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00)))
 
   test("handshaking") {
     val ctx = newCtx
@@ -144,12 +101,13 @@ class ClientDispatcherTest extends FunSuite {
     val db = "database0"
     val table = "table0"
 
-    def aux(len: Int): List[Field] = len match {
-      case 0 => Nil
-      case x =>
-        val maxLen = 12
-        val fieldName = "field" + len
-        val f = Field(
+    def aux(len: Int): List[Field] =
+      len match {
+        case 0 => Nil
+        case x =>
+          val maxLen = 12
+          val fieldName = "field" + len
+          val f = Field(
             catalog,
             db,
             table,
@@ -161,9 +119,9 @@ class ClientDispatcherTest extends FunSuite {
             Type.VarChar,
             0,
             0
-        )
-        f :: aux(len - 1)
-    }
+          )
+          f :: aux(len - 1)
+      }
     aux(numFields)
   }
 
@@ -172,7 +130,7 @@ class ClientDispatcherTest extends FunSuite {
 
     val sizeOfField =
       (strLen(f.catalog) + strLen(f.db) + strLen(f.table) +
-          strLen(f.origTable) + strLen(f.name) + strLen(f.origName) + 12)
+        strLen(f.origTable) + strLen(f.name) + strLen(f.origName) + 12)
 
     val fieldData = new Array[Byte](sizeOfField)
     val bw = BufferWriter(fieldData)
@@ -194,8 +152,8 @@ class ClientDispatcherTest extends FunSuite {
   val numFields = 5
   val numRows = 3
   val headerPacket = Packet(0, Buffer(Array(numFields.toByte)))
-  val eof = Packet(
-      0, Buffer(Array[Byte](Packet.EofByte, 0x00, 0x00, 0x00, 0x00)))
+  val eof =
+    Packet(0, Buffer(Array[Byte](Packet.EofByte, 0x00, 0x00, 0x00, 0x00)))
   val fields = createFields(numFields)
   val fieldPackets = fields map { toPacket(_) }
 
@@ -252,8 +210,8 @@ class ClientDispatcherTest extends FunSuite {
   test("Decode PreparedStatement numParams > 0, numCols > 0") {
     val ctx = newCtx
     import ctx._
-    val query = service(
-        PrepareRequest("SELECT name FROM t1 WHERE id IN (?, ?, ?, ?, ?)"))
+    val query =
+      service(PrepareRequest("SELECT name FROM t1 WHERE id IN (?, ?, ?, ?, ?)"))
     val numParams = numFields
     clientq.offer(makePreparedHeader(1, numParams))
     fieldPackets foreach { clientq.offer(_) }

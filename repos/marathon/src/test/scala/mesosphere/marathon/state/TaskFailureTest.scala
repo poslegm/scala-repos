@@ -58,7 +58,8 @@ class TaskFailureTest extends MarathonSpec with Matchers {
     import mesosphere.marathon.api.v2.json.Formats._
 
     val json = Json.toJson(
-        taskFailure.copy(slaveId = Some(slaveIDToProto(SlaveID("slave id")))))
+      taskFailure.copy(slaveId = Some(slaveIDToProto(SlaveID("slave id"))))
+    )
     val expectedJson =
       Json.parse("""
         |{

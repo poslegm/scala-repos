@@ -32,8 +32,10 @@ import org.apache.spark.util.{ThreadUtils, Utils}
   * given an estimate computation from a `RateEstimator`
   */
 private[streaming] abstract class RateController(
-    val streamUID: Int, rateEstimator: RateEstimator)
-    extends StreamingListener with Serializable {
+    val streamUID: Int,
+    rateEstimator: RateEstimator
+) extends StreamingListener
+    with Serializable {
 
   init()
 
@@ -50,7 +52,8 @@ private[streaming] abstract class RateController(
     */
   private def init() {
     executionContext = ExecutionContext.fromExecutorService(
-        ThreadUtils.newDaemonSingleThreadExecutor("stream-rate-update"))
+      ThreadUtils.newDaemonSingleThreadExecutor("stream-rate-update")
+    )
     rateLimit = new AtomicLong(-1L)
   }
 
@@ -64,7 +67,11 @@ private[streaming] abstract class RateController(
     * Compute the new rate limit and publish it asynchronously.
     */
   private def computeAndPublish(
-      time: Long, elems: Long, workDelay: Long, waitDelay: Long): Unit =
+      time: Long,
+      elems: Long,
+      workDelay: Long,
+      waitDelay: Long
+  ): Unit =
     Future[Unit] {
       val newRate = rateEstimator.compute(time, elems, workDelay, waitDelay)
       newRate.foreach { s =>
@@ -76,7 +83,8 @@ private[streaming] abstract class RateController(
   def getLatestRate(): Long = rateLimit.get()
 
   override def onBatchCompleted(
-      batchCompleted: StreamingListenerBatchCompleted) {
+      batchCompleted: StreamingListenerBatchCompleted
+  ) {
     val elements = batchCompleted.batchInfo.streamIdToInputInfo
 
     for {

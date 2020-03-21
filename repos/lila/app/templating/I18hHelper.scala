@@ -21,8 +21,7 @@ trait I18nHelper {
 
   implicit def lang(implicit ctx: UserContext) = pool lang ctx.req
 
-  def transKey(key: String, args: Seq[Any] = Nil)(
-      implicit lang: Lang): String =
+  def transKey(key: String, args: Seq[Any] = Nil)(implicit lang: Lang): String =
     i18nEnv.translator.transTo(key, args)(lang)
 
   def i18nJsObject(keys: I18nKey*)(implicit lang: Lang) =
@@ -41,27 +40,31 @@ trait I18nHelper {
   def transValidationPattern(trans: String) =
     (trans contains "%s") option ".*%s.*"
 
-  def langFallbackLinks(implicit ctx: UserContext) = Html {
-    pool
-      .preferredNames(ctx.req, 3)
-      .map {
-        case (code, name) =>
-          """<a class="lang_fallback" lang="%s" href="%s">%s</a>""".format(
-              code, langUrl(Lang(code))(I18nDomain(ctx.req.domain)), name)
-      }
-      .mkString("")
-      .replace(uriPlaceholder, ctx.req.uri)
-  }
+  def langFallbackLinks(implicit ctx: UserContext) =
+    Html {
+      pool
+        .preferredNames(ctx.req, 3)
+        .map {
+          case (code, name) =>
+            """<a class="lang_fallback" lang="%s" href="%s">%s</a>""".format(
+              code,
+              langUrl(Lang(code))(I18nDomain(ctx.req.domain)),
+              name
+            )
+        }
+        .mkString("")
+        .replace(uriPlaceholder, ctx.req.uri)
+    }
 
   private lazy val langAnnotationsBase: String =
-    pool.names.keySet diff Set("fp", "kb", "le", "tp", "pi", "io") map {
-      code =>
-        s"""<link rel="alternate" hreflang="$code" href="http://$code.lichess.org%"/>"""
+    pool.names.keySet diff Set("fp", "kb", "le", "tp", "pi", "io") map { code =>
+      s"""<link rel="alternate" hreflang="$code" href="http://$code.lichess.org%"/>"""
     } mkString ""
 
-  def langAnnotations(implicit ctx: UserContext) = Html {
-    langAnnotationsBase.replace("%", ctx.req.uri)
-  }
+  def langAnnotations(implicit ctx: UserContext) =
+    Html {
+      langAnnotationsBase.replace("%", ctx.req.uri)
+    }
 
   def commonDomain(implicit ctx: UserContext): String =
     I18nDomain(ctx.req.domain).commonDomain

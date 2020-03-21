@@ -21,20 +21,22 @@ trait HttpEventStreamHandle {
   def close(): Unit
 }
 
-class HttpEventStreamActorMetrics @Inject()(metrics: Metrics) {
+class HttpEventStreamActorMetrics @Inject() (metrics: Metrics) {
   val numberOfStreams: AtomicIntGauge = metrics.gauge(
-      metrics.name(MetricPrefixes.API, getClass, "number-of-streams"),
-      new AtomicIntGauge)
+    metrics.name(MetricPrefixes.API, getClass, "number-of-streams"),
+    new AtomicIntGauge
+  )
 }
 
 /**
   * This actor handles subscriptions from event stream handler.
   * It subscribes to the event stream and pushes all marathon events to all listener.
   */
-class HttpEventStreamActor(leaderInfo: LeaderInfo,
-                           metrics: HttpEventStreamActorMetrics,
-                           handleStreamProps: HttpEventStreamHandle => Props)
-    extends Actor {
+class HttpEventStreamActor(
+    leaderInfo: LeaderInfo,
+    metrics: HttpEventStreamActorMetrics,
+    handleStreamProps: HttpEventStreamHandle => Props
+) extends Actor {
   //map from handle to actor
   private[http] var streamHandleActors =
     Map.empty[HttpEventStreamHandle, ActorRef]
@@ -62,10 +64,10 @@ class HttpEventStreamActor(leaderInfo: LeaderInfo,
     */
   private[this] def behaviour(newConnectionBehaviour: Receive): Receive = {
     Seq(
-        handleLeadership,
-        cleanupHandlerActors,
-        newConnectionBehaviour,
-        warnAboutUnknownMessages
+      handleLeadership,
+      cleanupHandlerActors,
+      newConnectionBehaviour,
+      warnAboutUnknownMessages
     ).reduceLeft {
       // Prevent fatal warning about deriving type Any as type parameter
       _.orElse[Any, Unit](_)
@@ -86,7 +88,8 @@ class HttpEventStreamActor(leaderInfo: LeaderInfo,
     case HttpEventStreamConnectionOpen(handle) =>
       metrics.numberOfStreams.setValue(streamHandleActors.size)
       log.info(
-          s"Add EventStream Handle as event listener: $handle. Current nr of streams: ${streamHandleActors.size}")
+        s"Add EventStream Handle as event listener: $handle. Current nr of streams: ${streamHandleActors.size}"
+      )
       val actor = context.actorOf(handleStreamProps(handle), handle.id)
       context.watch(actor)
       streamHandleActors += handle -> actor
@@ -107,7 +110,7 @@ class HttpEventStreamActor(leaderInfo: LeaderInfo,
   /** Cleanup child actors which are not needed anymore. */
   private[this] def cleanupHandlerActors: Receive = {
     case HttpEventStreamConnectionClosed(handle) => removeHandler(handle)
-    case Terminated(actor) => unexpectedTerminationOfHandlerActor(actor)
+    case Terminated(actor)                       => unexpectedTerminationOfHandlerActor(actor)
   }
 
   private[this] def removeHandler(handle: HttpEventStreamHandle): Unit = {
@@ -116,13 +119,16 @@ class HttpEventStreamActor(leaderInfo: LeaderInfo,
       context.stop(actor)
       streamHandleActors -= handle
       metrics.numberOfStreams.setValue(streamHandleActors.size)
-      log.info(s"Removed EventStream Handle as event listener: $handle. " +
-          s"Current nr of listeners: ${streamHandleActors.size}")
+      log.info(
+        s"Removed EventStream Handle as event listener: $handle. " +
+          s"Current nr of listeners: ${streamHandleActors.size}"
+      )
     }
   }
 
   private[this] def unexpectedTerminationOfHandlerActor(
-      actor: ActorRef): Unit = {
+      actor: ActorRef
+  ): Unit = {
     streamHandleActors.find(_._2 == actor).foreach {
       case (handle, ref) =>
         log.error(s"Actor terminated unexpectedly: $handle")

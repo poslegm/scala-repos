@@ -81,12 +81,16 @@ object Test2 {
   println("(true,false)=" + load[(Boolean, Boolean)](dump((true, false))))
   println()
 
-  println("List(List(1), List(2))=" +
-      load[List[List[Int]]](dump(List(List(1), List(2)))))
+  println(
+    "List(List(1), List(2))=" +
+      load[List[List[Int]]](dump(List(List(1), List(2))))
+  )
   println()
 
-  println("Array(Array(1), Array(2))=" +
-      loadArray[Array[Int]](dump(Array(Array(1), Array(2)))))
+  println(
+    "Array(Array(1), Array(2))=" +
+      loadArray[Array[Int]](dump(Array(Array(1), Array(2))))
+  )
   println()
 }
 
@@ -116,8 +120,9 @@ object Marshal {
       case _: ClassCastException =>
         in.close()
         throw new ClassCastException(
-            "type mismatch;" + "\n found : " + found + "\n required: " +
-            expected)
+          "type mismatch;" + "\n found : " + found + "\n required: " +
+            expected
+        )
     }
   }
 }
@@ -141,8 +146,9 @@ trait TestUtil {
     val t1: TypeTag[T] = t
     val x1 = x.toString.replaceAll("@[0-9a-z]+$", "")
     println(
-        "x=" + x1 + ", t=" + t1 + ", k=" +
+      "x=" + x1 + ", t=" + t1 + ", k=" +
         t1.tpe.asInstanceOf[Product].productPrefix + ", s=" +
-        t1.tpe.typeSymbol.toString)
+        t1.tpe.typeSymbol.toString
+    )
   }
 }

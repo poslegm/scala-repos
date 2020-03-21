@@ -32,11 +32,15 @@ import scala.language.implicitConversions
 
 object FloatStringConverter {
   implicit def sfxFloatStringConverter2jfx(
-      c: FloatStringConverter): jfxuc.FloatStringConverter =
+      c: FloatStringConverter
+  ): jfxuc.FloatStringConverter =
     if (c != null) c.delegate else null
 }
 
 class FloatStringConverter(
-    delegate: jfxuc.FloatStringConverter = new jfxuc.FloatStringConverter)
-    extends StringConverterDelegate[
-        java.lang.Float, Float, jfxuc.FloatStringConverter](delegate)
+    delegate: jfxuc.FloatStringConverter = new jfxuc.FloatStringConverter
+) extends StringConverterDelegate[
+      java.lang.Float,
+      Float,
+      jfxuc.FloatStringConverter
+    ](delegate)

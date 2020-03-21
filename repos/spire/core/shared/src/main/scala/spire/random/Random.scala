@@ -10,7 +10,7 @@ sealed trait Op[+A] {
   def flatMap[B](f: A => Op[B]): Op[B] =
     this match {
       case FlatMap(a, g) => FlatMap(a, (x: Any) => g(x).flatMap(f))
-      case o => FlatMap(o, f)
+      case o             => FlatMap(o, f)
     }
 
   def map[B](f: A => B): Op[B] =
@@ -28,18 +28,19 @@ sealed trait Op[+A] {
       case FlatMap(a, f) =>
         a match {
           case Const(x) => f(x).resume(gen)
-          case More(k) => Left(() => FlatMap(k(), f))
-          case Next(g) => f(g(gen)).resume(gen)
+          case More(k)  => Left(() => FlatMap(k(), f))
+          case Next(g)  => f(g(gen)).resume(gen)
           case FlatMap(b, g) =>
             (FlatMap(b, (x: Any) => FlatMap(g(x), f)): Op[A]).resume(gen)
         }
     }
 
   def run(gen: Generator): A = {
-    def loop(e: Either[() => Op[A], A]): A = e match {
-      case Right(a) => a
-      case Left(k) => loop(k().resume(gen))
-    }
+    def loop(e: Either[() => Op[A], A]): A =
+      e match {
+        case Right(a) => a
+        case Left(k)  => loop(k().resume(gen))
+      }
     loop(resume(gen))
   }
 }
@@ -93,21 +94,19 @@ trait RandomCompanion[G <: Generator] { self =>
 
   def stringOfSize(n: Int): Random[String, G] =
     char
-      .foldLeftOfSize(n)(new StringBuilder) { (sb, c) =>
-        sb.append(c); sb
-      }
+      .foldLeftOfSize(n)(new StringBuilder) { (sb, c) => sb.append(c); sb }
       .map(_.toString)
 
   implicit class RandomOps[A](lhs: R[A]) {
-    def collection[CC[_]](size: Size)(
-        implicit cbf: CanBuildFrom[CC[A], A, CC[A]]): Random[CC[A], G] =
+    def collection[CC[_]](
+        size: Size
+    )(implicit cbf: CanBuildFrom[CC[A], A, CC[A]]): Random[CC[A], G] =
       size.random(self).flatMap(collectionOfSize(_))
 
-    def collectionOfSize[CC[_]](n: Int)(
-        implicit cbf: CanBuildFrom[CC[A], A, CC[A]]): Random[CC[A], G] =
-      foldLeftOfSize(n)(cbf()) { (b, a) =>
-        b += a; b
-      }.map(_.result)
+    def collectionOfSize[CC[_]](
+        n: Int
+    )(implicit cbf: CanBuildFrom[CC[A], A, CC[A]]): Random[CC[A], G] =
+      foldLeftOfSize(n)(cbf()) { (b, a) => b += a; b }.map(_.result)
 
     def foldLeftOfSize[B](n: Int)(init: => B)(f: (B, A) => B): Random[B, G] = {
       def loop(n: Int, ma: Op[A]): Op[B] =
@@ -118,13 +117,14 @@ trait RandomCompanion[G <: Generator] { self =>
 
     def unfold[B](init: B)(f: (B, A) => Option[B]): Random[B, G] = {
       def loop(mb: Op[B], ma: Op[A]): Op[B] =
-        mb.flatMap(
-            b =>
-              ma.flatMap(a =>
-                    f(b, a) match {
+        mb.flatMap(b =>
+          ma.flatMap(a =>
+            f(b, a) match {
               case Some(b2) => More(() => loop(Const(b2), ma))
-              case None => Const(b)
-          }))
+              case None     => Const(b)
+            }
+          )
+        )
       spawn(loop(Const(init), More(() => lhs.op)))
     }
   }
@@ -134,7 +134,11 @@ trait RandomCompanion[G <: Generator] { self =>
   def tuple3[A, B, C](r1: R[A], r2: R[B], r3: R[C]): R[(A, B, C)] =
     for { a <- r1; b <- r2; c <- r3 } yield (a, b, c)
   def tuple4[A, B, C, D](
-      r1: R[A], r2: R[B], r3: R[C], r4: R[D]): R[(A, B, C, D)] =
+      r1: R[A],
+      r2: R[B],
+      r3: R[C],
+      r4: R[D]
+  ): R[(A, B, C, D)] =
     for { a <- r1; b <- r2; c <- r3; d <- r4 } yield (a, b, c, d)
 }
 
@@ -207,7 +211,7 @@ object Size {
   }
 }
 
-class Seed private[spire](private[spire] val bytes: Array[Byte])
+class Seed private[spire] (private[spire] val bytes: Array[Byte])
 
 object Seed {
   val zero = Seed(Array[Byte](0, 0, 0, 0))

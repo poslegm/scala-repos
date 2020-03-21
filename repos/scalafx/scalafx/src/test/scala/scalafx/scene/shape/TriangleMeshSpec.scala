@@ -40,7 +40,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class TriangleMeshSpec
     extends SimpleSFXDelegateSpec[jfxss.TriangleMesh, TriangleMesh](
-        classOf[jfxss.TriangleMesh], classOf[TriangleMesh]) {
+      classOf[jfxss.TriangleMesh],
+      classOf[TriangleMesh]
+    ) {
 
   trait TestData {
     val mesh = new TriangleMesh()

@@ -22,7 +22,7 @@ object DataViewExt {
         dataView.getInt32(index + (if (littleEndian) 4 else 0), littleEndian)
       val low =
         dataView.getInt32(index + (if (littleEndian) 0 else 4), littleEndian)
-      (high.toLong << 32) | (low.toLong & 0xffffffffL)
+      (high.toLong << 32) | (low.toLong & 0xFFFFFFFFL)
     }
 
     /** Writes a 2's complement signed 64-bit integers to the data view.
@@ -32,13 +32,18 @@ object DataViewExt {
       */
     @inline
     def setInt64(
-        index: Int, value: Long, littleEndian: Boolean = false): Unit = {
+        index: Int,
+        value: Long,
+        littleEndian: Boolean = false
+    ): Unit = {
       val high = (value >>> 32).toInt
       val low = value.toInt
       dataView.setInt32(
-          index + (if (littleEndian) 4 else 0), high, littleEndian)
-      dataView.setInt32(
-          index + (if (littleEndian) 0 else 4), low, littleEndian)
+        index + (if (littleEndian) 4 else 0),
+        high,
+        littleEndian
+      )
+      dataView.setInt32(index + (if (littleEndian) 0 else 4), low, littleEndian)
     }
   }
 }

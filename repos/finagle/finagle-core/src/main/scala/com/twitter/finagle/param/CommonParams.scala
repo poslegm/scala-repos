@@ -73,7 +73,8 @@ trait CommonParams[A <: Stack.Parameterized[A]] {
     * which is a total function fully covering the input domain.
     */
   def withResponseClassifier(
-      responseClassifier: service.ResponseClassifier): A =
+      responseClassifier: service.ResponseClassifier
+  ): A =
     self.configured(ResponseClassifier(responseClassifier))
 
   /**
@@ -81,7 +82,8 @@ trait CommonParams[A <: Stack.Parameterized[A]] {
     * [[stats.ExceptionStatsHandler exception stats handler]].
     */
   def withExceptionStatsHandler(
-      exceptionStatsHandler: stats.ExceptionStatsHandler): A =
+      exceptionStatsHandler: stats.ExceptionStatsHandler
+  ): A =
     self.configured(ExceptionStatsHandler(exceptionStatsHandler))
 
   /**

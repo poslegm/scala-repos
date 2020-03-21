@@ -24,7 +24,8 @@ trait Platform {
 
   /** Update classpath with a substitution that maps entries to entries */
   def updateClassPath(
-      subst: Map[ClassPath[AbstractFile], ClassPath[AbstractFile]])
+      subst: Map[ClassPath[AbstractFile], ClassPath[AbstractFile]]
+  )
 
   /** Any platform-specific phases. */
   def platformPhases: List[SubComponent]

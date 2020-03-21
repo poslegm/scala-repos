@@ -35,9 +35,9 @@ import org.apache.spark.streaming.dstream.DStream
   * `window`. For operations applicable to key-value pair DStreams, see
   * [[org.apache.spark.streaming.api.java.JavaPairDStream]].
   */
-class JavaDStream[T](val dstream: DStream[T])(
-    implicit val classTag: ClassTag[T])
-    extends AbstractJavaDStreamLike[T, JavaDStream[T], JavaRDD[T]] {
+class JavaDStream[T](val dstream: DStream[T])(implicit
+    val classTag: ClassTag[T]
+) extends AbstractJavaDStreamLike[T, JavaDStream[T], JavaRDD[T]] {
 
   override def wrapRDD(rdd: RDD[T]): JavaRDD[T] = JavaRDD.fromRDD(rdd)
 
@@ -59,7 +59,7 @@ class JavaDStream[T](val dstream: DStream[T])(
   def compute(validTime: Time): JavaRDD[T] = {
     dstream.compute(validTime) match {
       case Some(rdd) => new JavaRDD(rdd)
-      case None => null
+      case None      => null
     }
   }
 
@@ -82,7 +82,9 @@ class JavaDStream[T](val dstream: DStream[T])(
     *                       DStream's batching interval
     */
   def window(
-      windowDuration: Duration, slideDuration: Duration): JavaDStream[T] =
+      windowDuration: Duration,
+      slideDuration: Duration
+  ): JavaDStream[T] =
     dstream.window(windowDuration, slideDuration)
 
   /**
@@ -106,6 +108,6 @@ object JavaDStream {
     * Convert a scala [[org.apache.spark.streaming.dstream.DStream]] to a Java-friendly
     * [[org.apache.spark.streaming.api.java.JavaDStream]].
     */
-  implicit def fromDStream[T : ClassTag](dstream: DStream[T]): JavaDStream[T] =
+  implicit def fromDStream[T: ClassTag](dstream: DStream[T]): JavaDStream[T] =
     new JavaDStream[T](dstream)
 }

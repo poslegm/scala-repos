@@ -39,17 +39,21 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
   private[this] val retainedDeadExecutors =
     conf.getInt("spark.ui.retainedDeadExecutors", 100)
 
-  def storageStatusList: Seq[StorageStatus] = synchronized {
-    executorIdToStorageStatus.values.toSeq
-  }
+  def storageStatusList: Seq[StorageStatus] =
+    synchronized {
+      executorIdToStorageStatus.values.toSeq
+    }
 
-  def deadStorageStatusList: Seq[StorageStatus] = synchronized {
-    deadExecutorStorageStatus.toSeq
-  }
+  def deadStorageStatusList: Seq[StorageStatus] =
+    synchronized {
+      deadExecutorStorageStatus.toSeq
+    }
 
   /** Update storage status list to reflect updated block statuses */
   private def updateStorageStatus(
-      execId: String, updatedBlocks: Seq[(BlockId, BlockStatus)]) {
+      execId: String,
+      updatedBlocks: Seq[(BlockId, BlockStatus)]
+  ) {
     executorIdToStorageStatus.get(execId).foreach { storageStatus =>
       updatedBlocks.foreach {
         case (blockId, updatedStatus) =>
@@ -72,16 +76,17 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
     }
   }
 
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = synchronized {
-    val info = taskEnd.taskInfo
-    val metrics = taskEnd.taskMetrics
-    if (info != null && metrics != null) {
-      val updatedBlocks = metrics.updatedBlockStatuses
-      if (updatedBlocks.length > 0) {
-        updateStorageStatus(info.executorId, updatedBlocks)
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit =
+    synchronized {
+      val info = taskEnd.taskInfo
+      val metrics = taskEnd.taskMetrics
+      if (info != null && metrics != null) {
+        val updatedBlocks = metrics.updatedBlockStatuses
+        if (updatedBlocks.length > 0) {
+          updateStorageStatus(info.executorId, updatedBlocks)
+        }
       }
     }
-  }
 
   override def onUnpersistRDD(unpersistRDD: SparkListenerUnpersistRDD): Unit =
     synchronized {
@@ -89,7 +94,8 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
     }
 
   override def onBlockManagerAdded(
-      blockManagerAdded: SparkListenerBlockManagerAdded) {
+      blockManagerAdded: SparkListenerBlockManagerAdded
+  ) {
     synchronized {
       val blockManagerId = blockManagerAdded.blockManagerId
       val executorId = blockManagerId.executorId
@@ -100,7 +106,8 @@ class StorageStatusListener(conf: SparkConf) extends SparkListener {
   }
 
   override def onBlockManagerRemoved(
-      blockManagerRemoved: SparkListenerBlockManagerRemoved) {
+      blockManagerRemoved: SparkListenerBlockManagerRemoved
+  ) {
     synchronized {
       val executorId = blockManagerRemoved.blockManagerId.executorId
       executorIdToStorageStatus.remove(executorId).foreach { status =>

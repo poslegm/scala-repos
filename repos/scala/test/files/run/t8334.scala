@@ -11,9 +11,7 @@ object Test extends App {
 
   def h: Boolean = {
     val xs =
-      Nil flatMap { _ =>
-        return false
-      }
+      Nil flatMap { _ => return false }
     true
   }
   assert(f && g && h)

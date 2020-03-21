@@ -7,9 +7,10 @@ import breeze.numerics.{pow, exp, log}
   *
   * @author dlwh
   **/
-case class Pareto(
-    scale: Double, shape: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf {
+case class Pareto(scale: Double, shape: Double)(implicit rand: RandBasis = Rand)
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf {
   def mean: Double = {
     if (shape <= 1) {
       Double.PositiveInfinity
@@ -51,10 +52,11 @@ case class Pareto(
     cdf(y) - cdf(x)
   }
 
-  def cdf(x: Double) = x match {
-    case x if x < scale => 0.0
-    case Double.PositiveInfinity => 1.0
-    case x =>
-      1 - math.pow(scale / x, shape)
-  }
+  def cdf(x: Double) =
+    x match {
+      case x if x < scale          => 0.0
+      case Double.PositiveInfinity => 1.0
+      case x =>
+        1 - math.pow(scale / x, shape)
+    }
 }

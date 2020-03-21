@@ -23,8 +23,8 @@ private[akka] final case class ClientConnectionSettingsImpl(
     requestHeaderSizeHint: Int,
     websocketRandomFactory: () ⇒ Random,
     socketOptions: immutable.Seq[SocketOption],
-    parserSettings: ParserSettings)
-    extends akka.http.scaladsl.settings.ClientConnectionSettings {
+    parserSettings: ParserSettings
+) extends akka.http.scaladsl.settings.ClientConnectionSettings {
 
   require(connectingTimeout >= Duration.Zero, "connectingTimeout must be >= 0")
   require(requestHeaderSizeHint > 0, "request-size-hint must be > 0")
@@ -33,21 +33,25 @@ private[akka] final case class ClientConnectionSettingsImpl(
 }
 
 object ClientConnectionSettingsImpl
-    extends SettingsCompanion[ClientConnectionSettingsImpl]("akka.http.client") {
+    extends SettingsCompanion[ClientConnectionSettingsImpl](
+      "akka.http.client"
+    ) {
   def fromSubConfig(root: Config, inner: Config) = {
     val c = inner.withFallback(root.getConfig(prefix))
     new ClientConnectionSettingsImpl(
-        userAgentHeader = c
-            .getString("user-agent-header")
-            .toOption
-            .map(`User-Agent`(_)),
-        connectingTimeout = c getFiniteDuration "connecting-timeout",
-        idleTimeout = c getPotentiallyInfiniteDuration "idle-timeout",
-        requestHeaderSizeHint = c getIntBytes "request-header-size-hint",
-        websocketRandomFactory = Randoms.SecureRandomInstances, // can currently only be overridden from code
-        socketOptions = SocketOptionSettings.fromSubConfig(
-              root, c.getConfig("socket-options")),
-        parserSettings = ParserSettingsImpl.fromSubConfig(
-              root, c.getConfig("parsing")))
+      userAgentHeader = c
+        .getString("user-agent-header")
+        .toOption
+        .map(`User-Agent`(_)),
+      connectingTimeout = c getFiniteDuration "connecting-timeout",
+      idleTimeout = c getPotentiallyInfiniteDuration "idle-timeout",
+      requestHeaderSizeHint = c getIntBytes "request-header-size-hint",
+      websocketRandomFactory =
+        Randoms.SecureRandomInstances, // can currently only be overridden from code
+      socketOptions =
+        SocketOptionSettings.fromSubConfig(root, c.getConfig("socket-options")),
+      parserSettings =
+        ParserSettingsImpl.fromSubConfig(root, c.getConfig("parsing"))
+    )
   }
 }

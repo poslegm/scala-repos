@@ -31,7 +31,10 @@ class StringUtilSpec extends FunSpec {
   describe("escapeHtml") {
     it("should escape &, <, > and \"") {
       assert(
-          StringUtil.escapeHtml("<a href=\"/test\">a & b</a>") == "&lt;a href=&quot;/test&quot;&gt;a &amp; b&lt;/a&gt;")
+        StringUtil.escapeHtml(
+          "<a href=\"/test\">a & b</a>"
+        ) == "&lt;a href=&quot;/test&quot;&gt;a &amp; b&lt;/a&gt;"
+      )
     }
   }
 
@@ -44,7 +47,8 @@ class StringUtilSpec extends FunSpec {
   describe("sha1") {
     it("should generate SHA1 hash") {
       assert(
-          StringUtil.sha1("abc") == "a9993e364706816aba3e25717850c26c9cd0d89d")
+        StringUtil.sha1("abc") == "a9993e364706816aba3e25717850c26c9cd0d89d"
+      )
     }
   }
 

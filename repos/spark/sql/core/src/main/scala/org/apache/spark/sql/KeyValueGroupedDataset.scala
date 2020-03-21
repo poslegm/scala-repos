@@ -21,8 +21,16 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.api.java.function._
-import org.apache.spark.sql.catalyst.encoders.{encoderFor, ExpressionEncoder, OuterScopes}
-import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, CreateStruct}
+import org.apache.spark.sql.catalyst.encoders.{
+  encoderFor,
+  ExpressionEncoder,
+  OuterScopes
+}
+import org.apache.spark.sql.catalyst.expressions.{
+  Alias,
+  Attribute,
+  CreateStruct
+}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.QueryExecution
 
@@ -35,13 +43,13 @@ import org.apache.spark.sql.execution.QueryExecution
   * @since 2.0.0
   */
 @Experimental
-class KeyValueGroupedDataset[K, V] private[sql](
+class KeyValueGroupedDataset[K, V] private[sql] (
     kEncoder: Encoder[K],
     vEncoder: Encoder[V],
     val queryExecution: QueryExecution,
     private val dataAttributes: Seq[Attribute],
-    private val groupingAttributes: Seq[Attribute])
-    extends Serializable {
+    private val groupingAttributes: Seq[Attribute]
+) extends Serializable {
 
   // Similar to [[Dataset]], we use unresolved encoders for later composition and resolved encoders
   // when constructing new logical plans that will operate on the output of the current
@@ -59,9 +67,11 @@ class KeyValueGroupedDataset[K, V] private[sql](
   private def sqlContext = queryExecution.sqlContext
 
   private def groupedData = {
-    new RelationalGroupedDataset(Dataset.newDataFrame(sqlContext, logicalPlan),
-                                 groupingAttributes,
-                                 RelationalGroupedDataset.GroupByType)
+    new RelationalGroupedDataset(
+      Dataset.newDataFrame(sqlContext, logicalPlan),
+      groupingAttributes,
+      RelationalGroupedDataset.GroupByType
+    )
   }
 
   /**
@@ -71,12 +81,14 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def keyAs[L : Encoder]: KeyValueGroupedDataset[L, V] =
-    new KeyValueGroupedDataset(encoderFor[L],
-                               unresolvedVEncoder,
-                               queryExecution,
-                               dataAttributes,
-                               groupingAttributes)
+  def keyAs[L: Encoder]: KeyValueGroupedDataset[L, V] =
+    new KeyValueGroupedDataset(
+      encoderFor[L],
+      unresolvedVEncoder,
+      queryExecution,
+      dataAttributes,
+      groupingAttributes
+    )
 
   /**
     * Returns a [[Dataset]] that contains each unique key.
@@ -84,8 +96,7 @@ class KeyValueGroupedDataset[K, V] private[sql](
     * @since 1.6.0
     */
   def keys: Dataset[K] = {
-    Dataset[K](sqlContext,
-               Distinct(Project(groupingAttributes, logicalPlan)))
+    Dataset[K](sqlContext, Distinct(Project(groupingAttributes, logicalPlan)))
   }
 
   /**
@@ -106,13 +117,13 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def flatMapGroups[U : Encoder](
-      f: (K, Iterator[V]) => TraversableOnce[U]): Dataset[U] = {
-    Dataset[U](sqlContext,
-               MapGroups(f,
-                         groupingAttributes,
-                         dataAttributes,
-                         logicalPlan))
+  def flatMapGroups[U: Encoder](
+      f: (K, Iterator[V]) => TraversableOnce[U]
+  ): Dataset[U] = {
+    Dataset[U](
+      sqlContext,
+      MapGroups(f, groupingAttributes, dataAttributes, logicalPlan)
+    )
   }
 
   /**
@@ -134,7 +145,9 @@ class KeyValueGroupedDataset[K, V] private[sql](
     * @since 1.6.0
     */
   def flatMapGroups[U](
-      f: FlatMapGroupsFunction[K, V, U], encoder: Encoder[U]): Dataset[U] = {
+      f: FlatMapGroupsFunction[K, V, U],
+      encoder: Encoder[U]
+  ): Dataset[U] = {
     flatMapGroups((key, data) => f.call(key, data.asJava).asScala)(encoder)
   }
 
@@ -155,7 +168,7 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def mapGroups[U : Encoder](f: (K, Iterator[V]) => U): Dataset[U] = {
+  def mapGroups[U: Encoder](f: (K, Iterator[V]) => U): Dataset[U] = {
     val func = (key: K, it: Iterator[V]) => Iterator(f(key, it))
     flatMapGroups(func)
   }
@@ -178,7 +191,9 @@ class KeyValueGroupedDataset[K, V] private[sql](
     * @since 1.6.0
     */
   def mapGroups[U](
-      f: MapGroupsFunction[K, V, U], encoder: Encoder[U]): Dataset[U] = {
+      f: MapGroupsFunction[K, V, U],
+      encoder: Encoder[U]
+  ): Dataset[U] = {
     mapGroups((key, data) => f.call(key, data.asJava))(encoder)
   }
 
@@ -211,11 +226,12 @@ class KeyValueGroupedDataset[K, V] private[sql](
   private def agg(exprs: Column*): DataFrame =
     groupedData.agg(withEncoder(exprs.head), exprs.tail.map(withEncoder): _*)
 
-  private def withEncoder(c: Column): Column = c match {
-    case tc: TypedColumn[_, _] =>
-      tc.withInputType(resolvedVEncoder.bind(dataAttributes), dataAttributes)
-    case _ => c
-  }
+  private def withEncoder(c: Column): Column =
+    c match {
+      case tc: TypedColumn[_, _] =>
+        tc.withInputType(resolvedVEncoder.bind(dataAttributes), dataAttributes)
+      case _ => c
+    }
 
   /**
     * Internal helper function for building typed aggregations that return tuples.  For simplicity
@@ -234,13 +250,15 @@ class KeyValueGroupedDataset[K, V] private[sql](
       } else {
         Alias(CreateStruct(groupingAttributes), "key")()
       }
-    val aggregate = Aggregate(
-        groupingAttributes, keyColumn +: namedColumns, logicalPlan)
+    val aggregate =
+      Aggregate(groupingAttributes, keyColumn +: namedColumns, logicalPlan)
     val execution = new QueryExecution(sqlContext, aggregate)
 
-    new Dataset(sqlContext,
-                execution,
-                ExpressionEncoder.tuple(unresolvedKEncoder +: encoders))
+    new Dataset(
+      sqlContext,
+      execution,
+      ExpressionEncoder.tuple(unresolvedKEncoder +: encoders)
+    )
   }
 
   /**
@@ -258,8 +276,10 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def agg[U1, U2](col1: TypedColumn[V, U1],
-                  col2: TypedColumn[V, U2]): Dataset[(K, U1, U2)] =
+  def agg[U1, U2](
+      col1: TypedColumn[V, U1],
+      col2: TypedColumn[V, U2]
+  ): Dataset[(K, U1, U2)] =
     aggUntyped(col1, col2).asInstanceOf[Dataset[(K, U1, U2)]]
 
   /**
@@ -268,9 +288,11 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def agg[U1, U2, U3](col1: TypedColumn[V, U1],
-                      col2: TypedColumn[V, U2],
-                      col3: TypedColumn[V, U3]): Dataset[(K, U1, U2, U3)] =
+  def agg[U1, U2, U3](
+      col1: TypedColumn[V, U1],
+      col2: TypedColumn[V, U2],
+      col3: TypedColumn[V, U3]
+  ): Dataset[(K, U1, U2, U3)] =
     aggUntyped(col1, col2, col3).asInstanceOf[Dataset[(K, U1, U2, U3)]]
 
   /**
@@ -283,7 +305,8 @@ class KeyValueGroupedDataset[K, V] private[sql](
       col1: TypedColumn[V, U1],
       col2: TypedColumn[V, U2],
       col3: TypedColumn[V, U3],
-      col4: TypedColumn[V, U4]): Dataset[(K, U1, U2, U3, U4)] =
+      col4: TypedColumn[V, U4]
+  ): Dataset[(K, U1, U2, U3, U4)] =
     aggUntyped(col1, col2, col3, col4)
       .asInstanceOf[Dataset[(K, U1, U2, U3, U4)]]
 
@@ -304,17 +327,22 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def cogroup[U, R : Encoder](other: KeyValueGroupedDataset[K, U])(
-      f: (K, Iterator[V], Iterator[U]) => TraversableOnce[R]): Dataset[R] = {
+  def cogroup[U, R: Encoder](
+      other: KeyValueGroupedDataset[K, U]
+  )(f: (K, Iterator[V], Iterator[U]) => TraversableOnce[R]): Dataset[R] = {
     implicit val uEncoder = other.unresolvedVEncoder
-    Dataset[R](sqlContext,
-               CoGroup(f,
-                       this.groupingAttributes,
-                       other.groupingAttributes,
-                       this.dataAttributes,
-                       other.dataAttributes,
-                       this.logicalPlan,
-                       other.logicalPlan))
+    Dataset[R](
+      sqlContext,
+      CoGroup(
+        f,
+        this.groupingAttributes,
+        other.groupingAttributes,
+        this.dataAttributes,
+        other.dataAttributes,
+        this.logicalPlan,
+        other.logicalPlan
+      )
+    )
   }
 
   /**
@@ -325,10 +353,13 @@ class KeyValueGroupedDataset[K, V] private[sql](
     *
     * @since 1.6.0
     */
-  def cogroup[U, R](other: KeyValueGroupedDataset[K, U],
-                    f: CoGroupFunction[K, V, U, R],
-                    encoder: Encoder[R]): Dataset[R] = {
-    cogroup(other)((key, left,
-        right) => f.call(key, left.asJava, right.asJava).asScala)(encoder)
+  def cogroup[U, R](
+      other: KeyValueGroupedDataset[K, U],
+      f: CoGroupFunction[K, V, U, R],
+      encoder: Encoder[R]
+  ): Dataset[R] = {
+    cogroup(other)((key, left, right) =>
+      f.call(key, left.asJava, right.asJava).asScala
+    )(encoder)
   }
 }

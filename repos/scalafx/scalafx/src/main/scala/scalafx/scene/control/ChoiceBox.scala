@@ -39,7 +39,8 @@ import scalafx.util.StringConverter
 
 object ChoiceBox {
   implicit def sfxChoiceBox2jfx[J <: Any](
-      cb: ChoiceBox[J]): jfxsc.ChoiceBox[J] =
+      cb: ChoiceBox[J]
+  ): jfxsc.ChoiceBox[J] =
     if (cb != null) cb.delegate else null
 
   /** Called when the ChoiceBox popup has been hidden. */
@@ -59,8 +60,9 @@ object ChoiceBox {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/ChoiceBox.html]].
   */
 class ChoiceBox[J <: Any](
-    override val delegate: jfxsc.ChoiceBox[J] = new jfxsc.ChoiceBox[J])
-    extends Control(delegate) with SFXDelegate[jfxsc.ChoiceBox[J]] {
+    override val delegate: jfxsc.ChoiceBox[J] = new jfxsc.ChoiceBox[J]
+) extends Control(delegate)
+    with SFXDelegate[jfxsc.ChoiceBox[J]] {
 
   /**
     * Create a new ChoiceBox with the given set of items.

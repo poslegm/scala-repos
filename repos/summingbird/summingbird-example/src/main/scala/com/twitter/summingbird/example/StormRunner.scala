@@ -21,7 +21,11 @@ import com.twitter.summingbird.Options
 import com.twitter.summingbird.option.CacheSize
 import com.twitter.summingbird.online.MergeableStoreFactory
 import com.twitter.summingbird.storm.{Storm, Executor, StormExecutionConfig}
-import com.twitter.summingbird.online.option.{FlatMapParallelism, SummerParallelism, SourceParallelism}
+import com.twitter.summingbird.online.option.{
+  FlatMapParallelism,
+  SummerParallelism,
+  SourceParallelism
+}
 import backtype.storm.{Config => BTConfig}
 import com.twitter.scalding.Args
 import com.twitter.tormenta.spout.TwitterSpout
@@ -118,12 +122,15 @@ object StormRunner {
 
       // No Ackers
       override def transformConfig(
-          config: Map[String, AnyRef]): Map[String, AnyRef] = {
+          config: Map[String, AnyRef]
+      ): Map[String, AnyRef] = {
         config ++ List(
-            (BTConfig.TOPOLOGY_ACKER_EXECUTORS -> (new java.lang.Integer(0))))
+          (BTConfig.TOPOLOGY_ACKER_EXECUTORS -> (new java.lang.Integer(0)))
+        )
       }
 
-      override def getNamedOptions: Map[String, Options] = Map(
+      override def getNamedOptions: Map[String, Options] =
+        Map(
           "DEFAULT" -> Options()
             .set(SummerParallelism(2))
             .set(FlatMapParallelism(80))

@@ -15,8 +15,8 @@ import java.io.File
 private[play] case class PlayCoreTestApplication(
     config: Map[String, Any] = Map(),
     path: File = new File("."),
-    mode: Mode.Mode = Mode.Test)
-    extends Application {
+    mode: Mode.Mode = Mode.Test
+) extends Application {
   val classloader = Thread.currentThread.getContextClassLoader
   lazy val configuration = Configuration.from(config)
   private val lazyActorSystem =

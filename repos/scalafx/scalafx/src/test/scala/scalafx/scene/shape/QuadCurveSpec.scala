@@ -43,4 +43,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class QuadCurveSpec
     extends SimpleSFXDelegateSpec[jfxss.QuadCurve, QuadCurve](
-        classOf[jfxss.QuadCurve], classOf[QuadCurve])
+      classOf[jfxss.QuadCurve],
+      classOf[QuadCurve]
+    )

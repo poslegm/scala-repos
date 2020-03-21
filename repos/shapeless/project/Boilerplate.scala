@@ -37,27 +37,28 @@ object Boilerplate {
   }
 
   val templates: Seq[Template] = List(
-      GenTuplerInstances,
-      GenFnToProductInstances,
-      GenFnFromProductInstances,
-      GenCaseInst,
-      GenPolyApply,
-      GenPolyInst,
-      GenCases,
-      GenPolyNTraits,
-      GenNats,
-      GenTupleTypeableInstances,
-      GenSizedBuilder,
-      GenHMapBuilder,
-      GenUnpackInstances
+    GenTuplerInstances,
+    GenFnToProductInstances,
+    GenFnFromProductInstances,
+    GenCaseInst,
+    GenPolyApply,
+    GenPolyInst,
+    GenCases,
+    GenPolyNTraits,
+    GenNats,
+    GenTupleTypeableInstances,
+    GenSizedBuilder,
+    GenHMapBuilder,
+    GenUnpackInstances
   )
 
   /** Returns a seq of the generated files.  As a side-effect, it actually generates them... */
-  def gen(dir: File) = for (t <- templates) yield {
-    val tgtFile = dir / "shapeless" / t.filename
-    IO.write(tgtFile, t.body)
-    tgtFile
-  }
+  def gen(dir: File) =
+    for (t <- templates) yield {
+      val tgtFile = dir / "shapeless" / t.filename
+      IO.write(tgtFile, t.body)
+      tgtFile
+    }
 
   val header =
     """
@@ -117,7 +118,7 @@ object Boilerplate {
         rawContents flatMap { _ filter (_ startsWith "-") map (_.tail) }
       val postBody =
         rawContents.head dropWhile (_ startsWith "|") dropWhile
-        (_ startsWith "-") map (_.tail)
+          (_ startsWith "-") map (_.tail)
       (headerLines ++ preBody ++ instances ++ postBody) mkString "\n"
     }
   }

@@ -50,7 +50,8 @@ abstract class BaseEvaluator[EI, Q, P, A, ER <: BaseEvaluatorResult]
       sc: SparkContext,
       evaluation: Evaluation,
       engineEvalDataSet: Seq[(EngineParams, Seq[(EI, RDD[(Q, P, A)])])],
-      params: WorkflowParams): ER
+      params: WorkflowParams
+  ): ER
 }
 
 /** Base trait of evaluator result */

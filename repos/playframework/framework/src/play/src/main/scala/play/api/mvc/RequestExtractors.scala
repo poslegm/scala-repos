@@ -16,7 +16,8 @@ trait RequestExtractors extends AcceptExtractors {
     */
   object & {
     def unapply(
-        request: RequestHeader): Option[(RequestHeader, RequestHeader)] =
+        request: RequestHeader
+    ): Option[(RequestHeader, RequestHeader)] =
       Some((request, request))
   }
 }

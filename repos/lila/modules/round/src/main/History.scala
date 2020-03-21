@@ -16,9 +16,11 @@ import lila.socket.actorApi.GetVersion
   * NOT THREAD SAFE
   * Designed for use within a sequential actor
   */
-private[round] final class History(load: Fu[VersionedEvents],
-                                   persist: VersionedEvents => Unit,
-                                   withPersistence: Boolean) {
+private[round] final class History(
+    load: Fu[VersionedEvents],
+    persist: VersionedEvents => Unit,
+    withPersistence: Boolean
+) {
 
   private var events: VersionedEvents = _
 
@@ -37,7 +39,7 @@ private[round] final class History(load: Fu[VersionedEvents],
     else
       events.takeWhile(_.version > v).reverse.some filter {
         case first :: rest => first.version == v + 1
-        case _ => true
+        case _             => true
       }
   }
 
@@ -74,15 +76,19 @@ private[round] object History {
   val size = 30
 
   def apply(coll: Coll)(gameId: String, withPersistence: Boolean): History =
-    new History(load = serverStarting ?? load(coll, gameId, withPersistence),
-                persist = persist(coll, gameId) _,
-                withPersistence = withPersistence)
+    new History(
+      load = serverStarting ?? load(coll, gameId, withPersistence),
+      persist = persist(coll, gameId) _,
+      withPersistence = withPersistence
+    )
 
   private def serverStarting = !lila.common.PlayApp.startedSinceMinutes(5)
 
-  private def load(coll: Coll,
-                   gameId: String,
-                   withPersistence: Boolean): Fu[VersionedEvents] =
+  private def load(
+      coll: Coll,
+      gameId: String,
+      withPersistence: Boolean
+  ): Fu[VersionedEvents] =
     coll.find(BSONDocument("_id" -> gameId)).one[BSONDocument].map {
       _.flatMap(_.getAs[VersionedEvents]("e")) ?? (_.reverse)
     } addEffect {
@@ -94,9 +100,12 @@ private[round] object History {
   private def persist(coll: Coll, gameId: String)(vevs: List[VersionedEvent]) {
     if (vevs.nonEmpty)
       coll.uncheckedUpdate(
-          BSONDocument("_id" -> gameId),
-          BSONDocument("$set" -> BSONDocument("e" -> vevs.reverse),
-                       "$setOnInsert" -> BSONDocument("d" -> DateTime.now)),
-          upsert = true)
+        BSONDocument("_id" -> gameId),
+        BSONDocument(
+          "$set" -> BSONDocument("e" -> vevs.reverse),
+          "$setOnInsert" -> BSONDocument("d" -> DateTime.now)
+        ),
+        upsert = true
+      )
   }
 }

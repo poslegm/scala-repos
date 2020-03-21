@@ -82,11 +82,15 @@ abstract class PlayableConnector(activity: SActivity) {
 
   private def startTimer() {
     timer = new Timer()
-    timer.schedule(new TimerTask {
-      def run() {
-        runOnUiThread(updateUI(ON_HEARTBEAT))
-      }
-    }, timerInterval, timerInterval)
+    timer.schedule(
+      new TimerTask {
+        def run() {
+          runOnUiThread(updateUI(ON_HEARTBEAT))
+        }
+      },
+      timerInterval,
+      timerInterval
+    )
   }
 
   activity.onPause {
@@ -120,7 +124,6 @@ abstract class PlayableConnector(activity: SActivity) {
 
   def stop(): Unit = playable.foreach(stop)
 
-  def toggle(): Unit = playable.foreach { p =>
-    if (p.running) stop(p) else start(p)
-  }
+  def toggle(): Unit =
+    playable.foreach { p => if (p.running) stop(p) else start(p) }
 }

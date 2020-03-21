@@ -26,8 +26,8 @@ import net.liftweb.util._
 final private[http] case class ContinuationException(
     req: Req,
     session: Box[LiftSession],
-    f: ((=> LiftResponse) => Unit) => Unit)
-    extends LiftFlowOfControlException("Continuation")
+    f: ((=> LiftResponse) => Unit) => Unit
+) extends LiftFlowOfControlException("Continuation")
 
 /**
   * Provides a generic way of sending asynchronous response to HTTP clients. If
@@ -78,7 +78,8 @@ object RestContinuation {
 
 object ContinuationsStore
     extends SessionVar[HashMap[ContinuationKey, Continuation]](
-        new HashMap[ContinuationKey, Continuation])
+      new HashMap[ContinuationKey, Continuation]
+    )
 
 trait Continuation {
   def tryRespond: Box[LiftResponse]

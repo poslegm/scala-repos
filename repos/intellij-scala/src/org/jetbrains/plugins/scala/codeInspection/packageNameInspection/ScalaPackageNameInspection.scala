@@ -18,9 +18,11 @@ class ScalaPackageNameInspection extends LocalInspectionTool {
 
   override def getID: String = "ScalaPackageName"
 
-  override def checkFile(file: PsiFile,
-                         manager: InspectionManager,
-                         isOnTheFly: Boolean): Array[ProblemDescriptor] = {
+  override def checkFile(
+      file: PsiFile,
+      manager: InspectionManager,
+      isOnTheFly: Boolean
+  ): Array[ProblemDescriptor] = {
     file match {
       case file: ScalaFile
           if IntentionAvailabilityChecker.checkInspection(this, file) =>
@@ -35,21 +37,23 @@ class ScalaPackageNameInspection extends LocalInspectionTool {
         val packName = cleanKeywords(file.packageName)
         val ranges: Seq[TextRange] = file.packagingRanges match {
           case Seq() => file.typeDefinitions.map(_.nameId.getTextRange)
-          case seq => seq
+          case seq   => seq
         }
 
         def problemDescriptors(
-            buffer: Seq[LocalQuickFix]): Seq[ProblemDescriptor] = ranges.map {
-          range =>
+            buffer: Seq[LocalQuickFix]
+        ): Seq[ProblemDescriptor] =
+          ranges.map { range =>
             manager.createProblemDescriptor(
-                file,
-                range,
-                "Package names doesn't correspond to directories structure, this may cause " +
+              file,
+              range,
+              "Package names doesn't correspond to directories structure, this may cause " +
                 "problems with resolve to classes from this file",
-                ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-                isOnTheFly,
-                buffer: _*)
-        }
+              ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+              isOnTheFly,
+              buffer: _*
+            )
+          }
 
         val expectedPackageName = file.typeDefinitions.head match {
           case obj: ScObject if obj.hasPackageKeyword =>
@@ -60,13 +64,15 @@ class ScalaPackageNameInspection extends LocalInspectionTool {
 
         if (packName == null) {
           val fixes = Seq(
-              new EnablePerformanceProblemsQuickFix(file.getProject))
+            new EnablePerformanceProblemsQuickFix(file.getProject)
+          )
           problemDescriptors(fixes).toArray
         } else if (packName != expectedPackageName) {
           val fixes = Seq(
-              new ScalaRenamePackageQuickFix(file, expectedPackageName),
-              new ScalaMoveToPackageQuickFix(file, packName),
-              new EnablePerformanceProblemsQuickFix(file.getProject))
+            new ScalaRenamePackageQuickFix(file, expectedPackageName),
+            new ScalaMoveToPackageQuickFix(file, packName),
+            new EnablePerformanceProblemsQuickFix(file.getProject)
+          )
 
           problemDescriptors(fixes).toArray
         } else null
@@ -79,7 +85,7 @@ class ScalaPackageNameInspection extends LocalInspectionTool {
     import org.jetbrains.plugins.scala.lang.refactoring.util.ScalaNamesUtil._
     packageName.split('.').map {
       case isBacktickedName(name) if isKeyword(name) => name
-      case name => name
+      case name                                      => name
     } mkString "."
   }
 }

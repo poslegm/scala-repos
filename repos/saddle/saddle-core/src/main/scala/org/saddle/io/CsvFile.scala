@@ -43,7 +43,8 @@ class CsvFile(path: String, encoding: String = UTF8) extends CsvSource {
   private val stream =
     ByteBufferInputStream.map(chan, FileChannel.MapMode.READ_ONLY)
   private val reader = new BufferedReader(
-      new InputStreamReader(stream, encoding))
+    new InputStreamReader(stream, encoding)
+  )
 
   def readLine = {
     val line = reader.readLine()

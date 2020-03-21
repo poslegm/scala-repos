@@ -30,17 +30,20 @@ class ContinueResponseException(val continue: () => Nothing)
     extends LiftFlowOfControlException("Continue in new session")
 
 object ContinueResponseException {
-  def unapply(in: Throwable): Option[ContinueResponseException] = in match {
-    case null => None
-    case cre: ContinueResponseException => Some(cre)
-    case e: Exception => unapply(e.getCause)
-    case _ => None
-  }
+  def unapply(in: Throwable): Option[ContinueResponseException] =
+    in match {
+      case null                           => None
+      case cre: ContinueResponseException => Some(cre)
+      case e: Exception                   => unapply(e.getCause)
+      case _                              => None
+    }
 }
 
 final case class ResponseShortcutException(
-    _response: () => LiftResponse, redirectTo: Box[String], doNotices: Boolean)
-    extends LiftFlowOfControlException("Shortcut") {
+    _response: () => LiftResponse,
+    redirectTo: Box[String],
+    doNotices: Boolean
+) extends LiftFlowOfControlException("Shortcut") {
   lazy val response = _response()
 
   def this(resp: => LiftResponse, doNot: Boolean) =
@@ -54,7 +57,10 @@ object ResponseShortcutException {
 
   def redirect(to: String): ResponseShortcutException =
     new ResponseShortcutException(
-        () => RedirectResponse(to, S.responseCookies: _*), Full(to), true)
+      () => RedirectResponse(to, S.responseCookies: _*),
+      Full(to),
+      true
+    )
 
   def redirect(to: String, func: () => Unit): ResponseShortcutException =
     S.session match {
@@ -65,7 +71,10 @@ object ResponseShortcutException {
 
   def seeOther(to: String): ResponseShortcutException =
     new ResponseShortcutException(
-        () => SeeOtherResponse(to, S.responseCookies: _*), Full(to), true)
+      () => SeeOtherResponse(to, S.responseCookies: _*),
+      Full(to),
+      true
+    )
 
   def seeOther(to: String, func: () => Unit): ResponseShortcutException =
     S.session match {

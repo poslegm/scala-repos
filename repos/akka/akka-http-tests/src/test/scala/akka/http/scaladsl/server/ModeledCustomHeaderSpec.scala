@@ -28,8 +28,7 @@ object ModeledCustomHeaderSpec {
   }
   //#modeled-api-key-custom-header
 
-  object DifferentHeader
-      extends ModeledCustomHeaderCompanion[DifferentHeader] {
+  object DifferentHeader extends ModeledCustomHeaderCompanion[DifferentHeader] {
     def renderInRequests = false
     def renderInResponses = false
     override val name = "different"
@@ -85,21 +84,22 @@ class ModeledCustomHeaderSpec extends RoutingSpec {
     "be able to match from RawHeader" in {
 
       //#matching-in-routes
-      def extractFromCustomHeader = headerValuePF {
-        case t @ ApiTokenHeader(token) ⇒ s"extracted> $t"
-        case raw: RawHeader ⇒ s"raw> $raw"
-      }
+      def extractFromCustomHeader =
+        headerValuePF {
+          case t @ ApiTokenHeader(token) ⇒ s"extracted> $t"
+          case raw: RawHeader ⇒ s"raw> $raw"
+        }
 
-      val routes = extractFromCustomHeader { s ⇒
-        complete(s)
-      }
+      val routes = extractFromCustomHeader { s ⇒ complete(s) }
 
       Get().withHeaders(RawHeader("apiKey", "TheKey")) ~> routes ~> check {
         status should ===(StatusCodes.OK)
         responseAs[String] should ===("extracted> apiKey: TheKey")
       }
 
-      Get().withHeaders(RawHeader("somethingElse", "TheKey")) ~> routes ~> check {
+      Get().withHeaders(
+        RawHeader("somethingElse", "TheKey")
+      ) ~> routes ~> check {
         status should ===(StatusCodes.OK)
         responseAs[String] should ===("raw> somethingElse: TheKey")
       }
@@ -117,7 +117,8 @@ class ModeledCustomHeaderSpec extends RoutingSpec {
       }
 
       ex.getMessage should ===(
-          "Unable to construct custom header by parsing: 'Hello world'")
+        "Unable to construct custom header by parsing: 'Hello world'"
+      )
       ex.getCause.getMessage should include("whitespace")
     }
   }

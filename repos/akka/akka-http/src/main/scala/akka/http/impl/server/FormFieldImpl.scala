@@ -8,7 +8,11 @@ import java.util.Optional
 
 import akka.http.javadsl.server.RequestVal
 import akka.http.javadsl.server.values.FormField
-import akka.http.scaladsl.common.{StrictForm, NameUnmarshallerReceptacle, NameReceptacle}
+import akka.http.scaladsl.common.{
+  StrictForm,
+  NameUnmarshallerReceptacle,
+  NameReceptacle
+}
 import akka.http.scaladsl.unmarshalling._
 
 import scala.reflect.ClassTag
@@ -19,11 +23,12 @@ import scala.compat.java8.OptionConverters._
 /**
   * INTERNAL API
   */
-private[http] class FormFieldImpl[T, U](receptacle: NameReceptacle[T])(
-    implicit fu: FromStrictFormFieldUnmarshaller[T],
+private[http] class FormFieldImpl[T, U](receptacle: NameReceptacle[T])(implicit
+    fu: FromStrictFormFieldUnmarshaller[T],
     tTag: ClassTag[U],
-    conv: T ⇒ U)
-    extends StandaloneExtractionImpl[U] with FormField[U] {
+    conv: T ⇒ U
+) extends StandaloneExtractionImpl[U]
+    with FormField[U] {
   import Directives._
 
   def directive: Directive1[U] =
@@ -48,14 +53,19 @@ private[http] class FormFieldImpl[T, U](receptacle: NameReceptacle[T])(
     }
 }
 object FormFieldImpl {
-  def apply[T, U](receptacle: NameReceptacle[T])(
-      implicit fu: FromStrictFormFieldUnmarshaller[T],
+  def apply[T, U](receptacle: NameReceptacle[T])(implicit
+      fu: FromStrictFormFieldUnmarshaller[T],
       tTag: ClassTag[U],
-      conv: T ⇒ U): FormField[U] =
+      conv: T ⇒ U
+  ): FormField[U] =
     new FormFieldImpl[T, U](receptacle)(fu, tTag, conv)
 
-  def apply[T, U](receptacle: NameUnmarshallerReceptacle[T])(
-      implicit tTag: ClassTag[U], conv: T ⇒ U): FormField[U] =
+  def apply[T, U](
+      receptacle: NameUnmarshallerReceptacle[T]
+  )(implicit tTag: ClassTag[U], conv: T ⇒ U): FormField[U] =
     apply(new NameReceptacle[T](receptacle.name))(
-        StrictForm.Field.unmarshallerFromFSU(receptacle.um), tTag, conv)
+      StrictForm.Field.unmarshallerFromFSU(receptacle.um),
+      tTag,
+      conv
+    )
 }

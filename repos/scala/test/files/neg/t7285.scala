@@ -11,8 +11,8 @@ object Test1 {
     (d1: Base, d2: Base) =>
       (d1, d2) match {
         case (Up, Up) | (Down, Down) => false
-        case (Down, Up) => true
-    }
+        case (Down, Up)              => true
+      }
   }
 }
 
@@ -27,7 +27,7 @@ object Test2 {
     (d1: Base, d2: Base) =>
       (d1) match {
         case Test2.Base.Up => false
-    }
+      }
   }
 }
 
@@ -44,6 +44,6 @@ object Test4 {
   (d1: Base, d2: Base) =>
     (d1, d2) match {
       case (Up, Up) | (Down, Down) => false
-      case (Down, Test4.Base.Up) => true
-  }
+      case (Down, Test4.Base.Up)   => true
+    }
 }

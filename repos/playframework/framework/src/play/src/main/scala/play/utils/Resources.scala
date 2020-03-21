@@ -14,15 +14,17 @@ import sun.net.www.protocol.file.FileURLConnection
   */
 object Resources {
 
-  def isDirectory(classLoader: ClassLoader, url: URL) = url.getProtocol match {
-    case "file" => new File(url.toURI).isDirectory
-    case "jar" => isZipResourceDirectory(url)
-    case "zip" => isZipResourceDirectory(url)
-    case "bundle" => isBundleResourceDirectory(classLoader, url)
-    case _ =>
-      throw new IllegalArgumentException(
-          s"Cannot check isDirectory for a URL with protocol='${url.getProtocol}'")
-  }
+  def isDirectory(classLoader: ClassLoader, url: URL) =
+    url.getProtocol match {
+      case "file"   => new File(url.toURI).isDirectory
+      case "jar"    => isZipResourceDirectory(url)
+      case "zip"    => isZipResourceDirectory(url)
+      case "bundle" => isBundleResourceDirectory(classLoader, url)
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Cannot check isDirectory for a URL with protocol='${url.getProtocol}'"
+        )
+    }
 
   /**
     * Tries to work out whether the given URL connection is a directory or not.
@@ -67,7 +69,9 @@ object Resources {
   }
 
   private def isBundleResourceDirectory(
-      classLoader: ClassLoader, url: URL): Boolean = {
+      classLoader: ClassLoader,
+      url: URL
+  ): Boolean = {
     /* ClassLoader within an OSGi container behave differently than the standard classloader.
      * One difference is how getResource returns when the resource's name end with a slash.
      * In a standard JVM, getResource doesn't care of ending slashes, and return the URL of

@@ -63,7 +63,8 @@ trait AnimationIncludes {
     * @return `Set` wrapping the `KeyValue`
     */
   implicit def wrapKeyValueInSet[T, J <: Object](
-      kv: KeyValue[T, J]): Set[KeyValue[_, _ <: Object]] =
+      kv: KeyValue[T, J]
+  ): Set[KeyValue[_, _ <: Object]] =
     Set[KeyValue[_, _ <: Object]](kv)
 
   /**
@@ -73,7 +74,8 @@ trait AnimationIncludes {
     * @return `Set` wrapping the `Tweenable`
     */
   implicit def wrapTweenableInSet[T, J <: Object](
-      t: Tweenable[T, J]): Set[KeyValue[_, _ <: Object]] =
+      t: Tweenable[T, J]
+  ): Set[KeyValue[_, _ <: Object]] =
     Set[KeyValue[_, _ <: Object]](t.linear)
 
   /**
@@ -83,7 +85,8 @@ trait AnimationIncludes {
     * @return `Set` of [[scalafx.animation.KeyValue]]s.
     */
   implicit def tweenableSet2KeyValueSet(
-      ts: Set[Tweenable[_, _ <: Object]]): Set[(KeyValue[_, _ <: Object])] =
+      ts: Set[Tweenable[_, _ <: Object]]
+  ): Set[(KeyValue[_, _ <: Object])] =
     ts.map(_.linear)
 
   /**
@@ -103,7 +106,8 @@ trait AnimationIncludes {
     *         according $INTERPM
     */
   implicit def jfxInterpolatable2sfxFunction2[T](
-      i: jfxa.Interpolatable[T]): ((T, Double) => T) =
+      i: jfxa.Interpolatable[T]
+  ): ((T, Double) => T) =
     (endValue: T, t: Double) => i.interpolate(endValue, t)
 
   /**
@@ -114,7 +118,8 @@ trait AnimationIncludes {
     * @return A new instance of $INTERP which $INTERPM calls `f` function.
     */
   implicit def sfxFunction2jfxInterpolatable[T](
-      f: ((T, Double) => T)): jfxa.Interpolatable[T] =
+      f: ((T, Double) => T)
+  ): jfxa.Interpolatable[T] =
     new jfxa.Interpolatable[T] {
       def interpolate(endValue: T, t: Double): T = f(endValue, t)
     }
@@ -123,7 +128,8 @@ trait AnimationIncludes {
     * $GENERATE `Animation` $FROM
     */
   implicit def jfxAnimation2sfx(v: jfxa.Animation): Animation =
-    if (v != null) new Animation(v) {} else null
+    if (v != null) new Animation(v) {}
+    else null
 
   /**
     * $GENERATE `Animation.Status` $FROM
@@ -135,7 +141,8 @@ trait AnimationIncludes {
     * $GENERATE `AnimationTimer` $FROM
     */
   implicit def jfxAnimationTimer2sfx(at: jfxa.AnimationTimer): AnimationTimer =
-    if (at != null) new AnimationTimer(at) {} else null
+    if (at != null) new AnimationTimer(at) {}
+    else null
 
   /**
     * $GENERATE `FadeTransition` $FROM
@@ -165,7 +172,8 @@ trait AnimationIncludes {
     * $GENERATE `ParallelTransition` $FROM
     */
   implicit def jfxParallelTransition2sfx(
-      v: jfxa.ParallelTransition): ParallelTransition =
+      v: jfxa.ParallelTransition
+  ): ParallelTransition =
     if (v != null) new ParallelTransition(v) else null
 
   /**
@@ -178,42 +186,48 @@ trait AnimationIncludes {
     * $GENERATE `PathTransition.OrientationType` $FROM
     */
   implicit def jfxPathTransitionOrientationType2sfx(
-      v: jfxa.PathTransition.OrientationType): OrientationType =
+      v: jfxa.PathTransition.OrientationType
+  ): OrientationType =
     if (v != null) new PathTransition.OrientationType(v) else null
 
   /**
     * $GENERATE `PauseTransition` $FROM
     */
   implicit def jfxPauseTransition2sfx(
-      v: jfxa.PauseTransition): PauseTransition =
+      v: jfxa.PauseTransition
+  ): PauseTransition =
     if (v != null) new PauseTransition(v) else null
 
   /**
     * $GENERATE `RotateTransition` $FROM
     */
   implicit def jfxRotateTransition2sfx(
-      v: jfxa.RotateTransition): RotateTransition =
+      v: jfxa.RotateTransition
+  ): RotateTransition =
     if (v != null) new RotateTransition(v) else null
 
   /**
     * $GENERATE `ScaleTransition` $FROM
     */
   implicit def jfxScaleTransition2sfx(
-      v: jfxa.ScaleTransition): ScaleTransition =
+      v: jfxa.ScaleTransition
+  ): ScaleTransition =
     if (v != null) new ScaleTransition(v) else null
 
   /**
     * $GENERATE `SequentialTransition` $FROM
     */
   implicit def jfxSequentialTransition2sfx(
-      v: jfxa.SequentialTransition): SequentialTransition =
+      v: jfxa.SequentialTransition
+  ): SequentialTransition =
     if (v != null) new SequentialTransition(v) else null
 
   /**
     * $GENERATE `StrokeTransition` $FROM
     */
   implicit def jfxStrokeTransition2sfx(
-      v: jfxa.StrokeTransition): StrokeTransition =
+      v: jfxa.StrokeTransition
+  ): StrokeTransition =
     if (v != null) new StrokeTransition(v) else null
 
   /**
@@ -226,12 +240,14 @@ trait AnimationIncludes {
     * $GENERATE `Transition` $FROM
     */
   implicit def jfxTransition2sfx(v: jfxa.Transition): Transition =
-    if (v != null) new Transition(v) {} else null
+    if (v != null) new Transition(v) {}
+    else null
 
   /**
     * $GENERATE `TranslateTransition` $FROM
     */
   implicit def jfxTranslateTransition2sfx(
-      v: jfxa.TranslateTransition): TranslateTransition =
+      v: jfxa.TranslateTransition
+  ): TranslateTransition =
     if (v != null) new TranslateTransition(v) else null
 }

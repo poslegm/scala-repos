@@ -10,8 +10,10 @@ import akka.http.javadsl.{model ⇒ jm}
 import akka.http.impl.util.JavaMapping.Implicits._
 
 final case class ContentTypeRange(
-    mediaRange: MediaRange, charsetRange: HttpCharsetRange)
-    extends jm.ContentTypeRange with ValueRenderable {
+    mediaRange: MediaRange,
+    charsetRange: HttpCharsetRange
+) extends jm.ContentTypeRange
+    with ValueRenderable {
   def matches(contentType: jm.ContentType) =
     contentType match {
       case ContentType.Binary(mt) ⇒ mediaRange.matches(mt)
@@ -19,10 +21,11 @@ final case class ContentTypeRange(
         mediaRange.matches(x.mediaType) && charsetRange.matches(x.charset)
     }
 
-  def render[R <: Rendering](r: R): r.type = charsetRange match {
-    case HttpCharsetRange.`*` ⇒ r ~~ mediaRange
-    case x ⇒ r ~~ mediaRange ~~ ContentType.`; charset=` ~~ x
-  }
+  def render[R <: Rendering](r: R): r.type =
+    charsetRange match {
+      case HttpCharsetRange.`*` ⇒ r ~~ mediaRange
+      case x ⇒ r ~~ mediaRange ~~ ContentType.`; charset=` ~~ x
+    }
 }
 
 object ContentTypeRange {
@@ -58,7 +61,8 @@ sealed trait ContentType extends jm.ContentType with ValueRenderable {
 
 object ContentType {
   final case class Binary(mediaType: MediaType.Binary)
-      extends jm.ContentType.Binary with ContentType {
+      extends jm.ContentType.Binary
+      with ContentType {
     def binary = true
     def charsetOption = None
   }
@@ -70,13 +74,16 @@ object ContentType {
   }
 
   final case class WithFixedCharset(val mediaType: MediaType.WithFixedCharset)
-      extends jm.ContentType.WithFixedCharset with NonBinary {
+      extends jm.ContentType.WithFixedCharset
+      with NonBinary {
     def charset = mediaType.charset
   }
 
   final case class WithCharset(
-      val mediaType: MediaType.WithOpenCharset, val charset: HttpCharset)
-      extends jm.ContentType.WithCharset with NonBinary {
+      val mediaType: MediaType.WithOpenCharset,
+      val charset: HttpCharset
+  ) extends jm.ContentType.WithCharset
+      with NonBinary {
 
     private[http] override def render[R <: Rendering](r: R): r.type =
       super.render(r) ~~ ContentType.`; charset=` ~~ charset
@@ -85,8 +92,10 @@ object ContentType {
   implicit def apply(mediaType: MediaType.Binary): Binary = Binary(mediaType)
   implicit def apply(mediaType: MediaType.WithFixedCharset): WithFixedCharset =
     WithFixedCharset(mediaType)
-  def apply(mediaType: MediaType.WithOpenCharset,
-            charset: HttpCharset): WithCharset =
+  def apply(
+      mediaType: MediaType.WithOpenCharset,
+      charset: HttpCharset
+  ): WithCharset =
     WithCharset(mediaType, charset)
   def apply(mediaType: MediaType, charset: () ⇒ HttpCharset): ContentType =
     mediaType match {
@@ -96,7 +105,8 @@ object ContentType {
     }
 
   def unapply(
-      contentType: ContentType): Option[(MediaType, Option[HttpCharset])] =
+      contentType: ContentType
+  ): Option[(MediaType, Option[HttpCharset])] =
     Some(contentType.mediaType → contentType.charsetOption)
 
   /**
@@ -112,7 +122,8 @@ object ContentType {
 object ContentTypes {
   val `application/json` = ContentType(MediaTypes.`application/json`)
   val `application/octet-stream` = ContentType(
-      MediaTypes.`application/octet-stream`)
+    MediaTypes.`application/octet-stream`
+  )
   val `text/plain(UTF-8)` =
     MediaTypes.`text/plain` withCharset HttpCharsets.`UTF-8`
   val `text/html(UTF-8)` =

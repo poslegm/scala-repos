@@ -8,13 +8,14 @@ final class Origin(val moduleName: String, val configuration: String) {
 
   override def toString(): String = s"$moduleName:$configuration"
 
-  override def equals(that: Any): Boolean = that match {
-    case that: Origin =>
-      this.moduleName == that.moduleName &&
-      this.configuration == that.configuration
-    case _ =>
-      false
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: Origin =>
+        this.moduleName == that.moduleName &&
+          this.configuration == that.configuration
+      case _ =>
+        false
+    }
 
   override def hashCode(): Int = {
     import scala.util.hashing.MurmurHash3._
@@ -41,8 +42,10 @@ object Origin {
   implicit object OriginDeserializer extends JSONDeserializer[Origin] {
     def deserialize(x: JSON): Origin = {
       val obj = new JSONObjExtractor(x)
-      new Origin(obj.fld[String]("moduleName"),
-                 obj.fld[String]("configuration"))
+      new Origin(
+        obj.fld[String]("moduleName"),
+        obj.fld[String]("configuration")
+      )
     }
   }
 }

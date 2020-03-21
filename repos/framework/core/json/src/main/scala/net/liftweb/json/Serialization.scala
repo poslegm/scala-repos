@@ -39,8 +39,9 @@ object Serialization {
 
   /** Serialize to Writer.
     */
-  def write[A <: Any, W <: Writer](a: A, out: W)(
-      implicit formats: Formats): W = {
+  def write[A <: Any, W <: Writer](a: A, out: W)(implicit
+      formats: Formats
+  ): W = {
     JsonAST.compactRender(Extraction.decompose(a)(formats), out)
     out
   }
@@ -52,8 +53,9 @@ object Serialization {
 
   /** Serialize to Writer (pretty format).
     */
-  def writePretty[A <: Any, W <: Writer](a: A, out: W)(
-      implicit formats: Formats): W = {
+  def writePretty[A <: Any, W <: Writer](a: A, out: W)(implicit
+      formats: Formats
+  ): W = {
     JsonAST.prettyRender(Extraction.decompose(a)(formats), out)
     out
   }
@@ -75,8 +77,9 @@ object Serialization {
     * implicit val formats = Serialization.formats(hints)
     * </pre>
     */
-  def formats(hints: TypeHints) = new Formats {
-    val dateFormat = DefaultFormats.lossless.dateFormat
-    override val typeHints = hints
-  }
+  def formats(hints: TypeHints) =
+    new Formats {
+      val dateFormat = DefaultFormats.lossless.dateFormat
+      override val typeHints = hints
+    }
 }

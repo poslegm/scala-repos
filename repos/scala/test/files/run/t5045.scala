@@ -5,10 +5,10 @@ object Test extends App {
   import scala.util.matching.{Regex, UnanchoredRegex}
 
   val dateP1 = """(\d\d\d\d)-(\d\d)-(\d\d)""".r.unanchored
-  val dateP2 = """(\d\d\d\d)-(\d\d)-(\d\d)""" r ("year", "month", "day") unanchored
-  val dateP3 = new Regex(
-      """(\d\d\d\d)-(\d\d)-(\d\d)""", "year", "month", "day")
-  with UnanchoredRegex
+  val dateP2 =
+    """(\d\d\d\d)-(\d\d)-(\d\d)""" r ("year", "month", "day") unanchored
+  val dateP3 = new Regex("""(\d\d\d\d)-(\d\d)-(\d\d)""", "year", "month", "day")
+    with UnanchoredRegex
 
   val yearStr = "2011"
   val dateStr = List(yearStr, "07", "15").mkString("-")
@@ -36,10 +36,11 @@ object Test extends App {
     Seq(List(y, m, d).mkString("-"), dateStr)
   }
 
-  def copyright(in: String): String = in match {
-    case dateP1(year, month, day) => "Copyright " + year
-    case _ => "No copyright"
-  }
+  def copyright(in: String): String =
+    in match {
+      case dateP1(year, month, day) => "Copyright " + year
+      case _                        => "No copyright"
+    }
 
   test("copyright example has date") {
     Seq(copyright("Date of this document: " + dateStr), "Copyright " + yearStr)

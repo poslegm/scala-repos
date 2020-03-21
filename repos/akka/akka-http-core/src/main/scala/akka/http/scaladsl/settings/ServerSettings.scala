@@ -23,7 +23,7 @@ import scala.language.implicitConversions
 /**
   * Public API but not intended for subclassing
   */
-abstract class ServerSettings private[akka]()
+abstract class ServerSettings private[akka] ()
     extends akka.http.javadsl.settings.ServerSettings {
   self: ServerSettingsImpl ⇒
   def serverHeader: Option[Server]
@@ -57,9 +57,10 @@ abstract class ServerSettings private[akka]()
   override def getTimeouts = timeouts
   override def getRawRequestUriHeader = rawRequestUriHeader
   override def getRemoteAddressHeader = remoteAddressHeader
-  override def getWebsocketRandomFactory = new Supplier[Random] {
-    override def get(): Random = websocketRandomFactory()
-  }
+  override def getWebsocketRandomFactory =
+    new Supplier[Random] {
+      override def get(): Random = websocketRandomFactory()
+    }
 
   // ---
 
@@ -81,10 +82,12 @@ abstract class ServerSettings private[akka]()
   override def withBacklog(newValue: Int): ServerSettings =
     self.copy(backlog = newValue)
   override def withSocketOptions(
-      newValue: java.lang.Iterable[SocketOption]): ServerSettings =
+      newValue: java.lang.Iterable[SocketOption]
+  ): ServerSettings =
     self.copy(socketOptions = newValue.asScala.toList)
   override def withWebsocketRandomFactory(
-      newValue: java.util.function.Supplier[Random]): ServerSettings =
+      newValue: java.util.function.Supplier[Random]
+  ): ServerSettings =
     self.copy(websocketRandomFactory = () ⇒ newValue.get())
 
   // overloads for Scala idiomatic use
@@ -98,8 +101,7 @@ abstract class ServerSettings private[akka]()
     self.copy(parserSettings = newValue)
   def withWebsocketRandomFactory(newValue: () ⇒ Random): ServerSettings =
     self.copy(websocketRandomFactory = newValue)
-  def withSocketOptions(
-      newValue: immutable.Seq[SocketOption]): ServerSettings =
+  def withSocketOptions(newValue: immutable.Seq[SocketOption]): ServerSettings =
     self.copy(socketOptions = newValue)
 }
 
@@ -110,10 +112,12 @@ object ServerSettings extends SettingsCompanion[ServerSettings] {
     override def withIdleTimeout(newValue: Duration): ServerSettings.Timeouts =
       self.copy(idleTimeout = newValue)
     override def withRequestTimeout(
-        newValue: Duration): ServerSettings.Timeouts =
+        newValue: Duration
+    ): ServerSettings.Timeouts =
       self.copy(requestTimeout = newValue)
     override def withBindTimeout(
-        newValue: FiniteDuration): ServerSettings.Timeouts =
+        newValue: FiniteDuration
+    ): ServerSettings.Timeouts =
       self.copy(bindTimeout = newValue)
   }
 

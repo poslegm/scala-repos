@@ -49,17 +49,18 @@ object BackgroundRepeat
     */
   val Space = new BackgroundRepeat(jfxsl.BackgroundRepeat.SPACE)
 
-  protected override def unsortedValues: Array[BackgroundRepeat] = Array(
+  protected override def unsortedValues: Array[BackgroundRepeat] =
+    Array(
       NoRepeat,
       Repeat,
       Round,
       Space
-  )
+    )
 }
 
 /**
   * Enumeration of options for repeating images in backgrounds
   */
 sealed case class BackgroundRepeat(
-    override val delegate: jfxsl.BackgroundRepeat)
-    extends SFXEnumDelegate[jfxsl.BackgroundRepeat]
+    override val delegate: jfxsl.BackgroundRepeat
+) extends SFXEnumDelegate[jfxsl.BackgroundRepeat]

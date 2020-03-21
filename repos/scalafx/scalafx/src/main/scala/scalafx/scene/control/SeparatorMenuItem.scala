@@ -37,7 +37,8 @@ import scalafx.delegate.SFXDelegate
   */
 object SeparatorMenuItem {
   implicit def sfxSeparatorMenuItem2jfx(
-      s: SeparatorMenuItem): jfxsc.SeparatorMenuItem =
+      s: SeparatorMenuItem
+  ): jfxsc.SeparatorMenuItem =
     if (s != null) s.delegate else null
 }
 

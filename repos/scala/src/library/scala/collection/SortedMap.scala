@@ -20,7 +20,8 @@ import mutable.Builder
   *  @since   2.4
   */
 trait SortedMap[A, +B]
-    extends Map[A, B] with SortedMapLike[A, B, SortedMap[A, B]] {
+    extends Map[A, B]
+    with SortedMapLike[A, B, SortedMap[A, B]] {
 
   /** Needs to be overridden in subclasses. */
   override def empty: SortedMap[A, B] = SortedMap.empty[A, B]
@@ -36,8 +37,9 @@ object SortedMap extends SortedMapFactory[SortedMap] {
   def empty[A, B](implicit ord: Ordering[A]): SortedMap[A, B] =
     immutable.SortedMap.empty[A, B](ord)
 
-  implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, (A, B), SortedMap[A, B]] =
+  implicit def canBuildFrom[A, B](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, (A, B), SortedMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
 
   private[collection] trait Default[A, +B] extends SortedMap[A, B] { self =>

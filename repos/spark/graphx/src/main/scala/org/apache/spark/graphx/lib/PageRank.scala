@@ -76,10 +76,11 @@ object PageRank extends Logging {
     * @return the graph containing with each vertex containing the PageRank and each edge
     *         containing the normalized weight.
     */
-  def run[VD : ClassTag, ED : ClassTag](
+  def run[VD: ClassTag, ED: ClassTag](
       graph: Graph[VD, ED],
       numIter: Int,
-      resetProb: Double = 0.15): Graph[Double, Double] = {
+      resetProb: Double = 0.15
+  ): Graph[Double, Double] = {
     runWithOptions(graph, numIter, resetProb)
   }
 
@@ -100,17 +101,22 @@ object PageRank extends Logging {
     *         containing the normalized weight.
     *
     */
-  def runWithOptions[VD : ClassTag, ED : ClassTag](
+  def runWithOptions[VD: ClassTag, ED: ClassTag](
       graph: Graph[VD, ED],
       numIter: Int,
       resetProb: Double = 0.15,
-      srcId: Option[VertexId] = None): Graph[Double, Double] = {
-    require(numIter > 0,
-            s"Number of iterations must be greater than 0," +
-            s" but got ${numIter}")
-    require(resetProb >= 0 && resetProb <= 1,
-            s"Random reset probability must belong" +
-            s" to [0, 1], but got ${resetProb}")
+      srcId: Option[VertexId] = None
+  ): Graph[Double, Double] = {
+    require(
+      numIter > 0,
+      s"Number of iterations must be greater than 0," +
+        s" but got ${numIter}"
+    )
+    require(
+      resetProb >= 0 && resetProb <= 1,
+      s"Random reset probability must belong" +
+        s" to [0, 1], but got ${resetProb}"
+    )
 
     val personalized = srcId isDefined
     val src: VertexId = srcId.getOrElse(-1L)
@@ -141,9 +147,10 @@ object PageRank extends Logging {
       // Compute the outgoing rank contributions of each vertex, perform local preaggregation, and
       // do the final aggregation at the receiving vertices. Requires a shuffle for aggregation.
       val rankUpdates = rankGraph.aggregateMessages[Double](
-          ctx => ctx.sendToDst(ctx.srcAttr * ctx.attr),
-          _ + _,
-          TripletFields.Src)
+        ctx => ctx.sendToDst(ctx.srcAttr * ctx.attr),
+        _ + _,
+        TripletFields.Src
+      )
 
       // Apply the final rank updates to get the new ranks, using join to preserve ranks of vertices
       // that didn't receive a message. Requires a shuffle for broadcasting updated ranks to the
@@ -152,9 +159,7 @@ object PageRank extends Logging {
       val rPrb =
         if (personalized) { (src: VertexId, id: VertexId) =>
           resetProb * delta(src, id)
-        } else { (src: VertexId, id: VertexId) =>
-          resetProb
-        }
+        } else { (src: VertexId, id: VertexId) => resetProb }
 
       rankGraph = rankGraph
         .joinVertices(rankUpdates) { (id, oldRank, msgSum) =>
@@ -162,7 +167,9 @@ object PageRank extends Logging {
         }
         .cache()
 
-      rankGraph.edges.foreachPartition(x => {}) // also materializes rankGraph.vertices
+      rankGraph.edges.foreachPartition(
+        x => {}
+      ) // also materializes rankGraph.vertices
       logInfo(s"PageRank finished iteration $iteration.")
       prevRankGraph.vertices.unpersist(false)
       prevRankGraph.edges.unpersist(false)
@@ -187,10 +194,11 @@ object PageRank extends Logging {
     * @return the graph containing with each vertex containing the PageRank and each edge
     *         containing the normalized weight.
     */
-  def runUntilConvergence[VD : ClassTag, ED : ClassTag](
+  def runUntilConvergence[VD: ClassTag, ED: ClassTag](
       graph: Graph[VD, ED],
       tol: Double,
-      resetProb: Double = 0.15): Graph[Double, Double] = {
+      resetProb: Double = 0.15
+  ): Graph[Double, Double] = {
     runUntilConvergenceWithOptions(graph, tol, resetProb)
   }
 
@@ -209,15 +217,18 @@ object PageRank extends Logging {
     * @return the graph containing with each vertex containing the PageRank and each edge
     *         containing the normalized weight.
     */
-  def runUntilConvergenceWithOptions[VD : ClassTag, ED : ClassTag](
+  def runUntilConvergenceWithOptions[VD: ClassTag, ED: ClassTag](
       graph: Graph[VD, ED],
       tol: Double,
       resetProb: Double = 0.15,
-      srcId: Option[VertexId] = None): Graph[Double, Double] = {
+      srcId: Option[VertexId] = None
+  ): Graph[Double, Double] = {
     require(tol >= 0, s"Tolerance must be no less than 0, but got ${tol}")
-    require(resetProb >= 0 && resetProb <= 1,
-            s"Random reset probability must belong" +
-            s" to [0, 1], but got ${resetProb}")
+    require(
+      resetProb >= 0 && resetProb <= 1,
+      s"Random reset probability must belong" +
+        s" to [0, 1], but got ${resetProb}"
+    )
 
     val personalized = srcId.isDefined
     val src: VertexId = srcId.getOrElse(-1L)
@@ -239,17 +250,21 @@ object PageRank extends Logging {
 
     // Define the three functions needed to implement PageRank in the GraphX
     // version of Pregel
-    def vertexProgram(id: VertexId,
-                      attr: (Double, Double),
-                      msgSum: Double): (Double, Double) = {
+    def vertexProgram(
+        id: VertexId,
+        attr: (Double, Double),
+        msgSum: Double
+    ): (Double, Double) = {
       val (oldPR, lastDelta) = attr
       val newPR = oldPR + (1.0 - resetProb) * msgSum
       (newPR, newPR - oldPR)
     }
 
-    def personalizedVertexProgram(id: VertexId,
-                                  attr: (Double, Double),
-                                  msgSum: Double): (Double, Double) = {
+    def personalizedVertexProgram(
+        id: VertexId,
+        attr: (Double, Double),
+        msgSum: Double
+    ): (Double, Double) = {
       val (oldPR, lastDelta) = attr
       var teleport = oldPR
       val delta = if (src == id) 1.0 else 0.0
@@ -285,6 +300,9 @@ object PageRank extends Logging {
       }
 
     Pregel(pagerankGraph, initialMessage, activeDirection = EdgeDirection.Out)(
-        vp, sendMessage, messageCombiner).mapVertices((vid, attr) => attr._1)
+      vp,
+      sendMessage,
+      messageCombiner
+    ).mapVertices((vid, attr) => attr._1)
   } // end of deltaPageRank
 }

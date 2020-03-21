@@ -8,16 +8,20 @@ case class ScalaType(
 )
 
 object ScalaType {
-  def apply(name: String,
-            params: List[ScalaType] = Nil,
-            bounds: List[ScalaType] = Nil,
-            isVar: Boolean = false): ScalaType =
-    ScalaType(name,
-              name.split('.').last,
-              params,
-              bounds,
-              isVar,
-              name /* reuse scala name by default */ )
+  def apply(
+      name: String,
+      params: List[ScalaType] = Nil,
+      bounds: List[ScalaType] = Nil,
+      isVar: Boolean = false
+  ): ScalaType =
+    ScalaType(
+      name,
+      name.split('.').last,
+      params,
+      bounds,
+      isVar,
+      name /* reuse scala name by default */
+    )
 }
 
 case class Argument(
@@ -65,7 +69,7 @@ case class AndroidListener(
 ) {
   def isSafe: Boolean =
     (!setter.startsWith("set")) || callbackMethods.length == 1 ||
-    callbackMethods.forall(_.retType.name == "Unit")
+      callbackMethods.forall(_.retType.name == "Unit")
 }
 
 case class AndroidIntentMethod(

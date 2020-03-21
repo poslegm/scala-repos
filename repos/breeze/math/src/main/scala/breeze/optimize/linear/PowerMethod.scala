@@ -11,17 +11,19 @@ import breeze.util.Implicits._
   * compute minimum eigen value through inverse power iterations
   * @author debasish83
   */
-class PowerMethod(maxIters: Int = 10, tolerance: Double = 1E-5)
+class PowerMethod(maxIters: Int = 10, tolerance: Double = 1e-5)
     extends SerializableLogging {
 
   import PowerMethod.BDM
   import PowerMethod.BDV
 
-  case class State private[PowerMethod](eigenValue: Double,
-                                        eigenVector: BDV,
-                                        ay: BDV,
-                                        iter: Int,
-                                        converged: Boolean)
+  case class State private[PowerMethod] (
+      eigenValue: Double,
+      eigenVector: BDV,
+      ay: BDV,
+      iter: Int,
+      converged: Boolean
+  )
 
   //memory allocation for the eigen vector result
   def normalize(ynorm: BDV, y: BDV) = {
@@ -38,8 +40,10 @@ class PowerMethod(maxIters: Int = 10, tolerance: Double = 1E-5)
 
   def reset(A: BDM, y: BDV, init: State): State = {
     import init._
-    require(eigenVector.length == y.length,
-            s"PowerMethod:reset mismatch in state dimension")
+    require(
+      eigenVector.length == y.length,
+      s"PowerMethod:reset mismatch in state dimension"
+    )
     normalize(eigenVector, y)
     QuadraticMinimizer.gemv(1.0, A, eigenVector, 0.0, ay)
     val lambda = nextEigen(eigenVector, ay)
@@ -88,12 +92,14 @@ object PowerMethod {
   type BDV = DenseVector[Double]
   type BDM = DenseMatrix[Double]
 
-  def inverse(maxIters: Int = 10, tolerance: Double = 1E-5): PowerMethod =
+  def inverse(maxIters: Int = 10, tolerance: Double = 1e-5): PowerMethod =
     new PowerMethod(maxIters, tolerance) {
       override def reset(A: BDM, y: BDV, init: State): State = {
         import init._
-        require(eigenVector.length == y.length,
-                s"InversePowerMethod:reset mismatch in state dimension")
+        require(
+          eigenVector.length == y.length,
+          s"InversePowerMethod:reset mismatch in state dimension"
+        )
         normalize(eigenVector, y)
         ay := eigenVector
         QuadraticMinimizer.dpotrs(A, ay)
@@ -102,7 +108,10 @@ object PowerMethod {
       }
 
       override def iterations(
-          A: BDM, y: BDV, initialState: State): Iterator[State] =
+          A: BDM,
+          y: BDV,
+          initialState: State
+      ): Iterator[State] =
         Iterator
           .iterate(reset(A, y, initialState)) { state =>
             import state._

@@ -51,15 +51,19 @@ private[mesos] object MesosSchedulerBackendUtil extends Logging {
           case Array(host_path, container_path, "rw") =>
             Some(vol.setContainerPath(container_path).setHostPath(host_path))
           case Array(host_path, container_path, "ro") =>
-            Some(vol
-                  .setContainerPath(container_path)
-                  .setHostPath(host_path)
-                  .setMode(Volume.Mode.RO))
+            Some(
+              vol
+                .setContainerPath(container_path)
+                .setHostPath(host_path)
+                .setMode(Volume.Mode.RO)
+            )
           case spec => {
-              logWarning(s"Unable to parse volume specs: $volumes. " +
-                  "Expected form: \"[host-dir:]container-dir[:rw|:ro](, ...)\"")
-              None
-            }
+            logWarning(
+              s"Unable to parse volume specs: $volumes. " +
+                "Expected form: \"[host-dir:]container-dir[:rw|:ro](, ...)\""
+            )
+            None
+          }
         }
       }
       .map { _.build() }
@@ -86,19 +90,25 @@ private[mesos] object MesosSchedulerBackendUtil extends Logging {
           DockerInfo.PortMapping.newBuilder().setProtocol("tcp")
         spec match {
           case Array(host_port, container_port) =>
-            Some(portmap
-                  .setHostPort(host_port.toInt)
-                  .setContainerPort(container_port.toInt))
+            Some(
+              portmap
+                .setHostPort(host_port.toInt)
+                .setContainerPort(container_port.toInt)
+            )
           case Array(host_port, container_port, protocol) =>
-            Some(portmap
-                  .setHostPort(host_port.toInt)
-                  .setContainerPort(container_port.toInt)
-                  .setProtocol(protocol))
+            Some(
+              portmap
+                .setHostPort(host_port.toInt)
+                .setContainerPort(container_port.toInt)
+                .setProtocol(protocol)
+            )
           case spec => {
-              logWarning(s"Unable to parse port mapping specs: $portmaps. " +
-                  "Expected form: \"host_port:container_port[:udp|:tcp](, ...)\"")
-              None
-            }
+            logWarning(
+              s"Unable to parse port mapping specs: $portmaps. " +
+                "Expected form: \"host_port:container_port[:udp|:tcp](, ...)\""
+            )
+            None
+          }
         }
       }
       .map { _.build() }
@@ -113,8 +123,8 @@ private[mesos] object MesosSchedulerBackendUtil extends Logging {
       image: String,
       volumes: Option[List[Volume]] = None,
       network: Option[ContainerInfo.DockerInfo.Network] = None,
-      portmaps: Option[List[ContainerInfo.DockerInfo.PortMapping]] = None)
-    : Unit = {
+      portmaps: Option[List[ContainerInfo.DockerInfo.PortMapping]] = None
+  ): Unit = {
 
     val docker = ContainerInfo.DockerInfo.newBuilder().setImage(image)
 
@@ -128,19 +138,18 @@ private[mesos] object MesosSchedulerBackendUtil extends Logging {
   /**
     * Setup a docker containerizer
     */
-  def setupContainerBuilderDockerInfo(imageName: String,
-                                      conf: SparkConf,
-                                      builder: ContainerInfo.Builder): Unit = {
+  def setupContainerBuilderDockerInfo(
+      imageName: String,
+      conf: SparkConf,
+      builder: ContainerInfo.Builder
+  ): Unit = {
     val volumes = conf
       .getOption("spark.mesos.executor.docker.volumes")
       .map(parseVolumesSpec)
     val portmaps = conf
       .getOption("spark.mesos.executor.docker.portmaps")
       .map(parsePortMappingsSpec)
-    addDockerInfo(builder,
-                  imageName,
-                  volumes = volumes,
-                  portmaps = portmaps)
+    addDockerInfo(builder, imageName, volumes = volumes, portmaps = portmaps)
     logDebug("setupContainerDockerInfo: using docker image: " + imageName)
   }
 }

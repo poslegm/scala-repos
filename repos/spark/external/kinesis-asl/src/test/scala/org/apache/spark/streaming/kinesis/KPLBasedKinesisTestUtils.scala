@@ -22,12 +22,17 @@ import java.nio.charset.StandardCharsets
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-import com.amazonaws.services.kinesis.producer.{KinesisProducer => KPLProducer, KinesisProducerConfiguration, UserRecordResult}
+import com.amazonaws.services.kinesis.producer.{
+  KinesisProducer => KPLProducer,
+  KinesisProducerConfiguration,
+  UserRecordResult
+}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 
 private[kinesis] class KPLBasedKinesisTestUtils extends KinesisTestUtils {
   override protected def getProducer(
-      aggregate: Boolean): KinesisDataGenerator = {
+      aggregate: Boolean
+  ): KinesisDataGenerator = {
     if (!aggregate) {
       new SimpleDataGenerator(kinesisClient)
     } else {
@@ -51,7 +56,9 @@ private[kinesis] class KPLDataGenerator(regionName: String)
   }
 
   override def sendData(
-      streamName: String, data: Seq[Int]): Map[String, Seq[(Int, String)]] = {
+      streamName: String,
+      data: Seq[Int]
+  ): Map[String, Seq[(Int, String)]] = {
     val shardIdToSeqNumbers =
       new mutable.HashMap[String, ArrayBuffer[(Int, String)]]()
     data.foreach { num =>
@@ -65,7 +72,9 @@ private[kinesis] class KPLDataGenerator(regionName: String)
           val shardId = result.getShardId
           val seqNumber = result.getSequenceNumber()
           val sentSeqNumbers = shardIdToSeqNumbers.getOrElseUpdate(
-              shardId, new ArrayBuffer[(Int, String)]())
+            shardId,
+            new ArrayBuffer[(Int, String)]()
+          )
           sentSeqNumbers += ((num, seqNumber))
         }
       }

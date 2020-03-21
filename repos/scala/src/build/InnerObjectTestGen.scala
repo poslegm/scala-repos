@@ -3,7 +3,7 @@ import scala.collection.mutable
 /** All contexts where objects can be embedded. */
 object Contexts extends Enumeration {
   val Class, Object, Trait, Method, PrivateMethod, Anonfun, ClassConstructor,
-  TraitConstructor, LazyVal, Val = Value
+      TraitConstructor, LazyVal, Val = Value
 
   val topLevel = List(Class, Object, Trait)
 }
@@ -123,14 +123,19 @@ object Test {
       depth: Int, // how many levels we still need to 'add' around the current body
       body: String, // the body of one test, so far
       trigger: String, // the code that needs to be invoked to run the test so far
-      nested: List[Contexts.Value], // the path from the innermost to the outermost context
-      p: List[Contexts.Value] => Boolean, // a predicate for filtering problematic cases
-      privateObj: Boolean = false) {
+      nested: List[
+        Contexts.Value
+      ], // the path from the innermost to the outermost context
+      p: List[
+        Contexts.Value
+      ] => Boolean, // a predicate for filtering problematic cases
+      privateObj: Boolean = false
+  ) {
     // are we using a private object?
 
     def shouldBeTopLevel =
       ((depth == 1) || (nested.headOption == Some(PrivateMethod)) ||
-          (nested.isEmpty && privateObj))
+        (nested.isEmpty && privateObj))
 
     val enums =
       if (shouldBeTopLevel) Contexts.topLevel else Contexts.values.toList
@@ -147,8 +152,7 @@ object Test {
                %s
                def run { %s }
              }
-           """.format(name, body, trigger),
-             "(new %s).run".format(name))
+           """.format(name, body, trigger), "(new %s).run".format(name))
 
           case Trait =>
             val name = freshName("Trait") + "_" + depth
@@ -157,8 +161,7 @@ object Test {
                %s
                def run { %s }
              }
-           """.format(name, body, trigger),
-             "(new %s {}).run".format(name))
+           """.format(name, body, trigger), "(new %s {}).run".format(name))
 
           case Object =>
             val name = freshName("Object") + "_" + depth
@@ -167,8 +170,7 @@ object Test {
                %s
                def run { %s } // trigger
              }
-           """.format(name, body, trigger),
-             "%s.run".format(name))
+           """.format(name, body, trigger), "%s.run".format(name))
 
           case Method =>
             val name = freshName("method") + "_" + depth
@@ -177,8 +179,7 @@ object Test {
                %s
                %s // trigger
              }
-           """.format(name, body, trigger),
-             name)
+           """.format(name, body, trigger), name)
 
           case PrivateMethod =>
             val name = freshName("method") + "_" + depth
@@ -187,8 +188,7 @@ object Test {
                %s
                %s // trigger
              }
-           """.format(name, body, trigger),
-             name)
+           """.format(name, body, trigger), name)
 
           case Val =>
             val name = freshName("value") + "_" + depth
@@ -197,8 +197,7 @@ object Test {
                  %s
                  %s // trigger
                }
-             """.format(name, body, trigger),
-             name)
+             """.format(name, body, trigger), name)
 
           case LazyVal =>
             val name = freshName("lzvalue") + "_" + depth
@@ -207,8 +206,7 @@ object Test {
                  %s
                  %s // trigger
                }
-             """.format(name, body, trigger),
-             name)
+             """.format(name, body, trigger), name)
 
           case Anonfun =>
             val name = freshName("fun") + "_" + depth
@@ -217,8 +215,7 @@ object Test {
                  %s
                  %s // trigger
                }
-             """.format(name, body, trigger),
-             name + "()")
+             """.format(name, body, trigger), name + "()")
 
           case ClassConstructor =>
             val name = freshName("Class") + "_" + depth
@@ -229,8 +226,7 @@ object Test {
                  %s // trigger
                }
              }
-           """.format(name, body, trigger),
-             "(new %s)".format(name))
+           """.format(name, body, trigger), "(new %s)".format(name))
 
           case TraitConstructor =>
             val name = freshName("Trait") + "_" + depth
@@ -241,8 +237,7 @@ object Test {
                  %s // trigger
                }
              }
-           """.format(name, body, trigger),
-             "(new %s {})".format(name))
+           """.format(name, body, trigger), "(new %s {})".format(name))
         }
         generate(depth - 1, body1, trigger1, ctx :: nested, p)
       }
@@ -252,7 +247,7 @@ object Test {
   /** Only allow multithreaded tests if not inside a static initializer. */
   private def allowMT(structure: List[Contexts.Value]): Boolean = {
     var nesting = structure
-    while ( (nesting ne Nil) && nesting.head == Object) {
+    while ((nesting ne Nil) && nesting.head == Object) {
       nesting = nesting.tail
     }
     if (nesting ne Nil) !(nesting.head == Val)
@@ -308,8 +303,11 @@ object Test {
     generate(depth, payloadMT, "runTest", List(), allowMT)
 
     println(
-        template.format(header,
-                        bodies.mkString("", "\n", ""),
-                        triggers.mkString("", "\n", "")))
+      template.format(
+        header,
+        bodies.mkString("", "\n", ""),
+        triggers.mkString("", "\n", "")
+      )
+    )
   }
 }

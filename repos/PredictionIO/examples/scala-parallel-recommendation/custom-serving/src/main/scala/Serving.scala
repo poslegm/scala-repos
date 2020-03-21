@@ -14,7 +14,8 @@ class Serving(val params: ServingParams)
 
   override def serve(
       query: Query,
-      predictedResults: Seq[PredictedResult]): PredictedResult = {
+      predictedResults: Seq[PredictedResult]
+  ): PredictedResult = {
     val disabledProducts: Set[String] =
       Source.fromFile(params.filepath).getLines.toSet
 

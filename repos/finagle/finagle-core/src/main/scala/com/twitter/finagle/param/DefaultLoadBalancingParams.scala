@@ -12,7 +12,8 @@ import com.twitter.finagle.loadbalancer.LoadBalancerFactory
   * @see [[https://twitter.github.io/finagle/guide/Clients.html#load-balancing]]
   */
 class DefaultLoadBalancingParams[A <: Stack.Parameterized[A]](
-    self: Stack.Parameterized[A]) {
+    self: Stack.Parameterized[A]
+) {
 
   /**
     * Configures this client with a given [[LoadBalancerFactory load balancer]] that

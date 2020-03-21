@@ -33,8 +33,9 @@ import org.apache.spark.util.{ShutdownHookManager, Utils}
   * SPARK_LOCAL_DIRS, if it's set).
   */
 private[spark] class DiskBlockManager(
-    conf: SparkConf, deleteFilesOnStop: Boolean)
-    extends Logging {
+    conf: SparkConf,
+    deleteFilesOnStop: Boolean
+) extends Logging {
 
   private[spark] val subDirsPerLocalDir =
     conf.getInt("spark.diskStore.subDirectories", 64)
@@ -91,15 +92,18 @@ private[spark] class DiskBlockManager(
   /** List all the files currently stored on disk by the disk manager. */
   def getAllFiles(): Seq[File] = {
     // Get all the files inside the array of array of directories
-    subDirs.flatMap { dir =>
-      dir.synchronized {
-        // Copy the content of dir because it may be modified in other threads
-        dir.clone()
+    subDirs
+      .flatMap { dir =>
+        dir.synchronized {
+          // Copy the content of dir because it may be modified in other threads
+          dir.clone()
+        }
       }
-    }.filter(_ != null).flatMap { dir =>
-      val files = dir.listFiles()
-      if (files != null) files else Seq.empty
-    }
+      .filter(_ != null)
+      .flatMap { dir =>
+        val files = dir.listFiles()
+        if (files != null) files else Seq.empty
+      }
   }
 
   /** List all the blocks currently stored on disk by the disk manager. */
@@ -139,8 +143,9 @@ private[spark] class DiskBlockManager(
       } catch {
         case e: IOException =>
           logError(
-              s"Failed to create local dir in $rootDir. Ignoring this directory.",
-              e)
+            s"Failed to create local dir in $rootDir. Ignoring this directory.",
+            e
+          )
           None
       }
     }
@@ -148,7 +153,8 @@ private[spark] class DiskBlockManager(
 
   private def addShutdownHook(): AnyRef = {
     ShutdownHookManager.addShutdownHook(
-        ShutdownHookManager.TEMP_DIR_SHUTDOWN_PRIORITY + 1) { () =>
+      ShutdownHookManager.TEMP_DIR_SHUTDOWN_PRIORITY + 1
+    ) { () =>
       logInfo("Shutdown hook called")
       DiskBlockManager.this.doStop()
     }
@@ -177,7 +183,9 @@ private[spark] class DiskBlockManager(
           } catch {
             case e: Exception =>
               logError(
-                  s"Exception while deleting local spark dir: $localDir", e)
+                s"Exception while deleting local spark dir: $localDir",
+                e
+              )
           }
         }
       }

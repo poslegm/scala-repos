@@ -11,18 +11,21 @@ private[parser] trait ContentTypeHeader {
   this: Parser with CommonRules with CommonActions ⇒
 
   // http://tools.ietf.org/html/rfc7231#section-3.1.1.5
-  def `content-type` = rule {
-    `media-type` ~ EOI ~>
-    ((main, sub,
-        params) ⇒ headers.`Content-Type`(contentType(main, sub, params)))
-  }
+  def `content-type` =
+    rule {
+      `media-type` ~ EOI ~>
+        ((main, sub, params) ⇒
+          headers.`Content-Type`(contentType(main, sub, params))
+        )
+    }
 
   @tailrec private def contentType(
       main: String,
       sub: String,
       params: Seq[(String, String)],
       charset: Option[HttpCharset] = None,
-      builder: StringMapBuilder = null): ContentType =
+      builder: StringMapBuilder = null
+  ): ContentType =
     params match {
       case Nil ⇒
         val parameters =
@@ -37,10 +40,10 @@ private[parser] trait ContentTypeHeader {
             ContentType.WithCharset(x, cs)
         }
 
-      case Seq(("charset", value), tail @ _ *) ⇒
+      case Seq(("charset", value), tail @ _*) ⇒
         contentType(main, sub, tail, Some(getCharset(value)), builder)
 
-      case Seq(kvp, tail @ _ *) ⇒
+      case Seq(kvp, tail @ _*) ⇒
         val b =
           if (builder eq null) Map.newBuilder[String, String] else builder
         b += kvp

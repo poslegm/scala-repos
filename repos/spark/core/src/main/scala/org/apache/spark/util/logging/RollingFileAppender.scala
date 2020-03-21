@@ -40,8 +40,7 @@ private[spark] class RollingFileAppender(
     val rollingPolicy: RollingPolicy,
     conf: SparkConf,
     bufferSize: Int = RollingFileAppender.DEFAULT_BUFFER_SIZE
-)
-    extends FileAppender(inputStream, activeFile, bufferSize) {
+) extends FileAppender(inputStream, activeFile, bufferSize) {
 
   import RollingFileAppender._
 
@@ -81,8 +80,9 @@ private[spark] class RollingFileAppender(
   private def moveFile() {
     val rolloverSuffix = rollingPolicy.generateRolledOverFileSuffix()
     val rolloverFile = new File(
-        activeFile.getParentFile,
-        activeFile.getName + rolloverSuffix).getAbsoluteFile
+      activeFile.getParentFile,
+      activeFile.getName + rolloverSuffix
+    ).getAbsoluteFile
     logDebug(s"Attempting to rollover file $activeFile to file $rolloverFile")
     if (activeFile.exists) {
       if (!rolloverFile.exists) {
@@ -97,14 +97,16 @@ private[spark] class RollingFileAppender(
         var altRolloverFile: File = null
         do {
           altRolloverFile = new File(
-              activeFile.getParent,
-              s"${activeFile.getName}$rolloverSuffix--$i").getAbsoluteFile
+            activeFile.getParent,
+            s"${activeFile.getName}$rolloverSuffix--$i"
+          ).getAbsoluteFile
           i += 1
         } while (i < 10000 && altRolloverFile.exists)
 
         logWarning(
-            s"Rollover file $rolloverFile already exists, " +
-            s"rolled over $activeFile to file $altRolloverFile")
+          s"Rollover file $rolloverFile already exists, " +
+            s"rolled over $activeFile to file $altRolloverFile"
+        )
         Files.move(activeFile, altRolloverFile)
       }
     } else {
@@ -123,16 +125,19 @@ private[spark] class RollingFileAppender(
         })
         .sorted
       val filesToBeDeleted = rolledoverFiles.take(
-          math.max(0, rolledoverFiles.length - maxRetainedFiles))
+        math.max(0, rolledoverFiles.length - maxRetainedFiles)
+      )
       filesToBeDeleted.foreach { file =>
         logInfo(s"Deleting file executor log file ${file.getAbsolutePath}")
         file.delete()
       }
     } catch {
       case e: Exception =>
-        logError("Error cleaning logs in directory " +
-                 activeFile.getParentFile.getAbsolutePath,
-                 e)
+        logError(
+          "Error cleaning logs in directory " +
+            activeFile.getParentFile.getAbsolutePath,
+          e
+        )
     }
   }
 }
@@ -158,7 +163,9 @@ private[spark] object RollingFileAppender {
     * prefixed with `activeFileName`) and appends the active file
     */
   def getSortedRolledOverFiles(
-      directory: String, activeFileName: String): Seq[File] = {
+      directory: String,
+      activeFileName: String
+  ): Seq[File] = {
     val rolledOverFiles =
       new File(directory).getAbsoluteFile.listFiles.filter { file =>
         val fileName = file.getName

@@ -20,9 +20,11 @@ trait DateHelper { self: I18nHelper =>
   private val dateFormatters = mutable.Map[String, DateTimeFormatter]()
   private val periodFormatters = mutable.Map[String, PeriodFormatter]()
   private val periodType =
-    PeriodType forFields Array(DurationFieldType.days,
-                               DurationFieldType.hours,
-                               DurationFieldType.minutes)
+    PeriodType forFields Array(
+      DurationFieldType.days,
+      DurationFieldType.hours,
+      DurationFieldType.minutes
+    )
 
   private val isoFormatter = ISODateTimeFormat.dateTime
 
@@ -30,21 +32,27 @@ trait DateHelper { self: I18nHelper =>
 
   private def dateTimeFormatter(ctx: Context): DateTimeFormatter =
     dateTimeFormatters.getOrElseUpdate(
-        lang(ctx).language,
-        DateTimeFormat forStyle dateTimeStyle withLocale new Locale(
-            lang(ctx).language))
+      lang(ctx).language,
+      DateTimeFormat forStyle dateTimeStyle withLocale new Locale(
+        lang(ctx).language
+      )
+    )
 
   private def dateFormatter(ctx: Context): DateTimeFormatter =
     dateFormatters.getOrElseUpdate(
-        lang(ctx).language,
-        DateTimeFormat forStyle dateStyle withLocale new Locale(
-            lang(ctx).language))
+      lang(ctx).language,
+      DateTimeFormat forStyle dateStyle withLocale new Locale(
+        lang(ctx).language
+      )
+    )
 
   private def periodFormatter(ctx: Context): PeriodFormatter =
-    periodFormatters.getOrElseUpdate(lang(ctx).language, {
-      Locale setDefault Locale.ENGLISH
-      PeriodFormat wordBased new Locale(lang(ctx).language)
-    })
+    periodFormatters.getOrElseUpdate(
+      lang(ctx).language, {
+        Locale setDefault Locale.ENGLISH
+        PeriodFormat wordBased new Locale(lang(ctx).language)
+      }
+    )
 
   def showDateTime(date: DateTime)(implicit ctx: Context): String =
     dateTimeFormatter(ctx) print date
@@ -55,30 +63,37 @@ trait DateHelper { self: I18nHelper =>
   def showEnglishDate(date: DateTime): String =
     englishDateFormatter print date
 
-  def semanticDate(date: DateTime)(implicit ctx: Context) = Html {
-    s"""<time datetime="${isoDate(date)}">${showDate(date)}</time>"""
-  }
+  def semanticDate(date: DateTime)(implicit ctx: Context) =
+    Html {
+      s"""<time datetime="${isoDate(date)}">${showDate(date)}</time>"""
+    }
 
   def showPeriod(period: Period)(implicit ctx: Context): String =
     periodFormatter(ctx) print period.normalizedStandard(periodType)
 
   def showMinutes(minutes: Int)(implicit ctx: Context): String =
-    showPeriod(new Period(minutes * 60 * 1000l))
+    showPeriod(new Period(minutes * 60 * 1000L))
 
   def isoDate(date: DateTime): String = isoFormatter print date
 
-  def momentFormat(date: DateTime, format: String): Html = Html {
-    s"""<time class="moment" datetime="${isoDate(date)}" data-format="$format"></time>"""
-  }
+  def momentFormat(date: DateTime, format: String): Html =
+    Html {
+      s"""<time class="moment" datetime="${isoDate(
+        date
+      )}" data-format="$format"></time>"""
+    }
   def momentFormat(date: DateTime): Html = momentFormat(date, "calendar")
 
-  def momentFromNow(date: DateTime)(implicit ctx: Context) = Html {
-    s"""<time class="moment-from-now" title="${showDate(date)}" datetime="${isoDate(
-        date)}"></time>"""
-  }
-  def momentFromNowNoCtx(date: DateTime) = Html {
-    s"""<time class="moment-from-now" datetime="${isoDate(date)}"></time>"""
-  }
+  def momentFromNow(date: DateTime)(implicit ctx: Context) =
+    Html {
+      s"""<time class="moment-from-now" title="${showDate(
+        date
+      )}" datetime="${isoDate(date)}"></time>"""
+    }
+  def momentFromNowNoCtx(date: DateTime) =
+    Html {
+      s"""<time class="moment-from-now" datetime="${isoDate(date)}"></time>"""
+    }
 
   def secondsFromNow(seconds: Int)(implicit ctx: Context) =
     momentFromNow(DateTime.now plusSeconds seconds)

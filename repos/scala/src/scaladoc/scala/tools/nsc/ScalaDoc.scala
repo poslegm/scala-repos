@@ -15,15 +15,20 @@ import scala.reflect.internal.util.FakePos
   */
 class ScalaDoc {
   val versionMsg = "Scaladoc %s -- %s".format(
-      Properties.versionString, Properties.copyrightString)
+    Properties.versionString,
+    Properties.copyrightString
+  )
 
   def process(args: Array[String]): Boolean = {
     var reporter: ScalaDocReporter = null
     val docSettings = new doc.Settings(
-        msg =>
-          reporter.error(FakePos("scaladoc"),
-                         msg + "\n  scaladoc -help  gives more information"),
-        msg => reporter.printMessage(msg))
+      msg =>
+        reporter.error(
+          FakePos("scaladoc"),
+          msg + "\n  scaladoc -help  gives more information"
+        ),
+      msg => reporter.printMessage(msg)
+    )
     reporter = new ScalaDocReporter(docSettings)
     val command = new ScalaDoc.Command(args.toList, docSettings)
     def hasFiles =
@@ -39,7 +44,8 @@ class ScalaDoc {
     else if (docSettings.help.value || !hasFiles)
       reporter.echo(command.usageMsg)
     else
-      try { new DocFactory(reporter, docSettings) document command.files } catch {
+      try { new DocFactory(reporter, docSettings) document command.files }
+      catch {
         case ex @ FatalError(msg) =>
           if (docSettings.debug.value) ex.printStackTrace()
           reporter.error(null, "fatal error: " + msg)
@@ -61,15 +67,19 @@ object ScalaDoc extends ScalaDoc {
   class Command(arguments: List[String], settings: doc.Settings)
       extends CompilerCommand(arguments, settings) {
     override def cmdName = "scaladoc"
-    override def usageMsg = (createUsageMsg(
-            "where possible scaladoc",
-            shouldExplain = false,
-            x => x.isStandard && settings.isScaladocSpecific(x.name)) +
-        "\n\nStandard scalac options also available:" + createUsageMsg(
-            x => x.isStandard && !settings.isScaladocSpecific(x.name)))
+    override def usageMsg =
+      (createUsageMsg(
+        "where possible scaladoc",
+        shouldExplain = false,
+        x => x.isStandard && settings.isScaladocSpecific(x.name)
+      ) +
+        "\n\nStandard scalac options also available:" + createUsageMsg(x =>
+        x.isStandard && !settings.isScaladocSpecific(x.name)
+      ))
   }
 
-  def main(args: Array[String]): Unit = sys exit {
-    if (process(args)) 0 else 1
-  }
+  def main(args: Array[String]): Unit =
+    sys exit {
+      if (process(args)) 0 else 1
+    }
 }

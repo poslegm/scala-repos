@@ -100,7 +100,9 @@ abstract class TaskContext extends Serializable {
     * @return false
     */
   @deprecated(
-      "Local execution was removed, so this always returns false", "2.0.0")
+    "Local execution was removed, so this always returns false",
+    "2.0.0"
+  )
   def isRunningLocally(): Boolean
 
   /**
@@ -120,8 +122,7 @@ abstract class TaskContext extends Serializable {
     * Exceptions thrown by the listener will result in failure of the task.
     */
   def addTaskCompletionListener(f: (TaskContext) => Unit): TaskContext = {
-    addTaskCompletionListener(
-        new TaskCompletionListener {
+    addTaskCompletionListener(new TaskCompletionListener {
       override def onTaskCompletion(context: TaskContext): Unit = f(context)
     })
   }
@@ -137,11 +138,11 @@ abstract class TaskContext extends Serializable {
     * Operations defined here must be idempotent, as `onTaskFailure` can be called multiple times.
     */
   def addTaskFailureListener(
-      f: (TaskContext, Throwable) => Unit): TaskContext = {
-    addTaskFailureListener(
-        new TaskFailureListener {
-      override def onTaskFailure(
-          context: TaskContext, error: Throwable): Unit = f(context, error)
+      f: (TaskContext, Throwable) => Unit
+  ): TaskContext = {
+    addTaskFailureListener(new TaskFailureListener {
+      override def onTaskFailure(context: TaskContext, error: Throwable): Unit =
+        f(context, error)
     })
   }
 

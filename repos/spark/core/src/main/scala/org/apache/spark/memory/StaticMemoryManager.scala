@@ -27,37 +27,48 @@ import org.apache.spark.storage.BlockId
   * `spark.shuffle.memoryFraction` and `spark.storage.memoryFraction` respectively. The two
   * regions are cleanly separated such that neither usage can borrow memory from the other.
   */
-private[spark] class StaticMemoryManager(conf: SparkConf,
-                                         maxOnHeapExecutionMemory: Long,
-                                         override val maxStorageMemory: Long,
-                                         numCores: Int)
-    extends MemoryManager(
-        conf, numCores, maxStorageMemory, maxOnHeapExecutionMemory) {
+private[spark] class StaticMemoryManager(
+    conf: SparkConf,
+    maxOnHeapExecutionMemory: Long,
+    override val maxStorageMemory: Long,
+    numCores: Int
+) extends MemoryManager(
+      conf,
+      numCores,
+      maxStorageMemory,
+      maxOnHeapExecutionMemory
+    ) {
 
   def this(conf: SparkConf, numCores: Int) {
-    this(conf,
-         StaticMemoryManager.getMaxExecutionMemory(conf),
-         StaticMemoryManager.getMaxStorageMemory(conf),
-         numCores)
+    this(
+      conf,
+      StaticMemoryManager.getMaxExecutionMemory(conf),
+      StaticMemoryManager.getMaxStorageMemory(conf),
+      numCores
+    )
   }
 
   // Max number of bytes worth of blocks to evict when unrolling
   private val maxUnrollMemory: Long = {
-    (maxStorageMemory * conf.getDouble("spark.storage.unrollFraction", 0.2)).toLong
+    (maxStorageMemory * conf.getDouble(
+      "spark.storage.unrollFraction",
+      0.2
+    )).toLong
   }
 
-  override def acquireStorageMemory(
-      blockId: BlockId, numBytes: Long): Boolean = synchronized {
-    if (numBytes > maxStorageMemory) {
-      // Fail fast if the block simply won't fit
-      logInfo(
+  override def acquireStorageMemory(blockId: BlockId, numBytes: Long): Boolean =
+    synchronized {
+      if (numBytes > maxStorageMemory) {
+        // Fail fast if the block simply won't fit
+        logInfo(
           s"Will not store $blockId as the required space ($numBytes bytes) exceeds our " +
-          s"memory limit ($maxStorageMemory bytes)")
-      false
-    } else {
-      storageMemoryPool.acquireMemory(blockId, numBytes)
+            s"memory limit ($maxStorageMemory bytes)"
+        )
+        false
+      } else {
+        storageMemoryPool.acquireMemory(blockId, numBytes)
+      }
     }
-  }
 
   override def acquireUnrollMemory(blockId: BlockId, numBytes: Long): Boolean =
     synchronized {
@@ -77,7 +88,10 @@ private[spark] class StaticMemoryManager(conf: SparkConf,
     }
 
   private[memory] override def acquireExecutionMemory(
-      numBytes: Long, taskAttemptId: Long, memoryMode: MemoryMode): Long =
+      numBytes: Long,
+      taskAttemptId: Long,
+      memoryMode: MemoryMode
+  ): Long =
     synchronized {
       memoryMode match {
         case MemoryMode.ON_HEAP =>

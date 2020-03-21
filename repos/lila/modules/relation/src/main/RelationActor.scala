@@ -14,8 +14,8 @@ import makeTimeout.short
 private[relation] final class RelationActor(
     getOnlineUserIds: () => Set[String],
     lightUser: String => Option[LightUser],
-    api: RelationApi)
-    extends Actor {
+    api: RelationApi
+) extends Actor {
 
   private val bus = context.system.lilaBus
 
@@ -30,8 +30,9 @@ private[relation] final class RelationActor(
       onlineFriends(userId) foreach {
         case OnlineFriends(users) =>
           bus.publish(
-              SendTo(userId, "following_onlines", users.map(_.titleName)),
-              'users)
+            SendTo(userId, "following_onlines", users.map(_.titleName)),
+            'users
+          )
       }
 
     case NotifyMovement =>

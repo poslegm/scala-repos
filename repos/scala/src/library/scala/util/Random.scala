@@ -105,8 +105,9 @@ class Random(val self: java.util.Random) extends AnyRef with Serializable {
     *
     *  @return         the shuffled collection
     */
-  def shuffle[T, CC[X] <: TraversableOnce[X]](xs: CC[T])(
-      implicit bf: CanBuildFrom[CC[T], T, CC[T]]): CC[T] = {
+  def shuffle[T, CC[X] <: TraversableOnce[X]](
+      xs: CC[T]
+  )(implicit bf: CanBuildFrom[CC[T], T, CC[T]]): CC[T] = {
     val buf = new ArrayBuffer[T] ++= xs
 
     def swap(i1: Int, i2: Int) {
@@ -124,8 +125,9 @@ class Random(val self: java.util.Random) extends AnyRef with Serializable {
   }
 
   @deprecated(
-      "Preserved for backwards binary compatibility. To remove in 2.12.x.",
-      "2.11.6")
+    "Preserved for backwards binary compatibility. To remove in 2.12.x.",
+    "2.11.6"
+  )
   final def `scala$util$Random$$isAlphaNum$1`(c: Char) =
     (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
 

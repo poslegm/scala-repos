@@ -71,7 +71,10 @@ object CharUtils {
     * Efficiently converts the given long into an upper-case hex string.
     */
   def upperHexString(long: Long): String =
-    appendUpperHexString(new JStringBuilder(numberOfHexDigits(long)), long).toString
+    appendUpperHexString(
+      new JStringBuilder(numberOfHexDigits(long)),
+      long
+    ).toString
 
   /**
     * Append the lower-case hex representation of the given long to the given StringBuilder.
@@ -89,7 +92,10 @@ object CharUtils {
     * Efficiently converts the given long into a lower-case hex string.
     */
   def lowerHexString(long: Long): String =
-    appendLowerHexString(new JStringBuilder(numberOfHexDigits(long)), long).toString
+    appendLowerHexString(
+      new JStringBuilder(numberOfHexDigits(long)),
+      long
+    ).toString
 
   /**
     * Append the lower-case hex representation of the given long to the given StringBuilder.
@@ -141,7 +147,10 @@ object CharUtils {
     * CAUTION: This algorithm cannot deal with `Long.MinValue`, you'll need to special case this value!
     */
   def getSignedDecimalChars(
-      long: Long, endIndex: Int, buf: Array[Char]): Unit = {
+      long: Long,
+      endIndex: Int,
+      buf: Array[Char]
+  ): Unit = {
     def div10(i: Int) = {
       var q = (i << 3) + (i << 2)
       q += (q << 12) + (q << 8) + (q << 4) + i
@@ -153,7 +162,7 @@ object CharUtils {
 
     phase1(math.abs(long), endIndex)
 
-    // for large numbers we bite the bullet of performing one division every two digits 
+    // for large numbers we bite the bullet of performing one division every two digits
     @tailrec def phase1(l: Long, ix: Int): Unit =
       if (l > 65535L) {
         val q = l / 100
@@ -188,14 +197,15 @@ object CharUtils {
   def toUpperCase(c: Char): Char =
     if (CharPredicate.LowerAlpha(c)) (c + 0x20).toChar else c
 
-  def escape(c: Char): String = c match {
-    case '\t' ⇒ "\\t"
-    case '\r' ⇒ "\\r"
-    case '\n' ⇒ "\\n"
-    case EOI ⇒ "EOI"
-    case x if Character.isISOControl(x) ⇒ "\\u%04x" format c.toInt
-    case x ⇒ x.toString
-  }
+  def escape(c: Char): String =
+    c match {
+      case '\t' ⇒ "\\t"
+      case '\r' ⇒ "\\r"
+      case '\n' ⇒ "\\n"
+      case EOI ⇒ "EOI"
+      case x if Character.isISOControl(x) ⇒ "\\u%04x" format c.toInt
+      case x ⇒ x.toString
+    }
 
   val escapedChars = CharPredicate("\t\r\n", EOI, Character.isISOControl _)
 

@@ -35,8 +35,7 @@ object ThreadingSuiteState {
   }
 }
 
-class ThreadingSuite
-    extends SparkFunSuite with LocalSparkContext with Logging {
+class ThreadingSuite extends SparkFunSuite with LocalSparkContext with Logging {
 
   test("accessing SparkContext form a different thread") {
     sc = new SparkContext("local", "test")
@@ -127,19 +126,18 @@ class ThreadingSuite
         override def run() {
           try {
             val ans = nums
-              .map(number =>
-                    {
-                  val running = ThreadingSuiteState.runningThreads
-                  running.getAndIncrement()
-                  val time = System.currentTimeMillis()
-                  while (running.get() != 4 &&
-                  System.currentTimeMillis() < time + 1000) {
-                    Thread.sleep(100)
-                  }
-                  if (running.get() != 4) {
-                    ThreadingSuiteState.failed.set(true)
-                  }
-                  number
+              .map(number => {
+                val running = ThreadingSuiteState.runningThreads
+                running.getAndIncrement()
+                val time = System.currentTimeMillis()
+                while (running.get() != 4 &&
+                       System.currentTimeMillis() < time + 1000) {
+                  Thread.sleep(100)
+                }
+                if (running.get() != 4) {
+                  ThreadingSuiteState.failed.set(true)
+                }
+                number
               })
               .collect()
             assert(ans.toList === List(1, 2))
@@ -153,12 +151,12 @@ class ThreadingSuite
       }.start()
     }
     sem.acquire(2)
-    throwable.foreach { t =>
-      throw improveStackTrace(t)
-    }
+    throwable.foreach { t => throw improveStackTrace(t) }
     if (ThreadingSuiteState.failed.get()) {
-      logError("Waited 1 second without seeing runningThreads = 4 (it was " +
-          ThreadingSuiteState.runningThreads.get() + "); failing test")
+      logError(
+        "Waited 1 second without seeing runningThreads = 4 (it was " +
+          ThreadingSuiteState.runningThreads.get() + "); failing test"
+      )
       fail("One or more threads didn't see runningThreads = 4")
     }
   }
@@ -186,9 +184,7 @@ class ThreadingSuite
     threads.foreach(_.start())
 
     sem.acquire(5)
-    throwable.foreach { t =>
-      throw improveStackTrace(t)
-    }
+    throwable.foreach { t => throw improveStackTrace(t) }
     assert(sc.getLocalProperty("test") === null)
   }
 
@@ -217,14 +213,14 @@ class ThreadingSuite
     threads.foreach(_.start())
 
     sem.acquire(5)
-    throwable.foreach { t =>
-      throw improveStackTrace(t)
-    }
+    throwable.foreach { t => throw improveStackTrace(t) }
     assert(sc.getLocalProperty("test") === "parent")
     assert(sc.getLocalProperty("Foo") === null)
   }
 
-  test("mutation in parent local property does not affect child (SPARK-10563)") {
+  test(
+    "mutation in parent local property does not affect child (SPARK-10563)"
+  ) {
     sc = new SparkContext("local", "test")
     val originalTestValue: String = "original-value"
     var threadTestValue: String = null
@@ -243,9 +239,7 @@ class ThreadingSuite
     sc.setLocalProperty("test", "this-should-not-be-inherited")
     thread.start()
     thread.join()
-    throwable.foreach { t =>
-      throw improveStackTrace(t)
-    }
+    throwable.foreach { t => throw improveStackTrace(t) }
     assert(threadTestValue === originalTestValue)
   }
 

@@ -100,17 +100,19 @@ object CalendarBatcher {
     }
   }
 
-  def hoursField(tz: TimeZone): CalField = new CalField {
-    def javaIntValue = Calendar.HOUR
-    def defaultSize = 1000L * 60L * 60L
-    def timeZone = tz
-  }
+  def hoursField(tz: TimeZone): CalField =
+    new CalField {
+      def javaIntValue = Calendar.HOUR
+      def defaultSize = 1000L * 60L * 60L
+      def timeZone = tz
+    }
 
-  def daysField(tz: TimeZone): CalField = new CalField {
-    def javaIntValue = Calendar.DAY_OF_YEAR
-    def defaultSize = 1000L * 60L * 60L * 24L
-    def timeZone = tz
-  }
+  def daysField(tz: TimeZone): CalField =
+    new CalField {
+      def javaIntValue = Calendar.DAY_OF_YEAR
+      def defaultSize = 1000L * 60L * 60L * 24L
+      def timeZone = tz
+    }
 
   def ofDays(days: Int)(implicit tz: TimeZone): CalendarBatcher =
     CalendarBatcher(days, daysField(tz))
@@ -131,8 +133,9 @@ object CalendarBatcher {
   * or day in the UTC calendar
   */
 final case class CalendarBatcher(
-    unitCount: Int, calField: CalendarBatcher.CalField)
-    extends Batcher {
+    unitCount: Int,
+    calField: CalendarBatcher.CalField
+) extends Batcher {
   final def batchOf(t: Timestamp) =
     BatchID(calField.unitsSinceEpoch(t.toDate) / unitCount)
   final def earliestTimeOf(batch: BatchID) =

@@ -12,7 +12,12 @@ import akka.http.impl.util._
 import org.scalatest.{Matchers, WordSpec}
 
 case class Employee(
-    fname: String, name: String, age: Int, id: Long, boardMember: Boolean) {
+    fname: String,
+    name: String,
+    age: Int,
+    id: Long,
+    boardMember: Boolean
+) {
   require(!boardMember || age > 40, "Board members must be older than 40")
 }
 
@@ -36,7 +41,9 @@ object Employee {
 
 /** Common infrastructure needed for several json support subprojects */
 abstract class JsonSupportSpec
-    extends WordSpec with Matchers with ScalatestRouteTest {
+    extends WordSpec
+    with Matchers
+    with ScalatestRouteTest {
   require(getClass.getSimpleName.endsWith("Spec"))
   // assuming that the classname ends with "Spec"
   def name: String = getClass.getSimpleName.dropRight(4)
@@ -45,8 +52,10 @@ abstract class JsonSupportSpec
 
   "The " + name should {
     "provide unmarshalling support for a case class" in {
-      HttpEntity(MediaTypes.`application/json`, Employee.json) should unmarshalToValue(
-          Employee.simple)
+      HttpEntity(
+        MediaTypes.`application/json`,
+        Employee.json
+      ) should unmarshalToValue(Employee.simple)
     }
     "provide marshalling support for a case class" in {
       val marshalled = marshal(Employee.simple)
@@ -60,12 +69,15 @@ abstract class JsonSupportSpec
           |}""".stripMarginWithNewline("\n")
     }
     "use UTF-8 as the default charset for JSON source decoding" in {
-      HttpEntity(MediaTypes.`application/json`, Employee.utf8json) should unmarshalToValue(
-          Employee.utf8)
+      HttpEntity(
+        MediaTypes.`application/json`,
+        Employee.utf8json
+      ) should unmarshalToValue(Employee.utf8)
     }
     "provide proper error messages for requirement errors" in {
-      val result = unmarshal(HttpEntity(MediaTypes.`application/json`,
-                                        Employee.illegalEmployeeJson))
+      val result = unmarshal(
+        HttpEntity(MediaTypes.`application/json`, Employee.illegalEmployeeJson)
+      )
 
       result.isFailure shouldEqual true
       val ex = result.failed.get

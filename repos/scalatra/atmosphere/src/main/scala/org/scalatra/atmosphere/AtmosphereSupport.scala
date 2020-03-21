@@ -4,7 +4,12 @@ package atmosphere
 import java.io.IOException
 import java.util
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import javax.servlet.{FilterConfig, ServletConfig, ServletContext, ServletException}
+import javax.servlet.{
+  FilterConfig,
+  ServletConfig,
+  ServletContext,
+  ServletException
+}
 
 import org.atmosphere.container.Tomcat7CometSupport
 import org.atmosphere.container.TomcatCometSupport
@@ -21,7 +26,11 @@ import grizzled.slf4j.Logger
 import org.apache.catalina.CometProcessor
 import org.atmosphere.cache.UUIDBroadcasterCache
 import org.atmosphere.client.TrackMessageSizeInterceptor
-import org.atmosphere.container.{JBossWebCometSupport, Tomcat7CometSupport, TomcatCometSupport}
+import org.atmosphere.container.{
+  JBossWebCometSupport,
+  Tomcat7CometSupport,
+  TomcatCometSupport
+}
 import org.atmosphere.cpr._
 import org.atmosphere.interceptor.SessionCreationInterceptor
 import org.jboss.servlet.http.{HttpEvent, HttpEventServlet}
@@ -34,8 +43,11 @@ import scala.collection.JavaConverters._
 import scala.util.control.Exception.allCatch
 
 trait AtmosphereSupport
-    extends Initializable with Handler with CometProcessor
-    with HttpEventServlet with org.apache.catalina.comet.CometProcessor
+    extends Initializable
+    with Handler
+    with CometProcessor
+    with HttpEventServlet
+    with org.apache.catalina.comet.CometProcessor
     with ScalatraAsyncSupport {
   self: ScalatraBase with org.scalatra.SessionSupport with JsonSupport[_] =>
 
@@ -49,7 +61,8 @@ trait AtmosphereSupport
     * Example: RedisScalatraBroadcasterConfig(URI.create("redis://127.0.0.1"), Some("password"))
     */
   protected val broadcasterConfig: BroadcasterConf = ScalatraBroadcasterConfig(
-      classOf[DefaultScalatraBroadcaster])
+    classOf[DefaultScalatraBroadcaster]
+  )
 
   implicit protected def wireFormat: WireFormat = _defaultWireformat
 
@@ -63,15 +76,18 @@ trait AtmosphereSupport
       else TextMessage(txt)
     } getOrElse TextMessage("")
 
-  private[this] def isFilter = self match {
-    case _: ScalatraFilter => true
-    case _ => false
-  }
+  private[this] def isFilter =
+    self match {
+      case _: ScalatraFilter => true
+      case _                 => false
+    }
 
   val atmosphereFramework = new ScalatraAtmosphereFramework(isFilter, false)
 
   implicit protected def scalatraActorSystem: ActorSystem =
-    servletContext.get(ActorSystemKey).map(_.asInstanceOf[ActorSystem]) getOrElse {
+    servletContext
+      .get(ActorSystemKey)
+      .map(_.asInstanceOf[ActorSystem]) getOrElse {
       val msg =
         "Scalatra Actor system not present. Creating a private actor system"
       logger.info(msg)
@@ -81,7 +97,8 @@ trait AtmosphereSupport
     }
 
   private[this] implicit def filterConfig2servletConfig(
-      fc: FilterConfig): ServletConfig = {
+      fc: FilterConfig
+  ): ServletConfig = {
     new ServletConfig {
       def getInitParameter(name: String): String =
         getServletContext.getInitParameter(name)
@@ -128,7 +145,9 @@ trait AtmosphereSupport
           .getInitParameter(ApplicationConfig.PROPERTY_NATIVE_COMETSUPPORT)
           .isBlank)
       cfg.getServletContext.setInitParameter(
-          ApplicationConfig.PROPERTY_NATIVE_COMETSUPPORT, "true")
+        ApplicationConfig.PROPERTY_NATIVE_COMETSUPPORT,
+        "true"
+      )
     if (trackMessageSize || cfg
           .getInitParameter(TrackMessageSize)
           .blankOption
@@ -161,15 +180,19 @@ trait AtmosphereSupport
     * `executeRoutes()`.
     */
   abstract override def handle(
-      request: HttpServletRequest, response: HttpServletResponse) {
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ) {
     withRequestResponse(request, response) {
       val atmoRoute = atmosphereRoute(request)
       if (atmoRoute.isDefined) {
         request(AtmosphereRouteKey) = atmoRoute.get
         request.getSession(true) // force session creation
         if (request.get(FrameworkConfig.ATMOSPHERE_HANDLER_WRAPPER).isEmpty)
-          atmosphereFramework.doCometSupport(AtmosphereRequest.wrap(request),
-                                             AtmosphereResponse.wrap(response))
+          atmosphereFramework.doCometSupport(
+            AtmosphereRequest.wrap(request),
+            AtmosphereResponse.wrap(response)
+          )
       } else {
         super.handle(request, response)
       }
@@ -178,8 +201,9 @@ trait AtmosphereSupport
 
   private[this] def noGetRoute =
     sys.error(
-        "You are using the AtmosphereSupport without defining any Get route," +
-        "you should get rid of it.")
+      "You are using the AtmosphereSupport without defining any Get route," +
+        "you should get rid of it."
+    )
 
   private[this] def atmosphereRoutes =
     routes.methodRoutes
@@ -194,24 +218,29 @@ trait AtmosphereSupport
 
   private[this] def configureBroadcasterFactory() {
     val factory = new ScalatraBroadcasterFactory(
-        atmosphereFramework.getAtmosphereConfig, broadcasterConfig)
+      atmosphereFramework.getAtmosphereConfig,
+      broadcasterConfig
+    )
     atmosphereFramework.setDefaultBroadcasterClassName(
-        broadcasterConfig.broadcasterClass.getName)
+      broadcasterConfig.broadcasterClass.getName
+    )
     atmosphereFramework.setBroadcasterFactory(factory)
   }
 
   private[this] def configureBroadcasterCache() {
     if (atmosphereFramework.getBroadcasterCacheClassName.isBlank)
       atmosphereFramework.setBroadcasterCacheClassName(
-          classOf[UUIDBroadcasterCache].getName)
+        classOf[UUIDBroadcasterCache].getName
+      )
   }
 
   private[atmosphere] val Atmosphere: RouteTransformer = { (route: Route) =>
     route.copy(metadata = route.metadata + ('Atmosphere -> 'Atmosphere))
   }
 
-  def atmosphere(transformers: RouteTransformer*)(
-      block: => AtmosphereClient): Unit = {
+  def atmosphere(
+      transformers: RouteTransformer*
+  )(block: => AtmosphereClient): Unit = {
     val newTransformers = transformers :+ Atmosphere
     get(newTransformers: _*)(block)
     post(newTransformers: _*) { () }
@@ -237,7 +266,8 @@ trait AtmosphereSupport
     handle(req, res)
 
     val transport = cometEvent.getHttpServletRequest.getParameter(
-        HeaderConfig.X_ATMOSPHERE_TRANSPORT)
+      HeaderConfig.X_ATMOSPHERE_TRANSPORT
+    )
     if (transport != null &&
         transport.equalsIgnoreCase(HeaderConfig.WEBSOCKET_TRANSPORT)) {
       cometEvent.close()
@@ -258,7 +288,8 @@ trait AtmosphereSupport
     handle(req, res)
 
     val transport = cometEvent.getHttpServletRequest.getParameter(
-        HeaderConfig.X_ATMOSPHERE_TRANSPORT)
+      HeaderConfig.X_ATMOSPHERE_TRANSPORT
+    )
     if (transport != null &&
         transport.equalsIgnoreCase(HeaderConfig.WEBSOCKET_TRANSPORT)) {
       cometEvent.close()

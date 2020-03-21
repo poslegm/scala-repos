@@ -27,38 +27,26 @@ import org.json4s.native.Serialization._
 
 import scala.util.{Failure, Try}
 
-case class FileToEventsArgs(env: String = "",
-                            logFile: String = "",
-                            appId: Int = 0,
-                            channel: Option[String] = None,
-                            inputPath: String = "",
-                            verbose: Boolean = false,
-                            debug: Boolean = false)
+case class FileToEventsArgs(
+    env: String = "",
+    logFile: String = "",
+    appId: Int = 0,
+    channel: Option[String] = None,
+    inputPath: String = "",
+    verbose: Boolean = false,
+    debug: Boolean = false
+)
 
 object FileToEvents extends Logging {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[FileToEventsArgs]("FileToEvents") {
-      opt[String]("env") action { (x, c) =>
-        c.copy(env = x)
-      }
-      opt[String]("log-file") action { (x, c) =>
-        c.copy(logFile = x)
-      }
-      opt[Int]("appid") action { (x, c) =>
-        c.copy(appId = x)
-      }
-      opt[String]("channel") action { (x, c) =>
-        c.copy(channel = Some(x))
-      }
-      opt[String]("input") action { (x, c) =>
-        c.copy(inputPath = x)
-      }
-      opt[Unit]("verbose") action { (x, c) =>
-        c.copy(verbose = true)
-      }
-      opt[Unit]("debug") action { (x, c) =>
-        c.copy(debug = true)
-      }
+      opt[String]("env") action { (x, c) => c.copy(env = x) }
+      opt[String]("log-file") action { (x, c) => c.copy(logFile = x) }
+      opt[Int]("appid") action { (x, c) => c.copy(appId = x) }
+      opt[String]("channel") action { (x, c) => c.copy(channel = Some(x)) }
+      opt[String]("input") action { (x, c) => c.copy(inputPath = x) }
+      opt[Unit]("verbose") action { (x, c) => c.copy(verbose = true) }
+      opt[Unit]("debug") action { (x, c) => c.copy(debug = true) }
     }
     parser.parse(args, FileToEventsArgs()) map { args =>
       // get channelId
@@ -80,9 +68,11 @@ object FileToEvents extends Logging {
       WorkflowUtils.modifyLogging(verbose = args.verbose)
       @transient lazy implicit val formats =
         Utils.json4sDefaultFormats + new EventJson4sSupport.APISerializer
-      val sc = WorkflowContext(mode = "Import",
-                               batch = "App ID " + args.appId + channelStr,
-                               executorEnv = Runner.envStringToMap(args.env))
+      val sc = WorkflowContext(
+        mode = "Import",
+        batch = "App ID " + args.appId + channelStr,
+        executorEnv = Runner.envStringToMap(args.env)
+      )
       val rdd = sc.textFile(args.inputPath).filter(_.trim.nonEmpty).map {
         json =>
           Try(read[Event](json)).recoverWith {

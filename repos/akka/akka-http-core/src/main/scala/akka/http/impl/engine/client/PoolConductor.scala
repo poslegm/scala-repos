@@ -19,24 +19,31 @@ private object PoolConductor {
   import PoolFlow.RequestContext
   import PoolSlot.{RawSlotEvent, SlotEvent}
 
-  case class Ports(requestIn: Inlet[RequestContext],
-                   slotEventIn: Inlet[RawSlotEvent],
-                   slotOuts: immutable.Seq[Outlet[RequestContext]])
-      extends Shape {
+  case class Ports(
+      requestIn: Inlet[RequestContext],
+      slotEventIn: Inlet[RawSlotEvent],
+      slotOuts: immutable.Seq[Outlet[RequestContext]]
+  ) extends Shape {
 
     override val inlets = requestIn :: slotEventIn :: Nil
     override def outlets = slotOuts
 
     override def deepCopy(): Shape =
-      Ports(requestIn.carbonCopy(),
-            slotEventIn.carbonCopy(),
-            slotOuts.map(_.carbonCopy()))
+      Ports(
+        requestIn.carbonCopy(),
+        slotEventIn.carbonCopy(),
+        slotOuts.map(_.carbonCopy())
+      )
 
-    override def copyFromPorts(inlets: immutable.Seq[Inlet[_]],
-                               outlets: immutable.Seq[Outlet[_]]): Shape =
-      Ports(inlets.head.asInstanceOf[Inlet[RequestContext]],
-            inlets.last.asInstanceOf[Inlet[RawSlotEvent]],
-            outlets.asInstanceOf[immutable.Seq[Outlet[RequestContext]]])
+    override def copyFromPorts(
+        inlets: immutable.Seq[Inlet[_]],
+        outlets: immutable.Seq[Outlet[_]]
+    ): Shape =
+      Ports(
+        inlets.head.asInstanceOf[Inlet[RequestContext]],
+        inlets.last.asInstanceOf[Inlet[RawSlotEvent]],
+        outlets.asInstanceOf[immutable.Seq[Outlet[RequestContext]]]
+      )
   }
 
   /*
@@ -61,9 +68,11 @@ private object PoolConductor {
                                   +---------+
 
    */
-  def apply(slotCount: Int,
-            pipeliningLimit: Int,
-            log: LoggingAdapter): Graph[Ports, Any] =
+  def apply(
+      slotCount: Int,
+      pipeliningLimit: Int,
+      log: LoggingAdapter
+  ): Graph[Ports, Any] =
     GraphDSL.create() { implicit b ⇒
       import GraphDSL.Implicits._
 
@@ -81,8 +90,14 @@ private object PoolConductor {
 
       retryMerge.out ~> slotSelector.in0
       slotSelector.out ~> route.in
-      retrySplit.out(0).filter(!_.isInstanceOf[SlotEvent.RetryRequest]) ~> flatten ~> slotSelector.in1
-      retrySplit.out(1).collect { case SlotEvent.RetryRequest(r) ⇒ r } ~> retryMerge.preferred
+      retrySplit
+        .out(0)
+        .filter(
+          !_.isInstanceOf[SlotEvent.RetryRequest]
+        ) ~> flatten ~> slotSelector.in1
+      retrySplit.out(1).collect {
+        case SlotEvent.RetryRequest(r) ⇒ r
+      } ~> retryMerge.preferred
 
       Ports(retryMerge.in(0), retrySplit.in, route.outArray.toList)
     }
@@ -111,8 +126,12 @@ private object PoolConductor {
   private object Busy extends Busy(1)
 
   private class SlotSelector(
-      slotCount: Int, pipeliningLimit: Int, log: LoggingAdapter)
-      extends GraphStage[FanInShape2[RequestContext, SlotEvent, SwitchCommand]] {
+      slotCount: Int,
+      pipeliningLimit: Int,
+      log: LoggingAdapter
+  ) extends GraphStage[
+        FanInShape2[RequestContext, SlotEvent, SwitchCommand]
+      ] {
 
     private val ctxIn = Inlet[RequestContext]("requestContext")
     private val slotIn = Inlet[SlotEvent]("slotEvents")
@@ -127,35 +146,41 @@ private object PoolConductor {
         val slotStates = Array.fill[SlotState](slotCount)(Unconnected)
         var nextSlot = 0
 
-        setHandler(ctxIn, new InHandler {
-          override def onPush(): Unit = {
-            val ctx = grab(ctxIn)
-            val slot = nextSlot
-            slotStates(slot) = slotStateAfterDispatch(
-                slotStates(slot), ctx.request.method)
-            nextSlot = bestSlot()
-            emit(out, SwitchCommand(ctx, slot), tryPullCtx)
-          }
-        })
-
-        setHandler(slotIn, new InHandler {
-          override def onPush(): Unit = {
-            grab(slotIn) match {
-              case SlotEvent.RequestCompleted(slotIx) ⇒
-                slotStates(slotIx) = slotStateAfterRequestCompleted(
-                    slotStates(slotIx))
-              case SlotEvent.Disconnected(slotIx, failed) ⇒
-                slotStates(slotIx) = slotStateAfterDisconnect(
-                    slotStates(slotIx), failed)
+        setHandler(
+          ctxIn,
+          new InHandler {
+            override def onPush(): Unit = {
+              val ctx = grab(ctxIn)
+              val slot = nextSlot
+              slotStates(slot) =
+                slotStateAfterDispatch(slotStates(slot), ctx.request.method)
+              nextSlot = bestSlot()
+              emit(out, SwitchCommand(ctx, slot), tryPullCtx)
             }
-            pull(slotIn)
-            val wasBlocked = nextSlot == -1
-            nextSlot = bestSlot()
-            val nowUnblocked = nextSlot != -1
-            if (wasBlocked && nowUnblocked)
-              pull(ctxIn) // get next request context
           }
-        })
+        )
+
+        setHandler(
+          slotIn,
+          new InHandler {
+            override def onPush(): Unit = {
+              grab(slotIn) match {
+                case SlotEvent.RequestCompleted(slotIx) ⇒
+                  slotStates(slotIx) =
+                    slotStateAfterRequestCompleted(slotStates(slotIx))
+                case SlotEvent.Disconnected(slotIx, failed) ⇒
+                  slotStates(slotIx) =
+                    slotStateAfterDisconnect(slotStates(slotIx), failed)
+              }
+              pull(slotIn)
+              val wasBlocked = nextSlot == -1
+              nextSlot = bestSlot()
+              val nowUnblocked = nextSlot != -1
+              if (wasBlocked && nowUnblocked)
+                pull(ctxIn) // get next request context
+            }
+          }
+        )
 
         setHandler(out, eagerTerminateOutput)
 
@@ -168,7 +193,9 @@ private object PoolConductor {
         }
 
         def slotStateAfterDispatch(
-            slotState: SlotState, method: HttpMethod): SlotState =
+            slotState: SlotState,
+            method: HttpMethod
+        ): SlotState =
           slotState match {
             case Unconnected | Idle ⇒
               if (method.isIdempotent) Loaded(1) else Busy(1)
@@ -176,7 +203,8 @@ private object PoolConductor {
               if (method.isIdempotent) Loaded(n + 1) else Busy(n + 1)
             case Busy(_) ⇒
               throw new IllegalStateException(
-                  "Request scheduled onto busy connection?")
+                "Request scheduled onto busy connection?"
+              )
           }
 
         def slotStateAfterRequestCompleted(slotState: SlotState): SlotState =
@@ -187,11 +215,14 @@ private object PoolConductor {
             case Busy(n) ⇒ Busy(n - 1)
             case _ ⇒
               throw new IllegalStateException(
-                  s"RequestCompleted on $slotState connection?")
+                s"RequestCompleted on $slotState connection?"
+              )
           }
 
         def slotStateAfterDisconnect(
-            slotState: SlotState, failed: Int): SlotState =
+            slotState: SlotState,
+            failed: Int
+        ): SlotState =
           slotState match {
             case Idle if failed == 0 ⇒ Unconnected
             case Loaded(n) if n > failed ⇒ Loaded(n - failed)
@@ -200,7 +231,8 @@ private object PoolConductor {
             case Busy(n) if n == failed ⇒ Unconnected
             case _ ⇒
               throw new IllegalStateException(
-                  s"Disconnect(_, $failed) on $slotState connection?")
+                s"Disconnect(_, $failed) on $slotState connection?"
+              )
           }
 
         /**
@@ -213,8 +245,11 @@ private object PoolConductor {
           *
           *  See http://tools.ietf.org/html/rfc7230#section-6.3.2 for more info on HTTP pipelining.
           */
-        @tailrec def bestSlot(ix: Int = 0, bestIx: Int = -1, bestState: SlotState = Busy)
-          : Int =
+        @tailrec def bestSlot(
+            ix: Int = 0,
+            bestIx: Int = -1,
+            bestState: SlotState = Busy
+        ): Int =
           if (ix < slotStates.length) {
             val pl = pipeliningLimit
             slotStates(ix) -> bestState match {
@@ -243,12 +278,15 @@ private object PoolConductor {
         shape.outArray foreach { setHandler(_, ignoreTerminateOutput) }
 
         val in = shape.in
-        setHandler(in, new InHandler {
-          override def onPush(): Unit = {
-            val cmd = grab(in)
-            emit(shape.outArray(cmd.slotIx), cmd.rc, pullIn)
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush(): Unit = {
+              val cmd = grab(in)
+              emit(shape.outArray(cmd.slotIx), cmd.rc, pullIn)
+            }
           }
-        })
+        )
         val pullIn = () ⇒ pull(in)
 
         override def preStart(): Unit = pullIn()

@@ -23,9 +23,11 @@ trait Subclassification[K] {
 
 private[akka] object SubclassifiedIndex {
 
-  class Nonroot[K, V](override val root: SubclassifiedIndex[K, V],
-                      val key: K,
-                      _values: Set[V])(implicit sc: Subclassification[K])
+  class Nonroot[K, V](
+      override val root: SubclassifiedIndex[K, V],
+      val key: K,
+      _values: Set[V]
+  )(implicit sc: Subclassification[K])
       extends SubclassifiedIndex[K, V](_values) {
 
     override def innerAddValue(key: K, value: V): Changes = {
@@ -83,7 +85,8 @@ private[akka] object SubclassifiedIndex {
   * scan at each level. Therefore, no value traversals are published.
   */
 private[akka] class SubclassifiedIndex[K, V] private (
-    protected var values: Set[V])(implicit sc: Subclassification[K]) {
+    protected var values: Set[V]
+)(implicit sc: Subclassification[K]) {
 
   import SubclassifiedIndex._
 
@@ -196,10 +199,14 @@ private[akka] class SubclassifiedIndex[K, V] private (
     * Find all subkeys of a given key in the index excluding some subkeys.
     */
   protected final def findSubKeysExcept(
-      key: K, except: Vector[Nonroot[K, V]]): Set[K] =
+      key: K,
+      except: Vector[Nonroot[K, V]]
+  ): Set[K] =
     root.innerFindSubKeys(key, except)
   protected def innerFindSubKeys(
-      key: K, except: Vector[Nonroot[K, V]]): Set[K] =
+      key: K,
+      except: Vector[Nonroot[K, V]]
+  ): Set[K] =
     (Set.empty[K] /: subkeys) { (s, n) ⇒
       if (sc.isEqual(key, n.key)) s
       else

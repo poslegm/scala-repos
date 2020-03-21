@@ -11,16 +11,17 @@ import org.reactivestreams.{Processor}
 class TransformProcessorTest extends AkkaIdentityProcessorVerification[Int] {
 
   override def createIdentityProcessor(
-      maxBufferSize: Int): Processor[Int, Int] = {
-    val settings = ActorMaterializerSettings(system).withInputBuffer(
-        initialSize = maxBufferSize / 2, maxSize = maxBufferSize)
+      maxBufferSize: Int
+  ): Processor[Int, Int] = {
+    val settings = ActorMaterializerSettings(system)
+      .withInputBuffer(initialSize = maxBufferSize / 2, maxSize = maxBufferSize)
 
     implicit val materializer = ActorMaterializer(settings)(system)
 
     val mkStage = () ⇒
       new PushStage[Int, Int] {
         override def onPush(in: Int, ctx: Context[Int]) = ctx.push(in)
-    }
+      }
 
     Flow[Int].transform(mkStage).toProcessor.run()
   }

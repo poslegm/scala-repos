@@ -7,12 +7,13 @@ import all._
   * Same as MathTests, but demonstrating the use of whitespace
   */
 object IndentationTests extends TestSuite {
-  def eval(tree: (String, Seq[Int])) = tree match {
-    case ("+", nums) => nums.reduceLeft(_ + _)
-    case ("-", nums) => nums.reduceLeft(_ - _)
-    case ("*", nums) => nums.reduceLeft(_ * _)
-    case ("/", nums) => nums.reduceLeft(_ / _)
-  }
+  def eval(tree: (String, Seq[Int])) =
+    tree match {
+      case ("+", nums) => nums.reduceLeft(_ + _)
+      case ("-", nums) => nums.reduceLeft(_ - _)
+      case ("*", nums) => nums.reduceLeft(_ * _)
+      case ("/", nums) => nums.reduceLeft(_ / _)
+    }
 
   /**
     * Parser for an indentation-based math syntax. Parens are no longer
@@ -24,8 +25,9 @@ object IndentationTests extends TestSuite {
 
     val deeper: P[Int] = P(" ".rep(indent + 1).!.map(_.length))
     val blockBody: P[Seq[Int]] =
-      "\n" ~ deeper.flatMap(
-          i => new Parser(indent = i).factor.rep(1, sep = ("\n" + " " * i).~/))
+      "\n" ~ deeper.flatMap(i =>
+        new Parser(indent = i).factor.rep(1, sep = ("\n" + " " * i).~/)
+      )
     val block: P[Int] = P(CharIn("+-*/").! ~/ blockBody).map(eval)
 
     val factor: P[Int] = P(number | block)
@@ -41,24 +43,24 @@ object IndentationTests extends TestSuite {
       }
 
       check(
-          """+
+        """+
           |  1
           |  1
         """.stripMargin.trim,
-          2
+        2
       )
       check(
-          """+
+        """+
           |  1
           |  *
           |    1
           |    2
         """.stripMargin.trim,
-          3
+        3
       )
 
       check(
-          """+
+        """+
           |  +
           |    1
           |    *
@@ -70,24 +72,24 @@ object IndentationTests extends TestSuite {
           |    5
           |
         """.stripMargin.trim,
-          63
+        63
       )
       check(
-          """/
+        """/
           |  15
           |  3
         """.stripMargin.trim,
-          5
+        5
       )
       check(
-          """/
+        """/
           |  63
           |  3
         """.stripMargin.trim,
-          21
+        21
       )
       check(
-          """+
+        """+
           |  +
           |    1
           |    *
@@ -100,10 +102,10 @@ object IndentationTests extends TestSuite {
           |      5
           |    20
         """.stripMargin.trim,
-          6
+        6
       )
       check(
-          """/
+        """/
           |  +
           |    +
           |      1
@@ -116,7 +118,7 @@ object IndentationTests extends TestSuite {
           |        5
           |  3
         """.stripMargin.trim,
-          21
+        21
       )
     }
     'fail {
@@ -126,22 +128,22 @@ object IndentationTests extends TestSuite {
         assert(expectedTrace.trim == actualTrace.trim)
       }
       * - check(
-          "+",
-          """ expr:1:1 / block:1:1 / "\n":1:1 ..."" """
+        "+",
+        """ expr:1:1 / block:1:1 / "\n":1:1 ..."" """
       )
       * - check(
-          """+
+        """+
           |  1
           |1
         """.stripMargin.trim,
-          """ expr:1:1 / (End | "\n  "):2:3 ..."\n1" """
+        """ expr:1:1 / (End | "\n  "):2:3 ..."\n1" """
       )
       * - check(
-          """+
+        """+
           |  1
           |   1
         """.stripMargin.trim,
-          """ expr:1:1 / block:1:1 / factor:3:3 / (number | block):3:3 ..." 1" """
+        """ expr:1:1 / block:1:1 / factor:3:3 / (number | block):3:3 ..." 1" """
       )
     }
   }

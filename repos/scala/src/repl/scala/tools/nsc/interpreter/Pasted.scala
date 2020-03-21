@@ -25,30 +25,33 @@ abstract class Pasted(prompt: String) {
   val ContinueString = replProps.continueText // "     | "
   val anyPrompt = {
     import scala.util.matching.Regex.quote
-    s"""\\s*(?:${quote(PromptString.trim)}|${quote(AltPromptString.trim)})\\s*""".r
+    s"""\\s*(?:${quote(PromptString.trim)}|${quote(
+      AltPromptString.trim
+    )})\\s*""".r
   }
 
   def isPrompted(line: String) = matchesPrompt(line)
-  def isPromptOnly(line: String) = line match {
-    case anyPrompt() => true; case _ => false
-  }
+  def isPromptOnly(line: String) =
+    line match {
+      case anyPrompt() => true; case _ => false
+    }
 
   private val testBoth = PromptString != AltPromptString
   private val spacey = " \t".toSet
 
   def matchesPrompt(line: String) =
     matchesString(line, PromptString) || testBoth &&
-    matchesString(line, AltPromptString)
+      matchesString(line, AltPromptString)
   def matchesContinue(line: String) = matchesString(line, ContinueString)
   def running = isRunning
 
   private def matchesString(line: String, target: String): Boolean =
     ((line startsWith target) ||
-        (line.nonEmpty && spacey(line.head) &&
-            matchesString(line.tail, target)))
+      (line.nonEmpty && spacey(line.head) &&
+        matchesString(line.tail, target)))
   private def stripString(line: String, target: String) =
     line indexOf target match {
-      case -1 => line
+      case -1  => line
       case idx => line drop (idx + target.length)
     }
   private var isRunning = false
@@ -58,14 +61,15 @@ abstract class Pasted(prompt: String) {
 
   private class PasteAnalyzer(val lines: List[String]) {
     val referenced = lines flatMap
-    (resReference findAllIn _.trim.stripPrefix("res")) toSet
+      (resReference findAllIn _.trim.stripPrefix("res")) toSet
     val ActualPromptString =
       lines find matchesPrompt map
-      (s =>
-            if (matchesString(s, PromptString)) PromptString
-            else AltPromptString) getOrElse PromptString
+        (s =>
+          if (matchesString(s, PromptString)) PromptString
+          else AltPromptString
+        ) getOrElse PromptString
     val cmds = lines reduceLeft append split ActualPromptString filterNot
-    (_.trim == "") toList
+      (_.trim == "") toList
 
     /** If it's a prompt or continuation line, strip the formatting bits and
       *  assemble the code.  Otherwise ship it off to be analyzed for res references
@@ -92,19 +96,20 @@ abstract class Pasted(prompt: String) {
       *
       *  In all other cases, discard the line.
       */
-    def fixResRefs(code: String, line: String) = line match {
-      case resCreation(resName) if referenced(resName) =>
-        code.lastIndexOf(ActualPromptString) match {
-          case -1 => code
-          case idx =>
-            val (str1, str2) = code splitAt (idx + ActualPromptString.length)
-            str2 match {
-              case resAssign(`resName`) => code
-              case _ => "%sval %s = { %s }".format(str1, resName, str2)
-            }
-        }
-      case _ => code
-    }
+    def fixResRefs(code: String, line: String) =
+      line match {
+        case resCreation(resName) if referenced(resName) =>
+          code.lastIndexOf(ActualPromptString) match {
+            case -1 => code
+            case idx =>
+              val (str1, str2) = code splitAt (idx + ActualPromptString.length)
+              str2 match {
+                case resAssign(`resName`) => code
+                case _                    => "%sval %s = { %s }".format(str1, resName, str2)
+              }
+          }
+        case _ => code
+      }
 
     def interpreted(line: String) = {
       echo(line.trim)
@@ -135,7 +140,8 @@ abstract class Pasted(prompt: String) {
     */
   def apply(lines: TraversableOnce[String]): Option[String] = {
     isRunning = true
-    try new PasteAnalyzer(lines.toList).run() finally isRunning = false
+    try new PasteAnalyzer(lines.toList).run()
+    finally isRunning = false
   }
   def unapply(line: String): Boolean = isPrompted(line)
 }

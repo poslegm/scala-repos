@@ -29,10 +29,12 @@ object TimeoutFilter {
     * for use in clients.
     */
   def clientModule[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module3[TimeoutFilter.Param,
-                      param.Timer,
-                      LatencyCompensation.Compensation,
-                      ServiceFactory[Req, Rep]] {
+    new Stack.Module3[
+      TimeoutFilter.Param,
+      param.Timer,
+      LatencyCompensation.Compensation,
+      ServiceFactory[Req, Rep]
+    ] {
       val role = TimeoutFilter.role
       val description =
         "Apply a timeout-derived deadline to requests; adjust existing deadlines."
@@ -61,8 +63,10 @@ object TimeoutFilter {
     * for use in servers.
     */
   def serverModule[Req, Rep]: Stackable[ServiceFactory[Req, Rep]] =
-    new Stack.Module2[
-        TimeoutFilter.Param, param.Timer, ServiceFactory[Req, Rep]] {
+    new Stack.Module2[TimeoutFilter.Param, param.Timer, ServiceFactory[
+      Req,
+      Rep
+    ]] {
       val role = TimeoutFilter.role
       val description =
         "Apply a timeout-derived deadline to requests; adjust existing deadlines."
@@ -86,10 +90,11 @@ object TimeoutFilter {
       timeout: Duration,
       exception: RequestTimeoutException,
       timer: Timer
-  ): TypeAgnostic = new TypeAgnostic {
-    override def toFilter[Req, Rep]: Filter[Req, Rep, Req, Rep] =
-      new TimeoutFilter[Req, Rep](timeout, exception, timer)
-  }
+  ): TypeAgnostic =
+    new TypeAgnostic {
+      override def toFilter[Req, Rep]: Filter[Req, Rep, Req, Rep] =
+        new TimeoutFilter[Req, Rep](timeout, exception, timer)
+    }
 }
 
 /**
@@ -105,8 +110,10 @@ object TimeoutFilter {
   *      in the user guide for more details.
   */
 class TimeoutFilter[Req, Rep](
-    timeout: Duration, exception: RequestTimeoutException, timer: Timer)
-    extends SimpleFilter[Req, Rep] {
+    timeout: Duration,
+    exception: RequestTimeoutException,
+    timer: Timer
+) extends SimpleFilter[Req, Rep] {
   def this(timeout: Duration, timer: Timer) =
     this(timeout, new IndividualRequestTimeoutException(timeout), timer)
 

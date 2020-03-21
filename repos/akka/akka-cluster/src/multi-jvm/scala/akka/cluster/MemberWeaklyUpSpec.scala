@@ -20,12 +20,15 @@ object MemberWeaklyUpSpec extends MultiNodeConfig {
   val fifth = role("fifth")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory.parseString("""
         akka.remote.retry-gate-closed-for = 3 s
         akka.cluster.allow-weakly-up-members = on
-        """))
-        .withFallback(MultiNodeClusterSpec.clusterConfig))
+        """)
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 
   testTransport(on = true)
 }
@@ -37,7 +40,8 @@ class MemberWeaklyUpMultiJvmNode4 extends MemberWeaklyUpSpec
 class MemberWeaklyUpMultiJvmNode5 extends MemberWeaklyUpSpec
 
 abstract class MemberWeaklyUpSpec
-    extends MultiNodeSpec(MemberWeaklyUpSpec) with MultiNodeClusterSpec {
+    extends MultiNodeSpec(MemberWeaklyUpSpec)
+    with MultiNodeClusterSpec {
 
   import MemberWeaklyUpSpec._
 
@@ -55,7 +59,8 @@ abstract class MemberWeaklyUpSpec
     }
 
     "detect network partition and mark nodes on other side as unreachable" taggedAs LongRunningTest in within(
-        20 seconds) {
+      20 seconds
+    ) {
       runOn(first) {
         // split the cluster in two parts (first, second) / (third, fourth, fifth)
         for (role1 ← side1; role2 ← side2) {
@@ -65,20 +70,25 @@ abstract class MemberWeaklyUpSpec
       enterBarrier("after-split")
 
       runOn(first) {
-        awaitAssert(clusterView.unreachableMembers.map(_.address) should be(
-                Set(address(third), address(fourth))))
+        awaitAssert(
+          clusterView.unreachableMembers
+            .map(_.address) should be(Set(address(third), address(fourth)))
+        )
       }
 
       runOn(third, fourth) {
-        awaitAssert(clusterView.unreachableMembers.map(_.address) should be(
-                Set(address(first))))
+        awaitAssert(
+          clusterView.unreachableMembers
+            .map(_.address) should be(Set(address(first)))
+        )
       }
 
       enterBarrier("after-2")
     }
 
     "accept joining on each side and set status to WeaklyUp" taggedAs LongRunningTest in within(
-        20 seconds) {
+      20 seconds
+    ) {
       runOn(second) {
         Cluster(system).join(first)
       }
@@ -109,7 +119,8 @@ abstract class MemberWeaklyUpSpec
     }
 
     "change status to Up after healed network partition" taggedAs LongRunningTest in within(
-        20 seconds) {
+      20 seconds
+    ) {
       runOn(first) {
         for (role1 ← side1; role2 ← side2) {
           testConductor.passThrough(role1, role2, Direction.Both).await

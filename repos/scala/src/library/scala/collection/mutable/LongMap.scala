@@ -24,10 +24,14 @@ import generic.CanBuildFrom
   *  rapidly as 2^30 is approached.
   *
   */
-final class LongMap[V] private[collection](
-    defaultEntry: Long => V, initialBufferSize: Int, initBlank: Boolean)
-    extends AbstractMap[Long, V]
-    with Map[Long, V] with MapLike[Long, V, LongMap[V]] with Serializable {
+final class LongMap[V] private[collection] (
+    defaultEntry: Long => V,
+    initialBufferSize: Int,
+    initBlank: Boolean
+) extends AbstractMap[Long, V]
+    with Map[Long, V]
+    with MapLike[Long, V, LongMap[V]]
+    with Serializable {
   import LongMap._
 
   def this() = this(LongMap.exceptionDefault, 16, true)
@@ -59,10 +63,11 @@ final class LongMap[V] private[collection](
   if (initBlank) defaultInitialize(initialBufferSize)
 
   private[this] def defaultInitialize(n: Int) = {
-    mask = if (n < 0) 0x7
-    else
-      (((1 << (32 - java.lang.Integer.numberOfLeadingZeros(n - 1))) -
-              1) & 0x3FFFFFFF) | 0x7
+    mask =
+      if (n < 0) 0x7
+      else
+        (((1 << (32 - java.lang.Integer.numberOfLeadingZeros(n - 1))) -
+          1) & 0x3FFFFFFF) | 0x7
     _keys = new Array[Long](mask + 1)
     _values = new Array[AnyRef](mask + 1)
   }
@@ -354,24 +359,25 @@ final class LongMap[V] private[collection](
     this
   }
 
-  def iterator: Iterator[(Long, V)] = new Iterator[(Long, V)] {
-    private[this] val kz = _keys
-    private[this] val vz = _values
+  def iterator: Iterator[(Long, V)] =
+    new Iterator[(Long, V)] {
+      private[this] val kz = _keys
+      private[this] val vz = _values
 
-    private[this] var nextPair: (Long, V) =
-      if (extraKeys == 0) null
-      else if ((extraKeys & 1) == 1) (0L, zeroValue.asInstanceOf[V])
-      else (Long.MinValue, minValue.asInstanceOf[V])
+      private[this] var nextPair: (Long, V) =
+        if (extraKeys == 0) null
+        else if ((extraKeys & 1) == 1) (0L, zeroValue.asInstanceOf[V])
+        else (Long.MinValue, minValue.asInstanceOf[V])
 
-    private[this] var anotherPair: (Long, V) =
-      if (extraKeys == 3) (Long.MinValue, minValue.asInstanceOf[V])
-      else null
+      private[this] var anotherPair: (Long, V) =
+        if (extraKeys == 3) (Long.MinValue, minValue.asInstanceOf[V])
+        else null
 
-    private[this] var index = 0
+      private[this] var index = 0
 
-    def hasNext: Boolean =
-      nextPair != null ||
-      (index < kz.length && {
+      def hasNext: Boolean =
+        nextPair != null ||
+          (index < kz.length && {
             var q = kz(index)
             while (q == -q) {
               index += 1
@@ -382,17 +388,17 @@ final class LongMap[V] private[collection](
             index += 1
             true
           })
-    def next = {
-      if (nextPair == null && !hasNext)
-        throw new NoSuchElementException("next")
-      val ans = nextPair
-      if (anotherPair != null) {
-        nextPair = anotherPair
-        anotherPair = null
-      } else nextPair = null
-      ans
+      def next = {
+        if (nextPair == null && !hasNext)
+          throw new NoSuchElementException("next")
+        val ans = nextPair
+        if (anotherPair != null) {
+          nextPair = anotherPair
+          anotherPair = null
+        } else nextPair = null
+        ans
+      }
     }
-  }
 
   override def foreach[U](f: ((Long, V)) => U) {
     if ((extraKeys & 1) == 1) f((0L, zeroValue.asInstanceOf[V]))
@@ -413,7 +419,15 @@ final class LongMap[V] private[collection](
     val vz = java.util.Arrays.copyOf(_values, _values.length)
     val lm = new LongMap[V](defaultEntry, 1, false)
     lm.initializeTo(
-        mask, extraKeys, zeroValue, minValue, _size, _vacant, kz, vz)
+      mask,
+      extraKeys,
+      zeroValue,
+      minValue,
+      _size,
+      _vacant,
+      kz,
+      vz
+    )
     lm
   }
 
@@ -472,10 +486,12 @@ final class LongMap[V] private[collection](
   def mapValuesNow[V1](f: V => V1): LongMap[V1] = {
     val zv =
       if ((extraKeys & 1) == 1)
-        f(zeroValue.asInstanceOf[V]).asInstanceOf[AnyRef] else null
+        f(zeroValue.asInstanceOf[V]).asInstanceOf[AnyRef]
+      else null
     val mv =
       if ((extraKeys & 2) == 2)
-        f(minValue.asInstanceOf[V]).asInstanceOf[AnyRef] else null
+        f(minValue.asInstanceOf[V]).asInstanceOf[AnyRef]
+      else null
     val lm = new LongMap[V1](LongMap.exceptionDefault, 1, false)
     val kz = java.util.Arrays.copyOf(_keys, _keys.length)
     val vz = new Array[AnyRef](_values.length)
@@ -522,8 +538,8 @@ object LongMap {
   private val exceptionDefault: Long => Nothing = (k: Long) =>
     throw new NoSuchElementException(k.toString)
 
-  implicit def canBuildFrom[V, U]: CanBuildFrom[
-      LongMap[V], (Long, U), LongMap[U]] =
+  implicit def canBuildFrom[V, U]
+      : CanBuildFrom[LongMap[V], (Long, U), LongMap[U]] =
     new CanBuildFrom[LongMap[V], (Long, U), LongMap[U]] {
       def apply(from: LongMap[V]): LongMapBuilder[U] = apply()
       def apply(): LongMapBuilder[U] = new LongMapBuilder[U]
@@ -533,8 +549,7 @@ object LongMap {
     *
     *  This builder can be reused to create multiple instances.
     */
-  final class LongMapBuilder[V]
-      extends ReusableBuilder[(Long, V), LongMap[V]] {
+  final class LongMapBuilder[V] extends ReusableBuilder[(Long, V), LongMap[V]] {
     private[collection] var elems: LongMap[V] = new LongMap[V]
     def +=(entry: (Long, V)): this.type = {
       elems += entry
@@ -574,8 +589,10 @@ object LongMap {
   /** Creates a new `LongMap` from keys and values.
     *  Equivalent to but more efficient than `LongMap((keys zip values): _*)`.
     */
-  def fromZip[V](keys: collection.Iterable[Long],
-                 values: collection.Iterable[V]): LongMap[V] = {
+  def fromZip[V](
+      keys: collection.Iterable[Long],
+      values: collection.Iterable[V]
+  ): LongMap[V] = {
     val sz = math.min(keys.size, values.size)
     val lm = new LongMap[V](sz * 2)
     val ki = keys.iterator

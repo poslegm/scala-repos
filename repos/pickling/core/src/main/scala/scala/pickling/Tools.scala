@@ -7,7 +7,12 @@ import scala.language.existentials
 import scala.reflect.macros.Context
 import scala.reflect.api.Universe
 
-import scala.collection.mutable.{Map => MutableMap, ListBuffer => MutableList, WeakHashMap, Set => MutableSet}
+import scala.collection.mutable.{
+  Map => MutableMap,
+  ListBuffer => MutableList,
+  WeakHashMap,
+  Set => MutableSet
+}
 import scala.collection.mutable.{Stack => MutableStack, Queue => MutableQueue}
 
 import java.lang.ref.WeakReference
@@ -44,7 +49,8 @@ class Tools[C <: Context](val c: C) {
   import definitions._
 
   private def directSubclassesAnnotation(
-      sym: TypeSymbol): Option[Seq[TypeSymbol]] = {
+      sym: TypeSymbol
+  ): Option[Seq[TypeSymbol]] = {
     val annotatedSubclasses =
       sym.annotations
         .collect({
@@ -80,7 +86,7 @@ class Tools[C <: Context](val c: C) {
 
   def blackList(sym: Symbol) =
     sym == AnyClass || sym == AnyRefClass || sym == AnyValClass ||
-    sym == ObjectClass
+      sym == ObjectClass
 
   def isRelevantSubclass(baseSym: Symbol, subSym: Symbol) = {
     !blackList(baseSym) && !blackList(subSym) && subSym.isClass && {
@@ -91,9 +97,14 @@ class Tools[C <: Context](val c: C) {
   }
 
   def compileTimeDispatchees(
-      tpe: Type, mirror: Mirror, excludeSelf: Boolean): List[Type] = {
-    val subtypes = allStaticallyKnownConcreteSubclasses(tpe, mirror).filter(
-        subtpe => subtpe.typeSymbol != tpe.typeSymbol)
+      tpe: Type,
+      mirror: Mirror,
+      excludeSelf: Boolean
+  ): List[Type] = {
+    val subtypes =
+      allStaticallyKnownConcreteSubclasses(tpe, mirror).filter(subtpe =>
+        subtpe.typeSymbol != tpe.typeSymbol
+      )
     val selfTpe =
       if (isRelevantSubclass(tpe.typeSymbol, tpe.typeSymbol)) List(tpe)
       else Nil
@@ -103,7 +114,9 @@ class Tools[C <: Context](val c: C) {
   }
 
   def allStaticallyKnownConcreteSubclasses(
-      tpe: Type, mirror: Mirror): List[Type] = {
+      tpe: Type,
+      mirror: Mirror
+  ): List[Type] = {
     // TODO: so far the search is a bit dumb
     // given `class C[T]; class D extends C[Int]` and `tpe = C[String]`, it will return <symbol of D>
     // TODO: on a more elaborate note
@@ -118,13 +131,14 @@ class Tools[C <: Context](val c: C) {
       val subclasses = MutableList[Symbol]()
       def analyze(sym: Symbol) =
         if (isRelevantSubclass(baseSym, sym)) subclasses += sym
-      def loop(tree: Tree): Unit = tree match {
-        // NOTE: only looking for classes defined in objects or top-level classes!
-        case PackageDef(_, stats) => stats.foreach(loop)
-        case cdef: ClassDef => analyze(cdef.symbol)
-        case mdef: ModuleDef => mdef.impl.body.foreach(loop)
-        case _ => // do nothing
-      }
+      def loop(tree: Tree): Unit =
+        tree match {
+          // NOTE: only looking for classes defined in objects or top-level classes!
+          case PackageDef(_, stats) => stats.foreach(loop)
+          case cdef: ClassDef       => analyze(cdef.symbol)
+          case mdef: ModuleDef      => mdef.impl.body.foreach(loop)
+          case _                    => // do nothing
+        }
       c.enclosingRun.units.map(_.body).foreach(loop)
       subclasses.toList
     }
@@ -137,13 +151,17 @@ class Tools[C <: Context](val c: C) {
           if (sym.isFinal || sym.isModuleClass) {
             Nil
           } else if (treatAsSealed(sym)) {
-            val syms: List[ClassSymbol] = directSubclasses(sym).map {
-              case csym: ClassSymbol => csym
-              case msym: ModuleSymbol => msym.moduleClass.asClass
-              case osym =>
-                throw new Exception(
-                    s"unexpected known direct subclass: $osym <: $sym")
-            }.toList.flatMap(loop)
+            val syms: List[ClassSymbol] = directSubclasses(sym)
+              .map {
+                case csym: ClassSymbol  => csym
+                case msym: ModuleSymbol => msym.moduleClass.asClass
+                case osym =>
+                  throw new Exception(
+                    s"unexpected known direct subclass: $osym <: $sym"
+                  )
+              }
+              .toList
+              .flatMap(loop)
             syms
           } else {
             hierarchyIsSealed = false
@@ -161,46 +179,50 @@ class Tools[C <: Context](val c: C) {
     def sourcepathAndClasspathScan(): List[Symbol] = {
       println(s"full classpath scan: $tpe")
       lazy val classpathCache = Tools
-        .subclassCache(mirror, {
-          val cache = MutableMap[Symbol, MutableList[Symbol]]()
-          def updateCache(bc: Symbol, c: Symbol) = {
-            if (bc != c &&
-                isRelevantSubclass(bc, c)) // TODO: what else do we want to ignore?
-              cache.getOrElseUpdate(bc, MutableList()) += c
-          }
-          def loop(pkg: Symbol): Unit = {
-            // NOTE: only looking for top-level classes!
-            val pkgMembers = pkg.typeSignature.members
-            pkgMembers foreach
-            (m =>
-                  {
-                    def analyze(m: Symbol): Unit = {
-                      if (m.name.decoded.contains("$")) () // SI-7251
-                      else if (m.isClass)
-                        m.asClass.baseClasses foreach
-                        (bc => updateCache(bc, m))
-                      else if (m.isModule) analyze(m.asModule.moduleClass)
-                      else ()
-                    }
-                    analyze(m)
-                })
-            def recurIntoPackage(pkg: Symbol) = {
-              pkg.name.toString != "_root_" &&
-              pkg.name.toString != "quicktime" &&
-              // TODO: pesky thing on my classpath, crashes ClassfileParser
-              pkg.name.toString != "j3d" &&
-              // TODO: another ClassfileParser crash
-              pkg.name.toString != "jansi" &&
-              // TODO: and another one (jline.jar)
-              pkg.name.toString != "jsoup" // TODO: SI-3809
+        .subclassCache(
+          mirror, {
+            val cache = MutableMap[Symbol, MutableList[Symbol]]()
+            def updateCache(bc: Symbol, c: Symbol) = {
+              if (bc != c &&
+                  isRelevantSubclass(
+                    bc,
+                    c
+                  )) // TODO: what else do we want to ignore?
+                cache.getOrElseUpdate(bc, MutableList()) += c
             }
-            val subpackages =
-              pkgMembers filter (m => m.isPackage && recurIntoPackage(m))
-            subpackages foreach loop
+            def loop(pkg: Symbol): Unit = {
+              // NOTE: only looking for top-level classes!
+              val pkgMembers = pkg.typeSignature.members
+              pkgMembers foreach
+                (m => {
+                  def analyze(m: Symbol): Unit = {
+                    if (m.name.decoded.contains("$")) () // SI-7251
+                    else if (m.isClass)
+                      m.asClass.baseClasses foreach
+                        (bc => updateCache(bc, m))
+                    else if (m.isModule) analyze(m.asModule.moduleClass)
+                    else ()
+                  }
+                  analyze(m)
+                })
+              def recurIntoPackage(pkg: Symbol) = {
+                pkg.name.toString != "_root_" &&
+                pkg.name.toString != "quicktime" &&
+                // TODO: pesky thing on my classpath, crashes ClassfileParser
+                pkg.name.toString != "j3d" &&
+                // TODO: another ClassfileParser crash
+                pkg.name.toString != "jansi" &&
+                // TODO: and another one (jline.jar)
+                pkg.name.toString != "jsoup" // TODO: SI-3809
+              }
+              val subpackages =
+                pkgMembers filter (m => m.isPackage && recurIntoPackage(m))
+              subpackages foreach loop
+            }
+            loop(mirror.RootClass)
+            cache // NOTE: 126873 cache entries for my classpath
           }
-          loop(mirror.RootClass)
-          cache // NOTE: 126873 cache entries for my classpath
-        })
+        )
         .asInstanceOf[MutableMap[Symbol, MutableList[Symbol]]]
       classpathCache.getOrElse(baseSym, Nil).toList
     }
@@ -216,25 +238,25 @@ class Tools[C <: Context](val c: C) {
       }
       // NOTE: need to order the list: children first, parents last
       // otherwise pattern match which uses this list might work funnily
-      val subSyms = unsorted.distinct.sortWith(
-          (c1, c2) => c1.asClass.baseClasses.contains(c2))
+      val subSyms = unsorted.distinct.sortWith((c1, c2) =>
+        c1.asClass.baseClasses.contains(c2)
+      )
       val subTpes = subSyms
         .map(_.asClass)
-        .map(subSym =>
-              {
-            def tparamNames(sym: TypeSymbol) =
-              sym.typeParams.map(_.name.toString)
-            // val tparamsMatch = subSym.typeParams.nonEmpty && tparamNames(baseSym) == tparamNames(subSym)
-            val tparamsMatch =
-              subSym.typeParams.nonEmpty &&
+        .map(subSym => {
+          def tparamNames(sym: TypeSymbol) =
+            sym.typeParams.map(_.name.toString)
+          // val tparamsMatch = subSym.typeParams.nonEmpty && tparamNames(baseSym) == tparamNames(subSym)
+          val tparamsMatch =
+            subSym.typeParams.nonEmpty &&
               tparamNames(baseSym).length == tparamNames(subSym).length
-            val targsAreConcrete =
-              baseTargs.nonEmpty && baseTargs.forall(_.typeSymbol.isClass)
-            // NOTE: this is an extremely naïve heuristics
-            // see http://groups.google.com/group/scala-internals/browse_thread/thread/3a43a6364b97b521 for more information
-            if (tparamsMatch && targsAreConcrete)
-              appliedType(subSym.toTypeConstructor, baseTargs)
-            else existentialAbstraction(subSym.typeParams, subSym.toType)
+          val targsAreConcrete =
+            baseTargs.nonEmpty && baseTargs.forall(_.typeSymbol.isClass)
+          // NOTE: this is an extremely naïve heuristics
+          // see http://groups.google.com/group/scala-internals/browse_thread/thread/3a43a6364b97b521 for more information
+          if (tparamsMatch && targsAreConcrete)
+            appliedType(subSym.toTypeConstructor, baseTargs)
+          else existentialAbstraction(subSym.typeParams, subSym.toType)
         })
       subTpes
     }
@@ -254,24 +276,26 @@ trait RichTypes {
       tpe.normalize match {
         case ExistentialType(tparams, TypeRef(pre, sym, targs))
             if targs.nonEmpty &&
-            targs.forall(targ => tparams.contains(targ.typeSymbol)) =>
+              targs.forall(targ => tparams.contains(targ.typeSymbol)) =>
           TypeRef(pre, sym, Nil).key
         case TypeRef(pre, sym, targs) if pre.typeSymbol.isModuleClass =>
           sym.fullName + (if (sym.isModuleClass) ".type" else "") +
-          (if (targs.isEmpty) "" else targs.map(_.key).mkString("[", ",", "]"))
+            (if (targs.isEmpty) ""
+             else targs.map(_.key).mkString("[", ",", "]"))
         case _ =>
           tpe.toString
       }
     }
 
-    def isEffectivelyPrimitive: Boolean = tpe match {
-      case TypeRef(_, sym: ClassSymbol, _) if sym.isPrimitive => true
-      case TypeRef(_, sym, eltpe :: Nil)
-          if sym == ArrayClass && eltpe.typeSymbol.isClass &&
-          eltpe.typeSymbol.asClass.isPrimitive =>
-        true
-      case _ => false
-    }
+    def isEffectivelyPrimitive: Boolean =
+      tpe match {
+        case TypeRef(_, sym: ClassSymbol, _) if sym.isPrimitive => true
+        case TypeRef(_, sym, eltpe :: Nil)
+            if sym == ArrayClass && eltpe.typeSymbol.isClass &&
+              eltpe.typeSymbol.asClass.isPrimitive =>
+          true
+        case _ => false
+      }
 
     def isEffectivelyFinal = tpe.typeSymbol.isEffectivelyFinal
 
@@ -375,8 +399,9 @@ abstract class Macro extends RichTypes { self =>
       c.inferImplicitValue(typeOf[refs.ShareNothing]) != EmptyTree
     if (shareEverything && shareNothing)
       c.abort(
-          c.enclosingPosition,
-          "inconsistent sharing configuration: both ShareEverything and ShareNothing are in scope")
+        c.enclosingPosition,
+        "inconsistent sharing configuration: both ShareEverything and ShareNothing are in scope"
+      )
     shareEverything
   }
 
@@ -387,8 +412,9 @@ abstract class Macro extends RichTypes { self =>
       c.inferImplicitValue(typeOf[refs.ShareNothing]) != EmptyTree
     if (shareEverything && shareNothing)
       c.abort(
-          c.enclosingPosition,
-          "inconsistent sharing configuration: both ShareEverything and ShareNothing are in scope")
+        c.enclosingPosition,
+        "inconsistent sharing configuration: both ShareEverything and ShareNothing are in scope"
+      )
     shareNothing
   }
 
@@ -405,7 +431,8 @@ abstract class Macro extends RichTypes { self =>
     // catch a partial failure of knownDirectSubclasses
     if (dispatchees.isEmpty)
       throw new Exception(
-          s"Didn't find any concrete subtypes of abstract $tpe, this may mean you need to use the @directSubclasses annotation to manually tell the compiler about subtypes")
+        s"Didn't find any concrete subtypes of abstract $tpe, this may mean you need to use the @directSubclasses annotation to manually tell the compiler about subtypes"
+      )
     dispatchees
   }
 
@@ -456,7 +483,8 @@ abstract class Macro extends RichTypes { self =>
           ourPt =:= theirPt
         }) {
       debug(
-          s"no, because: ourPt = $ourPt, theirPt = ${candidates.tail.head.pt}")
+        s"no, because: ourPt = $ourPt, theirPt = ${candidates.tail.head.pt}"
+      )
       // c.diverge()
       c.abort(c.enclosingPosition, "stepping aside: repeating itself")
     } else {
@@ -464,8 +492,10 @@ abstract class Macro extends RichTypes { self =>
       c.inferImplicitValue(ourPt, silent = true) match {
         case success if success != EmptyTree =>
           debug(s"no, because there's $success")
-          c.abort(c.enclosingPosition,
-                  "stepping aside: there are other candidates")
+          c.abort(
+            c.enclosingPosition,
+            "stepping aside: there are other candidates"
+          )
         // c.diverge()
         case _ =>
           debug("yes, there are no obstacles. entering " + ourPt)
@@ -479,11 +509,13 @@ abstract class Macro extends RichTypes { self =>
   private var reflectivePrologueEmitted =
     false // TODO: come up with something better
   def reflectively(target: String, fir: FieldIR)(
-      body: Tree => Tree): List[Tree] =
+      body: Tree => Tree
+  ): List[Tree] =
     reflectively(newTermName(target), fir)(body)
 
   def reflectivelyWithoutGetter(target: String, fir: FieldIR)(
-      body: Tree => Tree): List[Tree] = {
+      body: Tree => Tree
+  ): List[Tree] = {
     val pickleeName = newTermName(target)
     val getFieldValue = q"""
       val clazz = $pickleeName.getClass
@@ -499,7 +531,8 @@ abstract class Macro extends RichTypes { self =>
     *  requires: !fir.accessor.isEmpty
     */
   def reflectively(target: TermName, fir: FieldIR)(
-      body: Tree => Tree): List[Tree] = {
+      body: Tree => Tree
+  ): List[Tree] = {
     val prologue = {
       if (!reflectivePrologueEmitted) {
         reflectivePrologueEmitted = true
@@ -532,10 +565,12 @@ abstract class Macro extends RichTypes { self =>
   }
 }
 
-case class Hints(knownSize: Int = -1,
-                 elidedType: Option[FastTypeTag[_]] = None,
-                 oid: Int = -1,
-                 pinned: Boolean = false) {
+case class Hints(
+    knownSize: Int = -1,
+    elidedType: Option[FastTypeTag[_]] = None,
+    oid: Int = -1,
+    pinned: Boolean = false
+) {
 
   /** Returns true if the type tag can be/was eldied . */
   def isElidedType = !elidedType.isEmpty

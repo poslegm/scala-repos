@@ -55,11 +55,12 @@ object Service {
   *     way to create new instances.
   */
 abstract class Service[-Req, +Rep] extends (Req => Future[Rep]) with Closable {
-  def map[Req1](f: Req1 => Req) = new Service[Req1, Rep] {
-    def apply(req1: Req1): Future[Rep] = Service.this.apply(f(req1))
-    override def close(deadline: Time): Future[Unit] =
-      Service.this.close(deadline)
-  }
+  def map[Req1](f: Req1 => Req) =
+    new Service[Req1, Rep] {
+      def apply(req1: Req1): Future[Rep] = Service.this.apply(f(req1))
+      override def close(deadline: Time): Future[Unit] =
+        Service.this.close(deadline)
+    }
 
   /**
     * This is the method to override/implement to create your own Service.
@@ -119,7 +120,8 @@ object ClientConnection {
   * This is useful if you want to wrap-but-modify an existing service.
   */
 abstract class ServiceProxy[-Req, +Rep](val self: Service[Req, Rep])
-    extends Service[Req, Rep] with Proxy {
+    extends Service[Req, Rep]
+    with Proxy {
   def apply(request: Req): Future[Rep] = self(request)
   override def close(deadline: Time): Future[Unit] = self.close(deadline)
 
@@ -129,7 +131,8 @@ abstract class ServiceProxy[-Req, +Rep](val self: Service[Req, Rep])
 }
 
 abstract class ServiceFactory[-Req, +Rep]
-    extends (ClientConnection => Future[Service[Req, Rep]]) with Closable { self =>
+    extends (ClientConnection => Future[Service[Req, Rep]])
+    with Closable { self =>
 
   /**
     * Reserve the use of a given service instance. This pins the
@@ -145,14 +148,13 @@ abstract class ServiceFactory[-Req, +Rep]
     * stead. This is useful for implementing common factory wrappers that
     * only need to modify or operate on the underlying service.
     */
-  def flatMap[Req1, Rep1](f: Service[Req, Rep] => Future[Service[Req1, Rep1]])
-    : ServiceFactory[Req1, Rep1] =
+  def flatMap[Req1, Rep1](
+      f: Service[Req, Rep] => Future[Service[Req1, Rep1]]
+  ): ServiceFactory[Req1, Rep1] =
     new ServiceFactory[Req1, Rep1] {
       def apply(conn: ClientConnection): Future[Service[Req1, Rep1]] =
         self(conn) flatMap { service =>
-          f(service) onFailure { _ =>
-            service.close()
-          }
+          f(service) onFailure { _ => service.close() }
         }
       def close(deadline: Time) = self.close(deadline)
       override def status: Status = self.status
@@ -163,11 +165,10 @@ abstract class ServiceFactory[-Req, +Rep]
     * Map created services. Useful for implementing common
     * styles of factory wrappers.
     */
-  def map[Req1, Rep1](f: Service[Req, Rep] => Service[Req1, Rep1])
-    : ServiceFactory[Req1, Rep1] =
-    flatMap { s =>
-      Future.value(f(s))
-    }
+  def map[Req1, Rep1](
+      f: Service[Req, Rep] => Service[Req1, Rep1]
+  ): ServiceFactory[Req1, Rep1] =
+    flatMap { s => Future.value(f(s)) }
 
   /**
     * Make a service that after dispatching a request on that service,
@@ -186,18 +187,19 @@ abstract class ServiceFactory[-Req, +Rep]
 object ServiceFactory {
   def const[Req, Rep](service: Service[Req, Rep]): ServiceFactory[Req, Rep] =
     new ServiceFactory[Req, Rep] {
-      private[this] val noRelease = Future.value(
-          new ServiceProxy[Req, Rep](service) {
-        // close() is meaningless on connectionless services.
-        override def close(deadline: Time) = Future.Done
-      })
+      private[this] val noRelease =
+        Future.value(new ServiceProxy[Req, Rep](service) {
+          // close() is meaningless on connectionless services.
+          override def close(deadline: Time) = Future.Done
+        })
 
       def apply(conn: ClientConnection): Future[Service[Req, Rep]] = noRelease
       def close(deadline: Time): Future[Unit] = Future.Done
     }
 
   def apply[Req, Rep](
-      f: () => Future[Service[Req, Rep]]): ServiceFactory[Req, Rep] =
+      f: () => Future[Service[Req, Rep]]
+  ): ServiceFactory[Req, Rep] =
     new ServiceFactory[Req, Rep] {
       def apply(_conn: ClientConnection): Future[Service[Req, Rep]] = f()
       def close(deadline: Time): Future[Unit] = Future.Done
@@ -210,7 +212,8 @@ object ServiceFactory {
   * and existing `ServiceFactory`.
   */
 abstract class ServiceFactoryProxy[-Req, +Rep](_self: ServiceFactory[Req, Rep])
-    extends ServiceFactory[Req, Rep] with Proxy {
+    extends ServiceFactory[Req, Rep]
+    with Proxy {
   def self: ServiceFactory[Req, Rep] = _self
 
   def apply(conn: ClientConnection): Future[Service[Req, Rep]] = self(conn)
@@ -267,12 +270,14 @@ object FactoryToService {
            * This is too complicated.
            */
           val service = Future.value(
-              new ServiceProxy[Req, Rep](new FactoryToService(next)) {
-            override def close(deadline: Time): Future[Unit] = Future.Done
-          })
+            new ServiceProxy[Req, Rep](new FactoryToService(next)) {
+              override def close(deadline: Time): Future[Unit] = Future.Done
+            }
+          )
           new ServiceFactoryProxy(next) {
             override def apply(
-                conn: ClientConnection): Future[ServiceProxy[Req, Rep]] =
+                conn: ClientConnection
+            ): Future[ServiceProxy[Req, Rep]] =
               service
           }
         } else {
@@ -305,12 +310,14 @@ class FactoryToService[Req, Rep](factory: ServiceFactory[Req, Rep])
   */
 trait ServiceFactoryWrapper {
   def andThen[Req, Rep](
-      factory: ServiceFactory[Req, Rep]): ServiceFactory[Req, Rep]
+      factory: ServiceFactory[Req, Rep]
+  ): ServiceFactory[Req, Rep]
 }
 
 object ServiceFactoryWrapper {
   val identity: ServiceFactoryWrapper = new ServiceFactoryWrapper {
     def andThen[Req, Rep](
-        factory: ServiceFactory[Req, Rep]): ServiceFactory[Req, Rep] = factory
+        factory: ServiceFactory[Req, Rep]
+    ): ServiceFactory[Req, Rep] = factory
   }
 }

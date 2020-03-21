@@ -43,48 +43,69 @@ class ParametersAnnotatorTest extends SimpleTestCase {
     }
     assertMatches(messages("def f(a: A*, b: B*, c: C) {}")) {
       case Error("a: A*", "*-parameter must come last") :: Error(
-          "b: B*", "*-parameter must come last") :: Nil =>
+            "b: B*",
+            "*-parameter must come last"
+          ) :: Nil =>
     }
     assertMatches(messages("def f(a: A*, c: C)(b: B*, c: C) {}")) {
       case Error("a: A*", "*-parameter must come last") :: Error(
-          "b: B*", "*-parameter must come last") :: Nil =>
+            "b: B*",
+            "*-parameter must come last"
+          ) :: Nil =>
     }
   }
 
   def testRepeatedWithDefault(): Unit = {
     assertMatches(messages("def f(i: Int, js: Int* = 1) {}")) {
       case Error(
-          "(i: Int, js: Int* = 1)",
-          "Parameter section with *-parameter cannot have default arguments") :: Nil =>
+            "(i: Int, js: Int* = 1)",
+            "Parameter section with *-parameter cannot have default arguments"
+          ) :: Nil =>
     }
   }
 
   def testByName(): Unit = {
     assertMatches(messages("def f(a: A)(implicit b: => B) {}")) {
-      case Error("b: => B", "implicit parameters may not be call-by-name") :: Nil =>
+      case Error(
+            "b: => B",
+            "implicit parameters may not be call-by-name"
+          ) :: Nil =>
     }
     assertMatches(messages("case class D(a: A, b: => B)")) {
-      case Error("b: => B", "case class parameters may not be call-by-name") :: Nil =>
+      case Error(
+            "b: => B",
+            "case class parameters may not be call-by-name"
+          ) :: Nil =>
     }
     assertMatches(messages("class D(a: A, val b: => B)")) {
-      case Error("val b: => B", "'val' parameters may not be call-by-name") :: Nil =>
+      case Error(
+            "val b: => B",
+            "'val' parameters may not be call-by-name"
+          ) :: Nil =>
     }
     assertMatches(messages("class D(a: A, var b: => B)")) {
-      case Error("var b: => B", "'var' parameters may not be call-by-name") :: Nil =>
+      case Error(
+            "var b: => B",
+            "'var' parameters may not be call-by-name"
+          ) :: Nil =>
     }
   }
 
   def testMissingTypeAnnotation(): Unit = {
     assertMatches(
-        messages("def test(p1: String, p2 = \"default\") = p1 concat p2")) {
+      messages("def test(p1: String, p2 = \"default\") = p1 concat p2")
+    ) {
       //SCL-3799
-      case Error("p2 = \"default\"",
-                 "Missing type annotation for parameter: p2") :: Nil =>
+      case Error(
+            "p2 = \"default\"",
+            "Missing type annotation for parameter: p2"
+          ) :: Nil =>
     }
   }
 
-  def messages(@Language(value = "Scala", prefix = Header) code: String)
-    : List[Message] = {
+  def messages(
+      @Language(value = "Scala", prefix = Header) code: String
+  ): List[Message] = {
     val annotator = new ParametersAnnotator() {}
     val mock = new AnnotatorHolderMock
 

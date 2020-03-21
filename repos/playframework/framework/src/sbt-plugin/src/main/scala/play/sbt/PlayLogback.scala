@@ -15,9 +15,12 @@ object PlayLogback extends AutoPlugin {
   // add this plugin automatically if Play is added.
   override def trigger = AllRequirements
 
-  override def projectSettings = Seq(
+  override def projectSettings =
+    Seq(
       libraryDependencies ++= {
-        Seq("com.typesafe.play" %% "play-logback" % play.core.PlayVersion.current)
+        Seq(
+          "com.typesafe.play" %% "play-logback" % play.core.PlayVersion.current
+        )
       }
-  )
+    )
 }

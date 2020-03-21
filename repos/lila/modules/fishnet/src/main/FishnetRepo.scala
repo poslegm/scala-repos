@@ -13,20 +13,26 @@ private final class FishnetRepo(analysisColl: Coll, clientColl: Coll) {
   import BSONHandlers._
 
   private val clientCache = AsyncCache[Client.Key, Option[Client]](
-      f = key => clientColl.find(selectClient(key)).one[Client],
-      timeToLive = 10 seconds)
+    f = key => clientColl.find(selectClient(key)).one[Client],
+    timeToLive = 10 seconds
+  )
 
   def getClient(key: Client.Key) = clientCache(key)
-  def getEnabledClient(key: Client.Key) = getClient(key).map {
-    _.filter(_.enabled)
-  }
+  def getEnabledClient(key: Client.Key) =
+    getClient(key).map {
+      _.filter(_.enabled)
+    }
   def getOfflineClient: Fu[Client] =
     getEnabledClient(Client.offline.key) getOrElse fuccess(Client.offline)
   def updateClient(client: Client): Funit =
-    clientColl.update(selectClient(client.key), client, upsert = true).void >> clientCache
+    clientColl
+      .update(selectClient(client.key), client, upsert = true)
+      .void >> clientCache
       .remove(client.key)
   def updateClientInstance(
-      client: Client, instance: Client.Instance): Fu[Client] =
+      client: Client,
+      instance: Client.Instance
+  ): Fu[Client] =
     client.updateInstance(instance).fold(fuccess(client)) { updated =>
       updateClient(updated) inject updated
     }
@@ -35,23 +41,30 @@ private final class FishnetRepo(analysisColl: Coll, clientColl: Coll) {
     clientColl.remove(selectClient(key)) >> clientCache.remove(key)
   def enableClient(key: Client.Key, v: Boolean): Funit =
     clientColl
-      .update(selectClient(key),
-              BSONDocument("$set" -> BSONDocument("enabled" -> v)))
+      .update(
+        selectClient(key),
+        BSONDocument("$set" -> BSONDocument("enabled" -> v))
+      )
       .void >> clientCache.remove(key)
   def allRecentClients =
     clientColl
-      .find(BSONDocument(
-              "instance.seenAt" -> BSONDocument(
-                  "$gt" -> Client.Instance.recentSince)
-          ))
+      .find(
+        BSONDocument(
+          "instance.seenAt" -> BSONDocument(
+            "$gt" -> Client.Instance.recentSince
+          )
+        )
+      )
       .cursor[Client]()
       .collect[List]()
   def lichessClients =
     clientColl
-      .find(BSONDocument(
-              "enabled" -> true,
-              "userId" -> BSONDocument("$regex" -> "^lichess-")
-          ))
+      .find(
+        BSONDocument(
+          "enabled" -> true,
+          "userId" -> BSONDocument("$regex" -> "^lichess-")
+        )
+      )
       .cursor[Client]()
       .collect[List]()
 
@@ -67,9 +80,11 @@ private final class FishnetRepo(analysisColl: Coll, clientColl: Coll) {
   def updateOrGiveUpAnalysis(ana: Work.Analysis) =
     if (ana.isOutOfTries) giveUpAnalysis(ana) else updateAnalysis(ana)
   def countAnalysis(acquired: Boolean) =
-    analysisColl.count(BSONDocument(
-            "acquired" -> BSONDocument("$exists" -> acquired)
-        ).some)
+    analysisColl.count(
+      BSONDocument(
+        "acquired" -> BSONDocument("$exists" -> acquired)
+      ).some
+    )
 
   def getSimilarAnalysis(work: Work.Analysis): Fu[Option[Work.Analysis]] =
     analysisColl

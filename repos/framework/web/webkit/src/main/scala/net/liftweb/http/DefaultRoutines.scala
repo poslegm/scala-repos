@@ -33,34 +33,42 @@ object DefaultRoutines {
     new LRUMap(2000)
 
   private def rawResBundle(
-      loc: Locale, path: List[String]): Box[ResourceBundle] = {
+      loc: Locale,
+      path: List[String]
+  ): Box[ResourceBundle] = {
     val realPath = path match {
       case Nil => List("_resources")
-      case x => x
+      case x   => x
     }
 
     for {
-      xml <- Templates(realPath, loc) or Templates(
-          "templates-hidden" :: realPath, loc) or Templates(
+      xml <-
+        Templates(realPath, loc) or Templates(
+          "templates-hidden" :: realPath,
+          loc
+        ) or Templates(
           realPath.dropRight(1) :::
-          ("resources-hidden" :: realPath.takeRight(1)),
-          loc)
+            ("resources-hidden" :: realPath.takeRight(1)),
+          loc
+        )
 
       bundle <- BundleBuilder.convert(xml, loc)
     } yield bundle
   }
 
   private def resBundleFor(
-      loc: Locale, path: List[String]): Box[ResourceBundle] =
+      loc: Locale,
+      path: List[String]
+  ): Box[ResourceBundle] =
     resourceMap.synchronized {
       val key = loc.toString -> path
       resourceMap.get(key) match {
         case Full(x) => x
         case _ => {
-            val res = rawResBundle(loc, path)
-            if (!Props.devMode) resourceMap(key) = res
-            res
-          }
+          val res = rawResBundle(loc, path)
+          if (!Props.devMode) resourceMap(key) = res
+          res
+        }
       }
     }
 
@@ -92,15 +100,16 @@ object DefaultRoutines {
     * @see S.locale
     * @see Templates.apply
     * @see BundleBuilder.convert
-    * 
+    *
     */
   def resourceForCurrentReq(): List[ResourceBundle] = {
     val loc = S.locale
     val cb = for {
       req <- S.originalRequest
-      path = req.path.partPath.dropRight(1) ::: req.path.partPath
-        .takeRight(1)
-        .map(s => "_resources_" + s)
+      path =
+        req.path.partPath.dropRight(1) ::: req.path.partPath
+          .takeRight(1)
+          .map(s => "_resources_" + s)
       bundle <- resBundleFor(loc, path)
     } yield bundle
 

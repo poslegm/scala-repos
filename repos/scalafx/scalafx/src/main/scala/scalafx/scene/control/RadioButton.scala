@@ -37,8 +37,9 @@ object RadioButton {
 }
 
 class RadioButton(
-    override val delegate: jfxsc.RadioButton = new jfxsc.RadioButton)
-    extends ToggleButton(delegate) with SFXDelegate[jfxsc.RadioButton] {
+    override val delegate: jfxsc.RadioButton = new jfxsc.RadioButton
+) extends ToggleButton(delegate)
+    with SFXDelegate[jfxsc.RadioButton] {
 
   /**
     * Creates a radio button with the specified text as its label.

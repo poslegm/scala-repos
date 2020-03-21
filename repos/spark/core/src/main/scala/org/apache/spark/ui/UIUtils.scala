@@ -96,12 +96,12 @@ private[spark] object UIUtils extends Logging {
       val yearString = toString(ms / year, "year")
 
       Seq(
-          second -> millisecondsString,
-          minute -> s"$secondString $millisecondsString",
-          hour -> s"$minuteString $secondString",
-          day -> s"$hourString $minuteString $secondString",
-          week -> s"$dayString $hourString $minuteString",
-          year -> s"$weekString $dayString $hourString"
+        second -> millisecondsString,
+        minute -> s"$secondString $millisecondsString",
+        hour -> s"$minuteString $secondString",
+        day -> s"$hourString $minuteString $secondString",
+        week -> s"$dayString $hourString $minuteString",
+        year -> s"$weekString $dayString $hourString"
       ).foreach {
         case (durationLimit, durationString) =>
           if (ms < durationLimit) {
@@ -188,7 +188,9 @@ private[spark] object UIUtils extends Logging {
           href={prependBaseUri("/static/jquery.dataTables.1.10.4.min.css")} type="text/css"/>
     <link rel="stylesheet"
           href={prependBaseUri("/static/dataTables.bootstrap.css")} type="text/css"/>
-    <link rel="stylesheet" href={prependBaseUri("/static/jsonFormatter.min.css")} type="text/css"/>
+    <link rel="stylesheet" href={
+      prependBaseUri("/static/jsonFormatter.min.css")
+    } type="text/css"/>
     <script src={prependBaseUri("/static/jquery.dataTables.1.10.4.min.js")}></script>
     <script src={prependBaseUri("/static/jquery.cookies.2.2.0.min.js")}></script>
     <script src={prependBaseUri("/static/jquery.blockUI.min.js")}></script>
@@ -198,19 +200,23 @@ private[spark] object UIUtils extends Logging {
   }
 
   /** Returns a spark page with correctly formatted headers */
-  def headerSparkPage(title: String,
-                      content: => Seq[Node],
-                      activeTab: SparkUITab,
-                      refreshInterval: Option[Int] = None,
-                      helpText: Option[String] = None,
-                      showVisualization: Boolean = false): Seq[Node] = {
+  def headerSparkPage(
+      title: String,
+      content: => Seq[Node],
+      activeTab: SparkUITab,
+      refreshInterval: Option[Int] = None,
+      helpText: Option[String] = None,
+      showVisualization: Boolean = false
+  ): Seq[Node] = {
 
     val appName = activeTab.appName
     val shortAppName =
       if (appName.length < 36) appName else appName.take(32) + "..."
     val header = activeTab.headerTabs.map { tab =>
       <li class={if (tab == activeTab) "active" else ""}>
-        <a href={prependBaseUri(activeTab.basePath, "/" + tab.prefix + "/")}>{tab.name}</a>
+        <a href={prependBaseUri(activeTab.basePath, "/" + tab.prefix + "/")}>{
+        tab.name
+      }</a>
       </li>
     }
     val helpButton: Seq[Node] =
@@ -253,9 +259,11 @@ private[spark] object UIUtils extends Logging {
   }
 
   /** Returns a page with the spark css/js and a simple format. Used for scheduler UI. */
-  def basicSparkPage(content: => Seq[Node],
-                     title: String,
-                     useDataTables: Boolean = false): Seq[Node] = {
+  def basicSparkPage(
+      content: => Seq[Node],
+      title: String,
+      useDataTables: Boolean = false
+  ): Seq[Node] = {
     <html>
       <head>
         {commonHeaderNodes}
@@ -270,7 +278,9 @@ private[spark] object UIUtils extends Logging {
                 <a style="text-decoration: none" href={prependBaseUri("/")}>
                   <img src={prependBaseUri("/static/spark-logo-77x50px-hd.png")} />
                   <span class="version"
-                        style="margin-right: 15px;">{org.apache.spark.SPARK_VERSION}</span>
+                        style="margin-right: 15px;">{
+      org.apache.spark.SPARK_VERSION
+    }</span>
                 </a>
                 {title}
               </h3>
@@ -283,14 +293,16 @@ private[spark] object UIUtils extends Logging {
   }
 
   /** Returns an HTML table constructed by generating a row for each object in a sequence. */
-  def listingTable[T](headers: Seq[String],
-                      generateDataRow: T => Seq[Node],
-                      data: Iterable[T],
-                      fixedWidth: Boolean = false,
-                      id: Option[String] = None,
-                      headerClasses: Seq[String] = Seq.empty,
-                      stripeRowsWithCss: Boolean = true,
-                      sortable: Boolean = true): Seq[Node] = {
+  def listingTable[T](
+      headers: Seq[String],
+      generateDataRow: T => Seq[Node],
+      data: Iterable[T],
+      fixedWidth: Boolean = false,
+      id: Option[String] = None,
+      headerClasses: Seq[String] = Seq.empty,
+      stripeRowsWithCss: Boolean = true,
+      sortable: Boolean = true
+  ): Seq[Node] = {
 
     val listingTableClass = {
       val _tableClass =
@@ -316,7 +328,7 @@ private[spark] object UIUtils extends Logging {
     def getHeaderContent(header: String): Seq[Node] = {
       if (newlinesInHeader) {
         <ul class="unstyled">
-          { header.split("\n").map { case t => <li> {t} </li> } }
+          {header.split("\n").map { case t => <li> {t} </li> }}
         </ul>
       } else {
         Text(header)
@@ -325,7 +337,9 @@ private[spark] object UIUtils extends Logging {
 
     val headerRow: Seq[Node] = {
       headers.view.zipWithIndex.map { x =>
-        <th width={colWidthAttr} class={getClass(x._2)}>{getHeaderContent(x._1)}</th>
+        <th width={colWidthAttr} class={getClass(x._2)}>{
+          getHeaderContent(x._1)
+        }</th>
       }
     }
     <table class={listingTableClass} id={id.map(Text.apply)}>
@@ -336,11 +350,13 @@ private[spark] object UIUtils extends Logging {
     </table>
   }
 
-  def makeProgressBar(started: Int,
-                      completed: Int,
-                      failed: Int,
-                      skipped: Int,
-                      total: Int): Seq[Node] = {
+  def makeProgressBar(
+      started: Int,
+      completed: Int,
+      failed: Int,
+      skipped: Int,
+      total: Int
+  ): Seq[Node] = {
     val completeWidth =
       "width: %s%%".format((completed.toDouble / total) * 100)
     // started + completed can be > total when there are speculative tasks
@@ -351,8 +367,8 @@ private[spark] object UIUtils extends Logging {
     <div class="progress">
       <span style="text-align:center; position:absolute; width:100%; left:0;">
         {completed}/{total}
-        { if (failed > 0) s"($failed failed)" }
-        { if (skipped > 0) s"($skipped skipped)" }
+        {if (failed > 0) s"($failed failed)"}
+        {if (skipped > 0) s"($skipped skipped)"}
       </span>
       <div class="bar bar-completed" style={completeWidth}></div>
       <div class="bar bar-running" style={startWidth}></div>
@@ -361,12 +377,17 @@ private[spark] object UIUtils extends Logging {
 
   /** Return a "DAG visualization" DOM element that expands into a visualization for a stage. */
   def showDagVizForStage(
-      stageId: Int, graph: Option[RDDOperationGraph]): Seq[Node] = {
+      stageId: Int,
+      graph: Option[RDDOperationGraph]
+  ): Seq[Node] = {
     showDagViz(graph.toSeq, forJob = false)
   }
 
   /** Return a "DAG visualization" DOM element that expands into a visualization for a job. */
-  def showDagVizForJob(jobId: Int, graphs: Seq[RDDOperationGraph]): Seq[Node] = {
+  def showDagVizForJob(
+      jobId: Int,
+      graphs: Seq[RDDOperationGraph]
+  ): Seq[Node] = {
     showDagViz(graphs, forJob = true)
   }
 
@@ -378,12 +399,16 @@ private[spark] object UIUtils extends Logging {
     * reflected there.
     */
   private def showDagViz(
-      graphs: Seq[RDDOperationGraph], forJob: Boolean): Seq[Node] = {
+      graphs: Seq[RDDOperationGraph],
+      forJob: Boolean
+  ): Seq[Node] = {
     <div>
       <span id={if (forJob) "job-dag-viz" else "stage-dag-viz"}
             class="expand-dag-viz" onclick={s"toggleDagViz($forJob);"}>
         <span class="expand-dag-viz-arrow arrow-closed"></span>
-        <a data-toggle="tooltip" title={if (forJob) ToolTips.JOB_DAG else ToolTips.STAGE_DAG}
+        <a data-toggle="tooltip" title={
+      if (forJob) ToolTips.JOB_DAG else ToolTips.STAGE_DAG
+    }
            data-placement="right">
           DAG Visualization
         </a>
@@ -391,21 +416,30 @@ private[spark] object UIUtils extends Logging {
       <div id="dag-viz-graph"></div>
       <div id="dag-viz-metadata" style="display:none">
         {
-          graphs.map { g =>
-            val stageId = g.rootCluster.id.replaceAll(RDDOperationGraph.STAGE_CLUSTER_PREFIX, "")
-            val skipped = g.rootCluster.name.contains("skipped").toString
-            <div class="stage-metadata" stage-id={stageId} skipped={skipped}>
+      graphs.map { g =>
+        val stageId = g.rootCluster.id
+          .replaceAll(RDDOperationGraph.STAGE_CLUSTER_PREFIX, "")
+        val skipped = g.rootCluster.name.contains("skipped").toString
+        <div class="stage-metadata" stage-id={stageId} skipped={skipped}>
               <div class="dot-file">{RDDOperationGraph.makeDotFile(g)}</div>
-              { g.incomingEdges.map { e => <div class="incoming-edge">{e.fromId},{e.toId}</div> } }
-              { g.outgoingEdges.map { e => <div class="outgoing-edge">{e.fromId},{e.toId}</div> } }
               {
-                g.rootCluster.getCachedNodes.map { n =>
-                  <div class="cached-rdd">{n.id}</div>
-                }
-              }
-            </div>
+          g.incomingEdges.map { e =>
+            <div class="incoming-edge">{e.fromId},{e.toId}</div>
           }
         }
+              {
+          g.outgoingEdges.map { e =>
+            <div class="outgoing-edge">{e.fromId},{e.toId}</div>
+          }
+        }
+              {
+          g.rootCluster.getCachedNodes.map { n =>
+            <div class="cached-rdd">{n.id}</div>
+          }
+        }
+            </div>
+      }
+    }
       </div>
     </div>
   }
@@ -444,10 +478,9 @@ private[spark] object UIUtils extends Logging {
         }
       if (illegalNodes.nonEmpty) {
         throw new IllegalArgumentException(
-            "Only HTML anchors allowed in job descriptions\n" +
-            illegalNodes.map { n =>
-          s"${n.label} in $n"
-        }.mkString("\n\t"))
+          "Only HTML anchors allowed in job descriptions\n" +
+            illegalNodes.map { n => s"${n.label} in $n" }.mkString("\n\t")
+        )
       }
 
       // Verify that all links are relative links starting with "/"
@@ -457,8 +490,9 @@ private[spark] object UIUtils extends Logging {
         }
       if (allLinks.exists { !_.startsWith("/") }) {
         throw new IllegalArgumentException(
-            "Links in job descriptions must be root-relative:\n" +
-            allLinks.mkString("\n\t"))
+          "Links in job descriptions must be root-relative:\n" +
+            allLinks.mkString("\n\t")
+        )
       }
 
       // Prepend the relative links with basePathUri

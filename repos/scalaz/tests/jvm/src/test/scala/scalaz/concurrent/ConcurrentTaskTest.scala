@@ -27,9 +27,12 @@ object ConcurrentTaskTest extends SpecLite {
       def enqueue(taskId: Int) =
         q = q.enqueue((taskId, Thread.currentThread().getName))
 
-      val es = Executors.newFixedThreadPool(1, new ThreadFactory {
-        def newThread(p1: Runnable) = new Thread(p1, forked)
-      })
+      val es = Executors.newFixedThreadPool(
+        1,
+        new ThreadFactory {
+          def newThread(p1: Runnable) = new Thread(p1, forked)
+        }
+      )
 
       val sync = new SyncVar[Boolean]
 
@@ -41,10 +44,9 @@ object ConcurrentTaskTest extends SpecLite {
         _ <- fork(now(enqueue(5)))(es)
         _ <- now(enqueue(6))
         _ <- fork(delay(enqueue(7)))(es)
-      } yield ()).unsafePerformAsync(_ =>
-            {
-          enqueue(8)
-          sync.put(true)
+      } yield ()).unsafePerformAsync(_ => {
+        enqueue(8)
+        sync.put(true)
       })
       enqueue(9)
 

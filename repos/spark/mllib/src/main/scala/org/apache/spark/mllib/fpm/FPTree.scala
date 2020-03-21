@@ -40,12 +40,14 @@ private[fpm] class FPTree[T] extends Serializable {
     t.foreach { item =>
       val summary = summaries.getOrElseUpdate(item, new Summary)
       summary.count += count
-      val child = curr.children.getOrElseUpdate(item, {
-        val newNode = new Node(curr)
-        newNode.item = item
-        summary.nodes += newNode
-        newNode
-      })
+      val child = curr.children.getOrElseUpdate(
+        item, {
+          val newNode = new Node(curr)
+          newNode.item = item
+          summary.nodes += newNode
+          newNode
+        }
+      )
       child.count += count
       curr = child
     }
@@ -102,9 +104,10 @@ private[fpm] class FPTree[T] extends Serializable {
   }
 
   /** Extracts all patterns with valid suffix and minimum count. */
-  def extract(minCount: Long,
-              validateSuffix: T => Boolean = _ =>
-                  true): Iterator[(List[T], Long)] = {
+  def extract(
+      minCount: Long,
+      validateSuffix: T => Boolean = _ => true
+  ): Iterator[(List[T], Long)] = {
     summaries.iterator.flatMap {
       case (item, summary) =>
         if (validateSuffix(item) && summary.count >= minCount) {

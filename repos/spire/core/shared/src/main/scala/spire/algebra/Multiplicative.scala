@@ -43,9 +43,10 @@ object Multiplicative {
 
 trait MultiplicativeSemigroup[@sp(Byte, Short, Int, Long, Float, Double) A]
     extends Any {
-  def multiplicative: Semigroup[A] = new Semigroup[A] {
-    def op(x: A, y: A): A = times(x, y)
-  }
+  def multiplicative: Semigroup[A] =
+    new Semigroup[A] {
+      def op(x: A, y: A): A = times(x, y)
+    }
 
   def times(x: A, y: A): A
 
@@ -55,7 +56,8 @@ trait MultiplicativeSemigroup[@sp(Byte, Short, Int, Long, Float, Double) A]
   def prodn(a: A, n: Int): A =
     if (n <= 0)
       throw new IllegalArgumentException(
-          "Repeated multiplication for semigroups must have reptitions > 0")
+        "Repeated multiplication for semigroups must have reptitions > 0"
+      )
     else if (n == 1) a
     else prodnAboveOne(a, n)
 
@@ -79,18 +81,22 @@ trait MultiplicativeSemigroup[@sp(Byte, Short, Int, Long, Float, Double) A]
 }
 
 trait MultiplicativeCSemigroup[@sp(Byte, Short, Int, Long, Float, Double) A]
-    extends Any with MultiplicativeSemigroup[A] {
-  override def multiplicative: CSemigroup[A] = new CSemigroup[A] {
-    def op(x: A, y: A): A = times(x, y)
-  }
+    extends Any
+    with MultiplicativeSemigroup[A] {
+  override def multiplicative: CSemigroup[A] =
+    new CSemigroup[A] {
+      def op(x: A, y: A): A = times(x, y)
+    }
 }
 
 trait MultiplicativeMonoid[@sp(Byte, Short, Int, Long, Float, Double) A]
-    extends Any with MultiplicativeSemigroup[A] {
-  override def multiplicative: Monoid[A] = new Monoid[A] {
-    def id: A = one
-    def op(x: A, y: A): A = times(x, y)
-  }
+    extends Any
+    with MultiplicativeSemigroup[A] {
+  override def multiplicative: Monoid[A] =
+    new Monoid[A] {
+      def id: A = one
+      def op(x: A, y: A): A = times(x, y)
+    }
 
   def one: A
 
@@ -102,7 +108,8 @@ trait MultiplicativeMonoid[@sp(Byte, Short, Int, Long, Float, Double) A]
   override def prodn(a: A, n: Int): A =
     if (n < 0)
       throw new IllegalArgumentException(
-          "Repeated multiplication for monoids must have reptitions >= 0")
+        "Repeated multiplication for monoids must have reptitions >= 0"
+      )
     else if (n == 0) one
     else if (n == 1) a
     else prodnAboveOne(a, n)
@@ -114,20 +121,25 @@ trait MultiplicativeMonoid[@sp(Byte, Short, Int, Long, Float, Double) A]
 }
 
 trait MultiplicativeCMonoid[@sp(Byte, Short, Int, Long, Float, Double) A]
-    extends Any with MultiplicativeMonoid[A] with MultiplicativeCSemigroup[A] {
-  override def multiplicative: CMonoid[A] = new CMonoid[A] {
-    def id: A = one
-    def op(x: A, y: A): A = times(x, y)
-  }
+    extends Any
+    with MultiplicativeMonoid[A]
+    with MultiplicativeCSemigroup[A] {
+  override def multiplicative: CMonoid[A] =
+    new CMonoid[A] {
+      def id: A = one
+      def op(x: A, y: A): A = times(x, y)
+    }
 }
 
 trait MultiplicativeGroup[@sp(Byte, Short, Int, Long, Float, Double) A]
-    extends Any with MultiplicativeMonoid[A] {
-  override def multiplicative: Group[A] = new Group[A] {
-    def id: A = one
-    def op(x: A, y: A): A = times(x, y)
-    def inverse(x: A): A = reciprocal(x)
-  }
+    extends Any
+    with MultiplicativeMonoid[A] {
+  override def multiplicative: Group[A] =
+    new Group[A] {
+      def id: A = one
+      def op(x: A, y: A): A = times(x, y)
+      def inverse(x: A): A = reciprocal(x)
+    }
 
   def reciprocal(x: A): A = div(one, x)
   def div(x: A, y: A): A
@@ -145,10 +157,13 @@ trait MultiplicativeGroup[@sp(Byte, Short, Int, Long, Float, Double) A]
 }
 
 trait MultiplicativeAbGroup[@sp(Byte, Short, Int, Long, Float, Double) A]
-    extends Any with MultiplicativeGroup[A] with MultiplicativeCMonoid[A] {
-  override def multiplicative: AbGroup[A] = new AbGroup[A] {
-    def id: A = one
-    def op(x: A, y: A): A = times(x, y)
-    def inverse(x: A): A = reciprocal(x)
-  }
+    extends Any
+    with MultiplicativeGroup[A]
+    with MultiplicativeCMonoid[A] {
+  override def multiplicative: AbGroup[A] =
+    new AbGroup[A] {
+      def id: A = one
+      def op(x: A, y: A): A = times(x, y)
+      def inverse(x: A): A = reciprocal(x)
+    }
 }

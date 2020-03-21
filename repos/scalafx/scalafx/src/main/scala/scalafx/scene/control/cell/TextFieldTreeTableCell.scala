@@ -55,8 +55,8 @@ object TextFieldTreeTableCell {
     * @return JavaFX $TFTC
     */
   implicit def sfxTextFieldTreeTableCell2jfx[S, T](
-      cell: TextFieldTreeTableCell[S, T])
-    : jfxsc.cell.TextFieldTreeTableCell[S, T] =
+      cell: TextFieldTreeTableCell[S, T]
+  ): jfxsc.cell.TextFieldTreeTableCell[S, T] =
     if (cell != null) cell.delegate else null
 
   /**
@@ -75,8 +75,9 @@ object TextFieldTreeTableCell {
     * @param converter A `StringConverter` that can convert the given String (from what the user typed in) into an instance of type T.
     * @return $FLVRET
     */
-  def forTreeTableColumn[S, T](converter: StringConverter[T])
-    : (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
+  def forTreeTableColumn[S, T](
+      converter: StringConverter[T]
+  ): (jfxsc.TreeTableColumn[S, T] => TreeTableCell[S, T]) =
     (view: jfxsc.TreeTableColumn[S, T]) =>
       jfxscc.TextFieldTreeTableCell
         .forTreeTableColumn[S, T](converter)
@@ -85,8 +86,10 @@ object TextFieldTreeTableCell {
   /**
     * Added to satisfy Spec tests.
     */
-  @deprecated(message = "Use forTreeTableColumn[S, T](StringConverter[T])",
-              since = "1.0")
+  @deprecated(
+    message = "Use forTreeTableColumn[S, T](StringConverter[T])",
+    since = "1.0"
+  )
   def forTreeTableColumn[S, T](converter: jfxu.StringConverter[T]) =
     jfxscc.TextFieldTreeTableCell.forTreeTableColumn[S, T](converter)
 }
@@ -100,9 +103,10 @@ object TextFieldTreeTableCell {
   *
   * @define TFTC `TextFieldTreeTableCell`
   */
-class TextFieldTreeTableCell[S, T](override val delegate: jfxscc.TextFieldTreeTableCell[
-        S, T] = new jfxscc.TextFieldTreeTableCell[S, T])
-    extends TreeTableCell[S, T](delegate)
+class TextFieldTreeTableCell[S, T](
+    override val delegate: jfxscc.TextFieldTreeTableCell[S, T] =
+      new jfxscc.TextFieldTreeTableCell[S, T]
+) extends TreeTableCell[S, T](delegate)
     with ConvertableCell[jfxscc.TextFieldTreeTableCell[S, T], T, T]
     with UpdatableCell[jfxscc.TextFieldTreeTableCell[S, T], T]
     with SFXDelegate[jfxscc.TextFieldTreeTableCell[S, T]] {

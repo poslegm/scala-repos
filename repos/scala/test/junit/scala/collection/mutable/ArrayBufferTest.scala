@@ -28,7 +28,9 @@ class ArrayBufferTest {
 
     // No strange last position weirdness
     Assert.assertEquals(
-        ArrayBuffer(2, 4, 5, 7, 1, 3, 6, 9), insertAt(traver.size))
+      ArrayBuffer(2, 4, 5, 7, 1, 3, 6, 9),
+      insertAt(traver.size)
+    )
 
     // Overflow is caught
     AssertUtil.assertThrows[IndexOutOfBoundsException] { insertAt(-1) }

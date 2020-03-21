@@ -12,8 +12,8 @@ import akka.testkit.AkkaSpec
 
 class FlowIntersperseSpec extends AkkaSpec {
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 16)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 16)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -26,7 +26,8 @@ class FlowIntersperseSpec extends AkkaSpec {
 
       probe.expectSubscription()
       probe.toStrict(1.second).mkString("") should ===(
-          List(1, 2, 3).mkString(","))
+        List(1, 2, 3).mkString(",")
+      )
     }
 
     "inject element between existing elements, when downstream is fold" in {
@@ -45,7 +46,8 @@ class FlowIntersperseSpec extends AkkaSpec {
         .runWith(TestSink.probe)
 
       probe.toStrict(1.second).mkString("") should ===(
-          List(1, 2, 3).mkString("[", ",", "]"))
+        List(1, 2, 3).mkString("[", ",", "]")
+      )
     }
 
     "demonstrate how to prepend only" in {
@@ -54,7 +56,8 @@ class FlowIntersperseSpec extends AkkaSpec {
           .runWith(TestSink.probe)
 
       probe.toStrict(1.second).mkString("") should ===(
-          List(1, 2, 3).mkString(">> ", ",", ""))
+        List(1, 2, 3).mkString(">> ", ",", "")
+      )
     }
 
     "surround empty stream with []" in {
@@ -65,7 +68,8 @@ class FlowIntersperseSpec extends AkkaSpec {
 
       probe.expectSubscription()
       probe.toStrict(1.second).mkString("") should ===(
-          List().mkString("[", ",", "]"))
+        List().mkString("[", ",", "]")
+      )
     }
 
     "surround single element stream with []" in {
@@ -76,7 +80,8 @@ class FlowIntersperseSpec extends AkkaSpec {
 
       probe.expectSubscription()
       probe.toStrict(1.second).mkString("") should ===(
-          List(1).mkString("[", ",", "]"))
+        List(1).mkString("[", ",", "]")
+      )
     }
 
     "complete the stage when the Source has been completed" in {

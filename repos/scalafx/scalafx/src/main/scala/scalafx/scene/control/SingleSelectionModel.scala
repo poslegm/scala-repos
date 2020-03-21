@@ -33,7 +33,8 @@ import scalafx.delegate.SFXDelegate
 
 object SingleSelectionModel {
   implicit def sfxSingleSelectionModel2jfx[T](
-      v: SingleSelectionModel[T]): jfxsc.SingleSelectionModel[T] =
+      v: SingleSelectionModel[T]
+  ): jfxsc.SingleSelectionModel[T] =
     if (v != null) v.delegate else null
 
   /**
@@ -54,14 +55,13 @@ object SingleSelectionModel {
     *                  selection model.
     */
   def apply[T](modelItem: Int => T, itemCount: => Int) =
-    new SingleSelectionModel[T](
-        new jfxsc.SingleSelectionModel[T] {
+    new SingleSelectionModel[T](new jfxsc.SingleSelectionModel[T] {
       protected def getModelItem(index: Int): T = modelItem(index)
       protected def getItemCount = itemCount
     }) {}
 }
 
 abstract class SingleSelectionModel[T](
-    override val delegate: jfxsc.SingleSelectionModel[T])
-    extends SelectionModel[T](delegate)
+    override val delegate: jfxsc.SingleSelectionModel[T]
+) extends SelectionModel[T](delegate)
     with SFXDelegate[jfxsc.SingleSelectionModel[T]]

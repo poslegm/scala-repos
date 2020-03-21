@@ -80,23 +80,17 @@ object ScalaFX_Controls_02 extends JFXApp {
     graphic = okImageView
     text = "Accept"
     style = "-fx-font: 22 arial; -fx-base: #b6e7c9;"
-    onAction = { (_: ActionEvent) =>
-      label.text = "Accepted"
-    }
+    onAction = { (_: ActionEvent) => label.text = "Accepted" }
   }
 
   val okButton2 = new Button {
     text = "Accept"
-    onAction = { (_: ActionEvent) =>
-      label.text = "Accepted"
-    }
+    onAction = { (_: ActionEvent) => label.text = "Accepted" }
   }
 
   val koButton1 = new Button {
     text = "Decline"
-    onAction = { (_: ActionEvent) =>
-      label.text = "Declined"
-    }
+    onAction = { (_: ActionEvent) => label.text = "Declined" }
   }
 
   koButton1 addOnMouseEnteredHandler { (_: MouseEvent) =>
@@ -111,31 +105,27 @@ object ScalaFX_Controls_02 extends JFXApp {
     spacing = 10
     alignment = Pos.BottomCenter
     children = List(
-        okButton2,
-        koButton1,
-        label
+      okButton2,
+      koButton1,
+      label
     )
   }
 
   val okButton3 = new Button {
     graphic = okImageView
-    onAction = { (_: ActionEvent) =>
-      label.text = "Accepted"
-    }
+    onAction = { (_: ActionEvent) => label.text = "Accepted" }
   }
 
   val koButton2 = new Button {
     graphic = koImageView
-    onAction = { (_: ActionEvent) =>
-      label.text = "Declined"
-    }
+    onAction = { (_: ActionEvent) => label.text = "Declined" }
   }
 
   val hBox2 = new HBox {
     spacing = 25
     children = List(
-        okButton3,
-        koButton2
+      okButton3,
+      koButton2
     )
   }
 
@@ -144,9 +134,9 @@ object ScalaFX_Controls_02 extends JFXApp {
     layoutY = 20
     spacing = 10
     children = List(
-        okButton1,
-        hBox1,
-        hBox2
+      okButton1,
+      hBox1,
+      hBox2
     )
   }
   stage = new PrimaryStage {

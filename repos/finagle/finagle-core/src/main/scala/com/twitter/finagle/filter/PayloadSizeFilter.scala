@@ -15,8 +15,8 @@ import com.twitter.util.Future
 private[finagle] class PayloadSizeFilter[Req, Rep](
     statsReceiver: StatsReceiver,
     reqSize: Req => Int,
-    repSize: Rep => Int)
-    extends SimpleFilter[Req, Rep] {
+    repSize: Rep => Int
+) extends SimpleFilter[Req, Rep] {
 
   private[this] val requestBytes = statsReceiver.stat("request_payload_bytes")
   private[this] val responseBytes =
@@ -46,7 +46,8 @@ private[finagle] object PayloadSizeFilter {
 
       override def make(
           stats: Stats,
-          next: ServiceFactory[Req, Rep]): ServiceFactory[Req, Rep] =
+          next: ServiceFactory[Req, Rep]
+      ): ServiceFactory[Req, Rep] =
         new PayloadSizeFilter(stats.statsReceiver, reqSize, repSize)
           .andThen(next)
     }

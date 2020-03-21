@@ -17,7 +17,12 @@ import ClassFileParser._
 import scala.reflect.internal.pickling.ByteCodecs
 
 object ScalaSigParser {
-  import Main.{BYTES_VALUE, SCALA_LONG_SIG_ANNOTATION, SCALA_SIG, SCALA_SIG_ANNOTATION}
+  import Main.{
+    BYTES_VALUE,
+    SCALA_LONG_SIG_ANNOTATION,
+    SCALA_SIG,
+    SCALA_SIG_ANNOTATION
+  }
 
   // TODO SI-9296 duplicated code, refactor
   def scalaSigFromAnnotation(classFile: ClassFile): Option[ScalaSig] = {
@@ -31,7 +36,8 @@ object ScalaSigParser {
       }
 
     def mergedLongSignatureBytes(
-        signatureParts: Seq[ElementValue]): Array[Byte] =
+        signatureParts: Seq[ElementValue]
+    ): Array[Byte] =
       signatureParts.flatMap {
         case ConstValueIndex(index) => bytesForIndex(index)
       }(collection.breakOut)
@@ -86,13 +92,12 @@ object ScalaSigAttributeParsers extends ByteCodeReader {
     def natN(in: ByteCode, x: Int): Result[ByteCode, Int, Nothing] =
       in.nextByte match {
         case Success(out, b) => {
-            val y = (x << 7) + (b & 0x7f)
-            if ((b & 0x80) == 0) Success(out, y) else natN(out, y)
-          }
+          val y = (x << 7) + (b & 0x7f)
+          if ((b & 0x80) == 0) Success(out, y) else natN(out, y)
+        }
         case _ => Failure
       }
-    in =>
-      natN(in, 0)
+    in => natN(in, 0)
   }
 
   val rawBytes = nat >> bytes
@@ -105,8 +110,10 @@ object ScalaSigAttributeParsers extends ByteCodeReader {
 }
 
 case class ScalaSig(
-    majorVersion: Int, minorVersion: Int, table: Seq[Int ~ ByteCode])
-    extends DefaultMemoisable {
+    majorVersion: Int,
+    minorVersion: Int,
+    table: Seq[Int ~ ByteCode]
+) extends DefaultMemoisable {
 
   case class Entry(index: Int, entryType: Int, byteCode: ByteCode)
       extends DefaultMemoisable {
@@ -130,8 +137,8 @@ case class ScalaSig(
 
   override def toString =
     "ScalaSig version " + majorVersion + "." + minorVersion + {
-      for (i <- 0 until table.size) yield
-        i + ":\t" + parseEntry(i) // + "\n\t" + getEntry(i)
+      for (i <- 0 until table.size)
+        yield i + ":\t" + parseEntry(i) // + "\n\t" + getEntry(i)
     }.mkString("\n", "\n", "")
 
   lazy val symbols: Seq[Symbol] = ScalaSigParsers.symbols
@@ -148,21 +155,20 @@ object ScalaSigParsers extends RulesWithState with MemoisableRules {
   val symTab = read(_.table)
   val size = symTab ^^ (_.size)
 
-  def entry(index: Int) = memo(("entry", index)) {
-    cond(_ hasEntry index) -~ read(_ getEntry index) >-> { entry =>
-      Success(entry, entry.entryType)
-    }
-  }
-
-  def parseEntry[A](parser: ScalaSigEntryParsers.EntryParser[A])(
-      index: Int): Parser[A] =
-    entry(index) -~ parser >> { a => entry =>
-      Success(entry.scalaSig, a)
+  def entry(index: Int) =
+    memo(("entry", index)) {
+      cond(_ hasEntry index) -~ read(_ getEntry index) >-> { entry =>
+        Success(entry, entry.entryType)
+      }
     }
 
-  def allEntries[A](f: ScalaSigEntryParsers.EntryParser[A]) = size >> { n =>
-    anyOf((0 until n) map parseEntry(f))
-  }
+  def parseEntry[A](
+      parser: ScalaSigEntryParsers.EntryParser[A]
+  )(index: Int): Parser[A] =
+    entry(index) -~ parser >> { a => entry => Success(entry.scalaSig, a) }
+
+  def allEntries[A](f: ScalaSigEntryParsers.EntryParser[A]) =
+    size >> { n => anyOf((0 until n) map parseEntry(f)) }
 
   lazy val entries = allEntries(ScalaSigEntryParsers.entry) as "entries"
   lazy val symbols = allEntries(ScalaSigEntryParsers.symbol) as "symbols"
@@ -181,14 +187,12 @@ object ScalaSigEntryParsers extends RulesWithState with MemoisableRules {
   type EntryParser[A] = Rule[A, String]
 
   implicit def byteCodeEntryParser[A](
-      rule: ScalaSigAttributeParsers.Parser[A]): EntryParser[A] = apply {
-    entry =>
-      rule(entry.byteCode) mapOut (entry setByteCode _)
-  }
+      rule: ScalaSigAttributeParsers.Parser[A]
+  ): EntryParser[A] =
+    apply { entry => rule(entry.byteCode) mapOut (entry setByteCode _) }
 
-  def toEntry[A](index: Int) = apply { sigEntry =>
-    ScalaSigParsers.entry(index)(sigEntry.scalaSig)
-  }
+  def toEntry[A](index: Int) =
+    apply { sigEntry => ScalaSigParsers.entry(index)(sigEntry.scalaSig) }
 
   def parseEntry[A](parser: EntryParser[A])(index: Int) =
     (toEntry(index) -~ parser)
@@ -228,21 +232,25 @@ object ScalaSigEntryParsers extends RulesWithState with MemoisableRules {
   val classSymbol = symbolEntry(6) ~ (ref ?) ^~^ ClassSymbol as "class"
   val objectSymbol = symbolEntry(7) ^^ ObjectSymbol as "object"
   val methodSymbol =
-    symHeader(8) -~ /*(ref?) -~*/ symbolInfo ~ (ref ?) ^~^ MethodSymbol as "method"
+    symHeader(
+      8
+    ) -~ /*(ref?) -~*/ symbolInfo ~ (ref ?) ^~^ MethodSymbol as "method"
   val extRef =
     9 -~ nameRef ~ (symbolRef ?) ~ get ^~~^ ExternalSymbol as "extRef"
   val extModClassRef =
     10 -~ nameRef ~ (symbolRef ?) ~ get ^~~^ ExternalSymbol as "extModClassRef"
 
   lazy val symbol: EntryParser[Symbol] =
-    oneOf(noSymbol,
-          typeSymbol,
-          aliasSymbol,
-          classSymbol,
-          objectSymbol,
-          methodSymbol,
-          extRef,
-          extModClassRef) as "symbol"
+    oneOf(
+      noSymbol,
+      typeSymbol,
+      aliasSymbol,
+      classSymbol,
+      objectSymbol,
+      methodSymbol,
+      extRef,
+      extModClassRef
+    ) as "symbol"
 
   val classSymRef = refTo(classSymbol)
   val attribTreeRef = ref
@@ -251,38 +259,40 @@ object ScalaSigEntryParsers extends RulesWithState with MemoisableRules {
 
   lazy val typeEntry: EntryParser[Type] =
     oneOf(
-        11 -^ NoType,
-        12 -^ NoPrefixType,
-        13 -~ symbolRef ^^ ThisType,
-        14 -~ typeRef ~ symbolRef ^~^ SingleType,
-        15 -~ constantRef ^^ ConstantType,
-        16 -~ typeRef ~ symbolRef ~ (typeRef *) ^~~^ TypeRefType,
-        17 -~ typeRef ~ typeRef ^~^ TypeBoundsType,
-        18 -~ classSymRef ~ (typeRef *) ^~^ RefinedType,
-        19 -~ symbolRef ~ (typeRef *) ^~^ ClassInfoType,
-        20 -~ typeRef ~ (symbolRef *) ^~^ MethodType,
-        21 -~ typeRef ~ (refTo(typeSymbol) +) ^~^ PolyType,
-        // TODO: make future safe for past by doing the same transformation as in the
-        // full unpickler in case we're reading pre-2.9 classfiles
-        21 -~ typeRef ^^ NullaryMethodType,
-        22 -~ typeRef ~ (symbolRef *) ^~^ MethodType,
-        42 -~ typeRef ~ (attribTreeRef *) ^~^ AnnotatedType,
-        51 -~ typeRef ~ symbolRef ~ (attribTreeRef *) ^~~^ AnnotatedWithSelfType,
-        48 -~ typeRef ~ (symbolRef *) ^~^ ExistentialType) as "type"
+      11 -^ NoType,
+      12 -^ NoPrefixType,
+      13 -~ symbolRef ^^ ThisType,
+      14 -~ typeRef ~ symbolRef ^~^ SingleType,
+      15 -~ constantRef ^^ ConstantType,
+      16 -~ typeRef ~ symbolRef ~ (typeRef *) ^~~^ TypeRefType,
+      17 -~ typeRef ~ typeRef ^~^ TypeBoundsType,
+      18 -~ classSymRef ~ (typeRef *) ^~^ RefinedType,
+      19 -~ symbolRef ~ (typeRef *) ^~^ ClassInfoType,
+      20 -~ typeRef ~ (symbolRef *) ^~^ MethodType,
+      21 -~ typeRef ~ (refTo(typeSymbol) +) ^~^ PolyType,
+      // TODO: make future safe for past by doing the same transformation as in the
+      // full unpickler in case we're reading pre-2.9 classfiles
+      21 -~ typeRef ^^ NullaryMethodType,
+      22 -~ typeRef ~ (symbolRef *) ^~^ MethodType,
+      42 -~ typeRef ~ (attribTreeRef *) ^~^ AnnotatedType,
+      51 -~ typeRef ~ symbolRef ~ (attribTreeRef *) ^~~^ AnnotatedWithSelfType,
+      48 -~ typeRef ~ (symbolRef *) ^~^ ExistentialType
+    ) as "type"
 
   lazy val literal: EntryParser[Any] = oneOf(
-      24 -^ (()),
-      25 -~ longValue ^^ (_ != 0L),
-      26 -~ longValue ^^ (_.toByte),
-      27 -~ longValue ^^ (_.toShort),
-      28 -~ longValue ^^ (_.toChar),
-      29 -~ longValue ^^ (_.toInt),
-      30 -~ longValue ^^ (_.toLong),
-      31 -~ longValue ^^ (l => java.lang.Float.intBitsToFloat(l.toInt)),
-      32 -~ longValue ^^ (java.lang.Double.longBitsToDouble),
-      33 -~ nameRef,
-      34 -^ null,
-      35 -~ typeRef)
+    24 -^ (()),
+    25 -~ longValue ^^ (_ != 0L),
+    26 -~ longValue ^^ (_.toByte),
+    27 -~ longValue ^^ (_.toShort),
+    28 -~ longValue ^^ (_.toChar),
+    29 -~ longValue ^^ (_.toInt),
+    30 -~ longValue ^^ (_.toLong),
+    31 -~ longValue ^^ (l => java.lang.Float.intBitsToFloat(l.toInt)),
+    32 -~ longValue ^^ (java.lang.Double.longBitsToDouble),
+    33 -~ nameRef,
+    34 -^ null,
+    35 -~ typeRef
+  )
 
   lazy val attributeInfo =
     40 -~ symbolRef ~ typeRef ~ (constantRef ?) ~ (nameRef ~ constantRef *) ^~~~^ AttributeInfo // sym_Ref info_Ref {constant_Ref} {nameRef constantRef}
@@ -293,10 +303,11 @@ object ScalaSigEntryParsers extends RulesWithState with MemoisableRules {
   lazy val topLevelClass = classSymbol filter isTopLevelClass
   lazy val topLevelObject = objectSymbol filter isTopLevel
 
-  def isTopLevel(symbol: Symbol) = symbol.parent match {
-    case Some(ext: ExternalSymbol) => true
-    case _ => false
-  }
+  def isTopLevel(symbol: Symbol) =
+    symbol.parent match {
+      case Some(ext: ExternalSymbol) => true
+      case _                         => false
+    }
   def isTopLevelClass(symbol: Symbol) = !symbol.isModule && isTopLevel(symbol)
 }
 
@@ -304,7 +315,8 @@ case class AttributeInfo(
     symbol: Symbol,
     typeRef: Type,
     value: Option[Any],
-    values: Seq[String ~ Any]) // sym_Ref info_Ref {constant_Ref} {nameRef constantRef}
+    values: Seq[String ~ Any]
+) // sym_Ref info_Ref {constant_Ref} {nameRef constantRef}
 case class Children(symbolRefs: Seq[Int]) //sym_Ref {sym_Ref}
 
 case class AnnotInfo(refs: Seq[Int]) // attarg_Ref {constant_Ref attarg_Ref}

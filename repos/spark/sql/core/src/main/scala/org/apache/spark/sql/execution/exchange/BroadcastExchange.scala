@@ -23,7 +23,11 @@ import scala.concurrent.duration._
 import org.apache.spark.broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.plans.physical.{BroadcastMode, BroadcastPartitioning, Partitioning}
+import org.apache.spark.sql.catalyst.plans.physical.{
+  BroadcastMode,
+  BroadcastPartitioning,
+  Partitioning
+}
 import org.apache.spark.sql.execution.{SparkPlan, SQLExecution}
 import org.apache.spark.util.ThreadUtils
 
@@ -36,11 +40,12 @@ case class BroadcastExchange(mode: BroadcastMode, child: SparkPlan)
 
   override def outputPartitioning: Partitioning = BroadcastPartitioning(mode)
 
-  override def sameResult(plan: SparkPlan): Boolean = plan match {
-    case p: BroadcastExchange =>
-      mode.compatibleWith(p.mode) && child.sameResult(p.child)
-    case _ => false
-  }
+  override def sameResult(plan: SparkPlan): Boolean =
+    plan match {
+      case p: BroadcastExchange =>
+        mode.compatibleWith(p.mode) && child.sameResult(p.child)
+      case _ => false
+    }
 
   @transient
   private val timeout: Duration = {
@@ -77,10 +82,12 @@ case class BroadcastExchange(mode: BroadcastMode, child: SparkPlan)
 
   override protected def doExecute(): RDD[InternalRow] = {
     throw new UnsupportedOperationException(
-        "BroadcastExchange does not support the execute() code path.")
+      "BroadcastExchange does not support the execute() code path."
+    )
   }
 
-  override protected[sql] def doExecuteBroadcast[T](): broadcast.Broadcast[T] = {
+  override protected[sql] def doExecuteBroadcast[T]()
+      : broadcast.Broadcast[T] = {
     val result = Await.result(relationFuture, timeout)
     result.asInstanceOf[broadcast.Broadcast[T]]
   }
@@ -89,5 +96,6 @@ case class BroadcastExchange(mode: BroadcastMode, child: SparkPlan)
 object BroadcastExchange {
   private[execution] val executionContext =
     ExecutionContext.fromExecutorService(
-        ThreadUtils.newDaemonCachedThreadPool("broadcast-exchange", 128))
+      ThreadUtils.newDaemonCachedThreadPool("broadcast-exchange", 128)
+    )
 }

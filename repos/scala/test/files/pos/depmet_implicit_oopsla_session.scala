@@ -40,15 +40,20 @@ object Sessions {
     }
 
   def addClient =
-    Out(3, Out(4, {
-      System.out.println("Waiting")
-      In { z: Int =>
-        System.out.println(z)
-        Stop()
-      }
-    }))
+    Out(
+      3,
+      Out(
+        4, {
+          System.out.println("Waiting")
+          In { z: Int =>
+            System.out.println(z)
+            Stop()
+          }
+        }
+      )
+    )
 
-  def runSession[S, D : Session[S]#HasDual](p: S, dp: D) =
+  def runSession[S, D: Session[S]#HasDual](p: S, dp: D) =
     implicitly[Session[S]#HasDual[D]].run(p, dp)
 
   // def runSession[S, D](p: S, dp: D)(implicit s: Session[S]#HasDual[D]) =

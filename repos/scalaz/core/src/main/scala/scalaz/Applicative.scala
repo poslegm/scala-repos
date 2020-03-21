@@ -28,14 +28,14 @@ trait Applicative[F[_]] extends Apply[F] { self =>
   override def map[A, B](fa: F[A])(f: A => B): F[B] =
     ap(fa)(point(f))
 
-  override def apply2[A, B, C](fa: => F[A], fb: => F[B])(
-      f: (A, B) => C): F[C] =
+  override def apply2[A, B, C](fa: => F[A], fb: => F[B])(f: (A, B) => C): F[C] =
     ap2(fa, fb)(point(f))
 
   // impls of sequence, traverse, etc
 
-  def traverse[A, G[_], B](value: G[A])(f: A => F[B])(
-      implicit G: Traverse[G]): F[G[B]] =
+  def traverse[A, G[_], B](
+      value: G[A]
+  )(f: A => F[B])(implicit G: Traverse[G]): F[G[B]] =
     G.traverse(value)(f)(this)
 
   def sequence[A, G[_]: Traverse](as: G[F[A]]): F[G[A]] =
@@ -72,16 +72,16 @@ trait Applicative[F[_]] extends Apply[F] { self =>
     if (cond) void(f) else point(())
 
   /**The composition of Applicatives `F` and `G`, `[x]F[G[x]]`, is an Applicative */
-  def compose[G[_]](
-      implicit G0: Applicative[G]): Applicative[λ[α => F[G[α]]]] =
+  def compose[G[_]](implicit G0: Applicative[G]): Applicative[λ[α => F[G[α]]]] =
     new CompositionApplicative[F, G] {
       implicit def F = self
       implicit def G = G0
     }
 
   /**The product of Applicatives `F` and `G`, `[x](F[x], G[x]])`, is an Applicative */
-  def product[G[_]](
-      implicit G0: Applicative[G]): Applicative[λ[α => (F[α], G[α])]] =
+  def product[G[_]](implicit
+      G0: Applicative[G]
+  ): Applicative[λ[α => (F[α], G[α])]] =
     new ProductApplicative[F, G] {
       implicit def F = self
       implicit def G = G0
@@ -104,18 +104,21 @@ trait Applicative[F[_]] extends Apply[F] { self =>
       FA.equal(ap(fa)(point((a: A) => a)), fa)
 
     /** `point` distributes over function applications. */
-    def homomorphism[A, B](ab: A => B, a: A)(
-        implicit FB: Equal[F[B]]): Boolean =
+    def homomorphism[A, B](ab: A => B, a: A)(implicit
+        FB: Equal[F[B]]
+    ): Boolean =
       FB.equal(ap(point(a))(point(ab)), point(ab(a)))
 
     /** `point` is a left and right identity, F-wise. */
-    def interchange[A, B](f: F[A => B], a: A)(
-        implicit FB: Equal[F[B]]): Boolean =
+    def interchange[A, B](f: F[A => B], a: A)(implicit
+        FB: Equal[F[B]]
+    ): Boolean =
       FB.equal(ap(point(a))(f), ap(f)(point((f: A => B) => f(a))))
 
     /** `map` is like the one derived from `point` and `ap`. */
-    def mapLikeDerived[A, B](f: A => B, fa: F[A])(
-        implicit FB: Equal[F[B]]): Boolean =
+    def mapLikeDerived[A, B](f: A => B, fa: F[A])(implicit
+        FB: Equal[F[B]]
+    ): Boolean =
       FB.equal(map(fa)(f), ap(fa)(point(f)))
   }
   def applicativeLaw = new ApplicativeLaw {}
@@ -131,7 +134,7 @@ object Applicative {
 
   ////
 
-  implicit def monoidApplicative[M : Monoid]: Applicative[λ[α => M]] =
+  implicit def monoidApplicative[M: Monoid]: Applicative[λ[α => M]] =
     Monoid[M].applicative
 
   ////

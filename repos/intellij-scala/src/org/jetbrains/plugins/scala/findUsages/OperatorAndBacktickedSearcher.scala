@@ -12,7 +12,12 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.impl.cache.impl.id.{IdIndex, IdIndexEntry}
 import com.intellij.psi.impl.search.PsiSearchHelperImpl
 import com.intellij.psi.search.searches.ReferencesSearch
-import com.intellij.psi.search.{GlobalSearchScope, PsiSearchHelper, TextOccurenceProcessor, UsageSearchContext}
+import com.intellij.psi.search.{
+  GlobalSearchScope,
+  PsiSearchHelper,
+  TextOccurenceProcessor,
+  UsageSearchContext
+}
 import com.intellij.psi.{PsiElement, PsiManager, PsiReference}
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.indexing.FileBasedIndex
@@ -27,8 +32,10 @@ import org.jetbrains.plugins.scala.lang.refactoring.util.ScalaNamesUtil
   */
 class OperatorAndBacktickedSearcher
     extends QueryExecutor[PsiReference, ReferencesSearch.SearchParameters] {
-  def execute(queryParameters: ReferencesSearch.SearchParameters,
-              consumer: Processor[PsiReference]): Boolean = {
+  def execute(
+      queryParameters: ReferencesSearch.SearchParameters,
+      consumer: Processor[PsiReference]
+  ): Boolean = {
     val scope = inReadAction(queryParameters.getEffectiveSearchScope)
     val element = queryParameters.getElementToSearch
     val manager = PsiManager.getInstance(queryParameters.getProject)
@@ -50,8 +57,8 @@ class OperatorAndBacktickedSearcher
         val processor = new TextOccurenceProcessor {
           def execute(element: PsiElement, offsetInElement: Int): Boolean = {
             val references = inReadAction(element.getReferences)
-            for (ref <- references if ref.getRangeInElement.contains(
-                           offsetInElement)) {
+            for (ref <- references
+                 if ref.getRangeInElement.contains(offsetInElement)) {
               inReadAction {
                 if (ref.isReferenceTo(elem) || ref.resolve() == elem) {
                   if (!consumer.process(ref)) return false
@@ -65,7 +72,12 @@ class OperatorAndBacktickedSearcher
           new ScalaPsiSearchHelper(manager.asInstanceOf[PsiManagerEx])
         try {
           helper.processElementsWithWord(
-              processor, scope, name, UsageSearchContext.IN_CODE, true)
+            processor,
+            scope,
+            name,
+            UsageSearchContext.IN_CODE,
+            true
+          )
         } catch {
           case ignore: IndexNotReadyException =>
         }
@@ -80,7 +92,8 @@ class OperatorAndBacktickedSearcher
         searchContext: Short,
         caseSensitively: Boolean,
         text: String,
-        processor: Processor[VirtualFile]): Boolean = {
+        processor: Processor[VirtualFile]
+    ): Boolean = {
       val entries = getWordEntries(text, caseSensitively)
       if (entries.isEmpty) return true
       val collectProcessor: CommonProcessors.CollectProcessor[VirtualFile] =
@@ -91,17 +104,24 @@ class OperatorAndBacktickedSearcher
       }
       inReadAction {
         FileBasedIndex.getInstance.processFilesContainingAllKeys(
-            IdIndex.NAME, entries, scope, checker, collectProcessor)
+          IdIndex.NAME,
+          entries,
+          scope,
+          checker,
+          collectProcessor
+        )
       }
       val index: FileIndexFacade =
         FileIndexFacade.getInstance(manager.getProject)
       ContainerUtil.process(
-          collectProcessor.getResults, new ReadActionProcessor[VirtualFile] {
-        def processInReadAction(virtualFile: VirtualFile): Boolean = {
-          !index.shouldBeFound(scope, virtualFile) ||
-          processor.process(virtualFile)
+        collectProcessor.getResults,
+        new ReadActionProcessor[VirtualFile] {
+          def processInReadAction(virtualFile: VirtualFile): Boolean = {
+            !index.shouldBeFound(scope, virtualFile) ||
+            processor.process(virtualFile)
+          }
         }
-      })
+      )
     }
 
     /**
@@ -109,7 +129,9 @@ class OperatorAndBacktickedSearcher
       * because it works only for java identifiers there.
       */
     private def getWordEntries(
-        name: String, caseSensitively: Boolean): util.List[IdIndexEntry] = {
+        name: String,
+        caseSensitively: Boolean
+    ): util.List[IdIndexEntry] = {
       val keys = new util.ArrayList[IdIndexEntry]
       if (ScalaNamesUtil.isIdentifier(name))
         keys.add(new IdIndexEntry(name, caseSensitively))

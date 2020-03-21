@@ -58,9 +58,7 @@ trait Positional { self: Config =>
 
   lazy val validFen =
     variant != chess.variant.FromPosition || {
-      fen ?? { f =>
-        ~(Forsyth <<< f).map(_.situation playable strictFen)
-      }
+      fen ?? { f => ~(Forsyth <<< f).map(_.situation playable strictFen) }
     }
 
   def fenGame(builder: ChessGame => Game): Game = {
@@ -68,11 +66,13 @@ trait Positional { self: Config =>
       fen ifTrue (variant == chess.variant.FromPosition) flatMap Forsyth.<<<
     val (chessGame, state) = baseState.fold(makeGame -> none[SituationPlus]) {
       case sit @ SituationPlus(Situation(board, color), _) =>
-        val game = ChessGame(board = board,
-                             player = color,
-                             turns = sit.turns,
-                             startedAtTurn = sit.turns,
-                             clock = makeClock)
+        val game = ChessGame(
+          board = board,
+          player = color,
+          turns = sit.turns,
+          startedAtTurn = sit.turns,
+          clock = makeClock
+        )
         if (Forsyth.>>(game) == Forsyth.initial)
           makeGame(chess.variant.Standard) -> none
         else game -> baseState
@@ -80,12 +80,14 @@ trait Positional { self: Config =>
     val game = builder(chessGame)
     state.fold(game) {
       case sit @ SituationPlus(Situation(board, _), _) =>
-        game.copy(variant = chess.variant.FromPosition,
-                  castleLastMoveTime = game.castleLastMoveTime.copy(
-                        lastMove = board.history.lastMove.map(_.origDest),
-                        castles = board.history.castles
-                    ),
-                  turns = sit.turns)
+        game.copy(
+          variant = chess.variant.FromPosition,
+          castleLastMoveTime = game.castleLastMoveTime.copy(
+            lastMove = board.history.lastMove.map(_.origDest),
+            castles = board.history.castles
+          ),
+          turns = sit.turns
+        )
     }
   }
 }

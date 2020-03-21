@@ -13,14 +13,17 @@ import org.jetbrains.plugins.scala.lang.psi.stubs.impl.ScFileStubImpl
   */
 class ScalaFileStubBuilder extends DefaultStubBuilder {
   protected override def createStubForFile(
-      file: PsiFile): StubElement[_ <: PsiElement] = {
+      file: PsiFile
+  ): StubElement[_ <: PsiElement] = {
     val s: ScalaFile = file.getViewProvider
       .getPsi(ScalaLanguage.Instance)
       .asInstanceOf[ScalaFile]
-    new ScFileStubImpl(s,
-                       StringRef.fromString(s.packageName),
-                       StringRef.fromString(s.sourceName),
-                       s.isCompiled,
-                       s.isScriptFile(withCaching = false))
+    new ScFileStubImpl(
+      s,
+      StringRef.fromString(s.packageName),
+      StringRef.fromString(s.sourceName),
+      s.isCompiled,
+      s.isScriptFile(withCaching = false)
+    )
   }
 }

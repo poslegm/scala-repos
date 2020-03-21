@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -45,16 +45,18 @@ case class CachingAPIKeyManagerSettings(
 
 object CachingAPIKeyManagerSettings {
   val Default = CachingAPIKeyManagerSettings(
-      Seq(Cache.ExpireAfterWrite(Duration(5, MINUTES)), Cache.MaxSize(1000)),
-      Seq(Cache.ExpireAfterWrite(Duration(5, MINUTES)), Cache.MaxSize(1000)),
-      Seq(Cache.ExpireAfterWrite(Duration(5, MINUTES)), Cache.MaxSize(1000))
+    Seq(Cache.ExpireAfterWrite(Duration(5, MINUTES)), Cache.MaxSize(1000)),
+    Seq(Cache.ExpireAfterWrite(Duration(5, MINUTES)), Cache.MaxSize(1000)),
+    Seq(Cache.ExpireAfterWrite(Duration(5, MINUTES)), Cache.MaxSize(1000))
   )
 }
 
-class CachingAPIKeyManager[M[+ _]](
+class CachingAPIKeyManager[M[+_]](
     manager: APIKeyManager[M],
-    settings: CachingAPIKeyManagerSettings = CachingAPIKeyManagerSettings.Default)
-    extends APIKeyManager[M] with Logging {
+    settings: CachingAPIKeyManagerSettings =
+      CachingAPIKeyManagerSettings.Default
+) extends APIKeyManager[M]
+    with Logging {
   implicit val M = manager.M
 
   private val apiKeyCache =
@@ -64,67 +66,83 @@ class CachingAPIKeyManager[M[+ _]](
   private val grantCache =
     Cache.simple[GrantId, Grant](settings.grantCacheSettings: _*)
 
-  protected def add(r: APIKeyRecord) = IO {
-    @inline def addChildren(k: APIKey, c: Set[APIKeyRecord]) =
-      childCache.put(k, childCache.get(k).getOrElse(Set()) union c)
+  protected def add(r: APIKeyRecord) =
+    IO {
+      @inline def addChildren(k: APIKey, c: Set[APIKeyRecord]) =
+        childCache.put(k, childCache.get(k).getOrElse(Set()) union c)
 
-    apiKeyCache.put(r.apiKey, r)
-    addChildren(r.issuerKey, Set(r))
-  }
+      apiKeyCache.put(r.apiKey, r)
+      addChildren(r.issuerKey, Set(r))
+    }
 
-  protected def add(g: Grant) = IO {
-    grantCache.put(g.grantId, g)
-  }
+  protected def add(g: Grant) =
+    IO {
+      grantCache.put(g.grantId, g)
+    }
 
-  protected def remove(r: APIKeyRecord) = IO {
-    @inline def removeChildren(k: APIKey, c: Set[APIKeyRecord]) =
-      childCache.put(k, childCache.get(k).getOrElse(Set()) diff c)
+  protected def remove(r: APIKeyRecord) =
+    IO {
+      @inline def removeChildren(k: APIKey, c: Set[APIKeyRecord]) =
+        childCache.put(k, childCache.get(k).getOrElse(Set()) diff c)
 
-    apiKeyCache.remove(r.apiKey)
-    removeChildren(r.issuerKey, Set(r))
-  }
+      apiKeyCache.remove(r.apiKey)
+      removeChildren(r.issuerKey, Set(r))
+    }
 
-  protected def remove(g: Grant) = IO {
-    grantCache.remove(g.grantId)
-  }
+  protected def remove(g: Grant) =
+    IO {
+      grantCache.remove(g.grantId)
+    }
 
   def rootGrantId: M[GrantId] = manager.rootGrantId
   def rootAPIKey: M[APIKey] = manager.rootAPIKey
 
-  def createAPIKey(name: Option[String],
-                   description: Option[String],
-                   issuerKey: APIKey,
-                   grants: Set[GrantId]) =
+  def createAPIKey(
+      name: Option[String],
+      description: Option[String],
+      issuerKey: APIKey,
+      grants: Set[GrantId]
+  ) =
     manager.createAPIKey(name, description, issuerKey, grants) map {
       _ tap add unsafePerformIO
     }
 
-  def createGrant(name: Option[String],
-                  description: Option[String],
-                  issuerKey: APIKey,
-                  parentIds: Set[GrantId],
-                  perms: Set[Permission],
-                  expiration: Option[DateTime]) =
+  def createGrant(
+      name: Option[String],
+      description: Option[String],
+      issuerKey: APIKey,
+      parentIds: Set[GrantId],
+      perms: Set[Permission],
+      expiration: Option[DateTime]
+  ) =
     manager.createGrant(
-        name, description, issuerKey, parentIds, perms, expiration) map {
+      name,
+      description,
+      issuerKey,
+      parentIds,
+      perms,
+      expiration
+    ) map {
       _ tap add unsafePerformIO
     }
 
-  def findAPIKey(tid: APIKey) = apiKeyCache.get(tid) match {
-    case None =>
-      logger.debug("Cache miss on api key " + tid)
-      manager.findAPIKey(tid) map { _.traverse(_ tap add).unsafePerformIO }
+  def findAPIKey(tid: APIKey) =
+    apiKeyCache.get(tid) match {
+      case None =>
+        logger.debug("Cache miss on api key " + tid)
+        manager.findAPIKey(tid) map { _.traverse(_ tap add).unsafePerformIO }
 
-    case t => M.point(t)
-  }
+      case t => M.point(t)
+    }
 
-  def findGrant(gid: GrantId) = grantCache.get(gid) match {
-    case None =>
-      logger.debug("Cache miss on grant " + gid)
-      manager.findGrant(gid) map { _.traverse(_ tap add).unsafePerformIO }
+  def findGrant(gid: GrantId) =
+    grantCache.get(gid) match {
+      case None =>
+        logger.debug("Cache miss on grant " + gid)
+        manager.findGrant(gid) map { _.traverse(_ tap add).unsafePerformIO }
 
-    case s @ Some(_) => M.point(s)
-  }
+      case s @ Some(_) => M.point(s)
+    }
 
   def findAPIKeyChildren(apiKey: APIKey): M[Set[APIKeyRecord]] =
     childCache.get(apiKey) match {

@@ -43,55 +43,66 @@ object ScalatraBase {
   def onSuccess(fn: Any => Unit)(implicit request: HttpServletRequest): Unit =
     addCallback(_.foreach(fn))
 
-  def onFailure(fn: Throwable => Unit)(
-      implicit request: HttpServletRequest): Unit =
+  def onFailure(
+      fn: Throwable => Unit
+  )(implicit request: HttpServletRequest): Unit =
     addCallback(_.failed.foreach(fn))
 
-  def onCompleted(fn: Try[Any] => Unit)(
-      implicit request: HttpServletRequest): Unit = addCallback(fn)
+  def onCompleted(fn: Try[Any] => Unit)(implicit
+      request: HttpServletRequest
+  ): Unit = addCallback(fn)
 
-  def onRenderedSuccess(fn: Any => Unit)(
-      implicit request: HttpServletRequest): Unit =
+  def onRenderedSuccess(
+      fn: Any => Unit
+  )(implicit request: HttpServletRequest): Unit =
     addRenderCallback(_.foreach(fn))
 
-  def onRenderedFailure(fn: Throwable => Unit)(
-      implicit request: HttpServletRequest): Unit =
+  def onRenderedFailure(
+      fn: Throwable => Unit
+  )(implicit request: HttpServletRequest): Unit =
     addRenderCallback(_.failed.foreach(fn))
 
-  def onRenderedCompleted(fn: Try[Any] => Unit)(
-      implicit request: HttpServletRequest): Unit = addRenderCallback(fn)
+  def onRenderedCompleted(fn: Try[Any] => Unit)(implicit
+      request: HttpServletRequest
+  ): Unit = addRenderCallback(fn)
 
-  def callbacks(
-      implicit request: HttpServletRequest): List[(Try[Any]) => Unit] =
+  def callbacks(implicit
+      request: HttpServletRequest
+  ): List[(Try[Any]) => Unit] =
     request
       .getOrElse(Callbacks, List.empty[Try[Any] => Unit])
       .asInstanceOf[List[Try[Any] => Unit]]
 
-  def addCallback(callback: Try[Any] => Unit)(
-      implicit request: HttpServletRequest): Unit = {
+  def addCallback(
+      callback: Try[Any] => Unit
+  )(implicit request: HttpServletRequest): Unit = {
     request(Callbacks) = callback :: callbacks
   }
 
-  def runCallbacks(data: Try[Any])(
-      implicit request: HttpServletRequest): Unit = {
-    callbacks.reverse foreach (_ (data))
+  def runCallbacks(
+      data: Try[Any]
+  )(implicit request: HttpServletRequest): Unit = {
+    callbacks.reverse foreach (_(data))
   }
 
-  def renderCallbacks(
-      implicit request: HttpServletRequest): List[(Try[Any]) => Unit] = {
+  def renderCallbacks(implicit
+      request: HttpServletRequest
+  ): List[(Try[Any]) => Unit] = {
     request
       .getOrElse(RenderCallbacks, List.empty[Try[Any] => Unit])
       .asInstanceOf[List[Try[Any] => Unit]]
   }
 
-  def addRenderCallback(callback: Try[Any] => Unit)(
-      implicit request: HttpServletRequest): Unit = {
+  def addRenderCallback(
+      callback: Try[Any] => Unit
+  )(implicit request: HttpServletRequest): Unit = {
     request(RenderCallbacks) = callback :: renderCallbacks
   }
 
-  def runRenderCallbacks(data: Try[Any])(
-      implicit request: HttpServletRequest): Unit = {
-    renderCallbacks.reverse foreach (_ (data))
+  def runRenderCallbacks(
+      data: Try[Any]
+  )(implicit request: HttpServletRequest): Unit = {
+    renderCallbacks.reverse foreach (_(data))
   }
 
   def getServletRegistration(app: ScalatraBase): Option[ServletRegistration] = {
@@ -106,9 +117,14 @@ object ScalatraBase {
   * to all supported backends.
   */
 trait ScalatraBase
-    extends ScalatraContext with CoreDsl with DynamicScope with Initializable
-    with ServletApiImplicits with ScalatraParamsImplicits
-    with DefaultImplicitConversions with SessionSupport {
+    extends ScalatraContext
+    with CoreDsl
+    with DynamicScope
+    with Initializable
+    with ServletApiImplicits
+    with ScalatraParamsImplicits
+    with DefaultImplicitConversions
+    with SessionSupport {
 
   @deprecated("Use servletContext instead", "2.1.0")
   def applicationContext: ServletContext = servletContext
@@ -135,9 +151,11 @@ trait ScalatraBase
     * `executeRoutes()`.
     */
   override def handle(
-      request: HttpServletRequest, response: HttpServletResponse): Unit = {
-    request(CookieSupport.SweetCookiesKey) = new SweetCookies(
-        request.cookies, response)
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
+    request(CookieSupport.SweetCookiesKey) =
+      new SweetCookies(request.cookies, response)
     response.characterEncoding = Some(defaultCharacterEncoding)
     withRequestResponse(request, response) {
       executeRoutes()
@@ -180,12 +198,14 @@ trait ScalatraBase
             this match {
               case f: Filter
                   if !rq.contains(
-                      "org.scalatra.ScalatraFilter.afterFilters.Run") =>
+                    "org.scalatra.ScalatraFilter.afterFilters.Run"
+                  ) =>
                 rq("org.scalatra.ScalatraFilter.afterFilters.Run") = new {}
                 runFilters(routes.afterFilters)
               case f: HttpServlet
                   if !rq.contains(
-                      "org.scalatra.ScalatraServlet.afterFilters.Run") =>
+                    "org.scalatra.ScalatraServlet.afterFilters.Run"
+                  ) =>
                 rq("org.scalatra.ScalatraServlet.afterFilters.Run") = new {}
                 runFilters(routes.afterFilters)
               case _ =>
@@ -206,46 +226,51 @@ trait ScalatraBase
       }
     }
 
-    cradleHalt(result = runActions,
-               e =>
-                 {
-                   cradleHalt({
-                     result = errorHandler(e)
-                     rendered = false
-                   }, e =>
-                     {
-                       runCallbacks(Failure(e))
-                       try {
-                         renderUncaughtException(e)
-                       } finally {
-                         runRenderCallbacks(Failure(e))
-                       }
-                   })
-               })
+    cradleHalt(
+      result = runActions,
+      e => {
+        cradleHalt(
+          {
+            result = errorHandler(e)
+            rendered = false
+          },
+          e => {
+            runCallbacks(Failure(e))
+            try {
+              renderUncaughtException(e)
+            } finally {
+              runRenderCallbacks(Failure(e))
+            }
+          }
+        )
+      }
+    )
 
     if (!rendered) renderResponse(result)
   }
 
   private[this] def cradleHalt(body: => Any, error: Throwable => Any): Any = {
-    try body catch {
+    try body
+    catch {
       case e: HaltException => {
-          try {
-            handleStatusCode(extractStatusCode(e)) match {
-              case Some(result) => renderResponse(result)
-              case _ => renderHaltException(e)
-            }
-          } catch {
-            case e: HaltException => renderHaltException(e)
-            case e: Throwable => error(e)
+        try {
+          handleStatusCode(extractStatusCode(e)) match {
+            case Some(result) => renderResponse(result)
+            case _            => renderHaltException(e)
           }
+        } catch {
+          case e: HaltException => renderHaltException(e)
+          case e: Throwable     => error(e)
         }
+      }
       case e: Throwable => error(e)
     }
   }
 
-  protected def renderUncaughtException(e: Throwable)(
-      implicit request: HttpServletRequest,
-      response: HttpServletResponse): Unit = {
+  protected def renderUncaughtException(e: Throwable)(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Unit = {
     status = 500
     if (isDevelopmentMode) {
       contentType = "text/plain"
@@ -280,14 +305,16 @@ trait ScalatraBase
   }
 
   private[scalatra] def saveMatchedRoute(
-      matchedRoute: MatchedRoute): MatchedRoute = {
+      matchedRoute: MatchedRoute
+  ): MatchedRoute = {
     request("org.scalatra.MatchedRoute") = matchedRoute
     setMultiparams(Some(matchedRoute), multiParams)
     matchedRoute
   }
 
-  private[scalatra] def matchedRoute(
-      implicit request: HttpServletRequest): Option[MatchedRoute] = {
+  private[scalatra] def matchedRoute(implicit
+      request: HttpServletRequest
+  ): Option[MatchedRoute] = {
     request.get("org.scalatra.MatchedRoute").map(_.asInstanceOf[MatchedRoute])
   }
 
@@ -330,9 +357,7 @@ trait ScalatraBase
   protected var doNotFound: Action
 
   def notFound(fun: => Any): Unit = {
-    doNotFound = { () =>
-      fun
-    }
+    doNotFound = { () => fun }
   }
 
   /**
@@ -377,8 +402,8 @@ trait ScalatraBase
   }
 
   protected[scalatra] def withRouteMultiParams[S](
-      matchedRoute: Option[MatchedRoute])(thunk: => S)(
-      implicit request: HttpServletRequest): S = {
+      matchedRoute: Option[MatchedRoute]
+  )(thunk: => S)(implicit request: HttpServletRequest): S = {
     val originalParams = multiParams
     setMultiparams(matchedRoute, originalParams)
     try {
@@ -389,13 +414,14 @@ trait ScalatraBase
   }
 
   protected def setMultiparams[S](
-      matchedRoute: Option[MatchedRoute], originalParams: MultiParams)(
-      implicit request: HttpServletRequest): Unit = {
+      matchedRoute: Option[MatchedRoute],
+      originalParams: MultiParams
+  )(implicit request: HttpServletRequest): Unit = {
     val routeParams =
       matchedRoute.map(_.multiParams).getOrElse(Map.empty).map {
         case (key, values) =>
-          key -> values.map(
-              s => if (s.nonBlank) UriDecoder.secondStep(s) else s)
+          key -> values
+            .map(s => if (s.nonBlank) UriDecoder.secondStep(s) else s)
       }
     request(MultiParamsKey) = originalParams ++ routeParams
   }
@@ -423,14 +449,17 @@ trait ScalatraBase
     * $ - "text/html" for any other result
     */
   protected def contentTypeInferrer: ContentTypeInferrer = {
-    case s: String => "text/plain"
-    case bytes: Array[Byte] => MimeTypes(bytes)
+    case s: String               => "text/plain"
+    case bytes: Array[Byte]      => MimeTypes(bytes)
     case is: java.io.InputStream => MimeTypes(is)
-    case file: File => MimeTypes(file)
+    case file: File              => MimeTypes(file)
     case actionResult: ActionResult =>
-      actionResult.headers.find {
-        case (name, value) => name equalsIgnoreCase "CONTENT-TYPE"
-      }.getOrElse(("Content-Type", contentTypeInferrer(actionResult.body)))._2
+      actionResult.headers
+        .find {
+          case (name, value) => name equalsIgnoreCase "CONTENT-TYPE"
+        }
+        .getOrElse(("Content-Type", contentTypeInferrer(actionResult.body)))
+        ._2
     //    case Unit | _: Unit => null
     case _ => "text/html"
   }
@@ -441,10 +470,11 @@ trait ScalatraBase
     * @see #renderPipeline
     */
   protected def renderResponseBody(actionResult: Any): Unit = {
-    @tailrec def loop(ar: Any): Any = ar match {
-      case _: Unit | Unit => runRenderCallbacks(Success(actionResult))
-      case a => loop(renderPipeline.lift(a).getOrElse(()))
-    }
+    @tailrec def loop(ar: Any): Any =
+      ar match {
+        case _: Unit | Unit => runRenderCallbacks(Success(actionResult))
+        case a              => loop(renderPipeline.lift(a).getOrElse(()))
+      }
     try {
       runCallbacks(Success(actionResult))
       loop(actionResult)
@@ -519,7 +549,8 @@ trait ScalatraBase
     * a RouteMatcher by supplying the request path.
     */
   protected implicit def pathPatternParser2RouteMatcher(
-      pattern: PathPattern): RouteMatcher = {
+      pattern: PathPattern
+  ): RouteMatcher = {
     new PathPatternRouteMatcher(pattern)
   }
 
@@ -545,7 +576,8 @@ trait ScalatraBase
     * @see [[org.scalatra.BooleanBlockRouteMatcher]]
     */
   protected implicit def booleanBlock2RouteMatcher(
-      block: => Boolean): RouteMatcher = {
+      block: => Boolean
+  ): RouteMatcher = {
     new BooleanBlockRouteMatcher(block)
   }
 
@@ -554,10 +586,11 @@ trait ScalatraBase
       var rendered = false
       e match {
         case HaltException(Some(404), _, _, _: Unit | Unit) | HaltException(
-            _,
-            _,
-            _,
-            ActionResult(ResponseStatus(404, _), _: Unit | Unit, _)) =>
+              _,
+              _,
+              _,
+              ActionResult(ResponseStatus(404, _), _: Unit | Unit, _)
+            ) =>
           renderResponse(doNotFound())
           rendered = true
         case HaltException(Some(status), Some(reason), _, _) =>
@@ -578,10 +611,11 @@ trait ScalatraBase
     }
   }
 
-  protected def extractStatusCode(e: HaltException): Int = e match {
-    case HaltException(Some(status), _, _, _) => status
-    case _ => response.status.code
-  }
+  protected def extractStatusCode(e: HaltException): Int =
+    e match {
+      case HaltException(Some(status), _, _, _) => status
+      case _                                    => response.status.code
+    }
 
   def get(transformers: RouteTransformer*)(action: => Any): Route =
     addRoute(Get, transformers, action)
@@ -621,12 +655,16 @@ trait ScalatraBase
     *
     * @see org.scalatra.ScalatraKernel#removeRoute
     */
-  protected def addRoute(method: HttpMethod,
-                         transformers: Seq[RouteTransformer],
-                         action: => Any): Route = {
-    val route = Route(transformers,
-                      () => action,
-                      (req: HttpServletRequest) => routeBasePath(req))
+  protected def addRoute(
+      method: HttpMethod,
+      transformers: Seq[RouteTransformer],
+      action: => Any
+  ): Route = {
+    val route = Route(
+      transformers,
+      () => action,
+      (req: HttpServletRequest) => routeBasePath(req)
+    )
     routes.prependRoute(method, route)
     route
   }
@@ -646,9 +684,11 @@ trait ScalatraBase
   }
 
   protected[scalatra] def addStatusRoute(codes: Range, action: => Any): Unit = {
-    val route = Route(Seq.empty,
-                      () => action,
-                      (req: HttpServletRequest) => routeBasePath(req))
+    val route = Route(
+      Seq.empty,
+      () => action,
+      (req: HttpServletRequest) => routeBasePath(req)
+    )
     routes.addStatusRoute(codes, route)
   }
 
@@ -668,22 +708,27 @@ trait ScalatraBase
     this.config = config
     val path = contextPath match {
       case "" => "/" // The root servlet is "", but the root cookie path is "/"
-      case p => p
+      case p  => p
     }
     servletContext(CookieSupport.CookieOptionsKey) = CookieOptions(path = path)
   }
 
-  def relativeUrl(path: String,
-                  params: Iterable[(String, Any)] = Iterable.empty,
-                  includeContextPath: Boolean = true,
-                  includeServletPath: Boolean = true)(
-      implicit request: HttpServletRequest,
-      response: HttpServletResponse): String = {
-    url(path,
-        params,
-        includeContextPath,
-        includeServletPath,
-        absolutize = false)
+  def relativeUrl(
+      path: String,
+      params: Iterable[(String, Any)] = Iterable.empty,
+      includeContextPath: Boolean = true,
+      includeServletPath: Boolean = true
+  )(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): String = {
+    url(
+      path,
+      params,
+      includeContextPath,
+      includeServletPath,
+      absolutize = false
+    )
   }
 
   /**
@@ -700,20 +745,23 @@ trait ScalatraBase
     * @return the path plus the query string, if any.  The path is run through
     *         `response.encodeURL` to add any necessary session tracking parameters.
     */
-  def url(path: String,
-          params: Iterable[(String, Any)] = Iterable.empty,
-          includeContextPath: Boolean = true,
-          includeServletPath: Boolean = true,
-          absolutize: Boolean = true,
-          withSessionId: Boolean = true)(
-      implicit request: HttpServletRequest,
-      response: HttpServletResponse): String = {
+  def url(
+      path: String,
+      params: Iterable[(String, Any)] = Iterable.empty,
+      includeContextPath: Boolean = true,
+      includeServletPath: Boolean = true,
+      absolutize: Boolean = true,
+      withSessionId: Boolean = true
+  )(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): String = {
 
     val newPath = path match {
-      case x
-          if x.startsWith("/") && includeContextPath && includeServletPath =>
+      case x if x.startsWith("/") && includeContextPath && includeServletPath =>
         ensureSlash(routeBasePath) + ensureContextPathsStripped(
-            ensureSlash(path))
+          ensureSlash(path)
+        )
       case x if x.startsWith("/") && includeContextPath =>
         ensureSlash(contextPath) + ensureContextPathStripped(ensureSlash(path))
       case x if x.startsWith("/") && includeServletPath =>
@@ -721,7 +769,7 @@ trait ScalatraBase
           ensureSlash(_) + ensureServletPathStripped(ensureSlash(path))
         } getOrElse "/"
       case _ if absolutize => ensureContextPathsStripped(ensureSlash(path))
-      case _ => path
+      case _               => path
     }
 
     val pairs =
@@ -736,13 +784,15 @@ trait ScalatraBase
     else newPath + queryString
   }
 
-  private[this] def ensureContextPathsStripped(path: String)(
-      implicit request: HttpServletRequest): String = {
+  private[this] def ensureContextPathsStripped(
+      path: String
+  )(implicit request: HttpServletRequest): String = {
     ((ensureContextPathStripped _) andThen (ensureServletPathStripped _))(path)
   }
 
-  private[this] def ensureServletPathStripped(path: String)(
-      implicit request: HttpServletRequest): String = {
+  private[this] def ensureServletPathStripped(
+      path: String
+  )(implicit request: HttpServletRequest): String = {
     val sp = ensureSlash(request.getServletPath.blankOption getOrElse "")
     val np = if (path.startsWith(sp + "/")) path.substring(sp.length) else path
     ensureSlash(np)
@@ -777,8 +827,10 @@ trait ScalatraBase
   /**
     * Sends a redirect response and immediately halts the current action.
     */
-  def redirect(uri: String)(implicit request: HttpServletRequest,
-                            response: HttpServletResponse): Nothing = {
+  def redirect(uri: String)(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): Nothing = {
     halt(Found(fullUrl(uri, includeServletPath = false)))
   }
 
@@ -794,42 +846,51 @@ trait ScalatraBase
     *
     * @return the full URL
     */
-  def fullUrl(path: String,
-              params: Iterable[(String, Any)] = Iterable.empty,
-              includeContextPath: Boolean = true,
-              includeServletPath: Boolean = true,
-              withSessionId: Boolean = true)(
-      implicit request: HttpServletRequest,
-      response: HttpServletResponse): String = {
+  def fullUrl(
+      path: String,
+      params: Iterable[(String, Any)] = Iterable.empty,
+      includeContextPath: Boolean = true,
+      includeServletPath: Boolean = true,
+      withSessionId: Boolean = true
+  )(implicit
+      request: HttpServletRequest,
+      response: HttpServletResponse
+  ): String = {
     if (path.startsWith("http")) path
     else {
-      val p = url(
-          path, params, includeContextPath, includeServletPath, withSessionId)
+      val p =
+        url(path, params, includeContextPath, includeServletPath, withSessionId)
       if (p.startsWith("http")) p else buildBaseUrl + ensureSlash(p)
     }
   }
 
-  private[this] def buildBaseUrl(
-      implicit request: HttpServletRequest): String = {
+  private[this] def buildBaseUrl(implicit
+      request: HttpServletRequest
+  ): String = {
     "%s://%s".format(
-        if (needsHttps || isHttps) "https" else "http",
-        serverAuthority
+      if (needsHttps || isHttps) "https" else "http",
+      serverAuthority
     )
   }
 
-  private[this] def serverAuthority(
-      implicit request: HttpServletRequest): String = {
+  private[this] def serverAuthority(implicit
+      request: HttpServletRequest
+  ): String = {
     val p = serverPort
     val h = serverHost
     if (p == 80 || p == 443) h else h + ":" + p.toString
   }
 
   def serverHost(implicit request: HttpServletRequest): String = {
-    initParameter(HostNameKey).flatMap(_.blankOption) getOrElse request.getServerName
+    initParameter(HostNameKey).flatMap(
+      _.blankOption
+    ) getOrElse request.getServerName
   }
 
   def serverPort(implicit request: HttpServletRequest): Int = {
-    initParameter(PortKey).flatMap(_.blankOption).map(_.toInt) getOrElse request.getServerPort
+    initParameter(PortKey)
+      .flatMap(_.blankOption)
+      .map(_.toInt) getOrElse request.getServerPort
   }
 
   protected def contextPath: String = servletContext.contextPath
@@ -849,7 +910,9 @@ trait ScalatraBase
   }
 
   def environment: String = {
-    sys.props.get(EnvironmentKey) orElse initParameter(EnvironmentKey) getOrElse "DEVELOPMENT"
+    sys.props.get(EnvironmentKey) orElse initParameter(
+      EnvironmentKey
+    ) getOrElse "DEVELOPMENT"
   }
 
   /**
@@ -864,11 +927,13 @@ trait ScalatraBase
     */
   def requestPath(implicit request: HttpServletRequest): String
 
-  protected def addSessionId(uri: String)(
-      implicit response: HttpServletResponse): String = response.encodeURL(uri)
+  protected def addSessionId(uri: String)(implicit
+      response: HttpServletResponse
+  ): String = response.encodeURL(uri)
 
-  def multiParams(key: String)(
-      implicit request: HttpServletRequest): Seq[String] =
+  def multiParams(
+      key: String
+  )(implicit request: HttpServletRequest): Seq[String] =
     multiParams(request)(key)
 
   /**
@@ -882,7 +947,7 @@ trait ScalatraBase
     val read = request.contains("MultiParamsRead")
     val found =
       request.get(MultiParamsKey) map
-      (_.asInstanceOf[MultiParams] ++
+        (_.asInstanceOf[MultiParams] ++
           (if (read) Map.empty else request.multiParameters))
     val multi = found getOrElse request.multiParameters
     request("MultiParamsRead") = new {}

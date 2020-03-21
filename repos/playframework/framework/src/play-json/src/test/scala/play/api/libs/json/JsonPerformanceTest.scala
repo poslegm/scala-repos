@@ -27,57 +27,63 @@ object JsonPerformanceTest extends App {
   println("Deserialization run 3: " + testDeserialization() + "ms")
 
   println(
-      "Large Array Deserialization run 1: " + testLargeArrayDeserialization() +
-      "ms")
+    "Large Array Deserialization run 1: " + testLargeArrayDeserialization() +
+      "ms"
+  )
   println(
-      "Large Array Deserialization run 2: " + testLargeArrayDeserialization() +
-      "ms")
+    "Large Array Deserialization run 2: " + testLargeArrayDeserialization() +
+      "ms"
+  )
   println(
-      "Large Array Deserialization run 3: " + testLargeArrayDeserialization() +
-      "ms")
+    "Large Array Deserialization run 3: " + testLargeArrayDeserialization() +
+      "ms"
+  )
 
   println(
-      "Large Object Deserialization run 1: " +
-      testLargeObjectDeserialization() + "ms")
+    "Large Object Deserialization run 1: " +
+      testLargeObjectDeserialization() + "ms"
+  )
   println(
-      "Large Object Deserialization run 2: " +
-      testLargeObjectDeserialization() + "ms")
+    "Large Object Deserialization run 2: " +
+      testLargeObjectDeserialization() + "ms"
+  )
   println(
-      "Large Object Deserialization run 3: " +
-      testLargeObjectDeserialization() + "ms")
+    "Large Object Deserialization run 3: " +
+      testLargeObjectDeserialization() + "ms"
+  )
 
   lazy val jsvalue = Json.obj(
-      "f1" -> Json.obj(
-          "f1" -> "string",
-          "f2" -> "string",
-          "f3" -> "string",
-          "f4" -> 10,
-          "f5" -> Json.arr(
-              "string",
-              "string",
-              "string",
-              "string",
-              "string"
-          ),
-          "f6" -> Json.obj(
-              "f1" -> 10,
-              "f2" -> 20,
-              "f3" -> 30,
-              "f4" -> "string"
-          )
-      ),
+    "f1" -> Json.obj(
+      "f1" -> "string",
       "f2" -> "string",
       "f3" -> "string",
       "f4" -> 10,
-      "f5" -> true,
-      "f6" -> false,
-      "f7" -> Json.arr(1, 2, 3, 4, 5, 6)
+      "f5" -> Json.arr(
+        "string",
+        "string",
+        "string",
+        "string",
+        "string"
+      ),
+      "f6" -> Json.obj(
+        "f1" -> 10,
+        "f2" -> 20,
+        "f3" -> 30,
+        "f4" -> "string"
+      )
+    ),
+    "f2" -> "string",
+    "f3" -> "string",
+    "f4" -> 10,
+    "f5" -> true,
+    "f6" -> false,
+    "f7" -> Json.arr(1, 2, 3, 4, 5, 6)
   )
 
   lazy val json = Json.stringify(jsvalue)
 
   lazy val largeArrayJsValue = Json.obj(
-      "f1" -> Json.toJson((1 to 65536))
+    "f1" -> Json.toJson((1 to 65536))
   )
 
   lazy val largeArrayJson = Json.stringify(largeArrayJsValue)
@@ -100,14 +106,18 @@ object JsonPerformanceTest extends App {
   }
 
   def testLargeArrayDeserialization(
-      times: Int = 100, threads: Int = 10): Long = {
+      times: Int = 100,
+      threads: Int = 10
+  ): Long = {
     runTest(times, threads) {
       Json.parse(largeArrayJson)
     }
   }
 
   def testLargeObjectDeserialization(
-      times: Int = 100, threads: Int = 100): Long = {
+      times: Int = 100,
+      threads: Int = 100
+  ): Long = {
     runTest(times, threads) {
       Json.parse(largeObjectJson)
     }
@@ -123,17 +133,20 @@ object JsonPerformanceTest extends App {
       val start = System.currentTimeMillis()
 
       import ExecutionContext.Implicits.global
-      Await.ready(Future.sequence(
-                      List
-                        .range(0, threads)
-                        .map { t =>
-                      Future {
-                        for (i <- 0 to timesPerThread) {
-                          test
-                        }
-                      }(context)
-                    }),
-                  Duration.Inf)
+      Await.ready(
+        Future.sequence(
+          List
+            .range(0, threads)
+            .map { t =>
+              Future {
+                for (i <- 0 to timesPerThread) {
+                  test
+                }
+              }(context)
+            }
+        ),
+        Duration.Inf
+      )
       System.currentTimeMillis() - start
     } finally {
       executor.shutdownNow()

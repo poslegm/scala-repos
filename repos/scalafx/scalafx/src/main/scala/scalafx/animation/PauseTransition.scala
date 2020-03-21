@@ -49,7 +49,8 @@ object PauseTransition extends AnimationStatics {
     * @return JavaFX $PT extracted from `v`.
     */
   implicit def sfxPauseTransition2jfx(
-      v: PauseTransition): jfxa.PauseTransition =
+      v: PauseTransition
+  ): jfxa.PauseTransition =
     if (v != null) v.delegate else null
 }
 
@@ -62,8 +63,9 @@ object PauseTransition extends AnimationStatics {
   * @define PT `PauseTransition`
   */
 class PauseTransition(
-    override val delegate: jfxa.PauseTransition = new jfxa.PauseTransition)
-    extends Transition(delegate) with SFXDelegate[jfxa.PauseTransition] {
+    override val delegate: jfxa.PauseTransition = new jfxa.PauseTransition
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.PauseTransition] {
 
   /**
     * The constructor of $PT.

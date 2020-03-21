@@ -20,7 +20,8 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
 
   implicit val materializer = ActorMaterializer()
   implicit val config = PatienceConfig(
-      timeout = Span(timeout.duration.toMillis, Millis))
+    timeout = Span(timeout.duration.toMillis, Millis)
+  )
 
   "Single Source" must {
     "produce element" in {
@@ -79,56 +80,55 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
   }
 
   "Maybe Source" must {
-    "complete materialized future with None when stream cancels" in Utils.assertAllStagesStopped {
-      val neverSource = Source.maybe[Int]
-      val pubSink = Sink.asPublisher[Int](false)
+    "complete materialized future with None when stream cancels" in Utils
+      .assertAllStagesStopped {
+        val neverSource = Source.maybe[Int]
+        val pubSink = Sink.asPublisher[Int](false)
 
-      val (f, neverPub) = neverSource.toMat(pubSink)(Keep.both).run()
+        val (f, neverPub) = neverSource.toMat(pubSink)(Keep.both).run()
 
-      val c = TestSubscriber.manualProbe[Int]()
-      neverPub.subscribe(c)
-      val subs = c.expectSubscription()
+        val c = TestSubscriber.manualProbe[Int]()
+        neverPub.subscribe(c)
+        val subs = c.expectSubscription()
 
-      subs.request(1000)
-      c.expectNoMsg(300.millis)
+        subs.request(1000)
+        c.expectNoMsg(300.millis)
 
-      subs.cancel()
-      Await.result(f.future, 500.millis) shouldEqual None
-    }
-
-    "allow external triggering of empty completion" in Utils.assertAllStagesStopped {
-      val neverSource = Source.maybe[Int].filter(_ ⇒ false)
-      val counterSink = Sink.fold[Int, Int](0) { (acc, _) ⇒
-        acc + 1
+        subs.cancel()
+        Await.result(f.future, 500.millis) shouldEqual None
       }
 
-      val (neverPromise, counterFuture) =
-        neverSource.toMat(counterSink)(Keep.both).run()
+    "allow external triggering of empty completion" in Utils
+      .assertAllStagesStopped {
+        val neverSource = Source.maybe[Int].filter(_ ⇒ false)
+        val counterSink = Sink.fold[Int, Int](0) { (acc, _) ⇒ acc + 1 }
 
-      // external cancellation
-      neverPromise.trySuccess(None) shouldEqual true
+        val (neverPromise, counterFuture) =
+          neverSource.toMat(counterSink)(Keep.both).run()
 
-      Await.result(counterFuture, 500.millis) shouldEqual 0
-    }
+        // external cancellation
+        neverPromise.trySuccess(None) shouldEqual true
 
-    "allow external triggering of non-empty completion" in Utils.assertAllStagesStopped {
-      val neverSource = Source.maybe[Int]
-      val counterSink = Sink.head[Int]
+        Await.result(counterFuture, 500.millis) shouldEqual 0
+      }
 
-      val (neverPromise, counterFuture) =
-        neverSource.toMat(counterSink)(Keep.both).run()
+    "allow external triggering of non-empty completion" in Utils
+      .assertAllStagesStopped {
+        val neverSource = Source.maybe[Int]
+        val counterSink = Sink.head[Int]
 
-      // external cancellation
-      neverPromise.trySuccess(Some(6)) shouldEqual true
+        val (neverPromise, counterFuture) =
+          neverSource.toMat(counterSink)(Keep.both).run()
 
-      Await.result(counterFuture, 500.millis) shouldEqual 6
-    }
+        // external cancellation
+        neverPromise.trySuccess(Some(6)) shouldEqual true
+
+        Await.result(counterFuture, 500.millis) shouldEqual 6
+      }
 
     "allow external triggering of onError" in Utils.assertAllStagesStopped {
       val neverSource = Source.maybe[Int]
-      val counterSink = Sink.fold[Int, Int](0) { (acc, _) ⇒
-        acc + 1
-      }
+      val counterSink = Sink.fold[Int, Int](0) { (acc, _) ⇒ acc + 1 }
 
       val (neverPromise, counterFuture) =
         neverSource.toMat(counterSink)(Keep.both).run()
@@ -149,17 +149,20 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
       val out = TestSubscriber.manualProbe[Int]
 
       val s = Source
-        .fromGraph(GraphDSL.create(source, source, source, source, source)(
-                Seq(_, _, _, _, _)) { implicit b ⇒ (i0, i1, i2, i3, i4) ⇒
-          import GraphDSL.Implicits._
-          val m = b.add(Merge[Int](5))
-          i0.out ~> m.in(0)
-          i1.out ~> m.in(1)
-          i2.out ~> m.in(2)
-          i3.out ~> m.in(3)
-          i4.out ~> m.in(4)
-          SourceShape(m.out)
-        })
+        .fromGraph(
+          GraphDSL.create(source, source, source, source, source)(
+            Seq(_, _, _, _, _)
+          ) { implicit b ⇒ (i0, i1, i2, i3, i4) ⇒
+            import GraphDSL.Implicits._
+            val m = b.add(Merge[Int](5))
+            i0.out ~> m.in(0)
+            i1.out ~> m.in(1)
+            i2.out ~> m.in(2)
+            i3.out ~> m.in(3)
+            i4.out ~> m.in(4)
+            SourceShape(m.out)
+          }
+        )
         .to(Sink.fromSubscriber(out))
         .run()
 
@@ -207,7 +210,9 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
     "combine from two inputs with simplified API" in {
       val probes = Seq.fill(2)(TestPublisher.manualProbe[Int]())
       val source =
-        Source.fromPublisher(probes(0)) :: Source.fromPublisher(probes(1)) :: Nil
+        Source.fromPublisher(probes(0)) :: Source.fromPublisher(
+          probes(1)
+        ) :: Nil
       val out = TestSubscriber.manualProbe[Int]
 
       Source
@@ -240,42 +245,10 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
   }
 
   "Unfold Source" must {
-    val expected = List(9227465,
-                        5702887,
-                        3524578,
-                        2178309,
-                        1346269,
-                        832040,
-                        514229,
-                        317811,
-                        196418,
-                        121393,
-                        75025,
-                        46368,
-                        28657,
-                        17711,
-                        10946,
-                        6765,
-                        4181,
-                        2584,
-                        1597,
-                        987,
-                        610,
-                        377,
-                        233,
-                        144,
-                        89,
-                        55,
-                        34,
-                        21,
-                        13,
-                        8,
-                        5,
-                        3,
-                        2,
-                        1,
-                        1,
-                        0)
+    val expected = List(9227465, 5702887, 3524578, 2178309, 1346269, 832040,
+      514229, 317811, 196418, 121393, 75025, 46368, 28657, 17711, 10946, 6765,
+      4181, 2584, 1597, 987, 610, 377, 233, 144, 89, 55, 34, 21, 13, 8, 5, 3, 2,
+      1, 1, 0)
 
     "generate a finite fibonacci sequence" in {
       Source
@@ -289,14 +262,18 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
 
     "terminate with a failure if there is an exception thrown" in {
       val t = new RuntimeException("expected")
-      EventFilter[RuntimeException](message = "expected", occurrences = 1) intercept whenReady(
-          Source
-            .unfold((0, 1)) {
-          case (a, _) if a > 10000000 ⇒ throw t
-          case (a, b) ⇒ Some((b, a + b) → a)
-        }
-            .runFold(List.empty[Int]) { case (xs, x) ⇒ x :: xs }
-            .failed) {
+      EventFilter[RuntimeException](
+        message = "expected",
+        occurrences = 1
+      ) intercept whenReady(
+        Source
+          .unfold((0, 1)) {
+            case (a, _) if a > 10000000 ⇒ throw t
+            case (a, b) ⇒ Some((b, a + b) → a)
+          }
+          .runFold(List.empty[Int]) { case (xs, x) ⇒ x :: xs }
+          .failed
+      ) {
         _ should be theSameInstanceAs (t)
       }
     }
@@ -327,7 +304,8 @@ class SourceSpec extends AkkaSpec with DefaultTimeout {
         .grouped(10)
         .runWith(Sink.head)
         .futureValue should ===(
-          Seq(false, true, false, true, false, true, false, true, false, true))
+        Seq(false, true, false, true, false, true, false, true, false, true)
+      )
     }
   }
 

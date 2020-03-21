@@ -12,8 +12,10 @@ import session.NoHistory
 
 /** Reads using standard JDK API */
 class SimpleReader(
-    in: BufferedReader, out: JPrintWriter, val interactive: Boolean)
-    extends InteractiveReader {
+    in: BufferedReader,
+    out: JPrintWriter,
+    val interactive: Boolean
+) extends InteractiveReader {
   val history = NoHistory
   val completion = NoCompletion
 
@@ -29,19 +31,22 @@ class SimpleReader(
     sys.error("No char-based input in SimpleReader")
 
   protected def readOneLine(): String = in.readLine()
-  protected def echo(s: String): Unit = if (interactive) {
-    out.print(s)
-    out.flush()
-  }
+  protected def echo(s: String): Unit =
+    if (interactive) {
+      out.print(s)
+      out.flush()
+    }
 }
 
 object SimpleReader {
   def defaultIn = Console.in
   def defaultOut = new JPrintWriter(Console.out)
 
-  def apply(in: BufferedReader = defaultIn,
-            out: JPrintWriter = defaultOut,
-            interactive: Boolean = true): SimpleReader =
+  def apply(
+      in: BufferedReader = defaultIn,
+      out: JPrintWriter = defaultOut,
+      interactive: Boolean = true
+  ): SimpleReader =
     new SimpleReader(in, out, interactive)
 }
 

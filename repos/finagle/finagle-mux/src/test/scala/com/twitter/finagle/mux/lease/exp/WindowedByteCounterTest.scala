@@ -10,18 +10,23 @@ import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
 class WindowedByteCounterTest
-    extends FunSuite with Eventually with IntegrationPatience {
+    extends FunSuite
+    with Eventually
+    with IntegrationPatience {
 
   trait ByteCounterHelper {
     val fakePool = new FakeMemoryPool(
-        new FakeMemoryUsage(StorageUnit.zero, StorageUnit.zero))
+      new FakeMemoryUsage(StorageUnit.zero, StorageUnit.zero)
+    )
     val fakeBean = new FakeGarbageCollectorMXBean(0, 0)
     val nfo = new JvmInfo(fakePool, fakeBean)
   }
 
   // cleans up thread
   private[this] def withCounter(
-      fakeBean: FakeGarbageCollectorMXBean, fakePool: FakeMemoryPool)(
+      fakeBean: FakeGarbageCollectorMXBean,
+      fakePool: FakeMemoryPool
+  )(
       fn: (ByteCounter, () => Unit) => Unit
   ): Unit = {
     Time.withCurrentTimeFrozen { ctl =>
@@ -97,7 +102,9 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter
+            .rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds
+        )
     }
   }
 
@@ -114,16 +121,22 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter
+            .rate() == (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds
+        )
 
         for (i <- 1 to WindowedByteCounter.N) {
-          fakePool.setSnapshot(usage.copy(
-                  used = WindowedByteCounter.N.kilobytes + (i * 2).kilobytes))
+          fakePool.setSnapshot(
+            usage
+              .copy(used = WindowedByteCounter.N.kilobytes + (i * 2).kilobytes)
+          )
           nextPeriod()
         }
 
-        assert(counter.rate() ==
-            (2 * (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds))
+        assert(
+          counter.rate() ==
+            (2 * (WindowedByteCounter.N.kilobytes).inBytes / WindowedByteCounter.W.inMilliseconds)
+        )
     }
   }
 
@@ -144,7 +157,8 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == x.inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter.rate() == x.inBytes / WindowedByteCounter.W.inMilliseconds
+        )
     }
   }
 
@@ -176,7 +190,9 @@ class WindowedByteCounterTest
         }
 
         assert(
-            counter.rate() == WindowedByteCounter.N.kilobytes.inBytes / WindowedByteCounter.W.inMilliseconds)
+          counter
+            .rate() == WindowedByteCounter.N.kilobytes.inBytes / WindowedByteCounter.W.inMilliseconds
+        )
     }
   }
 

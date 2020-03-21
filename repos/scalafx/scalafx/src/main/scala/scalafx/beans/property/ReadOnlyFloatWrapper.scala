@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyFloatWrapper {
   implicit def sfxReadOnlyFloatWrapper2jfx(
-      w: ReadOnlyFloatWrapper): jfxbp.ReadOnlyFloatWrapper =
+      w: ReadOnlyFloatWrapper
+  ): jfxbp.ReadOnlyFloatWrapper =
     if (w != null) w.delegate else null
 
   /** Creates a new ReadOnlyFloatWrapper instance.
@@ -47,9 +48,10 @@ object ReadOnlyFloatWrapper {
 
 /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/beans/property/ReadOnlyFloatWrapper.html javafx.beans.property.ReadOnlyFloatWrapper]] */
 class ReadOnlyFloatWrapper(
-    override val delegate: jfxbp.ReadOnlyFloatWrapper = new jfxbp.ReadOnlyFloatWrapper(
-          ))
-    extends FloatProperty(delegate)
+    override val delegate: jfxbp.ReadOnlyFloatWrapper =
+      new jfxbp.ReadOnlyFloatWrapper(
+        )
+) extends FloatProperty(delegate)
     with SFXDelegate[jfxbp.ReadOnlyFloatWrapper] {
 
   /** Creates a new ReadOnlyFloatWrapper instance.

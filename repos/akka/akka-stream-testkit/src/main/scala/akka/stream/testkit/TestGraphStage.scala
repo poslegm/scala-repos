@@ -2,7 +2,11 @@ package akka.stream.testkit
 
 import akka.actor.NoSerializationVerificationNeeded
 import akka.stream.scaladsl.Source
-import akka.stream.stage.{OutHandler, GraphStageWithMaterializedValue, InHandler}
+import akka.stream.stage.{
+  OutHandler,
+  GraphStageWithMaterializedValue,
+  InHandler
+}
 import akka.stream._
 import akka.testkit.TestProbe
 
@@ -18,19 +22,21 @@ object GraphStageMessages {
 object TestSinkStage {
   def apply[T, M](
       stageUnderTest: GraphStageWithMaterializedValue[SinkShape[T], M],
-      probe: TestProbe) = new TestSinkStage(stageUnderTest, probe)
+      probe: TestProbe
+  ) = new TestSinkStage(stageUnderTest, probe)
 }
 
 private[testkit] class TestSinkStage[T, M](
     stageUnderTest: GraphStageWithMaterializedValue[SinkShape[T], M],
-    probe: TestProbe)
-    extends GraphStageWithMaterializedValue[SinkShape[T], M] {
+    probe: TestProbe
+) extends GraphStageWithMaterializedValue[SinkShape[T], M] {
 
   val in = Inlet[T]("testSinkStage.in")
   override val shape: SinkShape[T] = SinkShape.of(in)
 
   override def createLogicAndMaterializedValue(
-      inheritedAttributes: Attributes) = {
+      inheritedAttributes: Attributes
+  ) = {
     stageUnderTest.shape.in.id = in.id
     val (logic, mat) =
       stageUnderTest.createLogicAndMaterializedValue(inheritedAttributes)
@@ -57,20 +63,22 @@ private[testkit] class TestSinkStage[T, M](
 object TestSourceStage {
   def apply[T, M](
       stageUnderTest: GraphStageWithMaterializedValue[SourceShape[T], M],
-      probe: TestProbe) =
+      probe: TestProbe
+  ) =
     Source.fromGraph(new TestSourceStage(stageUnderTest, probe))
 }
 
 private[testkit] class TestSourceStage[T, M](
     stageUnderTest: GraphStageWithMaterializedValue[SourceShape[T], M],
-    probe: TestProbe)
-    extends GraphStageWithMaterializedValue[SourceShape[T], M] {
+    probe: TestProbe
+) extends GraphStageWithMaterializedValue[SourceShape[T], M] {
 
   val out = Outlet[T]("testSourceStage.out")
   override val shape: SourceShape[T] = SourceShape.of(out)
 
   override def createLogicAndMaterializedValue(
-      inheritedAttributes: Attributes) = {
+      inheritedAttributes: Attributes
+  ) = {
     stageUnderTest.shape.out.id = out.id
     val (logic, mat) =
       stageUnderTest.createLogicAndMaterializedValue(inheritedAttributes)

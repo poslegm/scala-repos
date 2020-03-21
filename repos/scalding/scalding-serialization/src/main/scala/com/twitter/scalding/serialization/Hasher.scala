@@ -24,7 +24,8 @@ import scala.util.hashing.MurmurHash3
   * does its work, Hasher should compose well (via collections, Tuple2, Option, Either)
   */
 trait Hasher[
-    @specialized(Boolean, Byte, Char, Short, Int, Long, Float, Double) -T] {
+    @specialized(Boolean, Byte, Char, Short, Int, Long, Float, Double) -T
+] {
   @inline
   def hash(i: T): Int
 }
@@ -35,7 +36,8 @@ object Hasher {
 
   @inline
   def hash[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
-      i: T)(implicit h: Hasher[T]): Int = h.hash(i)
+      i: T
+  )(implicit h: Hasher[T]): Int = h.hash(i)
 
   /*
    * Instances below

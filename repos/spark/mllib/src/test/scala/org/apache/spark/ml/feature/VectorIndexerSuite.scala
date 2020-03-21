@@ -30,7 +30,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 
 class VectorIndexerSuite
-    extends SparkFunSuite with MLlibTestSparkContext with DefaultReadWriteTest
+    extends SparkFunSuite
+    with MLlibTestSparkContext
+    with DefaultReadWriteTest
     with Logging {
 
   import VectorIndexerSuite.FeatureData
@@ -50,51 +52,66 @@ class VectorIndexerSuite
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val densePoints1Seq = Seq(Vectors.dense(1.0, 2.0, 0.0),
-                              Vectors.dense(0.0, 1.0, 2.0),
-                              Vectors.dense(0.0, 0.0, -1.0),
-                              Vectors.dense(1.0, 3.0, 2.0))
+    val densePoints1Seq = Seq(
+      Vectors.dense(1.0, 2.0, 0.0),
+      Vectors.dense(0.0, 1.0, 2.0),
+      Vectors.dense(0.0, 0.0, -1.0),
+      Vectors.dense(1.0, 3.0, 2.0)
+    )
     val sparsePoints1Seq = Seq(
-        Vectors.sparse(3, Array(0, 1), Array(1.0, 2.0)),
-        Vectors.sparse(3, Array(1, 2), Array(1.0, 2.0)),
-        Vectors.sparse(3, Array(2), Array(-1.0)),
-        Vectors.sparse(3, Array(0, 1, 2), Array(1.0, 3.0, 2.0)))
+      Vectors.sparse(3, Array(0, 1), Array(1.0, 2.0)),
+      Vectors.sparse(3, Array(1, 2), Array(1.0, 2.0)),
+      Vectors.sparse(3, Array(2), Array(-1.0)),
+      Vectors.sparse(3, Array(0, 1, 2), Array(1.0, 3.0, 2.0))
+    )
     point1maxes = Array(1.0, 3.0, 2.0)
 
-    val densePoints2Seq = Seq(Vectors.dense(1.0, 1.0, 0.0, 1.0),
-                              Vectors.dense(0.0, 1.0, 1.0, 1.0),
-                              Vectors.dense(-1.0, 1.0, 2.0, 0.0))
+    val densePoints2Seq = Seq(
+      Vectors.dense(1.0, 1.0, 0.0, 1.0),
+      Vectors.dense(0.0, 1.0, 1.0, 1.0),
+      Vectors.dense(-1.0, 1.0, 2.0, 0.0)
+    )
     val sparsePoints2Seq = Seq(
-        Vectors.sparse(4, Array(0, 1, 3), Array(1.0, 1.0, 1.0)),
-        Vectors.sparse(4, Array(1, 2, 3), Array(1.0, 1.0, 1.0)),
-        Vectors.sparse(4, Array(0, 1, 2), Array(-1.0, 1.0, 2.0)))
+      Vectors.sparse(4, Array(0, 1, 3), Array(1.0, 1.0, 1.0)),
+      Vectors.sparse(4, Array(1, 2, 3), Array(1.0, 1.0, 1.0)),
+      Vectors.sparse(4, Array(0, 1, 2), Array(-1.0, 1.0, 2.0))
+    )
 
-    val badPointsSeq = Seq(Vectors.sparse(2, Array(0, 1), Array(1.0, 1.0)),
-                           Vectors.sparse(3, Array(2), Array(-1.0)))
+    val badPointsSeq = Seq(
+      Vectors.sparse(2, Array(0, 1), Array(1.0, 1.0)),
+      Vectors.sparse(3, Array(2), Array(-1.0))
+    )
 
     // Sanity checks for assumptions made in tests
     assert(densePoints1Seq.head.size == sparsePoints1Seq.head.size)
     assert(densePoints2Seq.head.size == sparsePoints2Seq.head.size)
     assert(densePoints1Seq.head.size != densePoints2Seq.head.size)
     def checkPair(dvSeq: Seq[Vector], svSeq: Seq[Vector]): Unit = {
-      assert(dvSeq
-               .zip(svSeq)
-               .forall { case (dv, sv) => dv.toArray === sv.toArray },
-             "typo in unit test")
+      assert(
+        dvSeq
+          .zip(svSeq)
+          .forall { case (dv, sv) => dv.toArray === sv.toArray },
+        "typo in unit test"
+      )
     }
     checkPair(densePoints1Seq, sparsePoints1Seq)
     checkPair(densePoints2Seq, sparsePoints2Seq)
 
     densePoints1 = sqlContext.createDataFrame(
-        sc.parallelize(densePoints1Seq, 2).map(FeatureData))
+      sc.parallelize(densePoints1Seq, 2).map(FeatureData)
+    )
     sparsePoints1 = sqlContext.createDataFrame(
-        sc.parallelize(sparsePoints1Seq, 2).map(FeatureData))
+      sc.parallelize(sparsePoints1Seq, 2).map(FeatureData)
+    )
     densePoints2 = sqlContext.createDataFrame(
-        sc.parallelize(densePoints2Seq, 2).map(FeatureData))
+      sc.parallelize(densePoints2Seq, 2).map(FeatureData)
+    )
     sparsePoints2 = sqlContext.createDataFrame(
-        sc.parallelize(sparsePoints2Seq, 2).map(FeatureData))
+      sc.parallelize(sparsePoints2Seq, 2).map(FeatureData)
+    )
     badPoints = sqlContext.createDataFrame(
-        sc.parallelize(badPointsSeq, 2).map(FeatureData))
+      sc.parallelize(badPointsSeq, 2).map(FeatureData)
+    )
   }
 
   private def getIndexer: VectorIndexer =
@@ -108,7 +125,8 @@ class VectorIndexerSuite
 
   test("Cannot fit an empty DataFrame") {
     val rdd = sqlContext.createDataFrame(
-        sc.parallelize(Array.empty[Vector], 2).map(FeatureData))
+      sc.parallelize(Array.empty[Vector], 2).map(FeatureData)
+    )
     val vectorIndexer = getIndexer
     intercept[IllegalArgumentException] {
       vectorIndexer.fit(rdd)
@@ -127,18 +145,22 @@ class VectorIndexerSuite
     intercept[SparkException] {
       model.transform(densePoints2).collect()
       logInfo(
-          "Did not throw error when fit, transform were called on vectors of different lengths")
+        "Did not throw error when fit, transform were called on vectors of different lengths"
+      )
     }
     intercept[SparkException] {
       vectorIndexer.fit(badPoints)
       logInfo(
-          "Did not throw error when fitting vectors of different lengths in same RDD.")
+        "Did not throw error when fitting vectors of different lengths in same RDD."
+      )
     }
   }
 
   test("Same result with dense and sparse vectors") {
     def testDenseSparse(
-        densePoints: DataFrame, sparsePoints: DataFrame): Unit = {
+        densePoints: DataFrame,
+        sparsePoints: DataFrame
+    ): Unit = {
       val denseVectorIndexer = getIndexer.setMaxCategories(2)
       val sparseVectorIndexer = getIndexer.setMaxCategories(2)
       val denseModel = denseVectorIndexer.fit(densePoints)
@@ -146,25 +168,30 @@ class VectorIndexerSuite
       val denseMap = denseModel.categoryMaps
       val sparseMap = sparseModel.categoryMaps
       assert(
-          denseMap.keys.toSet == sparseMap.keys.toSet,
-          "Categorical features chosen from dense vs. sparse vectors did not match.")
+        denseMap.keys.toSet == sparseMap.keys.toSet,
+        "Categorical features chosen from dense vs. sparse vectors did not match."
+      )
       assert(
-          denseMap == sparseMap,
-          "Categorical feature value indexes chosen from dense vs. sparse vectors did not match.")
+        denseMap == sparseMap,
+        "Categorical feature value indexes chosen from dense vs. sparse vectors did not match."
+      )
     }
     testDenseSparse(densePoints1, sparsePoints1)
     testDenseSparse(densePoints2, sparsePoints2)
   }
 
   test(
-      "Builds valid categorical feature value index, transform correctly, check metadata") {
-    def checkCategoryMaps(data: DataFrame,
-                          maxCategories: Int,
-                          categoricalFeatures: Set[Int]): Unit = {
+    "Builds valid categorical feature value index, transform correctly, check metadata"
+  ) {
+    def checkCategoryMaps(
+        data: DataFrame,
+        maxCategories: Int,
+        categoricalFeatures: Set[Int]
+    ): Unit = {
       val collectedData = data.collect().map(_.getAs[Vector](0))
       val errMsg =
         s"checkCategoryMaps failed for input with maxCategories=$maxCategories," +
-        s" categoricalFeatures=${categoricalFeatures.mkString(", ")}"
+          s" categoricalFeatures=${categoricalFeatures.mkString(", ")}"
       try {
         val vectorIndexer = getIndexer.setMaxCategories(maxCategories)
         val model = vectorIndexer.fit(data)
@@ -178,32 +205,40 @@ class VectorIndexerSuite
         assert(featureAttrs.name === "indexed")
         assert(featureAttrs.attributes.get.length === model.numFeatures)
         categoricalFeatures.foreach { feature: Int =>
-          val origValueSet = collectedData.map(_ (feature)).toSet
+          val origValueSet = collectedData.map(_(feature)).toSet
           val targetValueIndexSet = Range(0, origValueSet.size).toSet
           val catMap = categoryMaps(feature)
           assert(catMap.keys.toSet === origValueSet) // Correct categories
-          assert(catMap.values.toSet === targetValueIndexSet) // Correct category indices
+          assert(
+            catMap.values.toSet === targetValueIndexSet
+          ) // Correct category indices
           if (origValueSet.contains(0.0)) {
             assert(catMap(0.0) === 0) // value 0 gets index 0
           }
           // Check transformed data
           assert(
-              indexedRDD.map(_ (feature)).collect().toSet === targetValueIndexSet)
+            indexedRDD.map(_(feature)).collect().toSet === targetValueIndexSet
+          )
           // Check metadata
           val featureAttr = featureAttrs(feature)
           assert(featureAttr.index.get === feature)
           featureAttr match {
             case attr: BinaryAttribute =>
-              assert(attr.values.get === origValueSet.toArray.sorted
-                    .map(_.toString))
+              assert(
+                attr.values.get === origValueSet.toArray.sorted
+                  .map(_.toString)
+              )
             case attr: NominalAttribute =>
-              assert(attr.values.get === origValueSet.toArray.sorted
-                    .map(_.toString))
+              assert(
+                attr.values.get === origValueSet.toArray.sorted
+                  .map(_.toString)
+              )
               assert(attr.isOrdinal.get === false)
             case _ =>
               throw new RuntimeException(
-                  errMsg + s". Categorical feature $feature failed" +
-                  s" metadata check. Found feature attribute: $featureAttr.")
+                errMsg + s". Categorical feature $feature failed" +
+                  s" metadata check. Found feature attribute: $featureAttr."
+              )
           }
         }
         // Check numerical feature metadata.
@@ -216,8 +251,9 @@ class VectorIndexerSuite
                 assert(featureAttr.index.get === feature)
               case _ =>
                 throw new RuntimeException(
-                    errMsg + s". Numerical feature $feature failed" +
-                    s" metadata check. Found feature attribute: $featureAttr.")
+                  errMsg + s". Numerical feature $feature failed" +
+                    s" metadata check. Found feature attribute: $featureAttr."
+                )
             }
           }
       } catch {
@@ -227,11 +263,20 @@ class VectorIndexerSuite
       }
     }
     checkCategoryMaps(
-        densePoints1, maxCategories = 2, categoricalFeatures = Set(0))
+      densePoints1,
+      maxCategories = 2,
+      categoricalFeatures = Set(0)
+    )
     checkCategoryMaps(
-        densePoints1, maxCategories = 3, categoricalFeatures = Set(0, 2))
+      densePoints1,
+      maxCategories = 3,
+      categoricalFeatures = Set(0, 2)
+    )
     checkCategoryMaps(
-        densePoints2, maxCategories = 2, categoricalFeatures = Set(1, 3))
+      densePoints2,
+      maxCategories = 2,
+      categoricalFeatures = Set(1, 3)
+    )
   }
 
   test("Maintain sparsity for sparse vectors") {
@@ -249,7 +294,9 @@ class VectorIndexerSuite
         case (orig: SparseVector, indexed: SparseVector) =>
           assert(orig.indices.length == indexed.indices.length)
         case _ =>
-          throw new UnknownError("Unit test has a bug in it.") // should never happen
+          throw new UnknownError(
+            "Unit test has a bug in it."
+          ) // should never happen
       }
     }
     checkSparsity(sparsePoints1, maxCategories = 2)
@@ -264,7 +311,8 @@ class VectorIndexerSuite
     }
     val attrGroup = new AttributeGroup("features", featureAttributes)
     val densePoints1WithMeta = densePoints1.select(
-        densePoints1("features").as("features", attrGroup.toMetadata()))
+      densePoints1("features").as("features", attrGroup.toMetadata())
+    )
     val vectorIndexer = getIndexer.setMaxCategories(2)
     val model = vectorIndexer.fit(densePoints1WithMeta)
     // Check that ML metadata are preserved.
@@ -295,9 +343,11 @@ class VectorIndexerSuite
   }
 
   test("VectorIndexerModel read/write") {
-    val categoryMaps = Map(0 -> Map(0.0 -> 0, 1.0 -> 1),
-                           1 -> Map(0.0 -> 0, 1.0 -> 1, 2.0 -> 2, 3.0 -> 3),
-                           2 -> Map(0.0 -> 0, -1.0 -> 1, 2.0 -> 2))
+    val categoryMaps = Map(
+      0 -> Map(0.0 -> 0, 1.0 -> 1),
+      1 -> Map(0.0 -> 0, 1.0 -> 1, 2.0 -> 2, 3.0 -> 3),
+      2 -> Map(0.0 -> 0, -1.0 -> 1, 2.0 -> 2)
+    )
     val instance =
       new VectorIndexerModel("myVectorIndexerModel", 3, categoryMaps)
     val newInstance = testDefaultReadWrite(instance)

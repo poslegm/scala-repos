@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -87,51 +87,61 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
   def includeIdField: Boolean
 
   trait MongoColumnarTableCompanion
-      extends BlockStoreColumnarTableCompanion with Logging {
+      extends BlockStoreColumnarTableCompanion
+      with Logging {
     def mongo: Mongo
     def dbAuthParams: Map[String, String]
 
     private def jTypeToProperties(
-        tpe: JType, current: Set[String]): Set[String] = tpe match {
-      case JArrayFixedT(elements) if current.nonEmpty =>
-        elements.map {
-          case (index, childType) =>
-            val newPaths = current.map { s =>
-              s + "[" + index + "]"
+        tpe: JType,
+        current: Set[String]
+    ): Set[String] =
+      tpe match {
+        case JArrayFixedT(elements) if current.nonEmpty =>
+          elements
+            .map {
+              case (index, childType) =>
+                val newPaths = current.map { s => s + "[" + index + "]" }
+                jTypeToProperties(childType, newPaths)
             }
-            jTypeToProperties(childType, newPaths)
-        }.toSet.flatten
+            .toSet
+            .flatten
 
-      case JObjectFixedT(fields) =>
-        fields.map {
-          case (name, childType) =>
-            val newPaths =
-              if (current.nonEmpty) {
-                current.map { s =>
-                  s + "." + name
-                }
-              } else {
-                Set(name)
-              }
-            jTypeToProperties(childType, newPaths)
-        }.toSet.flatten
+        case JObjectFixedT(fields) =>
+          fields
+            .map {
+              case (name, childType) =>
+                val newPaths =
+                  if (current.nonEmpty) {
+                    current.map { s => s + "." + name }
+                  } else {
+                    Set(name)
+                  }
+                jTypeToProperties(childType, newPaths)
+            }
+            .toSet
+            .flatten
 
-      case _ => current
-    }
+        case _ => current
+      }
 
     sealed trait LoadState
     case class InitialLoad(paths: List[Path]) extends LoadState
     case class InLoad(
-        cursorGen: () => DBCursor, skip: Int, remainingPaths: List[Path])
-        extends LoadState
+        cursorGen: () => DBCursor,
+        skip: Int,
+        remainingPaths: List[Path]
+    ) extends LoadState
 
     def safeOp[A](nullMessage: String)(v: => A): Option[A] =
       try {
         Option(v) orElse { logger.error(nullMessage); None }
       } catch {
         case t: Throwable =>
-          logger.error("Failure during Mongo query: %s(%s)".format(
-                  t.getClass, t.getMessage)); None
+          logger.error(
+            "Failure during Mongo query: %s(%s)"
+              .format(t.getClass, t.getMessage)
+          ); None
       }
 
     def load(table: Table, apiKey: APIKey, tpe: JType): Future[Table] = {
@@ -139,65 +149,77 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
         paths <- pathsM(table)
       } yield {
         Table(
-            StreamT.unfoldM[Future, Slice, LoadState](
-                InitialLoad(paths.toList)) {
-              case InLoad(cursorGen, skip, remaining) =>
-                M.point {
-                  val (slice, nextSkip) = makeSlice(cursorGen, skip)
-                  logger.trace(
-                      "Running InLoad: fetched %d rows, next skip = %s".format(
-                          slice.size, nextSkip))
-                  Some(slice,
-                       nextSkip
-                         .map(InLoad(cursorGen, _, remaining))
-                         .getOrElse(InitialLoad(remaining)))
-                }
+          StreamT.unfoldM[Future, Slice, LoadState](InitialLoad(paths.toList)) {
+            case InLoad(cursorGen, skip, remaining) =>
+              M.point {
+                val (slice, nextSkip) = makeSlice(cursorGen, skip)
+                logger.trace(
+                  "Running InLoad: fetched %d rows, next skip = %s"
+                    .format(slice.size, nextSkip)
+                )
+                Some(
+                  slice,
+                  nextSkip
+                    .map(InLoad(cursorGen, _, remaining))
+                    .getOrElse(InitialLoad(remaining))
+                )
+              }
 
-              case InitialLoad(path :: xs) =>
-                path.elements.toList match {
-                  case dbName :: collectionName :: Nil =>
-                    logger.trace("Running InitialLoad")
-                    M.point {
-                      for {
-                        db <- safeOp("Database " + dbName + " does not exist")(
-                            mongo.getDB(dbName)).flatMap {
+            case InitialLoad(path :: xs) =>
+              path.elements.toList match {
+                case dbName :: collectionName :: Nil =>
+                  logger.trace("Running InitialLoad")
+                  M.point {
+                    for {
+                      db <-
+                        safeOp("Database " + dbName + " does not exist")(
+                          mongo.getDB(dbName)
+                        ).flatMap {
                           d =>
                             if (!d.isAuthenticated &&
                                 dbAuthParams.contains(dbName)) {
                               logger.trace("Running auth setup for " + dbName)
-                              dbAuthParams.get(dbName).map(_.split(':')) flatMap {
+                              dbAuthParams
+                                .get(dbName)
+                                .map(_.split(':')) flatMap {
                                 case Array(user, password) =>
-                                  if (d.authenticate(user,
-                                                     password.toCharArray)) {
+                                  if (d.authenticate(
+                                        user,
+                                        password.toCharArray
+                                      )) {
                                     Some(d)
                                   } else {
                                     logger.error(
-                                        "Authentication failed for database " +
-                                        dbName); None
+                                      "Authentication failed for database " +
+                                        dbName
+                                    ); None
                                   }
 
                                 case invalid =>
                                   logger.error(
-                                      "Invalid user:password for %s: \"%s\""
-                                        .format(dbName,
-                                                invalid.mkString(":"))); None
+                                    "Invalid user:password for %s: \"%s\""
+                                      .format(dbName, invalid.mkString(":"))
+                                  ); None
                               }
                             } else {
                               Some(d)
                             }
                         }
-                        coll <- safeOp("Collection " + collectionName +
-                            " does not exist") {
-                          logger.trace(
-                              "Fetching collection: " + collectionName)
+                      coll <-
+                        safeOp(
+                          "Collection " + collectionName +
+                            " does not exist"
+                        ) {
+                          logger.trace("Fetching collection: " + collectionName)
                           db.getCollection(collectionName)
                         }
-                        slice <- safeOp("Invalid result in query") {
+                      slice <-
+                        safeOp("Invalid result in query") {
                           logger.trace("Getting data from " + coll)
                           val selector = jTypeToProperties(tpe, Set())
                             .foldLeft(new BasicDBObject()) {
-                            case (obj, path) => obj.append(path, 1)
-                          }
+                              case (obj, path) => obj.append(path, 1)
+                            }
 
                           val cursorGen =
                             () => coll.find(new BasicDBObject(), selector)
@@ -205,28 +227,35 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
                           val (slice, nextSkip) = makeSlice(cursorGen, 0)
 
                           logger.debug("Gen slice of size " + slice.size)
-                          (slice,
-                           nextSkip
-                             .map(InLoad(cursorGen, _, xs))
-                             .getOrElse(InitialLoad(xs)))
+                          (
+                            slice,
+                            nextSkip
+                              .map(InLoad(cursorGen, _, xs))
+                              .getOrElse(InitialLoad(xs))
+                          )
                         }
-                      } yield slice
-                    }
+                    } yield slice
+                  }
 
-                  case err =>
-                    sys.error("MongoDB path " + path.path +
-                        " does not have the form /dbName/collectionName; rollups not yet supported.")
-                }
+                case err =>
+                  sys.error(
+                    "MongoDB path " + path.path +
+                      " does not have the form /dbName/collectionName; rollups not yet supported."
+                  )
+              }
 
-              case InitialLoad(Nil) =>
-                M.point(None)
-            },
-            UnknownSize
+            case InitialLoad(Nil) =>
+              M.point(None)
+          },
+          UnknownSize
         )
       }
     }
 
-    def makeSlice(cursorGen: () => DBCursor, skip: Int): (Slice, Option[Int]) = {
+    def makeSlice(
+        cursorGen: () => DBCursor,
+        skip: Int
+    ): (Slice, Option[Int]) = {
       import TransSpecModule.paths._
 
       // Sort by _id always to mimic NIHDB
@@ -245,7 +274,7 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
           if (includeIdField) {
             columns0 get ColumnRef(Key \ 0, CString) map { idCol =>
               columns0 +
-              (ColumnRef(Value \ CPathField("_id"), CString) -> idCol)
+                (ColumnRef(Value \ CPathField("_id"), CString) -> idCol)
             } getOrElse columns0
           } else columns0
       }
@@ -264,8 +293,9 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
       (slice, nextSkip)
     }
 
-    private def buildColumns(dbObjs: java.util.List[DBObject])
-      : (Boolean, Int, Map[ColumnRef, Column]) = {
+    private def buildColumns(
+        dbObjs: java.util.List[DBObject]
+    ): (Boolean, Int, Map[ColumnRef, Column]) = {
       val sliceSize = dbObjs.size
 
       val acc = mutable.Map.empty[(List[CPathNode], CType), ArrayColumn[_]]
@@ -274,9 +304,11 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
         value match {
           case null =>
             acc
-              .getOrElseUpdate((rprefix, CNull), {
-                MutableNullColumn.empty()
-              })
+              .getOrElseUpdate(
+                (rprefix, CNull), {
+                  MutableNullColumn.empty()
+                }
+              )
               .asInstanceOf[MutableNullColumn]
               .unsafeTap(_.update(row, true))
 
@@ -285,65 +317,81 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
             val value =
               "ObjectId(\"" + Hex.encodeHexString(objId.toByteArray) + "\")"
             val col = acc
-              .getOrElseUpdate((rprefix, CString), {
-                ArrayStrColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CString), {
+                  ArrayStrColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayStrColumn]
             col.update(row, value)
 
           case str: String =>
             val col = acc
-              .getOrElseUpdate((rprefix, CString), {
-                ArrayStrColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CString), {
+                  ArrayStrColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayStrColumn]
             col.update(row, str)
 
           case num: java.lang.Integer =>
             val col = acc
-              .getOrElseUpdate((rprefix, CLong), {
-                ArrayLongColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CLong), {
+                  ArrayLongColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayLongColumn]
             col.update(row, num.longValue)
 
           case num: java.lang.Long =>
             val col = acc
-              .getOrElseUpdate((rprefix, CLong), {
-                ArrayLongColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CLong), {
+                  ArrayLongColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayLongColumn]
             col.update(row, num.longValue)
 
           case num: java.lang.Float =>
             val col = acc
-              .getOrElseUpdate((rprefix, CDouble), {
-                ArrayDoubleColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CDouble), {
+                  ArrayDoubleColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayDoubleColumn]
             col.update(row, num.doubleValue)
 
           case num: java.lang.Double =>
             val col = acc
-              .getOrElseUpdate((rprefix, CDouble), {
-                ArrayDoubleColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CDouble), {
+                  ArrayDoubleColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayDoubleColumn]
             col.update(row, num.doubleValue)
 
           case bool: java.lang.Boolean =>
             val col = acc
-              .getOrElseUpdate((rprefix, CBoolean), {
-                ArrayBoolColumn.empty()
-              })
+              .getOrElseUpdate(
+                (rprefix, CBoolean), {
+                  ArrayBoolColumn.empty()
+                }
+              )
               .asInstanceOf[ArrayBoolColumn]
             col.update(row, bool.booleanValue)
 
           case array: java.util.ArrayList[_] if array.isEmpty =>
             val col = acc
-              .getOrElseUpdate((rprefix, CEmptyArray), {
-                MutableEmptyArrayColumn.empty()
-              })
+              .getOrElseUpdate(
+                (rprefix, CEmptyArray), {
+                  MutableEmptyArrayColumn.empty()
+                }
+              )
               .asInstanceOf[MutableEmptyArrayColumn]
             col.update(row, true)
 
@@ -359,9 +407,11 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
             val keys = dbObj.keySet()
             if (keys.isEmpty) {
               acc
-                .getOrElseUpdate((rprefix, CEmptyObject), {
-                  MutableEmptyObjectColumn.empty()
-                })
+                .getOrElseUpdate(
+                  (rprefix, CEmptyObject), {
+                    MutableEmptyObjectColumn.empty()
+                  }
+                )
                 .asInstanceOf[MutableEmptyObjectColumn]
                 .unsafeTap(_.update(row, true))
             } else {
@@ -374,9 +424,11 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
 
           case date: java.util.Date =>
             val col = acc
-              .getOrElseUpdate((rprefix, CDate), {
-                ArrayDateColumn.empty(sliceSize)
-              })
+              .getOrElseUpdate(
+                (rprefix, CDate), {
+                  ArrayDateColumn.empty(sliceSize)
+                }
+              )
               .asInstanceOf[ArrayDateColumn]
             col.update(row, new DateTime(date))
         }
@@ -405,14 +457,16 @@ trait MongoColumnarTableModule extends BlockStoreColumnarTableModule[Future] {
         row += 1
       }
 
-      (dbObjIter.hasNext,
-       row,
-       acc
-         .map({
-           case ((rprefix, cType), col) =>
-             (ColumnRef(CPath(rprefix.reverse), cType), col)
-         })
-         .toMap)
+      (
+        dbObjIter.hasNext,
+        row,
+        acc
+          .map({
+            case ((rprefix, cType), col) =>
+              (ColumnRef(CPath(rprefix.reverse), cType), col)
+          })
+          .toMap
+      )
     }
   }
 }

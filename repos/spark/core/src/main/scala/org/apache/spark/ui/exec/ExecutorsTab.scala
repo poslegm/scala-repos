@@ -45,8 +45,9 @@ private[ui] class ExecutorsTab(parent: SparkUI)
   */
 @DeveloperApi
 class ExecutorsListener(
-    storageStatusListener: StorageStatusListener, conf: SparkConf)
-    extends SparkListener {
+    storageStatusListener: StorageStatusListener,
+    conf: SparkConf
+) extends SparkListener {
   val executorToTotalCores = HashMap[String, Int]()
   val executorToTasksMax = HashMap[String, Int]()
   val executorToTasksActive = HashMap[String, Int]()
@@ -70,25 +71,30 @@ class ExecutorsListener(
     storageStatusListener.deadStorageStatusList
 
   override def onExecutorAdded(
-      executorAdded: SparkListenerExecutorAdded): Unit = synchronized {
-    val eid = executorAdded.executorId
-    executorToLogUrls(eid) = executorAdded.executorInfo.logUrlMap
-    executorToTotalCores(eid) = executorAdded.executorInfo.totalCores
-    executorToTasksMax(eid) = executorToTotalCores(eid) / conf.getInt(
-        "spark.task.cpus", 1)
-    executorIdToData(eid) = ExecutorUIData(executorAdded.time)
-  }
+      executorAdded: SparkListenerExecutorAdded
+  ): Unit =
+    synchronized {
+      val eid = executorAdded.executorId
+      executorToLogUrls(eid) = executorAdded.executorInfo.logUrlMap
+      executorToTotalCores(eid) = executorAdded.executorInfo.totalCores
+      executorToTasksMax(eid) =
+        executorToTotalCores(eid) / conf.getInt("spark.task.cpus", 1)
+      executorIdToData(eid) = ExecutorUIData(executorAdded.time)
+    }
 
   override def onExecutorRemoved(
-      executorRemoved: SparkListenerExecutorRemoved): Unit = synchronized {
-    val eid = executorRemoved.executorId
-    val uiData = executorIdToData(eid)
-    uiData.finishTime = Some(executorRemoved.time)
-    uiData.finishReason = Some(executorRemoved.reason)
-  }
+      executorRemoved: SparkListenerExecutorRemoved
+  ): Unit =
+    synchronized {
+      val eid = executorRemoved.executorId
+      val uiData = executorIdToData(eid)
+      uiData.finishTime = Some(executorRemoved.time)
+      uiData.finishReason = Some(executorRemoved.reason)
+    }
 
   override def onApplicationStart(
-      applicationStart: SparkListenerApplicationStart): Unit = {
+      applicationStart: SparkListenerApplicationStart
+  ): Unit = {
     applicationStart.driverLogs.foreach { logs =>
       val storageStatus = activeStorageStatusList.find { s =>
         s.blockManagerId.executorId == SparkContext.LEGACY_DRIVER_IDENTIFIER ||
@@ -106,55 +112,66 @@ class ExecutorsListener(
       executorToTasksActive(eid) = executorToTasksActive.getOrElse(eid, 0) + 1
     }
 
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = synchronized {
-    val info = taskEnd.taskInfo
-    if (info != null) {
-      val eid = info.executorId
-      taskEnd.reason match {
-        case Resubmitted =>
-          // Note: For resubmitted tasks, we continue to use the metrics that belong to the
-          // first attempt of this task. This may not be 100% accurate because the first attempt
-          // could have failed half-way through. The correct fix would be to keep track of the
-          // metrics added by each attempt, but this is much more complicated.
-          return
-        case e: ExceptionFailure =>
-          executorToTasksFailed(eid) = executorToTasksFailed.getOrElse(eid, 0) +
-          1
-        case _ =>
-          executorToTasksComplete(eid) = executorToTasksComplete.getOrElse(
-              eid, 0) + 1
-      }
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit =
+    synchronized {
+      val info = taskEnd.taskInfo
+      if (info != null) {
+        val eid = info.executorId
+        taskEnd.reason match {
+          case Resubmitted =>
+            // Note: For resubmitted tasks, we continue to use the metrics that belong to the
+            // first attempt of this task. This may not be 100% accurate because the first attempt
+            // could have failed half-way through. The correct fix would be to keep track of the
+            // metrics added by each attempt, but this is much more complicated.
+            return
+          case e: ExceptionFailure =>
+            executorToTasksFailed(eid) =
+              executorToTasksFailed.getOrElse(eid, 0) +
+                1
+          case _ =>
+            executorToTasksComplete(eid) =
+              executorToTasksComplete.getOrElse(eid, 0) + 1
+        }
 
-      executorToTasksActive(eid) = executorToTasksActive.getOrElse(eid, 1) - 1
-      executorToDuration(eid) = executorToDuration.getOrElse(eid, 0L) +
-      info.duration
+        executorToTasksActive(eid) = executorToTasksActive.getOrElse(eid, 1) - 1
+        executorToDuration(eid) = executorToDuration.getOrElse(eid, 0L) +
+          info.duration
 
-      // Update shuffle read/write
-      val metrics = taskEnd.taskMetrics
-      if (metrics != null) {
-        metrics.inputMetrics.foreach { inputMetrics =>
-          executorToInputBytes(eid) = executorToInputBytes.getOrElse(eid, 0L) +
-          inputMetrics.bytesRead
-          executorToInputRecords(eid) = executorToInputRecords.getOrElse(
-              eid, 0L) + inputMetrics.recordsRead
+        // Update shuffle read/write
+        val metrics = taskEnd.taskMetrics
+        if (metrics != null) {
+          metrics.inputMetrics.foreach { inputMetrics =>
+            executorToInputBytes(eid) =
+              executorToInputBytes.getOrElse(eid, 0L) +
+                inputMetrics.bytesRead
+            executorToInputRecords(eid) = executorToInputRecords.getOrElse(
+              eid,
+              0L
+            ) + inputMetrics.recordsRead
+          }
+          metrics.outputMetrics.foreach { outputMetrics =>
+            executorToOutputBytes(eid) =
+              executorToOutputBytes.getOrElse(eid, 0L) +
+                outputMetrics.bytesWritten
+            executorToOutputRecords(eid) = executorToOutputRecords.getOrElse(
+              eid,
+              0L
+            ) + outputMetrics.recordsWritten
+          }
+          metrics.shuffleReadMetrics.foreach { shuffleRead =>
+            executorToShuffleRead(eid) =
+              executorToShuffleRead.getOrElse(eid, 0L) +
+                shuffleRead.remoteBytesRead
+          }
+          metrics.shuffleWriteMetrics.foreach { shuffleWrite =>
+            executorToShuffleWrite(eid) = executorToShuffleWrite.getOrElse(
+              eid,
+              0L
+            ) + shuffleWrite.bytesWritten
+          }
+          executorToJvmGCTime(eid) = executorToJvmGCTime.getOrElse(eid, 0L) +
+            metrics.jvmGCTime
         }
-        metrics.outputMetrics.foreach { outputMetrics =>
-          executorToOutputBytes(eid) = executorToOutputBytes.getOrElse(eid, 0L) +
-          outputMetrics.bytesWritten
-          executorToOutputRecords(eid) = executorToOutputRecords.getOrElse(
-              eid, 0L) + outputMetrics.recordsWritten
-        }
-        metrics.shuffleReadMetrics.foreach { shuffleRead =>
-          executorToShuffleRead(eid) = executorToShuffleRead.getOrElse(eid, 0L) +
-          shuffleRead.remoteBytesRead
-        }
-        metrics.shuffleWriteMetrics.foreach { shuffleWrite =>
-          executorToShuffleWrite(eid) = executorToShuffleWrite.getOrElse(
-              eid, 0L) + shuffleWrite.bytesWritten
-        }
-        executorToJvmGCTime(eid) = executorToJvmGCTime.getOrElse(eid, 0L) +
-        metrics.jvmGCTime
       }
     }
-  }
 }

@@ -79,10 +79,9 @@ class IndexSpec extends AkkaSpec with Matchers with DefaultTimeout {
       val index = indexWithValues
 
       var valueCount = 0
-      index.foreach((key, value) ⇒
-            {
-          valueCount = valueCount + 1
-          index.findValue(key)(_ == value) should ===(Some(value))
+      index.foreach((key, value) ⇒ {
+        valueCount = valueCount + 1
+        index.findValue(key)(_ == value) should ===(Some(value))
       })
       valueCount should ===(6)
     }
@@ -98,32 +97,37 @@ class IndexSpec extends AkkaSpec with Matchers with DefaultTimeout {
       val nrOfKeys = 10
       val nrOfValues = 10
       //Fill index
-      for (key ← 0 until nrOfKeys; value ← 0 until nrOfValues) index.put(key,
-                                                                         value)
+      for (key ← 0 until nrOfKeys; value ← 0 until nrOfValues)
+        index.put(key, value)
       //Tasks to be executed in parallel
-      def putTask() = Future {
-        index.put(Random.nextInt(nrOfKeys), Random.nextInt(nrOfValues))
-      }
-      def removeTask1() = Future {
-        index.remove(Random.nextInt(nrOfKeys / 2), Random.nextInt(nrOfValues))
-      }
-      def removeTask2() = Future {
-        index.remove(Random.nextInt(nrOfKeys / 2))
-      }
-      def readTask() = Future {
-        val key = Random.nextInt(nrOfKeys)
-        val values = index.valueIterator(key)
-        if (key >= nrOfKeys / 2) {
-          values.isEmpty should ===(false)
+      def putTask() =
+        Future {
+          index.put(Random.nextInt(nrOfKeys), Random.nextInt(nrOfValues))
         }
-      }
+      def removeTask1() =
+        Future {
+          index.remove(Random.nextInt(nrOfKeys / 2), Random.nextInt(nrOfValues))
+        }
+      def removeTask2() =
+        Future {
+          index.remove(Random.nextInt(nrOfKeys / 2))
+        }
+      def readTask() =
+        Future {
+          val key = Random.nextInt(nrOfKeys)
+          val values = index.valueIterator(key)
+          if (key >= nrOfKeys / 2) {
+            values.isEmpty should ===(false)
+          }
+        }
 
-      def executeRandomTask() = Random.nextInt(4) match {
-        case 0 ⇒ putTask()
-        case 1 ⇒ removeTask1()
-        case 2 ⇒ removeTask2()
-        case 3 ⇒ readTask()
-      }
+      def executeRandomTask() =
+        Random.nextInt(4) match {
+          case 0 ⇒ putTask()
+          case 1 ⇒ removeTask1()
+          case 2 ⇒ removeTask2()
+          case 3 ⇒ readTask()
+        }
 
       val tasks = List.fill(nrOfTasks)(executeRandomTask)
 

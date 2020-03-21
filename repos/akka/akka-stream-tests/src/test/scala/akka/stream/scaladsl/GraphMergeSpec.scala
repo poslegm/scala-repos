@@ -16,13 +16,14 @@ class GraphMergeSpec extends TwoStreamsSetup {
 
   override type Outputs = Int
 
-  override def fixture(b: GraphDSL.Builder[_]): Fixture = new Fixture(b) {
-    val merge = b add Merge[Outputs](2)
+  override def fixture(b: GraphDSL.Builder[_]): Fixture =
+    new Fixture(b) {
+      val merge = b add Merge[Outputs](2)
 
-    override def left: Inlet[Outputs] = merge.in(0)
-    override def right: Inlet[Outputs] = merge.in(1)
-    override def out: Outlet[Outputs] = merge.out
-  }
+      override def left: Inlet[Outputs] = merge.in(0)
+      override def right: Inlet[Outputs] = merge.in(1)
+      override def out: Outlet[Outputs] = merge.out
+    }
 
   "merge" must {
 
@@ -34,15 +35,14 @@ class GraphMergeSpec extends TwoStreamsSetup {
       val probe = TestSubscriber.manualProbe[Int]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           val m1 = b.add(Merge[Int](2))
           val m2 = b.add(Merge[Int](2))
 
           source1 ~> m1.in(0)
           m1.out ~> Flow[Int].map(_ * 2) ~> m2.in(0)
-          m2.out ~> Flow[Int].map(_ / 2).map(_ + 1) ~> Sink.fromSubscriber(
-              probe)
+          m2.out ~> Flow[Int].map(_ / 2).map(_ + 1) ~> Sink
+            .fromSubscriber(probe)
           source2 ~> m1.in(1)
           source3 ~> m2.in(1)
 
@@ -87,8 +87,7 @@ class GraphMergeSpec extends TwoStreamsSetup {
       val probe = TestSubscriber.manualProbe[Int]()
 
       RunnableGraph
-        .fromGraph(
-            GraphDSL.create() { implicit b ⇒
+        .fromGraph(GraphDSL.create() { implicit b ⇒
           val merge = b.add(Merge[Int](6))
 
           source1 ~> merge.in(0)
@@ -178,8 +177,7 @@ class GraphMergeSpec extends TwoStreamsSetup {
       val src2 = Source.asSubscriber[Int]
 
       val (graphSubscriber1, graphSubscriber2) = RunnableGraph
-        .fromGraph(
-            GraphDSL.create(src1, src2)((_, _)) { implicit b ⇒ (s1, s2) ⇒
+        .fromGraph(GraphDSL.create(src1, src2)((_, _)) { implicit b ⇒ (s1, s2) ⇒
           val merge = b.add(Merge[Int](2))
           s1.out ~> merge.in(0)
           s2.out ~> merge.in(1)

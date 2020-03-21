@@ -13,7 +13,7 @@ class Foo {
   val settings = new Settings()
   settings.classpath.value = location(classOf[Holder])
   settings.bootclasspath.value = settings.bootclasspath.value + / +
-  location(classOf[Product]) + / + location(classOf[Settings])
+    location(classOf[Product]) + / + location(classOf[Settings])
   val inter = new Interpreter(settings) {
     override protected def parentClassLoader = Foo.this.getClass.getClassLoader
   }
@@ -26,7 +26,8 @@ class Foo {
   def location(c: Class[_]) =
     toFile(c.getProtectionDomain.getCodeSource.getLocation).getAbsolutePath
   def toFile(url: URL) =
-    try { new File(url.toURI) } catch {
+    try { new File(url.toURI) }
+    catch {
       case _: URISyntaxException => new File(url.getPath)
     }
 }
@@ -34,8 +35,6 @@ class Foo {
 object Test {
   def main(args: Array[String]) {
     val foo = new Foo
-    args.foreach { arg =>
-      foo.eval(arg) == arg.toInt
-    }
+    args.foreach { arg => foo.eval(arg) == arg.toInt }
   }
 }

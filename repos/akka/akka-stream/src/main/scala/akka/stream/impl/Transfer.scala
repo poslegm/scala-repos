@@ -83,10 +83,11 @@ private[akka] trait DefaultOutputTransferStates extends Outputs {
     def isReady = demandAvailable
     def isCompleted = isClosed
   }
-  override def NeedsDemandOrCancel: TransferState = new TransferState {
-    def isReady = demandAvailable || isClosed
-    def isCompleted = false
-  }
+  override def NeedsDemandOrCancel: TransferState =
+    new TransferState {
+      def isReady = demandAvailable || isClosed
+      def isCompleted = false
+    }
 }
 
 // States of the operation that is executed by this processor
@@ -98,17 +99,19 @@ private[akka] trait TransferState {
   def isCompleted: Boolean
   def isExecutable = isReady && !isCompleted
 
-  def ||(other: TransferState): TransferState = new TransferState {
-    def isReady: Boolean = TransferState.this.isReady || other.isReady
-    def isCompleted: Boolean =
-      TransferState.this.isCompleted && other.isCompleted
-  }
+  def ||(other: TransferState): TransferState =
+    new TransferState {
+      def isReady: Boolean = TransferState.this.isReady || other.isReady
+      def isCompleted: Boolean =
+        TransferState.this.isCompleted && other.isCompleted
+    }
 
-  def &&(other: TransferState): TransferState = new TransferState {
-    def isReady: Boolean = TransferState.this.isReady && other.isReady
-    def isCompleted: Boolean =
-      TransferState.this.isCompleted || other.isCompleted
-  }
+  def &&(other: TransferState): TransferState =
+    new TransferState {
+      def isReady: Boolean = TransferState.this.isReady && other.isReady
+      def isCompleted: Boolean =
+        TransferState.this.isCompleted || other.isCompleted
+    }
 }
 
 /**
@@ -131,8 +134,9 @@ private[akka] object NotInitialized extends TransferState {
   * INTERNAL API
   */
 private[akka] case class WaitingForUpstreamSubscription(
-    remaining: Int, andThen: TransferPhase)
-    extends TransferState {
+    remaining: Int,
+    andThen: TransferPhase
+) extends TransferState {
   def isReady = false
   def isCompleted = false
 }
@@ -149,7 +153,8 @@ private[akka] object Always extends TransferState {
   * INTERNAL API
   */
 private[akka] final case class TransferPhase(precondition: TransferState)(
-    val action: () ⇒ Unit)
+    val action: () ⇒ Unit
+)
 
 /**
   * INTERNAL API
@@ -158,22 +163,30 @@ private[akka] trait Pump {
   private var transferState: TransferState = NotInitialized
   private var currentAction: () ⇒ Unit = () ⇒
     throw new IllegalStateException(
-        "Pump has been not initialized with a phase")
+      "Pump has been not initialized with a phase"
+    )
 
   final def initialPhase(waitForUpstream: Int, andThen: TransferPhase): Unit = {
-    require(waitForUpstream >= 1,
-            s"waitForUpstream must be >= 1 (was $waitForUpstream)")
+    require(
+      waitForUpstream >= 1,
+      s"waitForUpstream must be >= 1 (was $waitForUpstream)"
+    )
     if (transferState != NotInitialized)
       throw new IllegalStateException(
-          s"initialPhase expected NotInitialized, but was [$transferState]")
+        s"initialPhase expected NotInitialized, but was [$transferState]"
+      )
     transferState = WaitingForUpstreamSubscription(waitForUpstream, andThen)
   }
 
   final def waitForUpstreams(waitForUpstream: Int): Unit = {
-    require(waitForUpstream >= 1,
-            s"waitForUpstream must be >= 1 (was $waitForUpstream)")
+    require(
+      waitForUpstream >= 1,
+      s"waitForUpstream must be >= 1 (was $waitForUpstream)"
+    )
     transferState = WaitingForUpstreamSubscription(
-        waitForUpstream, TransferPhase(transferState)(currentAction))
+      waitForUpstream,
+      TransferPhase(transferState)(currentAction)
+    )
   }
 
   def gotUpstreamSubscription(): Unit = {
@@ -188,19 +201,21 @@ private[akka] trait Pump {
     pump()
   }
 
-  final def nextPhase(phase: TransferPhase): Unit = transferState match {
-    case WaitingForUpstreamSubscription(remaining, _) ⇒
-      transferState = WaitingForUpstreamSubscription(remaining, phase)
-    case _ ⇒
-      transferState = phase.precondition
-      currentAction = phase.action
-  }
+  final def nextPhase(phase: TransferPhase): Unit =
+    transferState match {
+      case WaitingForUpstreamSubscription(remaining, _) ⇒
+        transferState = WaitingForUpstreamSubscription(remaining, phase)
+      case _ ⇒
+        transferState = phase.precondition
+        currentAction = phase.action
+    }
 
   final def isPumpFinished: Boolean = transferState.isCompleted
 
   protected final val completedPhase = TransferPhase(Completed) { () ⇒
     throw new IllegalStateException(
-        "The action of completed phase must be never executed")
+      "The action of completed phase must be never executed"
+    )
   }
 
   // Exchange input buffer elements and output buffer "requests" until one of them becomes empty.

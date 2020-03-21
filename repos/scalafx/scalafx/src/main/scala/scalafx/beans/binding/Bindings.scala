@@ -49,7 +49,9 @@ trait Bindings {
     * @return The highest Value
     */
   def min(
-      v1: jfxbv.ObservableNumberValue, values: jfxbv.ObservableNumberValue*) =
+      v1: jfxbv.ObservableNumberValue,
+      values: jfxbv.ObservableNumberValue*
+  ) =
     (v1 /: values)(jfxbb.Bindings.min)
 
   /**
@@ -61,7 +63,9 @@ trait Bindings {
     * @return The Lowest Value
     */
   def max(
-      v1: jfxbv.ObservableNumberValue, values: jfxbv.ObservableNumberValue*) =
+      v1: jfxbv.ObservableNumberValue,
+      values: jfxbv.ObservableNumberValue*
+  ) =
     (v1 /: values)(jfxbb.Bindings.max)
 
   /**
@@ -73,75 +77,101 @@ trait Bindings {
     * @return The Value sum.
     */
   def add(
-      v1: jfxbv.ObservableNumberValue, values: jfxbv.ObservableNumberValue*) =
+      v1: jfxbv.ObservableNumberValue,
+      values: jfxbv.ObservableNumberValue*
+  ) =
     (v1 /: values)(jfxbb.Bindings.add)
 
   /**
     *
     * @param condition Function that returns a $JFX
     *                  [[http://docs.oracle.com/javase/8/javafx/api/javafx/beans/value/ObservableBooleanValue.html `ObservableBooleanValue`]]
-    * @return A ConditionBuilder wrapping `condition`. 
+    * @return A ConditionBuilder wrapping `condition`.
     */
   def when(condition: => jfxbv.ObservableBooleanValue) =
     new ConditionBuilder(new jfxbb.When(condition))
 
   protected class ConditionBuilder(whenBuilder: jfxbb.When) {
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`(thenExpression: jfxbv.ObservableNumberValue) =
       choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`(thenExpression: Int) = choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`(thenExpression: Long) = choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`(thenExpression: Float) = choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`(thenExpression: Double) = choose(thenExpression)
 
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: jfxbv.ObservableBooleanValue) =
       choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: Boolean) = choose(thenExpression)
 
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: jfxbv.ObservableStringValue) =
       choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: String) = choose(thenExpression)
 
     // explicit conversion needed due to T(Any) typed method
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: ObservableValue[T, T]) =
       choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: jfxbv.ObservableObjectValue[T]) =
       choose(thenExpression)
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[T](thenExpression: T) = choose(thenExpression)
 
     /** Create `ObjectConditionBuilder` with type of the delegate rather than wrapping SFX.
@@ -149,8 +179,10 @@ trait Bindings {
       * This is addressing problems pointed in Issue 16 - inability to bind an expression to JFX property
       * when `thenValue` is a SFX wrapper. */
     @deprecated(
-        message = "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
-        since = "1.0.0-m1")
+      message =
+        "`then` is a reserved word in Scala 2.10+, use `choose` instead. `then` will be removed in ScalaFX 1.0.0-m3",
+      since = "1.0.0-m1"
+    )
     def `then`[J <: Object](thenExpression: SFXDelegate[J]) =
       choose(thenExpression)
 
@@ -179,8 +211,12 @@ trait Bindings {
 
     // explicit conversion needed due to T(Any) typed method
     def choose[T](chooseExpression: ObservableValue[T, T]) =
-      new ObjectConditionBuilder[T](whenBuilder.`then`(ObservableValue
-                .sfxObservableValue2jfxObjectValue[T](chooseExpression)))
+      new ObjectConditionBuilder[T](
+        whenBuilder.`then`(
+          ObservableValue
+            .sfxObservableValue2jfxObjectValue[T](chooseExpression)
+        )
+      )
     def choose[T](chooseExpression: jfxbv.ObservableObjectValue[T]) =
       new ObjectConditionBuilder[T](whenBuilder.`then`(chooseExpression))
     def choose[T](chooseExpression: T) =
@@ -192,11 +228,13 @@ trait Bindings {
       * when `thenValue` is a SFX wrapper. */
     def choose[J <: Object](chooseExpression: SFXDelegate[J]) =
       new ObjectConditionBuilder[J](
-          whenBuilder.`then`(chooseExpression.delegate))
+        whenBuilder.`then`(chooseExpression.delegate)
+      )
   }
 
   protected class NumberConditionBuilder(
-      whenBuilder: jfxbb.When#NumberConditionBuilder) {
+      whenBuilder: jfxbb.When#NumberConditionBuilder
+  ) {
     def otherwise(otherwiseExpression: jfxbv.ObservableNumberValue) =
       whenBuilder.otherwise(otherwiseExpression)
     def otherwise(otherwiseExpression: Int) =
@@ -210,7 +248,8 @@ trait Bindings {
   }
 
   protected class BooleanConditionBuilder(
-      whenBuilder: jfxbb.When#BooleanConditionBuilder) {
+      whenBuilder: jfxbb.When#BooleanConditionBuilder
+  ) {
     def otherwise(otherwiseExpression: jfxbv.ObservableBooleanValue) =
       whenBuilder.otherwise(otherwiseExpression)
     def otherwise(otherwiseExpression: Boolean) =
@@ -218,7 +257,8 @@ trait Bindings {
   }
 
   protected class StringConditionBuilder(
-      whenBuilder: jfxbb.When#StringConditionBuilder) {
+      whenBuilder: jfxbb.When#StringConditionBuilder
+  ) {
     def otherwise(otherwiseExpression: jfxbv.ObservableStringValue) =
       whenBuilder.otherwise(otherwiseExpression)
     def otherwise(otherwiseExpression: String) =
@@ -226,11 +266,14 @@ trait Bindings {
   }
 
   protected class ObjectConditionBuilder[T](
-      whenBuilder: jfxbb.When#ObjectConditionBuilder[T]) {
+      whenBuilder: jfxbb.When#ObjectConditionBuilder[T]
+  ) {
     // explicit conversion needed due to T(Any) typed method
     def otherwise(otherwiseExpression: ObservableValue[T, T]) =
-      whenBuilder.otherwise(ObservableValue
-            .sfxObservableValue2jfxObjectValue[T](otherwiseExpression))
+      whenBuilder.otherwise(
+        ObservableValue
+          .sfxObservableValue2jfxObjectValue[T](otherwiseExpression)
+      )
     def otherwise(otherwiseExpression: jfxbv.ObservableObjectValue[T]) =
       whenBuilder.otherwise(otherwiseExpression)
     def otherwise(otherwiseExpression: T) =

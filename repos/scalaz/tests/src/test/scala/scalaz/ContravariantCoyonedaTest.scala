@@ -13,7 +13,8 @@ object ContravariantCoyonedaGens {
   type CtCoOrder[A] = ContravariantCoyoneda[Order, A]
 
   final class Schwartzian[F[_], A, FA <: ContravariantCoyoneda[F, A]](
-      val self: FA) /*extends AnyVal*/ {
+      val self: FA
+  ) /*extends AnyVal*/ {
     import self._
     @inline def schwartzianPre: A => (I, A) = a => (k(a), a)
     @inline def schwartzianPost: ((I, A)) => A = _._2
@@ -22,10 +23,11 @@ object ContravariantCoyonedaGens {
   }
 
   @inline implicit def Schwartzian[F[_], A](
-      co: ContravariantCoyoneda[F, A]): Schwartzian[F, A, co.type] =
+      co: ContravariantCoyoneda[F, A]
+  ): Schwartzian[F, A, co.type] =
     new Schwartzian[F, A, co.type](co)
 
-  def cmappedOrderLaws[A : Arbitrary](co: CtCoOrder[A]) = {
+  def cmappedOrderLaws[A: Arbitrary](co: CtCoOrder[A]) = {
     implicit val ran = co.run
     scalaz.scalacheck.ScalazProperties.order.laws[A]
   }
@@ -37,16 +39,14 @@ object ContravariantCoyonedaGens {
     else (1, x)
   }
 
-  val negated = CtCoOrder { x: Int =>
-    -x
-  }
+  val negated = CtCoOrder { x: Int => -x }
 
   val probablePrime = CtCoOrder { x: Int =>
     ((x - 1: BigInt) isProbablePrime 5, x)
   }
 
-  val intOrders: Gen[CtCoOrder[Int]] = Gen.oneOf[CtCoOrder[Int]](
-      aToString[Int], evensFirst, negated, probablePrime)
+  val intOrders: Gen[CtCoOrder[Int]] = Gen
+    .oneOf[CtCoOrder[Int]](aToString[Int], evensFirst, negated, probablePrime)
 }
 
 object ContravariantCoyonedaTest extends SpecLite {

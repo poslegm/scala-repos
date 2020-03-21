@@ -14,12 +14,14 @@ import org.scalatest.Matchers
 
 // must be refreshing as the tests don't clean up after themselves properly
 class DebugTest
-    extends EnsimeSpec with IsolatedEnsimeConfigFixture
-    with IsolatedTestKitFixture with IsolatedProjectFixture
+    extends EnsimeSpec
+    with IsolatedEnsimeConfigFixture
+    with IsolatedTestKitFixture
+    with IsolatedProjectFixture
     with DebugTestUtils {
 
   val original = EnsimeConfigFixture.DebugTestProject.copy(
-      javaLibs = Nil // no need to index the JRE
+    javaLibs = Nil // no need to index the JRE
   )
 
   // TODO This is broken because step in our case is stepping into
@@ -31,22 +33,25 @@ class DebugTest
         withProject { (project, asyncHelper) =>
           implicit val p = (project, asyncHelper)
           withDebugSession(
-              "stepping.ForComprehensionListString",
-              "stepping/ForComprehensionListString.scala",
-              9
+            "stepping.ForComprehensionListString",
+            "stepping/ForComprehensionListString.scala",
+            9
           ) { breakpointsFile =>
             import testkit._
 
-            checkTopStackFrame("stepping.ForComprehensionListString$",
-                               "main",
-                               9)
+            checkTopStackFrame(
+              "stepping.ForComprehensionListString$",
+              "main",
+              9
+            )
             project ! DebugNextReq(DebugThreadId(1))
             expectMsg(VoidResponse)
 
             checkTopStackFrame(
-                "stepping.ForComprehensionListString$$anonfun$main$1",
-                "apply",
-                10)
+              "stepping.ForComprehensionListString$$anonfun$main$1",
+              "apply",
+              10
+            )
           }
         }
       }
@@ -59,9 +64,9 @@ class DebugTest
         withProject { (project, asyncHelper) =>
           implicit val p = (project, asyncHelper)
           withDebugSession(
-              "breakpoints.Breakpoints",
-              "breakpoints/Breakpoints.scala",
-              32
+            "breakpoints.Breakpoints",
+            "breakpoints/Breakpoints.scala",
+            32
           ) { breakpointsFile =>
             import testkit._
             val breakpointsPath = breakpointsFile.getAbsolutePath
@@ -69,36 +74,45 @@ class DebugTest
             project ! DebugBacktraceReq(DebugThreadId(1), 0, 3)
             expectMsgType[DebugBacktrace] should matchPattern {
               case DebugBacktrace(
-                  List(
-                  DebugStackFrame(0,
-                                  List(),
-                                  0,
-                                  "breakpoints.Breakpoints",
-                                  "mainTest",
-                                  LineSourcePosition(`breakpointsFile`, 32),
-                                  _),
-                  DebugStackFrame(1,
-                                  List(
-                                  DebugStackLocal(0,
-                                                  "args",
-                                                  "Array[]",
-                                                  "java.lang.String[]")
-                                  ),
-                                  1,
-                                  "breakpoints.Breakpoints$",
-                                  "main",
-                                  LineSourcePosition(`breakpointsFile`, 41),
-                                  _),
-                  DebugStackFrame(2,
-                                  List(),
-                                  1,
-                                  "breakpoints.Breakpoints",
-                                  "main",
-                                  LineSourcePosition(`breakpointsFile`, _),
-                                  _)
-                  ),
-                  DebugThreadId(1),
-                  "main") =>
+                    List(
+                      DebugStackFrame(
+                        0,
+                        List(),
+                        0,
+                        "breakpoints.Breakpoints",
+                        "mainTest",
+                        LineSourcePosition(`breakpointsFile`, 32),
+                        _
+                      ),
+                      DebugStackFrame(
+                        1,
+                        List(
+                          DebugStackLocal(
+                            0,
+                            "args",
+                            "Array[]",
+                            "java.lang.String[]"
+                          )
+                        ),
+                        1,
+                        "breakpoints.Breakpoints$",
+                        "main",
+                        LineSourcePosition(`breakpointsFile`, 41),
+                        _
+                      ),
+                      DebugStackFrame(
+                        2,
+                        List(),
+                        1,
+                        "breakpoints.Breakpoints",
+                        "main",
+                        LineSourcePosition(`breakpointsFile`, _),
+                        _
+                      )
+                    ),
+                    DebugThreadId(1),
+                    "main"
+                  ) =>
             }
 
             //            val bp11 = session.addLineBreakpoint(BP_TYPENAME, 11)
@@ -114,13 +128,15 @@ class DebugTest
             //              session.checkStackFrame(BP_TYPENAME, "simple1()V", 11)
 
             asyncHelper.expectMsg(
-                DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 32))
+              DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 32)
+            )
 
             project ! DebugContinueReq(DebugThreadId(1))
             expectMsg(TrueResponse)
 
             asyncHelper.expectMsg(
-                DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 11))
+              DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 11)
+            )
 
             //              session.resumetoSuspension()
             //              session.checkStackFrame(BP_TYPENAME, "simple1()V", 13)
@@ -129,7 +145,8 @@ class DebugTest
             expectMsg(TrueResponse)
 
             asyncHelper.expectMsg(
-                DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 13))
+              DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 13)
+            )
 
             //              bp11.setEnabled(false)
             project ! DebugClearBreakReq(breakpointsFile, 11)
@@ -142,7 +159,8 @@ class DebugTest
             expectMsg(TrueResponse)
             //              session.checkStackFrame(BP_TYPENAME, "simple1()V", 13)
             asyncHelper.expectMsg(
-                DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 13))
+              DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 13)
+            )
             //
             //              bp11.setEnabled(true); bp13.setEnabled(false)
             project ! DebugSetBreakReq(breakpointsFile, 11)
@@ -160,14 +178,16 @@ class DebugTest
             expectMsg(TrueResponse)
 
             asyncHelper.expectMsg(
-                DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 11))
+              DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 11)
+            )
             //
             //              session.resumetoSuspension()
             //              session.checkStackFrame(BP_TYPENAME, "simple1()V", 11)
             project ! DebugContinueReq(DebugThreadId(1))
             expectMsg(TrueResponse)
             asyncHelper.expectMsg(
-                DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 11))
+              DebugBreakEvent(DebugThreadId(1), "main", breakpointsFile, 11)
+            )
             //
             project ! DebugContinueReq(DebugThreadId(1))
             expectMsg(TrueResponse)
@@ -186,9 +206,9 @@ class DebugTest
       withProject { (project, asyncHelper) =>
         implicit val p = (project, asyncHelper)
         withDebugSession(
-            "breakpoints.Breakpoints",
-            "breakpoints/Breakpoints.scala",
-            32
+          "breakpoints.Breakpoints",
+          "breakpoints/Breakpoints.scala",
+          32
         ) { breakpointsFile =>
           import testkit._
           val breakpointsPath = breakpointsFile.getAbsolutePath
@@ -211,8 +231,8 @@ class DebugTest
           inside(expectMsgType[BreakpointList]) {
             case BreakpointList(activeBreakpoints, pendingBreakpoints) =>
               activeBreakpoints should contain theSameElementsAs Set(
-                  Breakpoint(breakpointsFile, 11),
-                  Breakpoint(breakpointsFile, 13)
+                Breakpoint(breakpointsFile, 11),
+                Breakpoint(breakpointsFile, 13)
               )
               pendingBreakpoints shouldBe empty
           }
@@ -237,9 +257,9 @@ class DebugTest
         withProject { (project, asyncHelper) =>
           implicit val p = (project, asyncHelper)
           withDebugSession(
-              "debug.Variables",
-              "debug/Variables.scala",
-              21
+            "debug.Variables",
+            "debug/Variables.scala",
+            21
           ) { variablesFile =>
             // boolean local
             getVariableValue(DebugThreadId(1), "a") should matchPattern {
@@ -278,15 +298,19 @@ class DebugTest
 
             // String local
             inside(getVariableValue(DebugThreadId(1), "h")) {
-              case DebugStringInstance("\"test\"",
-                                       debugFields,
-                                       "java.lang.String",
-                                       _) =>
+              case DebugStringInstance(
+                    "\"test\"",
+                    debugFields,
+                    "java.lang.String",
+                    _
+                  ) =>
                 exactly(1, debugFields) should matchPattern {
-                  case DebugClassField(_,
-                                       "value",
-                                       "char[]",
-                                       "Array['t', 'e', 's',...]") =>
+                  case DebugClassField(
+                        _,
+                        "value",
+                        "char[]",
+                        "Array['t', 'e', 's',...]"
+                      ) =>
                 }
             }
 
@@ -298,25 +322,30 @@ class DebugTest
             // type local
             inside(getVariableValue(DebugThreadId(1), "j")) {
               case DebugObjectInstance(
-                  "Instance of $colon$colon",
-                  debugFields,
-                  "scala.collection.immutable.$colon$colon",
-                  _) =>
+                    "Instance of $colon$colon",
+                    debugFields,
+                    "scala.collection.immutable.$colon$colon",
+                    _
+                  ) =>
                 exactly(1, debugFields) should matchPattern {
-                  case DebugClassField(_,
-                                       head,
-                                       "java.lang.Object",
-                                       "Instance of Integer")
+                  case DebugClassField(
+                        _,
+                        head,
+                        "java.lang.Object",
+                        "Instance of Integer"
+                      )
                       if head == "head" | head == "scala$collection$immutable$$colon$colon$$hd" =>
                 }
             }
 
             // object array local
             getVariableValue(DebugThreadId(1), "k") should matchPattern {
-              case DebugArrayInstance(3,
-                                      "java.lang.Object[]",
-                                      "java.lang.Object",
-                                      _) =>
+              case DebugArrayInstance(
+                    3,
+                    "java.lang.Object[]",
+                    "java.lang.Object",
+                    _
+                  ) =>
             }
           }
         }
@@ -338,8 +367,8 @@ trait DebugTestUtils {
       breakLine: Int
   )(
       f: File => Any
-  )(
-      implicit config: EnsimeConfig,
+  )(implicit
+      config: EnsimeConfig,
       testkit: TestKitFix,
       // don't take an implicit TestActorRef or it steals the implicit sender
       p: (TestActorRef[Project], TestProbe)
@@ -358,8 +387,8 @@ trait DebugTestUtils {
     asyncHelper.expectMsg(DebugVMStartEvent)
     asyncHelper.expectMsgType[DebugThreadStartEvent]
 
-    val expect = DebugBreakEvent(
-        DebugThreadId(1), "main", resolvedFile, breakLine)
+    val expect =
+      DebugBreakEvent(DebugThreadId(1), "main", resolvedFile, breakLine)
     asyncHelper.expectMsg(expect)
     project ! DebugClearBreakReq(resolvedFile, breakLine)
     expectMsg(TrueResponse)
@@ -376,15 +405,16 @@ trait DebugTestUtils {
       expectMsg(TrueResponse)
       project ! DebugStopReq
       expectMsgPF() {
-        case TrueResponse =>
+        case TrueResponse  =>
         case FalseResponse => // windows does this sometimes
       }
     }
   }
 
-  def getVariableValue(threadId: DebugThreadId, variableName: String)(
-      implicit testkit: TestKitFix,
-      p: (TestActorRef[Project], TestProbe)): DebugValue = {
+  def getVariableValue(threadId: DebugThreadId, variableName: String)(implicit
+      testkit: TestKitFix,
+      p: (TestActorRef[Project], TestProbe)
+  ): DebugValue = {
     import testkit._
     val project = p._1
     project ! DebugLocateNameReq(threadId, variableName)
@@ -394,19 +424,30 @@ trait DebugTestUtils {
     expectMsgType[DebugValue]
   }
 
-  def checkTopStackFrame(className: String, method: String, line: Int)(
-      implicit testkit: TestKitFix,
-      p: (TestActorRef[Project], TestProbe)): Unit = {
+  def checkTopStackFrame(className: String, method: String, line: Int)(implicit
+      testkit: TestKitFix,
+      p: (TestActorRef[Project], TestProbe)
+  ): Unit = {
     import testkit._
     val project = p._1
 
     project ! DebugBacktraceReq(DebugThreadId(1), 0, 1)
     expectMsgType[DebugBacktrace] should matchPattern {
       case DebugBacktrace(
-          List(DebugStackFrame(
-          0, _, 1, `className`, `method`, LineSourcePosition(_, `line`), _)),
-          DebugThreadId(1),
-          "main") =>
+            List(
+              DebugStackFrame(
+                0,
+                _,
+                1,
+                `className`,
+                `method`,
+                LineSourcePosition(_, `line`),
+                _
+              )
+            ),
+            DebugThreadId(1),
+            "main"
+          ) =>
     }
   }
 }

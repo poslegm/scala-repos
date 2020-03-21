@@ -23,9 +23,10 @@ object ProxySpec {
     def theVoid() = ()
     def theJavaVoid = null
     def aFuture = Future.value(2)
-    def aPromise = new Promise[Int] {
-      setValue(2)
-    }
+    def aPromise =
+      new Promise[Int] {
+        setValue(2)
+      }
   }
 
   class TestClass {
@@ -43,9 +44,7 @@ class ProxyTest extends WordSpec {
     "generate a factory for an interface" in {
       var called = 0
 
-      val f1 = new ProxyFactory[TestInterface]({ m =>
-        called += 1; m()
-      })
+      val f1 = new ProxyFactory[TestInterface]({ m => called += 1; m() })
       val obj = new TestImpl
 
       val proxied = f1(obj)
@@ -59,9 +58,7 @@ class ProxyTest extends WordSpec {
     "generate a factory for a class with a default constructor" in {
       var called = 0
 
-      val f2 = new ProxyFactory[TestClass]({ m =>
-        called += 1; m()
-      })
+      val f2 = new ProxyFactory[TestClass]({ m => called += 1; m() })
       val obj = new TestClass
 
       val proxied = f2(obj)
@@ -73,7 +70,7 @@ class ProxyTest extends WordSpec {
     }
 
     "must not throw UndeclaredThrowableException" in {
-      val pf = new ProxyFactory[TestImpl](_ ())
+      val pf = new ProxyFactory[TestImpl](_())
       val proxied = pf(new TestImpl)
 
       intercept[RuntimeException] {
@@ -121,7 +118,7 @@ class ProxyTest extends WordSpec {
     }
 
     "MethodCall throws an exception when invoked without a target" in {
-      val pf = new ProxyFactory[TestImpl](_ ())
+      val pf = new ProxyFactory[TestImpl](_())
       val targetless = pf()
 
       intercept[NonexistentTargetException] {
@@ -172,11 +169,9 @@ class ProxyTest extends WordSpec {
     }
 
     val reflectConstructor = { () =>
-      new ReferenceProxyFactory[TestInterface](_ ())
+      new ReferenceProxyFactory[TestInterface](_())
     }
-    val cglibConstructor = { () =>
-      new ProxyFactory[TestInterface](_ ())
-    }
+    val cglibConstructor = { () => new ProxyFactory[TestInterface](_()) }
     /*
     "maintains proxy creation speed" in {
       val repTimes = 40000
@@ -223,8 +218,9 @@ class ProxyTest extends WordSpec {
     }
   }
 
-  class ReferenceProxyFactory[I <: AnyRef : Manifest](
-      f: (() => AnyRef) => AnyRef) {
+  class ReferenceProxyFactory[I <: AnyRef: Manifest](
+      f: (() => AnyRef) => AnyRef
+  ) {
     import java.lang.reflect
 
     protected val interface = implicitly[Manifest[I]].runtimeClass

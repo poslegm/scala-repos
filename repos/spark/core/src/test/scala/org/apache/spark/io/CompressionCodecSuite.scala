@@ -92,7 +92,9 @@ class CompressionCodecSuite extends SparkFunSuite {
 
   test("snappy compression codec") {
     val codec = CompressionCodec.createCodec(
-        conf, classOf[SnappyCompressionCodec].getName)
+      conf,
+      classOf[SnappyCompressionCodec].getName
+    )
     assert(codec.getClass === classOf[SnappyCompressionCodec])
     testCodec(codec)
   }
@@ -105,7 +107,9 @@ class CompressionCodecSuite extends SparkFunSuite {
 
   test("snappy supports concatenation of serialized streams") {
     val codec = CompressionCodec.createCodec(
-        conf, classOf[SnappyCompressionCodec].getName)
+      conf,
+      classOf[SnappyCompressionCodec].getName
+    )
     assert(codec.getClass === classOf[SnappyCompressionCodec])
     testConcatenationOfSerializedStreams(codec)
   }
@@ -117,7 +121,8 @@ class CompressionCodecSuite extends SparkFunSuite {
   }
 
   private def testConcatenationOfSerializedStreams(
-      codec: CompressionCodec): Unit = {
+      codec: CompressionCodec
+  ): Unit = {
     val bytes1: Array[Byte] = {
       val baos = new ByteArrayOutputStream()
       val out = codec.compressedOutputStream(baos)

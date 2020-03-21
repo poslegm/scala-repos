@@ -34,8 +34,10 @@ class PersistenceSchemaEvolutionDocSpec extends WordSpec {
       //#custom-serializer-config
     """
 
-  val system = ActorSystem("PersistenceSchemaEvolutionDocSpec",
-                           ConfigFactory.parseString(customSerializerConfig))
+  val system = ActorSystem(
+    "PersistenceSchemaEvolutionDocSpec",
+    ConfigFactory.parseString(customSerializerConfig)
+  )
   try {
     SerializationExtension(system)
   } finally {
@@ -48,12 +50,13 @@ class ProtobufReadOptional {
   //#protobuf-read-optional-model
   sealed abstract class SeatType { def code: String }
   object SeatType {
-    def fromString(s: String) = s match {
-      case Window.code => Window
-      case Aisle.code => Aisle
-      case Other.code => Other
-      case _ => Unknown
-    }
+    def fromString(s: String) =
+      s match {
+        case Window.code => Window
+        case Aisle.code  => Aisle
+        case Other.code  => Other
+        case _           => Unknown
+      }
     case object Window extends SeatType { override val code = "W" }
     case object Aisle extends SeatType { override val code = "A" }
     case object Other extends SeatType { override val code = "O" }
@@ -68,8 +71,7 @@ class ProtobufReadOptional {
     * Example serializer impl which uses protocol buffers generated classes (proto.*)
     * to perform the to/from binary marshalling.
     */
-  class AddedFieldsSerializerWithProtobuf
-      extends SerializerWithStringManifest {
+  class AddedFieldsSerializerWithProtobuf extends SerializerWithStringManifest {
     override def identifier = 67876
 
     final val SeatReservedManifest = classOf[SeatReserved].getName
@@ -83,18 +85,20 @@ class ProtobufReadOptional {
           seatReserved(FlightAppModels.SeatReserved.parseFrom(bytes))
         case _ =>
           throw new IllegalArgumentException(
-              "Unable to handle manifest: " + manifest)
+            "Unable to handle manifest: " + manifest
+          )
       }
 
-    override def toBinary(o: AnyRef): Array[Byte] = o match {
-      case s: SeatReserved =>
-        FlightAppModels.SeatReserved.newBuilder
-          .setRow(s.row)
-          .setLetter(s.letter)
-          .setSeatType(s.seatType.code)
-          .build()
-          .toByteArray
-    }
+    override def toBinary(o: AnyRef): Array[Byte] =
+      o match {
+        case s: SeatReserved =>
+          FlightAppModels.SeatReserved.newBuilder
+            .setRow(s.row)
+            .setLetter(s.letter)
+            .setSeatType(s.seatType.code)
+            .build()
+            .toByteArray
+      }
 
     // -- fromBinary helpers --
 
@@ -143,8 +147,7 @@ class RenamePlainJson {
     override def fromJournal(event: Any, manifest: String): EventSeq =
       event match {
         case json: JsObject =>
-          EventSeq(
-              marshaller.fromJson(manifest match {
+          EventSeq(marshaller.fromJson(manifest match {
             case V1 => rename(json, "code", "seatNr")
             case V2 => json // pass-through
             case unknown =>
@@ -153,7 +156,8 @@ class RenamePlainJson {
         case _ =>
           val c = event.getClass
           throw new IllegalArgumentException(
-              "Can only work with JSON, was: %s".format(c))
+            "Can only work with JSON, was: %s".format(c)
+          )
       }
 
     def rename(json: JsObject, from: String, to: String): JsObject = {
@@ -191,12 +195,14 @@ object SimplestCustomSerializer {
     override def manifest(o: AnyRef): String = o.getClass.getName
 
     // serialize the object
-    override def toBinary(obj: AnyRef): Array[Byte] = obj match {
-      case p: Person => s"""${p.name}|${p.surname}""".getBytes(Utf8)
-      case _ =>
-        throw new IllegalArgumentException(
-            s"Unable to serialize to bytes, clazz was: ${obj.getClass}!")
-    }
+    override def toBinary(obj: AnyRef): Array[Byte] =
+      obj match {
+        case p: Person => s"""${p.name}|${p.surname}""".getBytes(Utf8)
+        case _ =>
+          throw new IllegalArgumentException(
+            s"Unable to serialize to bytes, clazz was: ${obj.getClass}!"
+          )
+      }
 
     // deserialize the object, using the manifest to indicate which logic to apply
     override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
@@ -207,8 +213,9 @@ object SimplestCustomSerializer {
           Person(name, surname)
         case _ =>
           throw new IllegalArgumentException(
-              s"Unable to deserialize from bytes, manifest was: $manifest! Bytes length: " +
-              bytes.length)
+            s"Unable to deserialize from bytes, manifest was: $manifest! Bytes length: " +
+              bytes.length
+          )
       }
   }
 
@@ -276,14 +283,15 @@ class RemovedEventsAwareSerializer extends SerializerWithStringManifest {
   override def identifier: Int = 8337
 
   val SkipEventManifestsEvents = Set(
-      "docs.persistence.CustomerBlinked" // ...
+    "docs.persistence.CustomerBlinked" // ...
   )
 
   override def manifest(o: AnyRef): String = o.getClass.getName
 
-  override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case _ => o.toString.getBytes(utf8) // example serialization
-  }
+  override def toBinary(o: AnyRef): Array[Byte] =
+    o match {
+      case _ => o.toString.getBytes(utf8) // example serialization
+    }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
     manifest match {
@@ -300,10 +308,11 @@ class SkippedEventsAwareAdapter extends EventAdapter {
   override def manifest(event: Any) = ""
   override def toJournal(event: Any) = event
 
-  override def fromJournal(event: Any, manifest: String) = event match {
-    case EventDeserializationSkipped => EventSeq.empty
-    case _ => EventSeq(event)
-  }
+  override def fromJournal(event: Any, manifest: String) =
+    event match {
+      case EventDeserializationSkipped => EventSeq.empty
+      case _                           => EventSeq(event)
+    }
 }
 //#string-serializer-skip-deleved-event-by-manifest-adapter
 
@@ -318,16 +327,17 @@ class RenamedEventAwareSerializer extends SerializerWithStringManifest {
 
   override def manifest(o: AnyRef): String = o.getClass.getName
 
-  override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case SamplePayload(data) => s"""$data""".getBytes(Utf8)
-    // previously also handled "old" events here.
-  }
+  override def toBinary(o: AnyRef): Array[Byte] =
+    o match {
+      case SamplePayload(data) => s"""$data""".getBytes(Utf8)
+      // previously also handled "old" events here.
+    }
 
   override def fromBinary(bytes: Array[Byte], manifest: String): AnyRef =
     manifest match {
       case OldPayloadClassName => SamplePayload(new String(bytes, Utf8))
-      case MyPayloadClassName => SamplePayload(new String(bytes, Utf8))
-      case other => throw new Exception(s"unexpected manifest [$other]")
+      case MyPayloadClassName  => SamplePayload(new String(bytes, Utf8))
+      case other               => throw new Exception(s"unexpected manifest [$other]")
     }
 }
 //#string-serializer-handle-rename
@@ -353,15 +363,17 @@ object DataModel {
 class DetachedModelsAdapter extends EventAdapter {
   override def manifest(event: Any): String = ""
 
-  override def toJournal(event: Any): Any = event match {
-    case DomainModel.SeatBooked(code, customer) =>
-      DataModel.SeatBooked(code, customer.name)
-  }
+  override def toJournal(event: Any): Any =
+    event match {
+      case DomainModel.SeatBooked(code, customer) =>
+        DataModel.SeatBooked(code, customer.name)
+    }
   override def fromJournal(event: Any, manifest: String): EventSeq =
     event match {
       case DataModel.SeatBooked(code, customerName) =>
         EventSeq(
-            DomainModel.SeatBooked(code, DomainModel.Customer(customerName)))
+          DomainModel.SeatBooked(code, DomainModel.Customer(customerName))
+        )
     }
 }
 //#detach-models-adapter
@@ -387,7 +399,8 @@ class JsonDataModelAdapter extends EventAdapter {
         EventSeq(marshaller.fromJson(json))
       case _ =>
         throw new IllegalArgumentException(
-            "Unable to fromJournal a non-JSON object! Was: " + event.getClass)
+          "Unable to fromJournal a non-JSON object! Was: " + event.getClass
+        )
     }
 }
 //#detach-models-adapter-json

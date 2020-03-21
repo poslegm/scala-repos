@@ -76,8 +76,10 @@ trait Test1 {
     for (c <- cls.getDeclaredClasses) {
       mods = AccessFlags.asString(c.getModifiers)
       kind = if (c.isInterface) "interface" else "class"
-      println("  " + mods + kind + " " + c.getName + " of class " +
-          c.getEnclosingClass.getName)
+      println(
+        "  " + mods + kind + " " + c.getName + " of class " +
+          c.getEnclosingClass.getName
+      )
     }
   }
   def printClass(cls: Class[_]) {
@@ -99,13 +101,15 @@ trait Test2 {
   //   in.close()
   // }
   def printClass(name: String) {
-    try { printClass(Class.forName(name)) } catch {
+    try { printClass(Class.forName(name)) }
+    catch {
       case e: Exception => println(e)
     }
   }
   def printClass(cls: Class[_]) {
     println("\n[[ " + cls.getName + " ]]");
-    try { printInnerClasses(cls) } catch { case e: Exception => println(e) }
+    try { printInnerClasses(cls) }
+    catch { case e: Exception => println(e) }
   }
 }
 

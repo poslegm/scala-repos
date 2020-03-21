@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-13 Miles Sabin 
+ * Copyright (c) 2011-13 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,9 @@ object hlist {
   }
 
   object IsHCons {
-    def apply[L <: HList](
-        implicit isHCons: IsHCons[L]): Aux[L, isHCons.H, isHCons.T] = isHCons
+    def apply[L <: HList](implicit
+        isHCons: IsHCons[L]
+    ): Aux[L, isHCons.H, isHCons.T] = isHCons
 
     type Aux[L <: HList, H0, T0 <: HList] = IsHCons[L] {
       type H = H0; type T = T0
@@ -62,8 +63,9 @@ object hlist {
 
     type Aux[L <: HList, Out0 <: HList] = Reverse[L] { type Out = Out0 }
 
-    implicit def reverse[L <: HList, Out0 <: HList](
-        implicit reverse: Reverse0[HNil, L, Out0]): Aux[L, Out0] =
+    implicit def reverse[L <: HList, Out0 <: HList](implicit
+        reverse: Reverse0[HNil, L, Out0]
+    ): Aux[L, Out0] =
       new Reverse[L] {
         type Out = Out0
         def apply(l: L): Out = reverse(HNil, l)
@@ -80,8 +82,8 @@ object hlist {
         }
 
       implicit def hlistReverse[Acc <: HList, InH, InT <: HList, Out <: HList](
-          implicit rt: Reverse0[InH :: Acc, InT, Out])
-        : Reverse0[Acc, InH :: InT, Out] =
+          implicit rt: Reverse0[InH :: Acc, InT, Out]
+      ): Reverse0[Acc, InH :: InT, Out] =
         new Reverse0[Acc, InH :: InT, Out] {
           def apply(acc: Acc, l: InH :: InT): Out = rt(l.head :: acc, l.tail)
         }
@@ -110,8 +112,9 @@ object hlist {
   }
 
   object Prepend extends LowPriorityPrepend {
-    def apply[P <: HList, S <: HList](
-        implicit prepend: Prepend[P, S]): Aux[P, S, prepend.Out] = prepend
+    def apply[P <: HList, S <: HList](implicit
+        prepend: Prepend[P, S]
+    ): Aux[P, S, prepend.Out] = prepend
 
     implicit def hnilPrepend1[P <: HNil, S <: HList]: Aux[P, S, S] =
       new Prepend[P, S] {
@@ -119,8 +122,9 @@ object hlist {
         def apply(prefix: P, suffix: S): S = suffix
       }
 
-    implicit def hlistPrepend[PH, PT <: HList, S <: HList](
-        implicit pt: Prepend[PT, S]): Aux[PH :: PT, S, PH :: pt.Out] =
+    implicit def hlistPrepend[PH, PT <: HList, S <: HList](implicit
+        pt: Prepend[PT, S]
+    ): Aux[PH :: PT, S, PH :: pt.Out] =
       new Prepend[PH :: PT, S] {
         type Out = PH :: pt.Out
         def apply(prefix: PH :: PT, suffix: S): Out =
@@ -142,8 +146,9 @@ object hlist {
       type Out = Out0
     }
 
-    implicit def hnilReversePrepend0[P <: HList, S <: HNil](
-        implicit rv: Reverse[P]): Aux[P, S, rv.Out] =
+    implicit def hnilReversePrepend0[P <: HList, S <: HNil](implicit
+        rv: Reverse[P]
+    ): Aux[P, S, rv.Out] =
       new ReversePrepend[P, S] {
         type Out = rv.Out
         def apply(prefix: P, suffix: S) = prefix.reverse
@@ -151,8 +156,9 @@ object hlist {
   }
 
   object ReversePrepend extends LowPriorityReversePrepend {
-    def apply[P <: HList, S <: HList](
-        implicit prepend: ReversePrepend[P, S]): Aux[P, S, prepend.Out] =
+    def apply[P <: HList, S <: HList](implicit
+        prepend: ReversePrepend[P, S]
+    ): Aux[P, S, prepend.Out] =
       prepend
 
     implicit def hnilReversePrepend1[P <: HNil, S <: HList]: Aux[P, S, S] =
@@ -161,8 +167,9 @@ object hlist {
         def apply(prefix: P, suffix: S) = suffix
       }
 
-    implicit def hlistReversePrepend[PH, PT <: HList, S <: HList](
-        implicit rpt: ReversePrepend[PT, PH :: S]): Aux[PH :: PT, S, rpt.Out] =
+    implicit def hlistReversePrepend[PH, PT <: HList, S <: HList](implicit
+        rpt: ReversePrepend[PT, PH :: S]
+    ): Aux[PH :: PT, S, rpt.Out] =
       new ReversePrepend[PH :: PT, S] {
         type Out = rpt.Out
         def apply(prefix: PH :: PT, suffix: S): Out =

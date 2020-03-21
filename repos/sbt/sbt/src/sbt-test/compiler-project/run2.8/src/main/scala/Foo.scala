@@ -13,9 +13,12 @@ class Foo {
   val settings = new Settings()
   val loader = getClass.getClassLoader
   settings.classpath.value = classpath("app", loader).getOrElse(
-      error("Error: could not find application classpath"))
-  settings.bootclasspath.value = settings.bootclasspath.value + / + classpath(
-      "boot", loader).getOrElse(error("Error: could not find boot classpath"))
+    error("Error: could not find application classpath")
+  )
+  settings.bootclasspath.value =
+    settings.bootclasspath.value + / + classpath("boot", loader).getOrElse(
+      error("Error: could not find boot classpath")
+    )
   val inter = new Interpreter(settings) {
     override protected def parentClassLoader = Foo.this.getClass.getClassLoader
   }
@@ -35,8 +38,6 @@ class Foo {
 object Test {
   def main(args: Array[String]) {
     val foo = new Foo
-    args.foreach { arg =>
-      foo.eval(arg) == arg.toInt
-    }
+    args.foreach { arg => foo.eval(arg) == arg.toInt }
   }
 }

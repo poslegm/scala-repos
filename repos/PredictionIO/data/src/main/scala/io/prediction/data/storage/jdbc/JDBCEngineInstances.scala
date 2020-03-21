@@ -22,8 +22,11 @@ import scalikejdbc._
 
 /** JDBC implementation of [[EngineInstances]] */
 class JDBCEngineInstances(
-    client: String, config: StorageClientConfig, prefix: String)
-    extends EngineInstances with Logging {
+    client: String,
+    config: StorageClientConfig,
+    prefix: String
+) extends EngineInstances
+    with Logging {
 
   /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "engineinstances")
@@ -47,9 +50,10 @@ class JDBCEngineInstances(
       servingParams text not null)""".execute().apply()
   }
 
-  def insert(i: EngineInstance): String = DB localTx { implicit session =>
-    val id = java.util.UUID.randomUUID().toString
-    sql"""
+  def insert(i: EngineInstance): String =
+    DB localTx { implicit session =>
+      val id = java.util.UUID.randomUUID().toString
+      sql"""
     INSERT INTO $tableName VALUES(
       $id,
       ${i.status},
@@ -66,11 +70,11 @@ class JDBCEngineInstances(
       ${i.preparatorParams},
       ${i.algorithmsParams},
       ${i.servingParams})""".update().apply()
-    id
-  }
+      id
+    }
 
-  def get(id: String): Option[EngineInstance] = DB localTx {
-    implicit session =>
+  def get(id: String): Option[EngineInstance] =
+    DB localTx { implicit session =>
       sql"""
     SELECT
       id,
@@ -92,10 +96,11 @@ class JDBCEngineInstances(
         .map(resultToEngineInstance)
         .single()
         .apply()
-  }
+    }
 
-  def getAll(): Seq[EngineInstance] = DB localTx { implicit session =>
-    sql"""
+  def getAll(): Seq[EngineInstance] =
+    DB localTx { implicit session =>
+      sql"""
     SELECT
       id,
       status,
@@ -113,17 +118,21 @@ class JDBCEngineInstances(
       algorithmsParams,
       servingParams
     FROM $tableName""".map(resultToEngineInstance).list().apply()
-  }
+    }
 
-  def getLatestCompleted(engineId: String,
-                         engineVersion: String,
-                         engineVariant: String): Option[EngineInstance] =
+  def getLatestCompleted(
+      engineId: String,
+      engineVersion: String,
+      engineVariant: String
+  ): Option[EngineInstance] =
     getCompleted(engineId, engineVersion, engineVariant).headOption
 
-  def getCompleted(engineId: String,
-                   engineVersion: String,
-                   engineVariant: String): Seq[EngineInstance] = DB localTx {
-    implicit s =>
+  def getCompleted(
+      engineId: String,
+      engineVersion: String,
+      engineVariant: String
+  ): Seq[EngineInstance] =
+    DB localTx { implicit s =>
       sql"""
     SELECT
       id,
@@ -148,10 +157,11 @@ class JDBCEngineInstances(
       engineVersion = $engineVersion AND
       engineVariant = $engineVariant
     ORDER BY startTime DESC""".map(resultToEngineInstance).list().apply()
-  }
+    }
 
-  def update(i: EngineInstance): Unit = DB localTx { implicit session =>
-    sql"""
+  def update(i: EngineInstance): Unit =
+    DB localTx { implicit session =>
+      sql"""
     update $tableName set
       status = ${i.status},
       startTime = ${i.startTime},
@@ -168,28 +178,31 @@ class JDBCEngineInstances(
       algorithmsParams = ${i.algorithmsParams},
       servingParams = ${i.servingParams}
     where id = ${i.id}""".update().apply()
-  }
+    }
 
-  def delete(id: String): Unit = DB localTx { implicit session =>
-    sql"DELETE FROM $tableName WHERE id = $id".update().apply()
-  }
+  def delete(id: String): Unit =
+    DB localTx { implicit session =>
+      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
+    }
 
   /** Convert JDBC results to [[EngineInstance]] */
   def resultToEngineInstance(rs: WrappedResultSet): EngineInstance = {
-    EngineInstance(id = rs.string("id"),
-                   status = rs.string("status"),
-                   startTime = rs.jodaDateTime("startTime"),
-                   endTime = rs.jodaDateTime("endTime"),
-                   engineId = rs.string("engineId"),
-                   engineVersion = rs.string("engineVersion"),
-                   engineVariant = rs.string("engineVariant"),
-                   engineFactory = rs.string("engineFactory"),
-                   batch = rs.string("batch"),
-                   env = JDBCUtils.stringToMap(rs.string("env")),
-                   sparkConf = JDBCUtils.stringToMap(rs.string("sparkConf")),
-                   dataSourceParams = rs.string("datasourceParams"),
-                   preparatorParams = rs.string("preparatorParams"),
-                   algorithmsParams = rs.string("algorithmsParams"),
-                   servingParams = rs.string("servingParams"))
+    EngineInstance(
+      id = rs.string("id"),
+      status = rs.string("status"),
+      startTime = rs.jodaDateTime("startTime"),
+      endTime = rs.jodaDateTime("endTime"),
+      engineId = rs.string("engineId"),
+      engineVersion = rs.string("engineVersion"),
+      engineVariant = rs.string("engineVariant"),
+      engineFactory = rs.string("engineFactory"),
+      batch = rs.string("batch"),
+      env = JDBCUtils.stringToMap(rs.string("env")),
+      sparkConf = JDBCUtils.stringToMap(rs.string("sparkConf")),
+      dataSourceParams = rs.string("datasourceParams"),
+      preparatorParams = rs.string("preparatorParams"),
+      algorithmsParams = rs.string("algorithmsParams"),
+      servingParams = rs.string("servingParams")
+    )
   }
 }

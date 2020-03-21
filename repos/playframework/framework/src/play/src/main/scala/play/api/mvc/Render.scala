@@ -27,13 +27,15 @@ trait Rendering {
       * @param f A partial function returning a `Result` for a given request media range
       * @return A result provided by `f`, if it is defined for the current request media ranges, otherwise NotAcceptable
       */
-    def apply(f: PartialFunction[MediaRange, Result])(
-        implicit request: RequestHeader): Result = {
-      def _render(ms: Seq[MediaRange]): Result = ms match {
-        case Nil => NotAcceptable
-        case Seq(m, ms @ _ *) =>
-          f.applyOrElse(m, (m: MediaRange) => _render(ms))
-      }
+    def apply(
+        f: PartialFunction[MediaRange, Result]
+    )(implicit request: RequestHeader): Result = {
+      def _render(ms: Seq[MediaRange]): Result =
+        ms match {
+          case Nil => NotAcceptable
+          case Seq(m, ms @ _*) =>
+            f.applyOrElse(m, (m: MediaRange) => _render(ms))
+        }
 
       // “If no Accept header field is present, then it is assumed that the client accepts all media types.”
       val result =
@@ -61,13 +63,15 @@ trait Rendering {
       * @param f A partial function returning a `Future[Result]` for a given request media range
       * @return A result provided by `f`, if it is defined for the current request media ranges, otherwise NotAcceptable
       */
-    def async(f: PartialFunction[MediaRange, Future[Result]])(
-        implicit request: RequestHeader): Future[Result] = {
-      def _render(ms: Seq[MediaRange]): Future[Result] = ms match {
-        case Nil => Future.successful(NotAcceptable)
-        case Seq(m, ms @ _ *) =>
-          f.applyOrElse(m, (m: MediaRange) => _render(ms))
-      }
+    def async(
+        f: PartialFunction[MediaRange, Future[Result]]
+    )(implicit request: RequestHeader): Future[Result] = {
+      def _render(ms: Seq[MediaRange]): Future[Result] =
+        ms match {
+          case Nil => Future.successful(NotAcceptable)
+          case Seq(m, ms @ _*) =>
+            f.applyOrElse(m, (m: MediaRange) => _render(ms))
+        }
 
       // “If no Accept header field is present, then it is assumed that the client accepts all media types.”
       val result =

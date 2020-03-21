@@ -34,15 +34,19 @@ private[repl] class SparkJLineReader(_completion: => Completion)
   def reset() = term.reset()
   def init() = term.init()
 
-  def scalaToJline(tc: ScalaCompleter): Completer = new Completer {
-    def complete(
-        _buf: String, cursor: Int, candidates: JList[CharSequence]): Int = {
-      val buf = if (_buf == null) "" else _buf
-      val Candidates(newCursor, newCandidates) = tc.complete(buf, cursor)
-      newCandidates foreach (candidates add _)
-      newCursor
+  def scalaToJline(tc: ScalaCompleter): Completer =
+    new Completer {
+      def complete(
+          _buf: String,
+          cursor: Int,
+          candidates: JList[CharSequence]
+      ): Int = {
+        val buf = if (_buf == null) "" else _buf
+        val Candidates(newCursor, newCandidates) = tc.complete(buf, cursor)
+        newCandidates foreach (candidates add _)
+        newCursor
+      }
     }
-  }
 
   class JLineConsoleReader extends ConsoleReader with ConsoleReaderHelper {
     if ((history: History) ne NoHistory) this setHistory history
@@ -64,7 +68,9 @@ private[repl] class SparkJLineReader(_completion: => Completion)
 
       if (completion ne NoCompletion) {
         val argCompletor: ArgumentCompleter = new ArgumentCompleter(
-            new JLineDelimiter, scalaToJline(completion.completer()))
+          new JLineDelimiter,
+          scalaToJline(completion.completer())
+        )
         argCompletor setStrict false
 
         this addCompleter argCompletor
@@ -88,5 +94,6 @@ private[repl] class SparkJLineHistory extends JLineFileHistory {
 
   def defaultFileName = ".spark_history"
   override protected lazy val historyFile = File(
-      Path(userHome) / defaultFileName)
+    Path(userHome) / defaultFileName
+  )
 }

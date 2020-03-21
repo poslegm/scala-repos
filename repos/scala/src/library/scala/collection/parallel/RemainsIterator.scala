@@ -109,7 +109,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   /* transformers to combiners */
 
   def map2combiner[S, That](
-      f: T => S, cb: Combiner[S, That]): Combiner[S, That] = {
+      f: T => S,
+      cb: Combiner[S, That]
+  ): Combiner[S, That] = {
     //val cb = pbf(repr)
     if (isRemainingCheap) cb.sizeHint(remaining)
     while (hasNext) cb += f(next())
@@ -117,7 +119,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def collect2combiner[S, That](
-      pf: PartialFunction[T, S], cb: Combiner[S, That]): Combiner[S, That] = {
+      pf: PartialFunction[T, S],
+      cb: Combiner[S, That]
+  ): Combiner[S, That] = {
     //val cb = pbf(repr)
     val runWith = pf.runWith(cb += _)
     while (hasNext) {
@@ -127,8 +131,10 @@ private[collection] trait AugmentedIterableIterator[+T]
     cb
   }
 
-  def flatmap2combiner[S, That](f: T => GenTraversableOnce[S],
-                                cb: Combiner[S, That]): Combiner[S, That] = {
+  def flatmap2combiner[S, That](
+      f: T => GenTraversableOnce[S],
+      cb: Combiner[S, That]
+  ): Combiner[S, That] = {
     //val cb = pbf(repr)
     while (hasNext) {
       val traversable = f(next()).seq
@@ -146,7 +152,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def filter2combiner[U >: T, This](
-      pred: T => Boolean, cb: Combiner[U, This]): Combiner[U, This] = {
+      pred: T => Boolean,
+      cb: Combiner[U, This]
+  ): Combiner[U, This] = {
     while (hasNext) {
       val curr = next()
       if (pred(curr)) cb += curr
@@ -155,7 +163,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def filterNot2combiner[U >: T, This](
-      pred: T => Boolean, cb: Combiner[U, This]): Combiner[U, This] = {
+      pred: T => Boolean,
+      cb: Combiner[U, This]
+  ): Combiner[U, This] = {
     while (hasNext) {
       val curr = next()
       if (!pred(curr)) cb += curr
@@ -163,9 +173,11 @@ private[collection] trait AugmentedIterableIterator[+T]
     cb
   }
 
-  def partition2combiners[U >: T, This](pred: T => Boolean,
-                                        btrue: Combiner[U, This],
-                                        bfalse: Combiner[U, This]) = {
+  def partition2combiners[U >: T, This](
+      pred: T => Boolean,
+      btrue: Combiner[U, This],
+      bfalse: Combiner[U, This]
+  ) = {
     while (hasNext) {
       val curr = next()
       if (pred(curr)) btrue += curr
@@ -175,7 +187,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def take2combiner[U >: T, This](
-      n: Int, cb: Combiner[U, This]): Combiner[U, This] = {
+      n: Int,
+      cb: Combiner[U, This]
+  ): Combiner[U, This] = {
     cb.sizeHint(n)
     var left = n
     while (left > 0) {
@@ -186,7 +200,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def drop2combiner[U >: T, This](
-      n: Int, cb: Combiner[U, This]): Combiner[U, This] = {
+      n: Int,
+      cb: Combiner[U, This]
+  ): Combiner[U, This] = {
     drop(n)
     if (isRemainingCheap) cb.sizeHint(remaining)
     while (hasNext) cb += next
@@ -194,7 +210,10 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def slice2combiner[U >: T, This](
-      from: Int, until: Int, cb: Combiner[U, This]): Combiner[U, This] = {
+      from: Int,
+      until: Int,
+      cb: Combiner[U, This]
+  ): Combiner[U, This] = {
     drop(from)
     var left = scala.math.max(until - from, 0)
     cb.sizeHint(left)
@@ -206,7 +225,10 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def splitAt2combiners[U >: T, This](
-      at: Int, before: Combiner[U, This], after: Combiner[U, This]) = {
+      at: Int,
+      before: Combiner[U, This],
+      after: Combiner[U, This]
+  ) = {
     before.sizeHint(at)
     if (isRemainingCheap) after.sizeHint(remaining - at)
     var left = at
@@ -219,7 +241,9 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def takeWhile2combiner[U >: T, This](
-      p: T => Boolean, cb: Combiner[U, This]) = {
+      p: T => Boolean,
+      cb: Combiner[U, This]
+  ) = {
     var loop = true
     while (hasNext && loop) {
       val curr = next()
@@ -230,7 +254,10 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def span2combiners[U >: T, This](
-      p: T => Boolean, before: Combiner[U, This], after: Combiner[U, This]) = {
+      p: T => Boolean,
+      before: Combiner[U, This],
+      after: Combiner[U, This]
+  ) = {
     var isBefore = true
     while (hasNext && isBefore) {
       val curr = next()
@@ -246,7 +273,11 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def scanToArray[U >: T, A >: U](
-      z: U, op: (U, U) => U, array: Array[A], from: Int) {
+      z: U,
+      op: (U, U) => U,
+      array: Array[A],
+      from: Int
+  ) {
     var last = z
     var i = from
     while (hasNext) {
@@ -257,7 +288,10 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def scanToCombiner[U >: T, That](
-      startValue: U, op: (U, U) => U, cb: Combiner[U, That]) = {
+      startValue: U,
+      op: (U, U) => U,
+      cb: Combiner[U, That]
+  ) = {
     var curr = startValue
     while (hasNext) {
       curr = op(curr, next())
@@ -267,7 +301,11 @@ private[collection] trait AugmentedIterableIterator[+T]
   }
 
   def scanToCombiner[U >: T, That](
-      howmany: Int, startValue: U, op: (U, U) => U, cb: Combiner[U, That]) = {
+      howmany: Int,
+      startValue: U,
+      op: (U, U) => U,
+      cb: Combiner[U, That]
+  ) = {
     var curr = startValue
     var left = howmany
     while (left > 0) {
@@ -280,7 +318,8 @@ private[collection] trait AugmentedIterableIterator[+T]
 
   def zip2combiner[U >: T, S, That](
       otherpit: RemainsIterator[S],
-      cb: Combiner[(U, S), That]): Combiner[(U, S), That] = {
+      cb: Combiner[(U, S), That]
+  ): Combiner[(U, S), That] = {
     if (isRemainingCheap && otherpit.isRemainingCheap)
       cb.sizeHint(remaining min otherpit.remaining)
     while (hasNext && otherpit.hasNext) {
@@ -293,7 +332,8 @@ private[collection] trait AugmentedIterableIterator[+T]
       that: RemainsIterator[S],
       thiselem: U,
       thatelem: S,
-      cb: Combiner[(U, S), That]): Combiner[(U, S), That] = {
+      cb: Combiner[(U, S), That]
+  ): Combiner[(U, S), That] = {
     if (isRemainingCheap && that.isRemainingCheap)
       cb.sizeHint(remaining max that.remaining)
     while (this.hasNext && that.hasNext) cb += ((this.next(), that.next()))
@@ -353,7 +393,8 @@ private[collection] trait AugmentedSeqIterator[+T]
   /* transformers */
 
   def reverse2combiner[U >: T, This](
-      cb: Combiner[U, This]): Combiner[U, This] = {
+      cb: Combiner[U, This]
+  ): Combiner[U, This] = {
     if (isRemainingCheap) cb.sizeHint(remaining)
     var lst = List[T]()
     while (hasNext) lst ::= next
@@ -365,7 +406,9 @@ private[collection] trait AugmentedSeqIterator[+T]
   }
 
   def reverseMap2combiner[S, That](
-      f: T => S, cb: Combiner[S, That]): Combiner[S, That] = {
+      f: T => S,
+      cb: Combiner[S, That]
+  ): Combiner[S, That] = {
     //val cb = cbf(repr)
     if (isRemainingCheap) cb.sizeHint(remaining)
     var lst = List[S]()
@@ -378,7 +421,10 @@ private[collection] trait AugmentedSeqIterator[+T]
   }
 
   def updated2combiner[U >: T, That](
-      index: Int, elem: U, cb: Combiner[U, That]): Combiner[U, That] = {
+      index: Int,
+      elem: U,
+      cb: Combiner[U, That]
+  ): Combiner[U, That] = {
     //val cb = cbf(repr)
     if (isRemainingCheap) cb.sizeHint(remaining)
     var j = 0
@@ -399,7 +445,9 @@ private[collection] trait AugmentedSeqIterator[+T]
   *  @tparam T          type of the elements iterated.
   */
 trait IterableSplitter[+T]
-    extends AugmentedIterableIterator[T] with Splitter[T] with Signalling
+    extends AugmentedIterableIterator[T]
+    with Splitter[T]
+    with Signalling
     with DelegatedSignalling {
   self =>
 
@@ -458,15 +506,17 @@ trait IterableSplitter[+T]
     def hasNext = remaining > 0
     def next = { remaining -= 1; self.next() }
     def dup: IterableSplitter[T] = self.dup.take(taken)
-    def split: Seq[IterableSplitter[T]] = takeSeq(self.split) { (p, n) =>
-      p.take(n)
-    }
-    protected[this] def takeSeq[PI <: IterableSplitter[T]](sq: Seq[PI])(
-        taker: (PI, Int) => PI) = {
+    def split: Seq[IterableSplitter[T]] =
+      takeSeq(self.split) { (p, n) => p.take(n) }
+    protected[this] def takeSeq[PI <: IterableSplitter[T]](
+        sq: Seq[PI]
+    )(taker: (PI, Int) => PI) = {
       val sizes = sq.scanLeft(0)(_ + _.remaining)
-      val shortened = for ((it, (from, until)) <- sq zip
-      (sizes.init zip sizes.tail)) yield
-        if (until < remaining) it else taker(it, remaining - from)
+      val shortened =
+        for ((it, (from, until)) <-
+               sq zip
+                 (sizes.init zip sizes.tail))
+          yield if (until < remaining) it else taker(it, remaining - from)
       shortened filter { _.remaining > 0 }
     }
   }
@@ -545,18 +595,17 @@ trait IterableSplitter[+T]
       val selfs = self.split
       val sizes = selfs.map(_.remaining)
       val thats = that.psplit(sizes: _*)
-      (selfs zip thats) map { p =>
-        p._1 zipParSeq p._2
-      }
+      (selfs zip thats) map { p => p._1 zipParSeq p._2 }
     }
   }
 
   def zipParSeq[S](that: SeqSplitter[S]) = new Zipped(that)
 
-  class ZippedAll[U >: T, S](protected val that: SeqSplitter[S],
-                             protected val thiselem: U,
-                             protected val thatelem: S)
-      extends IterableSplitter[(U, S)] {
+  class ZippedAll[U >: T, S](
+      protected val that: SeqSplitter[S],
+      protected val thiselem: U,
+      protected val thatelem: S
+  ) extends IterableSplitter[(U, S)] {
     signalDelegate = self.signalDelegate
     def hasNext = self.hasNext || that.hasNext
     def next =
@@ -574,7 +623,9 @@ trait IterableSplitter[+T]
       val thisit =
         if (selfrem < thatrem)
           self.appendParIterable[U, SeqSplitter[U]](
-              repetition[U](thiselem, thatrem - selfrem).splitter) else self
+            repetition[U](thiselem, thatrem - selfrem).splitter
+          )
+        else self
       val thatit =
         if (selfrem > thatrem)
           that.appendParSeq(repetition(thatelem, selfrem - thatrem).splitter)
@@ -585,7 +636,10 @@ trait IterableSplitter[+T]
   }
 
   def zipAllParSeq[S, U >: T, R >: S](
-      that: SeqSplitter[S], thisElem: U, thatElem: R) =
+      that: SeqSplitter[S],
+      thisElem: U,
+      thatElem: R
+  ) =
     new ZippedAll[U, R](that, thisElem, thatElem)
 }
 
@@ -594,7 +648,8 @@ trait IterableSplitter[+T]
   *  @tparam T          type of the elements iterated.
   */
 trait SeqSplitter[+T]
-    extends IterableSplitter[T] with AugmentedSeqIterator[T]
+    extends IterableSplitter[T]
+    with AugmentedSeqIterator[T]
     with PreciseSplitter[T] {
   self =>
   def dup: SeqSplitter[T]
@@ -629,9 +684,7 @@ trait SeqSplitter[+T]
     override def split: Seq[SeqSplitter[T]] =
       super.split.asInstanceOf[Seq[SeqSplitter[T]]]
     def psplit(sizes: Int*): Seq[SeqSplitter[T]] =
-      takeSeq(self.psplit(sizes: _*)) { (p, n) =>
-        p.take(n)
-      }
+      takeSeq(self.psplit(sizes: _*)) { (p, n) => p.take(n) }
   }
   override private[collection] def newTaken(until: Int): Taken =
     new Taken(until)
@@ -650,7 +703,8 @@ trait SeqSplitter[+T]
   override def map[S](f: T => S) = new Mapped(f)
 
   class Appended[U >: T, PI <: SeqSplitter[U]](it: PI)
-      extends super.Appended[U, PI](it) with SeqSplitter[U] {
+      extends super.Appended[U, PI](it)
+      with SeqSplitter[U] {
     override def dup = super.dup.asInstanceOf[SeqSplitter[U]]
     override def split: Seq[SeqSplitter[U]] =
       super.split.asInstanceOf[Seq[SeqSplitter[U]]]
@@ -670,9 +724,12 @@ trait SeqSplitter[+T]
         }
         val (selfszfrom, thatszfrom) =
           splitsizes.zip(szcum.init).span(_._2 < selfrem)
-        val (selfsizes, thatsizes) = (selfszfrom map { _._1 }, thatszfrom map {
-          _._1
-        })
+        val (selfsizes, thatsizes) = (
+          selfszfrom map { _._1 },
+          thatszfrom map {
+            _._1
+          }
+        )
 
         // split iterators
         val selfs = self.psplit(selfsizes: _*)
@@ -680,8 +737,10 @@ trait SeqSplitter[+T]
 
         // appended last in self with first in rest if necessary
         if (appendMiddle)
-          selfs.init ++ Seq(selfs.last
-                .appendParSeq[U, SeqSplitter[U]](thats.head)) ++ thats.tail
+          selfs.init ++ Seq(
+            selfs.last
+              .appendParSeq[U, SeqSplitter[U]](thats.head)
+          ) ++ thats.tail
         else selfs ++ thats
       } else curr.asInstanceOf[SeqSplitter[U]].psplit(sizes: _*)
   }
@@ -690,7 +749,8 @@ trait SeqSplitter[+T]
     new Appended[U, PI](that)
 
   class Zipped[S](ti: SeqSplitter[S])
-      extends super.Zipped[S](ti) with SeqSplitter[(T, S)] {
+      extends super.Zipped[S](ti)
+      with SeqSplitter[(T, S)] {
     override def dup = super.dup.asInstanceOf[SeqSplitter[(T, S)]]
     override def split: Seq[SeqSplitter[(T, S)]] =
       super.split.asInstanceOf[Seq[SeqSplitter[(T, S)]]]
@@ -712,7 +772,9 @@ trait SeqSplitter[+T]
       val thisit =
         if (selfrem < thatrem)
           self.appendParSeq[U, SeqSplitter[U]](
-              repetition[U](thiselem, thatrem - selfrem).splitter) else self
+            repetition[U](thiselem, thatrem - selfrem).splitter
+          )
+        else self
       val thatit =
         if (selfrem > thatrem)
           that.appendParSeq(repetition(thatelem, selfrem - thatrem).splitter)
@@ -732,7 +794,10 @@ trait SeqSplitter[+T]
   }
 
   override def zipAllParSeq[S, U >: T, R >: S](
-      that: SeqSplitter[S], thisElem: U, thatElem: R) =
+      that: SeqSplitter[S],
+      thisElem: U,
+      thatElem: R
+  ) =
     new ZippedAll[U, R](that, thisElem, thatElem)
 
   def reverse: SeqSplitter[T] = {
@@ -758,6 +823,9 @@ trait SeqSplitter[+T]
   }
 
   def patchParSeq[U >: T](
-      from: Int, patchElems: SeqSplitter[U], replaced: Int) =
+      from: Int,
+      patchElems: SeqSplitter[U],
+      replaced: Int
+  ) =
     new Patched(from, patchElems, replaced)
 }

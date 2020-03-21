@@ -14,7 +14,8 @@ trait Semigroup[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A]
   def combinen(a: A, n: Int): A =
     if (n <= 0)
       throw new IllegalArgumentException(
-          "Repeated combination for semigroups must have repetitions > 0")
+        "Repeated combination for semigroups must have repetitions > 0"
+      )
     else if (n == 1) a
     else combinenAboveOne(a, n)
 
@@ -44,15 +45,17 @@ object Semigroup {
     * If there exists an implicit `AdditiveSemigroup[A]`, this returns a
     * `Semigroup[A]` using `plus` for `op`.
     */
-  @inline final def additive[A](
-      implicit A: AdditiveSemigroup[A]): Semigroup[A] = A.additive
+  @inline final def additive[A](implicit
+      A: AdditiveSemigroup[A]
+  ): Semigroup[A] = A.additive
 
   /**
     * If there exists an implicit `MultiplicativeSemigroup[A]`, this returns a
     * `Semigroup[A]` using `times` for `op`.
     */
-  @inline final def multiplicative[A](
-      implicit A: MultiplicativeSemigroup[A]): Semigroup[A] = A.multiplicative
+  @inline final def multiplicative[A](implicit
+      A: MultiplicativeSemigroup[A]
+  ): Semigroup[A] = A.multiplicative
 }
 
 /**
@@ -61,13 +64,16 @@ object Semigroup {
   * A semigroup is commutative if for all x and y, x |+| y === y |+| x.
   */
 trait CSemigroup[@sp(Boolean, Byte, Short, Int, Long, Float, Double) A]
-    extends Any with Semigroup[A]
+    extends Any
+    with Semigroup[A]
 
 object CSemigroup {
   @inline final def apply[A](implicit ev: CSemigroup[A]): CSemigroup[A] = ev
-  @inline final def additive[A](
-      implicit A: AdditiveCSemigroup[A]): CSemigroup[A] = A.additive
-  @inline final def multiplicative[A](
-      implicit A: MultiplicativeCSemigroup[A]): CSemigroup[A] =
+  @inline final def additive[A](implicit
+      A: AdditiveCSemigroup[A]
+  ): CSemigroup[A] = A.additive
+  @inline final def multiplicative[A](implicit
+      A: MultiplicativeCSemigroup[A]
+  ): CSemigroup[A] =
     A.multiplicative
 }

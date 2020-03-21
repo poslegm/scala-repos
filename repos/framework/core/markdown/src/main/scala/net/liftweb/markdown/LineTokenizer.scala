@@ -39,11 +39,12 @@ case class LineReader private (val lines: Seq[String], val lineCount: Int)
   def rest =
     if (lines.isEmpty) this else new LineReader(lines.tail, lineCount + 1)
   def atEnd = lines.isEmpty
-  def pos = new Position {
-    def line = lineCount
-    def column = 1
-    protected def lineContents = first
-  }
+  def pos =
+    new Position {
+      def line = lineCount
+      def column = 1
+      protected def lineContents = first
+    }
 }
 
 /**
@@ -66,16 +67,17 @@ class LineTokenizer() extends Parsers {
     * Returns a parser based on the given line parser.
     * The resulting parser succeeds if the given line parser consumes the whole String.
     */
-  def p[T](parser: lineParsers.Parser[T]): Parser[T] = Parser { in =>
-    if (in.atEnd) {
-      Failure("End of Input.", in)
-    } else {
-      lineParsers.parseAll(parser, in.first) match {
-        case lineParsers.Success(t, _) => Success(t, in.rest)
-        case n: lineParsers.NoSuccess => Failure(n.msg, in)
+  def p[T](parser: lineParsers.Parser[T]): Parser[T] =
+    Parser { in =>
+      if (in.atEnd) {
+        Failure("End of Input.", in)
+      } else {
+        lineParsers.parseAll(parser, in.first) match {
+          case lineParsers.Success(t, _) => Success(t, in.rest)
+          case n: lineParsers.NoSuccess  => Failure(n.msg, in)
+        }
       }
     }
-  }
 
   /** Returns the first char in the given string or a newline if the string is empty.
     * This is done to speed up header parsing. Used to speed up line tokenizing substantially
@@ -106,7 +108,8 @@ class LineTokenizer() extends Parsers {
     * The passed tuple is the result from a previous parser and used to decide how to continue parsing.
     */
   def maybeUrlInNextLine(
-      prev: (LinkDefinitionStart, Option[String])): Parser[LinkDefinition] =
+      prev: (LinkDefinitionStart, Option[String])
+  ): Parser[LinkDefinition] =
     prev match {
       case (lds, Some(title)) => success(lds.toLinkDefinition(Some(title)))
       case (lds, None) =>
@@ -114,7 +117,10 @@ class LineTokenizer() extends Parsers {
           if (in.atEnd) {
             Success(lds.toLinkDefinition(None), in)
           } else {
-            lineParsers.parseAll(lineParsers.linkDefinitionTitle, in.first) match {
+            lineParsers.parseAll(
+              lineParsers.linkDefinitionTitle,
+              in.first
+            ) match {
               case lineParsers.Success(title, _) =>
                 Success(lds.toLinkDefinition(Some(title)), in.rest)
               case _ => Success(lds.toLinkDefinition(None), in)
@@ -146,10 +152,11 @@ class LineTokenizer() extends Parsers {
 
   /** Very dumb parser for XML chunks.
     */
-  def xmlChunk = xmlChunkStart ~ (notXmlChunkEnd *) ~ xmlChunkEnd ^^ {
-    case s ~ ms ~ e =>
-      new XmlChunk(s + "\n" + ms.mkString("\n") + "\n" + e + "\n")
-  }
+  def xmlChunk =
+    xmlChunkStart ~ (notXmlChunkEnd *) ~ xmlChunkEnd ^^ {
+      case s ~ ms ~ e =>
+        new XmlChunk(s + "\n" + ms.mkString("\n") + "\n" + e + "\n")
+    }
 
   /** Parses Markdown Lines. Always succeeds.
     */
@@ -169,38 +176,42 @@ class LineTokenizer() extends Parsers {
           case (_, '>') => p(lineParsers.blockquoteLine)(in)
           case (_, n) if (n >= '0' && n <= '9') =>
             p(lineParsers.oItemStartLine)(in)
-          case (_, ' ') => p(lineParsers.emptyOrCode)(in)
+          case (_, ' ')  => p(lineParsers.emptyOrCode)(in)
           case (_, '\t') => p(lineParsers.emptyOrCode)(in)
           case (_, '\n') => p(lineParsers.emptyLine)(in)
-          case (_, '`') => p(lineParsers.fencedCodeStartOrEnd)(in)
-          case _ => p(lineParsers.otherLine)(in)
+          case (_, '`')  => p(lineParsers.fencedCodeStartOrEnd)(in)
+          case _         => p(lineParsers.otherLine)(in)
         }
       }
-    } | p(lineParsers.otherLine) //this makes sure every line is consumed, even if our guess was no good
+    } | p(
+      lineParsers.otherLine
+    ) //this makes sure every line is consumed, even if our guess was no good
 
   /** Parses link definitions and verbatim xml blocks
     */
-  def preprocessToken = Parser { in =>
-    if (in.atEnd) {
-      Failure("End of Input.", in)
-    } else {
-      val line = in.first
-      (firstChar(line), indicatorChar(line)) match {
-        //link definitions have absolute precedence
-        case (_, '[') => linkDefinition(in)
-        //then filter out xml blocks if allowed
-        case ('<', _) if (allowXmlBlocks) => xmlChunk(in)
-        //no token for preprocessing
-        case _ => Failure("No preprocessing token.", in)
+  def preprocessToken =
+    Parser { in =>
+      if (in.atEnd) {
+        Failure("End of Input.", in)
+      } else {
+        val line = in.first
+        (firstChar(line), indicatorChar(line)) match {
+          //link definitions have absolute precedence
+          case (_, '[') => linkDefinition(in)
+          //then filter out xml blocks if allowed
+          case ('<', _) if (allowXmlBlocks) => xmlChunk(in)
+          //no token for preprocessing
+          case _ => Failure("No preprocessing token.", in)
+        }
       }
     }
-  }
 
   /** Parses tokens that may occur inside a block. Works like the normal token parser except that
     * it does not check for link definitions and verbatim XML.
     */
   def innerTokens(
-      lookup: Map[String, LinkDefinition]): Parser[MarkdownLineReader] =
+      lookup: Map[String, LinkDefinition]
+  ): Parser[MarkdownLineReader] =
     phrase(lineToken *) ^^ {
       case ts => new MarkdownLineReader(ts, lookup)
     }
@@ -215,7 +226,7 @@ class LineTokenizer() extends Parsers {
         for (t <- ts) {
           t match {
             case ld: LinkDefinition => lookup(ld.id) = ld
-            case ml: MarkdownLine => lines.append(ml)
+            case ml: MarkdownLine   => lines.append(ml)
           }
         }
         new MarkdownLineReader(lines.toList, lookup.toMap)
@@ -244,8 +255,9 @@ class LineTokenizer() extends Parsers {
       case Success(reader, _) => reader
       case n: NoSuccess =>
         throw new IllegalStateException(
-            "Inner line Tokenizing failed. This is a bug. Message was: " +
-            n.msg)
+          "Inner line Tokenizing failed. This is a bug. Message was: " +
+            n.msg
+        )
     }
 
   /** Tokenizes a whole Markdown document.
@@ -264,6 +276,7 @@ class LineTokenizer() extends Parsers {
       case Success(reader, _) => reader
       case n: NoSuccess =>
         throw new IllegalStateException(
-            "Tokenizing failed. This is a bug. Message was: " + n.msg)
+          "Tokenizing failed. This is a bug. Message was: " + n.msg
+        )
     }
 }

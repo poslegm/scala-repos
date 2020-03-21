@@ -45,7 +45,8 @@ class TestRpcEndpoint extends ThreadSafeRpcEndpoint with TripleEquals {
   }
 
   override def receiveAndReply(
-      context: RpcCallContext): PartialFunction[Any, Unit] = {
+      context: RpcCallContext
+  ): PartialFunction[Any, Unit] = {
     case message: Any => receiveAndReplyMessages += message
   }
 
@@ -58,7 +59,9 @@ class TestRpcEndpoint extends ThreadSafeRpcEndpoint with TripleEquals {
     * `remoteAddress`.
     */
   override def onNetworkError(
-      cause: Throwable, remoteAddress: RpcAddress): Unit = {
+      cause: Throwable,
+      remoteAddress: RpcAddress
+  ): Unit = {
     onNetworkErrorMessages += cause -> remoteAddress
   }
 
@@ -117,12 +120,15 @@ class TestRpcEndpoint extends ThreadSafeRpcEndpoint with TripleEquals {
   }
 
   def verifySingleOnNetworkErrorMessage(
-      cause: Throwable, remoteAddress: RpcAddress): Unit = {
+      cause: Throwable,
+      remoteAddress: RpcAddress
+  ): Unit = {
     verifyOnNetworkErrorMessages(List(cause -> remoteAddress))
   }
 
   def verifyOnNetworkErrorMessages(
-      expected: Seq[(Throwable, RpcAddress)]): Unit = {
+      expected: Seq[(Throwable, RpcAddress)]
+  ): Unit = {
     assert(onNetworkErrorMessages === expected)
   }
 }

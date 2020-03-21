@@ -35,13 +35,16 @@ private[http] class Utf8Encoder extends PushStage[String, ByteString] {
           surrogateValue = 0x10000 | ((char ^ SurrogateFirst) << 10)
         else if (char >= SurrogateSecond && char < 0xdfff)
           throw new IllegalArgumentException(
-              f"Unexpected UTF-16 surrogate continuation")
+            f"Unexpected UTF-16 surrogate continuation"
+          )
         else if (char <= Utf8ThreeByteLimit) {
           b(0xe0 | ((char & 0xf000) >> 12)) // upper 4 bits
           b(0x80 | ((char & 0x0fc0) >> 6)) // middle 6 bits
           b(0x80 | (char & 0x3f)) // lower 6 bits
         } else
-          throw new IllegalStateException("Char cannot be >= 2^16") // char value was converted from 16bit value
+          throw new IllegalStateException(
+            "Char cannot be >= 2^16"
+          ) // char value was converted from 16bit value
       else if (char >= SurrogateSecond && char <= 0xdfff) {
         surrogateValue |= (char & 0x3ff)
         b(0xf0 | ((surrogateValue & 0x1c0000) >> 18)) // upper 3 bits
@@ -51,7 +54,8 @@ private[http] class Utf8Encoder extends PushStage[String, ByteString] {
         surrogateValue = 0
       } else
         throw new IllegalArgumentException(
-            f"Expected UTF-16 surrogate continuation")
+          f"Expected UTF-16 surrogate continuation"
+        )
 
     var offset = 0
     while (offset < input.length) {
@@ -64,10 +68,14 @@ private[http] class Utf8Encoder extends PushStage[String, ByteString] {
   }
 
   override def onUpstreamFinish(
-      ctx: Context[ByteString]): TerminationDirective =
+      ctx: Context[ByteString]
+  ): TerminationDirective =
     if (inSurrogatePair)
-      ctx.fail(new IllegalArgumentException(
-              "Truncated String input (ends in the middle of surrogate pair)"))
+      ctx.fail(
+        new IllegalArgumentException(
+          "Truncated String input (ends in the middle of surrogate pair)"
+        )
+      )
     else super.onUpstreamFinish(ctx)
 }
 

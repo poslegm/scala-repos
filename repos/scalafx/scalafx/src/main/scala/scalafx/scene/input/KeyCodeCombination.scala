@@ -33,7 +33,8 @@ import scalafx.delegate.SFXDelegate
 
 object KeyCodeCombination {
   implicit def sfxKeyCodeCombination2jfx(
-      kcc: KeyCodeCombination): jfxsi.KeyCodeCombination =
+      kcc: KeyCodeCombination
+  ): jfxsi.KeyCodeCombination =
     if (kcc != null) kcc.delegate else null
 }
 
@@ -50,15 +51,17 @@ class KeyCodeCombination(override val delegate: jfxsi.KeyCodeCombination)
   /**
     * Constructs a KeyCodeCombination for the specified main key and with an explicit specification of all modifier keys.
     */
-  def this(code: jfxsi.KeyCode,
-           shift: jfxsi.KeyCombination.ModifierValue,
-           control: jfxsi.KeyCombination.ModifierValue,
-           alt: jfxsi.KeyCombination.ModifierValue,
-           meta: jfxsi.KeyCombination.ModifierValue,
-           shortcut: jfxsi.KeyCombination.ModifierValue) =
+  def this(
+      code: jfxsi.KeyCode,
+      shift: jfxsi.KeyCombination.ModifierValue,
+      control: jfxsi.KeyCombination.ModifierValue,
+      alt: jfxsi.KeyCombination.ModifierValue,
+      meta: jfxsi.KeyCombination.ModifierValue,
+      shortcut: jfxsi.KeyCombination.ModifierValue
+  ) =
     this(
-        new jfxsi.KeyCodeCombination(
-            code, shift, control, alt, meta, shortcut))
+      new jfxsi.KeyCodeCombination(code, shift, control, alt, meta, shortcut)
+    )
 
   /**
     * Gets the key code associated with this key combination.

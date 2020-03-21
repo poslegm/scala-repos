@@ -9,4 +9,7 @@ import com.intellij.codeInsight.template.FileTypeBasedContextType
   */
 class ScalaLiveTemplateContextType
     extends FileTypeBasedContextType(
-        "SCALA", "Scala", ScalaFileType.SCALA_FILE_TYPE)
+      "SCALA",
+      "Scala",
+      ScalaFileType.SCALA_FILE_TYPE
+    )

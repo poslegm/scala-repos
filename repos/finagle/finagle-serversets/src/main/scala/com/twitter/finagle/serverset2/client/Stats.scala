@@ -13,12 +13,10 @@ private[serverset2] trait StatsClient extends ZooKeeperClient {
     def apply[T](result: Future[T]): Future[T] = {
       Stat
         .timeFuture(stats.stat(s"${name}_latency_ms"))(result)
-        .onSuccess { _ =>
-          success.incr()
-        }
+        .onSuccess { _ => success.incr() }
         .onFailure {
           case ke: KeeperException => stats.counter(ke.name).incr()
-          case _ => failure.incr()
+          case _                   => failure.incr()
         }
       result
     }
@@ -57,8 +55,7 @@ private[serverset2] trait StatsClient extends ZooKeeperClient {
   def sessionTimeout: Duration = underlying.sessionTimeout
 }
 
-private[serverset2] trait StatsReader
-    extends StatsClient with ZooKeeperReader {
+private[serverset2] trait StatsReader extends StatsClient with ZooKeeperReader {
   protected val underlying: ZooKeeperReader
 
   def exists(path: String): Future[Option[Data.Stat]] =
@@ -79,8 +76,7 @@ private[serverset2] trait StatsReader
   def sync(path: String): Future[Unit] = ReadFilter(underlying.sync(path))
 }
 
-private[serverset2] trait StatsWriter
-    extends StatsClient with ZooKeeperWriter {
+private[serverset2] trait StatsWriter extends StatsClient with ZooKeeperWriter {
   protected val underlying: ZooKeeperWriter
 
   def create(
@@ -88,25 +84,30 @@ private[serverset2] trait StatsWriter
       data: Option[Buf],
       acl: Seq[Data.ACL],
       createMode: CreateMode
-  ): Future[String] = createMode match {
-    case CreateMode.Ephemeral =>
-      EphemeralFilter(underlying.create(path, data, acl, createMode))
-    case CreateMode.EphemeralSequential =>
-      EphemeralFilter(underlying.create(path, data, acl, createMode))
-    case _ => WriteFilter(underlying.create(path, data, acl, createMode))
-  }
+  ): Future[String] =
+    createMode match {
+      case CreateMode.Ephemeral =>
+        EphemeralFilter(underlying.create(path, data, acl, createMode))
+      case CreateMode.EphemeralSequential =>
+        EphemeralFilter(underlying.create(path, data, acl, createMode))
+      case _ => WriteFilter(underlying.create(path, data, acl, createMode))
+    }
 
   def delete(path: String, version: Option[Int]): Future[Unit] =
     WriteFilter(underlying.delete(path, version))
 
-  def setACL(path: String,
-             acl: Seq[Data.ACL],
-             version: Option[Int]): Future[Data.Stat] =
+  def setACL(
+      path: String,
+      acl: Seq[Data.ACL],
+      version: Option[Int]
+  ): Future[Data.Stat] =
     WriteFilter(underlying.setACL(path, acl, version))
 
-  def setData(path: String,
-              data: Option[Buf],
-              version: Option[Int]): Future[Data.Stat] =
+  def setData(
+      path: String,
+      data: Option[Buf],
+      version: Option[Int]
+  ): Future[Data.Stat] =
     WriteFilter(underlying.setData(path, data, version))
 }
 
@@ -118,12 +119,16 @@ private[serverset2] trait StatsMulti extends StatsClient with ZooKeeperMulti {
 }
 
 private[serverset2] trait StatsRW
-    extends ZooKeeperRW with StatsReader with StatsWriter {
+    extends ZooKeeperRW
+    with StatsReader
+    with StatsWriter {
   protected val underlying: ZooKeeperRW
 }
 
 private[serverset2] trait StatsRWMulti
-    extends ZooKeeperRWMulti with StatsReader with StatsWriter
+    extends ZooKeeperRWMulti
+    with StatsReader
+    with StatsWriter
     with StatsMulti {
   protected val underlying: ZooKeeperRWMulti
 }
@@ -145,11 +150,11 @@ private[serverset2] trait EventStats {
 
   protected def EventFilter(event: NodeEvent): NodeEvent = {
     event match {
-      case Created => createdCounter.incr()
-      case DataChanged => dataChangedCounter.incr()
-      case Deleted => deletedCounter.incr()
-      case ChildrenChanged => childrenChangedCounter.incr()
-      case DataWatchRemoved => dataWatchRemovedCounter.incr()
+      case Created           => createdCounter.incr()
+      case DataChanged       => dataChangedCounter.incr()
+      case Deleted           => deletedCounter.incr()
+      case ChildrenChanged   => childrenChangedCounter.incr()
+      case DataWatchRemoved  => dataWatchRemovedCounter.incr()
       case ChildWatchRemoved => childWatchRemovedCounter.incr()
     }
     event
@@ -184,12 +189,12 @@ object SessionStats {
             stateTracker.transition(newState)
 
             newState match {
-              case Unknown => unknownCounter.incr()
-              case AuthFailed => authFailedCounter.incr()
-              case Disconnected => disconnectedCounter.incr()
-              case Expired => expiredCounter.incr()
-              case SyncConnected => syncConnectedCounter.incr()
-              case NoSyncConnected => noSyncConnectedCounter.incr()
+              case Unknown           => unknownCounter.incr()
+              case AuthFailed        => authFailedCounter.incr()
+              case Disconnected      => disconnectedCounter.incr()
+              case Expired           => expiredCounter.incr()
+              case SyncConnected     => syncConnectedCounter.incr()
+              case NoSyncConnected   => noSyncConnectedCounter.incr()
               case ConnectedReadOnly => connectedReadOnlyCounter.incr()
               case SaslAuthenticated => saslAuthenticatedCounter.incr()
             }

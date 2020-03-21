@@ -33,30 +33,32 @@ import org.apache.spark.mllib.util.MLUtils
 object SampledRDDs {
 
   case class Params(
-      input: String = "data/mllib/sample_binary_classification_data.txt")
-      extends AbstractParams[Params]
+      input: String = "data/mllib/sample_binary_classification_data.txt"
+  ) extends AbstractParams[Params]
 
   def main(args: Array[String]) {
     val defaultParams = Params()
 
     val parser = new OptionParser[Params]("SampledRDDs") {
       head(
-          "SampledRDDs: an example app for randomly generated and sampled RDDs.")
+        "SampledRDDs: an example app for randomly generated and sampled RDDs."
+      )
       opt[String]("input")
         .text(
-            s"Input path to labeled examples in LIBSVM format, default: ${defaultParams.input}")
+          s"Input path to labeled examples in LIBSVM format, default: ${defaultParams.input}"
+        )
         .action((x, c) => c.copy(input = x))
-      note("""
+      note(
+        """
         |For example, the following command runs this app:
         |
         | bin/spark-submit --class org.apache.spark.examples.mllib.SampledRDDs \
         |  examples/target/scala-*/spark-examples-*.jar
-        """.stripMargin)
+        """.stripMargin
+      )
     }
 
-    parser.parse(args, defaultParams).map { params =>
-      run(params)
-    } getOrElse {
+    parser.parse(args, defaultParams).map { params => run(params) } getOrElse {
       sys.exit(1)
     }
   }
@@ -73,12 +75,14 @@ object SampledRDDs {
       throw new RuntimeException("Error: Data file had no samples to load.")
     }
     println(
-        s"Loaded data with $numExamples examples from file: ${params.input}")
+      s"Loaded data with $numExamples examples from file: ${params.input}"
+    )
 
     // Example: RDD.sample() and RDD.takeSample()
     val expectedSampleSize = (numExamples * fraction).toInt
     println(
-        s"Sampling RDD using fraction $fraction.  Expected sample size = $expectedSampleSize.")
+      s"Sampling RDD using fraction $fraction.  Expected sample size = $expectedSampleSize."
+    )
     val sampledRDD =
       examples.sample(withReplacement = true, fraction = fraction)
     println(s"  RDD.sample(): sample has ${sampledRDD.count()} examples")
@@ -89,9 +93,7 @@ object SampledRDDs {
     println()
 
     // Example: RDD.sampleByKey() and RDD.sampleByKeyExact()
-    val keyedRDD = examples.map { lp =>
-      (lp.label.toInt, lp.features)
-    }
+    val keyedRDD = examples.map { lp => (lp.label.toInt, lp.features) }
     println(s"  Keyed data using label (Int) as key ==> Orig")
     //  Count examples per label in original data.
     val keyCounts = keyedRDD.countByKey()
@@ -103,8 +105,9 @@ object SampledRDDs {
     val keyCountsB = sampledByKeyRDD.countByKey()
     val sizeB = keyCountsB.values.sum
     println(
-        s"  Sampled $sizeB examples using approximate stratified sampling (by label)." +
-        " ==> Approx Sample")
+      s"  Sampled $sizeB examples using approximate stratified sampling (by label)." +
+        " ==> Approx Sample"
+    )
 
     //  Subsample, and count examples per label in sampled data. (approximate)
     val sampledByKeyRDDExact =
@@ -112,8 +115,9 @@ object SampledRDDs {
     val keyCountsBExact = sampledByKeyRDDExact.countByKey()
     val sizeBExact = keyCountsBExact.values.sum
     println(
-        s"  Sampled $sizeBExact examples using exact stratified sampling (by label)." +
-        " ==> Exact Sample")
+      s"  Sampled $sizeBExact examples using exact stratified sampling (by label)." +
+        " ==> Exact Sample"
+    )
 
     //  Compare samples
     println(s"   \tFractions of examples with key")
