@@ -17,7 +17,12 @@
 
 package org.apache.spark.sql.execution
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  DataInputStream,
+  DataOutputStream
+}
 import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.collection.mutable.ArrayBuffer
@@ -42,7 +47,9 @@ import org.apache.spark.util.ThreadUtils
   * The base class for physical operators.
   */
 abstract class SparkPlan
-    extends QueryPlan[SparkPlan] with Logging with Serializable {
+    extends QueryPlan[SparkPlan]
+    with Logging
+    with Serializable {
 
   /**
     * A handle to the SQL Context that was used to create this plan.   Since many operators need
@@ -117,17 +124,19 @@ abstract class SparkPlan
     * Returns the result of this query as an RDD[InternalRow] by delegating to doExecute after
     * preparations. Concrete implementations of SparkPlan should override doExecute.
     */
-  final def execute(): RDD[InternalRow] = executeQuery {
-    doExecute()
-  }
+  final def execute(): RDD[InternalRow] =
+    executeQuery {
+      doExecute()
+    }
 
   /**
     * Returns the result of this query as a broadcast variable by delegating to doBroadcast after
     * preparations. Concrete implementations of SparkPlan should override doBroadcast.
     */
-  final def executeBroadcast[T](): broadcast.Broadcast[T] = executeQuery {
-    doExecuteBroadcast()
-  }
+  final def executeBroadcast[T](): broadcast.Broadcast[T] =
+    executeQuery {
+      doExecuteBroadcast()
+    }
 
   /**
     * Execute a query after preparing the query and adding query plan information to created RDDs
@@ -176,12 +185,14 @@ abstract class SparkPlan
         val rows = Await.result(futureResult, Duration.Inf)
         if (rows.length > 1) {
           sys.error(
-              s"more than one row returned by a subquery used as an expression:\n${e.plan}")
+            s"more than one row returned by a subquery used as an expression:\n${e.plan}"
+          )
         }
         if (rows.length == 1) {
           assert(
-              rows(0).numFields == 1,
-              s"Expects 1 field, but got ${rows(0).numFields}; something went wrong in analysis")
+            rows(0).numFields == 1,
+            s"Expects 1 field, but got ${rows(0).numFields}; something went wrong in analysis"
+          )
           e.updateResult(rows(0).get(0, e.dataType))
         } else {
           // If there is no rows returned, the result should be null.
@@ -224,7 +235,8 @@ abstract class SparkPlan
     */
   protected[sql] def doExecuteBroadcast[T](): broadcast.Broadcast[T] = {
     throw new UnsupportedOperationException(
-        s"$nodeName does not implement doExecuteBroadcast")
+      s"$nodeName does not implement doExecuteBroadcast"
+    )
   }
 
   /**
@@ -259,7 +271,9 @@ abstract class SparkPlan
     * Decode the byte arrays back to UnsafeRows and put them into buffer.
     */
   private def decodeUnsafeRows(
-      bytes: Array[Byte], buffer: ArrayBuffer[InternalRow]): Unit = {
+      bytes: Array[Byte],
+      buffer: ArrayBuffer[InternalRow]
+  ): Unit = {
     val nFields = schema.length
 
     val codec = CompressionCodec.createCodec(SparkEnv.get.conf)
@@ -283,9 +297,7 @@ abstract class SparkPlan
     val byteArrayRdd = getByteArrayRdd()
 
     val results = ArrayBuffer[InternalRow]()
-    byteArrayRdd.collect().foreach { bytes =>
-      decodeUnsafeRows(bytes, results)
-    }
+    byteArrayRdd.collect().foreach { bytes => decodeUnsafeRows(bytes, results) }
     results.toArray
   }
 
@@ -326,20 +338,22 @@ abstract class SparkPlan
           numPartsToTry = (1.5 * n * partsScanned / buf.size).toInt
         }
       }
-      numPartsToTry = math.max(0, numPartsToTry) // guard against negative num of partitions
+      numPartsToTry =
+        math.max(0, numPartsToTry) // guard against negative num of partitions
 
       val left = n - buf.size
       val p = partsScanned.until(
-          math.min(partsScanned + numPartsToTry, totalParts).toInt)
+        math.min(partsScanned + numPartsToTry, totalParts).toInt
+      )
       val sc = sqlContext.sparkContext
-      val res = sc.runJob(childRDD,
-                          (it: Iterator[Array[Byte]]) =>
-                            if (it.hasNext) it.next() else Array.empty,
-                          p)
+      val res = sc.runJob(
+        childRDD,
+        (it: Iterator[Array[Byte]]) =>
+          if (it.hasNext) it.next() else Array.empty,
+        p
+      )
 
-      res.foreach { r =>
-        decodeUnsafeRows(r.asInstanceOf[Array[Byte]], buf)
-      }
+      res.foreach { r => decodeUnsafeRows(r.asInstanceOf[Array[Byte]], buf) }
 
       partsScanned += p.size
     }
@@ -356,21 +370,27 @@ abstract class SparkPlan
   protected def newMutableProjection(
       expressions: Seq[Expression],
       inputSchema: Seq[Attribute],
-      useSubexprElimination: Boolean = false): () => MutableProjection = {
+      useSubexprElimination: Boolean = false
+  ): () => MutableProjection = {
     log.debug(s"Creating MutableProj: $expressions, inputSchema: $inputSchema")
     GenerateMutableProjection.generate(
-        expressions, inputSchema, useSubexprElimination)
+      expressions,
+      inputSchema,
+      useSubexprElimination
+    )
   }
 
   protected def newPredicate(
       expression: Expression,
-      inputSchema: Seq[Attribute]): (InternalRow) => Boolean = {
+      inputSchema: Seq[Attribute]
+  ): (InternalRow) => Boolean = {
     GeneratePredicate.generate(expression, inputSchema)
   }
 
   protected def newOrdering(
       order: Seq[SortOrder],
-      inputSchema: Seq[Attribute]): Ordering[InternalRow] = {
+      inputSchema: Seq[Attribute]
+  ): Ordering[InternalRow] = {
     GenerateOrdering.generate(order, inputSchema)
   }
 
@@ -378,7 +398,8 @@ abstract class SparkPlan
     * Creates a row ordering for the given schema, in natural ascending order.
     */
   protected def newNaturalAscendingOrdering(
-      dataTypes: Seq[DataType]): Ordering[InternalRow] = {
+      dataTypes: Seq[DataType]
+  ): Ordering[InternalRow] = {
     val order: Seq[SortOrder] = dataTypes.zipWithIndex.map {
       case (dt, index) =>
         new SortOrder(BoundReference(index, dt, nullable = true), Ascending)
@@ -390,7 +411,8 @@ abstract class SparkPlan
 object SparkPlan {
   private[execution] val subqueryExecutionContext =
     ExecutionContext.fromExecutorService(
-        ThreadUtils.newDaemonCachedThreadPool("subquery", 16))
+      ThreadUtils.newDaemonCachedThreadPool("subquery", 16)
+    )
 }
 
 private[sql] trait LeafNode extends SparkPlan {

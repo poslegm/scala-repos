@@ -12,8 +12,9 @@ abstract class Uploadable {
 }
 
 case class FilePart(
-    file: File, contentType: String = "application/octet-stream")
-    extends Uploadable {
+    file: File,
+    contentType: String = "application/octet-stream"
+) extends Uploadable {
 
   lazy val content = {
     val fin = new FileInputStream(file)
@@ -42,10 +43,11 @@ case class FilePart(
   def fileName = file.getName
 }
 
-case class BytesPart(fileName: String,
-                     content: Array[Byte],
-                     contentType: String = "application/octet-stream")
-    extends Uploadable {
+case class BytesPart(
+    fileName: String,
+    content: Array[Byte],
+    contentType: String = "application/octet-stream"
+) extends Uploadable {
 
   def contentLength = content.length.toLong
 }

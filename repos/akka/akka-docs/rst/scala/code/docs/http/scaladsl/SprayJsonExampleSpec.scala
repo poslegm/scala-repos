@@ -89,16 +89,14 @@ class SprayJsonExampleSpec extends WordSpec with Matchers {
 
               onSuccess(maybeItem) {
                 case Some(item) => complete(item)
-                case None => complete(StatusCodes.NotFound)
+                case None       => complete(StatusCodes.NotFound)
               }
             }
           } ~ post {
             path("create-order") {
               entity(as[Order]) { order =>
                 val saved: Future[Done] = saveOrder(order)
-                onComplete(saved) { done =>
-                  complete("order created")
-                }
+                onComplete(saved) { done => complete("order created") }
               }
             }
           }

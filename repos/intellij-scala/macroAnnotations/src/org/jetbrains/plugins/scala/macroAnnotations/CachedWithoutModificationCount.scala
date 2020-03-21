@@ -22,14 +22,16 @@ import scala.reflect.macros.whitebox
 class CachedWithoutModificationCount(
     synchronized: Boolean,
     valueWrapper: ValueWrapper,
-    addToBuffer: ArrayBuffer[_ <: java.util.Map[_ <: Any, _ <: Any]]*)
-    extends StaticAnnotation {
-  def macroTransform(annottees: Any*): Any = macro CachedWithoutModificationCount.cachedWithoutModificationCountImpl
+    addToBuffer: ArrayBuffer[_ <: java.util.Map[_ <: Any, _ <: Any]]*
+) extends StaticAnnotation {
+  def macroTransform(annottees: Any*): Any =
+    macro CachedWithoutModificationCount.cachedWithoutModificationCountImpl
 }
 
 object CachedWithoutModificationCount {
-  def cachedWithoutModificationCountImpl(c: whitebox.Context)(
-      annottees: c.Tree*): c.Expr[Any] = {
+  def cachedWithoutModificationCountImpl(
+      c: whitebox.Context
+  )(annottees: c.Tree*): c.Expr[Any] = {
     import CachedMacroUtil._
     import c.universe._
     implicit val x: c.type = c
@@ -41,8 +43,8 @@ object CachedWithoutModificationCount {
       def valueWrapperParam(valueWrapper: Tree): ValueWrapper =
         valueWrapper match {
           case q"valueWrapper = $v" => valueWrapperParam(v)
-          case q"ValueWrapper.$v" => ValueWrapper.withName(v.toString)
-          case q"$v" => ValueWrapper.withName(v.toString)
+          case q"ValueWrapper.$v"   => ValueWrapper.withName(v.toString)
+          case q"$v"                => ValueWrapper.withName(v.toString)
         }
 
       c.prefix.tree match {
@@ -50,7 +52,7 @@ object CachedWithoutModificationCount {
             if params.length >= 2 =>
           val synch: Boolean = params.head match {
             case q"synchronized = $v" => c.eval[Boolean](c.Expr(v))
-            case q"$v" => c.eval[Boolean](c.Expr(v))
+            case q"$v"                => c.eval[Boolean](c.Expr(v))
           }
           val valueWrapper = valueWrapperParam(params(1))
           val buffers: List[Tree] = params.drop(2)
@@ -184,8 +186,8 @@ object CachedWithoutModificationCount {
           $cachesUtilFQN.incrementModCountForFunsWithModifiedReturn()
           $functionContentsInSynchronizedBlock
         """
-        val updatedDef = DefDef(
-            mods, name, tpParams, paramss, retTp, updatedRhs)
+        val updatedDef =
+          DefDef(mods, name, tpParams, paramss, retTp, updatedRhs)
         val res = q"""
           ..$fields
           $updatedDef

@@ -26,7 +26,8 @@ import java.util.Comparator
   * org.apache.spark.util.collection. This is a simple wrapper of it that is available to spark.
   */
 private[spark] class Sorter[K, Buffer](
-    private val s: SortDataFormat[K, Buffer]) {
+    private val s: SortDataFormat[K, Buffer]
+) {
 
   private val timSort = new TimSort(s)
 

@@ -18,12 +18,22 @@ package com.twitter.scalding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
-import com.twitter.chill.{ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator}
+import com.twitter.chill.{
+  ExternalizerCodec,
+  ExternalizerInjection,
+  Externalizer,
+  KryoInstantiator
+}
 import com.twitter.chill.config.{ScalaMapConfig, ConfiguredInstantiator}
 import com.twitter.bijection.{Base64String, Injection}
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{FlowListener, FlowStepListener, FlowProps, FlowStepStrategy}
+import cascading.flow.{
+  FlowListener,
+  FlowStepListener,
+  FlowProps,
+  FlowStepStrategy
+}
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
@@ -45,10 +55,11 @@ trait Config extends Serializable {
   def ++(that: Config): Config = Config(toMap ++ that.toMap)
   def -(k: String): Config = Config(toMap - k)
   def update[R](
-      k: String)(fn: Option[String] => (Option[String], R)): (R, Config) =
+      k: String
+  )(fn: Option[String] => (Option[String], R)): (R, Config) =
     fn(get(k)) match {
       case (Some(v), r) => (r, this + (k -> v))
-      case (None, r) => (r, this - k)
+      case (None, r)    => (r, this - k)
     }
 
   /**
@@ -82,9 +93,9 @@ trait Config extends Serializable {
       // The Class[_] messes up using Try(Class.forName(str)) on scala 2.9.3
       try {
         Success(
-            // Make sure we are using the class-loader for the current thread
-            Class.forName(
-                str, true, Thread.currentThread().getContextClassLoader))
+          // Make sure we are using the class-loader for the current thread
+          Class.forName(str, true, Thread.currentThread().getContextClassLoader)
+        )
       } catch { case err: Throwable => Failure(err) }
     }
 
@@ -135,18 +146,20 @@ trait Config extends Serializable {
     */
   def getKryoRegisteredClasses: Set[Class[_]] = {
     // Get an instance of the Kryo serializer (which is populated with registrations)
-    getKryo.map { kryo =>
-      val cr = kryo.newKryo.getClassResolver
+    getKryo
+      .map { kryo =>
+        val cr = kryo.newKryo.getClassResolver
 
-      @annotation.tailrec
-      def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
-        Option(cr.getRegistration(idx)) match {
-          case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
-          case None => acc // The first null is the end of the line
-        }
+        @annotation.tailrec
+        def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
+          Option(cr.getRegistration(idx)) match {
+            case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
+            case None      => acc // The first null is the end of the line
+          }
 
-      kryoClasses(0, Set[Class[_]]())
-    }.getOrElse(Set())
+        kryoClasses(0, Set[Class[_]]())
+      }
+      .getOrElse(Set())
   }
 
   /*
@@ -161,20 +174,25 @@ trait Config extends Serializable {
    * Left((classOf[serialization.KryoHadoop], myInstance))
    */
   def setSerialization(
-      kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator),
-                   Class[_ <: KryoInstantiator]],
-      userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil): Config = {
+      kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[
+        _ <: KryoInstantiator
+      ]],
+      userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil
+  ): Config = {
 
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] = Seq(
-        classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-        classOf[cascading.tuple.hadoop.TupleSerialization],
-        classOf[serialization.WrappedSerialization[_]])
+      classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+      classOf[cascading.tuple.hadoop.TupleSerialization],
+      classOf[serialization.WrappedSerialization[_]]
+    )
     // this must come last
     val last: Seq[Class[_ <: HSerialization[_]]] = Seq(
-        classOf[com.twitter.chill.hadoop.KryoSerialization])
+      classOf[com.twitter.chill.hadoop.KryoSerialization]
+    )
     val required =
-      (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
+      (first ++ last)
+        .toSet[AnyRef] // Class is invariant, but we use it as a function
     // Make sure we keep the order correct and don't add the required fields twice
     val hadoopSer = first ++ (userHadoop.filterNot(required)) ++ last
 
@@ -205,16 +223,16 @@ trait Config extends Serializable {
       Some((new ConfiguredInstantiator(ScalaMapConfig(toMap))).getDelegate)
     else None
 
-  def getArgs: Args = get(Config.ScaldingJobArgs) match {
-    case None => new Args(Map.empty)
-    case Some(str) => Args(str)
-  }
+  def getArgs: Args =
+    get(Config.ScaldingJobArgs) match {
+      case None      => new Args(Map.empty)
+      case Some(str) => Args(str)
+    }
 
   def setArgs(args: Args): Config =
     this + (Config.ScaldingJobArgs -> args.toString)
 
-  def setDefaultComparator(
-      clazz: Class[_ <: java.util.Comparator[_]]): Config =
+  def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
     this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
 
   def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
@@ -222,13 +240,14 @@ trait Config extends Serializable {
     (this
       .+(Config.ScaldingVersion -> scaldingVersion))
       .+(
-          // This is setting a property for cascading/driven
-          (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
+        // This is setting a property for cascading/driven
+        (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString))
+      )
 
   def getUniqueIds: Set[UniqueID] =
-    get(UniqueID.UNIQUE_JOB_ID).map { str =>
-      str.split(",").toSet[String].map(UniqueID(_))
-    }.getOrElse(Set.empty)
+    get(UniqueID.UNIQUE_JOB_ID)
+      .map { str => str.split(",").toSet[String].map(UniqueID(_)) }
+      .getOrElse(Set.empty)
 
   /**
     * The serialization of your data will be smaller if any classes passed between tasks in your job
@@ -247,8 +266,10 @@ trait Config extends Serializable {
     update(UniqueID.UNIQUE_JOB_ID) {
       case None => (Some(u.get), ())
       case Some(str) =>
-        (Some((StringUtility.fastSplit(str, ",").toSet + u.get).mkString(",")),
-         ())
+        (
+          Some((StringUtility.fastSplit(str, ",").toSet + u.get).mkString(",")),
+          ()
+        )
     }._2
 
   /**
@@ -281,19 +302,18 @@ trait Config extends Serializable {
       .+(ScaldingFlowClassSignature -> Config.md5Identifier(clazz))
 
   def getSubmittedTimestamp: Option[RichDate] =
-    get(ScaldingFlowSubmittedTimestamp).map { ts =>
-      RichDate(ts.toLong)
-    }
+    get(ScaldingFlowSubmittedTimestamp).map { ts => RichDate(ts.toLong) }
   /*
    * Sets the timestamp only if it was not already set. This is here
    * to prevent overwriting the submission time if it was set by an
    * previously (or externally)
    */
   def maybeSetSubmittedTimestamp(
-      date: RichDate = RichDate.now): (Option[RichDate], Config) =
+      date: RichDate = RichDate.now
+  ): (Option[RichDate], Config) =
     update(ScaldingFlowSubmittedTimestamp) {
       case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
-      case None => (Some(date.timestamp.toString), None)
+      case None         => (Some(date.timestamp.toString), None)
     }
 
   /**
@@ -309,7 +329,7 @@ trait Config extends Serializable {
     */
   def addReducerEstimator(clsName: String): Config =
     update(Config.ReducerEstimators) {
-      case None => (Some(clsName), ())
+      case None      => (Some(clsName), ())
       case Some(lst) => (Some(s"$clsName,$lst"), ())
     }._2
 
@@ -321,10 +341,11 @@ trait Config extends Serializable {
     * configure flow listeneres for observability
     */
   def addFlowListener(
-      flowListenerProvider: (Mode, Config) => FlowListener): Config = {
+      flowListenerProvider: (Mode, Config) => FlowListener
+  ): Config = {
     val serializedListener = flowListenerSerializer(flowListenerProvider)
     update(Config.FlowListeners) {
-      case None => (Some(serializedListener), ())
+      case None      => (Some(serializedListener), ())
       case Some(lst) => (Some(s"$serializedListener,$lst"), ())
     }._2
   }
@@ -336,10 +357,11 @@ trait Config extends Serializable {
       .toList
 
   def addFlowStepListener(
-      flowListenerProvider: (Mode, Config) => FlowStepListener): Config = {
+      flowListenerProvider: (Mode, Config) => FlowStepListener
+  ): Config = {
     val serializedListener = flowStepListenerSerializer(flowListenerProvider)
     update(Config.FlowStepListeners) {
-      case None => (Some(serializedListener), ())
+      case None      => (Some(serializedListener), ())
       case Some(lst) => (Some(s"$serializedListener,$lst"), ())
     }._2
   }
@@ -351,11 +373,11 @@ trait Config extends Serializable {
       .toList
 
   def addFlowStepStrategy(
-      flowStrategyProvider: (Mode,
-      Config) => FlowStepStrategy[JobConf]): Config = {
+      flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]
+  ): Config = {
     val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
     update(Config.FlowStepStrategies) {
-      case None => (Some(serializedListener), ())
+      case None      => (Some(serializedListener), ())
       case Some(lst) => (Some(s"$serializedListener,$lst"), ())
     }._2
   }
@@ -363,8 +385,8 @@ trait Config extends Serializable {
   def clearFlowStepStrategies: Config =
     this.-(Config.FlowStepStrategies)
 
-  def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[
-              JobConf]]] =
+  def getFlowStepStrategies
+      : List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
     get(Config.FlowStepStrategies).toIterable
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowStepStrategiesSerializer.invert(_))
@@ -386,10 +408,11 @@ trait Config extends Serializable {
     get(HashJoinAutoForceRight).map(_.toBoolean).getOrElse(false)
 
   override def hashCode = toMap.hashCode
-  override def equals(that: Any) = that match {
-    case thatConf: Config => toMap == thatConf.toMap
-    case _ => false
-  }
+  override def equals(that: Any) =
+    that match {
+      case thatConf: Config => toMap == thatConf.toMap
+      case _                => false
+    }
 }
 
 object Config {
@@ -464,11 +487,11 @@ object Config {
     */
   def defaultFrom(mode: Mode): Config =
     default ++
-    (mode match {
-          case m: HadoopMode =>
-            Config.fromHadoop(m.jobConf) - IoSerializationsKey
-          case _ => empty
-        })
+      (mode match {
+        case m: HadoopMode =>
+          Config.fromHadoop(m.jobConf) - IoSerializationsKey
+        case _ => empty
+      })
 
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*
@@ -490,8 +513,12 @@ object Config {
         // Again, the _ causes problem with Try
         try {
           val cls = classOf[Class[_]].cast(clazz)
-          Success((nonStrings - AppProps.APP_JAR_CLASS,
-                   initConf.setCascadingAppJar(cls)))
+          Success(
+            (
+              nonStrings - AppProps.APP_JAR_CLASS,
+              initConf.setCascadingAppJar(cls)
+            )
+          )
         } catch {
           case err: Throwable => Failure(err)
         }
@@ -501,7 +528,8 @@ object Config {
         if (unhandled.isEmpty) Success(withJar)
         else
           Failure(
-              new Exception("unhandled configurations: " + unhandled.toString))
+            new Exception("unhandled configurations: " + unhandled.toString)
+          )
     }
   }
 
@@ -509,12 +537,13 @@ object Config {
     * Returns all the non-string keys on the left, the string keys/values on the right
     */
   def stringsFrom[K >: String, V >: String](
-      m: Map[K, V]): (Map[K, V], Map[String, String]) =
+      m: Map[K, V]
+  ): (Map[K, V], Map[String, String]) =
     m.foldLeft((Map.empty[K, V], Map.empty[String, String])) {
       case ((kvs, conf), kv) =>
         kv match {
           case (ks: String, vs: String) => (kvs, conf + (ks -> vs))
-          case _ => (kvs + kv, conf)
+          case _                        => (kvs + kv, conf)
         }
     }
 
@@ -522,19 +551,25 @@ object Config {
     * Either union these two, or return the keys that overlap
     */
   def disjointUnion[K >: String, V >: String](
-      m: Map[K, V], conf: Config): Either[Set[String], Map[K, V]] = {
+      m: Map[K, V],
+      conf: Config
+  ): Either[Set[String], Map[K, V]] = {
     val asMap = conf.toMap.toMap[K, V]
     val duplicateKeys = (m.keySet & asMap.keySet)
     if (duplicateKeys.isEmpty) Right(m ++ asMap)
     else
-      Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
+      Left(
+        conf.toMap.keySet.filter(duplicateKeys(_))
+      ) // make sure to return Set[String], and not cast
   }
 
   /**
     * This overwrites any keys in m that exist in config.
     */
   def overwrite[K >: String, V >: String](
-      m: Map[K, V], conf: Config): Map[K, V] =
+      m: Map[K, V],
+      conf: Config
+  ): Map[K, V] =
     m ++ (conf.toMap.toMap[K, V])
 
   /*
@@ -545,10 +580,7 @@ object Config {
    */
   def fromHadoop(conf: Configuration): Config =
     // use `conf.get` to force JobConf to evaluate expressions
-    Config(
-        conf.asScala.map { e =>
-      e.getKey -> conf.get(e.getKey)
-    }.toMap)
+    Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
 
   /*
    * For everything BUT SERIALIZATION, this prefers values in conf,
@@ -556,9 +588,10 @@ object Config {
    * (or some other system that handles general instances at runtime).
    */
   def hadoopWithDefaults(conf: Configuration): Config =
-    (empty.setListSpillThreshold(100 * 1000)
-          .setMapSpillThreshold(100 * 1000)
-          .setMapSideAggregationThreshold(100 * 1000) ++ fromHadoop(conf))
+    (empty
+      .setListSpillThreshold(100 * 1000)
+      .setMapSpillThreshold(100 * 1000)
+      .setMapSideAggregationThreshold(100 * 1000) ++ fromHadoop(conf))
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
   /*
@@ -586,8 +619,8 @@ object Config {
     md5Hex(bytes)
   }
 
-  private[this] def buildInj[
-      T : ExternalizerInjection : ExternalizerCodec]: Injection[T, String] =
+  private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]
+      : Injection[T, String] =
     Injection.connect[T, Externalizer[T], Array[Byte], Base64String, String]
 
   @transient private[scalding] lazy val flowStepListenerSerializer =

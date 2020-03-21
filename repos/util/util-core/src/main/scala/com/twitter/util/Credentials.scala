@@ -37,15 +37,14 @@ object Credentials {
     private[this] val value = ".+".r
 
     def auth = key ~ ":" ~ value ^^ { case k ~ ":" ~ v => (k, v) }
-    def content: Parser[Map[String, String]] = rep(auth) ^^ { auths =>
-      Map(auths: _*)
-    }
+    def content: Parser[Map[String, String]] =
+      rep(auth) ^^ { auths => Map(auths: _*) }
 
     def apply(in: String): Map[String, String] = {
       parseAll(content, in) match {
         case Success(result, _) => result
-        case x: Failure => throw new IOException(x.toString)
-        case x: Error => throw new IOException(x.toString)
+        case x: Failure         => throw new IOException(x.toString)
+        case x: Error           => throw new IOException(x.toString)
       }
     }
   }
@@ -57,8 +56,11 @@ object Credentials {
 
   def byName(name: String): Map[String, String] = {
     apply(
-        new File(System.getenv().asScala.getOrElse("KEY_FOLDER", "/etc/keys"),
-                 name))
+      new File(
+        System.getenv().asScala.getOrElse("KEY_FOLDER", "/etc/keys"),
+        name
+      )
+    )
   }
 }
 

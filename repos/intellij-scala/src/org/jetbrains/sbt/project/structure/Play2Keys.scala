@@ -1,7 +1,11 @@
 package org.jetbrains.sbt
 package project.structure
 
-import org.jetbrains.sbt.project.structure.Play2Keys.AllKeys.{SeqStringParsedValue, StringParsedValue, ParsedValue}
+import org.jetbrains.sbt.project.structure.Play2Keys.AllKeys.{
+  SeqStringParsedValue,
+  StringParsedValue,
+  ParsedValue
+}
 
 import scala.collection.mutable
 import scala.xml.Text
@@ -34,16 +38,22 @@ object Play2Keys {
         elem.child.filterNot(_.text.forall(c => c == '\n' || c == ' '))
 
       if (children.forall(
-              _.child.forall { case _: Text => true; case _ => false })) {
+            _.child.forall { case _: Text => true; case _ => false }
+          )) {
         Some(
-            new StringXmlKey(
-                keyName,
-                children
-                  .map(projectKey => (projectKey.label, projectKey.text))
-                  .toMap))
-      } else if (children.forall(_.child.forall(node =>
-                           node.label == ENTRY_SEQ_NAME ||
-                           node.isInstanceOf[Text]))) {
+          new StringXmlKey(
+            keyName,
+            children
+              .map(projectKey => (projectKey.label, projectKey.text))
+              .toMap
+          )
+        )
+      } else if (children.forall(
+                   _.child.forall(node =>
+                     node.label == ENTRY_SEQ_NAME ||
+                       node.isInstanceOf[Text]
+                   )
+                 )) {
         val values = children.flatMap {
           case _: Text => None
           case projectKey =>
@@ -56,18 +66,25 @@ object Play2Keys {
 
   object KeyTransformer {
     def transform(
-        keys: Seq[SettingKey[_]]): Map[String, Map[String, ParsedValue[_]]] = {
+        keys: Seq[SettingKey[_]]
+    ): Map[String, Map[String, ParsedValue[_]]] = {
       val map = mutable.HashMap[String, Map[String, ParsedValue[_]]]()
 
       keys foreach {
         case str: StringXmlKey =>
-          map.put(str.name, str.values.map {
-            case (k, v) => (k, new StringParsedValue(v))
-          })
+          map.put(
+            str.name,
+            str.values.map {
+              case (k, v) => (k, new StringParsedValue(v))
+            }
+          )
         case seqStr: SeqStringXmlKey =>
-          map.put(seqStr.name, seqStr.values map {
-            case (k, v) => (k, new SeqStringParsedValue(v))
-          })
+          map.put(
+            seqStr.name,
+            seqStr.values map {
+              case (k, v) => (k, new SeqStringParsedValue(v))
+            }
+          )
         case _ =>
       }
 
@@ -87,20 +104,24 @@ object Play2Keys {
       def in(allKeys: Map[String, Map[String, ParsedValue[_]]]) =
         allKeys get name
 
-      def in(projectName: String,
-             allKeys: Map[String, Map[String, ParsedValue[_]]]): Option[T] = {
+      def in(
+          projectName: String,
+          allKeys: Map[String, Map[String, ParsedValue[_]]]
+      ): Option[T] = {
         allIn(allKeys).find(_._1 == projectName).map(_._2)
       }
 
       def allIn(
-          allKeys: Map[String, Map[String, ParsedValue[_]]]): Seq[(String, T)]
+          allKeys: Map[String, Map[String, ParsedValue[_]]]
+      ): Seq[(String, T)]
 
       override def toString: String = name + "_KEY"
     }
 
     class StringParsedKey(name: String) extends ParsedKey[String](name) {
-      override def allIn(allKeys: Map[String, Map[String, ParsedValue[_]]])
-        : Seq[(String, String)] = {
+      override def allIn(
+          allKeys: Map[String, Map[String, ParsedValue[_]]]
+      ): Seq[(String, String)] = {
         in(allKeys) map {
           case vs =>
             vs.toSeq flatMap {
@@ -114,8 +135,9 @@ object Play2Keys {
 
     class SeqStringParsedKey(name: String)
         extends ParsedKey[Seq[String]](name) {
-      override def allIn(allKeys: Map[String, Map[String, ParsedValue[_]]])
-        : Seq[(String, Seq[String])] = {
+      override def allIn(
+          allKeys: Map[String, Map[String, ParsedValue[_]]]
+      ): Seq[(String, Seq[String])] = {
         in(allKeys) map {
           case vs =>
             vs.toSeq flatMap {

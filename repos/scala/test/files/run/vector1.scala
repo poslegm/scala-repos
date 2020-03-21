@@ -37,10 +37,16 @@ object Test {
   }
 
   def assertVectorIndexed[V](
-      a: Vector[V], label: String, start: Int, end: Int) = {
+      a: Vector[V],
+      label: String,
+      start: Int,
+      end: Int
+  ) = {
     val res = a
-    assert(res.length == (end - start),
-           res.length + "!=" + (end - start) + " (" + res + ")")
+    assert(
+      res.length == (end - start),
+      res.length + "!=" + (end - start) + " (" + res + ")"
+    )
     for (i <- start until end) {
       assert(res(i) == (label + i), "" + res(i) + "!=" + (label + i))
     }
@@ -48,10 +54,16 @@ object Test {
   }
 
   def assertVectorIterated[V](
-      a: Vector[V], label: String, start: Int, end: Int) = {
+      a: Vector[V],
+      label: String,
+      start: Int,
+      end: Int
+  ) = {
     val res = a
-    assert(res.length == (end - start),
-           res.length + "!=" + (end - start) + " (" + res + ")")
+    assert(
+      res.length == (end - start),
+      res.length + "!=" + (end - start) + " (" + res + ")"
+    )
     var i = start
     var it = res.iterator
     while (it.hasNext) {
@@ -90,12 +102,14 @@ object Test {
 
     def nextChunkSize = 3 //rand.nextInt(chunkLimit)
 
-    def seqBack() = for (i <- 0 until Math.min(nextChunkSize, N - max)) {
-      a = a :+ ("a" + max); max += 1
-    }
-    def seqFront() = for (i <- 0 until Math.min(nextChunkSize, min)) {
-      min -= 1; a = ("a" + min) +: a
-    }
+    def seqBack() =
+      for (i <- 0 until Math.min(nextChunkSize, N - max)) {
+        a = a :+ ("a" + max); max += 1
+      }
+    def seqFront() =
+      for (i <- 0 until Math.min(nextChunkSize, min)) {
+        min -= 1; a = ("a" + min) +: a
+      }
 
     try {
 
@@ -119,8 +133,10 @@ object Test {
     val N = 150000
     val a = vector("a", N)
 
-    val pos = scala.util.Random.shuffle(scala.collection.mutable.WrappedArray
-          .make[Int](Array.tabulate[Int](N)(i => i)))
+    val pos = scala.util.Random.shuffle(
+      scala.collection.mutable.WrappedArray
+        .make[Int](Array.tabulate[Int](N)(i => i))
+    )
 
     var b = a
 

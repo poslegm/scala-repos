@@ -5,7 +5,7 @@
   * The ASF licenses this file to You under the Apache License, Version 2.0
   * (the "License"); you may not use this file except in compliance with
   * the License.  You may obtain a copy of the License at
-  * 
+  *
   *    http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
@@ -83,15 +83,16 @@ class Pool[K, V](valueFactory: Option[(K) => V] = None)
 
   override def size = pool.size
 
-  override def iterator = new Iterator[(K, V)]() {
+  override def iterator =
+    new Iterator[(K, V)]() {
 
-    private val iter = pool.entrySet.iterator
+      private val iter = pool.entrySet.iterator
 
-    def hasNext: Boolean = iter.hasNext
+      def hasNext: Boolean = iter.hasNext
 
-    def next: (K, V) = {
-      val n = iter.next
-      (n.getKey, n.getValue)
+      def next: (K, V) = {
+        val n = iter.next
+        (n.getKey, n.getValue)
+      }
     }
-  }
 }

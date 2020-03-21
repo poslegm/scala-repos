@@ -18,14 +18,19 @@
 package org.apache.spark.sql.catalyst.trees
 
 import org.apache.spark.SparkFunSuite
-import org.apache.spark.sql.catalyst.expressions.{Expression, IntegerLiteral, Literal}
+import org.apache.spark.sql.catalyst.expressions.{
+  Expression,
+  IntegerLiteral,
+  Literal
+}
 import org.apache.spark.sql.catalyst.rules.{Rule, RuleExecutor}
 
 class RuleExecutorSuite extends SparkFunSuite {
   object DecrementLiterals extends Rule[Expression] {
-    def apply(e: Expression): Expression = e transform {
-      case IntegerLiteral(i) if i > 0 => Literal(i - 1)
-    }
+    def apply(e: Expression): Expression =
+      e transform {
+        case IntegerLiteral(i) if i > 0 => Literal(i - 1)
+      }
   }
 
   test("only once") {

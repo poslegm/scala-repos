@@ -32,12 +32,15 @@ object ClusterSingletonManagerLeaveSpec extends MultiNodeConfig {
   val second = role("second")
   val third = role("third")
 
-  commonConfig(ConfigFactory.parseString("""
+  commonConfig(
+    ConfigFactory
+      .parseString("""
     akka.loglevel = INFO
     akka.actor.provider = "akka.cluster.ClusterActorRefProvider"
     akka.remote.log-remote-lifecycle-events = off
     akka.cluster.auto-down-unreachable-after = off
-    """))
+    """)
+  )
 
   case object EchoStarted
 
@@ -65,7 +68,8 @@ class ClusterSingletonManagerLeaveMultiJvmNode3
 
 class ClusterSingletonManagerLeaveSpec
     extends MultiNodeSpec(ClusterSingletonManagerLeaveSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
   import ClusterSingletonManagerLeaveSpec._
 
   override def initialParticipants = roles.size
@@ -80,18 +84,24 @@ class ClusterSingletonManagerLeaveSpec
   }
 
   def createSingleton(): ActorRef = {
-    system.actorOf(ClusterSingletonManager.props(
-                       singletonProps = Props(classOf[Echo], testActor),
-                       terminationMessage = PoisonPill,
-                       settings = ClusterSingletonManagerSettings(system)),
-                   name = "echo")
+    system.actorOf(
+      ClusterSingletonManager.props(
+        singletonProps = Props(classOf[Echo], testActor),
+        terminationMessage = PoisonPill,
+        settings = ClusterSingletonManagerSettings(system)
+      ),
+      name = "echo"
+    )
   }
 
   lazy val echoProxy: ActorRef = {
-    system.actorOf(ClusterSingletonProxy.props(
-                       singletonManagerPath = "/user/echo",
-                       settings = ClusterSingletonProxySettings(system)),
-                   name = "echoProxy")
+    system.actorOf(
+      ClusterSingletonProxy.props(
+        singletonManagerPath = "/user/echo",
+        settings = ClusterSingletonProxySettings(system)
+      ),
+      name = "echoProxy"
+    )
   }
 
   "Leaving ClusterSingletonManager" must {
@@ -108,8 +118,10 @@ class ClusterSingletonManagerLeaveSpec
       join(second, first)
       join(third, first)
       within(10.seconds) {
-        awaitAssert(cluster.state.members
-              .count(m ⇒ m.status == MemberStatus.Up) should be(3))
+        awaitAssert(
+          cluster.state.members
+            .count(m ⇒ m.status == MemberStatus.Up) should be(3)
+        )
       }
       enterBarrier("all-up")
 
@@ -129,7 +141,7 @@ class ClusterSingletonManagerLeaveSpec
           p.awaitAssert {
             echoProxy.tell("hello2", p.ref)
             p.expectMsgType[ActorRef](1.seconds).path.address should not be
-            (firstAddress)
+              (firstAddress)
           }
         }
       }

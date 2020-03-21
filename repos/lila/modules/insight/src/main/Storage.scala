@@ -19,7 +19,8 @@ private final class Storage(coll: Coll) {
   import Entry.{BSONFields => F}
 
   def aggregate(
-      operators: NonEmptyList[PipelineOperator]): Fu[AggregationResult] =
+      operators: NonEmptyList[PipelineOperator]
+  ): Fu[AggregationResult] =
     coll.aggregate(operators.head, operators.tail, allowDiskUse = true)
 
   def fetchFirst(userId: String): Fu[Option[Entry]] =
@@ -35,8 +36,9 @@ private final class Storage(coll: Coll) {
 
   def bulkInsert(ps: Seq[Entry]) =
     coll.bulkInsert(
-        documents = ps.map(BSONHandlers.EntryBSONHandler.write).toStream,
-        ordered = false)
+      documents = ps.map(BSONHandlers.EntryBSONHandler.write).toStream,
+      ordered = false
+    )
 
   def update(p: Entry) = coll.update(selectId(p.id), p, upsert = true).void
 
@@ -52,8 +54,8 @@ private final class Storage(coll: Coll) {
   def nbByPerf(userId: String): Fu[Map[PerfType, Int]] =
     coll
       .aggregate(
-          Match(BSONDocument(F.userId -> userId)),
-          List(GroupField(F.perf)("nb" -> SumValue(1)))
+        Match(BSONDocument(F.userId -> userId)),
+        List(GroupField(F.perf)("nb" -> SumValue(1)))
       )
       .map {
         _.documents.flatMap { doc =>
@@ -74,7 +76,8 @@ private object Storage {
   val sortChronological = BSONDocument(F.date -> 1)
   val sortAntiChronological = BSONDocument(F.date -> -1)
 
-  def combineDocs(docs: List[BSONDocument]) = docs.foldLeft(BSONDocument()) {
-    case (acc, doc) => acc ++ doc
-  }
+  def combineDocs(docs: List[BSONDocument]) =
+    docs.foldLeft(BSONDocument()) {
+      case (acc, doc) => acc ++ doc
+    }
 }

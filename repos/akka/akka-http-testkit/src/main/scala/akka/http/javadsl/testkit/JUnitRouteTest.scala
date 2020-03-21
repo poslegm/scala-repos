@@ -25,11 +25,17 @@ abstract class JUnitRouteTestBase extends RouteTest {
   protected def createTestResponse(response: HttpResponse): TestResponse =
     new TestResponse(response, awaitDuration)(system.dispatcher, materializer) {
       protected def assertEquals(
-          expected: AnyRef, actual: AnyRef, message: String): Unit =
+          expected: AnyRef,
+          actual: AnyRef,
+          message: String
+      ): Unit =
         Assert.assertEquals(message, expected, actual)
 
       protected def assertEquals(
-          expected: Int, actual: Int, message: String): Unit =
+          expected: Int,
+          actual: Int,
+          message: String
+      ): Unit =
         Assert.assertEquals(message, expected, actual)
 
       protected def assertTrue(predicate: Boolean, message: String): Unit =
@@ -42,10 +48,13 @@ abstract class JUnitRouteTestBase extends RouteTest {
     }
 
   protected def completeWithValueToString[T](value: RequestVal[T]): Route =
-    handleWith1(value, new Handler1[T] {
-      def apply(ctx: RequestContext, t: T): RouteResult =
-        ctx.complete(t.toString)
-    })
+    handleWith1(
+      value,
+      new Handler1[T] {
+        def apply(ctx: RequestContext, t: T): RouteResult =
+          ctx.complete(t.toString)
+      }
+    )
 }
 abstract class JUnitRouteTest extends JUnitRouteTestBase {
   private[this] val _systemResource = new ActorSystemResource

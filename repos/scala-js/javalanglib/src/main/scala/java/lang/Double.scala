@@ -19,14 +19,15 @@ final class Double private () extends Number with Comparable[Double] {
   @inline def longValue(): scala.Long = doubleValue.toLong
   @inline def floatValue(): scala.Float = doubleValue.toFloat
 
-  override def equals(that: Any): scala.Boolean = that match {
-    case that: Double =>
-      val a = doubleValue
-      val b = that.doubleValue
-      (a == b) || (Double.isNaN(a) && Double.isNaN(b))
-    case _ =>
-      false
-  }
+  override def equals(that: Any): scala.Boolean =
+    that match {
+      case that: Double =>
+        val a = doubleValue
+        val b = that.doubleValue
+        (a == b) || (Double.isNaN(a) && Double.isNaN(b))
+      case _ =>
+        false
+    }
 
   @inline override def hashCode(): Int =
     scala.scalajs.runtime.Bits.numberHashCode(doubleValue)
@@ -61,7 +62,7 @@ object Double {
   @inline def valueOf(s: String): Double = valueOf(parseDouble(s))
 
   private[this] lazy val doubleStrPat = new js.RegExp(
-      "^" + "[\\x00-\\x20]*" + // optional whitespace
+    "^" + "[\\x00-\\x20]*" + // optional whitespace
       "[+-]?" + // optional sign
       "(NaN|Infinity|" + // special cases
       "(\\d+\\.?\\d*|" + // literal w/  leading digit
@@ -69,7 +70,8 @@ object Double {
       "([eE][+-]?\\d+)?" + // optional exponent
       ")[fFdD]?" + // optional float / double specifier (ignored)
       "[\\x00-\\x20]*" + // optional whitespace
-      "$")
+      "$"
+  )
 
   def parseDouble(s: String): scala.Double = {
     if (doubleStrPat.test(s))

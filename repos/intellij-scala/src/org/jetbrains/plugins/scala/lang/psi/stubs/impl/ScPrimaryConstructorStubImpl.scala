@@ -14,7 +14,8 @@ import org.jetbrains.plugins.scala.lang.psi.api.base.ScPrimaryConstructor
   */
 class ScPrimaryConstructorStubImpl[ParentPsi <: PsiElement](
     parent: StubElement[ParentPsi],
-    elemType: IStubElementType[
-        _ <: StubElement[_ <: PsiElement], _ <: PsiElement])
-    extends StubBaseWrapper[ScPrimaryConstructor](parent, elemType)
+    elemType: IStubElementType[_ <: StubElement[
+      _ <: PsiElement
+    ], _ <: PsiElement]
+) extends StubBaseWrapper[ScPrimaryConstructor](parent, elemType)
     with ScPrimaryConstructorStub {}

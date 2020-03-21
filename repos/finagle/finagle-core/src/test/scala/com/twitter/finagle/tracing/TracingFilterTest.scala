@@ -12,7 +12,9 @@ import scala.collection.JavaConverters._
 
 @RunWith(classOf[JUnitRunner])
 class TracingFilterTest
-    extends FunSuite with MockitoSugar with BeforeAndAfter
+    extends FunSuite
+    with MockitoSugar
+    with BeforeAndAfter
     with AssertionsForJUnit {
 
   val serviceName = "bird"
@@ -78,12 +80,13 @@ class TracingFilterTest
       assert(versions == Seq("?"))
     }
 
-    def withDtab(dtab: Dtab) = Filter.mk[Int, Int, Int, Int] { (req, svc) =>
-      Dtab.unwind {
-        Dtab.local = dtab
-        svc(req)
+    def withDtab(dtab: Dtab) =
+      Filter.mk[Int, Int, Int, Int] { (req, svc) =>
+        Dtab.unwind {
+          Dtab.local = dtab
+          svc(req)
+        }
       }
-    }
 
     test(s"$prefix: should trace Dtab.local") {
       val dtab = Dtab.read("/fox=>/spooky;/dana=>/starbuck")
@@ -122,22 +125,23 @@ class TracingFilterTest
         case Record(_, _, a @ Annotation.ClientSend(), _) => a
         case Record(_, _, a @ Annotation.ClientRecv(), _) => a
       }
-    assert(
-        annotations == Seq(Annotation.ClientSend(), Annotation.ClientRecv()))
+    assert(annotations == Seq(Annotation.ClientSend(), Annotation.ClientRecv()))
   }
 
   test("clnt: recv error") {
     val annotations =
       recordException(mkClient()) collect {
-        case Record(_, _, a @ Annotation.ClientSend(), _) => a
-        case Record(_, _, a @ Annotation.ClientRecv(), _) => a
+        case Record(_, _, a @ Annotation.ClientSend(), _)       => a
+        case Record(_, _, a @ Annotation.ClientRecv(), _)       => a
         case Record(_, _, a @ Annotation.ClientRecvError(_), _) => a
       }
     assert(
-        annotations == Seq(
-            Annotation.ClientSend(),
-            Annotation.ClientRecvError("java.lang.Exception: bummer"),
-            Annotation.ClientRecv()))
+      annotations == Seq(
+        Annotation.ClientSend(),
+        Annotation.ClientRecvError("java.lang.Exception: bummer"),
+        Annotation.ClientRecv()
+      )
+    )
   }
 
   /*
@@ -155,7 +159,6 @@ class TracingFilterTest
         case Record(_, _, a @ Annotation.ServerRecv(), _) => a
         case Record(_, _, a @ Annotation.ServerSend(), _) => a
       }
-    assert(
-        annotations == Seq(Annotation.ServerRecv(), Annotation.ServerSend()))
+    assert(annotations == Seq(Annotation.ServerRecv(), Annotation.ServerSend()))
   }
 }

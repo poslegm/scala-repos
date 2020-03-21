@@ -22,8 +22,9 @@ object TreeMap extends ImmutableSortedMapFactory[TreeMap] {
   def empty[A, B](implicit ord: Ordering[A]) = new TreeMap[A, B]()(ord)
 
   /** $sortedMapCanBuildFromInfo */
-  implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, (A, B), TreeMap[A, B]] =
+  implicit def canBuildFrom[A, B](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, (A, B), TreeMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
 }
 
@@ -48,12 +49,15 @@ object TreeMap extends ImmutableSortedMapFactory[TreeMap] {
   *  @define willNotTerminateInf
   */
 @deprecatedInheritance(
-    "The implementation details of immutable tree maps make inheriting from them unwise.",
-    "2.11.0")
-class TreeMap[A, +B] private (
-    tree: RB.Tree[A, B])(implicit val ordering: Ordering[A])
-    extends SortedMap[A, B] with SortedMapLike[A, B, TreeMap[A, B]]
-    with MapLike[A, B, TreeMap[A, B]] with Serializable {
+  "The implementation details of immutable tree maps make inheriting from them unwise.",
+  "2.11.0"
+)
+class TreeMap[A, +B] private (tree: RB.Tree[A, B])(implicit
+    val ordering: Ordering[A]
+) extends SortedMap[A, B]
+    with SortedMapLike[A, B, TreeMap[A, B]]
+    with MapLike[A, B, TreeMap[A, B]]
+    with Serializable {
 
   override protected[this] def newBuilder: Builder[(A, B), TreeMap[A, B]] =
     TreeMap.newBuilder[A, B]
@@ -157,7 +161,10 @@ class TreeMap[A, +B] private (
     *  @return      a new $coll with the updated bindings
     */
   override def +[B1 >: B](
-      elem1: (A, B1), elem2: (A, B1), elems: (A, B1)*): TreeMap[A, B1] =
+      elem1: (A, B1),
+      elem2: (A, B1),
+      elems: (A, B1)*
+  ): TreeMap[A, B1] =
     this + elem1 + elem2 ++ elems
 
   /** Adds a number of elements provided by a traversable object

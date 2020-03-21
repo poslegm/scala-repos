@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -30,10 +30,12 @@ import com.precog.util._
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.ArrayBuffer
 
-case class CTree(path: CPath,
-                 fields: MMap[String, CTree],
-                 indices: ArrayBuffer[CTree],
-                 types: MMap[CType, Int]) {
+case class CTree(
+    path: CPath,
+    fields: MMap[String, CTree],
+    indices: ArrayBuffer[CTree],
+    types: MMap[CType, Int]
+) {
   def getField(s: String): CTree =
     fields.getOrElseUpdate(s, CTree.empty(CPath(path.nodes :+ CPathField(s))))
   def getIndex(n: Int): CTree = {
@@ -47,20 +49,23 @@ case class CTree(path: CPath,
   def getType(ctype: CType): Int = types.getOrElse(ctype, -1)
   def setType(ctype: CType, n: Int): Unit = types(ctype) = n
 
-  override def equals(that: Any): Boolean = that match {
-    case CTree(`path`, fields2, indices2, types2) =>
-      fields == fields2 && indices == indices2 && types == types2
-    case _ =>
-      false
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case CTree(`path`, fields2, indices2, types2) =>
+        fields == fields2 && indices == indices2 && types == types2
+      case _ =>
+        false
+    }
 }
 
 object CTree {
   def empty(path: CPath) =
-    CTree(path,
-          MMap.empty[String, CTree],
-          ArrayBuffer.empty[CTree],
-          MMap.empty[CType, Int])
+    CTree(
+      path,
+      MMap.empty[String, CTree],
+      ArrayBuffer.empty[CTree],
+      MMap.empty[CType, Int]
+    )
 }
 
 object Segments {
@@ -69,14 +74,19 @@ object Segments {
 }
 
 case class Segments(
-    id: Long, var length: Int, t: CTree, a: ArrayBuffer[Segment]) {
+    id: Long,
+    var length: Int,
+    t: CTree,
+    a: ArrayBuffer[Segment]
+) {
 
-  override def equals(that: Any): Boolean = that match {
-    case Segments(`id`, length2, t2, a2) =>
-      length == length2 && t == t2 && a.toSet == a2.toSet
-    case _ =>
-      false
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case Segments(`id`, length2, t2, a2) =>
+        length == length2 && t == t2 && a.toSet == a2.toSet
+      case _ =>
+        false
+    }
 
   def addNullType(row: Int, tree: CTree, ct: CNullType) {
     val n = tree.getType(ct)
@@ -258,15 +268,15 @@ case class Segments(
 
   def initializeSegments(row: Int, j: JValue, tree: CTree): Unit = {
     j match {
-      case JNull => addNull(row, tree)
-      case JTrue => addTrue(row, tree)
+      case JNull  => addNull(row, tree)
+      case JTrue  => addTrue(row, tree)
       case JFalse => addFalse(row, tree)
 
-      case JString(s) => addString(row, tree, s)
-      case JNumLong(n) => addLong(row, tree, n)
+      case JString(s)    => addString(row, tree, s)
+      case JNumLong(n)   => addLong(row, tree, n)
       case JNumDouble(n) => addDouble(row, tree, n)
       case JNumBigDec(n) => addBigDecimal(row, tree, n)
-      case JNumStr(s) => addNum(row, tree, s)
+      case JNumStr(s)    => addNum(row, tree, s)
 
       case JObject(m) =>
         if (m.isEmpty) {

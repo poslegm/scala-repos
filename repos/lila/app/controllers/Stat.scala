@@ -7,8 +7,8 @@ import views._
 
 object Stat extends LilaController {
 
-  def ratingDistribution(perfKey: lila.rating.Perf.Key) = Open {
-    implicit ctx =>
+  def ratingDistribution(perfKey: lila.rating.Perf.Key) =
+    Open { implicit ctx =>
       lila.rating.PerfType(perfKey).filter(lila.rating.PerfType.isGame) match {
         case Some(perfType) =>
           Env.user.cached.ratingDistribution(perfType) map { data =>
@@ -16,5 +16,5 @@ object Stat extends LilaController {
           }
         case _ => notFound
       }
-  }
+    }
 }

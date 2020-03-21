@@ -42,7 +42,9 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class WebEventSpec[T]
     extends SimpleSFXDelegateSpec[jfxsw.WebEvent[T], WebEvent[T]](
-        classOf[jfxsw.WebEvent[T]], classOf[WebEvent[T]]) {
+      classOf[jfxsw.WebEvent[T]],
+      classOf[WebEvent[T]]
+    ) {
 
   override protected def getJavaClassInstance =
     new jfxsw.WebEvent[T](null, null, null.asInstanceOf[T])

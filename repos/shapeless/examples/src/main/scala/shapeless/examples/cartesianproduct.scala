@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-14 Miles Sabin 
+ * Copyright (c) 2012-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,15 @@ object CartesianProductExample extends App {
   }
 
   object ApplyMapper {
-    implicit def hnil[HF, A] = new ApplyMapper[HF, A, HNil, HNil] {
-      def apply(a: A, x: HNil) = HNil
-    }
+    implicit def hnil[HF, A] =
+      new ApplyMapper[HF, A, HNil, HNil] {
+        def apply(a: A, x: HNil) = HNil
+      }
 
-    implicit def hlist[HF, A, XH, XT <: HList, OutH, OutT <: HList](
-        implicit applied: Case2.Aux[HF, A, XH, OutH],
-        mapper: ApplyMapper[HF, A, XT, OutT]) =
+    implicit def hlist[HF, A, XH, XT <: HList, OutH, OutT <: HList](implicit
+        applied: Case2.Aux[HF, A, XH, OutH],
+        mapper: ApplyMapper[HF, A, XT, OutT]
+    ) =
       new ApplyMapper[HF, A, XH :: XT, OutH :: OutT] {
         def apply(a: A, x: XH :: XT) = applied(a, x.head) :: mapper(a, x.tail)
       }
@@ -62,9 +64,10 @@ object CartesianProductExample extends App {
   }
 
   object LiftA2 {
-    implicit def hnil[HF, Y <: HList] = new LiftA2[HF, HNil, Y, HNil] {
-      def apply(x: HNil, y: Y) = HNil
-    }
+    implicit def hnil[HF, Y <: HList] =
+      new LiftA2[HF, HNil, Y, HNil] {
+        def apply(x: HNil, y: Y) = HNil
+      }
 
     implicit def hlist[
         HF,
@@ -73,9 +76,11 @@ object CartesianProductExample extends App {
         Y <: HList,
         Out1 <: HList,
         Out2 <: HList
-    ](implicit mapper: ApplyMapper[HF, XH, Y, Out1],
-      lift: LiftA2[HF, XT, Y, Out2],
-      prepend: Prepend[Out1, Out2]) =
+    ](implicit
+        mapper: ApplyMapper[HF, XH, Y, Out1],
+        lift: LiftA2[HF, XT, Y, Out2],
+        prepend: Prepend[Out1, Out2]
+    ) =
       new LiftA2[HF, XH :: XT, Y, prepend.Out] {
         def apply(x: XH :: XT, y: Y) =
           prepend(mapper(x.head, y), lift(x.tail, y))
@@ -87,7 +92,8 @@ object CartesianProductExample extends App {
     * lifted to work on two HLists.
     */
   def liftA2[HF, X <: HList, Y <: HList, Out <: HList](hf: HF)(x: X, y: Y)(
-      implicit lift: LiftA2[HF, X, Y, Out]) = lift(x, y)
+      implicit lift: LiftA2[HF, X, Y, Out]
+  ) = lift(x, y)
 
   /**
     * A polymorphic binary function that pairs its arguments.
@@ -104,12 +110,17 @@ object CartesianProductExample extends App {
   val result = liftA2(tuple)(xs, ys)
 
   // The expected type of the Cartesian product.
-  type Result = (Int, Double) :: (Int, String) :: (Symbol, Double) :: (Symbol,
-  String) :: (Char, Double) :: (Char, String) :: HNil
+  type Result = (Int, Double) :: (Int, String) :: (Symbol, Double) :: (
+      Symbol,
+      String
+  ) :: (Char, Double) :: (Char, String) :: HNil
 
   // The expected value.
   val expected =
-    (1, 4.0) :: (1, "e") :: ('b, 4.0) :: ('b, "e") :: ('c', 4.0) :: ('c', "e") :: HNil
+    (1, 4.0) :: (1, "e") :: ('b, 4.0) :: ('b, "e") :: ('c', 4.0) :: (
+      'c',
+      "e"
+    ) :: HNil
 
   typed[Result](result)
 

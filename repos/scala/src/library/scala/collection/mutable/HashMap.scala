@@ -37,11 +37,14 @@ import scala.collection.parallel.mutable.ParHashMap
   *  @define willNotTerminateInf
   */
 @SerialVersionUID(1L)
-class HashMap[A, B] private[collection](
-    contents: HashTable.Contents[A, DefaultEntry[A, B]])
-    extends AbstractMap[A, B] with Map[A, B] with MapLike[A, B, HashMap[A, B]]
+class HashMap[A, B] private[collection] (
+    contents: HashTable.Contents[A, DefaultEntry[A, B]]
+) extends AbstractMap[A, B]
+    with Map[A, B]
+    with MapLike[A, B, HashMap[A, B]]
     with HashTable[A, DefaultEntry[A, B]]
-    with CustomParallelizable[(A, B), ParHashMap[A, B]] with Serializable {
+    with CustomParallelizable[(A, B), ParHashMap[A, B]]
+    with Serializable {
   initWithContents(contents)
 
   type Entry = DefaultEntry[A, B]
@@ -97,9 +100,10 @@ class HashMap[A, B] private[collection](
     foreachEntry(e => f((e.key, e.value)))
 
   /* Override to avoid tuple allocation in foreach */
-  override def keySet: scala.collection.Set[A] = new DefaultKeySet {
-    override def foreach[U](f: A => U) = foreachEntry(e => f(e.key))
-  }
+  override def keySet: scala.collection.Set[A] =
+    new DefaultKeySet {
+      override def foreach[U](f: A => U) = foreachEntry(e => f(e.key))
+    }
 
   /* Override to avoid tuple allocation in foreach */
   override def values: scala.collection.Iterable[B] =
@@ -108,18 +112,20 @@ class HashMap[A, B] private[collection](
     }
 
   /* Override to avoid tuple allocation */
-  override def keysIterator: Iterator[A] = new AbstractIterator[A] {
-    val iter = entriesIterator
-    def hasNext = iter.hasNext
-    def next() = iter.next().key
-  }
+  override def keysIterator: Iterator[A] =
+    new AbstractIterator[A] {
+      val iter = entriesIterator
+      def hasNext = iter.hasNext
+      def next() = iter.next().key
+    }
 
   /* Override to avoid tuple allocation */
-  override def valuesIterator: Iterator[B] = new AbstractIterator[B] {
-    val iter = entriesIterator
-    def hasNext = iter.hasNext
-    def next() = iter.next().value
-  }
+  override def valuesIterator: Iterator[B] =
+    new AbstractIterator[B] {
+      val iter = entriesIterator
+      def hasNext = iter.hasNext
+      def next() = iter.next().value
+    }
 
   /** Toggles whether a size map is used to track hash map statistics.
     */
@@ -133,10 +139,13 @@ class HashMap[A, B] private[collection](
   }
 
   private def writeObject(out: java.io.ObjectOutputStream) {
-    serializeTo(out, { entry =>
-      out.writeObject(entry.key)
-      out.writeObject(entry.value)
-    })
+    serializeTo(
+      out,
+      { entry =>
+        out.writeObject(entry.key)
+        out.writeObject(entry.value)
+      }
+    )
   }
 
   private def readObject(in: java.io.ObjectInputStream) {

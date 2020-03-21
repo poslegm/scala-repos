@@ -53,8 +53,10 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @param stateName designator for the state
     * @param stateFunctionBuilder partial function builder describing response to input
     */
-  final def when(stateName: S,
-                 stateFunctionBuilder: FSMStateFunctionBuilder[S, D]): Unit =
+  final def when(
+      stateName: S,
+      stateFunctionBuilder: FSMStateFunctionBuilder[S, D]
+  ): Unit =
     when(stateName, null, stateFunctionBuilder)
 
   /**
@@ -67,9 +69,11 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @param stateTimeout default state timeout for this state
     * @param stateFunctionBuilder partial function builder describing response to input
     */
-  final def when(stateName: S,
-                 stateTimeout: FiniteDuration,
-                 stateFunctionBuilder: FSMStateFunctionBuilder[S, D]): Unit =
+  final def when(
+      stateName: S,
+      stateTimeout: FiniteDuration,
+      stateFunctionBuilder: FSMStateFunctionBuilder[S, D]
+  ): Unit =
     when(stateName, stateTimeout)(stateFunctionBuilder.build())
 
   /**
@@ -93,7 +97,10 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @param timeout state timeout for the initial state, overriding the default timeout for that state
     */
   final def startWith(
-      stateName: S, stateData: D, timeout: FiniteDuration): Unit =
+      stateName: S,
+      stateData: D,
+      timeout: FiniteDuration
+  ): Unit =
     startWith(stateName, stateData, Option(timeout))
 
   /**
@@ -104,9 +111,11 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * called, not only the first one matching.</b>
     */
   final def onTransition(
-      transitionHandlerBuilder: FSMTransitionHandlerBuilder[S]): Unit =
+      transitionHandlerBuilder: FSMTransitionHandlerBuilder[S]
+  ): Unit =
     onTransition(
-        transitionHandlerBuilder.build().asInstanceOf[TransitionHandler])
+      transitionHandlerBuilder.build().asInstanceOf[TransitionHandler]
+    )
 
   /**
     * Add a handler which is called upon each state transition, i.e. not when
@@ -125,7 +134,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * The current state may be queried using ``stateName``.
     */
   final def whenUnhandled(
-      stateFunctionBuilder: FSMStateFunctionBuilder[S, D]): Unit =
+      stateFunctionBuilder: FSMStateFunctionBuilder[S, D]
+  ): Unit =
     whenUnhandled(stateFunctionBuilder.build())
 
   /**
@@ -134,7 +144,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     */
   final def onTermination(stopBuilder: FSMStopBuilder[S, D]): Unit =
     onTermination(
-        stopBuilder.build().asInstanceOf[PartialFunction[StopEvent, Unit]])
+      stopBuilder.build().asInstanceOf[PartialFunction[StopEvent, Unit]]
+    )
 
   /**
     * Create an [[akka.japi.pf.FSMStateFunctionBuilder]] with the first case statement set.
@@ -151,7 +162,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
       eventType: Class[ET],
       dataType: Class[DT],
       predicate: TypedPredicate2[ET, DT],
-      apply: Apply2[ET, DT, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[ET, DT, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]()
       .event(eventType, dataType, predicate, apply)
 
@@ -168,7 +180,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   final def matchEvent[ET, DT <: D](
       eventType: Class[ET],
       dataType: Class[DT],
-      apply: Apply2[ET, DT, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[ET, DT, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().event(eventType, dataType, apply)
 
   /**
@@ -184,7 +197,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   final def matchEvent[ET](
       eventType: Class[ET],
       predicate: TypedPredicate2[ET, D],
-      apply: Apply2[ET, D, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[ET, D, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().event(eventType, predicate, apply);
 
   /**
@@ -198,7 +212,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     */
   final def matchEvent[ET](
       eventType: Class[ET],
-      apply: Apply2[ET, D, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[ET, D, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().event(eventType, apply);
 
   /**
@@ -212,7 +227,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     */
   final def matchEvent(
       predicate: TypedPredicate2[AnyRef, D],
-      apply: Apply2[AnyRef, D, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[AnyRef, D, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().event(predicate, apply);
 
   /**
@@ -229,7 +245,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   final def matchEvent[DT <: D](
       eventMatches: JList[AnyRef],
       dataType: Class[DT],
-      apply: Apply2[AnyRef, DT, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[AnyRef, DT, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().event(eventMatches, dataType, apply);
 
   /**
@@ -244,7 +261,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     */
   final def matchEvent(
       eventMatches: JList[AnyRef],
-      apply: Apply2[AnyRef, D, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[AnyRef, D, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().event(eventMatches, apply);
 
   /**
@@ -260,7 +278,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   final def matchEventEquals[E, DT <: D](
       event: E,
       dataType: Class[DT],
-      apply: Apply2[E, DT, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[E, DT, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().eventEquals(event, dataType, apply);
 
   /**
@@ -273,7 +292,9 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @return the builder with the case statement added
     */
   final def matchEventEquals[E](
-      event: E, apply: Apply2[E, D, State]): FSMStateFunctionBuilder[S, D] =
+      event: E,
+      apply: Apply2[E, D, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().eventEquals(event, apply);
 
   /**
@@ -285,7 +306,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @return the builder with the case statement added
     */
   final def matchAnyEvent(
-      apply: Apply2[AnyRef, D, State]): FSMStateFunctionBuilder[S, D] =
+      apply: Apply2[AnyRef, D, State]
+  ): FSMStateFunctionBuilder[S, D] =
     new FSMStateFunctionBuilder[S, D]().anyEvent(apply)
 
   /**
@@ -298,9 +320,11 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @param apply  an action to apply when the states match
     * @return the builder with the case statement added
     */
-  final def matchState(fromState: S,
-                       toState: S,
-                       apply: UnitApplyVoid): FSMTransitionHandlerBuilder[S] =
+  final def matchState(
+      fromState: S,
+      toState: S,
+      apply: UnitApplyVoid
+  ): FSMTransitionHandlerBuilder[S] =
     new FSMTransitionHandlerBuilder[S]().state(fromState, toState, apply)
 
   /**
@@ -316,7 +340,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   final def matchState(
       fromState: S,
       toState: S,
-      apply: UnitApply2[S, S]): FSMTransitionHandlerBuilder[S] =
+      apply: UnitApply2[S, S]
+  ): FSMTransitionHandlerBuilder[S] =
     new FSMTransitionHandlerBuilder[S]().state(fromState, toState, apply)
 
   /**
@@ -329,7 +354,9 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @return the builder with the case statement added
     */
   final def matchStop(
-      reason: Reason, apply: UnitApply2[S, D]): FSMStopBuilder[S, D] =
+      reason: Reason,
+      apply: UnitApply2[S, D]
+  ): FSMStopBuilder[S, D] =
     new FSMStopBuilder[S, D]().stop(reason, apply)
 
   /**
@@ -343,7 +370,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     */
   final def matchStop[RT <: Reason](
       reasonType: Class[RT],
-      apply: UnitApply3[RT, S, D]): FSMStopBuilder[S, D] =
+      apply: UnitApply3[RT, S, D]
+  ): FSMStopBuilder[S, D] =
     new FSMStopBuilder[S, D]().stop(reasonType, apply)
 
   /**
@@ -359,7 +387,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   final def matchStop[RT <: Reason](
       reasonType: Class[RT],
       predicate: TypedPredicate[RT],
-      apply: UnitApply3[RT, S, D]): FSMStopBuilder[S, D] =
+      apply: UnitApply3[RT, S, D]
+  ): FSMStopBuilder[S, D] =
     new FSMStopBuilder[S, D]().stop(reasonType, predicate, apply)
 
   /**
@@ -370,7 +399,9 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @return a builder with the case statement added
     */
   final def matchData[DT <: D](
-      dataType: Class[DT], apply: UnitApply[DT]): UnitPFBuilder[D] =
+      dataType: Class[DT],
+      apply: UnitApply[DT]
+  ): UnitPFBuilder[D] =
     UnitMatch.`match`(dataType, apply)
 
   /**
@@ -381,9 +412,11 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
     * @param apply  an action to apply to the argument if the type and predicate matches
     * @return a builder with the case statement added
     */
-  final def matchData[DT <: D](dataType: Class[DT],
-                               predicate: TypedPredicate[DT],
-                               apply: UnitApply[DT]): UnitPFBuilder[D] =
+  final def matchData[DT <: D](
+      dataType: Class[DT],
+      predicate: TypedPredicate[DT],
+      apply: UnitApply[DT]
+  ): UnitPFBuilder[D] =
     UnitMatch.`match`(dataType, predicate, apply)
 
   /**
@@ -426,7 +459,8 @@ abstract class AbstractFSM[S, D] extends FSM[S, D] {
   * This is an EXPERIMENTAL feature and is subject to change until it has received more real world testing.
   */
 abstract class AbstractLoggingFSM[S, D]
-    extends AbstractFSM[S, D] with LoggingFSM[S, D]
+    extends AbstractFSM[S, D]
+    with LoggingFSM[S, D]
 
 /**
   * Java API: compatible with lambda expressions

@@ -129,37 +129,42 @@ trait Compat210Component {
 
   // Compat to support: new overridingPairs.Cursor(sym).iterator
 
-  implicit class OverridingPairsCursor2Iterable(cursor: overridingPairs.Cursor) {
-    def iterator: Iterator[SymbolPair] = new Iterator[SymbolPair] {
-      skipIgnoredEntries()
-
-      def hasNext: Boolean = cursor.hasNext
-
-      def next(): SymbolPair = {
-        val symbolPair = new SymbolPair(cursor.overriding, cursor.overridden)
-        cursor.next()
+  implicit class OverridingPairsCursor2Iterable(
+      cursor: overridingPairs.Cursor
+  ) {
+    def iterator: Iterator[SymbolPair] =
+      new Iterator[SymbolPair] {
         skipIgnoredEntries()
-        symbolPair
-      }
 
-      private def skipIgnoredEntries(): Unit = {
-        while (cursor.hasNext && ignoreNextEntry) cursor.next()
-      }
+        def hasNext: Boolean = cursor.hasNext
 
-      /** In 2.10 the overridingPairs.Cursor returns some false positives
-        *  on overriding members. The known false positives are always trying to
-        *  override the `isInstanceOf` method.
-        */
-      private def ignoreNextEntry: Boolean =
-        cursor.overriding.name == nme.isInstanceOf_
-    }
+        def next(): SymbolPair = {
+          val symbolPair = new SymbolPair(cursor.overriding, cursor.overridden)
+          cursor.next()
+          skipIgnoredEntries()
+          symbolPair
+        }
+
+        private def skipIgnoredEntries(): Unit = {
+          while (cursor.hasNext && ignoreNextEntry) cursor.next()
+        }
+
+        /** In 2.10 the overridingPairs.Cursor returns some false positives
+          *  on overriding members. The known false positives are always trying to
+          *  override the `isInstanceOf` method.
+          */
+        private def ignoreNextEntry: Boolean =
+          cursor.overriding.name == nme.isInstanceOf_
+      }
 
     class SymbolPair(val low: Symbol, val high: Symbol)
 
     /** To make this compat code compile in 2.11 as the fields `overriding` and
       *  `overridden` are only present in 2.10.
       */
-    private implicit class Cursor210toCursor211(cursor: overridingPairs.Cursor) {
+    private implicit class Cursor210toCursor211(
+        cursor: overridingPairs.Cursor
+    ) {
       def overriding: Symbol = sys.error("infinite loop in Compat")
       def overridden: Symbol = sys.error("infinite loop in Compat")
     }
@@ -171,7 +176,8 @@ trait Compat210Component {
     def valueClazz: Symbol = self.original.typeSymbol
     def erasedUnderlying: Type =
       enteringPhase(currentRun.erasurePhase)(
-          erasure.erasedValueClassArg(self.original))
+        erasure.erasedValueClassArg(self.original)
+      )
     def original: TypeRef = sys.error("infinite loop in Compat")
   }
 
@@ -181,12 +187,14 @@ trait Compat210Component {
     global.definitions.repeatedToSingle(t)
 
   private implicit final class DefinitionsCompat(
-      self: Compat210Component.this.global.definitions.type) {
+      self: Compat210Component.this.global.definitions.type
+  ) {
 
-    def repeatedToSingle(t: Type): Type = t match {
-      case TypeRef(_, self.RepeatedParamClass, arg :: Nil) => arg
-      case _ => t
-    }
+    def repeatedToSingle(t: Type): Type =
+      t match {
+        case TypeRef(_, self.RepeatedParamClass, arg :: Nil) => arg
+        case _                                               => t
+      }
   }
 
   // run.runDefinitions bundles methods and state related to the run
@@ -214,7 +222,8 @@ object Compat210Component {
   }
 
   private implicit final class AnalyzerCompat(
-      self: scala.tools.nsc.typechecker.Analyzer) {
+      self: scala.tools.nsc.typechecker.Analyzer
+  ) {
     def FUNmode = {
       // scalastyle:ignore
       import Compat210Component.LowPriorityMode._

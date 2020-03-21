@@ -343,7 +343,8 @@ trait Row extends Serializable {
     */
   def fieldIndex(name: String): Int = {
     throw new UnsupportedOperationException(
-        "fieldIndex on a Row without schema is undefined.")
+      "fieldIndex on a Row without schema is undefined."
+    )
   }
 
   /**
@@ -356,9 +357,7 @@ trait Row extends Serializable {
     * @throws ClassCastException when data type does not match.
     */
   def getValuesMap[T](fieldNames: Seq[String]): Map[String, T] = {
-    fieldNames.map { name =>
-      name -> getAs[T](name)
-    }.toMap
+    fieldNames.map { name => name -> getAs[T](name) }.toMap
   }
 
   override def toString(): String = s"[${this.mkString(",")}]"

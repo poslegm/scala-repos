@@ -43,26 +43,26 @@ class PrefixComparatorsSuite extends SparkFunSuite with PropertyChecks {
         .lexicographicalComparator()
         .compare(utf8string1.getBytes.take(8), utf8string2.getBytes.take(8))
 
-      assert((prefixComparisonResult == 0 && cmp == 0) ||
+      assert(
+        (prefixComparisonResult == 0 && cmp == 0) ||
           (prefixComparisonResult < 0 && s1.compareTo(s2) < 0) ||
-          (prefixComparisonResult > 0 && s1.compareTo(s2) > 0))
+          (prefixComparisonResult > 0 && s1.compareTo(s2) > 0)
+      )
     }
 
     // scalastyle:off
     val regressionTests = Table(
-        ("s1", "s2"),
-        ("abc", "世界"),
-        ("你好", "世界"),
-        ("你好123", "你好122")
+      ("s1", "s2"),
+      ("abc", "世界"),
+      ("你好", "世界"),
+      ("你好123", "你好122")
     )
     // scalastyle:on
 
     forAll(regressionTests) { (s1: String, s2: String) =>
       testPrefixComparison(s1, s2)
     }
-    forAll { (s1: String, s2: String) =>
-      testPrefixComparison(s1, s2)
-    }
+    forAll { (s1: String, s2: String) => testPrefixComparison(s1, s2) }
   }
 
   test("Binary prefix comparator") {
@@ -81,33 +81,38 @@ class PrefixComparatorsSuite extends SparkFunSuite with PropertyChecks {
       val prefixComparisonResult =
         PrefixComparators.BINARY.compare(s1Prefix, s2Prefix)
       assert(
-          (prefixComparisonResult == 0) ||
+        (prefixComparisonResult == 0) ||
           (prefixComparisonResult < 0 && compareBinary(x, y) < 0) ||
-          (prefixComparisonResult > 0 && compareBinary(x, y) > 0))
+          (prefixComparisonResult > 0 && compareBinary(x, y) > 0)
+      )
     }
 
     // scalastyle:off
     val regressionTests = Table(
-        ("s1", "s2"),
-        ("abc", "世界"),
-        ("你好", "世界"),
-        ("你好123", "你好122")
+      ("s1", "s2"),
+      ("abc", "世界"),
+      ("你好", "世界"),
+      ("你好123", "你好122")
     )
     // scalastyle:on
 
     forAll(regressionTests) { (s1: String, s2: String) =>
-      testPrefixComparison(s1.getBytes(StandardCharsets.UTF_8),
-                           s2.getBytes(StandardCharsets.UTF_8))
+      testPrefixComparison(
+        s1.getBytes(StandardCharsets.UTF_8),
+        s2.getBytes(StandardCharsets.UTF_8)
+      )
     }
     forAll { (s1: String, s2: String) =>
-      testPrefixComparison(s1.getBytes(StandardCharsets.UTF_8),
-                           s2.getBytes(StandardCharsets.UTF_8))
+      testPrefixComparison(
+        s1.getBytes(StandardCharsets.UTF_8),
+        s2.getBytes(StandardCharsets.UTF_8)
+      )
     }
   }
 
   test("double prefix comparator handles NaNs properly") {
-    val nan1: Double = java.lang.Double.longBitsToDouble(0x7ff0000000000001L)
-    val nan2: Double = java.lang.Double.longBitsToDouble(0x7fffffffffffffffL)
+    val nan1: Double = java.lang.Double.longBitsToDouble(0x7FF0000000000001L)
+    val nan2: Double = java.lang.Double.longBitsToDouble(0x7FFFFFFFFFFFFFFFL)
     assert(nan1.isNaN)
     assert(nan2.isNaN)
     val nan1Prefix =

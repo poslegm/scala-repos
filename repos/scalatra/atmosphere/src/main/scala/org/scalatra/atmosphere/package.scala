@@ -37,18 +37,19 @@ package object atmosphere {
 
   import org.scalatra.servlet.ServletApiImplicits._
 
-  implicit def atmoResourceWithClient(res: AtmosphereResource) = new {
-    def clientOption =
-      res.session
-        .get(AtmosphereClientKey)
-        .asInstanceOf[Option[AtmosphereClient]]
-    def client =
-      res.session.apply(AtmosphereClientKey).asInstanceOf[AtmosphereClient]
-  }
+  implicit def atmoResourceWithClient(res: AtmosphereResource) =
+    new {
+      def clientOption =
+        res.session
+          .get(AtmosphereClientKey)
+          .asInstanceOf[Option[AtmosphereClient]]
+      def client =
+        res.session.apply(AtmosphereClientKey).asInstanceOf[AtmosphereClient]
+    }
 
   private[atmosphere] implicit def jucFuture2akkaFuture[T](
-      javaFuture: java.util.concurrent.Future[T])(
-      implicit system: ActorSystem): Future[T] = {
+      javaFuture: java.util.concurrent.Future[T]
+  )(implicit system: ActorSystem): Future[T] = {
     implicit val execContext = system.dispatcher
     val promise = Promise[T]()
     pollJavaFutureUntilDoneOrCancelled(javaFuture, promise)
@@ -59,7 +60,8 @@ package object atmosphere {
   private[atmosphere] def pollJavaFutureUntilDoneOrCancelled[T](
       javaFuture: java.util.concurrent.Future[T],
       promise: Promise[T],
-      maybeTimeout: Option[Deadline] = None)(implicit system: ActorSystem) {
+      maybeTimeout: Option[Deadline] = None
+  )(implicit system: ActorSystem) {
     implicit val execContext = system.dispatcher
     if (maybeTimeout.exists(_.isOverdue())) javaFuture.cancel(true)
 

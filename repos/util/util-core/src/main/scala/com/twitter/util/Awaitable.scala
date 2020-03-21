@@ -141,8 +141,10 @@ object Await {
     */
   @throws(classOf[TimeoutException])
   @throws(classOf[InterruptedException])
-  def all(awaitables: java.util.Collection[Awaitable[_]],
-          timeout: Duration): Unit =
+  def all(
+      awaitables: java.util.Collection[Awaitable[_]],
+      timeout: Duration
+  ): Unit =
     all(awaitables.asScala.toSeq, timeout)
 }
 
@@ -160,8 +162,9 @@ private[util] trait CloseAwaitably0[U <: Unit] extends Awaitable[U] {
     onClose
   }
 
-  def ready(timeout: Duration)(
-      implicit permit: Awaitable.CanAwait): this.type = {
+  def ready(
+      timeout: Duration
+  )(implicit permit: Awaitable.CanAwait): this.type = {
     onClose.ready(timeout)
     this
   }

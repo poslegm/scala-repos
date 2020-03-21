@@ -14,8 +14,8 @@ import org.jetbrains.plugins.scala.lang.structureView.itemsPresentations.impl._
   * Date: 16.05.2008
   */
 class ScalaPrimaryConstructorStructureViewElement(
-    private val element: ScPrimaryConstructor)
-    extends ScalaStructureViewElement(element, false) {
+    private val element: ScPrimaryConstructor
+) extends ScalaStructureViewElement(element, false) {
 
   def getPresentation: ItemPresentation = {
     new ScalaPrimaryConstructorItemPresentation(element);

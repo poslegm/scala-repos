@@ -8,7 +8,8 @@ case class ResourceLabels(labels: Map[String, String]) {
     labels.foreach {
       case (k, v) =>
         labelsBuilder.addLabels(
-            MesosProtos.Label.newBuilder().setKey(k).setValue(v))
+          MesosProtos.Label.newBuilder().setKey(k).setValue(v)
+        )
     }
     labelsBuilder.build()
   }
@@ -30,8 +31,9 @@ object ResourceLabels {
   def apply(resource: MesosProtos.Labels): ResourceLabels = {
     import scala.collection.JavaConverters._
     ResourceLabels(
-        resource.getLabelsList.asScala.iterator
-          .map(l => l.getKey -> l.getValue)
-          .toMap)
+      resource.getLabelsList.asScala.iterator
+        .map(l => l.getKey -> l.getValue)
+        .toMap
+    )
   }
 }

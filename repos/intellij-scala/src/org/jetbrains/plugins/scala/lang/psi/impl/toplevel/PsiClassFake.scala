@@ -63,15 +63,20 @@ trait PsiClassFake extends PsiClass with PsiReferenceList {
   def findFieldByName(name: String, checkBases: Boolean): PsiField = null
 
   def findMethodBySignature(
-      patternMethod: PsiMethod, checkBases: Boolean): PsiMethod = null
+      patternMethod: PsiMethod,
+      checkBases: Boolean
+  ): PsiMethod = null
 
   def findMethodsBySignature(
-      patternMethod: PsiMethod, checkBases: Boolean): Array[PsiMethod] =
+      patternMethod: PsiMethod,
+      checkBases: Boolean
+  ): Array[PsiMethod] =
     PsiMethod.EMPTY_ARRAY
 
   def findMethodsAndTheirSubstitutorsByName(
       name: String,
-      checkBases: Boolean): List[Pair[PsiMethod, PsiSubstitutor]] =
+      checkBases: Boolean
+  ): List[Pair[PsiMethod, PsiSubstitutor]] =
     Collections.emptyList[Pair[PsiMethod, PsiSubstitutor]]
 
   def findMethodsAndTheirSubstitutors: List[Pair[PsiMethod, PsiSubstitutor]] =

@@ -44,7 +44,8 @@ class RuntimeConfigImpl extends RuntimeConfig {
   override def get(key: String): String = conf.getConfString(key)
 
   override def getOption(key: String): Option[String] = {
-    try Option(get(key)) catch {
+    try Option(get(key))
+    catch {
       case _: NoSuchElementException => None
     }
   }
@@ -57,16 +58,18 @@ class RuntimeConfigImpl extends RuntimeConfig {
   }
 
   @throws[NoSuchElementException]("if the key is not set")
-  override def getHadoop(key: String): String = hadoopConf.synchronized {
-    if (hadoopConf.containsKey(key)) {
-      hadoopConf.get(key)
-    } else {
-      throw new NoSuchElementException(key)
+  override def getHadoop(key: String): String =
+    hadoopConf.synchronized {
+      if (hadoopConf.containsKey(key)) {
+        hadoopConf.get(key)
+      } else {
+        throw new NoSuchElementException(key)
+      }
     }
-  }
 
   override def getHadoopOption(key: String): Option[String] = {
-    try Option(getHadoop(key)) catch {
+    try Option(getHadoop(key))
+    catch {
       case _: NoSuchElementException => None
     }
   }

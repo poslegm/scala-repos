@@ -167,15 +167,16 @@ class BitSet(numBits: Int) extends Serializable {
   /**
     * Get an iterator over the set bits.
     */
-  def iterator: Iterator[Int] = new Iterator[Int] {
-    var ind = nextSetBit(0)
-    override def hasNext: Boolean = ind >= 0
-    override def next(): Int = {
-      val tmp = ind
-      ind = nextSetBit(ind + 1)
-      tmp
+  def iterator: Iterator[Int] =
+    new Iterator[Int] {
+      var ind = nextSetBit(0)
+      override def hasNext: Boolean = ind >= 0
+      override def next(): Int = {
+        val tmp = ind
+        ind = nextSetBit(ind + 1)
+        tmp
+      }
     }
-  }
 
   /** Return the number of bits set to true in this BitSet. */
   def cardinality(): Int = {
@@ -212,7 +213,7 @@ class BitSet(numBits: Int) extends Serializable {
     var word = words(wordIndex) >> subIndex
     if (word != 0) {
       return (wordIndex << 6) + subIndex +
-      java.lang.Long.numberOfTrailingZeros(word)
+        java.lang.Long.numberOfTrailingZeros(word)
     }
 
     // Find the next set bit in the rest of the words

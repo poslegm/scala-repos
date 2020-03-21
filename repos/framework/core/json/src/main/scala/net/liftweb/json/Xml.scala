@@ -43,11 +43,11 @@ object Xml {
     *         &lt;id&gt;2&lt;/id&gt;
     *         &lt;name&gt;David&lt;/name&gt;
     *       &lt;/user&gt;
-    *     &lt;/users&gt;   
+    *     &lt;/users&gt;
     *
     * scala> val json = toJson(xml)
     * scala> pretty(render(json))
-    * 
+    *
     * {
     *   "users":{
     *     "user":[{
@@ -72,7 +72,7 @@ object Xml {
     * json map {
     *   case JField("id", JString(s)) => JField("id", JInt(s.toInt))
     *   case JField("user", x: JObject) => JField("user", JArray(x :: Nil))
-    *   case x => x 
+    *   case x => x
     * }
     * </pre>
     */
@@ -83,13 +83,12 @@ object Xml {
      * <foo>bar</foo>, <foo>{ doSomething() }</foo>, etc.
      */
     def leaf_?(node: Node) = {
-      def descendant(n: Node): List[Node] = n match {
-        case g: Group => g.nodes.toList.flatMap(x => x :: descendant(x))
-        case _ =>
-          n.child.toList.flatMap { x =>
-            x :: descendant(x)
-          }
-      }
+      def descendant(n: Node): List[Node] =
+        n match {
+          case g: Group => g.nodes.toList.flatMap(x => x :: descendant(x))
+          case _ =>
+            n.child.toList.flatMap { x => x :: descendant(x) }
+        }
 
       !descendant(node).find(_.isInstanceOf[Elem]).isDefined
     }
@@ -110,61 +109,63 @@ object Xml {
     case class XNode(fields: List[(String, XElem)]) extends XElem
     case class XArray(elems: List[XElem]) extends XElem
 
-    def toJValue(x: XElem): JValue = x match {
-      case XValue(s) => JString(s)
-      case XLeaf((name, value), attrs) =>
-        (value, attrs) match {
-          case (_, Nil) => toJValue(value)
-          case (XValue(""), xs) => JObject(mkFields(xs))
-          case (_, xs) =>
-            JObject(JField(name, toJValue(value)) :: mkFields(xs))
-        }
-      case XNode(xs) => JObject(mkFields(xs))
-      case XArray(elems) => JArray(elems.map(toJValue))
-    }
+    def toJValue(x: XElem): JValue =
+      x match {
+        case XValue(s) => JString(s)
+        case XLeaf((name, value), attrs) =>
+          (value, attrs) match {
+            case (_, Nil)         => toJValue(value)
+            case (XValue(""), xs) => JObject(mkFields(xs))
+            case (_, xs) =>
+              JObject(JField(name, toJValue(value)) :: mkFields(xs))
+          }
+        case XNode(xs)     => JObject(mkFields(xs))
+        case XArray(elems) => JArray(elems.map(toJValue))
+      }
 
     def mkFields(xs: List[(String, XElem)]) =
       xs.flatMap {
         case (name, value) =>
           (value, toJValue(value)) match {
             // This special case is needed to flatten nested objects which resulted from
-            // XML attributes. Flattening keeps transformation more predicatable.  
+            // XML attributes. Flattening keeps transformation more predicatable.
             // <a><foo id="1">x</foo></a> -> {"a":{"foo":{"foo":"x","id":"1"}}} vs
             // <a><foo id="1">x</foo></a> -> {"a":{"foo":"x","id":"1"}}
             case (XLeaf(v, x :: xs), o: JObject) => o.obj
-            case (_, json) => JField(name, json) :: Nil
+            case (_, json)                       => JField(name, json) :: Nil
           }
       }
 
-    def buildNodes(xml: NodeSeq): List[XElem] = xml match {
-      case n: Node =>
-        if (empty_?(n)) XLeaf((nameOf(n), XValue("")), buildAttrs(n)) :: Nil
-        else if (leaf_?(n))
-          XLeaf((nameOf(n), XValue(n.text)), buildAttrs(n)) :: Nil
-        else {
-          val children = directChildren(n)
-          XNode(
+    def buildNodes(xml: NodeSeq): List[XElem] =
+      xml match {
+        case n: Node =>
+          if (empty_?(n)) XLeaf((nameOf(n), XValue("")), buildAttrs(n)) :: Nil
+          else if (leaf_?(n))
+            XLeaf((nameOf(n), XValue(n.text)), buildAttrs(n)) :: Nil
+          else {
+            val children = directChildren(n)
+            XNode(
               buildAttrs(n) ::: children
                 .map(nameOf)
                 .toList
-                .zip(buildNodes(children))) :: Nil
-        }
-      case nodes: NodeSeq =>
-        val allLabels = nodes.map(_.label)
-        if (array_?(allLabels)) {
-          val arr = XArray(
-              nodes.toList.flatMap { n =>
-            if (leaf_?(n) && n.attributes.length == 0) XValue(n.text) :: Nil
-            else buildNodes(n)
-          })
-          XLeaf((allLabels(0), arr), Nil) :: Nil
-        } else nodes.toList.flatMap(buildNodes)
-    }
+                .zip(buildNodes(children))
+            ) :: Nil
+          }
+        case nodes: NodeSeq =>
+          val allLabels = nodes.map(_.label)
+          if (array_?(allLabels)) {
+            val arr = XArray(nodes.toList.flatMap { n =>
+              if (leaf_?(n) && n.attributes.length == 0) XValue(n.text) :: Nil
+              else buildNodes(n)
+            })
+            XLeaf((allLabels(0), arr), Nil) :: Nil
+          } else nodes.toList.flatMap(buildNodes)
+      }
 
     buildNodes(xml) match {
       case List(x @ XLeaf(_, _ :: _)) => toJValue(x)
-      case List(x) => JObject(JField(nameOf(xml.head), toJValue(x)) :: Nil)
-      case x => JArray(x.map(toJValue))
+      case List(x)                    => JObject(JField(nameOf(xml.head), toJValue(x)) :: Nil)
+      case x                          => JArray(x.map(toJValue))
     }
   }
 
@@ -188,20 +189,19 @@ object Xml {
     * </pre>
     */
   def toXml(json: JValue): NodeSeq = {
-    def toXml(name: String, json: JValue): NodeSeq = json match {
-      case JObject(fields) =>
-        new XmlNode(name, fields flatMap { case JField(n, v) => toXml(n, v) })
-      case JArray(xs) =>
-        xs flatMap { v =>
-          toXml(name, v)
-        }
-      case JInt(x) => new XmlElem(name, x.toString)
-      case JDouble(x) => new XmlElem(name, x.toString)
-      case JString(x) => new XmlElem(name, x)
-      case JBool(x) => new XmlElem(name, x.toString)
-      case JNull => new XmlElem(name, "null")
-      case JNothing => Text("")
-    }
+    def toXml(name: String, json: JValue): NodeSeq =
+      json match {
+        case JObject(fields) =>
+          new XmlNode(name, fields flatMap { case JField(n, v) => toXml(n, v) })
+        case JArray(xs) =>
+          xs flatMap { v => toXml(name, v) }
+        case JInt(x)    => new XmlElem(name, x.toString)
+        case JDouble(x) => new XmlElem(name, x.toString)
+        case JString(x) => new XmlElem(name, x)
+        case JBool(x)   => new XmlElem(name, x.toString)
+        case JNull      => new XmlElem(name, "null")
+        case JNothing   => Text("")
+      }
 
     json match {
       case JObject(fields) =>

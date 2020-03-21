@@ -4,11 +4,12 @@ import com.novocode.junit.RunSettings
 import sbt.testing._
 import java.util.concurrent.atomic.AtomicInteger
 
-final class JUnitMasterRunner(args: Array[String],
-                              remoteArgs: Array[String],
-                              testClassLoader: ClassLoader,
-                              runSettings: RunSettings)
-    extends JUnitBaseRunner(args, remoteArgs, testClassLoader, runSettings) {
+final class JUnitMasterRunner(
+    args: Array[String],
+    remoteArgs: Array[String],
+    testClassLoader: ClassLoader,
+    runSettings: RunSettings
+) extends JUnitBaseRunner(args, remoteArgs, testClassLoader, runSettings) {
 
   private[this] var registeredCount = 0
   private[this] var slaveCount = 0
@@ -24,8 +25,7 @@ final class JUnitMasterRunner(args: Array[String],
     val done = doneCount
 
     if (slaves > 0)
-      throw new IllegalStateException(
-          s"There are still $slaves slaves running")
+      throw new IllegalStateException(s"There are still $slaves slaves running")
 
     if (registered != done) {
       val msg = s"$registered task(s) were registered, $done were executed"
@@ -35,16 +35,17 @@ final class JUnitMasterRunner(args: Array[String],
     }
   }
 
-  def receiveMessage(msg: String): Option[String] = msg(0) match {
-    case 'd' =>
-      val slaveDone = JUnitBaseRunner.Done.deserialize(msg.tail)
-      doneCount += slaveDone.done
-      passedCount += slaveDone.passed
-      failedCount += slaveDone.failed
-      ignoredCount += slaveDone.skipped
-      skippedCount += slaveDone.skipped
-      totalCount += slaveDone.total
-      slaveCount -= 1
-      None
-  }
+  def receiveMessage(msg: String): Option[String] =
+    msg(0) match {
+      case 'd' =>
+        val slaveDone = JUnitBaseRunner.Done.deserialize(msg.tail)
+        doneCount += slaveDone.done
+        passedCount += slaveDone.passed
+        failedCount += slaveDone.failed
+        ignoredCount += slaveDone.skipped
+        skippedCount += slaveDone.skipped
+        totalCount += slaveDone.total
+        slaveCount -= 1
+        None
+    }
 }

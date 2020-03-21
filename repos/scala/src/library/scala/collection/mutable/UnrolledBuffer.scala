@@ -44,8 +44,9 @@ import scala.reflect.ClassTag
   */
 @SerialVersionUID(1L)
 @deprecatedInheritance(
-    "UnrolledBuffer is not designed to enable meaningful subclassing.",
-    "2.11.0")
+  "UnrolledBuffer is not designed to enable meaningful subclassing.",
+  "2.11.0"
+)
 class UnrolledBuffer[T](implicit val tag: ClassTag[T])
     extends scala.collection.mutable.AbstractBuffer[T]
     with scala.collection.mutable.Buffer[T]
@@ -72,13 +73,13 @@ class UnrolledBuffer[T](implicit val tag: ClassTag[T])
   // The below would allow more flexible behavior without requiring inheritance
   // that is risky because all the important internals are private.
   // private var myLengthPolicy: Int => Int = x => x
-  // 
+  //
   // /** Specifies how the array lengths should vary.
-  //   * 
+  //   *
   //   *  By default,  `UnrolledBuffer` uses arrays of a fixed size.  A length
   //   *  policy can be given that changes this scheme to, for instance, an
   //   *  exponential growth.
-  //   * 
+  //   *
   //   *  @param nextLength   computes the length of the next array from the length of the latest one
   //   */
   // def setLengthPolicy(nextLength: Int => Int): Unit = { myLengthPolicy = nextLength }
@@ -121,27 +122,28 @@ class UnrolledBuffer[T](implicit val tag: ClassTag[T])
     sz = 0
   }
 
-  def iterator: Iterator[T] = new AbstractIterator[T] {
-    var pos: Int = -1
-    var node: Unrolled[T] = headptr
-    scan()
+  def iterator: Iterator[T] =
+    new AbstractIterator[T] {
+      var pos: Int = -1
+      var node: Unrolled[T] = headptr
+      scan()
 
-    private def scan() {
-      pos += 1
-      while (pos >= node.size) {
-        pos = 0
-        node = node.next
-        if (node eq null) return
+      private def scan() {
+        pos += 1
+        while (pos >= node.size) {
+          pos = 0
+          node = node.next
+          if (node eq null) return
+        }
       }
+      def hasNext = node ne null
+      def next =
+        if (hasNext) {
+          val r = node.array(pos)
+          scan()
+          r
+        } else Iterator.empty.next()
     }
-    def hasNext = node ne null
-    def next =
-      if (hasNext) {
-        val r = node.array(pos)
-        scan()
-        r
-      } else Iterator.empty.next()
-  }
 
   // this should be faster than the iterator
   override def foreach[U](f: T => U) = headptr.foreach(f)
@@ -205,8 +207,9 @@ class UnrolledBuffer[T](implicit val tag: ClassTag[T])
 object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
 
   /** $genericCanBuildFromInfo */
-  implicit def canBuildFrom[T](
-      implicit t: ClassTag[T]): CanBuildFrom[Coll, T, UnrolledBuffer[T]] =
+  implicit def canBuildFrom[T](implicit
+      t: ClassTag[T]
+  ): CanBuildFrom[Coll, T, UnrolledBuffer[T]] =
     new GenericCanBuildFrom[T]
   def newBuilder[T](implicit t: ClassTag[T]): Builder[T, UnrolledBuffer[T]] =
     new UnrolledBuffer[T]
@@ -218,11 +221,12 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
 
   /** Unrolled buffer node.
     */
-  class Unrolled[T : ClassTag] private[collection](
+  class Unrolled[T: ClassTag] private[collection] (
       var size: Int,
       var array: Array[T],
       var next: Unrolled[T],
-      val buff: UnrolledBuffer[T] = null) {
+      val buff: UnrolledBuffer[T] = null
+  ) {
     private[collection] def this() =
       this(0, new Array[T](unrolledlength), null, null)
     private[collection] def this(b: UnrolledBuffer[T]) =
@@ -309,7 +313,7 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
     }
     protected def tryMergeWithNext() =
       if (next != null && (size + next.size) <
-          (array.length * waterline / waterlineDelim)) {
+            (array.length * waterline / waterlineDelim)) {
         // copy the next array, then discard the next node
         Array.copy(next.array, 0, array, size, next.size)
         size = size + next.size
@@ -317,9 +321,11 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
         if (next eq null) true else false // checks if last node was thrown out
       } else false
 
-    @tailrec final def insertAll(idx: Int,
-                                 t: scala.collection.Traversable[T],
-                                 buffer: UnrolledBuffer[T]): Unit = {
+    @tailrec final def insertAll(
+        idx: Int,
+        t: scala.collection.Traversable[T],
+        buffer: UnrolledBuffer[T]
+    ): Unit = {
       if (idx < size) {
         // divide this node at the appropriate position and insert all into head
         // update new next
@@ -350,7 +356,8 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
     private def nullout(from: Int, until: Int) {
       var idx = from
       while (idx < until) {
-        array(idx) = null.asInstanceOf[T] // TODO find a way to assign a default here!!
+        array(idx) =
+          null.asInstanceOf[T] // TODO find a way to assign a default here!!
         idx += 1
       }
     }
@@ -367,9 +374,11 @@ object UnrolledBuffer extends ClassTagTraversableFactory[UnrolledBuffer] {
     override def toString =
       array
         .take(size)
-        .mkString("Unrolled@%08x".format(System.identityHashCode(this)) + "[" +
-                  size + "/" + array.length + "](",
-                  ", ",
-                  ")") + " -> " + (if (next ne null) next.toString else "")
+        .mkString(
+          "Unrolled@%08x".format(System.identityHashCode(this)) + "[" +
+            size + "/" + array.length + "](",
+          ", ",
+          ")"
+        ) + " -> " + (if (next ne null) next.toString else "")
   }
 }

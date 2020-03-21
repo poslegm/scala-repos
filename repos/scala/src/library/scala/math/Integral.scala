@@ -34,8 +34,9 @@ object Integral {
       *  bumping into one another when searching for this implicit, so they
       *  are exiled into their own companions.
       */
-    implicit def infixIntegralOps[T](x: T)(
-        implicit num: Integral[T]): Integral[T]#IntegralOps =
+    implicit def infixIntegralOps[T](
+        x: T
+    )(implicit num: Integral[T]): Integral[T]#IntegralOps =
       new num.IntegralOps(x)
   }
   object Implicits extends ExtraImplicits

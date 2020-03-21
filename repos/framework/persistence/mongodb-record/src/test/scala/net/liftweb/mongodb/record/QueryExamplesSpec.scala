@@ -127,7 +127,8 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
 
     // query for the Flinstones using a Pattern
     val flinstones = Person.findAll(
-        ("name" -> Pattern.compile("^flinst", Pattern.CASE_INSENSITIVE)))
+      ("name" -> Pattern.compile("^flinst", Pattern.CASE_INSENSITIVE))
+    )
 
     flinstones.length must_== 2
     flinstones.map(_.id.get).filterNot(flinstonesIds.contains(_)) must_== List()
@@ -148,7 +149,9 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
     people.length must_== 3
     people
       .map(_.id.get)
-      .filterNot(List(wilma.id.get, barney.id.get, betty.id.get).contains(_)) must_==
+      .filterNot(
+        List(wilma.id.get, barney.id.get, betty.id.get).contains(_)
+      ) must_==
       List()
 
     // you do not need to define the implicit formats val if you write your query in the MongoMetaRecord object.
@@ -157,7 +160,9 @@ object QueryExamplesSpec extends Specification with MongoTestKit {
     people2.length must_== 3
     people2
       .map(_.id.get)
-      .filterNot(List(wilma.id.get, barney.id.get, betty.id.get).contains(_)) must_==
+      .filterNot(
+        List(wilma.id.get, barney.id.get, betty.id.get).contains(_)
+      ) must_==
       List()
 
     // query with Sort

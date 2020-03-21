@@ -19,9 +19,7 @@ object CustomRoute {
       def receive = {
         case msg: CamelMessage =>
           sender() !
-          (msg.mapBody { body: String =>
-                "received %s" format body
-              })
+            (msg.mapBody { body: String => "received %s" format body })
       }
     }
 

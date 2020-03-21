@@ -18,9 +18,11 @@ final class PresentationCompilerThread(var compiler: Global, name: String = "")
     compiler.debugLog("starting new runner thread")
     while (compiler ne null) try {
       compiler.checkNoResponsesOutstanding()
-      compiler.log.logreplay("wait for more work", {
-        compiler.scheduler.waitForMoreWork(); true
-      })
+      compiler.log.logreplay(
+        "wait for more work", {
+          compiler.scheduler.waitForMoreWork(); true
+        }
+      )
       compiler.pollForWork(compiler.NoPosition)
       while (compiler.isOutOfDate) {
         try {
@@ -44,11 +46,13 @@ final class PresentationCompilerThread(var compiler: Global, name: String = "")
         ex match {
           case ex: FreshRunReq =>
             compiler.debugLog(
-                "fresh run req caught outside presentation compiler loop; ignored") // This shouldn't be reported
+              "fresh run req caught outside presentation compiler loop; ignored"
+            ) // This shouldn't be reported
           case _: Global#ValidateException =>
             // This will have been reported elsewhere
             compiler.debugLog(
-                "validate exception caught outside presentation compiler loop; ignored")
+              "validate exception caught outside presentation compiler loop; ignored"
+            )
           case _ =>
             ex.printStackTrace(); compiler.informIDE("Fatal Error: " + ex)
         }

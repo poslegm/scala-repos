@@ -76,17 +76,18 @@ trait PasswordTypedField extends TypedField[String] {
       case Full(hash: String) if (hash.startsWith("$2a$")) =>
         setBox(Full(hash))
       case _ => {
-          invalidPw = true; invalidMsg = S.?("passwords.do.not.match");
-          Failure(invalidMsg)
-        }
+        invalidPw = true; invalidMsg = S.?("passwords.do.not.match");
+        Failure(invalidMsg)
+      }
     }
   }
 
-  def setFromString(s: String): Box[String] = s match {
-    case null | "" if optional_? => setBoxPlain(Empty)
-    case null | "" => setBoxPlain(Failure(notOptionalErrorMessage))
-    case _ => setBoxPlain(Full(s))
-  }
+  def setFromString(s: String): Box[String] =
+    s match {
+      case null | "" if optional_? => setBoxPlain(Empty)
+      case null | ""               => setBoxPlain(Failure(notOptionalErrorMessage))
+      case _                       => setBoxPlain(Full(s))
+    }
 
   override def validate: List[FieldError] = {
     if (!invalidPw && valueBox != defaultValueBox) Nil
@@ -98,29 +99,31 @@ trait PasswordTypedField extends TypedField[String] {
 
   override def formInputType = "password"
 
-  private def elem = S.fmapFunc(SFuncHolder(this.setFromAny(_))) { funcName =>
-    <input type={formInputType}
+  private def elem =
+    S.fmapFunc(SFuncHolder(this.setFromAny(_))) { funcName =>
+      <input type={formInputType}
       name={funcName}
       value={valueBox openOr ""}
       tabindex={tabIndex.toString}/>
-  
-  }
+
+    }
 
   def toForm: Box[NodeSeq] =
     uniqueFieldId match {
       case Full(id) => Full(elem % ("id" -> id))
-      case _ => Full(elem)
+      case _        => Full(elem)
     }
 
   protected def validatePassword(pwdValue: Box[String]): Boolean = {
     pwdValue match {
       case Empty | Full("" | null) if !optional_? => {
-          invalidPw = true; invalidMsg = notOptionalErrorMessage
-        }
+        invalidPw = true; invalidMsg = notOptionalErrorMessage
+      }
       case Full(s)
           if s == "" || s == PasswordField.blankPw ||
-          s.length < PasswordField.minPasswordLength =>
-        { invalidPw = true; invalidMsg = S.?("password.too.short") }
+            s.length < PasswordField.minPasswordLength => {
+        invalidPw = true; invalidMsg = S.?("password.too.short")
+      }
       case _ => { invalidPw = false; invalidMsg = "" }
     }
     invalidPw
@@ -133,15 +136,17 @@ trait PasswordTypedField extends TypedField[String] {
   def asJValue: JValue =
     valueBox.map(v => JString(v)) openOr (JNothing: JValue)
 
-  def setFromJValue(jvalue: JValue): Box[MyType] = jvalue match {
-    case JNothing | JNull if optional_? => setBoxPlain(Empty)
-    case JString(s) => setFromString(s)
-    case other => setBoxPlain(FieldHelpers.expectedA("JString", other))
-  }
+  def setFromJValue(jvalue: JValue): Box[MyType] =
+    jvalue match {
+      case JNothing | JNull if optional_? => setBoxPlain(Empty)
+      case JString(s)                     => setFromString(s)
+      case other                          => setBoxPlain(FieldHelpers.expectedA("JString", other))
+    }
 }
 
 class PasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[String, OwnerType] with MandatoryTypedField[String]
+    extends Field[String, OwnerType]
+    with MandatoryTypedField[String]
     with PasswordTypedField {
 
   def this(rec: OwnerType, value: String) = {
@@ -161,7 +166,8 @@ class PasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 }
 
 class OptionalPasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[String, OwnerType] with OptionalTypedField[String]
+    extends Field[String, OwnerType]
+    with OptionalTypedField[String]
     with PasswordTypedField {
 
   def this(rec: OwnerType, value: Box[String]) = {

@@ -26,22 +26,24 @@ private[http] object Protocol {
     def isControl: Boolean
   }
   object Opcode {
-    def forCode(code: Byte): Opcode = code match {
-      case 0x0 ⇒ Continuation
-      case 0x1 ⇒ Text
-      case 0x2 ⇒ Binary
+    def forCode(code: Byte): Opcode =
+      code match {
+        case 0x0 ⇒ Continuation
+        case 0x1 ⇒ Text
+        case 0x2 ⇒ Binary
 
-      case 0x8 ⇒ Close
-      case 0x9 ⇒ Ping
-      case 0xA ⇒ Pong
+        case 0x8 ⇒ Close
+        case 0x9 ⇒ Ping
+        case 0xA ⇒ Pong
 
-      case b if (b & 0xf0) == 0 ⇒ Other(code)
-      case _ ⇒
-        throw new IllegalArgumentException(
-            f"Opcode must be 4bit long but was 0x$code%02X")
-    }
+        case b if (b & 0xf0) == 0 ⇒ Other(code)
+        case _ ⇒
+          throw new IllegalArgumentException(
+            f"Opcode must be 4bit long but was 0x$code%02X"
+          )
+      }
 
-    sealed abstract class AbstractOpcode private[Opcode](val code: Byte)
+    sealed abstract class AbstractOpcode private[Opcode] (val code: Byte)
         extends Opcode {
       def isControl: Boolean = (code & 0x8) != 0
     }
@@ -64,7 +66,7 @@ private[http] object Protocol {
     def isError(code: Int): Boolean = !(code == Regular || code == GoingAway)
     def isValid(code: Int): Boolean =
       ((code >= 1000) && (code <= 1003)) || (code >= 1007) && (code <= 1011) ||
-      (code >= 3000) && (code <= 4999)
+        (code >= 3000) && (code <= 4999)
 
     val Regular = 1000
     val GoingAway = 1001

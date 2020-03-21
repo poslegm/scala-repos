@@ -9,7 +9,8 @@ package object db extends PackageObject with WithPlay {
   type BsTubeInColl[A] = BsTube[A] with InColl[A]
 
   def recoverDuplicateKey[A](
-      f: WriteResult => A): PartialFunction[Throwable, A] = {
+      f: WriteResult => A
+  ): PartialFunction[Throwable, A] = {
     case e: WriteResult if e.code.contains(11000) => f(e)
   }
 

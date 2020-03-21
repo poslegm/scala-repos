@@ -16,7 +16,10 @@ class TestProbeSpec extends AkkaSpec with DefaultTimeout {
     "reply to futures" in {
       val tk = TestProbe()
       val future = tk.ref ? "hello"
-      tk.expectMsg(0 millis, "hello") // TestActor runs on CallingThreadDispatcher
+      tk.expectMsg(
+        0 millis,
+        "hello"
+      ) // TestActor runs on CallingThreadDispatcher
       tk.lastMessage.sender ! "world"
       future should be('completed)
       Await.result(future, timeout.duration) should ===("world")
@@ -47,7 +50,8 @@ class TestProbeSpec extends AkkaSpec with DefaultTimeout {
         case scala.util.Failure(e: AssertionError) ⇒
           if (!(e.getMessage contains expectedHint))
             fail(
-                s"failure message did not contain hint! Was: ${e.getMessage}, expected to contain $expectedHint")
+              s"failure message did not contain hint! Was: ${e.getMessage}, expected to contain $expectedHint"
+            )
         case scala.util.Failure(oth) ⇒
           fail(s"expected AssertionError but got: $oth")
         case scala.util.Success(result) ⇒
@@ -77,8 +81,7 @@ class TestProbeSpec extends AkkaSpec with DefaultTimeout {
     "have an AutoPilot" in {
       //#autopilot
       val probe = TestProbe()
-      probe.setAutoPilot(
-          new TestActor.AutoPilot {
+      probe.setAutoPilot(new TestActor.AutoPilot {
         def run(sender: ActorRef, msg: Any): TestActor.AutoPilot =
           msg match {
             case "stop" ⇒ TestActor.NoAutoPilot

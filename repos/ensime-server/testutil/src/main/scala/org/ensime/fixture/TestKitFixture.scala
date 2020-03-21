@@ -23,13 +23,16 @@ import akka.testkit._
   */
 trait TestKitFixture {
   require(
-      !this.isInstanceOf[TestKit],
-      "IsolatedActorSystems are incompatible with TestKit. Instead, 'import sys._'"
+    !this.isInstanceOf[TestKit],
+    "IsolatedActorSystems are incompatible with TestKit. Instead, 'import sys._'"
   )
 
   implicit protected val akkaTimeout: Timeout = ConfigFactory
     .load()
-    .getDuration("akka.test.default-timeout", TimeUnit.MILLISECONDS) milliseconds
+    .getDuration(
+      "akka.test.default-timeout",
+      TimeUnit.MILLISECONDS
+  ) milliseconds
 
   def withTestKit(testCode: TestKitFix => Any): Any
 }

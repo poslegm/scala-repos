@@ -29,16 +29,18 @@ object UnfoldExamples extends App {
   }
 
   object Unfold {
-    implicit def unfold1[F <: Poly, E, S, Out0 <: HList](
-        implicit unfold: UnfoldAux[F, E, S, E, Out0]): Unfold[F, E, S] =
+    implicit def unfold1[F <: Poly, E, S, Out0 <: HList](implicit
+        unfold: UnfoldAux[F, E, S, E, Out0]
+    ): Unfold[F, E, S] =
       new Unfold[F, E, S] {
         type Out = Out0
         def apply(s: S) = unfold(s)
       }
 
     trait ApplyUnfold[E] {
-      def apply[S, L <: HList](f: Poly)(s: S)(
-          implicit unfold: UnfoldAux[f.type, E, S, E, L]) = unfold(s)
+      def apply[S, L <: HList](f: Poly)(s: S)(implicit
+          unfold: UnfoldAux[f.type, E, S, E, L]
+      ) = unfold(s)
     }
 
     def unfold[E] = new ApplyUnfold[E] {}
@@ -59,11 +61,20 @@ object UnfoldExamples extends App {
     // shrink at the same time as the term S (read: seed) grows. The only structure assumed
     // for the (co-)sequence of seeds is that implied by the cases of F.
     implicit def unfold2[
-        F <: Poly, E, S, CoS, SS, OutH, OutT <: HList, PCoS, PCoSV](
-        implicit shrink: Case1.Aux[F, PCoS, (PCoSV, CoS)],
+        F <: Poly,
+        E,
+        S,
+        CoS,
+        SS,
+        OutH,
+        OutT <: HList,
+        PCoS,
+        PCoSV
+    ](implicit
+        shrink: Case1.Aux[F, PCoS, (PCoSV, CoS)],
         f: Case1.Aux[F, S, (OutH, SS)],
-        ut: UnfoldAux[F, E, SS, PCoS, OutT])
-      : UnfoldAux[F, E, S, CoS, OutH :: OutT] =
+        ut: UnfoldAux[F, E, SS, PCoS, OutT]
+    ): UnfoldAux[F, E, S, CoS, OutH :: OutT] =
       new UnfoldAux[F, E, S, CoS, OutH :: OutT] {
         def apply(s: S): OutH :: OutT = {
           val (outH, sn) = f(s :: HNil)
@@ -88,11 +99,12 @@ object UnfoldExamples extends App {
   object unfoldFibs extends Poly1 {
     implicit def case0 = at[_0](_ => (_0, _1))
     implicit def case1 = at[_1](_ => (_1, _2))
-    implicit def caseN[N <: Nat, FN <: Nat, FSN <: Nat, FSSN <: Nat](
-        implicit fn: Case.Aux[N, (FN, Succ[N])],
+    implicit def caseN[N <: Nat, FN <: Nat, FSN <: Nat, FSSN <: Nat](implicit
+        fn: Case.Aux[N, (FN, Succ[N])],
         fsn: Case.Aux[Succ[N], (FSN, Succ[Succ[N]])],
         sum: Sum.Aux[FN, FSN, FSSN],
-        fssn: Witness.Aux[FSSN]) =
+        fssn: Witness.Aux[FSSN]
+    ) =
       at[Succ[Succ[N]]](_ => ((fssn.value: FSSN), Succ[Succ[Succ[N]]]))
   }
 

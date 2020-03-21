@@ -22,12 +22,16 @@ import com.typesafe.tools.mima.core._
 import com.typesafe.tools.mima.core.MissingClassProblem
 import com.typesafe.tools.mima.core.MissingTypesProblem
 import com.typesafe.tools.mima.core.ProblemFilters._
-import com.typesafe.tools.mima.plugin.MimaKeys.{binaryIssueFilters, previousArtifact}
+import com.typesafe.tools.mima.plugin.MimaKeys.{
+  binaryIssueFilters,
+  previousArtifact
+}
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 
 object MimaBuild {
 
-  def excludeMember(fullName: String) = Seq(
+  def excludeMember(fullName: String) =
+    Seq(
       ProblemFilters.exclude[MissingMethodProblem](fullName),
       // Sometimes excluded methods have default arguments and
       // they are translated into public methods/fields($default$) in generated
@@ -39,14 +43,15 @@ object MimaBuild {
       ProblemFilters.exclude[IncompatibleResultTypeProblem](fullName),
       ProblemFilters.exclude[IncompatibleMethTypeProblem](fullName),
       ProblemFilters.exclude[IncompatibleFieldTypeProblem](fullName)
-  )
+    )
 
   // Exclude a single class
-  def excludeClass(className: String) = Seq(
+  def excludeClass(className: String) =
+    Seq(
       excludePackage(className),
       ProblemFilters.exclude[MissingClassProblem](className),
       ProblemFilters.exclude[MissingTypesProblem](className)
-  )
+    )
 
   // Exclude a Spark class, that is in the package org.apache.spark
   def excludeSparkClass(className: String) = {
@@ -65,9 +70,11 @@ object MimaBuild {
 
     // Read package-private excludes from file
     val classExcludeFilePath = file(
-        base.getAbsolutePath + "/.generated-mima-class-excludes")
+      base.getAbsolutePath + "/.generated-mima-class-excludes"
+    )
     val memberExcludeFilePath = file(
-        base.getAbsolutePath + "/.generated-mima-member-excludes")
+      base.getAbsolutePath + "/.generated-mima-member-excludes"
+    )
 
     val ignoredClasses: Seq[String] =
       if (!classExcludeFilePath.exists()) {
@@ -95,9 +102,10 @@ object MimaBuild {
     val previousSparkVersion = "1.6.0"
     val fullId = "spark-" + projectRef.project + "_2.11"
     mimaDefaultSettings ++ Seq(
-        previousArtifact := Some(organization % fullId % previousSparkVersion),
-        binaryIssueFilters ++= ignoredABIProblems(sparkHome, version.value),
-        sbt.Keys.resolvers +=
-          "MQTT Repository" at "https://repo.eclipse.org/content/repositories/paho-releases")
+      previousArtifact := Some(organization % fullId % previousSparkVersion),
+      binaryIssueFilters ++= ignoredABIProblems(sparkHome, version.value),
+      sbt.Keys.resolvers +=
+        "MQTT Repository" at "https://repo.eclipse.org/content/repositories/paho-releases"
+    )
   }
 }

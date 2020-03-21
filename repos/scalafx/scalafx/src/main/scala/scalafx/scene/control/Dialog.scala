@@ -46,10 +46,11 @@ trait DConvert[T, F] {
 
 object DConvert {
   def apply[T, F](implicit conv: DConvert[T, F]) = conv
-  implicit def t2r[T, R]: DConvert[T, T => R] = new DConvert[T, T => R] {
-    type S = R
-    def apply(t: T, f: T => R) = f(t)
-  }
+  implicit def t2r[T, R]: DConvert[T, T => R] =
+    new DConvert[T, T => R] {
+      type S = R
+      def apply(t: T, f: T => R) = f(t)
+    }
 }
 
 /**
@@ -80,7 +81,8 @@ object Dialog {
   * @define ORIGINALDOC Original Documentation]].
   */
 class Dialog[R](override val delegate: jfxsc.Dialog[R] = new jfxsc.Dialog[R]())
-    extends EventTarget(delegate) with SFXDelegate[jfxsc.Dialog[R]] {
+    extends EventTarget(delegate)
+    with SFXDelegate[jfxsc.Dialog[R]] {
 
   /**
     * Shows the dialog and waits for the user response (in other words, brings
@@ -102,9 +104,9 @@ class Dialog[R](override val delegate: jfxsc.Dialog[R] = new jfxsc.Dialog[R]())
     * @return An `Option` that contains the `result`.
     * @see $URL0#showAndWait showAndWait $ORIGINALDOC
     */
-  def showAndWait[F](j2s: F = { x: R =>
-    x
-  })(implicit convert: DConvert[R, F]): Option[convert.S] = {
+  def showAndWait[F](
+      j2s: F = { x: R => x }
+  )(implicit convert: DConvert[R, F]): Option[convert.S] = {
     val v = delegate.showAndWait()
     if (v.isPresent) Some(convert(v.get, j2s)) else None
   }
@@ -243,11 +245,11 @@ class Dialog[R](override val delegate: jfxsc.Dialog[R] = new jfxsc.Dialog[R]())
     * this callback must be specified.
     */
   def resultConverter: ObjectProperty[ButtonType => R] =
-    ObjectProperty(
-        (bt: ButtonType) => delegate.resultConverterProperty.getValue.call(bt))
+    ObjectProperty((bt: ButtonType) =>
+      delegate.resultConverterProperty.getValue.call(bt)
+    )
   def resultConverter_=(f: ButtonType => R): Unit = {
-    delegate.setResultConverter(
-        new jfxu.Callback[jfxsc.ButtonType, R] {
+    delegate.setResultConverter(new jfxu.Callback[jfxsc.ButtonType, R] {
       override def call(param: jfxsc.ButtonType): R = f(param)
     })
   }

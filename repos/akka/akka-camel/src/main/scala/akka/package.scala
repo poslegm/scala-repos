@@ -17,6 +17,7 @@ package object camel {
     * }}}
     */
   implicit def toActorRouteDefinition[T <: ProcessorDefinition[T]](
-      definition: ProcessorDefinition[T]) =
+      definition: ProcessorDefinition[T]
+  ) =
     new ActorRouteDefinition(definition)
 }

@@ -22,11 +22,13 @@ object Mimes {
   private def registerEncodingsIfNotSet(): Unit = {
     synchronized {
       if (EncodingGuesser.getSupportedEncodings.isEmpty) {
-        val enc = Set("UTF-8",
-                      "ISO-8859-1",
-                      "windows-1252",
-                      "MacRoman",
-                      EncodingGuesser.getDefaultEncoding)
+        val enc = Set(
+          "UTF-8",
+          "ISO-8859-1",
+          "windows-1252",
+          "MacRoman",
+          EncodingGuesser.getDefaultEncoding
+        )
         EncodingGuesser.setSupportedEncodings(enc)
       }
     }
@@ -46,18 +48,24 @@ trait Mimes {
   protected[this] def mimeUtil: MimeUtil2 = new MimeUtil2()
   quiet {
     mimeUtil.registerMimeDetector(
-        "eu.medsea.mimeutil.detector.MagicMimeMimeDetector")
+      "eu.medsea.mimeutil.detector.MagicMimeMimeDetector"
+    )
   }
   quiet {
     mimeUtil.registerMimeDetector(
-        "eu.medsea.mimeutil.detector.ExtensionMimeDetector")
+      "eu.medsea.mimeutil.detector.ExtensionMimeDetector"
+    )
   }
 
-  def bytesMime(content: Array[Byte], fallback: String = DefaultMime): String = {
+  def bytesMime(
+      content: Array[Byte],
+      fallback: String = DefaultMime
+  ): String = {
     detectMime(fallback) {
       MimeUtil2
         .getMostSpecificMimeType(
-            mimeUtil.getMimeTypes(content, new MimeType(fallback)))
+          mimeUtil.getMimeTypes(content, new MimeType(fallback))
+        )
         .toString
     }
   }
@@ -65,16 +73,20 @@ trait Mimes {
     detectMime(fallback) {
       MimeUtil2
         .getMostSpecificMimeType(
-            mimeUtil.getMimeTypes(file, new MimeType(fallback)))
+          mimeUtil.getMimeTypes(file, new MimeType(fallback))
+        )
         .toString
     }
   }
   def inputStreamMime(
-      input: InputStream, fallback: String = DefaultMime): String = {
+      input: InputStream,
+      fallback: String = DefaultMime
+  ): String = {
     detectMime(fallback) {
       MimeUtil2
         .getMostSpecificMimeType(
-            mimeUtil.getMimeTypes(input, new MimeType(fallback)))
+          mimeUtil.getMimeTypes(input, new MimeType(fallback))
+        )
         .toString
     }
   }
@@ -89,7 +101,8 @@ trait Mimes {
     detectMime(fallback) {
       MimeUtil2
         .getMostSpecificMimeType(
-            mimeUtil.getMimeTypes(path, new MimeType(fallback)))
+          mimeUtil.getMimeTypes(path, new MimeType(fallback))
+        )
         .toString
     }
   }
@@ -104,14 +117,15 @@ trait Mimes {
     detectMime(fallback) {
       MimeUtil2
         .getMostSpecificMimeType(
-            mimeUtil.getMimeTypes(new URL(url), new MimeType(fallback))
+          mimeUtil.getMimeTypes(new URL(url), new MimeType(fallback))
         )
         .toString
     }
   }
 
-  private def detectMime(fallback: String = DefaultMime)(
-      mimeDetect: => String): String = {
+  private def detectMime(
+      fallback: String = DefaultMime
+  )(mimeDetect: => String): String = {
     def errorHandler(t: Throwable) = {
       internalLogger.warn("There was an error detecting the mime type. ", t)
       fallback
@@ -124,8 +138,8 @@ trait Mimes {
 
   private def quiet(fn: => Unit): Unit = {
     allCatch.withApply(
-        internalLogger.warn(
-            "An error occurred while registering a mime type detector.", _)
+      internalLogger
+        .warn("An error occurred while registering a mime type detector.", _)
     )(fn)
   }
 

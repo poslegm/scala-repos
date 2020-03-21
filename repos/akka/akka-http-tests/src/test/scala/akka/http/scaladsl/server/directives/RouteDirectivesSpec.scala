@@ -28,8 +28,10 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
     "be lazy in its argument evaluation, independently of application style" in {
       var i = 0
       Put() ~> {
-        get { complete { i += 1; "get" } } ~ put { complete { i += 1; "put" } } ~
-        (post & complete { i += 1; "post" })
+        get { complete { i += 1; "get" } } ~ put {
+          complete { i += 1; "put" }
+        } ~
+          (post & complete { i += 1; "post" })
       } ~> check {
         responseAs[String] shouldEqual "put"
         i shouldEqual 1
@@ -39,7 +41,8 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
       "simple case without marshaller" in {
         Get() ~> {
           get & complete(
-              Promise.successful(HttpResponse(entity = "yup")).future)
+            Promise.successful(HttpResponse(entity = "yup")).future
+          )
         } ~> check { responseAs[String] shouldEqual "yup" }
       }
       "for successful futures and marshalling" in {
@@ -48,17 +51,22 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
         }
       }
       "for failed futures and marshalling" in EventFilter[RuntimeException](
-          occurrences = 1).intercept {
+        occurrences = 1
+      ).intercept {
         object TestException extends RuntimeException
-        Get() ~> complete(Promise.failed[String](TestException).future) ~> check {
+        Get() ~> complete(
+          Promise.failed[String](TestException).future
+        ) ~> check {
           status shouldEqual StatusCodes.InternalServerError
           responseAs[String] shouldEqual "There was an internal server error."
         }
       }
       "for futures failed with a RejectionError" in {
-        Get() ~> complete(Promise
-              .failed[String](RejectionError(AuthorizationFailedRejection))
-              .future) ~> check {
+        Get() ~> complete(
+          Promise
+            .failed[String](RejectionError(AuthorizationFailedRejection))
+            .future
+        ) ~> check {
           rejection shouldEqual AuthorizationFailedRejection
         }
       }
@@ -84,7 +92,8 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
                 import spray.json.DefaultJsonProtocol._
                 import SprayJsonSupport._
                 StatusCodes.BadRequest -> Map(
-                    "error" -> "User already Registered")
+                  "error" -> "User already Registered"
+                )
             }
           }
         }
@@ -102,16 +111,22 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
       val route = get & complete(Data("Ida", 83))
 
       import akka.http.scaladsl.model.headers.Accept
-      Get().withHeaders(Accept(MediaTypes.`application/json`)) ~> route ~> check {
+      Get().withHeaders(
+        Accept(MediaTypes.`application/json`)
+      ) ~> route ~> check {
         responseAs[String] shouldEqual """{
             |  "name": "Ida",
             |  "age": 83
             |}""".stripMarginWithNewline("\n")
       }
       Get().withHeaders(Accept(MediaTypes.`text/xml`)) ~> route ~> check {
-        responseAs[xml.NodeSeq] shouldEqual <data><name>Ida</name><age>83</age></data>
+        responseAs[
+          xml.NodeSeq
+        ] shouldEqual <data><name>Ida</name><age>83</age></data>
       }
-      Get().withHeaders(Accept(MediaTypes.`text/plain`)) ~> Route.seal(route) ~> check {
+      Get().withHeaders(Accept(MediaTypes.`text/plain`)) ~> Route.seal(
+        route
+      ) ~> check {
         status shouldEqual StatusCodes.NotAcceptable
       }
     }
@@ -123,11 +138,13 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
         redirect("/foo", Found)
       } ~> check {
         response shouldEqual HttpResponse(
-            status = 302,
-            entity = HttpEntity(
-                  ContentTypes.`text/html(UTF-8)`,
-                  "The requested resource temporarily resides under <a href=\"/foo\">this URI</a>."),
-            headers = Location("/foo") :: Nil)
+          status = 302,
+          entity = HttpEntity(
+            ContentTypes.`text/html(UTF-8)`,
+            "The requested resource temporarily resides under <a href=\"/foo\">this URI</a>."
+          ),
+          headers = Location("/foo") :: Nil
+        )
       }
     }
 
@@ -135,8 +152,10 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
       Get() ~> {
         redirect("/foo", NotModified)
       } ~> check {
-        response shouldEqual HttpResponse(304,
-                                          headers = Location("/foo") :: Nil)
+        response shouldEqual HttpResponse(
+          304,
+          headers = Location("/foo") :: Nil
+        )
       }
     }
   }
@@ -150,8 +169,7 @@ class RouteDirectivesSpec extends FreeSpec with GenericRoutingSpec {
     val jsonMarshaller: ToEntityMarshaller[Data] = jsonFormat2(Data.apply)
 
     val xmlMarshaller: ToEntityMarshaller[Data] = Marshaller.combined {
-      (data: Data) ⇒
-        <data><name>{ data.name }</name><age>{ data.age }</age></data>
+      (data: Data) ⇒ <data><name>{data.name}</name><age>{data.age}</age></data>
     }
 
     implicit val dataMarshaller: ToResponseMarshaller[Data] =

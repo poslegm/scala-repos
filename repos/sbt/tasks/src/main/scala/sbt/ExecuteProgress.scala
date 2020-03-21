@@ -19,10 +19,12 @@ private[sbt] trait ExecuteProgress[A[_]] {
     * The dependencies of `task` are `allDeps` and the subset of those dependencies that
     * have not completed are `pendingDeps`.
     */
-  def registered(state: S,
-                 task: A[_],
-                 allDeps: Iterable[A[_]],
-                 pendingDeps: Iterable[A[_]]): S
+  def registered(
+      state: S,
+      task: A[_],
+      allDeps: Iterable[A[_]],
+      pendingDeps: Iterable[A[_]]
+  ): S
 
   /**
     * Notifies that all of the dependencies of `task` have completed and `task` is therefore
@@ -60,17 +62,20 @@ private[sbt] trait ExecuteProgress[A[_]] {
 
 /** This module is experimental and subject to binary and source incompatible changes at any time. */
 private[sbt] object ExecuteProgress {
-  def empty[A[_]]: ExecuteProgress[A] = new ExecuteProgress[A] {
-    type S = Unit
-    def initial = ()
-    def registered(state: Unit,
-                   task: A[_],
-                   allDeps: Iterable[A[_]],
-                   pendingDeps: Iterable[A[_]]) = ()
-    def ready(state: Unit, task: A[_]) = ()
-    def workStarting(task: A[_]) = ()
-    def workFinished[T](task: A[T], result: Either[A[T], Result[T]]) = ()
-    def completed[T](state: Unit, task: A[T], result: Result[T]) = ()
-    def allCompleted(state: Unit, results: RMap[A, Result]) = ()
-  }
+  def empty[A[_]]: ExecuteProgress[A] =
+    new ExecuteProgress[A] {
+      type S = Unit
+      def initial = ()
+      def registered(
+          state: Unit,
+          task: A[_],
+          allDeps: Iterable[A[_]],
+          pendingDeps: Iterable[A[_]]
+      ) = ()
+      def ready(state: Unit, task: A[_]) = ()
+      def workStarting(task: A[_]) = ()
+      def workFinished[T](task: A[T], result: Either[A[T], Result[T]]) = ()
+      def completed[T](state: Unit, task: A[T], result: Result[T]) = ()
+      def allCompleted(state: Unit, results: RMap[A, Result]) = ()
+    }
 }

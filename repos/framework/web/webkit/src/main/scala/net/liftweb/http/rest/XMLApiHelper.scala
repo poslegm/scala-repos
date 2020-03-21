@@ -76,7 +76,7 @@ object CalculatorApi extends XmlApiHelper {
 <pre name="code" class="xml">
 &lt;api operation="sum" success="true">&lt;result>15&lt;/result>&lt;/api>
 </pre>
-  * 
+  *
   */
 trait XMLApiHelper {
 
@@ -95,10 +95,14 @@ trait XMLApiHelper {
     * of the root element will be set to the Failure's msg value.
     */
   implicit def canBoolToResponse(in: Box[Boolean]): LiftResponse =
-    buildResponse(in openOr false, in match {
-      case Failure(msg, _, _) => Full(Text(msg))
-      case _ => Empty
-    }, <xml:group/>)
+    buildResponse(
+      in openOr false,
+      in match {
+        case Failure(msg, _, _) => Full(Text(msg))
+        case _                  => Empty
+      },
+      <xml:group/>
+    )
 
   /**
     * Converts a boxed Seq[Node] into a response. If the Box is a Full,
@@ -109,11 +113,12 @@ trait XMLApiHelper {
     * element is returned with no contents and the "success" attribute set to
     * "false".
     */
-  implicit def canNodeToResponse(in: Box[Seq[Node]]): LiftResponse = in match {
-    case Full(n) => buildResponse(true, Empty, n)
-    case Failure(msg, _, _) => buildResponse(false, Full(Text(msg)), Text(""))
-    case _ => buildResponse(false, Empty, Text(""))
-  }
+  implicit def canNodeToResponse(in: Box[Seq[Node]]): LiftResponse =
+    in match {
+      case Full(n)            => buildResponse(true, Empty, n)
+      case Failure(msg, _, _) => buildResponse(false, Full(Text(msg)), Text(""))
+      case _                  => buildResponse(false, Empty, Text(""))
+    }
 
   /**
     * Converts a Seq[Node] into a root element with the "success" attribute
@@ -141,11 +146,10 @@ trait XMLApiHelper {
     * the root element based on the second element of the request path.
     */
   protected def operation: Option[NodeSeq] =
-    (for (req <- S.request) yield
-      req.path.partPath match {
-        case _ :: name :: _ => name
-        case _ => ""
-      }).map(Text(_))
+    (for (req <- S.request) yield req.path.partPath match {
+      case _ :: name :: _ => name
+      case _              => ""
+    }).map(Text(_))
 
   /**
     * The method that wraps the outer-most tag around the body. The success,
@@ -173,9 +177,13 @@ trait XMLApiHelper {
     * and the body
     */
   protected def buildResponse(
-      success: Boolean, msg: Box[NodeSeq], body: NodeSeq): LiftResponse =
+      success: Boolean,
+      msg: Box[NodeSeq],
+      body: NodeSeq
+  ): LiftResponse =
     XmlResponse(
-        createTag(body) % (successAttrName -> success) %
+      createTag(body) % (successAttrName -> success) %
         (new UnprefixedAttribute(operationAttrName, operation, Null)) %
-        (new UnprefixedAttribute(msgAttrName, msg, Null)))
+        (new UnprefixedAttribute(msgAttrName, msg, Null))
+    )
 }

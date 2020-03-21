@@ -2,9 +2,24 @@ package org.scalatra
 
 import java.io._
 import java.nio.charset.Charset
-import java.util.zip.{DeflaterOutputStream, GZIPInputStream, GZIPOutputStream, InflaterInputStream}
-import javax.servlet.http.{HttpServletRequest, HttpServletRequestWrapper, HttpServletResponse, HttpServletResponseWrapper}
-import javax.servlet.{ReadListener, ServletInputStream, ServletOutputStream, WriteListener}
+import java.util.zip.{
+  DeflaterOutputStream,
+  GZIPInputStream,
+  GZIPOutputStream,
+  InflaterInputStream
+}
+import javax.servlet.http.{
+  HttpServletRequest,
+  HttpServletRequestWrapper,
+  HttpServletResponse,
+  HttpServletResponseWrapper
+}
+import javax.servlet.{
+  ReadListener,
+  ServletInputStream,
+  ServletOutputStream,
+  WriteListener
+}
 
 import scala.util.Try
 
@@ -33,9 +48,11 @@ trait ContentEncoding {
 
 object ContentEncoding {
 
-  private def create(id: String,
-                     e: OutputStream => OutputStream,
-                     d: InputStream => InputStream): ContentEncoding = {
+  private def create(
+      id: String,
+      e: OutputStream => OutputStream,
+      d: InputStream => InputStream
+  ): ContentEncoding = {
     new ContentEncoding {
       override def name: String = id
       override def encode(out: OutputStream): OutputStream = e(out)
@@ -44,29 +61,35 @@ object ContentEncoding {
   }
 
   val GZip: ContentEncoding = {
-    create("gzip",
-           out => new GZIPOutputStream(out),
-           in => new GZIPInputStream(in))
+    create(
+      "gzip",
+      out => new GZIPOutputStream(out),
+      in => new GZIPInputStream(in)
+    )
   }
 
   val Deflate: ContentEncoding = {
-    create("deflate",
-           out => new DeflaterOutputStream(out),
-           in => new InflaterInputStream(in))
+    create(
+      "deflate",
+      out => new DeflaterOutputStream(out),
+      in => new InflaterInputStream(in)
+    )
   }
 
-  def forName(name: String): Option[ContentEncoding] = name.toLowerCase match {
-    case "gzip" => Some(GZip)
-    case "deflate" => Some(Deflate)
-    case _ => None
-  }
+  def forName(name: String): Option[ContentEncoding] =
+    name.toLowerCase match {
+      case "gzip"    => Some(GZip)
+      case "deflate" => Some(Deflate)
+      case _         => None
+    }
 }
 
 // - Request decoding --------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
 private class DecodedServletRequest(
-    req: HttpServletRequest, enc: ContentEncoding)
-    extends HttpServletRequestWrapper(req) {
+    req: HttpServletRequest,
+    enc: ContentEncoding
+) extends HttpServletRequestWrapper(req) {
 
   override lazy val getInputStream: EncodedInputStream = {
     val raw = req.getInputStream
@@ -75,7 +98,8 @@ private class DecodedServletRequest(
 
   override lazy val getReader: BufferedReader = {
     new BufferedReader(
-        new InputStreamReader(getInputStream, getCharacterEncoding))
+      new InputStreamReader(getInputStream, getCharacterEncoding)
+    )
   }
 
   override def getContentLength: Int = -1
@@ -99,8 +123,9 @@ private class EncodedInputStream(encoded: InputStream, raw: ServletInputStream)
 // ---------------------------------------------------------------------------------------------------------------------
 /** Encodes any output written to a servlet response. */
 private class EncodedServletResponse(
-    res: HttpServletResponse, enc: ContentEncoding)
-    extends HttpServletResponseWrapper(res) {
+    res: HttpServletResponse,
+    enc: ContentEncoding
+) extends HttpServletResponseWrapper(res) {
 
   // Object to flush when complete, if any.
   // Note that while this is essentially a mutable shared state, it's not really an issue here - or rather, if multiple
@@ -118,7 +143,8 @@ private class EncodedServletResponse(
 
   override lazy val getWriter: PrintWriter = {
     val writer = new PrintWriter(
-        new OutputStreamWriter(getOutputStream, getCharset))
+      new OutputStreamWriter(getOutputStream, getCharset)
+    )
     toFlush = Some(writer)
     writer
   }

@@ -49,25 +49,19 @@ class HttpClientDispatcherTest extends FunSuite {
     val c = res.reader.read(Int.MaxValue)
     assert(!c.isDefined)
     req.writer.write(Buf.Utf8("a"))
-    serverT.read().flatMap { c =>
-      serverT.write(c)
-    }
+    serverT.read().flatMap { c => serverT.write(c) }
     assert(Await.result(c, timeout) == Some(Buf.Utf8("a")))
 
     val cc = res.reader.read(Int.MaxValue)
     assert(!cc.isDefined)
     req.writer.write(Buf.Utf8("some other thing"))
-    serverT.read() flatMap { c =>
-      serverT.write(c)
-    }
+    serverT.read() flatMap { c => serverT.write(c) }
     assert(Await.result(cc, timeout) == Some(Buf.Utf8("some other thing")))
 
     val last = res.reader.read(Int.MaxValue)
     assert(!last.isDefined)
     req.close()
-    serverT.read() flatMap { c =>
-      serverT.write(c)
-    }
+    serverT.read() flatMap { c => serverT.write(c) }
     assert(Await.result(last, timeout).isEmpty)
   }
 
@@ -90,9 +84,9 @@ class HttpClientDispatcherTest extends FunSuite {
     val (clientT, serverT) = mkPair[Any, Any]
     val disp = new HttpClientDispatcher(clientT)
     val httpRes = new DefaultFullHttpResponse(
-        NettyHttp.HttpVersion.HTTP_1_1,
-        NettyHttp.HttpResponseStatus.OK,
-        Unpooled.wrappedBuffer("hello".getBytes("UTF-8"))
+      NettyHttp.HttpVersion.HTTP_1_1,
+      NettyHttp.HttpResponseStatus.OK,
+      Unpooled.wrappedBuffer("hello".getBytes("UTF-8"))
     )
     val req = Request()
     val f = disp(req)
@@ -104,7 +98,7 @@ class HttpClientDispatcherTest extends FunSuite {
 
   def chunk(content: String): NettyHttp.HttpContent =
     new NettyHttp.DefaultHttpContent(
-        BufAsByteBuf.Owned(Buf.Utf8(content))
+      BufAsByteBuf.Owned(Buf.Utf8(content))
     )
 
   test("chunked response") {
@@ -186,11 +180,12 @@ class HttpClientDispatcherTest extends FunSuite {
 
     val readp = new Promise[Nothing]
     val transport = OpTransport[Any, Any](
-        // First write the initial request.
-        Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
-        // Read the response
-        Read(readp),
-        Close(Future.Done))
+      // First write the initial request.
+      Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
+      // Read the response
+      Read(readp),
+      Close(Future.Done)
+    )
 
     val disp = new HttpClientDispatcher(transport)
     val req = Request()
@@ -217,13 +212,14 @@ class HttpClientDispatcherTest extends FunSuite {
 
     val chunkp = new Promise[Unit]
     val transport = OpTransport[Any, Any](
-        // First write the initial request.
-        Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
-        // Read the response
-        Read(Future.never),
-        // Then we try to write the chunk
-        Write(_.isInstanceOf[NettyHttp.HttpContent], chunkp),
-        Close(Future.Done))
+      // First write the initial request.
+      Write(_.isInstanceOf[NettyHttp.HttpRequest], Future.Done),
+      // Read the response
+      Read(Future.never),
+      // Then we try to write the chunk
+      Write(_.isInstanceOf[NettyHttp.HttpContent], chunkp),
+      Close(Future.Done)
+    )
 
     val disp = new HttpClientDispatcher(transport)
     val req = Request()
@@ -272,8 +268,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
     // send back an http ok to the dispatcher
     val sentResult = new NettyHttp.DefaultHttpResponse(
-        NettyHttp.HttpVersion.HTTP_1_1,
-        NettyHttp.HttpResponseStatus.OK
+      NettyHttp.HttpVersion.HTTP_1_1,
+      NettyHttp.HttpResponseStatus.OK
     )
     out.write(sentResult)
 
@@ -312,8 +308,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
     // send back an http ok to the dispatcher
     val sentResult = new NettyHttp.DefaultHttpResponse(
-        NettyHttp.HttpVersion.HTTP_1_1,
-        NettyHttp.HttpResponseStatus.OK
+      NettyHttp.HttpVersion.HTTP_1_1,
+      NettyHttp.HttpResponseStatus.OK
     )
     out.write(sentResult)
 
@@ -353,8 +349,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
       // send back an http ok to the dispatcher
       val sentResult = new NettyHttp.DefaultHttpResponse(
-          NettyHttp.HttpVersion.HTTP_1_1,
-          NettyHttp.HttpResponseStatus.OK
+        NettyHttp.HttpVersion.HTTP_1_1,
+        NettyHttp.HttpResponseStatus.OK
       )
       out.write(sentResult)
 
@@ -444,37 +440,40 @@ class HttpClientDispatcherTest extends FunSuite {
 
     var ops = _ops
 
-    def read() = ops match {
-      case Read(res) :: rest =>
-        ops = rest
-        res
-      case _ =>
-        fail(s"Expected ${ops.headOption}; got read()")
-    }
+    def read() =
+      ops match {
+        case Read(res) :: rest =>
+          ops = rest
+          res
+        case _ =>
+          fail(s"Expected ${ops.headOption}; got read()")
+      }
 
-    def write(in: In) = ops match {
-      case Write(accept, res) :: rest =>
-        if (!accept(in)) fail(s"Did not accept write $in")
+    def write(in: In) =
+      ops match {
+        case Write(accept, res) :: rest =>
+          if (!accept(in)) fail(s"Did not accept write $in")
 
-        ops = rest
-        res
-      case _ =>
-        fail(s"Expected ${ops.headOption}; got write($in)")
-    }
+          ops = rest
+          res
+        case _ =>
+          fail(s"Expected ${ops.headOption}; got write($in)")
+      }
 
-    def close(deadline: Time) = ops match {
-      case Close(res) :: rest =>
-        ops = rest
-        status = Status.Closed
-        res respond {
-          case Return(()) =>
-            onClose.setValue(new Exception("closed"))
-          case Throw(exc) =>
-            onClose.setValue(exc)
-        }
-      case _ =>
-        fail(s"Expected ${ops.headOption}; got close($deadline)")
-    }
+    def close(deadline: Time) =
+      ops match {
+        case Close(res) :: rest =>
+          ops = rest
+          status = Status.Closed
+          res respond {
+            case Return(()) =>
+              onClose.setValue(new Exception("closed"))
+            case Throw(exc) =>
+              onClose.setValue(exc)
+          }
+        case _ =>
+          fail(s"Expected ${ops.headOption}; got close($deadline)")
+      }
 
     var status: Status = Status.Open
     val onClose = new Promise[Throwable]

@@ -79,12 +79,14 @@ object OpenSSL {
   /**
     * Get a server
     */
-  def server(certificatePath: String,
-             keyPath: String,
-             caPath: String,
-             ciphers: String,
-             nextProtos: String,
-             useCache: Boolean = true): Option[Engine] = {
+  def server(
+      certificatePath: String,
+      keyPath: String,
+      caPath: String,
+      ciphers: String,
+      nextProtos: String,
+      useCache: Boolean = true
+  ): Option[Engine] = {
     try {
       synchronized {
         if (null == linker) linker = new Linker()
@@ -92,9 +94,11 @@ object OpenSSL {
     } catch {
       case e: Exception =>
         // This is a warning rather than a Throwable because we fall back to JSSE
-        log.log(Level.FINEST,
-                "APR/OpenSSL could not be loaded: " + e.getClass().getName() +
-                ": " + e.getMessage())
+        log.log(
+          Level.FINEST,
+          "APR/OpenSSL could not be loaded: " + e.getClass().getName() +
+            ": " + e.getMessage()
+        )
         return None
     }
 
@@ -102,19 +106,25 @@ object OpenSSL {
       val configMap = new java.util.HashMap[java.lang.String, java.lang.String]
       configMap.put("ssl.cert_path", certificatePath)
       configMap.put("ssl.key_path", keyPath)
-      configMap.put("ssl.cipher_spec", Option(ciphers).getOrElse {
-        defaultCiphers
-      })
+      configMap.put(
+        "ssl.cipher_spec",
+        Option(ciphers).getOrElse {
+          defaultCiphers
+        }
+      )
 
       if (caPath != null) configMap.put("ssl.ca_path", caPath)
 
       if (nextProtos != null) configMap.put("ssl.next_protos", nextProtos)
 
       val config = linker.configurationCtor.newInstance(
-          configMap.asInstanceOf[MapOfStrings])
+        configMap.asInstanceOf[MapOfStrings]
+      )
 
-      log.finest("OpenSSL context instantiated for certificate '%s'".format(
-              certificatePath))
+      log.finest(
+        "OpenSSL context instantiated for certificate '%s'"
+          .format(certificatePath)
+      )
 
       linker.contextHolderCtor
         .newInstance(mallocPool, config.asInstanceOf[AnyRef])
@@ -129,8 +139,8 @@ object OpenSSL {
 
     val engine: SSLEngine = linker.sslEngineCtor
       .newInstance(
-          contextHolder,
-          bufferPool
+        contextHolder,
+        bufferPool
       )
       .asInstanceOf[SSLEngine]
 

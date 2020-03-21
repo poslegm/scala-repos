@@ -13,10 +13,16 @@ import com.intellij.psi.util._
 import com.intellij.util.containers.{ContainerUtil, Stack}
 import org.jetbrains.plugins.scala.debugger.evaluation.ScalaCodeFragment
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScModifiableTypedDeclaration, ScModificationTrackerOwner}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{
+  ScModifiableTypedDeclaration,
+  ScModificationTrackerOwner
+}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunction
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScTypeDefinition
-import org.jetbrains.plugins.scala.lang.psi.impl.{ScPackageImpl, ScalaPsiManager}
+import org.jetbrains.plugins.scala.lang.psi.impl.{
+  ScPackageImpl,
+  ScalaPsiManager
+}
 import org.jetbrains.plugins.scala.lang.psi.types.ScType
 
 import scala.annotation.tailrec
@@ -55,19 +61,20 @@ object CachesUtil {
     *
     * Do not use this method directly. You should use annotations instead
     */
-  def getOrCreateKey[T](id: String): T = Option(keys.get(id)) match {
-    case Some(key) => key.asInstanceOf[T]
-    case None =>
-      synchronized {
-        Option(keys.get(id)) match {
-          case Some(key) => key.asInstanceOf[T]
-          case None =>
-            val res: T = Key.create[T](id).asInstanceOf[T]
-            keys.put(id, res)
-            res
+  def getOrCreateKey[T](id: String): T =
+    Option(keys.get(id)) match {
+      case Some(key) => key.asInstanceOf[T]
+      case None =>
+        synchronized {
+          Option(keys.get(id)) match {
+            case Some(key) => key.asInstanceOf[T]
+            case None =>
+              val res: T = Key.create[T](id).asInstanceOf[T]
+              keys.put(id, res)
+              res
+          }
         }
-      }
-  }
+    }
 
   //keys for getUserData
   val IMPLICIT_TYPE: Key[ScType] = Key.create("implicit.type")
@@ -87,28 +94,32 @@ object CachesUtil {
       e: Dom,
       key: Key[CachedValue[Result]],
       provider: => MyProvider[Dom, Result],
-      defaultValue: => Result): Result = {
+      defaultValue: => Result
+  ): Result = {
     var computed: CachedValue[Result] = e.getUserData(key)
     if (computed == null) {
       val manager = CachedValuesManager.getManager(e.getProject)
-      computed = manager.createCachedValue(new CachedValueProvider[Result] {
-        def compute(): CachedValueProvider.Result[Result] = {
-          val guard = getRecursionGuard(key.toString)
-          if (guard.currentStack().contains(e)) {
-            if (ScPackageImpl.isPackageObjectProcessing) {
-              throw new ScPackageImpl.DoNotProcessPackageObjectException
+      computed = manager.createCachedValue(
+        new CachedValueProvider[Result] {
+          def compute(): CachedValueProvider.Result[Result] = {
+            val guard = getRecursionGuard(key.toString)
+            if (guard.currentStack().contains(e)) {
+              if (ScPackageImpl.isPackageObjectProcessing) {
+                throw new ScPackageImpl.DoNotProcessPackageObjectException
+              }
+              val fun =
+                PsiTreeUtil.getContextOfType(e, true, classOf[ScFunction])
+              if (fun == null || fun.isProbablyRecursive) {
+                return new CachedValueProvider.Result(
+                  defaultValue,
+                  provider.getDependencyItem
+                )
+              } else {
+                fun.setProbablyRecursive(true)
+                throw new ProbablyRecursionException(e, (), key, Set(fun))
+              }
             }
-            val fun =
-              PsiTreeUtil.getContextOfType(e, true, classOf[ScFunction])
-            if (fun == null || fun.isProbablyRecursive) {
-              return new CachedValueProvider.Result(
-                  defaultValue, provider.getDependencyItem)
-            } else {
-              fun.setProbablyRecursive(true)
-              throw new ProbablyRecursionException(e, (), key, Set(fun))
-            }
-          }
-          guard.doPreventingRecursion(
+            guard.doPreventingRecursion(
               e,
               false /* todo: true? */,
               new Computable[CachedValueProvider.Result[Result]] {
@@ -123,24 +134,28 @@ object CachesUtil {
                       } finally set.foreach(_.setProbablyRecursive(false))
                     case t @ ProbablyRecursionException(ee, data, k, set)
                         if k == key =>
-                      val fun = PsiTreeUtil.getContextOfType(
-                          e, true, classOf[ScFunction])
+                      val fun = PsiTreeUtil
+                        .getContextOfType(e, true, classOf[ScFunction])
                       if (fun == null || fun.isProbablyRecursive) throw t
                       else {
                         fun.setProbablyRecursive(true)
-                        throw ProbablyRecursionException(
-                            ee, data, k, set + fun)
+                        throw ProbablyRecursionException(ee, data, k, set + fun)
                       }
                   }
                 }
-              }) match {
-            case null =>
-              new CachedValueProvider.Result(
-                  defaultValue, provider.getDependencyItem)
-            case notNull => notNull
+              }
+            ) match {
+              case null =>
+                new CachedValueProvider.Result(
+                  defaultValue,
+                  provider.getDependencyItem
+                )
+              case notNull => notNull
+            }
           }
-        }
-      }, false)
+        },
+        false
+      )
       e.putUserData(key, computed)
     }
     computed.getValue
@@ -154,9 +169,11 @@ object CachesUtil {
     *
     * Do not use this method directly. You should use CachedInsidePsiElement annotation instead
     */
-  def get[Dom <: PsiElement, T](e: Dom,
-                                key: Key[CachedValue[T]],
-                                provider: => CachedValueProvider[T]): T = {
+  def get[Dom <: PsiElement, T](
+      e: Dom,
+      key: Key[CachedValue[T]],
+      provider: => CachedValueProvider[T]
+  ): T = {
     var computed: CachedValue[T] = e.getUserData(key)
     if (computed == null) {
       val manager = CachedValuesManager.getManager(e.getProject)
@@ -192,24 +209,32 @@ object CachesUtil {
     * Do not use this method directly. You should use CachedMappedWithRecursionGuard annotation instead
     */
   def getMappedWithRecursionPreventingWithRollback[
-      Dom <: PsiElement, Data, Result](
+      Dom <: PsiElement,
+      Data,
+      Result
+  ](
       e: Dom,
       data: Data,
       key: Key[CachedValue[ConcurrentMap[Data, Result]]],
       builder: (Dom, Data) => Result,
       defaultValue: => Result,
-      dependencyItem: Object): Result = {
+      dependencyItem: Object
+  ): Result = {
     var computed: CachedValue[ConcurrentMap[Data, Result]] = e.getUserData(key)
     if (computed == null) {
       val manager = CachedValuesManager.getManager(e.getProject)
       computed = manager.createCachedValue(
-          new CachedValueProvider[ConcurrentMap[Data, Result]] {
-        def compute(
-            ): CachedValueProvider.Result[ConcurrentMap[Data, Result]] = {
-          new CachedValueProvider.Result(
-              ContainerUtil.newConcurrentMap[Data, Result](), dependencyItem)
-        }
-      }, false)
+        new CachedValueProvider[ConcurrentMap[Data, Result]] {
+          def compute(
+              ): CachedValueProvider.Result[ConcurrentMap[Data, Result]] = {
+            new CachedValueProvider.Result(
+              ContainerUtil.newConcurrentMap[Data, Result](),
+              dependencyItem
+            )
+          }
+        },
+        false
+      )
       e.putUserData(key, computed)
     }
     val map = computed.getValue
@@ -232,30 +257,37 @@ object CachesUtil {
           }
         } else {
           guard.doPreventingRecursion(
-              (e, data), false, new Computable[Result] {
-            def compute(): Result = {
-              try {
-                builder(e, data)
-              } catch {
-                case ProbablyRecursionException(`e`, `data`, k, set)
-                    if k == key =>
-                  try {
-                    builder(e, data)
-                  } finally set.foreach(_.setProbablyRecursive(false))
-                case t @ ProbablyRecursionException(ee, innerData, k, set)
-                    if k == key =>
-                  val fun =
-                    PsiTreeUtil.getContextOfType(e, true, classOf[ScFunction])
-                  if (fun == null || fun.isProbablyRecursive) throw t
-                  else {
-                    fun.setProbablyRecursive(true)
-                    throw ProbablyRecursionException(
-                        ee, innerData, k, set + fun)
-                  }
+            (e, data),
+            false,
+            new Computable[Result] {
+              def compute(): Result = {
+                try {
+                  builder(e, data)
+                } catch {
+                  case ProbablyRecursionException(`e`, `data`, k, set)
+                      if k == key =>
+                    try {
+                      builder(e, data)
+                    } finally set.foreach(_.setProbablyRecursive(false))
+                  case t @ ProbablyRecursionException(ee, innerData, k, set)
+                      if k == key =>
+                    val fun =
+                      PsiTreeUtil.getContextOfType(e, true, classOf[ScFunction])
+                    if (fun == null || fun.isProbablyRecursive) throw t
+                    else {
+                      fun.setProbablyRecursive(true)
+                      throw ProbablyRecursionException(
+                        ee,
+                        innerData,
+                        k,
+                        set + fun
+                      )
+                    }
+                }
               }
             }
-          }) match {
-            case null => defaultValue
+          ) match {
+            case null    => defaultValue
             case notNull => notNull
           }
         }
@@ -267,8 +299,9 @@ object CachesUtil {
     result
   }
 
-  def getDependentItem(element: PsiElement)(
-      dep_item: Object = enclosingModificationOwner(element)): Object = {
+  def getDependentItem(
+      element: PsiElement
+  )(dep_item: Object = enclosingModificationOwner(element)): Object = {
     element.getContainingFile match {
       case file: ScalaFile if file.isCompiled =>
         if (!ProjectRootManager
@@ -294,8 +327,9 @@ object CachesUtil {
     @tailrec
     def calc(element: PsiElement): ModificationTracker = {
       Option(
-          PsiTreeUtil.getContextOfType(
-              element, false, classOf[ScModificationTrackerOwner])) match {
+        PsiTreeUtil
+          .getContextOfType(element, false, classOf[ScModificationTrackerOwner])
+      ) match {
         case Some(owner) if owner.isValidModificationTrackerOwner() =>
           owner.getModificationTracker
         case Some(owner) => calc(owner.getContext)
@@ -311,17 +345,23 @@ object CachesUtil {
 
   @tailrec
   def updateModificationCount(
-      elem: PsiElement, incModCountOnTopLevel: Boolean = false): Unit = {
+      elem: PsiElement,
+      incModCountOnTopLevel: Boolean = false
+  ): Unit = {
     Option(
-        PsiTreeUtil.getContextOfType(elem,
-                                     false,
-                                     classOf[ScModificationTrackerOwner],
-                                     classOf[ScalaCodeFragment])) match {
+      PsiTreeUtil.getContextOfType(
+        elem,
+        false,
+        classOf[ScModificationTrackerOwner],
+        classOf[ScalaCodeFragment]
+      )
+    ) match {
       case Some(_: ScalaCodeFragment) =>
       //do not update on changes in dummy file
       case Some(owner: ScModificationTrackerOwner)
           if owner.isValidModificationTrackerOwner(
-              checkForChangedReturn = true) =>
+            checkForChangedReturn = true
+          ) =>
         owner.incModificationCount()
       case Some(owner) => updateModificationCount(owner.getContext)
       case _ if incModCountOnTopLevel =>
@@ -334,14 +374,15 @@ object CachesUtil {
       elem: Dom,
       data: Data,
       key: Key[T],
-      set: Set[ScFunction])
-      extends ControlThrowable
+      set: Set[ScFunction]
+  ) extends ControlThrowable
 
   private[this] val funsRetTpToCheck =
     new mutable.Queue[(ScModifiableTypedDeclaration, Project)]()
   private[this] val associatedQueueLock = new ReentrantLock(true)
   private def doQueueWithLock[T](
-      ac: mutable.Queue[(ScModifiableTypedDeclaration, Project)] => T): T = {
+      ac: mutable.Queue[(ScModifiableTypedDeclaration, Project)] => T
+  ): T = {
     try {
       associatedQueueLock.lock()
       ac(funsRetTpToCheck)
@@ -377,7 +418,9 @@ object CachesUtil {
             clearQueue()
           } else {
             updateModificationCount(
-                fun.getContext, incModCountOnTopLevel = true)
+              fun.getContext,
+              incModCountOnTopLevel = true
+            )
           }
         }
 
@@ -398,16 +441,14 @@ object CachesUtil {
   }
 
   def addModificationFunctionsReturnType(
-      fun: ScModifiableTypedDeclaration): Unit = {
+      fun: ScModifiableTypedDeclaration
+  ): Unit = {
     val project = fun.getProject
 
-    doQueueWithLock(
-        queue =>
-          {
-            if (!queue.exists(_._1 == fun)) {
-              queue.enqueue((fun, project)); needToCheckFuns = true
-            }
-        }
-    )
+    doQueueWithLock(queue => {
+      if (!queue.exists(_._1 == fun)) {
+        queue.enqueue((fun, project)); needToCheckFuns = true
+      }
+    })
   }
 }

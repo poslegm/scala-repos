@@ -55,37 +55,47 @@ import org.apache.spark.util.Utils
   * @tparam R the full accumulated data (result type)
   * @tparam T partial data that can be added in
   */
-class Accumulable[R, T] private (val id: Long,
-                                 // SI-8813: This must explicitly be a private val, or else scala 2.11 doesn't compile
-                                 @transient private val initialValue: R,
-                                 param: AccumulableParam[R, T],
-                                 val name: Option[String],
-                                 internal: Boolean,
-                                 private[spark] val countFailedValues: Boolean)
-    extends Serializable {
+class Accumulable[R, T] private (
+    val id: Long,
+    // SI-8813: This must explicitly be a private val, or else scala 2.11 doesn't compile
+    @transient private val initialValue: R,
+    param: AccumulableParam[R, T],
+    val name: Option[String],
+    internal: Boolean,
+    private[spark] val countFailedValues: Boolean
+) extends Serializable {
 
-  private[spark] def this(initialValue: R,
-                          param: AccumulableParam[R, T],
-                          name: Option[String],
-                          internal: Boolean,
-                          countFailedValues: Boolean) = {
-    this(Accumulators.newId(),
-         initialValue,
-         param,
-         name,
-         internal,
-         countFailedValues)
+  private[spark] def this(
+      initialValue: R,
+      param: AccumulableParam[R, T],
+      name: Option[String],
+      internal: Boolean,
+      countFailedValues: Boolean
+  ) = {
+    this(
+      Accumulators.newId(),
+      initialValue,
+      param,
+      name,
+      internal,
+      countFailedValues
+    )
   }
 
-  private[spark] def this(initialValue: R,
-                          param: AccumulableParam[R, T],
-                          name: Option[String],
-                          internal: Boolean) = {
+  private[spark] def this(
+      initialValue: R,
+      param: AccumulableParam[R, T],
+      name: Option[String],
+      internal: Boolean
+  ) = {
     this(initialValue, param, name, internal, false /* countFailedValues */ )
   }
 
   def this(
-      initialValue: R, param: AccumulableParam[R, T], name: Option[String]) =
+      initialValue: R,
+      param: AccumulableParam[R, T],
+      name: Option[String]
+  ) =
     this(initialValue, param, name, false /* internal */ )
 
   def this(initialValue: R, param: AccumulableParam[R, T]) =
@@ -119,7 +129,13 @@ class Accumulable[R, T] private (val id: Long,
     */
   private[spark] def copy(): Accumulable[R, T] = {
     new Accumulable[R, T](
-        id, initialValue, param, name, internal, countFailedValues)
+      id,
+      initialValue,
+      param,
+      name,
+      internal,
+      countFailedValues
+    )
   }
 
   /**
@@ -158,7 +174,8 @@ class Accumulable[R, T] private (val id: Long,
       value_
     } else {
       throw new UnsupportedOperationException(
-          "Can't read accumulator value in task")
+        "Can't read accumulator value in task"
+      )
     }
   }
 
@@ -181,7 +198,8 @@ class Accumulable[R, T] private (val id: Long,
       value_ = newValue
     } else {
       throw new UnsupportedOperationException(
-          "Can't assign accumulator value in task")
+        "Can't assign accumulator value in task"
+      )
     }
   }
 
@@ -201,7 +219,9 @@ class Accumulable[R, T] private (val id: Long,
     * Create an [[AccumulableInfo]] representation of this [[Accumulable]] with the provided values.
     */
   private[spark] def toInfo(
-      update: Option[Any], value: Option[Any]): AccumulableInfo = {
+      update: Option[Any],
+      value: Option[Any]
+  ): AccumulableInfo = {
     new AccumulableInfo(id, name, update, value, internal, countFailedValues)
   }
 
@@ -261,8 +281,9 @@ trait AccumulableParam[R, T] extends Serializable {
   def zero(initialValue: R): R
 }
 
-private[spark] class GrowableAccumulableParam[
-    R <% Growable[T] with TraversableOnce[T] with Serializable : ClassTag, T]
+private[spark] class GrowableAccumulableParam[R <% Growable[
+  T
+] with TraversableOnce[T] with Serializable: ClassTag, T]
     extends AccumulableParam[R, T] {
 
   def addAccumulator(growable: R, elem: T): R = {

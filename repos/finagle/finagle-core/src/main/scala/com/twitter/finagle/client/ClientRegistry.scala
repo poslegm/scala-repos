@@ -25,39 +25,41 @@ private[twitter] object ClientRegistry extends StackRegistry {
     * @note Experimental feature which will eventually be solved by exposing Service
     *       availability as a Var.
     */
-  def expAllRegisteredClientsResolved(): Future[Set[String]] = synchronized {
-    val fs: Iterable[Future[String]] = registrants.map {
-      case StackRegistry.Entry(_, _, params) =>
-        val param.Label(name) = params[param.Label]
-        val LoadBalancerFactory.Dest(va) = params[LoadBalancerFactory.Dest]
-        val param.Logger(log) = params[param.Logger]
+  def expAllRegisteredClientsResolved(): Future[Set[String]] =
+    synchronized {
+      val fs: Iterable[Future[String]] = registrants.map {
+        case StackRegistry.Entry(_, _, params) =>
+          val param.Label(name) = params[param.Label]
+          val LoadBalancerFactory.Dest(va) = params[LoadBalancerFactory.Dest]
+          val param.Logger(log) = params[param.Logger]
 
-        val resolved = va.changes.filter(_ != Addr.Pending).toFuture()
-        resolved.map { resolution =>
-          // the full resolution can be rather verbose for large clusters,
-          // so be stingy with our output
-          log.fine(s"${name} params ${params}")
-          if (log.isLoggable(Level.FINER)) {
-            log.finer(s"${name} resolved to ${resolution}")
-          } else {
-            resolution match {
-              case bound: Addr.Bound =>
-                log.info(
-                    s"${name} resolved to Addr.Bound, current size=${bound.addrs.size}")
-              case _ =>
-                log.info(s"${name} resolved to ${resolution}")
+          val resolved = va.changes.filter(_ != Addr.Pending).toFuture()
+          resolved.map { resolution =>
+            // the full resolution can be rather verbose for large clusters,
+            // so be stingy with our output
+            log.fine(s"${name} params ${params}")
+            if (log.isLoggable(Level.FINER)) {
+              log.finer(s"${name} resolved to ${resolution}")
+            } else {
+              resolution match {
+                case bound: Addr.Bound =>
+                  log.info(
+                    s"${name} resolved to Addr.Bound, current size=${bound.addrs.size}"
+                  )
+                case _ =>
+                  log.info(s"${name} resolved to ${resolution}")
+              }
             }
+
+            name
           }
+      }
 
-          name
-        }
+      val start = Time.now
+      Future.collect(fs.toSeq).map(_.toSet).ensure {
+        initialResolutionTime.incr((Time.now - start).inMilliseconds.toInt)
+      }
     }
-
-    val start = Time.now
-    Future.collect(fs.toSeq).map(_.toSet).ensure {
-      initialResolutionTime.incr((Time.now - start).inMilliseconds.toInt)
-    }
-  }
 }
 
 private[finagle] object RegistryEntryLifecycle {
@@ -67,9 +69,10 @@ private[finagle] object RegistryEntryLifecycle {
       val role = RegistryEntryLifecycle.role
 
       val description: String = "Maintains the ClientRegistry for the stack"
-      def parameters: Seq[Stack.Param[_]] = Seq(
+      def parameters: Seq[Stack.Param[_]] =
+        Seq(
           implicitly[Stack.Param[BindingFactory.Dest]]
-      )
+        )
 
       def make(
           params: Stack.Params,
@@ -81,7 +84,7 @@ private[finagle] object RegistryEntryLifecycle {
         // for the benefit of ClientRegistry.expAllRegisteredClientsResolved
         // which waits for these to become non-Pending
         val va = dest match {
-          case Name.Bound(va) => va
+          case Name.Bound(va)  => va
           case Name.Path(path) => Namer.resolve(baseDtab(), path)
         }
 
@@ -91,14 +94,17 @@ private[finagle] object RegistryEntryLifecycle {
 
         CanStackFrom
           .fromFun[ServiceFactory[Req, Rep]]
-          .toStackable(role, { factory: ServiceFactory[Req, Rep] =>
-            new ServiceFactoryProxy[Req, Rep](factory) {
-              override def close(deadline: Time): Future[Unit] = {
-                ClientRegistry.unregister(shown, next, params)
-                self.close(deadline)
+          .toStackable(
+            role,
+            { factory: ServiceFactory[Req, Rep] =>
+              new ServiceFactoryProxy[Req, Rep](factory) {
+                override def close(deadline: Time): Future[Unit] = {
+                  ClientRegistry.unregister(shown, next, params)
+                  self.close(deadline)
+                }
               }
             }
-          }) +: next
+          ) +: next
       }
     }
 }

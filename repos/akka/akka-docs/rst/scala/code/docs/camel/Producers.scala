@@ -38,8 +38,7 @@ object Producers {
       }
     }
 
-    class Forwarder(uri: String, target: ActorRef)
-        extends Actor with Producer {
+    class Forwarder(uri: String, target: ActorRef) extends Actor with Producer {
       def endpointUri = uri
 
       override def routeResponse(msg: Any) { target forward msg }
@@ -47,10 +46,13 @@ object Producers {
     val system = ActorSystem("some-system")
     val receiver = system.actorOf(Props[ResponseReceiver])
     val forwardResponse = system.actorOf(
-        Props(classOf[Forwarder],
-              this,
-              "http://localhost:8080/news/akka",
-              receiver))
+      Props(
+        classOf[Forwarder],
+        this,
+        "http://localhost:8080/news/akka",
+        receiver
+      )
+    )
     // the Forwarder sends out a request to the web page and forwards the response to
     // the ResponseReceiver
     forwardResponse ! "some request"
@@ -64,13 +66,13 @@ object Producers {
     class Transformer(uri: String) extends Actor with Producer {
       def endpointUri = uri
 
-      def upperCase(msg: CamelMessage) = msg.mapBody { body: String =>
-        body.toUpperCase
-      }
+      def upperCase(msg: CamelMessage) =
+        msg.mapBody { body: String => body.toUpperCase }
 
-      override def transformOutgoingMessage(msg: Any) = msg match {
-        case msg: CamelMessage => upperCase(msg)
-      }
+      override def transformOutgoingMessage(msg: Any) =
+        msg match {
+          case msg: CamelMessage => upperCase(msg)
+        }
     }
     //#TransformOutgoingMessage
   }
@@ -102,8 +104,7 @@ object Producers {
     val system = ActorSystem("some-system")
     val producer = system.actorOf(Props[Producer2])
 
-    producer ! CamelMessage(
-        "bar", Map(CamelMessage.MessageExchangeId -> "123"))
+    producer ! CamelMessage("bar", Map(CamelMessage.MessageExchangeId -> "123"))
     //#Correlate
   }
   object Sample6 {

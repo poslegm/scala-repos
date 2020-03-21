@@ -19,7 +19,10 @@ object ImportExpr {
   def parse(builder: ScalaPsiBuilder): Boolean = {
     val importExprMarker = builder.mark
     if (!StableId.parse(
-            builder, forImport = true, ScalaElementTypes.REFERENCE)) {
+          builder,
+          forImport = true,
+          ScalaElementTypes.REFERENCE
+        )) {
       builder error ErrMsg("identifier.expected")
       importExprMarker.drop()
       return true
@@ -31,9 +34,9 @@ object ImportExpr {
     }
     builder.advanceLexer()
     builder.getTokenType match {
-      case ScalaTokenTypes.tUNDER => builder.advanceLexer() //Ate _
+      case ScalaTokenTypes.tUNDER  => builder.advanceLexer() //Ate _
       case ScalaTokenTypes.tLBRACE => ImportSelectors parse builder
-      case _ => builder error ErrMsg("wrong.import.statment.end")
+      case _                       => builder error ErrMsg("wrong.import.statment.end")
     }
     importExprMarker.done(ScalaElementTypes.IMPORT_EXPR)
     true

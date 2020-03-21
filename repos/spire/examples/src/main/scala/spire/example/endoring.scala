@@ -23,15 +23,16 @@ object EndoRingExample extends App {
       * keeping track of the inclusions and exclusions separately. This let's
       * us ensure it is commutative and that we always have an inverse.
       */
-    implicit def PairedSetAbGroup[A] = new AbGroup[(Set[A], Set[A])] {
-      def op(a: (Set[A], Set[A]), b: (Set[A], Set[A])): (Set[A], Set[A]) = {
-        val (a1, a2) = a
-        val (b1, b2) = b
-        ((a1 -- b2) union (b1 -- a2), (a2 -- b1) union (b2 -- a1))
+    implicit def PairedSetAbGroup[A] =
+      new AbGroup[(Set[A], Set[A])] {
+        def op(a: (Set[A], Set[A]), b: (Set[A], Set[A])): (Set[A], Set[A]) = {
+          val (a1, a2) = a
+          val (b1, b2) = b
+          ((a1 -- b2) union (b1 -- a2), (a2 -- b1) union (b2 -- a1))
+        }
+        def inverse(a: (Set[A], Set[A])): (Set[A], Set[A]) = (a._2, a._1)
+        def id: (Set[A], Set[A]) = (Set.empty, Set.empty)
       }
-      def inverse(a: (Set[A], Set[A])): (Set[A], Set[A]) = (a._2, a._1)
-      def id: (Set[A], Set[A]) = (Set.empty, Set.empty)
-    }
   }
 
   implicit def set2pairedSet[A](a: Set[A]): (Set[A], Set[A]) = (a, Set.empty)
@@ -45,7 +46,7 @@ object EndoRingExample extends App {
     * for an abelian group `ab`. This defines addition as group addition after
     * applying the endomorphism and multiplication as composition.
     */
-  class EndoRing[A : AbGroup] extends Ring[Endo[A]] {
+  class EndoRing[A: AbGroup] extends Ring[Endo[A]] {
     def plus(f: Endo[A], g: Endo[A]): Endo[A] = a => f(a) |+| g(a)
     def negate(f: Endo[A]): Endo[A] = a => f(a).inverse
     def times(f: Endo[A], g: Endo[A]): Endo[A] = a => f(g(a))
@@ -58,7 +59,7 @@ object EndoRingExample extends App {
   }
 
   object EndoRing {
-    def apply[A : AbGroup] = new EndoRing[A]
+    def apply[A: AbGroup] = new EndoRing[A]
   }
 
   implicit val intEndoRing = EndoRing[Int]

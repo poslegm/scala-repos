@@ -111,14 +111,15 @@ class FixedPoint(val long: Long) extends AnyVal { lhs =>
     val q = lhs.long / d
     val r = lhs.long % d
     val qq = rhs * q
-    val rr = try {
-      (rhs * r) / d
-    } catch {
-      case _: FixedPointOverflow =>
-        val n = (SafeLong(rhs.long) * r) / d
-        if (n.isValidLong) new FixedPoint(n.toLong)
-        else throw new FixedPointOverflow(n.toLong)
-    }
+    val rr =
+      try {
+        (rhs * r) / d
+      } catch {
+        case _: FixedPointOverflow =>
+          val n = (SafeLong(rhs.long) * r) / d
+          if (n.isValidLong) new FixedPoint(n.toLong)
+          else throw new FixedPointOverflow(n.toLong)
+      }
     qq + rr
   }
 
@@ -165,8 +166,9 @@ class FixedPoint(val long: Long) extends AnyVal { lhs =>
   def /~(rhs: FixedPoint)(implicit scale: FixedScale): FixedPoint =
     (lhs - lhs % rhs) / rhs
 
-  def /%(rhs: FixedPoint)(
-      implicit scale: FixedScale): (FixedPoint, FixedPoint) = {
+  def /%(
+      rhs: FixedPoint
+  )(implicit scale: FixedScale): (FixedPoint, FixedPoint) = {
     val rem = lhs % rhs
     ((lhs - rem) / rhs, rem)
   }
@@ -285,8 +287,9 @@ object FixedPoint extends FixedPointInstances {
   def apply(s: String)(implicit scale: FixedScale): FixedPoint =
     apply(Rational(s))
 
-  def apply[@sp(Float, Double) A](a: A)(
-      implicit scale: FixedScale, fr: Fractional[A]): FixedPoint = {
+  def apply[@sp(Float, Double) A](
+      a: A
+  )(implicit scale: FixedScale, fr: Fractional[A]): FixedPoint = {
     val x = a * scale.denom
     if (x < fr.fromLong(Long.MinValue) || fr.fromLong(Long.MaxValue) < x)
       throw new FixedPointOverflow(x.toLong)
@@ -296,8 +299,9 @@ object FixedPoint extends FixedPointInstances {
 
 trait FixedPointInstances {
 
-  implicit def algebra(implicit scale: FixedScale)
-    : Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] =
+  implicit def algebra(implicit
+      scale: FixedScale
+  ): Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] =
     new Fractional[FixedPoint] with Order[FixedPoint] with Signed[FixedPoint] {
       def abs(x: FixedPoint): FixedPoint = x.abs
       def signum(x: FixedPoint): Int = x.signum
@@ -355,8 +359,9 @@ trait FixedPointInstances {
       def fromRational(n: Rational): FixedPoint = FixedPoint(n)
       def fromAlgebraic(n: Algebraic): FixedPoint =
         FixedPoint(
-            n.toRational.getOrElse(
-                Rational(n.toBigDecimal(MathContext.DECIMAL64))))
+          n.toRational
+            .getOrElse(Rational(n.toBigDecimal(MathContext.DECIMAL64)))
+        )
       def fromReal(n: Real): FixedPoint = FixedPoint(n.toRational)
 
       def fromType[B](b: B)(implicit ev: ConvertableFrom[B]): FixedPoint =
@@ -365,10 +370,11 @@ trait FixedPointInstances {
 
   import NumberTag._
   implicit final val FixedPointTag = new CustomTag[FixedPoint](
-      Approximate,
-      Some(FixedPoint.zero),
-      Some(FixedPoint.MinValue),
-      Some(FixedPoint.MaxValue),
-      true,
-      true)
+    Approximate,
+    Some(FixedPoint.zero),
+    Some(FixedPoint.MinValue),
+    Some(FixedPoint.MaxValue),
+    true,
+    true
+  )
 }

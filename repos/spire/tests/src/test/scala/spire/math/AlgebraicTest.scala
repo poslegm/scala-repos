@@ -12,7 +12,11 @@ import MathContext.{DECIMAL64, DECIMAL128}
 
 class AlgebraicTest extends SpireProperties {
 
-  def approximation(approx0: Algebraic, scale: Int, actual: BigDecimal): Unit = {
+  def approximation(
+      approx0: Algebraic,
+      scale: Int,
+      actual: BigDecimal
+  ): Unit = {
     val error = BigDecimal(10).pow(-scale)
     val approx = approx0.toBigDecimal(scale, RoundingMode.HALF_EVEN)
     (approx - error) should be <= actual
@@ -149,8 +153,8 @@ class AlgebraicTest extends SpireProperties {
   property("root isolation uses inverse transform to map upper-bound") {
     import spire.implicits._
     val roots = List(
-        Rational("16279/50267"),
-        Rational("223/175")
+      Rational("16279/50267"),
+      Rational("223/175")
     )
     val poly = roots.map(x => Polynomial.linear(Rational.one, -x)).qproduct
     val algebraicRoots = Algebraic.roots(poly)
@@ -166,9 +170,9 @@ class AlgebraicTest extends SpireProperties {
     // A failing special case of "algebraic root is zero", where the root is
     // closer to 0 then the approximation required to test.
     val roots = List(
-        Rational("8791167214431305472/8377325351665"),
-        Rational("12785/4238682313717812603653317580032"),
-        Rational("0")
+      Rational("8791167214431305472/8377325351665"),
+      Rational("12785/4238682313717812603653317580032"),
+      Rational("0")
     )
     val poly = roots.map(x => Polynomial.linear(Rational.one, -x)).qproduct
     val algebraicRoots = Algebraic.roots(poly)
@@ -187,9 +191,7 @@ class AlgebraicTest extends SpireProperties {
     // to drop the limits and just give it a bit of time to run.
     forAll(genRationalPoly, minSuccessful(20), maxSize(6)) { poly =>
       val apoly = poly.map(Algebraic(_))
-      Algebraic.roots(poly).forall { root =>
-        apoly(root).isZero
-      }
+      Algebraic.roots(poly).forall { root => apoly(root).isZero }
     }
   }
 
@@ -197,8 +199,7 @@ class AlgebraicTest extends SpireProperties {
     for {
       bytes <- Gen.listOf(arbitrary[Byte])
       signum <- arbitrary[Boolean].map(n => if (n) -1 else 1)
-    } yield
-      BigInt(signum, if (bytes.isEmpty) Array(0: Byte) else bytes.toArray)
+    } yield BigInt(signum, if (bytes.isEmpty) Array(0: Byte) else bytes.toArray)
 
   def genRational: Gen[Rational] =
     for {
@@ -228,13 +229,15 @@ class AlgebraicTest extends SpireProperties {
     def genRationalAlgebraic(depth: Int): Gen[RationalAlgebraic] =
       if (depth >= MaxDepth) genLeaf
       else
-        Gen.frequency((1, genAdd(depth + 1)),
-                      (1, genSub(depth + 1)),
-                      (1, genMul(depth + 1)),
-                      (1, genDiv(depth + 1)),
-                      (1, genNeg(depth + 1)),
-                      (1, genPow(depth + 1, arbitrary[Byte].map(_.toInt % 7))),
-                      (7, genLeaf))
+        Gen.frequency(
+          (1, genAdd(depth + 1)),
+          (1, genSub(depth + 1)),
+          (1, genMul(depth + 1)),
+          (1, genDiv(depth + 1)),
+          (1, genNeg(depth + 1)),
+          (1, genPow(depth + 1, arbitrary[Byte].map(_.toInt % 7))),
+          (7, genLeaf)
+        )
 
     def genLong: Gen[RationalAlgebraic] =
       for {
@@ -253,14 +256,13 @@ class AlgebraicTest extends SpireProperties {
         x <- arbitrary[Double]
       } yield RationalAlgebraic(Algebraic(x), Rational(x))
 
-    def genLeaf: Gen[RationalAlgebraic] = Gen.oneOf(
-        genRational.map { q =>
-          RationalAlgebraic(Algebraic(q), q)
-        },
+    def genLeaf: Gen[RationalAlgebraic] =
+      Gen.oneOf(
+        genRational.map { q => RationalAlgebraic(Algebraic(q), q) },
         genBigDecimal,
         genDouble,
         genLong
-    )
+      )
 
     def genAdd(depth: Int): Gen[RationalAlgebraic] =
       for {
@@ -283,8 +285,8 @@ class AlgebraicTest extends SpireProperties {
     def genDiv(depth: Int): Gen[RationalAlgebraic] =
       for {
         RationalAlgebraic(lhsA, lhsQ) <- genRationalAlgebraic(depth + 1)
-        RationalAlgebraic(rhsA, rhsQ) <- genRationalAlgebraic(depth + 1) if
-                                        (rhsQ.signum != 0)
+        RationalAlgebraic(rhsA, rhsQ) <- genRationalAlgebraic(depth + 1)
+        if (rhsQ.signum != 0)
       } yield RationalAlgebraic(lhsA / rhsA, lhsQ / rhsQ)
 
     def genNeg(depth: Int): Gen[RationalAlgebraic] =

@@ -13,7 +13,8 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
 
     "send 404 on a bad request" in {
       route(app, FakeRequest(GET, "/boum")).map(status(_)) mustBe Some(
-          NOT_FOUND)
+        NOT_FOUND
+      )
     }
   }
 

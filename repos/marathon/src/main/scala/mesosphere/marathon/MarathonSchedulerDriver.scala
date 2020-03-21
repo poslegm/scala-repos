@@ -13,10 +13,12 @@ object MarathonSchedulerDriver {
 
   //TODO: fix style issue and enable this scalastyle check
   //scalastyle:off method.length
-  def newDriver(config: MarathonConf,
-                httpConfig: HttpConf,
-                newScheduler: MarathonScheduler,
-                frameworkId: Option[FrameworkID]): SchedulerDriver = {
+  def newDriver(
+      config: MarathonConf,
+      httpConfig: HttpConf,
+      newScheduler: MarathonScheduler,
+      frameworkId: Option[FrameworkID]
+  ): SchedulerDriver = {
 
     log.info(s"Create new Scheduler Driver with frameworkId: $frameworkId")
 
@@ -39,11 +41,13 @@ object MarathonSchedulerDriver {
     } else if (httpConfig.sslKeystorePath.isDefined) {
       // ssl enabled, use https
       frameworkInfoBuilder.setWebuiUrl(
-          s"https://${config.hostname()}:${httpConfig.httpsPort()}")
+        s"https://${config.hostname()}:${httpConfig.httpsPort()}"
+      )
     } else {
       // ssl disabled, use http
       frameworkInfoBuilder.setWebuiUrl(
-          s"http://${config.hostname()}:${httpConfig.httpPort()}")
+        s"http://${config.hostname()}:${httpConfig.httpPort()}"
+      )
     }
 
     // set the authentication principal, if provided
@@ -62,8 +66,9 @@ object MarathonSchedulerDriver {
           } catch {
             case cause: Throwable =>
               throw new IOException(
-                  s"Error reading authentication secret from file [$secretFile]",
-                  cause)
+                s"Error reading authentication secret from file [$secretFile]",
+                cause
+              )
           }
         }
 
@@ -77,17 +82,21 @@ object MarathonSchedulerDriver {
     val implicitAcknowledgements = false
     val newDriver: MesosSchedulerDriver = credential match {
       case Some(cred) =>
-        new MesosSchedulerDriver(newScheduler,
-                                 frameworkInfo,
-                                 config.mesosMaster(),
-                                 implicitAcknowledgements,
-                                 cred)
+        new MesosSchedulerDriver(
+          newScheduler,
+          frameworkInfo,
+          config.mesosMaster(),
+          implicitAcknowledgements,
+          cred
+        )
 
       case None =>
-        new MesosSchedulerDriver(newScheduler,
-                                 frameworkInfo,
-                                 config.mesosMaster(),
-                                 implicitAcknowledgements)
+        new MesosSchedulerDriver(
+          newScheduler,
+          frameworkInfo,
+          config.mesosMaster(),
+          implicitAcknowledgements
+        )
     }
 
     log.debug("Finished creating new driver", newDriver)

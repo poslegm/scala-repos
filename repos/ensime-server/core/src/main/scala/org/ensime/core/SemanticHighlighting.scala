@@ -14,7 +14,8 @@ import scala.tools.refactoring.common.{CompilerAccess, EnrichedTrees}
 import org.ensime.api._
 
 class SemanticHighlighting(val global: RichPresentationCompiler)
-    extends CompilerAccess with EnrichedTrees {
+    extends CompilerAccess
+    with EnrichedTrees {
 
   import global._
 
@@ -60,8 +61,9 @@ class SemanticHighlighting(val global: RichPresentationCompiler)
             add(DeprecatedSymbol)
           }
 
-          if (sym.ownerChain.exists(_.annotations.exists(
-                      _.atp.toString().endsWith("deprecating")))) {
+          if (sym.ownerChain.exists(
+                _.annotations.exists(_.atp.toString().endsWith("deprecating"))
+              )) {
             add(DeprecatedSymbol)
           }
 
@@ -143,7 +145,7 @@ class SemanticHighlighting(val global: RichPresentationCompiler)
                 }
               }
 
-            case t: ApplyImplicitView => add(ImplicitConversionSymbol)
+            case t: ApplyImplicitView   => add(ImplicitConversionSymbol)
             case t: ApplyToImplicitArgs => add(ImplicitParamsSymbol)
 
             case TypeTree() =>

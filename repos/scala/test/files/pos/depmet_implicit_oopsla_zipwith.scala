@@ -9,11 +9,12 @@ trait ZipWith[N, S] {
   def zipWith: N => S => T = n => f => manyApp(n)(continually(f))
 }
 object ZipWith {
-  implicit def ZeroZipWith[S] = new ZipWith[Zero, S] {
-    type T = Stream[S]
+  implicit def ZeroZipWith[S] =
+    new ZipWith[Zero, S] {
+      type T = Stream[S]
 
-    def manyApp = n => xs => xs
-  }
+      def manyApp = n => xs => xs
+    }
 
   implicit def SuccZipWith[N, S, R](implicit zw: ZipWith[N, R]) =
     new ZipWith[Succ[N], S => R] {
@@ -22,7 +23,7 @@ object ZipWith {
       def zapp[A, B](xs: Stream[A => B], ys: Stream[A]): Stream[B] =
         (xs, ys) match {
           case (cons(f, fs), cons(s, ss)) => cons(f(s), zapp(fs, ss))
-          case (_, _) => Stream.empty
+          case (_, _)                     => Stream.empty
         }
 
       def manyApp =
@@ -31,7 +32,7 @@ object ZipWith {
             ss =>
               n match {
                 case Succ(i) => zw.manyApp(i)(zapp(xs, ss))
-        }
+              }
     }
 }
 

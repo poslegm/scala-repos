@@ -50,7 +50,8 @@ object ParallelTransition extends AnimationStatics {
     * @return JavaFX $PT extracted from `v`.
     */
   implicit def sfxParallelTransition2jfx(
-      v: ParallelTransition): jfxa.ParallelTransition =
+      v: ParallelTransition
+  ): jfxa.ParallelTransition =
     if (v != null) v.delegate else null
 }
 
@@ -69,8 +70,9 @@ object ParallelTransition extends AnimationStatics {
   * @define ANSARG The child $ANS of this $PT.
   */
 class ParallelTransition(
-    override val delegate: jfxa.ParallelTransition = new jfxa.ParallelTransition)
-    extends Transition(delegate) with SFXDelegate[jfxa.ParallelTransition] {
+    override val delegate: jfxa.ParallelTransition = new jfxa.ParallelTransition
+) extends Transition(delegate)
+    with SFXDelegate[jfxa.ParallelTransition] {
 
   // CONSTRUCTORS
 

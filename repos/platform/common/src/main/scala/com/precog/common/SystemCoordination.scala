@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -39,14 +39,16 @@ import scalaz.syntax.plus._
 
 trait CheckpointCoordination {
   def loadYggCheckpoint(
-      bifrost: String): Option[Validation[Error, YggCheckpoint]]
+      bifrost: String
+  ): Option[Validation[Error, YggCheckpoint]]
   def saveYggCheckpoint(bifrost: String, checkpoint: YggCheckpoint): Unit
 }
 
 object CheckpointCoordination {
   object Noop extends CheckpointCoordination {
     def loadYggCheckpoint(
-        bifrost: String): Option[Validation[Error, YggCheckpoint]] = None
+        bifrost: String
+    ): Option[Validation[Error, YggCheckpoint]] = None
     def saveYggCheckpoint(bifrost: String, checkpoint: YggCheckpoint): Unit =
       ()
   }
@@ -54,16 +56,21 @@ object CheckpointCoordination {
 
 trait SystemCoordination extends CheckpointCoordination {
   def registerRelayAgent(
-      agent: String, blockSize: Int): Validation[Error, EventRelayState]
+      agent: String,
+      blockSize: Int
+  ): Validation[Error, EventRelayState]
   def unregisterRelayAgent(agent: String, state: EventRelayState): Unit
 
-  def renewEventRelayState(agent: String,
-                           offset: Long,
-                           producerId: Int,
-                           blockSize: Int): Validation[Error, EventRelayState]
+  def renewEventRelayState(
+      agent: String,
+      offset: Long,
+      producerId: Int,
+      blockSize: Int
+  ): Validation[Error, EventRelayState]
   def saveEventRelayState(
       agent: String,
-      state: EventRelayState): Validation[Error, EventRelayState]
+      state: EventRelayState
+  ): Validation[Error, EventRelayState]
 
   def close(): Unit
 }
@@ -79,8 +86,10 @@ case object EmptyIdSequence extends IdSequence {
 }
 
 case class IdSequenceBlock(
-    producerId: Int, firstSequenceId: Int, lastSequenceId: Int)
-    extends IdSequence {
+    producerId: Int,
+    firstSequenceId: Int,
+    lastSequenceId: Int
+) extends IdSequence {
   private val currentSequenceId = new AtomicInteger(firstSequenceId)
 
   def isEmpty() = currentSequenceId.get > lastSequenceId
@@ -105,14 +114,17 @@ object IdSequenceBlock {
 }
 
 case class EventRelayState(
-    offset: Long, nextSequenceId: Int, idSequenceBlock: IdSequenceBlock) {
+    offset: Long,
+    nextSequenceId: Int,
+    idSequenceBlock: IdSequenceBlock
+) {
   override def toString() =
     "EventRelayState[ offset: %d prodId: %d seqId: %d in [%d,%d] ]".format(
-        offset,
-        idSequenceBlock.producerId,
-        nextSequenceId,
-        idSequenceBlock.firstSequenceId,
-        idSequenceBlock.lastSequenceId
+      offset,
+      idSequenceBlock.producerId,
+      nextSequenceId,
+      idSequenceBlock.firstSequenceId,
+      idSequenceBlock.lastSequenceId
     )
 }
 

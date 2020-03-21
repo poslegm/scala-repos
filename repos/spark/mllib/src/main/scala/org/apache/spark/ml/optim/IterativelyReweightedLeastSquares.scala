@@ -33,8 +33,8 @@ private[ml] class IterativelyReweightedLeastSquaresModel(
     val coefficients: DenseVector,
     val intercept: Double,
     val diagInvAtWA: DenseVector,
-    val numIterations: Int)
-    extends Serializable
+    val numIterations: Int
+) extends Serializable
 
 /**
   * Implements the method of iteratively reweighted least squares (IRLS) which is used to solve
@@ -57,13 +57,13 @@ private[ml] class IterativelyReweightedLeastSquaresModel(
   */
 private[ml] class IterativelyReweightedLeastSquares(
     val initialModel: WeightedLeastSquaresModel,
-    val reweightFunc: (Instance, WeightedLeastSquaresModel) => (Double,
-    Double),
+    val reweightFunc: (Instance, WeightedLeastSquaresModel) => (Double, Double),
     val fitIntercept: Boolean,
     val regParam: Double,
     val maxIter: Int,
-    val tol: Double)
-    extends Logging with Serializable {
+    val tol: Double
+) extends Logging
+    with Serializable {
 
   def fit(instances: RDD[Instance]): IterativelyReweightedLeastSquaresModel = {
 
@@ -85,10 +85,11 @@ private[ml] class IterativelyReweightedLeastSquares(
 
       // Estimate new model
       model = new WeightedLeastSquares(
-          fitIntercept,
-          regParam,
-          standardizeFeatures = false,
-          standardizeLabel = false).fit(newInstances)
+        fitIntercept,
+        regParam,
+        standardizeFeatures = false,
+        standardizeLabel = false
+      ).fit(newInstances)
 
       // Check convergence
       val oldCoefficients = oldModel.coefficients
@@ -98,7 +99,9 @@ private[ml] class IterativelyReweightedLeastSquares(
         math.max(math.abs(x), math.abs(y))
       }
       val maxTol = math.max(
-          maxTolOfCoefficients, math.abs(oldModel.intercept - model.intercept))
+        maxTolOfCoefficients,
+        math.abs(oldModel.intercept - model.intercept)
+      )
 
       if (maxTol < tol) {
         converged = true
@@ -114,6 +117,10 @@ private[ml] class IterativelyReweightedLeastSquares(
     }
 
     new IterativelyReweightedLeastSquaresModel(
-        model.coefficients, model.intercept, model.diagInvAtWA, iter)
+      model.coefficients,
+      model.intercept,
+      model.diagInvAtWA,
+      iter
+    )
   }
 }

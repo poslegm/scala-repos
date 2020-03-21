@@ -27,7 +27,9 @@ import math.{Pi, log1p}
   * @author dlwh
   */
 case class Gaussian(mu: Double, sigma: Double)(implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf
+    extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf
     with HasInverseCdf {
   private val inner = rand.gaussian(mu, sigma)
   def draw() = inner.get()
@@ -109,7 +111,8 @@ object Gaussian
   def distribution(p: (Double, Double)) = new Gaussian(p._1, math.sqrt(p._2))
 
   def likelihoodFunction(
-      stats: SufficientStatistic): DiffFunction[(Double, Double)] =
+      stats: SufficientStatistic
+  ): DiffFunction[(Double, Double)] =
     new DiffFunction[Parameter] {
       val normPiece = math.log(2 * Pi)
       def calculate(x: (Double, Double)) = {
@@ -120,12 +123,12 @@ object Gaussian
         else {
           val objective =
             n *
-            ((variance + mean * mean) / sigma2 / 2 - mean * mu / sigma2 +
+              ((variance + mean * mean) / sigma2 / 2 - mean * mu / sigma2 +
                 mu * mu / sigma2 / 2 + .5 * (math.log(sigma2) + normPiece))
           val gradientMu = n * (-mean / sigma2 + mu / sigma2)
           val gradientSig =
             n *
-            (-(variance + mean * mean) / sigma2 / sigma2 / 2 +
+              (-(variance + mean * mean) / sigma2 / sigma2 / 2 +
                 mean * mu / sigma2 / sigma2 - mu * mu / sigma2 / sigma2 / 2 +
                 .5 / (sigma2))
           (objective, (gradientMu, gradientSig))

@@ -7,8 +7,7 @@ class Admin extends javax.swing.JApplet {
       jScrollPane.synchronized {
         def someFunction() = {}
         //scala.concurrent.ops.spawn {someFunction ()}
-        jScrollPane.addComponentListener(
-            new java.awt.event.ComponentAdapter {
+        jScrollPane.addComponentListener(new java.awt.event.ComponentAdapter {
           override def componentShown(e: java.awt.event.ComponentEvent) = {
             someFunction(); jScrollPane.removeComponentListener(this)
           }
@@ -20,8 +19,6 @@ class Admin extends javax.swing.JApplet {
 // t2630.scala
 object Test {
   def meh(xs: List[Any]) {
-    xs map { x =>
-      (new AnyRef {})
-    }
+    xs map { x => (new AnyRef {}) }
   }
 }

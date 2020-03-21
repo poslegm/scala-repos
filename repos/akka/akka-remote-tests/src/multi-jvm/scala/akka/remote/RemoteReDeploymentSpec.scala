@@ -97,7 +97,8 @@ abstract class RemoteReDeploymentSlowMultiJvmSpec
 }
 
 abstract class RemoteReDeploymentMultiJvmSpec
-    extends MultiNodeSpec(RemoteReDeploymentMultiJvmSpec) with STMultiNodeSpec
+    extends MultiNodeSpec(RemoteReDeploymentMultiJvmSpec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   def sleepAfterKill: FiniteDuration
@@ -132,7 +133,8 @@ abstract class RemoteReDeploymentMultiJvmSpec
           within(sleepAfterKill) {
             expectMsg("PostStop")
             expectNoMsg()
-          } else expectNoMsg(sleepAfterKill)
+          }
+        else expectNoMsg(sleepAfterKill)
         awaitAssert(node(second), 10.seconds, 100.millis)
       }
 

@@ -20,8 +20,10 @@ trait Collections {
     *  the function is true for all the triples.
     */
   @tailrec final def corresponds3[A, B, C](
-      xs1: List[A], xs2: List[B], xs3: List[C])(
-      f: (A, B, C) => Boolean): Boolean =
+      xs1: List[A],
+      xs2: List[B],
+      xs3: List[C]
+  )(f: (A, B, C) => Boolean): Boolean =
     (if (xs1.isEmpty) xs2.isEmpty && xs3.isEmpty
      else
        !xs2.isEmpty && !xs3.isEmpty && f(xs1.head, xs2.head, xs3.head) &&
@@ -68,19 +70,22 @@ trait Collections {
       head
     }
 
-  final def collectFirst[A, B](as: List[A])(
-      pf: PartialFunction[A, B]): Option[B] = {
+  final def collectFirst[A, B](
+      as: List[A]
+  )(pf: PartialFunction[A, B]): Option[B] = {
     @tailrec
-    def loop(rest: List[A]): Option[B] = rest match {
-      case Nil => None
-      case a :: as if pf.isDefinedAt(a) => Some(pf(a))
-      case a :: as => loop(as)
-    }
+    def loop(rest: List[A]): Option[B] =
+      rest match {
+        case Nil                          => None
+        case a :: as if pf.isDefinedAt(a) => Some(pf(a))
+        case a :: as                      => loop(as)
+      }
     loop(as)
   }
 
   final def map2[A, B, C](xs1: List[A], xs2: List[B])(
-      f: (A, B) => C): List[C] = {
+      f: (A, B) => C
+  ): List[C] = {
     val lb = new ListBuffer[C]
     var ys1 = xs1
     var ys2 = xs2
@@ -96,14 +101,17 @@ trait Collections {
     *  `f` maps all elements to themselves.
     */
   final def map2Conserve[A <: AnyRef, B](xs: List[A], ys: List[B])(
-      f: (A, B) => A): List[A] = {
+      f: (A, B) => A
+  ): List[A] = {
     // Note to developers: there exists a duplication between this function and `List#mapConserve`.
     // If any successful optimization attempts or other changes are made, please rehash them there too.
     @tailrec
-    def loop(mapped: ListBuffer[A],
-             unchanged: List[A],
-             pending0: List[A],
-             pending1: List[B]): List[A] = {
+    def loop(
+        mapped: ListBuffer[A],
+        unchanged: List[A],
+        pending0: List[A],
+        pending1: List[B]
+    ): List[A] = {
       if (pending0.isEmpty || pending1.isEmpty) {
         if (mapped eq null) unchanged
         else mapped.prependToList(unchanged)
@@ -117,7 +125,7 @@ trait Collections {
         } else {
           val b = if (mapped eq null) new ListBuffer[A] else mapped
           var xc = unchanged
-          while ( (xc ne pending0) && (xc ne pending1)) {
+          while ((xc ne pending0) && (xc ne pending1)) {
             b += xc.head
             xc = xc.tail
           }
@@ -132,13 +140,15 @@ trait Collections {
   }
 
   final def map3[A, B, C, D](xs1: List[A], xs2: List[B], xs3: List[C])(
-      f: (A, B, C) => D): List[D] = {
+      f: (A, B, C) => D
+  ): List[D] = {
     if (xs1.isEmpty || xs2.isEmpty || xs3.isEmpty) Nil
     else
       f(xs1.head, xs2.head, xs3.head) :: map3(xs1.tail, xs2.tail, xs3.tail)(f)
   }
   final def flatMap2[A, B, C](xs1: List[A], xs2: List[B])(
-      f: (A, B) => List[C]): List[C] = {
+      f: (A, B) => List[C]
+  ): List[C] = {
     var lb: ListBuffer[C] = null
     var ys1 = xs1
     var ys2 = xs2
@@ -154,8 +164,9 @@ trait Collections {
     if (lb eq null) Nil else lb.result
   }
 
-  final def flatCollect[A, B](elems: List[A])(
-      pf: PartialFunction[A, Traversable[B]]): List[B] = {
+  final def flatCollect[A, B](
+      elems: List[A]
+  )(pf: PartialFunction[A, Traversable[B]]): List[B] = {
     val lb = new ListBuffer[B]
     for (x <- elems; if pf isDefinedAt x) lb ++= pf(x)
 
@@ -190,16 +201,18 @@ trait Collections {
   }
 
   // @inline
-  final def findOrElse[A](xs: TraversableOnce[A])(p: A => Boolean)(
-      orElse: => A): A = {
+  final def findOrElse[A](
+      xs: TraversableOnce[A]
+  )(p: A => Boolean)(orElse: => A): A = {
     xs find p getOrElse orElse
   }
 
   final def mapFrom[A, A1 >: A, B](xs: List[A])(f: A => B): Map[A1, B] = {
     Map[A1, B](xs map (x => (x, f(x))): _*)
   }
-  final def linkedMapFrom[A, A1 >: A, B](xs: List[A])(
-      f: A => B): mutable.LinkedHashMap[A1, B] = {
+  final def linkedMapFrom[A, A1 >: A, B](
+      xs: List[A]
+  )(f: A => B): mutable.LinkedHashMap[A1, B] = {
     mutable.LinkedHashMap[A1, B](xs map (x => (x, f(x))): _*)
   }
 
@@ -215,7 +228,8 @@ trait Collections {
     lb.toList
   }
   final def collectMap2[A, B, C](xs1: List[A], xs2: List[B])(
-      p: (A, B) => Boolean): Map[A, B] = {
+      p: (A, B) => Boolean
+  ): Map[A, B] = {
     if (xs1.isEmpty || xs2.isEmpty) return Map()
 
     val buf = immutable.Map.newBuilder[A, B]
@@ -232,7 +246,8 @@ trait Collections {
     buf.result()
   }
   final def foreach2[A, B](xs1: List[A], xs2: List[B])(
-      f: (A, B) => Unit): Unit = {
+      f: (A, B) => Unit
+  ): Unit = {
     var ys1 = xs1
     var ys2 = xs2
     while (!ys1.isEmpty && !ys2.isEmpty) {
@@ -242,7 +257,8 @@ trait Collections {
     }
   }
   final def foreach3[A, B, C](xs1: List[A], xs2: List[B], xs3: List[C])(
-      f: (A, B, C) => Unit): Unit = {
+      f: (A, B, C) => Unit
+  ): Unit = {
     var ys1 = xs1
     var ys2 = xs2
     var ys3 = xs3
@@ -254,7 +270,8 @@ trait Collections {
     }
   }
   final def exists2[A, B](xs1: List[A], xs2: List[B])(
-      f: (A, B) => Boolean): Boolean = {
+      f: (A, B) => Boolean
+  ): Boolean = {
     var ys1 = xs1
     var ys2 = xs2
     while (!ys1.isEmpty && !ys2.isEmpty) {
@@ -266,7 +283,8 @@ trait Collections {
     false
   }
   final def exists3[A, B, C](xs1: List[A], xs2: List[B], xs3: List[C])(
-      f: (A, B, C) => Boolean): Boolean = {
+      f: (A, B, C) => Boolean
+  ): Boolean = {
     var ys1 = xs1
     var ys2 = xs2
     var ys3 = xs3
@@ -280,7 +298,8 @@ trait Collections {
     false
   }
   final def forall3[A, B, C](xs1: List[A], xs2: List[B], xs3: List[C])(
-      f: (A, B, C) => Boolean): Boolean = {
+      f: (A, B, C) => Boolean
+  ): Boolean = {
     var ys1 = xs1
     var ys2 = xs2
     var ys3 = xs3

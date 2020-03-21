@@ -28,11 +28,21 @@
 package scalafx.scene
 
 import javafx.scene.{input => jfxsi, layout => jfxsl, paint => jfxsp}
-import javafx.{collections => jfxc, event => jfxe, geometry => jfxg, scene => jfxs, util => jfxu}
+import javafx.{
+  collections => jfxc,
+  event => jfxe,
+  geometry => jfxg,
+  scene => jfxs,
+  util => jfxu
+}
 
 import scala.language.implicitConversions
 import scalafx.Includes._
-import scalafx.beans.property.{ObjectProperty, ReadOnlyDoubleProperty, ReadOnlyObjectProperty}
+import scalafx.beans.property.{
+  ObjectProperty,
+  ReadOnlyDoubleProperty,
+  ReadOnlyObjectProperty
+}
 import scalafx.collections._
 import scalafx.delegate.SFXDelegate
 import scalafx.geometry.NodeOrientation
@@ -53,8 +63,8 @@ object Scene {
   *                 [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/Group.html Group]] as root Node.
   */
 class Scene(
-    override val delegate: jfxs.Scene = new jfxs.Scene(new jfxs.Group()))
-    extends SFXDelegate[jfxs.Scene] {
+    override val delegate: jfxs.Scene = new jfxs.Scene(new jfxs.Group())
+) extends SFXDelegate[jfxs.Scene] {
 
   /**
     * Creates a Scene with a [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/Group.html Group]] as root Node with a
@@ -93,7 +103,11 @@ class Scene(
     * @param depthBuffer The depth buffer flag
     */
   def this(
-      parent: Parent, width: Double, height: Double, depthBuffer: Boolean) =
+      parent: Parent,
+      width: Double,
+      height: Double,
+      depthBuffer: Boolean
+  ) =
     this(new jfxs.Scene(parent, width, height, depthBuffer))
 
   /**
@@ -118,11 +132,13 @@ class Scene(
     * @param depthBuffer The depth buffer flag
     * @param antiAliasing The required scene anti-aliasing.
     */
-  def this(parent: Parent,
-           width: Double,
-           height: Double,
-           depthBuffer: Boolean,
-           antiAliasing: SceneAntialiasing) =
+  def this(
+      parent: Parent,
+      width: Double,
+      height: Double,
+      depthBuffer: Boolean,
+      antiAliasing: SceneAntialiasing
+  ) =
     this(new jfxs.Scene(parent, width, height, depthBuffer, antiAliasing))
 
   /**
@@ -135,13 +151,15 @@ class Scene(
     * @param depthBuffer The depth buffer flag
     * @param antiAliasing The required scene anti-aliasing.
     */
-  def this(width: Double,
-           height: Double,
-           depthBuffer: Boolean,
-           antiAliasing: SceneAntialiasing) =
+  def this(
+      width: Double,
+      height: Double,
+      depthBuffer: Boolean,
+      antiAliasing: SceneAntialiasing
+  ) =
     this(
-        new jfxs.Scene(
-            new jfxs.Group(), width, height, depthBuffer, antiAliasing))
+      new jfxs.Scene(new jfxs.Group(), width, height, depthBuffer, antiAliasing)
+    )
 
   /**
     * Creates a Scene for a specific root Node with a specific size and fill.
@@ -175,14 +193,16 @@ class Scene(
   /**
     * Returns Nodes children from this Scene's `root`.
     */
-  def getChildren = root.value match {
-    case group: jfxs.Group => group.getChildren
-    case pane: jfxsl.Pane => pane.getChildren
-    case _ =>
-      throw new IllegalStateException(
+  def getChildren =
+    root.value match {
+      case group: jfxs.Group => group.getChildren
+      case pane: jfxsl.Pane  => pane.getChildren
+      case _ =>
+        throw new IllegalStateException(
           "Cannot access children of root: " + root + "\n" +
-          "Use a class that extends Group or Pane, or override the getChildren method.")
-  }
+            "Use a class that extends Group or Pane, or override the getChildren method."
+        )
+    }
 
   /**
     * Returns scene's antialiasing setting.
@@ -271,7 +291,8 @@ class Scene(
     */
   def onContextMenuRequested = delegate.onContextMenuRequestedProperty
   def onContextMenuRequested_=(
-      v: jfxe.EventHandler[_ >: jfxsi.ContextMenuEvent]) {
+      v: jfxe.EventHandler[_ >: jfxsi.ContextMenuEvent]
+  ) {
     onContextMenuRequested() = v
   }
 
@@ -329,7 +350,8 @@ class Scene(
     */
   def onInputMethodTextChanged = delegate.onInputMethodTextChangedProperty
   def onInputMethodTextChanged_=(
-      v: jfxe.EventHandler[_ >: jfxsi.InputMethodEvent]) {
+      v: jfxe.EventHandler[_ >: jfxsi.InputMethodEvent]
+  ) {
     onInputMethodTextChanged() = v
   }
 
@@ -550,8 +572,10 @@ class Scene(
   /**
     * Gets the list of mnemonics for this `Scene`.
     */
-  def getMnemonics: jfxc.ObservableMap[
-      jfxsi.KeyCombination, jfxc.ObservableList[jfxsi.Mnemonic]] =
+  def getMnemonics
+      : jfxc.ObservableMap[jfxsi.KeyCombination, jfxc.ObservableList[
+        jfxsi.Mnemonic
+      ]] =
     delegate.getMnemonics
 
   /**

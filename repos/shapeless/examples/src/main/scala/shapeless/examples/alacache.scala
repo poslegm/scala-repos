@@ -101,14 +101,15 @@ trait CachedFacet extends ProductISOFacet {
         if (found != null) found.get else extracted
       }
     }
-    def intern(c: C): C = cache.synchronized {
-      val found = cache.get(c)
-      if (found != null) found.get
-      else {
-        cache.put(c, new WeakReference(c))
-        c
+    def intern(c: C): C =
+      cache.synchronized {
+        val found = cache.get(c)
+        if (found != null) found.get
+        else {
+          cache.put(c, new WeakReference(c))
+          c
+        }
       }
-    }
     def alive(): Long = cache.synchronized { cache.size() }
     def aliveExtracted(): Long = uncache.synchronized { uncache.size() }
   }
@@ -128,32 +129,43 @@ trait CachedFacet extends ProductISOFacet {
 }
 
 trait CachedCaseClassDefns
-    extends LogFacet with CachedFacet with ProductFacet
-    with PolymorphicEqualityFacet with CopyFacet with ToStringFacet {
+    extends LogFacet
+    with CachedFacet
+    with ProductFacet
+    with PolymorphicEqualityFacet
+    with CopyFacet
+    with ToStringFacet {
 
   trait CaseClassOps
-      extends LogOps with CachedOps with ProductOps with PolymorphicEqualityOps
-      with CopyOps with ToStringOps
+      extends LogOps
+      with CachedOps
+      with ProductOps
+      with PolymorphicEqualityOps
+      with CopyOps
+      with ToStringOps
 
   trait CaseClassCompanion extends CachedCompanion
 
   trait CaseClass
-      extends LogMethods with CachedMethods with ProductMethods
-      with PolymorphicEqualityMethods with CopyMethods with ToStringMethods {
-    self: C =>
-  }
+      extends LogMethods
+      with CachedMethods
+      with ProductMethods
+      with PolymorphicEqualityMethods
+      with CopyMethods
+      with ToStringMethods { self: C => }
 
   val ops: CaseClassOps
 
-  def Ops[Repr0 <: HList, LRepr0 <: HList, P0 <: Product, N <: Nat](
-      implicit gen0: Generic.Aux[C, Repr0],
+  def Ops[Repr0 <: HList, LRepr0 <: HList, P0 <: Product, N <: Nat](implicit
+      gen0: Generic.Aux[C, Repr0],
       lgen0: LabelledGeneric.Aux[C, LRepr0],
       len: Length.Aux[Repr0, N],
       toInt: ToInt[N],
       tup: Tupler.Aux[Repr0, P0],
       pgen0: Generic.Aux[P0, Repr0],
       typ0: Typeable[C],
-      tag0: ClassTag[C]) = {
+      tag0: ClassTag[C]
+  ) = {
     val fqn = tag0.runtimeClass.getName
     new CaseClassOps {
       type Repr = Repr0
@@ -182,7 +194,7 @@ object ALaCacheDemo extends App {
     val ops = Ops
     object Foo extends CaseClassCompanion
     // keep the constructor private so everybody has to go through .apply
-    class Foo private[FooDefns](val i: Int, val s: String) extends CaseClass {
+    class Foo private[FooDefns] (val i: Int, val s: String) extends CaseClass {
       def stuff = log.info("hello")
     }
   }

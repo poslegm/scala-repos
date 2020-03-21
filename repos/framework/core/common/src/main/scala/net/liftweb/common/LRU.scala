@@ -58,8 +58,10 @@ private[common] trait LinkedListElem[T1, T2] {
   *        after `[[expired]]` is invoked.
   */
 class LRUMap[K, V](
-    initMaxSize: Int, loadFactor: Box[Float], expiredFunc: ((K, V) => Unit)*)
-    extends LinkedListElem[K, V] {
+    initMaxSize: Int,
+    loadFactor: Box[Float],
+    expiredFunc: ((K, V) => Unit)*
+) extends LinkedListElem[K, V] {
   import java.util.HashMap
 
   def this(size: Int) = this(size, Empty)
@@ -96,13 +98,14 @@ class LRUMap[K, V](
     *
     * Accessing a key this way will mark its value as most-recently-used.
     */
-  def get(key: K): Box[V] = localMap.get(key) match {
-    case null => Empty
-    case v =>
-      v.remove
-      addAtHead(v)
-      Full(v.value2)
-  }
+  def get(key: K): Box[V] =
+    localMap.get(key) match {
+      case null => Empty
+      case v =>
+        v.remove
+        addAtHead(v)
+        Full(v.value2)
+    }
 
   /**
     * Unsafe version of `[[get]]`.
@@ -113,7 +116,8 @@ class LRUMap[K, V](
     */
   def apply(key: K) =
     get(key).openOrThrowException(
-        "Simulating what happens with a regular Map, use contains(key) to check if it is present or not.")
+      "Simulating what happens with a regular Map, use contains(key) to check if it is present or not."
+    )
 
   /**
     * Check if the given `key` exists in the map. A key may not be in the map
@@ -184,7 +188,7 @@ class LRUMap[K, V](
       toRemove.remove
       localMap.remove(toRemove.value1)
       expired(toRemove.value1, toRemove.value2)
-      expiredFunc.foreach(_ (toRemove.value1, toRemove.value2))
+      expiredFunc.foreach(_(toRemove.value1, toRemove.value2))
     }
   }
 

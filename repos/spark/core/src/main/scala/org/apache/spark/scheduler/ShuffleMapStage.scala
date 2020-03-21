@@ -40,8 +40,8 @@ private[spark] class ShuffleMapStage(
     parents: List[Stage],
     firstJobId: Int,
     callSite: CallSite,
-    val shuffleDep: ShuffleDependency[_, _, _])
-    extends Stage(id, rdd, numTasks, parents, firstJobId, callSite) {
+    val shuffleDep: ShuffleDependency[_, _, _]
+) extends Stage(id, rdd, numTasks, parents, firstJobId, callSite) {
 
   private[this] var _mapStageJobs: List[ActiveJob] = Nil
 
@@ -90,8 +90,9 @@ private[spark] class ShuffleMapStage(
   override def findMissingPartitions(): Seq[Int] = {
     val missing = (0 until numPartitions).filter(id => outputLocs(id).isEmpty)
     assert(
-        missing.size == numPartitions - _numAvailableOutputs,
-        s"${missing.size} missing, expected ${numPartitions - _numAvailableOutputs}")
+      missing.size == numPartitions - _numAvailableOutputs,
+      s"${missing.size} missing, expected ${numPartitions - _numAvailableOutputs}"
+    )
     missing
   }
 
@@ -139,8 +140,14 @@ private[spark] class ShuffleMapStage(
     }
     if (becameUnavailable) {
       logInfo(
-          "%s is now unavailable on executor %s (%d/%d, %s)".format(
-              this, execId, _numAvailableOutputs, numPartitions, isAvailable))
+        "%s is now unavailable on executor %s (%d/%d, %s)".format(
+          this,
+          execId,
+          _numAvailableOutputs,
+          numPartitions,
+          isAvailable
+        )
+      )
     }
   }
 }

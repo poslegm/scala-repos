@@ -96,10 +96,12 @@ class BackoffSupervisorSpec extends AkkaSpec with ImplicitSender {
         }
 
         assertCustomStrategy(
-            create(onStopOptions().withSupervisorStrategy(stoppingStrategy)))
+          create(onStopOptions().withSupervisorStrategy(stoppingStrategy))
+        )
 
-        assertCustomStrategy(create(
-                onFailureOptions().withSupervisorStrategy(restartingStrategy)))
+        assertCustomStrategy(
+          create(onFailureOptions().withSupervisorStrategy(restartingStrategy))
+        )
       }
     }
 
@@ -141,8 +143,7 @@ class BackoffSupervisorSpec extends AkkaSpec with ImplicitSender {
           awaitAssert {
             supervisor ! BackoffSupervisor.GetCurrentChild
             // new instance
-            expectMsgType[BackoffSupervisor.CurrentChild].ref.get should !==(
-                c1)
+            expectMsgType[BackoffSupervisor.CurrentChild].ref.get should !==(c1)
           }
 
           supervisor ! "hello"
@@ -164,12 +165,18 @@ class BackoffSupervisorSpec extends AkkaSpec with ImplicitSender {
         }
 
         assertManualReset(
-            create(onStopOptions(ManualChild.props(testActor)).withManualReset
-                  .withSupervisorStrategy(stoppingStrategy)))
+          create(
+            onStopOptions(ManualChild.props(testActor)).withManualReset
+              .withSupervisorStrategy(stoppingStrategy)
+          )
+        )
 
-        assertManualReset(create(
-                onFailureOptions(ManualChild.props(testActor)).withManualReset
-                  .withSupervisorStrategy(restartingStrategy)))
+        assertManualReset(
+          create(
+            onFailureOptions(ManualChild.props(testActor)).withManualReset
+              .withSupervisorStrategy(restartingStrategy)
+          )
+        )
       }
     }
   }

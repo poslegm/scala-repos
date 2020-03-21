@@ -41,14 +41,14 @@ trait DateTimeTypedField extends TypedField[Calendar] {
   }
 
   def setFromAny(in: Any): Box[Calendar] =
-    toDate(in).flatMap(d => setBox(Full(dateToCal(d)))) or genericSetFromAny(
-        in)
+    toDate(in).flatMap(d => setBox(Full(dateToCal(d)))) or genericSetFromAny(in)
 
-  def setFromString(s: String): Box[Calendar] = s match {
-    case null | "" if optional_? => setBox(Empty)
-    case null | "" => setBox(Failure(notOptionalErrorMessage))
-    case other => setBox(tryo(dateToCal(parseInternetDate(s))))
-  }
+  def setFromString(s: String): Box[Calendar] =
+    s match {
+      case null | "" if optional_? => setBox(Empty)
+      case null | ""               => setBox(Failure(notOptionalErrorMessage))
+      case other                   => setBox(tryo(dateToCal(parseInternetDate(s))))
+    }
 
   private def elem =
     S.fmapFunc(SFuncHolder(this.setFromAny(_))) { funcName =>
@@ -61,27 +61,28 @@ trait DateTimeTypedField extends TypedField[Calendar] {
   def toForm: Box[NodeSeq] =
     uniqueFieldId match {
       case Full(id) => Full(elem % ("id" -> id))
-      case _ => Full(elem)
+      case _        => Full(elem)
     }
 
   def asJs =
     valueBox.map(v => Str(formats.dateFormat.format(v.getTime))) openOr JsNull
 
   def asJValue: JValue = asJString(v => formats.dateFormat.format(v.getTime))
-  def setFromJValue(jvalue: JValue) = setFromJString(jvalue) { v =>
-    formats.dateFormat
-      .parse(v)
-      .map(d =>
-            {
+  def setFromJValue(jvalue: JValue) =
+    setFromJString(jvalue) { v =>
+      formats.dateFormat
+        .parse(v)
+        .map(d => {
           val cal = Calendar.getInstance
           cal.setTime(d)
           cal
-      })
-  }
+        })
+    }
 }
 
 class DateTimeField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[Calendar, OwnerType] with MandatoryTypedField[Calendar]
+    extends Field[Calendar, OwnerType]
+    with MandatoryTypedField[Calendar]
     with DateTimeTypedField {
 
   def owner = rec
@@ -95,7 +96,8 @@ class DateTimeField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 }
 
 class OptionalDateTimeField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-    extends Field[Calendar, OwnerType] with OptionalTypedField[Calendar]
+    extends Field[Calendar, OwnerType]
+    with OptionalTypedField[Calendar]
     with DateTimeTypedField {
 
   def owner = rec

@@ -47,7 +47,8 @@ object TableSelectionModel {
     * @since 8.0
     */
   implicit def sfxTableSelectionModel2jfx[T](
-      tsm: TableSelectionModel[T]): jfxsc.TableSelectionModel[T] =
+      tsm: TableSelectionModel[T]
+  ): jfxsc.TableSelectionModel[T] =
     if (tsm != null) tsm.delegate else null
 }
 
@@ -60,8 +61,8 @@ object TableSelectionModel {
   * @since 8.0
   */
 class TableSelectionModel[T](
-    override val delegate: jfxsc.TableSelectionModel[T])
-    extends MultipleSelectionModel[T](delegate)
+    override val delegate: jfxsc.TableSelectionModel[T]
+) extends MultipleSelectionModel[T](delegate)
     with SFXDelegate[jfxsc.TableSelectionModel[T]] {
 
   //    protected abstract int getItemCount()
@@ -140,10 +141,12 @@ class TableSelectionModel[T](
   /**
     * Selects the cells in the range (minRow, minColumn) to (maxRow, maxColumn), inclusive.
     */
-  def selectRange(minRow: Int,
-                  minColumn: TableColumnBase[T, _],
-                  maxRow: Int,
-                  maxColumn: TableColumnBase[T, _]) {
+  def selectRange(
+      minRow: Int,
+      minColumn: TableColumnBase[T, _],
+      maxRow: Int,
+      maxColumn: TableColumnBase[T, _]
+  ) {
     delegate.selectRange(minRow, minColumn, maxRow, maxColumn)
   }
 }

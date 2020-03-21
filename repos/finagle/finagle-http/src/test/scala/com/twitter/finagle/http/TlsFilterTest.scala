@@ -12,10 +12,11 @@ class TlsFilterTest extends FunSuite {
   import Version._
   import Method._
 
-  def svc(p: Promise[Request]) = Service.mk { (req: Request) =>
-    p.setValue(req)
-    Future.never
-  }
+  def svc(p: Promise[Request]) =
+    Service.mk { (req: Request) =>
+      p.setValue(req)
+      Future.never
+    }
 
   test("filter") {
     val host = "test.host"
@@ -30,7 +31,8 @@ class TlsFilterTest extends FunSuite {
     val host = "test.host"
     val p = new Promise[Request]
     val stk = TlsFilter.module.toStack(
-        Stack.Leaf(TlsFilter.role, ServiceFactory.const(svc(p))))
+      Stack.Leaf(TlsFilter.role, ServiceFactory.const(svc(p)))
+    )
     val fac =
       stk.make(Stack.Params.empty + Transporter.TLSHostname(Some(host)))
     Await.result(fac())(Request(Http11, Get, "/"))

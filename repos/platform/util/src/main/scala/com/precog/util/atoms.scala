@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -75,8 +75,9 @@ class Atom[A] extends Source[A] with Sink[A] {
     }
   }
 
-  def +=[B](b: B)(implicit cbf: CanBuildFrom[A, B, A],
-                  evidence: A <:< TraversableOnce[B]) {
+  def +=[B](
+      b: B
+  )(implicit cbf: CanBuildFrom[A, B, A], evidence: A <:< TraversableOnce[B]) {
     if (!isForced || setterThread != null) {
       lock.lock()
       try {
@@ -105,9 +106,11 @@ class Atom[A] extends Source[A] with Sink[A] {
     }
   }
 
-  def ++=[E](c: A)(implicit unpack: Unpack[A, E],
-                   cbf: CanBuildFrom[A, E, A],
-                   evidence2: A <:< TraversableOnce[E]) {
+  def ++=[E](c: A)(implicit
+      unpack: Unpack[A, E],
+      cbf: CanBuildFrom[A, E, A],
+      evidence2: A <:< TraversableOnce[E]
+  ) {
     if (!isForced || setterThread != null) {
       lock.lock()
       try {
@@ -136,10 +139,11 @@ class Atom[A] extends Source[A] with Sink[A] {
     }
   }
 
-  def appendFrom[E, Coll[_]](a: Atom[Coll[E]])(
-      implicit cbf: CanBuildFrom[Coll[E], E, A],
+  def appendFrom[E, Coll[_]](a: Atom[Coll[E]])(implicit
+      cbf: CanBuildFrom[Coll[E], E, A],
       evidence: A =:= Coll[E],
-      evidence2: Coll[E] <:< TraversableOnce[E]) {
+      evidence2: Coll[E] <:< TraversableOnce[E]
+  ) {
     if (!isForced || setterThread != null) {
       lock.lock()
       try {
@@ -226,7 +230,8 @@ class Atom[A] extends Source[A] with Sink[A] {
 
             if (!isSet) {
               sys.error(
-                  "Unable to self-populate atom (value not set following attempted population)")
+                "Unable to self-populate atom (value not set following attempted population)"
+              )
             }
           } finally {
             lock.lock()
@@ -243,7 +248,7 @@ class Atom[A] extends Source[A] with Sink[A] {
     if (!targets.isEmpty) {
       lock.lock()
       try {
-        targets foreach { _ () = value }
+        targets foreach { _() = value }
         targets = Set()
       } finally {
         lock.unlock()
@@ -255,11 +260,12 @@ class Atom[A] extends Source[A] with Sink[A] {
 }
 
 object Atom {
-  def atom[A](f: => Unit): Atom[A] = new Atom[A] {
-    override def populate() = {
-      f
+  def atom[A](f: => Unit): Atom[A] =
+    new Atom[A] {
+      override def populate() = {
+        f
+      }
     }
-  }
 
   def atom[A]: Atom[A] = new Atom[A]
 }

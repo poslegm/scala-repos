@@ -17,14 +17,14 @@ object SCL4662 {
       val memb = value.members
       val methods = memb.filter(_.isMethod).map(_.asMethod).toArray
       /*start*/
-      methods.flatMap(
-          e =>
-            try {
+      methods.flatMap(e =>
+        try {
           Some(lookAtMe.reflectMethod(e))
         } catch {
           case e: Throwable =>
             e.printStackTrace(); None
-      }) /*end*/
+        }
+      ) /*end*/
     }
   }
 }

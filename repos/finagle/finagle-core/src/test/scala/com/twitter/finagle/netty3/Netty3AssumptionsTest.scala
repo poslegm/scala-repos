@@ -18,16 +18,22 @@ class Netty3AssumptionsTest extends FunSuite {
 
   def makeServer() = {
     val bootstrap = new ServerBootstrap(
-        new NioServerSocketChannelFactory(executor, executor))
+      new NioServerSocketChannelFactory(executor, executor)
+    )
     bootstrap.setPipelineFactory(new ChannelPipelineFactory {
       def getPipeline = {
         val pipeline = Channels.pipeline()
-        pipeline.addLast("stfu", new SimpleChannelUpstreamHandler {
-          override def messageReceived(
-              ctx: ChannelHandlerContext, e: MessageEvent) {
-            /* nothing */
+        pipeline.addLast(
+          "stfu",
+          new SimpleChannelUpstreamHandler {
+            override def messageReceived(
+                ctx: ChannelHandlerContext,
+                e: MessageEvent
+            ) {
+              /* nothing */
+            }
           }
-        })
+        )
         pipeline
       }
     })
@@ -35,7 +41,8 @@ class Netty3AssumptionsTest extends FunSuite {
   }
 
   test(
-      "Channel.close() should leave the channel in a closed state [immediately]") {
+    "Channel.close() should leave the channel in a closed state [immediately]"
+  ) {
 
     val ch = makeServer()
     val addr = ch.getLocalAddress
@@ -44,12 +51,17 @@ class Netty3AssumptionsTest extends FunSuite {
     val bootstrap = new ClientBootstrap(Netty3Transporter.channelFactory)
 
     val pipeline = Channels.pipeline
-    pipeline.addLast("stfu", new SimpleChannelUpstreamHandler {
-      override def exceptionCaught(ctx: ChannelHandlerContext,
-                                   e: ExceptionEvent) {
-        // nothing here.
+    pipeline.addLast(
+      "stfu",
+      new SimpleChannelUpstreamHandler {
+        override def exceptionCaught(
+            ctx: ChannelHandlerContext,
+            e: ExceptionEvent
+        ) {
+          // nothing here.
+        }
       }
-    })
+    )
     bootstrap.setPipeline(pipeline)
 
     val latch = new CountDownLatch(1)

@@ -27,10 +27,12 @@ private[scalding] class ConfPropertiesHfsTap(
     config: Config,
     scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     stringPath: String,
-    sinkMode: SinkMode)
-    extends Hfs(scheme, stringPath, sinkMode) {
+    sinkMode: SinkMode
+) extends Hfs(scheme, stringPath, sinkMode) {
   override def sourceConfInit(
-      process: FlowProcess[JobConf], conf: JobConf): Unit = {
+      process: FlowProcess[JobConf],
+      conf: JobConf
+  ): Unit = {
     config.toMap.foreach {
       case (k, v) =>
         conf.set(k, v)
@@ -39,7 +41,9 @@ private[scalding] class ConfPropertiesHfsTap(
   }
 
   override def sinkConfInit(
-      process: FlowProcess[JobConf], conf: JobConf): Unit = {
+      process: FlowProcess[JobConf],
+      conf: JobConf
+  ): Unit = {
     config.toMap.foreach {
       case (k, v) =>
         conf.set(k, v)
@@ -61,6 +65,7 @@ trait HfsConfPropertySetter extends HfsTapProvider {
   override def createHfsTap(
       scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
       path: String,
-      sinkMode: SinkMode): Hfs =
+      sinkMode: SinkMode
+  ): Hfs =
     new ConfPropertiesHfsTap(tapConfig, scheme, path, sinkMode)
 }

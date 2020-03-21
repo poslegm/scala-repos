@@ -53,8 +53,7 @@ object Searching {
       *         sequence, or the `InsertionPoint` where the element would be inserted if
       *         the element is not in the sequence.
       */
-    final def search[B >: A](elem: B)(
-        implicit ord: Ordering[B]): SearchResult =
+    final def search[B >: A](elem: B)(implicit ord: Ordering[B]): SearchResult =
       coll match {
         case _: IndexedSeqLike[A, Repr] =>
           binarySearch(elem, 0, coll.length)(ord)
@@ -81,30 +80,32 @@ object Searching {
       *         sequence, or the `InsertionPoint` where the element would be inserted if
       *         the element is not in the sequence.
       */
-    final def search[B >: A](elem: B, from: Int, to: Int)(
-        implicit ord: Ordering[B]): SearchResult =
+    final def search[B >: A](elem: B, from: Int, to: Int)(implicit
+        ord: Ordering[B]
+    ): SearchResult =
       coll match {
         case _: IndexedSeqLike[A, Repr] => binarySearch(elem, from, to)(ord)
-        case _ => linearSearch(coll.view(from, to), elem, from)(ord)
+        case _                          => linearSearch(coll.view(from, to), elem, from)(ord)
       }
 
     @tailrec
-    private def binarySearch[B >: A](elem: B, from: Int, to: Int)(
-        implicit ord: Ordering[B]): SearchResult = {
+    private def binarySearch[B >: A](elem: B, from: Int, to: Int)(implicit
+        ord: Ordering[B]
+    ): SearchResult = {
       if (to == from) InsertionPoint(from)
       else {
         val idx = from + (to - from - 1) / 2
         math.signum(ord.compare(elem, coll(idx))) match {
           case -1 => binarySearch(elem, from, idx)(ord)
-          case 1 => binarySearch(elem, idx + 1, to)(ord)
-          case _ => Found(idx)
+          case 1  => binarySearch(elem, idx + 1, to)(ord)
+          case _  => Found(idx)
         }
       }
     }
 
-    private def linearSearch[B >: A](
-        c: SeqView[A, Repr], elem: B, offset: Int)(
-        implicit ord: Ordering[B]): SearchResult = {
+    private def linearSearch[B >: A](c: SeqView[A, Repr], elem: B, offset: Int)(
+        implicit ord: Ordering[B]
+    ): SearchResult = {
       var idx = offset
       val it = c.iterator
       while (it.hasNext) {
@@ -117,7 +118,8 @@ object Searching {
     }
   }
 
-  implicit def search[Repr, A](coll: Repr)(
-      implicit fr: IsSeqLike[Repr]): SearchImpl[fr.A, Repr] =
+  implicit def search[Repr, A](
+      coll: Repr
+  )(implicit fr: IsSeqLike[Repr]): SearchImpl[fr.A, Repr] =
     new SearchImpl(fr.conversion(coll))
 }

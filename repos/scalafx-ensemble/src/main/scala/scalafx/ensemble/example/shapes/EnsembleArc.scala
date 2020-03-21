@@ -34,10 +34,11 @@ import scalafx.scene.paint.Color
 import scalafx.scene.shape.{Arc, ArcType}
 
 class EnsembleArc extends EnsembleExample {
-  def getContent = new HBox {
-    spacing = 50
-    padding = Insets(20)
-    children = List(
+  def getContent =
+    new HBox {
+      spacing = 50
+      padding = Insets(20)
+      children = List(
         new Arc {
           centerX = 200
           centerY = 200
@@ -83,6 +84,6 @@ class EnsembleArc extends EnsembleExample {
           strokeWidth = 3
           `type` = ArcType.Open
         }
-    )
-  }
+      )
+    }
 }

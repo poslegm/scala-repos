@@ -19,7 +19,7 @@ trait Delimited { self: Parsed =>
     if (s == "") Nil
     else
       (s indexWhere isDelimiterChar) match {
-        case -1 => List(s)
+        case -1  => List(s)
         case idx => (s take idx) :: toArgs(s drop (idx + 1))
       }
 
@@ -33,8 +33,7 @@ class Parsed private (
     val buffer: String,
     val cursor: Int,
     val delimited: Char => Boolean
-)
-    extends Delimited {
+) extends Delimited {
   def isEmpty = args.isEmpty
   def isUnqualified = args.size == 1
   def isAtStart = cursor <= 0
@@ -49,7 +48,11 @@ class Parsed private (
   def bufferHead = args.head
   def headLength = bufferHead.length + 1
   def bufferTail =
-    new Parsed(buffer drop headLength, cursor - headLength, delimited) withVerbosity verbosity
+    new Parsed(
+      buffer drop headLength,
+      cursor - headLength,
+      delimited
+    ) withVerbosity verbosity
 
   def prev = new Parsed(buffer, cursor - 1, delimited) withVerbosity verbosity
   def currentChar = buffer(cursor)

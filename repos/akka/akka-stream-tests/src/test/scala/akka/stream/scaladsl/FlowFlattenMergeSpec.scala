@@ -44,8 +44,8 @@ class FlowFlattenMergeSpec extends AkkaSpec {
 
     "respect breadth" in {
       val seq = Source(
-          List(src10(0), src10(10), src10(20), blocked, blocked, src10(30)))
-        .flatMapMerge(3, identity)
+        List(src10(0), src10(10), src10(20), blocked, blocked, src10(30))
+      ).flatMapMerge(3, identity)
         .take(40)
         .runWith(toSeq)
         .futureValue
@@ -100,8 +100,10 @@ class FlowFlattenMergeSpec extends AkkaSpec {
       val p1, p2 = TestPublisher.probe[Int]()
       val ex = new Exception("buh")
       val p = Promise[Source[Int, NotUsed]]
-      (Source(List(Source.fromPublisher(p1), Source.fromPublisher(p2))) ++ Source
-            .fromFuture(p.future)).flatMapMerge(5, identity).runWith(Sink.head)
+      (Source(
+        List(Source.fromPublisher(p1), Source.fromPublisher(p2))
+      ) ++ Source
+        .fromFuture(p.future)).flatMapMerge(5, identity).runWith(Sink.head)
       p1.expectRequest()
       p2.expectRequest()
       p.failure(ex)
@@ -113,10 +115,13 @@ class FlowFlattenMergeSpec extends AkkaSpec {
       val p1, p2 = TestPublisher.probe[Int]()
       val ex = new Exception("buh")
       val p = Promise[Int]
-      Source(List(Source.fromPublisher(p1),
-                  Source.fromPublisher(p2),
-                  Source.fromFuture(p.future)))
-        .flatMapMerge(5, identity)
+      Source(
+        List(
+          Source.fromPublisher(p1),
+          Source.fromPublisher(p2),
+          Source.fromFuture(p.future)
+        )
+      ).flatMapMerge(5, identity)
         .runWith(Sink.head)
       p1.expectRequest()
       p2.expectRequest()
@@ -134,12 +139,15 @@ class FlowFlattenMergeSpec extends AkkaSpec {
       val ex = new Exception("buh")
       val latch = TestLatch()
       Source(1 to 3)
-        .flatMapMerge(10, {
-          case 1 ⇒ Source.fromPublisher(p)
-          case 2 ⇒
-            Await.ready(latch, 3.seconds)
-            throw ex
-        })
+        .flatMapMerge(
+          10,
+          {
+            case 1 ⇒ Source.fromPublisher(p)
+            case 2 ⇒
+              Await.ready(latch, 3.seconds)
+              throw ex
+          }
+        )
         .runWith(Sink.head)(mat)
       p.expectRequest()
       latch.countDown()

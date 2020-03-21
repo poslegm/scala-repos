@@ -48,7 +48,7 @@ object LegacyTypeStringParser extends RegexParsers {
 
   protected lazy val structField: Parser[StructField] =
     ("StructField(" ~> "[a-zA-Z0-9_]*".r) ~ ("," ~> dataType) ~
-    ("," ~> boolVal <~ ")") ^^ {
+      ("," ~> boolVal <~ ")") ^^ {
       case name ~ tpe ~ nullable =>
         StructField(name, tpe, nullable = nullable)
     }
@@ -67,10 +67,12 @@ object LegacyTypeStringParser extends RegexParsers {
   /**
     * Parses a string representation of a DataType.
     */
-  def parse(asString: String): DataType = parseAll(dataType, asString) match {
-    case Success(result, _) => result
-    case failure: NoSuccess =>
-      throw new IllegalArgumentException(
-          s"Unsupported dataType: $asString, $failure")
-  }
+  def parse(asString: String): DataType =
+    parseAll(dataType, asString) match {
+      case Success(result, _) => result
+      case failure: NoSuccess =>
+        throw new IllegalArgumentException(
+          s"Unsupported dataType: $asString, $failure"
+        )
+    }
 }

@@ -13,7 +13,10 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, GivenWhenThen, Matchers}
 
 class PostToEventStreamStepImplTest
-    extends FunSuite with Matchers with GivenWhenThen with ScalaFutures {
+    extends FunSuite
+    with Matchers
+    with GivenWhenThen
+    with ScalaFutures {
   test("name") {
     new Fixture().step.name should be("postTaskStatusEvent")
   }
@@ -28,9 +31,9 @@ class PostToEventStreamStepImplTest
     val (logs, events) = f.captureLogAndEvents {
       f.step
         .processUpdate(
-            timestamp = updateTimestamp,
-            task = existingTask,
-            status = status
+          timestamp = updateTimestamp,
+          task = existingTask,
+          status = status
         )
         .futureValue
     }
@@ -38,25 +41,28 @@ class PostToEventStreamStepImplTest
     Then("the appropriate event is posted")
     events should have size 1
     events should be(
-        Seq(
-            MesosStatusUpdateEvent(
-                slaveId = slaveId.getValue,
-                taskId = taskId,
-                taskStatus = status.getState.name,
-                message = taskStatusMessage,
-                appId = appId,
-                host = host,
-                ipAddresses = Nil,
-                ports = portsList,
-                version = version.toString,
-                timestamp = updateTimestamp.toString
-            )
-        ))
+      Seq(
+        MesosStatusUpdateEvent(
+          slaveId = slaveId.getValue,
+          taskId = taskId,
+          taskStatus = status.getState.name,
+          message = taskStatusMessage,
+          appId = appId,
+          host = host,
+          ipAddresses = Nil,
+          ports = portsList,
+          version = version.toString,
+          timestamp = updateTimestamp.toString
+        )
+      )
+    )
     And("only sending event info gets logged")
     logs should have size 1
-    logs.map(_.toString) should be(Seq(
-            s"[INFO] Sending event notification for $taskId of app [$appId]: ${status.getState}"
-        ))
+    logs.map(_.toString) should be(
+      Seq(
+        s"[INFO] Sending event notification for $taskId of app [$appId]: ${status.getState}"
+      )
+    )
   }
 
   test("ignore running notification of already running task") {
@@ -70,9 +76,9 @@ class PostToEventStreamStepImplTest
     val (logs, events) = f.captureLogAndEvents {
       f.step
         .processUpdate(
-            timestamp = updateTimestamp,
-            task = existingTask,
-            status = status
+          timestamp = updateTimestamp,
+          task = existingTask,
+          status = status
         )
         .futureValue
     }
@@ -100,7 +106,8 @@ class PostToEventStreamStepImplTest
   }
 
   private[this] def testExistingTerminatedTask(
-      terminalTaskState: TaskState): Unit = {
+      terminalTaskState: TaskState
+  ): Unit = {
     Given("an existing task")
     val f = new Fixture
     val existingTask = stagedMarathonTask
@@ -111,9 +118,9 @@ class PostToEventStreamStepImplTest
     val (logs, events) = f.captureLogAndEvents {
       f.step
         .processUpdate(
-            timestamp = updateTimestamp,
-            task = existingTask,
-            status = status
+          timestamp = updateTimestamp,
+          task = existingTask,
+          status = status
         )
         .futureValue
     }
@@ -121,25 +128,28 @@ class PostToEventStreamStepImplTest
     Then("the appropriate event is posted")
     events should have size 1
     events should be(
-        Seq(
-            MesosStatusUpdateEvent(
-                slaveId = slaveId.getValue,
-                taskId = taskId,
-                taskStatus = status.getState.name,
-                message = taskStatusMessage,
-                appId = appId,
-                host = host,
-                ipAddresses = Nil,
-                ports = portsList,
-                version = version.toString,
-                timestamp = updateTimestamp.toString
-            )
-        ))
+      Seq(
+        MesosStatusUpdateEvent(
+          slaveId = slaveId.getValue,
+          taskId = taskId,
+          taskStatus = status.getState.name,
+          message = taskStatusMessage,
+          appId = appId,
+          host = host,
+          ipAddresses = Nil,
+          ports = portsList,
+          version = version.toString,
+          timestamp = updateTimestamp.toString
+        )
+      )
+    )
     And("only sending event info gets logged")
     logs should have size 1
-    logs.map(_.toString) should be(Seq(
-            s"[INFO] Sending event notification for $taskId of app [$appId]: ${status.getState}"
-        ))
+    logs.map(_.toString) should be(
+      Seq(
+        s"[INFO] Sending event notification for $taskId of app [$appId]: ${status.getState}"
+      )
+    )
   }
 
   private[this] val slaveId = SlaveID.newBuilder().setValue("slave1")
@@ -170,7 +180,8 @@ class PostToEventStreamStepImplTest
     val captureEvents = new CaptureEvents(eventStream)
 
     def captureLogAndEvents(
-        block: => Unit): (Vector[ILoggingEvent], Seq[MarathonEvent]) = {
+        block: => Unit
+    ): (Vector[ILoggingEvent], Seq[MarathonEvent]) = {
       var logs: Vector[ILoggingEvent] = Vector.empty
       val events = captureEvents.forBlock {
         logs = CaptureLogEvents.forBlock {

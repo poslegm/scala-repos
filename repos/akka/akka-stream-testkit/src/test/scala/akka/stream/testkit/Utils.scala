@@ -13,13 +13,16 @@ object Utils {
 
   /** Sets the default-mailbox to the usual [[akka.dispatch.UnboundedMailbox]] instead of [[StreamTestDefaultMailbox]]. */
   val UnboundedMailboxConfig = ConfigFactory.parseString(
-      """akka.actor.default-mailbox.mailbox-type = "akka.dispatch.UnboundedMailbox"""")
+    """akka.actor.default-mailbox.mailbox-type = "akka.dispatch.UnboundedMailbox""""
+  )
 
   case class TE(message: String)
-      extends RuntimeException(message) with NoStackTrace
+      extends RuntimeException(message)
+      with NoStackTrace
 
-  def assertAllStagesStopped[T](block: ⇒ T)(
-      implicit materializer: Materializer): T =
+  def assertAllStagesStopped[T](
+      block: ⇒ T
+  )(implicit materializer: Materializer): T =
     materializer match {
       case impl: ActorMaterializerImpl ⇒
         val probe = TestProbe()(impl.system)
@@ -32,8 +35,9 @@ object Utils {
             impl.supervisor.tell(StreamSupervisor.GetChildren, probe.ref)
             children = probe.expectMsgType[StreamSupervisor.Children].children
             assert(
-                children.isEmpty,
-                s"expected no StreamSupervisor children, but got [${children.mkString(", ")}]")
+              children.isEmpty,
+              s"expected no StreamSupervisor children, but got [${children.mkString(", ")}]"
+            )
           } catch {
             case ex: Throwable ⇒
               children.foreach(_ ! StreamSupervisor.PrintDebugDump)
@@ -44,12 +48,14 @@ object Utils {
       case _ ⇒ block
     }
 
-  def assertDispatcher(ref: ActorRef, dispatcher: String): Unit = ref match {
-    case r: ActorRefWithCell ⇒
-      if (r.underlying.props.dispatcher != dispatcher)
-        throw new AssertionError(
-            s"Expected $ref to use dispatcher [$dispatcher], yet used: [${r.underlying.props.dispatcher}]")
-    case _ ⇒
-      throw new Exception(s"Unable to determine dispatcher of $ref")
-  }
+  def assertDispatcher(ref: ActorRef, dispatcher: String): Unit =
+    ref match {
+      case r: ActorRefWithCell ⇒
+        if (r.underlying.props.dispatcher != dispatcher)
+          throw new AssertionError(
+            s"Expected $ref to use dispatcher [$dispatcher], yet used: [${r.underlying.props.dispatcher}]"
+          )
+      case _ ⇒
+        throw new Exception(s"Unable to determine dispatcher of $ref")
+    }
 }

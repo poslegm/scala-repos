@@ -48,8 +48,8 @@ object XmlParserSpec extends Specification with XmlMatchers {
 
   "XML can contain PCData" in {
     val data = <foo>{
-        PCData("Hello Yak")
-      }</foo>
+      PCData("Hello Yak")
+    }</foo>
 
     val str = AltXML.toXML(data, false, true)
 
@@ -58,8 +58,8 @@ object XmlParserSpec extends Specification with XmlMatchers {
 
   "XML can contain Unparsed" in {
     val data = <foo>{
-        Unparsed("Hello & goodbye > <yak Yak")
-      }</foo>
+      Unparsed("Hello & goodbye > <yak Yak")
+    }</foo>
 
     val str = AltXML.toXML(data, false, true)
 
@@ -69,27 +69,28 @@ object XmlParserSpec extends Specification with XmlMatchers {
   "XML cannot contain Control characters" in {
     val data = <foo>
       {
-        '\u0085'
-      }{
-        Text("hello \u0000 \u0085 \u0080")
-      }{
-        "hello \u0000 \u0003 \u0085 \u0080"
-      }{
-        '\u0003'
-      }
+      '\u0085'
+    }{
+      Text("hello \u0000 \u0085 \u0080")
+    }{
+      "hello \u0000 \u0003 \u0085 \u0080"
+    }{
+      '\u0003'
+    }
     </foo>
 
     val str = AltXML.toXML(data, false, true)
 
-    def cntIllegal(in: Char): Int = in match {
-      case '\u0085' => 1
-      case c if (c >= '\u007f' && c <= '\u0095') => 1
-      case '\n' => 0
-      case '\r' => 0
-      case '\t' => 0
-      case c if c < ' ' => 1
-      case _ => 0
-    }
+    def cntIllegal(in: Char): Int =
+      in match {
+        case '\u0085'                              => 1
+        case c if (c >= '\u007f' && c <= '\u0095') => 1
+        case '\n'                                  => 0
+        case '\r'                                  => 0
+        case '\t'                                  => 0
+        case c if c < ' '                          => 1
+        case _                                     => 0
+      }
 
     str.toList.foldLeft(0)((a, b) => a + cntIllegal(b)) must_== 0
   }

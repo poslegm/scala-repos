@@ -20,7 +20,9 @@ import scala.concurrent.duration.Duration
   * A journal that delegates actual storage to a target actor. For testing only.
   */
 private[persistence] trait AsyncWriteProxy
-    extends AsyncWriteJournal with Stash with ActorLogging {
+    extends AsyncWriteJournal
+    with Stash
+    with ActorLogging {
   import AsyncWriteProxy._
   import AsyncWriteTarget._
   import context.dispatcher
@@ -29,16 +31,18 @@ private[persistence] trait AsyncWriteProxy
   private var isInitTimedOut = false
   protected var store: Option[ActorRef] = None
   private val storeNotInitialized = Future.failed(
-      new TimeoutException("Store not initialized. " +
-          "Use `SharedLeveldbJournal.setStore(sharedStore, system)`"))
+    new TimeoutException(
+      "Store not initialized. " +
+        "Use `SharedLeveldbJournal.setStore(sharedStore, system)`"
+    )
+  )
 
   override protected[akka] def aroundPreStart(): Unit = {
     context.system.scheduler.scheduleOnce(timeout.duration, self, InitTimeout)
     super.aroundPreStart()
   }
 
-  override protected[akka] def aroundReceive(
-      receive: Receive, msg: Any): Unit =
+  override protected[akka] def aroundReceive(receive: Receive, msg: Any): Unit =
     if (isInitialized) {
       if (msg != InitTimeout) super.aroundReceive(receive, msg)
     } else
@@ -57,7 +61,8 @@ private[persistence] trait AsyncWriteProxy
   implicit def timeout: Timeout
 
   def asyncWriteMessages(
-      messages: immutable.Seq[AtomicWrite]): Future[immutable.Seq[Try[Unit]]] =
+      messages: immutable.Seq[AtomicWrite]
+  ): Future[immutable.Seq[Try[Unit]]] =
     store match {
       case Some(s) ⇒
         (s ? WriteMessages(messages)).mapTo[immutable.Seq[Try[Unit]]]
@@ -65,41 +70,52 @@ private[persistence] trait AsyncWriteProxy
     }
 
   def asyncDeleteMessagesTo(
-      persistenceId: String, toSequenceNr: Long): Future[Unit] =
+      persistenceId: String,
+      toSequenceNr: Long
+  ): Future[Unit] =
     store match {
       case Some(s) ⇒
         (s ? DeleteMessagesTo(persistenceId, toSequenceNr)).mapTo[Unit]
       case None ⇒ storeNotInitialized
     }
 
-  def asyncReplayMessages(persistenceId: String,
-                          fromSequenceNr: Long,
-                          toSequenceNr: Long,
-                          max: Long)(
-      replayCallback: PersistentRepr ⇒ Unit): Future[Unit] =
+  def asyncReplayMessages(
+      persistenceId: String,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )(replayCallback: PersistentRepr ⇒ Unit): Future[Unit] =
     store match {
       case Some(s) ⇒
         val replayCompletionPromise = Promise[Unit]()
         val mediator = context.actorOf(
-            Props(classOf[ReplayMediator],
-                  replayCallback,
-                  replayCompletionPromise,
-                  timeout.duration).withDeploy(Deploy.local))
+          Props(
+            classOf[ReplayMediator],
+            replayCallback,
+            replayCompletionPromise,
+            timeout.duration
+          ).withDeploy(Deploy.local)
+        )
         s.tell(
-            ReplayMessages(persistenceId, fromSequenceNr, toSequenceNr, max),
-            mediator)
+          ReplayMessages(persistenceId, fromSequenceNr, toSequenceNr, max),
+          mediator
+        )
         replayCompletionPromise.future
       case None ⇒ storeNotInitialized
     }
 
   def asyncReadHighestSequenceNr(
-      persistenceId: String, fromSequenceNr: Long): Future[Long] =
+      persistenceId: String,
+      fromSequenceNr: Long
+  ): Future[Long] =
     store match {
       case Some(s) ⇒
-        (s ? ReplayMessages(persistenceId,
-                            fromSequenceNr = 0L,
-                            toSequenceNr = 0L,
-                            max = 0L)).map {
+        (s ? ReplayMessages(
+          persistenceId,
+          fromSequenceNr = 0L,
+          toSequenceNr = 0L,
+          max = 0L
+        )).map {
           case ReplaySuccess(highest) ⇒ highest
         }
       case None ⇒ storeNotInitialized
@@ -125,10 +141,12 @@ private[persistence] object AsyncWriteTarget {
   final case class DeleteMessagesTo(persistenceId: String, toSequenceNr: Long)
 
   @SerialVersionUID(1L)
-  final case class ReplayMessages(persistenceId: String,
-                                  fromSequenceNr: Long,
-                                  toSequenceNr: Long,
-                                  max: Long)
+  final case class ReplayMessages(
+      persistenceId: String,
+      fromSequenceNr: Long,
+      toSequenceNr: Long,
+      max: Long
+  )
 
   @SerialVersionUID(1L)
   case class ReplaySuccess(highestSequenceNr: Long)
@@ -143,10 +161,11 @@ private[persistence] object AsyncWriteTarget {
 @SerialVersionUID(1L)
 class AsyncReplayTimeoutException(msg: String) extends AkkaException(msg)
 
-private class ReplayMediator(replayCallback: PersistentRepr ⇒ Unit,
-                             replayCompletionPromise: Promise[Unit],
-                             replayTimeout: Duration)
-    extends Actor {
+private class ReplayMediator(
+    replayCallback: PersistentRepr ⇒ Unit,
+    replayCompletionPromise: Promise[Unit],
+    replayTimeout: Duration
+) extends Actor {
   import AsyncWriteTarget._
 
   context.setReceiveTimeout(replayTimeout)
@@ -160,8 +179,11 @@ private class ReplayMediator(replayCallback: PersistentRepr ⇒ Unit,
       replayCompletionPromise.failure(cause)
       context.stop(self)
     case ReceiveTimeout ⇒
-      replayCompletionPromise.failure(new AsyncReplayTimeoutException(
-              s"replay timed out after ${replayTimeout.toSeconds} seconds inactivity"))
+      replayCompletionPromise.failure(
+        new AsyncReplayTimeoutException(
+          s"replay timed out after ${replayTimeout.toSeconds} seconds inactivity"
+        )
+      )
       context.stop(self)
   }
 }

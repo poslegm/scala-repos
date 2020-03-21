@@ -5,18 +5,20 @@ import cats.laws.discipline.{BitraverseTests, SerializableTests}
 import cats.laws.discipline.eq.tuple2Eq
 
 class TupleTests extends CatsSuite {
-  checkAll("Tuple2",
-           BitraverseTests[Tuple2]
-             .bitraverse[Option, Int, Int, Int, String, String, String])
   checkAll(
-      "Bitraverse[Tuple2]", SerializableTests.serializable(Bitraverse[Tuple2]))
+    "Tuple2",
+    BitraverseTests[Tuple2]
+      .bitraverse[Option, Int, Int, Int, String, String, String]
+  )
+  checkAll(
+    "Bitraverse[Tuple2]",
+    SerializableTests.serializable(Bitraverse[Tuple2])
+  )
 
   test("show") {
     (1, 2).show should ===("(1,2)")
 
-    forAll { fs: (String, String) =>
-      fs.show should ===(fs.toString)
-    }
+    forAll { fs: (String, String) => fs.show should ===(fs.toString) }
 
     // Provide some "non-standard" Show instances to make sure the tuple2 is actually use the Show instances for the
     // relevant types instead of blindly calling toString

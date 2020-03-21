@@ -26,17 +26,18 @@ import play.core.Execution.Implicits.internalContext
 object JavaWebSocket extends JavaHelpers {
 
   def webSocketWrapper[A](
-      retrieveWebSocket: => CompletionStage[LegacyWebSocket[A]])(
-      implicit transformer: MessageFlowTransformer[A, A]): WebSocket =
+      retrieveWebSocket: => CompletionStage[LegacyWebSocket[A]]
+  )(implicit transformer: MessageFlowTransformer[A, A]): WebSocket =
     WebSocket { request =>
       val javaContext = createJavaContext(request)
 
-      val javaWebSocket = try {
-        JContext.current.set(javaContext)
-        FutureConverters.toScala(retrieveWebSocket)
-      } finally {
-        JContext.current.remove()
-      }
+      val javaWebSocket =
+        try {
+          JContext.current.set(javaContext)
+          FutureConverters.toScala(retrieveWebSocket)
+        } finally {
+          JContext.current.remove()
+        }
 
       javaWebSocket.map { jws =>
         val reject = Option(jws.rejectWith())
@@ -48,36 +49,37 @@ object JavaWebSocket extends JavaHelpers {
           implicit val mat = current.materializer
 
           Right(
-              if (jws.isActor) {
-                transformer.transform(ActorFlow.actorRef(jws.actorProps))
-              } else {
+            if (jws.isActor) {
+              transformer.transform(ActorFlow.actorRef(jws.actorProps))
+            } else {
 
-                val socketIn = new JWebSocket.In[A]
+              val socketIn = new JWebSocket.In[A]
 
-                val sink = Flow[A].map { msg =>
+              val sink = Flow[A]
+                .map { msg =>
                   socketIn.callbacks.asScala.foreach(_.accept(msg))
-                }.to(Sink.onComplete { _ =>
+                }
+                .to(Sink.onComplete { _ =>
                   socketIn.closeCallbacks.asScala.foreach(_.run())
                 })
 
-                val source = Source
-                  .actorRef[A](256, OverflowStrategy.dropNew)
-                  .mapMaterializedValue {
-                    actor =>
-                      val socketOut = new JWebSocket.Out[A] {
-                        def write(frame: A) = {
-                          actor ! frame
-                        }
-                        def close() = {
-                          actor ! Status.Success(())
-                        }
-                      }
-
-                      jws.onReady(socketIn, socketOut)
+              val source = Source
+                .actorRef[A](256, OverflowStrategy.dropNew)
+                .mapMaterializedValue { actor =>
+                  val socketOut = new JWebSocket.Out[A] {
+                    def write(frame: A) = {
+                      actor ! frame
+                    }
+                    def close() = {
+                      actor ! Status.Success(())
+                    }
                   }
 
-                transformer.transform(Flow.fromSinkAndSource(sink, source))
-              }
+                  jws.onReady(socketIn, socketOut)
+                }
+
+              transformer.transform(Flow.fromSinkAndSource(sink, source))
+            }
           )
         }
       }
@@ -87,38 +89,41 @@ object JavaWebSocket extends JavaHelpers {
 
   def ofBytes(retrieveWebSocket: => LegacyWebSocket[Array[Byte]]): WebSocket =
     webSocketWrapper[Array[Byte]](
-        CompletableFuture.completedFuture(retrieveWebSocket))
+      CompletableFuture.completedFuture(retrieveWebSocket)
+    )
 
   def promiseOfBytes(
-      retrieveWebSocket: => CompletionStage[LegacyWebSocket[Array[Byte]]])
-    : WebSocket =
+      retrieveWebSocket: => CompletionStage[LegacyWebSocket[Array[Byte]]]
+  ): WebSocket =
     webSocketWrapper[Array[Byte]](retrieveWebSocket)
 
   // -- String
 
   def ofString(retrieveWebSocket: => LegacyWebSocket[String]): WebSocket =
     webSocketWrapper[String](
-        CompletableFuture.completedFuture(retrieveWebSocket))
+      CompletableFuture.completedFuture(retrieveWebSocket)
+    )
 
   def promiseOfString(
-      retrieveWebSocket: => CompletionStage[LegacyWebSocket[String]])
-    : WebSocket =
+      retrieveWebSocket: => CompletionStage[LegacyWebSocket[String]]
+  ): WebSocket =
     webSocketWrapper[String](retrieveWebSocket)
 
   // -- Json (JsonNode)
 
   implicit val jsonFrame =
     MessageFlowTransformer.stringMessageFlowTransformer.map(
-        play.libs.Json.parse,
-        play.libs.Json.stringify
+      play.libs.Json.parse,
+      play.libs.Json.stringify
     )
 
   def ofJson(retrieveWebSocket: => LegacyWebSocket[JsonNode]): WebSocket =
     webSocketWrapper[JsonNode](
-        CompletableFuture.completedFuture(retrieveWebSocket))
+      CompletableFuture.completedFuture(retrieveWebSocket)
+    )
 
   def promiseOfJson(
-      retrieveWebSocket: => CompletionStage[LegacyWebSocket[JsonNode]])
-    : WebSocket =
+      retrieveWebSocket: => CompletionStage[LegacyWebSocket[JsonNode]]
+  ): WebSocket =
     webSocketWrapper[JsonNode](retrieveWebSocket)
 }

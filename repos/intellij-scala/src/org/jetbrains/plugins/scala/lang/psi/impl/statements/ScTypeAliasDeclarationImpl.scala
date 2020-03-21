@@ -18,17 +18,22 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaElementVisitor
 import org.jetbrains.plugins.scala.lang.psi.api.base.types.ScTypeElement
 import org.jetbrains.plugins.scala.lang.psi.api.statements._
 import org.jetbrains.plugins.scala.lang.psi.stubs.ScTypeAliasStub
-import org.jetbrains.plugins.scala.lang.psi.types.result.{Success, TypingContext}
+import org.jetbrains.plugins.scala.lang.psi.types.result.{
+  Success,
+  TypingContext
+}
 import org.jetbrains.plugins.scala.lang.psi.types.{Any, Nothing}
 
-/** 
+/**
   * @author Alexander Podkhalyuzin
   * Date: 22.02.2008
   * Time: 9:54:54
   */
 class ScTypeAliasDeclarationImpl private (
-    stub: StubElement[ScTypeAlias], nodeType: IElementType, node: ASTNode)
-    extends ScalaStubBasedElementImpl(stub, nodeType, node)
+    stub: StubElement[ScTypeAlias],
+    nodeType: IElementType,
+    node: ASTNode
+) extends ScalaStubBasedElementImpl(stub, nodeType, node)
     with ScTypeAliasDeclaration {
   def this(node: ASTNode) = { this(null, null, node) }
   def this(stub: ScTypeAliasStub) = {
@@ -42,26 +47,31 @@ class ScTypeAliasDeclarationImpl private (
     if (descriptor != null) descriptor.navigate(requestFocus)
   }
 
-  def nameId = findChildByType[PsiElement](ScalaTokenTypes.tIDENTIFIER) match {
-    case null =>
-      ScalaPsiElementFactory
-        .createIdentifier(
-            getStub.asInstanceOf[ScTypeAliasStub].getName, getManager)
-        .getPsi
-    case n => n
-  }
+  def nameId =
+    findChildByType[PsiElement](ScalaTokenTypes.tIDENTIFIER) match {
+      case null =>
+        ScalaPsiElementFactory
+          .createIdentifier(
+            getStub.asInstanceOf[ScTypeAliasStub].getName,
+            getManager
+          )
+          .getPsi
+      case n => n
+    }
 
   override def toString: String = "ScTypeAliasDeclaration: " + name
 
-  def lowerBound = lowerTypeElement match {
-    case Some(te) => te.getType(TypingContext.empty)
-    case None => Success(Nothing, Some(this))
-  }
+  def lowerBound =
+    lowerTypeElement match {
+      case Some(te) => te.getType(TypingContext.empty)
+      case None     => Success(Nothing, Some(this))
+    }
 
-  def upperBound = upperTypeElement match {
-    case Some(te) => te.getType(TypingContext.empty)
-    case None => Success(Any, Some(this))
-  }
+  def upperBound =
+    upperTypeElement match {
+      case Some(te) => te.getType(TypingContext.empty)
+      case None     => Success(Any, Some(this))
+    }
 
   override def upperTypeElement: Option[ScTypeElement] = {
     import org.jetbrains.plugins.scala.extensions._
@@ -76,7 +86,7 @@ class ScTypeAliasDeclarationImpl private (
     if (tUpper != null) {
       PsiTreeUtil.getNextSiblingOfType(tUpper, classOf[ScTypeElement]) match {
         case null => None
-        case te => Some(te)
+        case te   => Some(te)
       }
     } else None
   }
@@ -94,7 +104,7 @@ class ScTypeAliasDeclarationImpl private (
     if (tLower != null) {
       PsiTreeUtil.getNextSiblingOfType(tLower, classOf[ScTypeElement]) match {
         case null => None
-        case te => Some(te)
+        case te   => Some(te)
       }
     } else None
   }
@@ -105,14 +115,14 @@ class ScTypeAliasDeclarationImpl private (
       def getTextAttributesKey: TextAttributesKey = null
       def getLocationString: String =
         "(" + ScTypeAliasDeclarationImpl.this.containingClass.qualifiedName +
-        ")"
+          ")"
       override def getIcon(open: Boolean) =
         ScTypeAliasDeclarationImpl.this.getIcon(0)
     }
   }
 
   override def getOriginalElement: PsiElement =
-    super [ScTypeAliasDeclaration].getOriginalElement
+    super[ScTypeAliasDeclaration].getOriginalElement
 
   override def accept(visitor: ScalaElementVisitor) {
     visitor.visitTypeAliasDeclaration(this)
@@ -121,7 +131,7 @@ class ScTypeAliasDeclarationImpl private (
   override def accept(visitor: PsiElementVisitor) {
     visitor match {
       case s: ScalaElementVisitor => s.visitTypeAliasDeclaration(this)
-      case _ => super.accept(visitor)
+      case _                      => super.accept(visitor)
     }
   }
 }

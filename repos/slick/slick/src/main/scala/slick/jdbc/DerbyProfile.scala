@@ -76,18 +76,18 @@ trait DerbyProfile extends JdbcProfile {
 
   override protected def computeCapabilities: Set[Capability] =
     (super.computeCapabilities - RelationalCapabilities.functionDatabase -
-        RelationalCapabilities.pagingNested -
-        JdbcCapabilities.returnInsertOther - SqlCapabilities.sequenceCurr
-        // Cycling is broken in Derby. It cycles to the start value instead of min or max
-        - SqlCapabilities.sequenceCycle - RelationalCapabilities.zip -
-        RelationalCapabilities.joinFull - JdbcCapabilities.insertOrUpdate -
-        RelationalCapabilities.replace - RelationalCapabilities.reverse -
-        JdbcCapabilities.booleanMetaData - JdbcCapabilities.supportsByte -
-        RelationalCapabilities.repeat)
+      RelationalCapabilities.pagingNested -
+      JdbcCapabilities.returnInsertOther - SqlCapabilities.sequenceCurr
+    // Cycling is broken in Derby. It cycles to the start value instead of min or max
+      - SqlCapabilities.sequenceCycle - RelationalCapabilities.zip -
+      RelationalCapabilities.joinFull - JdbcCapabilities.insertOrUpdate -
+      RelationalCapabilities.replace - RelationalCapabilities.reverse -
+      JdbcCapabilities.booleanMetaData - JdbcCapabilities.supportsByte -
+      RelationalCapabilities.repeat)
 
   class ModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(
-      implicit ec: ExecutionContext)
-      extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {
+      implicit ec: ExecutionContext
+  ) extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {
     override def createTableNamer(mTable: MTable): TableNamer =
       new TableNamer(mTable) {
         override def schema =
@@ -96,35 +96,41 @@ trait DerbyProfile extends JdbcProfile {
   }
 
   override def createModelBuilder(
-      tables: Seq[MTable], ignoreInvalidDefaults: Boolean)(
-      implicit ec: ExecutionContext): JdbcModelBuilder =
+      tables: Seq[MTable],
+      ignoreInvalidDefaults: Boolean
+  )(implicit ec: ExecutionContext): JdbcModelBuilder =
     new ModelBuilder(tables, ignoreInvalidDefaults)
 
-  override def defaultTables(
-      implicit ec: ExecutionContext): DBIO[Seq[MTable]] =
+  override def defaultTables(implicit ec: ExecutionContext): DBIO[Seq[MTable]] =
     MTable.getTables(None, None, None, Some(Seq("TABLE")))
 
   override protected def computeQueryCompiler =
     super.computeQueryCompiler + Phase.rewriteBooleans +
-    Phase.specializeParameters
+      Phase.specializeParameters
   override val columnTypes = new JdbcTypes
-  override def createQueryBuilder(
-      n: Node, state: CompilerState): QueryBuilder = new QueryBuilder(n, state)
+  override def createQueryBuilder(n: Node, state: CompilerState): QueryBuilder =
+    new QueryBuilder(n, state)
   override def createTableDDLBuilder(table: Table[_]): TableDDLBuilder =
     new TableDDLBuilder(table)
   override def createColumnDDLBuilder(
-      column: FieldSymbol, table: Table[_]): ColumnDDLBuilder =
+      column: FieldSymbol,
+      table: Table[_]
+  ): ColumnDDLBuilder =
     new ColumnDDLBuilder(column)
   override def createSequenceDDLBuilder(
-      seq: Sequence[_]): SequenceDDLBuilder[_] = new SequenceDDLBuilder(seq)
+      seq: Sequence[_]
+  ): SequenceDDLBuilder[_] = new SequenceDDLBuilder(seq)
 
   override def defaultSqlTypeName(
-      tmd: JdbcType[_], sym: Option[FieldSymbol]): String = tmd.sqlType match {
-    case java.sql.Types.BOOLEAN => "SMALLINT"
-    /* Derby does not have a TINYINT type, so we use SMALLINT instead. */
-    case java.sql.Types.TINYINT => "SMALLINT"
-    case _ => super.defaultSqlTypeName(tmd, sym)
-  }
+      tmd: JdbcType[_],
+      sym: Option[FieldSymbol]
+  ): String =
+    tmd.sqlType match {
+      case java.sql.Types.BOOLEAN => "SMALLINT"
+      /* Derby does not have a TINYINT type, so we use SMALLINT instead. */
+      case java.sql.Types.TINYINT => "SMALLINT"
+      case _                      => super.defaultSqlTypeName(tmd, sym)
+    }
 
   override val scalarFrom = Some("sysibm.sysdummy1")
 
@@ -135,54 +141,56 @@ trait DerbyProfile extends JdbcProfile {
     override protected val supportsLiteralGroupBy = true
     override protected val quotedJdbcFns = Some(Vector(Library.User))
 
-    override def expr(c: Node, skipParens: Boolean = false): Unit = c match {
-      case Library.Cast(ch @ _ *) =>
-        /* Work around DERBY-2072 by casting numeric values first to CHAR and
-         * then to VARCHAR. */
-        val (toVarchar, tn) = {
-          val tn =
-            (if (ch.length == 2)
-               ch(1).asInstanceOf[LiteralNode].value.asInstanceOf[String]
-             else jdbcTypeFor(c.nodeType).sqlTypeName(None)).toLowerCase
-          if (tn == "varchar")
-            (true, columnTypes.stringJdbcType.sqlTypeName(None))
-          else if (tn.startsWith("varchar")) (true, tn)
-          else (false, tn)
-        }
-        if (toVarchar &&
-            jdbcTypeFor(ch(0).nodeType).isInstanceOf[NumericTypedType])
-          b"trim(cast(cast(${ch(0)} as char(30)) as $tn))"
-        else b"cast(${ch(0)} as $tn)"
-      case Library.IfNull(l, r) =>
-        /* Derby does not support IFNULL so we use COALESCE instead,
-         * and it requires NULLs to be casted to a suitable type */
-        b"coalesce(cast($l as ${jdbcTypeFor(c.nodeType).sqlTypeName(None)}),!$r)"
-      case Library.SilentCast(LiteralNode(None)) :@ JdbcType(ti, _)
-          if currentPart == SelectPart =>
-        // Cast NULL to the correct type
-        b"cast(null as ${ti.sqlTypeName(None)})"
-      case LiteralNode(None) :@ JdbcType(ti, _) if currentPart == SelectPart =>
-        // Cast NULL to the correct type
-        b"cast(null as ${ti.sqlTypeName(None)})"
-      case (c @ LiteralNode(v)) :@ JdbcType(ti, option)
-          if currentPart == SelectPart =>
-        /* The Derby embedded driver has a bug (DERBY-4671) which results in a
-         * NullPointerException when using bind variables in a SELECT clause.
-         * This should be fixed in Derby 10.6.1.1. The workaround is to add an
-         * explicit type annotation (in the form of a CAST expression). */
-        if (c.volatileHint || !ti.hasLiteralForm) {
-          b"cast("
-          b +?= { (p, idx, param) =>
-            if (option) ti.setOption(v.asInstanceOf[Option[Any]], p, idx)
-            else ti.setValue(v, p, idx)
+    override def expr(c: Node, skipParens: Boolean = false): Unit =
+      c match {
+        case Library.Cast(ch @ _*) =>
+          /* Work around DERBY-2072 by casting numeric values first to CHAR and
+           * then to VARCHAR. */
+          val (toVarchar, tn) = {
+            val tn =
+              (if (ch.length == 2)
+                 ch(1).asInstanceOf[LiteralNode].value.asInstanceOf[String]
+               else jdbcTypeFor(c.nodeType).sqlTypeName(None)).toLowerCase
+            if (tn == "varchar")
+              (true, columnTypes.stringJdbcType.sqlTypeName(None))
+            else if (tn.startsWith("varchar")) (true, tn)
+            else (false, tn)
           }
-          b" as ${ti.sqlTypeName(None)})"
-        } else super.expr(c, skipParens)
-      case Library.NextValue(SequenceNode(name)) => b"(next value for `$name)"
-      case Library.CurrentValue(_ *) =>
-        throw new SlickException("Derby does not support CURRVAL")
-      case _ => super.expr(c, skipParens)
-    }
+          if (toVarchar &&
+              jdbcTypeFor(ch(0).nodeType).isInstanceOf[NumericTypedType])
+            b"trim(cast(cast(${ch(0)} as char(30)) as $tn))"
+          else b"cast(${ch(0)} as $tn)"
+        case Library.IfNull(l, r) =>
+          /* Derby does not support IFNULL so we use COALESCE instead,
+           * and it requires NULLs to be casted to a suitable type */
+          b"coalesce(cast($l as ${jdbcTypeFor(c.nodeType).sqlTypeName(None)}),!$r)"
+        case Library.SilentCast(LiteralNode(None)) :@ JdbcType(ti, _)
+            if currentPart == SelectPart =>
+          // Cast NULL to the correct type
+          b"cast(null as ${ti.sqlTypeName(None)})"
+        case LiteralNode(None) :@ JdbcType(ti, _)
+            if currentPart == SelectPart =>
+          // Cast NULL to the correct type
+          b"cast(null as ${ti.sqlTypeName(None)})"
+        case (c @ LiteralNode(v)) :@ JdbcType(ti, option)
+            if currentPart == SelectPart =>
+          /* The Derby embedded driver has a bug (DERBY-4671) which results in a
+           * NullPointerException when using bind variables in a SELECT clause.
+           * This should be fixed in Derby 10.6.1.1. The workaround is to add an
+           * explicit type annotation (in the form of a CAST expression). */
+          if (c.volatileHint || !ti.hasLiteralForm) {
+            b"cast("
+            b +?= { (p, idx, param) =>
+              if (option) ti.setOption(v.asInstanceOf[Option[Any]], p, idx)
+              else ti.setValue(v, p, idx)
+            }
+            b" as ${ti.sqlTypeName(None)})"
+          } else super.expr(c, skipParens)
+        case Library.NextValue(SequenceNode(name)) => b"(next value for `$name)"
+        case Library.CurrentValue(_*) =>
+          throw new SlickException("Derby does not support CURRVAL")
+        case _ => super.expr(c, skipParens)
+      }
   }
 
   class TableDDLBuilder(table: Table[_]) extends super.TableDDLBuilder(table) {
@@ -194,8 +202,11 @@ trait DerbyProfile extends JdbcProfile {
          * CONSTRAINT. */
         val sb =
           new StringBuilder append "ALTER TABLE " append quoteIdentifier(
-              table.tableName) append " ADD "
-        sb append "CONSTRAINT " append quoteIdentifier(idx.name) append " UNIQUE("
+            table.tableName
+          ) append " ADD "
+        sb append "CONSTRAINT " append quoteIdentifier(
+          idx.name
+        ) append " UNIQUE("
         addIndexColumnList(idx.on, sb, idx.table.tableName)
         sb append ")"
         sb.toString
@@ -221,7 +232,8 @@ trait DerbyProfile extends JdbcProfile {
       val desc = increment < zero
       val b =
         new StringBuilder append "CREATE SEQUENCE " append quoteIdentifier(
-            seq.name)
+          seq.name
+        )
       /* Set the START value explicitly because it defaults to the data type's
        * min/max value instead of the more conventional 1/-1. */
       b append " START WITH " append seq._start.getOrElse(if (desc) -1 else 1)

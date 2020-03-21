@@ -60,8 +60,9 @@ class VariableDefinitionAnnotatorTest extends SimpleTestCase {
     }
   }
 
-  def messages(@Language(value = "Scala", prefix = Header) code: String)
-    : List[Message] = {
+  def messages(
+      @Language(value = "Scala", prefix = Header) code: String
+  ): List[Message] = {
     val parse: ScalaFile = (Header + code).parse
     val definition =
       parse.depthFirst.findByType(classOf[ScVariableDefinition]).get
@@ -70,7 +71,10 @@ class VariableDefinitionAnnotatorTest extends SimpleTestCase {
     val mock = new AnnotatorHolderMock
 
     annotator.annotateVariableDefinition(
-        definition, mock, highlightErrors = true)
+      definition,
+      mock,
+      highlightErrors = true
+    )
     mock.annotations
   }
 

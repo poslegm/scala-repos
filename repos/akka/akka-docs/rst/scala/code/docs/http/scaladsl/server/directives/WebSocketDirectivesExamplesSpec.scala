@@ -20,8 +20,10 @@ class WebSocketDirectivesExamplesSpec extends RoutingSpec {
     def greeter: Flow[Message, Message, Any] =
       Flow[Message].mapConcat {
         case tm: TextMessage ⇒
-          TextMessage(Source.single("Hello ") ++ tm.textStream ++ Source
-                .single("!")) :: Nil
+          TextMessage(
+            Source.single("Hello ") ++ tm.textStream ++ Source
+              .single("!")
+          ) :: Nil
         case bm: BinaryMessage ⇒
           // ignore binary messages but drain content to avoid the stream being clogged
           bm.dataStream.runWith(Sink.ignore)
@@ -59,8 +61,10 @@ class WebSocketDirectivesExamplesSpec extends RoutingSpec {
     def greeterService: Flow[Message, Message, Any] =
       Flow[Message].mapConcat {
         case tm: TextMessage ⇒
-          TextMessage(Source.single("Hello ") ++ tm.textStream ++ Source
-                .single("!")) :: Nil
+          TextMessage(
+            Source.single("Hello ") ++ tm.textStream ++ Source
+              .single("!")
+          ) :: Nil
         case bm: BinaryMessage ⇒
           // ignore binary messages but drain content to avoid the stream being clogged
           bm.dataStream.runWith(Sink.ignore)
@@ -74,15 +78,21 @@ class WebSocketDirectivesExamplesSpec extends RoutingSpec {
 
     def websocketMultipleProtocolRoute =
       path("services") {
-        handleWebSocketMessagesForProtocol(greeterService, "greeter") ~ handleWebSocketMessagesForProtocol(
-            echoService, "echo")
+        handleWebSocketMessagesForProtocol(
+          greeterService,
+          "greeter"
+        ) ~ handleWebSocketMessagesForProtocol(echoService, "echo")
       }
 
     // tests:
     val wsClient = WSProbe()
 
     // WS creates a WebSocket request for testing
-    WS("/services", wsClient.flow, List("other", "echo")) ~> websocketMultipleProtocolRoute ~> check {
+    WS(
+      "/services",
+      wsClient.flow,
+      List("other", "echo")
+    ) ~> websocketMultipleProtocolRoute ~> check {
       expectWebSocketUpgradeWithProtocol { protocol ⇒
         protocol shouldEqual "echo"
 

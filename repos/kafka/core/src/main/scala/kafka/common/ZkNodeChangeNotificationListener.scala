@@ -54,8 +54,8 @@ class ZkNodeChangeNotificationListener(
     private val seqNodePrefix: String,
     private val notificationHandler: NotificationHandler,
     private val changeExpirationMs: Long = 15 * 60 * 1000,
-    private val time: Time = SystemTime)
-    extends Logging {
+    private val time: Time = SystemTime
+) extends Logging {
   private var lastExecutedChange = -1L
   private val isClosed = new AtomicBoolean(false)
 
@@ -95,8 +95,9 @@ class ZkNodeChangeNotificationListener(
             val changeZnode = seqNodeRoot + "/" + notification
             val (data, stat) = zkUtils.readDataMaybeNull(changeZnode)
             data map (notificationHandler.processNotification(_)) getOrElse
-            (logger.warn(
-                    s"read null data from $changeZnode when processing notification $notification"))
+              (logger.warn(
+                s"read null data from $changeZnode when processing notification $notification"
+              ))
           }
           lastExecutedChange = changeId
         }
@@ -114,7 +115,9 @@ class ZkNodeChangeNotificationListener(
     * @param notifications
     */
   private def purgeObsoleteNotifications(
-      now: Long, notifications: Seq[String]) {
+      now: Long,
+      notifications: Seq[String]
+  ) {
     for (notification <- notifications.sorted) {
       val notificationNode = seqNodeRoot + "/" + notification
       val (data, stat) = zkUtils.readDataMaybeNull(notificationNode)
@@ -136,7 +139,9 @@ class ZkNodeChangeNotificationListener(
     */
   object NodeChangeListener extends IZkChildListener {
     override def handleChildChange(
-        path: String, notifications: java.util.List[String]) {
+        path: String,
+        notifications: java.util.List[String]
+    ) {
       try {
         import scala.collection.JavaConverters._
         if (notifications != null)
@@ -144,8 +149,9 @@ class ZkNodeChangeNotificationListener(
       } catch {
         case e: Exception =>
           error(
-              s"Error processing notification change for path = $path and notification= $notifications :",
-              e)
+            s"Error processing notification change for path = $path and notification= $notifications :",
+            e
+          )
       }
     }
   }

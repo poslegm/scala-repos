@@ -33,19 +33,16 @@ object MergeableStoreFactory {
     }
   }
 
-  def from[K, V](store: => Mergeable[(K, BatchID), V])(
-      implicit batcher: Batcher): MergeableStoreFactory[(K, BatchID), V] =
-    apply({ () =>
-      store
-    }, batcher)
+  def from[K, V](
+      store: => Mergeable[(K, BatchID), V]
+  )(implicit batcher: Batcher): MergeableStoreFactory[(K, BatchID), V] =
+    apply({ () => store }, batcher)
 
-  def fromOnlineOnly[K, V](store: => MergeableStore[K, V])
-    : MergeableStoreFactory[(K, BatchID), V] = {
+  def fromOnlineOnly[K, V](
+      store: => MergeableStore[K, V]
+  ): MergeableStoreFactory[(K, BatchID), V] = {
     implicit val batcher = Batcher.unit
-    from(
-        store.convert { k: (K, BatchID) =>
-      k._1
-    })
+    from(store.convert { k: (K, BatchID) => k._1 })
   }
 }
 

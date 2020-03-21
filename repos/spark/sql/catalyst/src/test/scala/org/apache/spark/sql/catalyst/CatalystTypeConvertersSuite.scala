@@ -23,17 +23,19 @@ import org.apache.spark.sql.types._
 
 class CatalystTypeConvertersSuite extends SparkFunSuite {
 
-  private val simpleTypes: Seq[DataType] = Seq(StringType,
-                                               DateType,
-                                               BooleanType,
-                                               ByteType,
-                                               ShortType,
-                                               IntegerType,
-                                               LongType,
-                                               FloatType,
-                                               DoubleType,
-                                               DecimalType.SYSTEM_DEFAULT,
-                                               DecimalType.USER_DEFAULT)
+  private val simpleTypes: Seq[DataType] = Seq(
+    StringType,
+    DateType,
+    BooleanType,
+    ByteType,
+    ShortType,
+    IntegerType,
+    LongType,
+    FloatType,
+    DoubleType,
+    DecimalType.SYSTEM_DEFAULT,
+    DecimalType.USER_DEFAULT
+  )
 
   test("null handling in rows") {
     val schema =
@@ -49,7 +51,8 @@ class CatalystTypeConvertersSuite extends SparkFunSuite {
   test("null handling for individual values") {
     for (dataType <- simpleTypes) {
       assert(
-          CatalystTypeConverters.createToScalaConverter(dataType)(null) === null)
+        CatalystTypeConverters.createToScalaConverter(dataType)(null) === null
+      )
     }
   }
 
@@ -61,7 +64,9 @@ class CatalystTypeConvertersSuite extends SparkFunSuite {
   }
 
   test("option handling in createToCatalystConverter") {
-    assert(CatalystTypeConverters.createToCatalystConverter(IntegerType)(
-            Some(123)) === 123)
+    assert(
+      CatalystTypeConverters
+        .createToCatalystConverter(IntegerType)(Some(123)) === 123
+    )
   }
 }

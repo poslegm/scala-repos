@@ -5,17 +5,18 @@ package effect
 import scalaz.effect.MonadIO
 
 /** Wraps a value `self` and provides methods related to `MonadIO` */
-final class MonadIOOps[F[_], A] private[syntax](val self: F[A])(
-    implicit val F: MonadIO[F])
-    extends Ops[F[A]] {
+final class MonadIOOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: MonadIO[F]
+) extends Ops[F[A]] {
   ////
 
   ////
 }
 
 sealed trait ToMonadIOOps0 {
-  implicit def ToMonadIOOpsUnapply[FA](v: FA)(
-      implicit F0: Unapply[MonadIO, FA]) =
+  implicit def ToMonadIOOpsUnapply[FA](
+      v: FA
+  )(implicit F0: Unapply[MonadIO, FA]) =
     new MonadIOOps[F0.M, F0.A](F0(v))(F0.TC)
 }
 

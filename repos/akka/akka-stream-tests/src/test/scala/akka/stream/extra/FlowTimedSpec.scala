@@ -16,8 +16,8 @@ class FlowTimedSpec extends AkkaSpec with ScriptedTest {
 
   import scala.concurrent.duration._
 
-  val settings = ActorMaterializerSettings(system).withInputBuffer(
-      initialSize = 2, maxSize = 16)
+  val settings = ActorMaterializerSettings(system)
+    .withInputBuffer(initialSize = 2, maxSize = 16)
 
   implicit val materializer = ActorMaterializer(settings)
 
@@ -29,28 +29,29 @@ class FlowTimedSpec extends AkkaSpec with ScriptedTest {
       val testActor = TestProbe()
 
       val measureBetweenEvery = 5
-      val printInfo = (interval: Duration) ⇒
-        {
-          testActor.ref ! interval
-          info(
-              s"Measured interval between $measureBetweenEvery elements was: $interval")
+      val printInfo = (interval: Duration) ⇒ {
+        testActor.ref ! interval
+        info(
+          s"Measured interval between $measureBetweenEvery elements was: $interval"
+        )
       }
 
       val n = 20
       val testRuns = 1 to 2
 
       def script =
-        Script((1 to n) map { x ⇒
-          Seq(x) -> Seq(x)
-        }: _*)
+        Script((1 to n) map { x ⇒ Seq(x) -> Seq(x) }: _*)
       testRuns foreach
-      (_ ⇒
-            runScript(script, settings) { flow ⇒
-              flow
-                .map(identity)
-                .timedIntervalBetween(_ % measureBetweenEvery == 0,
-                                      onInterval = printInfo)
-          })
+        (_ ⇒
+          runScript(script, settings) { flow ⇒
+            flow
+              .map(identity)
+              .timedIntervalBetween(
+                _ % measureBetweenEvery == 0,
+                onInterval = printInfo
+              )
+          }
+        )
 
       val expectedNrOfOnIntervalCalls =
         testRuns.size * ((n / measureBetweenEvery) - 1) // first time has no value to compare to, so skips calling onInterval
@@ -63,27 +64,23 @@ class FlowTimedSpec extends AkkaSpec with ScriptedTest {
       val testActor = TestProbe()
 
       val n = 50
-      val printInfo = (d: FiniteDuration) ⇒
-        {
-          testActor.ref ! d
-          info(s"Processing $n elements took $d")
+      val printInfo = (d: FiniteDuration) ⇒ {
+        testActor.ref ! d
+        info(s"Processing $n elements took $d")
       }
 
       val testRuns = 1 to 3
 
       def script =
-        Script((1 to n) map { x ⇒
-          Seq(x) -> Seq(x)
-        }: _*)
+        Script((1 to n) map { x ⇒ Seq(x) -> Seq(x) }: _*)
       testRuns foreach
-      (_ ⇒
-            runScript(script, settings) { flow ⇒
-              flow.timed(_.map(identity), onComplete = printInfo)
-          })
+        (_ ⇒
+          runScript(script, settings) { flow ⇒
+            flow.timed(_.map(identity), onComplete = printInfo)
+          }
+        )
 
-      testRuns foreach { _ ⇒
-        testActor.expectMsgType[Duration]
-      }
+      testRuns foreach { _ ⇒ testActor.expectMsgType[Duration] }
       testActor.expectNoMsg(1.second)
     }
 
@@ -119,11 +116,11 @@ class FlowTimedSpec extends AkkaSpec with ScriptedTest {
 
       // making sure the types come out as expected
       val flow: Flow[Int, String, _] = Flow[Int]
-        .timed(_.map(_.toDouble).map(_.toInt).map(_.toString),
-               duration ⇒ probe.ref ! duration)
-        .map { s: String ⇒
-          s + "!"
-        }
+        .timed(
+          _.map(_.toDouble).map(_.toInt).map(_.toString),
+          duration ⇒ probe.ref ! duration
+        )
+        .map { s: String ⇒ s + "!" }
 
       val (flowIn: Subscriber[Int], flowOut: Publisher[String]) =
         flow.runWith(Source.asSubscriber[Int], Sink.asPublisher[String](false))
@@ -136,9 +133,7 @@ class FlowTimedSpec extends AkkaSpec with ScriptedTest {
 
       val s = c1.expectSubscription()
       s.request(200)
-      0 to 100 foreach { i ⇒
-        c1.expectNext(i.toString + "!")
-      }
+      0 to 100 foreach { i ⇒ c1.expectNext(i.toString + "!") }
       c1.expectComplete()
 
       val duration = probe.expectMsgType[Duration]

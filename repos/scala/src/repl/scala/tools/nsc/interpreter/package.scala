@@ -45,7 +45,8 @@ package object interpreter extends ReplConfig with ReplStrings {
     scala.language.postfixOps // make all postfix ops in this package compile without warning
 
   private[interpreter] implicit def javaCharSeqCollectionToScala(
-      xs: JCollection[_ <: CharSequence]): List[String] = {
+      xs: JCollection[_ <: CharSequence]
+  ): List[String] = {
     import scala.collection.JavaConverters._
     xs.asScala.toList map ("" + _)
   }
@@ -57,13 +58,16 @@ package object interpreter extends ReplConfig with ReplStrings {
 
   private val ourClassloader = getClass.getClassLoader
 
-  def staticTypeTag[T : ClassTag]: ru.TypeTag[T] =
-    ru.TypeTag[T](ru.runtimeMirror(ourClassloader), new TypeCreator {
-      def apply[U <: ApiUniverse with Singleton](m: Mirror[U]): U#Type =
-        m.staticClass(classTag[T].runtimeClass.getName)
-          .toTypeConstructor
-          .asInstanceOf[U#Type]
-    })
+  def staticTypeTag[T: ClassTag]: ru.TypeTag[T] =
+    ru.TypeTag[T](
+      ru.runtimeMirror(ourClassloader),
+      new TypeCreator {
+        def apply[U <: ApiUniverse with Singleton](m: Mirror[U]): U#Type =
+          m.staticClass(classTag[T].runtimeClass.getName)
+            .toTypeConstructor
+            .asInstanceOf[U#Type]
+      }
+    )
 
   /** This class serves to trick the compiler into treating a var
     *  (intp, in ILoop) as a stable identifier.
@@ -98,8 +102,10 @@ package object interpreter extends ReplConfig with ReplStrings {
 
       filtered foreach {
         case (source, syms) =>
-          p("/* " + syms.size + " implicit members imported from " +
-              source.fullName + " */")
+          p(
+            "/* " + syms.size + " implicit members imported from " +
+              source.fullName + " */"
+          )
 
           // This groups the members by where the symbol is defined
           val byOwner = syms groupBy (_.owner)
@@ -120,7 +126,7 @@ package object interpreter extends ReplConfig with ReplStrings {
                 val (big, small) = groups partition (_._2.size > 3)
                 val xss =
                   ((big sortBy (_._1.toString) map (_._2)) :+
-                      (small flatMap (_._2)))
+                    (small flatMap (_._2)))
 
                 xss map (xs => xs sortBy (_.name.toString))
               }
@@ -140,22 +146,27 @@ package object interpreter extends ReplConfig with ReplStrings {
     }
 
     def kindCommandInternal(expr: String, verbose: Boolean): Unit = {
-      val catcher = catching(classOf[MissingRequirementError],
-                             classOf[ScalaReflectionException])
-      def typeFromTypeString: Option[ClassSymbol] = catcher opt {
-        exprTyper.typeOfTypeString(expr).typeSymbol.asClass
-      }
-      def typeFromNameTreatedAsTerm: Option[ClassSymbol] = catcher opt {
-        val moduleClass = exprTyper.typeOfExpression(expr).typeSymbol
-        moduleClass.linkedClassOfClass.asClass
-      }
-      def typeFromFullName: Option[ClassSymbol] = catcher opt {
-        intp.global.rootMirror.staticClass(expr)
-      }
+      val catcher = catching(
+        classOf[MissingRequirementError],
+        classOf[ScalaReflectionException]
+      )
+      def typeFromTypeString: Option[ClassSymbol] =
+        catcher opt {
+          exprTyper.typeOfTypeString(expr).typeSymbol.asClass
+        }
+      def typeFromNameTreatedAsTerm: Option[ClassSymbol] =
+        catcher opt {
+          val moduleClass = exprTyper.typeOfExpression(expr).typeSymbol
+          moduleClass.linkedClassOfClass.asClass
+        }
+      def typeFromFullName: Option[ClassSymbol] =
+        catcher opt {
+          intp.global.rootMirror.staticClass(expr)
+        }
       def typeOfTerm: Option[TypeSymbol] =
         replInfo(symbolOfLine(expr)).typeSymbol match {
           case sym: TypeSymbol => Some(sym)
-          case _ => None
+          case _               => None
         }
       (typeFromTypeString orElse typeFromNameTreatedAsTerm orElse typeFromFullName orElse typeOfTerm) foreach {
         sym =>
@@ -171,8 +182,8 @@ package object interpreter extends ReplConfig with ReplStrings {
       def typeString(tpe: Type): String = {
         tpe match {
           case TypeRef(_, sym, _) => typeString(sym.info)
-          case RefinedType(_, _) => tpe.toString
-          case _ => tpe.typeSymbol.fullName
+          case RefinedType(_, _)  => tpe.toString
+          case _                  => tpe.typeSymbol.fullName
         }
       }
       printAfterTyper(typeString(tpe) + "'s kind is " + kind.scalaNotation)

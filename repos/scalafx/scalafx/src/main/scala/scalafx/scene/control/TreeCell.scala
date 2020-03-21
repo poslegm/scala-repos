@@ -46,8 +46,9 @@ object TreeCell {
   * @tparam T The type of the value contained within the `TreeItem` property.
   */
 class TreeCell[T](
-    override val delegate: jfxsc.TreeCell[T] = new jfxsc.TreeCell[T])
-    extends IndexedCell(delegate) with SFXDelegate[jfxsc.TreeCell[T]] {
+    override val delegate: jfxsc.TreeCell[T] = new jfxsc.TreeCell[T]
+) extends IndexedCell(delegate)
+    with SFXDelegate[jfxsc.TreeCell[T]] {
 
   /**
     * The disclosure node is commonly seen represented as a triangle that rotates on screen to indicate whether or

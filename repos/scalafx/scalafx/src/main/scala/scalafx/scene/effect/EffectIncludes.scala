@@ -141,7 +141,8 @@ trait EffectIncludes {
     * @return $SFX $DSM
     */
   implicit def jfxDisplacementMap2sfx(
-      dm: jfxse.DisplacementMap): DisplacementMap =
+      dm: jfxse.DisplacementMap
+  ): DisplacementMap =
     if (dm != null) new DisplacementMap(dm) else null
 
   /**
@@ -151,7 +152,8 @@ trait EffectIncludes {
     * @return $SFX $EFF
     */
   implicit def jfxEffect2sfx(e: jfxse.Effect): Effect =
-    if (e != null) new Effect(e) {} else null
+    if (e != null) new Effect(e) {}
+    else null
 
   /**
     * $START$DPS.html $DPS$END
@@ -214,7 +216,8 @@ trait EffectIncludes {
     * @return $SFX $LIG
     */
   implicit def jfxLight2sfx(l: jfxse.Light): Light =
-    if (l != null) new Light(l) {} else null
+    if (l != null) new Light(l) {}
+    else null
 
   /**
     * $START$LDS.html $LDS$END
@@ -268,7 +271,8 @@ trait EffectIncludes {
     * @return $SFX $PTR
     */
   implicit def jfxPerspectiveTransform2sfx(
-      pt: jfxse.PerspectiveTransform): PerspectiveTransform =
+      pt: jfxse.PerspectiveTransform
+  ): PerspectiveTransform =
     if (pt != null) new PerspectiveTransform(pt) else null
 
   /**

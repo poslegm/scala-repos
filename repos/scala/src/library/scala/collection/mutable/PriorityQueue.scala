@@ -47,17 +47,24 @@ import generic._
   *  @define willNotTerminateInf
   */
 @deprecatedInheritance(
-    "PriorityQueue is not intended to be subclassed due to extensive private implementation details.",
-    "2.11.0")
+  "PriorityQueue is not intended to be subclassed due to extensive private implementation details.",
+  "2.11.0"
+)
 class PriorityQueue[A](implicit val ord: Ordering[A])
     extends AbstractIterable[A]
-    with Iterable[A] with GenericOrderedTraversableTemplate[A, PriorityQueue]
-    with IterableLike[A, PriorityQueue[A]] with Growable[A]
-    with Builder[A, PriorityQueue[A]] with Serializable with scala.Cloneable {
+    with Iterable[A]
+    with GenericOrderedTraversableTemplate[A, PriorityQueue]
+    with IterableLike[A, PriorityQueue[A]]
+    with Growable[A]
+    with Builder[A, PriorityQueue[A]]
+    with Serializable
+    with scala.Cloneable {
   import ord._
 
   private class ResizableArrayAccess[A]
-      extends AbstractSeq[A] with ResizableArray[A] with Serializable {
+      extends AbstractSeq[A]
+      with ResizableArray[A]
+      with Serializable {
     def p_size0 = size0
     def p_size0_=(s: Int) = size0 = s
     def p_array = array
@@ -93,7 +100,8 @@ class PriorityQueue[A](implicit val ord: Ordering[A])
     while (n >= 2 * k) {
       var j = 2 * k
       if (j < n && toA(as(j)) < toA(as(j + 1))) j += 1
-      if (toA(as(k)) >= toA(as(j))) return else {
+      if (toA(as(k)) >= toA(as(j))) return
+      else {
         val h = as(k)
         as(k) = as(j)
         as(j) = h
@@ -145,7 +153,9 @@ class PriorityQueue[A](implicit val ord: Ordering[A])
       toA(resarr.p_array(resarr.p_size0))
     } else throw new NoSuchElementException("no element to remove from heap")
 
-  def dequeueAll[A1 >: A, That](implicit bf: CanBuildFrom[_, A1, That]): That = {
+  def dequeueAll[A1 >: A, That](implicit
+      bf: CanBuildFrom[_, A1, That]
+  ): That = {
     val b = bf.apply()
     while (nonEmpty) {
       b += dequeue()
@@ -175,15 +185,16 @@ class PriorityQueue[A](implicit val ord: Ordering[A])
     *
     *  @return  an iterator over all the elements.
     */
-  override def iterator: Iterator[A] = new AbstractIterator[A] {
-    private var i = 1
-    def hasNext: Boolean = i < resarr.p_size0
-    def next(): A = {
-      val n = resarr.p_array(i)
-      i += 1
-      toA(n)
+  override def iterator: Iterator[A] =
+    new AbstractIterator[A] {
+      private var i = 1
+      def hasNext: Boolean = i < resarr.p_size0
+      def next(): A = {
+        val n = resarr.p_array(i)
+        i += 1
+        toA(n)
+      }
     }
-  }
 
   /** Returns the reverse of this queue. The priority queue that gets
     *  returned will have an inversed ordering - if for some elements
@@ -213,15 +224,16 @@ class PriorityQueue[A](implicit val ord: Ordering[A])
     *
     *  @return  an iterator over all elements sorted in descending order.
     */
-  def reverseIterator: Iterator[A] = new AbstractIterator[A] {
-    private var i = resarr.p_size0 - 1
-    def hasNext: Boolean = i >= 1
-    def next(): A = {
-      val n = resarr.p_array(i)
-      i -= 1
-      toA(n)
+  def reverseIterator: Iterator[A] =
+    new AbstractIterator[A] {
+      private var i = resarr.p_size0 - 1
+      def hasNext: Boolean = i >= 1
+      def next(): A = {
+        val n = resarr.p_array(i)
+        i -= 1
+        toA(n)
+      }
     }
-  }
 
   /** The hashCode method always yields an error, since it is not
     *  safe to use mutable queues as keys in hash tables.
@@ -261,7 +273,8 @@ class PriorityQueue[A](implicit val ord: Ordering[A])
 
 object PriorityQueue extends OrderedTraversableFactory[PriorityQueue] {
   def newBuilder[A](implicit ord: Ordering[A]) = new PriorityQueue[A]
-  implicit def canBuildFrom[A](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, A, PriorityQueue[A]] =
+  implicit def canBuildFrom[A](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, A, PriorityQueue[A]] =
     new GenericCanBuildFrom[A]
 }

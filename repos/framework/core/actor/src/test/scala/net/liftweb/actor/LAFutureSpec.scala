@@ -23,9 +23,7 @@ class LAFutureSpec extends Specification {
       val transformedFuture = future.map(tranformThrowingException)
 
       var notifiedAboutFailure: Boolean = false
-      transformedFuture.onFail { _ =>
-        notifiedAboutFailure = true
-      }
+      transformedFuture.onFail { _ => notifiedAboutFailure = true }
 
       transformedFuture.get(timeout)
       notifiedAboutFailure shouldEqual true
@@ -40,9 +38,7 @@ class LAFutureSpec extends Specification {
       val transformedFuture = future.flatMap(tranformThrowingException)
 
       var notifiedAboutFailure: Boolean = false
-      transformedFuture.onFail { _ =>
-        notifiedAboutFailure = true
-      }
+      transformedFuture.onFail { _ => notifiedAboutFailure = true }
 
       transformedFuture.get(timeout)
       notifiedAboutFailure shouldEqual true
@@ -72,8 +68,10 @@ class LAFutureSpec extends Specification {
       val givenTwoResult = 234
       val one = LAFuture(() => givenOneResult)
       val two = LAFuture(() => givenTwoResult)
-      LAFuture.collect(one, two).get(timeout) shouldEqual List(givenOneResult,
-                                                               givenTwoResult)
+      LAFuture.collect(one, two).get(timeout) shouldEqual List(
+        givenOneResult,
+        givenTwoResult
+      )
     }
 
     "collect empty list immediately" in {

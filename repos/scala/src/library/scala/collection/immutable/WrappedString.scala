@@ -28,14 +28,18 @@ import mutable.{Builder, StringBuilder}
   *  @define coll wrapped string
   */
 @deprecatedInheritance(
-    "Inherit from StringLike instead of WrappedString.", "2.11.0")
+  "Inherit from StringLike instead of WrappedString.",
+  "2.11.0"
+)
 class WrappedString(val self: String)
-    extends AbstractSeq[Char] with IndexedSeq[Char]
+    extends AbstractSeq[Char]
+    with IndexedSeq[Char]
     with StringLike[WrappedString] {
 
   override protected[this] def thisCollection: WrappedString = this
   override protected[this] def toCollection(
-      repr: WrappedString): WrappedString = repr
+      repr: WrappedString
+  ): WrappedString = repr
 
   /** Creates a string builder buffer as builder for this class */
   override protected[this] def newBuilder = WrappedString.newBuilder

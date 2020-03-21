@@ -45,7 +45,9 @@ class StringUtilityTest extends WordSpec with Matchers {
 class StringUtilityPropertyTest extends PropSpec with Checkers {
   val randomStringGen = for {
     s <- Gen.pick(
-        5, List.fill(100)(List("k", "l", "m", "x", "//.", "@")).flatten)
+      5,
+      List.fill(100)(List("k", "l", "m", "x", "//.", "@")).flatten
+    )
   } yield s
 
   // test for one separator and two
@@ -53,7 +55,9 @@ class StringUtilityPropertyTest extends PropSpec with Checkers {
     s <- Gen.oneOf("@@", "@", "x", "//.")
   } yield s
 
-  property("fastSplit(s, sep) should match s.split(sep, -1) for non-regex sep") {
+  property(
+    "fastSplit(s, sep) should match s.split(sep, -1) for non-regex sep"
+  ) {
     check {
       forAll(randomStringGen, randomSeparator) { (str, separator) =>
         val t = str.mkString("")

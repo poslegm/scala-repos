@@ -11,13 +11,16 @@ import util.ClassPath
 import GenericRunnerCommand._
 
 object JarRunner extends CommonRunner {
-  def runJar(settings: GenericRunnerSettings,
-             jarPath: String,
-             arguments: Seq[String]): Either[Throwable, Boolean] = {
+  def runJar(
+      settings: GenericRunnerSettings,
+      jarPath: String,
+      arguments: Seq[String]
+  ): Either[Throwable, Boolean] = {
     val jar = new io.Jar(jarPath)
     val mainClass =
       jar.mainClass getOrElse sys.error(
-          "Cannot find main class for jar: " + jarPath)
+        "Cannot find main class for jar: " + jarPath
+      )
     val jarURLs = ClassPath expandManifestPath jarPath
     val urls =
       if (jarURLs.isEmpty) File(jarPath).toURL +: settings.classpathURLs
@@ -37,18 +40,26 @@ object JarRunner extends CommonRunner {
   *  or interactive entry.
   */
 class MainGenericRunner {
-  def errorFn(str: String,
-              e: Option[Throwable] = None,
-              isFailure: Boolean = true): Boolean = {
+  def errorFn(
+      str: String,
+      e: Option[Throwable] = None,
+      isFailure: Boolean = true
+  ): Boolean = {
     if (str.nonEmpty) Console.err println str
     e foreach (_.printStackTrace())
     !isFailure
   }
 
   def process(args: Array[String]): Boolean = {
-    val command = new GenericRunnerCommand(
-        args.toList, (x: String) => errorFn(x))
-    import command.{settings, howToRun, thingToRun, shortUsageMsg, shouldStopWithInfo}
+    val command =
+      new GenericRunnerCommand(args.toList, (x: String) => errorFn(x))
+    import command.{
+      settings,
+      howToRun,
+      thingToRun,
+      shortUsageMsg,
+      shouldStopWithInfo
+    }
     def sampleCompiler =
       new Global(settings) // def so it's not created unless needed
 
@@ -69,21 +80,28 @@ class MainGenericRunner {
         files ++ str mkString "\n\n"
       }
 
-      def runTarget(): Either[Throwable, Boolean] = howToRun match {
-        case AsObject =>
-          ObjectRunner.runAndCatch(
-              settings.classpathURLs, thingToRun, command.arguments)
-        case AsScript =>
-          ScriptRunner.runScriptAndCatch(
-              settings, thingToRun, command.arguments)
-        case AsJar =>
-          JarRunner.runJar(settings, thingToRun, command.arguments)
-        case Error =>
-          Right(false)
-        case _ =>
-          // We start the repl when no arguments are given.
-          Right(new interpreter.ILoop process settings)
-      }
+      def runTarget(): Either[Throwable, Boolean] =
+        howToRun match {
+          case AsObject =>
+            ObjectRunner.runAndCatch(
+              settings.classpathURLs,
+              thingToRun,
+              command.arguments
+            )
+          case AsScript =>
+            ScriptRunner.runScriptAndCatch(
+              settings,
+              thingToRun,
+              command.arguments
+            )
+          case AsJar =>
+            JarRunner.runJar(settings, thingToRun, command.arguments)
+          case Error =>
+            Right(false)
+          case _ =>
+            // We start the repl when no arguments are given.
+            Right(new interpreter.ILoop process settings)
+        }
 
       /** If -e and -i were both given, we want to execute the -e code after the
         *  -i files have been included, so they are read into strings and prepended to
@@ -94,11 +112,17 @@ class MainGenericRunner {
         */
       if (isE) {
         ScriptRunner.runCommand(
-            settings, combinedCode, thingToRun +: command.arguments)
+          settings,
+          combinedCode,
+          thingToRun +: command.arguments
+        )
       } else
         runTarget() match {
           case Left(ex) =>
-            errorFn("", Some(ex)) // there must be a useful message of hope to offer here
+            errorFn(
+              "",
+              Some(ex)
+            ) // there must be a useful message of hope to offer here
           case Right(b) => b
         }
     }

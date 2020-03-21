@@ -102,17 +102,19 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
 
   def iterator: Iterator[Int] = iteratorFrom(0)
 
-  override def keysIteratorFrom(start: Int) = new AbstractIterator[Int] {
-    private var current = start
-    private val end = nwords * WordLength
-    def hasNext: Boolean = {
-      while (current != end && !self.contains(current)) current += 1
-      current != end
+  override def keysIteratorFrom(start: Int) =
+    new AbstractIterator[Int] {
+      private var current = start
+      private val end = nwords * WordLength
+      def hasNext: Boolean = {
+        while (current != end && !self.contains(current)) current += 1
+        current != end
+      }
+      def next(): Int =
+        if (hasNext) { val r = current; current += 1; r }
+        else
+          Iterator.empty.next()
     }
-    def next(): Int =
-      if (hasNext) { val r = current; current += 1; r } else
-        Iterator.empty.next()
-  }
 
   override def foreach[U](f: Int => U) {
     /* NOTE: while loops are significantly faster as of 2.11 and
@@ -223,7 +225,11 @@ trait BitSetLike[+This <: BitSetLike[This] with SortedSet[Int]]
   }
 
   override def addString(
-      sb: StringBuilder, start: String, sep: String, end: String) = {
+      sb: StringBuilder,
+      start: String,
+      sep: String,
+      end: String
+  ) = {
     sb append start
     var pre = ""
     val max = nwords * WordLength
@@ -249,9 +255,13 @@ object BitSetLike {
   private[collection] final val MaxSize = (Int.MaxValue >> LogWL) + 1
 
   private[collection] def updateArray(
-      elems: Array[Long], idx: Int, w: Long): Array[Long] = {
+      elems: Array[Long],
+      idx: Int,
+      w: Long
+  ): Array[Long] = {
     var len = elems.length
-    while (len > 0 && (elems(len - 1) == 0L || w == 0L && idx == len - 1)) len -= 1
+    while (len > 0 && (elems(len - 1) == 0L || w == 0L && idx == len - 1))
+      len -= 1
     var newlen = len
     if (idx >= newlen && w != 0L) newlen = idx + 1
     val newelems = new Array[Long](newlen)

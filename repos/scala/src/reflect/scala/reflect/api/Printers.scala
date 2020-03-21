@@ -172,35 +172,44 @@ trait Printers { self: Universe =>
       BooleanFlag(value)
     import scala.reflect.internal.settings.MutableSettings
     implicit def settingToBooleanFlag(
-        setting: MutableSettings#BooleanSetting): BooleanFlag =
+        setting: MutableSettings#BooleanSetting
+    ): BooleanFlag =
       BooleanFlag(Some(setting.value))
   }
 
   /** @group Printers */
-  protected def render(what: Any,
-                       mkPrinter: PrintWriter => TreePrinter,
-                       printTypes: BooleanFlag = None,
-                       printIds: BooleanFlag = None,
-                       printOwners: BooleanFlag = None,
-                       printKinds: BooleanFlag = None,
-                       printMirrors: BooleanFlag = None,
-                       printPositions: BooleanFlag = None): String = {
+  protected def render(
+      what: Any,
+      mkPrinter: PrintWriter => TreePrinter,
+      printTypes: BooleanFlag = None,
+      printIds: BooleanFlag = None,
+      printOwners: BooleanFlag = None,
+      printKinds: BooleanFlag = None,
+      printMirrors: BooleanFlag = None,
+      printPositions: BooleanFlag = None
+  ): String = {
     val buffer = new StringWriter()
     val writer = new PrintWriter(buffer)
     val printer = mkPrinter(writer)
     printTypes.value.map(printTypes =>
-          if (printTypes) printer.withTypes else printer.withoutTypes)
-    printIds.value.map(
-        printIds => if (printIds) printer.withIds else printer.withoutIds)
+      if (printTypes) printer.withTypes else printer.withoutTypes
+    )
+    printIds.value.map(printIds =>
+      if (printIds) printer.withIds else printer.withoutIds
+    )
     printOwners.value.map(printOwners =>
-          if (printOwners) printer.withOwners else printer.withoutOwners)
+      if (printOwners) printer.withOwners else printer.withoutOwners
+    )
     printKinds.value.map(printKinds =>
-          if (printKinds) printer.withKinds else printer.withoutKinds)
+      if (printKinds) printer.withKinds else printer.withoutKinds
+    )
     printMirrors.value.map(printMirrors =>
-          if (printMirrors) printer.withMirrors else printer.withoutMirrors)
+      if (printMirrors) printer.withMirrors else printer.withoutMirrors
+    )
     printPositions.value.map(printPositions =>
-          if (printPositions) printer.withPositions
-          else printer.withoutPositions)
+      if (printPositions) printer.withPositions
+      else printer.withoutPositions
+    )
     printer.print(what)
     writer.flush()
     buffer.toString
@@ -216,21 +225,25 @@ trait Printers { self: Universe =>
     *
     *  @group Printers
     */
-  def show(any: Any,
-           printTypes: BooleanFlag = None,
-           printIds: BooleanFlag = None,
-           printOwners: BooleanFlag = None,
-           printKinds: BooleanFlag = None,
-           printMirrors: BooleanFlag = None,
-           printPositions: BooleanFlag = None): String =
-    render(any,
-           newTreePrinter(_),
-           printTypes,
-           printIds,
-           printOwners,
-           printKinds,
-           printMirrors,
-           printPositions)
+  def show(
+      any: Any,
+      printTypes: BooleanFlag = None,
+      printIds: BooleanFlag = None,
+      printOwners: BooleanFlag = None,
+      printKinds: BooleanFlag = None,
+      printMirrors: BooleanFlag = None,
+      printPositions: BooleanFlag = None
+  ): String =
+    render(
+      any,
+      newTreePrinter(_),
+      printTypes,
+      printIds,
+      printOwners,
+      printKinds,
+      printMirrors,
+      printPositions
+    )
 
   /** Hook to define what `show(...)` means.
     * @group Printers
@@ -249,48 +262,59 @@ trait Printers { self: Universe =>
     *
     *  @group Printers
     */
-  def showCode(tree: Tree,
-               printTypes: BooleanFlag = None,
-               printIds: BooleanFlag = None,
-               printOwners: BooleanFlag = None,
-               printPositions: BooleanFlag = None,
-               printRootPkg: Boolean = false) =
-    render(tree,
-           newCodePrinter(_, tree, printRootPkg),
-           printTypes,
-           printIds,
-           printOwners,
-           printKinds = None,
-           printMirrors = None,
-           printPositions)
+  def showCode(
+      tree: Tree,
+      printTypes: BooleanFlag = None,
+      printIds: BooleanFlag = None,
+      printOwners: BooleanFlag = None,
+      printPositions: BooleanFlag = None,
+      printRootPkg: Boolean = false
+  ) =
+    render(
+      tree,
+      newCodePrinter(_, tree, printRootPkg),
+      printTypes,
+      printIds,
+      printOwners,
+      printKinds = None,
+      printMirrors = None,
+      printPositions
+    )
 
   /**
     * Hook to define what `showCode(...)` means.
     * @group Printers
     */
   protected def newCodePrinter(
-      out: PrintWriter, tree: Tree, printRootPkg: Boolean): TreePrinter
+      out: PrintWriter,
+      tree: Tree,
+      printRootPkg: Boolean
+  ): TreePrinter
 
   /** Renders internal structure of a reflection artifact as the
     *  visualization of a Scala syntax tree.
     *
     *  @group Printers
     */
-  def showRaw(any: Any,
-              printTypes: BooleanFlag = None,
-              printIds: BooleanFlag = None,
-              printOwners: BooleanFlag = None,
-              printKinds: BooleanFlag = None,
-              printMirrors: BooleanFlag = None,
-              printPositions: BooleanFlag = None): String =
-    render(any,
-           newRawTreePrinter,
-           printTypes,
-           printIds,
-           printOwners,
-           printKinds,
-           printMirrors,
-           printPositions)
+  def showRaw(
+      any: Any,
+      printTypes: BooleanFlag = None,
+      printIds: BooleanFlag = None,
+      printOwners: BooleanFlag = None,
+      printKinds: BooleanFlag = None,
+      printMirrors: BooleanFlag = None,
+      printPositions: BooleanFlag = None
+  ): String =
+    render(
+      any,
+      newRawTreePrinter,
+      printTypes,
+      printIds,
+      printOwners,
+      printKinds,
+      printMirrors,
+      printPositions
+    )
 
   /** Hook to define what `showRaw(...)` means.
     * @group Printers

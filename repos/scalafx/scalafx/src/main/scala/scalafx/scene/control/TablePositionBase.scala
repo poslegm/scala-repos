@@ -45,7 +45,8 @@ object TablePositionBase {
     * @since 8.0
     */
   implicit def sfxTablePositionBase2jfx[TC <: jfxsc.TableColumnBase[_, _]](
-      tpb: TablePositionBase[TC]): jfxsc.TablePositionBase[TC] =
+      tpb: TablePositionBase[TC]
+  ): jfxsc.TablePositionBase[TC] =
     if (tpb != null) tpb.delegate else null
 }
 
@@ -58,8 +59,8 @@ object TablePositionBase {
   * @since 8.0
   */
 abstract class TablePositionBase[TC <: jfxsc.TableColumnBase[_, _]](
-    override val delegate: jfxsc.TablePositionBase[TC])
-    extends SFXDelegate[jfxsc.TablePositionBase[TC]] {
+    override val delegate: jfxsc.TablePositionBase[TC]
+) extends SFXDelegate[jfxsc.TablePositionBase[TC]] {
 
   //  protected	TablePositionBase(int row, TC tableColumn)
 

@@ -15,16 +15,18 @@ object RedisCluster { self =>
 
   def address: Option[InetSocketAddress] = instanceStack.head.address
   def address(i: Int) = instanceStack(i).address
-  def addresses: Seq[Option[InetSocketAddress]] = instanceStack.map { i =>
-    i.address
-  }
+  def addresses: Seq[Option[InetSocketAddress]] =
+    instanceStack.map { i => i.address }
 
   def hostAddresses(): String = {
     require(instanceStack.length > 0)
-    addresses.map { address =>
-      val addy = address.get
-      "%s:%d".format(addy.getHostName(), addy.getPort())
-    }.sorted.mkString(",")
+    addresses
+      .map { address =>
+        val addy = address.get
+        "%s:%d".format(addy.getHostName(), addy.getPort())
+      }
+      .sorted
+      .mkString(",")
   }
 
   def start(count: Int = 1) {
@@ -38,9 +40,7 @@ object RedisCluster { self =>
     instanceStack.pop().stop()
   }
   def stopAll() {
-    instanceStack.foreach { i =>
-      i.stop()
-    }
+    instanceStack.foreach { i => i.stop() }
     instanceStack.clear
   }
 
@@ -49,9 +49,7 @@ object RedisCluster { self =>
     .getRuntime()
     .addShutdownHook(new Thread {
       override def run() {
-        self.instanceStack.foreach { instance =>
-          instance.stop()
-        }
+        self.instanceStack.foreach { instance => instance.stop() }
       }
     });
 }
@@ -66,8 +64,10 @@ class ExternalRedis() {
     val p = new ProcessBuilder("redis-server", "--help").start()
     p.waitFor()
     val exitValue = p.exitValue()
-    require(exitValue == 0 || exitValue == 1,
-            "redis-server binary must be present.")
+    require(
+      exitValue == 0 || exitValue == 1,
+      "redis-server binary must be present."
+    )
   }
 
   private[this] def findAddress() {

@@ -38,8 +38,9 @@ object ToggleButton {
 }
 
 class ToggleButton(
-    override val delegate: jfxsc.ToggleButton = new jfxsc.ToggleButton)
-    extends ButtonBase(delegate) with Toggle
+    override val delegate: jfxsc.ToggleButton = new jfxsc.ToggleButton
+) extends ButtonBase(delegate)
+    with Toggle
     with SFXDelegate[jfxsc.ToggleButton] {
 
   /**

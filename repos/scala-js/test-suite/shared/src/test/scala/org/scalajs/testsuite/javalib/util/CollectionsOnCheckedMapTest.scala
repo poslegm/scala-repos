@@ -29,11 +29,15 @@ trait CollectionsOnCheckedMapTest extends CollectionsOnMapsTest {
       override def implementationName: String =
         s"checkedMap(${originalFactory.implementationName})"
 
-      def empty[K, V](
-          implicit kct: ClassTag[K], vct: ClassTag[V]): ju.Map[K, V] = {
-        ju.Collections.checkedMap(originalFactory.empty[K, V],
-                                  kct.runtimeClass.asInstanceOf[Class[K]],
-                                  vct.runtimeClass.asInstanceOf[Class[V]])
+      def empty[K, V](implicit
+          kct: ClassTag[K],
+          vct: ClassTag[V]
+      ): ju.Map[K, V] = {
+        ju.Collections.checkedMap(
+          originalFactory.empty[K, V],
+          kct.runtimeClass.asInstanceOf[Class[K]],
+          vct.runtimeClass.asInstanceOf[Class[V]]
+        )
       }
 
       override def allowsNullKeys: Boolean =
@@ -60,8 +64,10 @@ trait CollectionsOnCheckedMapTest extends CollectionsOnMapsTest {
       m.put(new C, new C)
       m.asInstanceOf[ju.Map[A, A]]
     }
-    expectThrows(classOf[ClassCastException],
-                 singletonMap().entrySet().head.setValue(new A))
+    expectThrows(
+      classOf[ClassCastException],
+      singletonMap().entrySet().head.setValue(new A)
+    )
   }
 
   private def superMap(): ju.Map[A, A] =
@@ -77,12 +83,15 @@ trait CollectionsOnCheckedSortedMapTest extends CollectionsOnSortedMapsTest {
       override def implementationName: String =
         s"checkedSortedMap(${originalFactory.implementationName})"
 
-      def empty[K, V](
-          implicit kct: ClassTag[K], vct: ClassTag[V]): ju.SortedMap[K, V] = {
+      def empty[K, V](implicit
+          kct: ClassTag[K],
+          vct: ClassTag[V]
+      ): ju.SortedMap[K, V] = {
         ju.Collections.checkedSortedMap(
-            originalFactory.empty[K, V],
-            kct.runtimeClass.asInstanceOf[Class[K]],
-            vct.runtimeClass.asInstanceOf[Class[V]])
+          originalFactory.empty[K, V],
+          kct.runtimeClass.asInstanceOf[Class[K]],
+          vct.runtimeClass.asInstanceOf[Class[V]]
+        )
       }
 
       override def allowsNullKeys: Boolean =
@@ -109,16 +118,17 @@ trait CollectionsOnCheckedSortedMapTest extends CollectionsOnSortedMapsTest {
       m.put(new C, new C)
       m.asInstanceOf[ju.Map[A, A]]
     }
-    expectThrows(classOf[ClassCastException],
-                 singletonMap().entrySet().head.setValue(new A))
+    expectThrows(
+      classOf[ClassCastException],
+      singletonMap().entrySet().head.setValue(new A)
+    )
   }
 
   private def superMap(): ju.Map[A, A] =
     factory.empty[B, B].asInstanceOf[ju.Map[A, A]]
 }
 
-class CollectionsOnCheckedMapOnHashMapTest
-    extends CollectionsOnCheckedMapTest {
+class CollectionsOnCheckedMapOnHashMapTest extends CollectionsOnCheckedMapTest {
   def originalFactory: MapFactory = new HashMapFactory
 }
 

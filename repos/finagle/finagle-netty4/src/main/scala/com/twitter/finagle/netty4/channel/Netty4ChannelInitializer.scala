@@ -26,8 +26,8 @@ import io.netty.handler.timeout._
 private[netty4] class Netty4ChannelInitializer(
     pipelineInit: ChannelPipeline => Unit,
     params: Stack.Params,
-    newBridge: () => ChannelHandler)
-    extends ChannelInitializer[SocketChannel] {
+    newBridge: () => ChannelHandler
+) extends ChannelInitializer[SocketChannel] {
 
   val Logger(logger) = params[Logger]
   val Label(label) = params[Label]
@@ -43,8 +43,10 @@ private[netty4] class Netty4ChannelInitializer(
 
   val (channelRequestStatsHandler, channelStatsHandler) =
     if (!stats.isNull)
-      (Some(new ChannelRequestStatsHandler(stats)),
-       Some(new ChannelStatsHandler(stats)))
+      (
+        Some(new ChannelRequestStatsHandler(stats)),
+        Some(new ChannelStatsHandler(stats))
+      )
     else (None, None)
 
   val channelSnooper =
@@ -58,7 +60,9 @@ private[netty4] class Netty4ChannelInitializer(
   val exceptionHandler = new ChannelExceptionHandler(stats, logger)
 
   def initChannelTls(
-      config: Netty4ListenerTLSConfig, ch: SocketChannel): Unit = {
+      config: Netty4ListenerTLSConfig,
+      ch: SocketChannel
+  ): Unit = {
     for (Netty4ListenerTLSConfig(newEngine) <- tlsConfig) {
       val engine = newEngine()
       engine.self.setUseClientMode(false)
@@ -68,8 +72,8 @@ private[netty4] class Netty4ChannelInitializer(
       ch.pipeline.addFirst("ssl", handler)
 
       ch.pipeline.addFirst(
-          "sslShutdown",
-          new TlsShutdownHandler(engine)
+        "sslShutdown",
+        new TlsShutdownHandler(engine)
       )
     }
   }
@@ -81,18 +85,22 @@ private[netty4] class Netty4ChannelInitializer(
     channelSnooper.foreach(pipeline.addFirst("channelLogger", _))
     channelStatsHandler.foreach(pipeline.addFirst("channelStatsHandler", _))
     writeCompletionTimeoutHandler.foreach(
-        pipeline.addLast("writeCompletionTimeout", _))
+      pipeline.addLast("writeCompletionTimeout", _)
+    )
 
     if (readTimeout.isFinite) {
       val (timeoutValue, timeoutUnit) = readTimeout.inTimeUnit
       pipeline.addLast(
-          "readTimeout", new ReadTimeoutHandler(timeoutValue, timeoutUnit))
+        "readTimeout",
+        new ReadTimeoutHandler(timeoutValue, timeoutUnit)
+      )
     }
 
     tlsConfig.foreach(initChannelTls(_, ch))
 
     channelRequestStatsHandler.foreach(
-        pipeline.addLast("channelRequestStatsHandler", _))
+      pipeline.addLast("channelRequestStatsHandler", _)
+    )
 
     pipeline.addLast("exceptionHandler", exceptionHandler)
     // The bridge handler must be last in the pipeline to ensure
@@ -108,23 +116,26 @@ private[netty4] class Netty4ChannelInitializer(
 @Sharable
 private[netty4] class ServerBridge[In, Out](
     transportFac: SocketChannel => Transport[In, Out],
-    serveTransport: Transport[In, Out] => Unit)
-    extends ChannelInboundHandlerAdapter {
+    serveTransport: Transport[In, Out] => Unit
+) extends ChannelInboundHandlerAdapter {
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
     val transport: Transport[In, Out] = transportFac(
-        ctx.channel.asInstanceOf[SocketChannel])
+      ctx.channel.asInstanceOf[SocketChannel]
+    )
     serveTransport(transport)
     super.channelActive(ctx)
   }
 }
 
 private[netty4] object ChannelExceptionHandler {
-  private val FinestIOExceptionMessages = Set("Connection reset by peer",
-                                              "Broken pipe",
-                                              "Connection timed out",
-                                              "No route to host",
-                                              "")
+  private val FinestIOExceptionMessages = Set(
+    "Connection reset by peer",
+    "Broken pipe",
+    "Connection timed out",
+    "No route to host",
+    ""
+  )
 }
 
 /**
@@ -132,31 +143,35 @@ private[netty4] object ChannelExceptionHandler {
   */
 @Sharable
 private[netty4] class ChannelExceptionHandler(
-    stats: StatsReceiver, log: java.util.logging.Logger)
-    extends ChannelInboundHandlerAdapter {
+    stats: StatsReceiver,
+    log: java.util.logging.Logger
+) extends ChannelInboundHandlerAdapter {
   import ChannelExceptionHandler.FinestIOExceptionMessages
 
   private[this] val readTimeoutCounter = stats.counter("read_timeout")
   private[this] val writeTimeoutCounter = stats.counter("write_timeout")
 
-  private[this] def severity(exc: Throwable): Level = exc match {
-    case e: Failure => e.logLevel
-    case _: java.nio.channels.ClosedChannelException |
-        _: javax.net.ssl.SSLException | _: ReadTimeoutException |
-        _: WriteTimedOutException | _: javax.net.ssl.SSLException =>
-      Level.FINEST
-    case e: java.io.IOException
-        if FinestIOExceptionMessages.contains(e.getMessage) =>
-      Level.FINEST
-    case _ => Level.WARNING
-  }
+  private[this] def severity(exc: Throwable): Level =
+    exc match {
+      case e: Failure => e.logLevel
+      case _: java.nio.channels.ClosedChannelException |
+          _: javax.net.ssl.SSLException | _: ReadTimeoutException |
+          _: WriteTimedOutException | _: javax.net.ssl.SSLException =>
+        Level.FINEST
+      case e: java.io.IOException
+          if FinestIOExceptionMessages.contains(e.getMessage) =>
+        Level.FINEST
+      case _ => Level.WARNING
+    }
 
   override def exceptionCaught(
-      ctx: ChannelHandlerContext, t: Throwable): Unit = {
+      ctx: ChannelHandlerContext,
+      t: Throwable
+  ): Unit = {
     t match {
-      case e: ReadTimeoutException => readTimeoutCounter.incr()
+      case e: ReadTimeoutException   => readTimeoutCounter.incr()
       case e: WriteTimedOutException => writeTimeoutCounter.incr()
-      case _ =>
+      case _                         =>
     }
 
     val remoteAddr = Option(ctx.channel.remoteAddress)

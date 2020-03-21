@@ -18,8 +18,9 @@ import scala.compat.java8.FutureConverters._
 /**
   * Represents one accepted incoming HTTP connection.
   */
-class IncomingConnection private[http](
-    delegate: akka.http.scaladsl.Http.IncomingConnection) {
+class IncomingConnection private[http] (
+    delegate: akka.http.scaladsl.Http.IncomingConnection
+) {
 
   /**
     * The local address of this connection.
@@ -45,29 +46,37 @@ class IncomingConnection private[http](
     * Handles the connection with the given flow, which is materialized exactly once
     * and the respective materialization result returned.
     */
-  def handleWith[Mat](handler: Flow[HttpRequest, HttpResponse, Mat],
-                      materializer: Materializer): Mat =
-    delegate.handleWith(handler
-          .asInstanceOf[Flow[sm.HttpRequest, sm.HttpResponse, Mat]]
-          .asScala)(materializer)
+  def handleWith[Mat](
+      handler: Flow[HttpRequest, HttpResponse, Mat],
+      materializer: Materializer
+  ): Mat =
+    delegate.handleWith(
+      handler
+        .asInstanceOf[Flow[sm.HttpRequest, sm.HttpResponse, Mat]]
+        .asScala
+    )(materializer)
 
   /**
     * Handles the connection with the given handler function.
     */
-  def handleWithSyncHandler(handler: Function[HttpRequest, HttpResponse],
-                            materializer: Materializer): Unit =
+  def handleWithSyncHandler(
+      handler: Function[HttpRequest, HttpResponse],
+      materializer: Materializer
+  ): Unit =
     delegate.handleWithSyncHandler(
-        handler.apply(_).asInstanceOf[sm.HttpResponse])(materializer)
+      handler.apply(_).asInstanceOf[sm.HttpResponse]
+    )(materializer)
 
   /**
     * Handles the connection with the given handler function.
     */
   def handleWithAsyncHandler(
       handler: Function[HttpRequest, CompletionStage[HttpResponse]],
-      materializer: Materializer): Unit =
+      materializer: Materializer
+  ): Unit =
     delegate.handleWithAsyncHandler(
-        handler.apply(_).toScala.asInstanceOf[Future[sm.HttpResponse]])(
-        materializer)
+      handler.apply(_).toScala.asInstanceOf[Future[sm.HttpResponse]]
+    )(materializer)
 
   /**
     * Handles the connection with the given handler function.
@@ -75,8 +84,10 @@ class IncomingConnection private[http](
   def handleWithAsyncHandler(
       handler: Function[HttpRequest, CompletionStage[HttpResponse]],
       parallelism: Int,
-      materializer: Materializer): Unit =
+      materializer: Materializer
+  ): Unit =
     delegate.handleWithAsyncHandler(
-        handler.apply(_).toScala.asInstanceOf[Future[sm.HttpResponse]],
-        parallelism)(materializer)
+      handler.apply(_).toScala.asInstanceOf[Future[sm.HttpResponse]],
+      parallelism
+    )(materializer)
 }

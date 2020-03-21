@@ -47,63 +47,68 @@ class AsyncTest {
 
     steps += "prep-foreach"
 
-    f2 foreach { _ =>
-      steps += "foreach"
-    }
+    f2 foreach { _ => steps += "foreach" }
 
     steps += "done"
 
     steps
   }
 
-  def queueExecOrderTests(processQueue: () => Unit)(
-      implicit executor: ExecutionContext): Unit = {
+  def queueExecOrderTests(
+      processQueue: () => Unit
+  )(implicit executor: ExecutionContext): Unit = {
 
     val res = asyncTest
 
-    assertArrayEquals(Array("prep-future", "prep-map", "prep-foreach", "done"),
-                      res.toArray)
+    assertArrayEquals(
+      Array("prep-future", "prep-map", "prep-foreach", "done"),
+      res.toArray
+    )
 
     processQueue()
 
-    assertArrayEquals(Array("prep-future",
-                            "prep-map",
-                            "prep-foreach",
-                            "done",
-                            "future",
-                            "map",
-                            "foreach"),
-                      res.toArray)
+    assertArrayEquals(
+      Array(
+        "prep-future",
+        "prep-map",
+        "prep-foreach",
+        "done",
+        "future",
+        "map",
+        "foreach"
+      ),
+      res.toArray
+    )
   }
 
   @Test def scala_scalajs_concurrent_JSExecutionContext_queue(): Unit = {
     assumeTrue(js.isUndefined(js.Dynamic.global.Promise))
     TimeoutMock.withMockedTimeout { tick =>
-      queueExecOrderTests { () =>
-        tick(1)
-      }(JSExecutionContext.queue)
+      queueExecOrderTests { () => tick(1) }(JSExecutionContext.queue)
     }
   }
 
   @Test def scala_scalajs_concurrent_JSExecutionContext_runNow(): Unit = {
     val res = asyncTest(JSExecutionContext.runNow)
 
-    assertArrayEquals(Array("prep-future",
-                            "future",
-                            "prep-map",
-                            "map",
-                            "prep-foreach",
-                            "foreach",
-                            "done"),
-                      res.toArray)
+    assertArrayEquals(
+      Array(
+        "prep-future",
+        "future",
+        "prep-map",
+        "map",
+        "prep-foreach",
+        "foreach",
+        "done"
+      ),
+      res.toArray
+    )
   }
 
   @Test def scala_scala_concurrent_ExecutionContext_global(): Unit = {
     assumeTrue(js.isUndefined(js.Dynamic.global.Promise))
     TimeoutMock.withMockedTimeout { tick =>
-      queueExecOrderTests { () =>
-        tick(1)
-      }(ExecutionContext.global)
+      queueExecOrderTests { () => tick(1) }(ExecutionContext.global)
 
       assertSame(JSExecutionContext.queue, ExecutionContext.global)
     }
@@ -115,7 +120,7 @@ class AsyncTest {
         implicit val executor = QueueExecutionContext()
         queueExecOrderTests { () =>
           tick(1)
-          optProcessQueue.foreach(_ ())
+          optProcessQueue.foreach(_())
         }
       }
     }
@@ -124,18 +129,14 @@ class AsyncTest {
   @Test def scala_scalajs_concurrent_QueueExecutionContext_timeouts(): Unit = {
     TimeoutMock.withMockedTimeout { tick =>
       implicit val executor = QueueExecutionContext.timeouts()
-      queueExecOrderTests { () =>
-        tick(1)
-      }
+      queueExecOrderTests { () => tick(1) }
     }
   }
 
   @Test def scala_scalajs_concurrent_QueueExecutionContext_promises(): Unit = {
     PromiseMock.withMockedPromise { processQueue =>
       implicit val executor = QueueExecutionContext.promises()
-      queueExecOrderTests { () =>
-        processQueue()
-      }
+      queueExecOrderTests { () => processQueue() }
     }
   }
 
@@ -162,9 +163,10 @@ class AsyncTest {
       implicit val ec = QueueExecutionContext.promises()
 
       val p = new js.Promise[Int]({
-        (resolve: js.Function1[Int | js.Thenable[Int], _],
-        reject: js.Function1[Any, _]) =>
-          resolve(42)
+        (
+            resolve: js.Function1[Int | js.Thenable[Int], _],
+            reject: js.Function1[Any, _]
+        ) => resolve(42)
       })
 
       val f = p.toFuture
@@ -210,9 +212,10 @@ class AsyncTest {
       implicit val ec = QueueExecutionContext.promises()
 
       val initialPromise = new js.Promise[Int]({
-        (resolve: js.Function1[Int | js.Thenable[Int], _],
-        reject: js.Function1[Any, _]) =>
-          resolve(42)
+        (
+            resolve: js.Function1[Int | js.Thenable[Int], _],
+            reject: js.Function1[Any, _]
+        ) => resolve(42)
       })
 
       val f = Future { initialPromise }

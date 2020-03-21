@@ -6,7 +6,11 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScExpression
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager.ClassCategory
-import org.jetbrains.plugins.scala.lang.psi.types.{Boolean => BooleanType, ScType, ValType}
+import org.jetbrains.plugins.scala.lang.psi.types.{
+  Boolean => BooleanType,
+  ScType,
+  ValType
+}
 import org.jetbrains.plugins.scala.util.ScEquivalenceUtil
 import scala.language.implicitConversions
 
@@ -24,38 +28,44 @@ object SelectorConditions {
 
   val THROWABLE = isDescendantCondition("java.lang.Throwable")
 
-  def isDescendantCondition(ancestorFqn: String) = new Condition[PsiElement] {
-    override def value(t: PsiElement): Boolean = t match {
-      case expr: ScExpression =>
-        val project = t.getProject
-        val manager = ScalaPsiManager.instance(project)
-        expr
-          .getTypeIgnoreBaseType()
-          .toOption
-          .flatMap { exprType =>
-            ScType.extractClass(exprType, Option(project)).map { psiClass =>
-              val base =
-                manager.getCachedClass(ancestorFqn,
-                                       GlobalSearchScope.allScope(project),
-                                       ClassCategory.ALL)
-              (psiClass != null && base != null &&
+  def isDescendantCondition(ancestorFqn: String) =
+    new Condition[PsiElement] {
+      override def value(t: PsiElement): Boolean =
+        t match {
+          case expr: ScExpression =>
+            val project = t.getProject
+            val manager = ScalaPsiManager.instance(project)
+            expr
+              .getTypeIgnoreBaseType()
+              .toOption
+              .flatMap { exprType =>
+                ScType.extractClass(exprType, Option(project)).map { psiClass =>
+                  val base =
+                    manager.getCachedClass(
+                      ancestorFqn,
+                      GlobalSearchScope.allScope(project),
+                      ClassCategory.ALL
+                    )
+                  (psiClass != null && base != null &&
                   ScEquivalenceUtil.areClassesEquivalent(psiClass, base)) ||
-              manager.cachedDeepIsInheritor(psiClass, base)
-            }
-          }
-          .getOrElse(false)
-      case _ => false
+                  manager.cachedDeepIsInheritor(psiClass, base)
+                }
+              }
+              .getOrElse(false)
+          case _ => false
+        }
     }
-  }
 
-  def typedCondition(myType: ValType) = new Condition[PsiElement] {
+  def typedCondition(myType: ValType) =
+    new Condition[PsiElement] {
 
-    override def value(t: PsiElement): Boolean = t match {
-      case expr: ScExpression =>
-        expr.getTypeIgnoreBaseType().getOrAny == myType
-      case _ => false
+      override def value(t: PsiElement): Boolean =
+        t match {
+          case expr: ScExpression =>
+            expr.getTypeIgnoreBaseType().getOrAny == myType
+          case _ => false
+        }
     }
-  }
 
   class ExpandedCondition[T](source: Condition[T]) extends Condition[T] {
     override def value(t: T): Boolean = source.value(t)

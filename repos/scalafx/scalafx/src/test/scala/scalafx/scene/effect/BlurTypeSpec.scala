@@ -39,6 +39,7 @@ import scalafx.testutil.SFXEnumDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class BlurTypeSpec
     extends SFXEnumDelegateSpec[jfxse.BlurType, BlurType](
-        javaClass = classOf[jfxse.BlurType],
-        scalaClass = classOf[BlurType],
-        companion = BlurType)
+      javaClass = classOf[jfxse.BlurType],
+      scalaClass = classOf[BlurType],
+      companion = BlurType
+    )

@@ -47,7 +47,9 @@ object LocalKMeans {
   }
 
   def closestPoint(
-      p: Vector[Double], centers: HashMap[Int, Vector[Double]]): Int = {
+      p: Vector[Double],
+      centers: HashMap[Int, Vector[Double]]
+  ): Int = {
     var index = 0
     var bestIndex = 0
     var closest = Double.PositiveInfinity
@@ -65,10 +67,12 @@ object LocalKMeans {
   }
 
   def showWarning() {
-    System.err.println("""WARN: This is a naive implementation of KMeans Clustering and is given as an example!
+    System.err.println(
+      """WARN: This is a naive implementation of KMeans Clustering and is given as an example!
         |Please use the KMeans method found in org.apache.spark.mllib.clustering
         |for more conventional use.
-      """.stripMargin)
+      """.stripMargin
+    )
   }
 
   def main(args: Array[String]) {

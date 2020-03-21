@@ -5,8 +5,21 @@ package sbt
 package std
 
 import java.io.{InputStream, IOException, OutputStream, Reader, Writer}
-import java.io.{BufferedInputStream, BufferedOutputStream, BufferedReader, BufferedWriter, PrintWriter}
-import java.io.{Closeable, File, FileInputStream, FileOutputStream, InputStreamReader, OutputStreamWriter}
+import java.io.{
+  BufferedInputStream,
+  BufferedOutputStream,
+  BufferedReader,
+  BufferedWriter,
+  PrintWriter
+}
+import java.io.{
+  Closeable,
+  File,
+  FileInputStream,
+  FileOutputStream,
+  InputStreamReader,
+  OutputStreamWriter
+}
 
 import sbt.internal.io.DeferredWriter
 import sbt.io.IO
@@ -78,13 +91,15 @@ trait Streams[Key] {
   def use[T](key: Key)(f: TaskStreams[Key] => T): T = {
     val s = apply(key)
     s.open()
-    try { f(s) } finally { s.close() }
+    try { f(s) }
+    finally { s.close() }
   }
 }
 trait CloseableStreams[Key] extends Streams[Key] with java.io.Closeable
 object Streams {
   private[this] val closeQuietly = (c: Closeable) =>
-    try { c.close() } catch { case _: IOException => () }
+    try { c.close() }
+    catch { case _: IOException => () }
 
   def closeable[Key](delegate: Streams[Key]): CloseableStreams[Key] =
     new CloseableStreams[Key] {
@@ -106,65 +121,79 @@ object Streams {
         synchronized { streams.values.foreach(_.close()); streams.clear() }
     }
 
-  def apply[Key](taskDirectory: Key => File,
-                 name: Key => String,
-                 mkLogger: (Key,
-                 PrintWriter) => Logger): Streams[Key] = new Streams[Key] {
+  def apply[Key](
+      taskDirectory: Key => File,
+      name: Key => String,
+      mkLogger: (Key, PrintWriter) => Logger
+  ): Streams[Key] =
+    new Streams[Key] {
 
-    def apply(a: Key): ManagedStreams[Key] = new ManagedStreams[Key] {
-      private[this] var opened: List[Closeable] = Nil
-      private[this] var closed = false
+      def apply(a: Key): ManagedStreams[Key] =
+        new ManagedStreams[Key] {
+          private[this] var opened: List[Closeable] = Nil
+          private[this] var closed = false
 
-      def readText(a: Key, sid: String = default): BufferedReader =
-        make(a, sid)(f =>
-              new BufferedReader(new InputStreamReader(new FileInputStream(f),
-                                                       IO.defaultCharset)))
+          def readText(a: Key, sid: String = default): BufferedReader =
+            make(a, sid)(f =>
+              new BufferedReader(
+                new InputStreamReader(new FileInputStream(f), IO.defaultCharset)
+              )
+            )
 
-      def readBinary(a: Key, sid: String = default): BufferedInputStream =
-        make(a, sid)(f => new BufferedInputStream(new FileInputStream(f)))
+          def readBinary(a: Key, sid: String = default): BufferedInputStream =
+            make(a, sid)(f => new BufferedInputStream(new FileInputStream(f)))
 
-      def text(sid: String = default): PrintWriter =
-        make(a, sid)(
-            f =>
+          def text(sid: String = default): PrintWriter =
+            make(a, sid)(f =>
               new PrintWriter(
-                  new DeferredWriter(new BufferedWriter(new OutputStreamWriter(
-                              new FileOutputStream(f), IO.defaultCharset)))))
+                new DeferredWriter(
+                  new BufferedWriter(
+                    new OutputStreamWriter(
+                      new FileOutputStream(f),
+                      IO.defaultCharset
+                    )
+                  )
+                )
+              )
+            )
 
-      def binary(sid: String = default): BufferedOutputStream =
-        make(a, sid)(f => new BufferedOutputStream(new FileOutputStream(f)))
+          def binary(sid: String = default): BufferedOutputStream =
+            make(a, sid)(f => new BufferedOutputStream(new FileOutputStream(f)))
 
-      lazy val cacheDirectory: File = {
-        val dir = taskDirectory(a)
-        IO.createDirectory(dir)
-        dir
-      }
+          lazy val cacheDirectory: File = {
+            val dir = taskDirectory(a)
+            IO.createDirectory(dir)
+            dir
+          }
 
-      def log(sid: String): Logger = mkLogger(a, text(sid))
+          def log(sid: String): Logger = mkLogger(a, text(sid))
 
-      def make[T <: Closeable](a: Key, sid: String)(f: File => T): T =
-        synchronized {
-          checkOpen()
-          val file = taskDirectory(a) / sid
-          IO.touch(file, false)
-          val t = f(file)
-          opened ::= t
-          t
+          def make[T <: Closeable](a: Key, sid: String)(f: File => T): T =
+            synchronized {
+              checkOpen()
+              val file = taskDirectory(a) / sid
+              IO.touch(file, false)
+              val t = f(file)
+              opened ::= t
+              t
+            }
+
+          def key: Key = a
+          def open(): Unit = ()
+          def isClosed: Boolean = synchronized { closed }
+
+          def close(): Unit =
+            synchronized {
+              if (!closed) {
+                closed = true
+                opened foreach closeQuietly
+              }
+            }
+          def checkOpen(): Unit =
+            synchronized {
+              if (closed)
+                sys.error("Streams for '" + name(a) + "' have been closed.")
+            }
         }
-
-      def key: Key = a
-      def open(): Unit = ()
-      def isClosed: Boolean = synchronized { closed }
-
-      def close(): Unit = synchronized {
-        if (!closed) {
-          closed = true
-          opened foreach closeQuietly
-        }
-      }
-      def checkOpen(): Unit = synchronized {
-        if (closed)
-          sys.error("Streams for '" + name(a) + "' have been closed.")
-      }
     }
-  }
 }

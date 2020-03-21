@@ -19,8 +19,8 @@ object GenSerialServerDispatcher {
   * allowing the implementor to furnish custom dispatchers & handlers.
   */
 abstract class GenSerialServerDispatcher[Req, Rep, In, Out](
-    trans: Transport[In, Out])
-    extends Closable {
+    trans: Transport[In, Out]
+) extends Closable {
 
   import GenSerialServerDispatcher._
 
@@ -49,20 +49,18 @@ abstract class GenSerialServerDispatcher[Req, Rep, In, Out](
         val eos = new Promise[Unit]
         val save = Local.save()
         try {
-          Contexts.local.let(RemoteInfo.Upstream.AddressCtx,
-                             trans.remoteAddress) {
-            trans.peerCertificate match {
-              case None => p.become(dispatch(req, eos))
-              case Some(cert) =>
-                Contexts.local.let(Transport.peerCertCtx, cert) {
-                  p.become(dispatch(req, eos))
-                }
+          Contexts.local
+            .let(RemoteInfo.Upstream.AddressCtx, trans.remoteAddress) {
+              trans.peerCertificate match {
+                case None => p.become(dispatch(req, eos))
+                case Some(cert) =>
+                  Contexts.local.let(Transport.peerCertCtx, cert) {
+                    p.become(dispatch(req, eos))
+                  }
+              }
             }
-          }
         } finally Local.restore(save)
-        p map { res =>
-          (res, eos)
-        }
+        p map { res => (res, eos) }
       } else Eof
     } flatMap {
       case (rep, eos) =>
@@ -104,8 +102,9 @@ abstract class GenSerialServerDispatcher[Req, Rep, In, Out](
   * released after any error.
   */
 class SerialServerDispatcher[Req, Rep](
-    trans: Transport[Rep, Req], service: Service[Req, Rep])
-    extends GenSerialServerDispatcher[Req, Rep, Rep, Req](trans) {
+    trans: Transport[Rep, Req],
+    service: Service[Req, Rep]
+) extends GenSerialServerDispatcher[Req, Rep, Rep, Req](trans) {
 
   trans.onClose ensure {
     service.close()

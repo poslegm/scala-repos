@@ -481,12 +481,14 @@ class SingletonTypesTests {
   }
 
   object Rel {
-    implicit def relTrue: Rel[True] { type Out = Int } = new Rel[True] {
-      type Out = Int
-    }
-    implicit def relFalse: Rel[False] { type Out = String } = new Rel[False] {
-      type Out = String
-    }
+    implicit def relTrue: Rel[True] { type Out = Int } =
+      new Rel[True] {
+        type Out = Int
+      }
+    implicit def relFalse: Rel[False] { type Out = String } =
+      new Rel[False] {
+        type Out = String
+      }
   }
 
   def check(w: WitnessWith[Rel])(v: w.instance.Out) = v
@@ -585,8 +587,10 @@ class SingletonTypesTests {
 
   @Test
   def singletonWiden {
-    illTyped(" Widen[A.type] ",
-             "could not find implicit value for parameter widen:.*")
+    illTyped(
+      " Widen[A.type] ",
+      "could not find implicit value for parameter widen:.*"
+    )
   }
 }
 

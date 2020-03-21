@@ -40,7 +40,8 @@ private[spark] trait WritablePartitionedPairCollection[K, V] {
     * destroy the underlying collection.
     */
   def partitionedDestructiveSortedIterator(
-      keyComparator: Option[Comparator[K]]): Iterator[((Int, K), V)]
+      keyComparator: Option[Comparator[K]]
+  ): Iterator[((Int, K), V)]
 
   /**
     * Iterate through the data and write out the elements instead of returning them. Records are
@@ -48,7 +49,8 @@ private[spark] trait WritablePartitionedPairCollection[K, V] {
     * This may destroy the underlying collection.
     */
   def destructiveSortedWritablePartitionedIterator(
-      keyComparator: Option[Comparator[K]]): WritablePartitionedIterator = {
+      keyComparator: Option[Comparator[K]]
+  ): WritablePartitionedIterator = {
     val it = partitionedDestructiveSortedIterator(keyComparator)
     new WritablePartitionedIterator {
       private[this] var cur = if (it.hasNext) it.next() else null
@@ -70,17 +72,19 @@ private[spark] object WritablePartitionedPairCollection {
   /**
     * A comparator for (Int, K) pairs that orders them by only their partition ID.
     */
-  def partitionComparator[K]: Comparator[(Int, K)] = new Comparator[(Int, K)] {
-    override def compare(a: (Int, K), b: (Int, K)): Int = {
-      a._1 - b._1
+  def partitionComparator[K]: Comparator[(Int, K)] =
+    new Comparator[(Int, K)] {
+      override def compare(a: (Int, K), b: (Int, K)): Int = {
+        a._1 - b._1
+      }
     }
-  }
 
   /**
     * A comparator for (Int, K) pairs that orders them both by their partition ID and a key ordering.
     */
   def partitionKeyComparator[K](
-      keyComparator: Comparator[K]): Comparator[(Int, K)] = {
+      keyComparator: Comparator[K]
+  ): Comparator[(Int, K)] = {
     new Comparator[(Int, K)] {
       override def compare(a: (Int, K), b: (Int, K)): Int = {
         val partitionDiff = a._1 - b._1

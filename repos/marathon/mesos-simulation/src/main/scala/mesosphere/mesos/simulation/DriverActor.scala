@@ -30,7 +30,10 @@ object DriverActor {
     * `acceptOffers(o: util.Collection[OfferID], ops: util.Collection[Offer.Operation], filters: Filters): Status`
     */
   case class AcceptOffers(
-      offerIds: Seq[OfferID], ops: Seq[Offer.Operation], filters: Filters)
+      offerIds: Seq[OfferID],
+      ops: Seq[Offer.Operation],
+      filters: Filters
+  )
 
   /**
     * Corresponds to the following method in [[org.apache.mesos.MesosSchedulerDriver]]:
@@ -104,27 +107,32 @@ class DriverActor(schedulerProps: Props) extends Actor {
       .setFrameworkId(FrameworkID.newBuilder().setValue("notanidframework"))
       .setSlaveId(SlaveID.newBuilder().setValue("notanidslave"))
       .setHostname("hostname")
-      .addAllResources(Seq(
-              resource("cpus", 100),
-              resource("mem", 500000),
-              resource("disk", 1000000000),
-              Resource
+      .addAllResources(
+        Seq(
+          resource("cpus", 100),
+          resource("mem", 500000),
+          resource("disk", 1000000000),
+          Resource
+            .newBuilder()
+            .setName("ports")
+            .setType(Value.Type.RANGES)
+            .setRanges(
+              Value.Ranges
                 .newBuilder()
-                .setName("ports")
-                .setType(Value.Type.RANGES)
-                .setRanges(Value.Ranges
-                      .newBuilder()
-                      .addRange(Value.Range
-                            .newBuilder()
-                            .setBegin(10000)
-                            .setEnd(20000)))
-                .build()
-            ))
+                .addRange(
+                  Value.Range
+                    .newBuilder()
+                    .setBegin(10000)
+                    .setEnd(20000)
+                )
+            )
+            .build()
+        )
+      )
       .build()
   }
   private[this] def offers: ResourceOffers =
-    SchedulerActor.ResourceOffers(
-        (1 to numberOfOffersPerCycle).map(_ => offer))
+    SchedulerActor.ResourceOffers((1 to numberOfOffersPerCycle).map(_ => offer))
 
   //scalastyle:on
   override def preStart(): Unit = {
@@ -133,8 +141,8 @@ class DriverActor(schedulerProps: Props) extends Actor {
 
     import context.dispatcher
     periodicOffers = Some(
-        context.system.scheduler
-          .schedule(1.second, 1.seconds)(scheduler ! offers)
+      context.system.scheduler
+        .schedule(1.second, 1.seconds)(scheduler ! offers)
     )
   }
 
@@ -145,52 +153,58 @@ class DriverActor(schedulerProps: Props) extends Actor {
   }
 
   //scalastyle:off cyclomatic.complexity
-  override def receive: Receive = LoggingReceive {
-    case driver: SchedulerDriver =>
-      log.debug(s"pass on driver to scheduler $scheduler")
-      scheduler ! driver
+  override def receive: Receive =
+    LoggingReceive {
+      case driver: SchedulerDriver =>
+        log.debug(s"pass on driver to scheduler $scheduler")
+        scheduler ! driver
 
-    case LaunchTasks(offers, tasks) =>
-      simulateTaskLaunch(offers, tasks)
+      case LaunchTasks(offers, tasks) =>
+        simulateTaskLaunch(offers, tasks)
 
-    case AcceptOffers(offers, ops, filters) =>
-      val taskInfos = extractTaskInfos(ops)
-      simulateTaskLaunch(offers, taskInfos)
+      case AcceptOffers(offers, ops, filters) =>
+        val taskInfos = extractTaskInfos(ops)
+        simulateTaskLaunch(offers, taskInfos)
 
-    case KillTask(taskId) =>
-      log.debug(s"kill task $taskId")
+      case KillTask(taskId) =>
+        log.debug(s"kill task $taskId")
 
-      tasks.get(taskId.getValue) match {
-        case Some(task) =>
-          scheduleStatusChange(toState = TaskState.TASK_KILLED,
-                               afterDuration = 2.seconds)(taskID = taskId)
-        case None =>
-          scheduleStatusChange(toState = TaskState.TASK_LOST,
-                               afterDuration = 1.second)(taskID = taskId)
-      }
+        tasks.get(taskId.getValue) match {
+          case Some(task) =>
+            scheduleStatusChange(
+              toState = TaskState.TASK_KILLED,
+              afterDuration = 2.seconds
+            )(taskID = taskId)
+          case None =>
+            scheduleStatusChange(
+              toState = TaskState.TASK_LOST,
+              afterDuration = 1.second
+            )(taskID = taskId)
+        }
 
-    case SuppressOffers => ()
+      case SuppressOffers => ()
 
-    case ReviveOffers =>
-      scheduler ! offers
+      case ReviveOffers =>
+        scheduler ! offers
 
-    case ChangeTaskStatus(status, create) =>
-      changeTaskStatus(status, create)
+      case ChangeTaskStatus(status, create) =>
+        changeTaskStatus(status, create)
 
-    case ReconcileTask(taskStatuses) =>
-      if (taskStatuses.isEmpty) {
-        tasks.values.foreach(scheduler ! _)
-      } else {
-        taskStatuses.iterator
-          .map(_.getTaskId.getValue)
-          .map(tasks)
-          .foreach(scheduler ! _)
-      }
-  }
+      case ReconcileTask(taskStatuses) =>
+        if (taskStatuses.isEmpty) {
+          tasks.values.foreach(scheduler ! _)
+        } else {
+          taskStatuses.iterator
+            .map(_.getTaskId.getValue)
+            .map(tasks)
+            .foreach(scheduler ! _)
+        }
+    }
   //scalastyle:on
 
   private[this] def extractTaskInfos(
-      ops: Iterable[Offer.Operation]): Iterable[TaskInfo] = {
+      ops: Iterable[Offer.Operation]
+  ): Iterable[TaskInfo] = {
     import scala.collection.JavaConverters._
     ops.filter(_.getType == Offer.Operation.Type.LAUNCH).flatMap { op =>
       Option(op.getLaunch).map(_.getTaskInfosList.asScala).getOrElse(Seq.empty)
@@ -198,24 +212,32 @@ class DriverActor(schedulerProps: Props) extends Actor {
   }
 
   private[this] def simulateTaskLaunch(
-      offers: Seq[OfferID], tasksToLaunch: Iterable[TaskInfo]): Unit = {
+      offers: Seq[OfferID],
+      tasksToLaunch: Iterable[TaskInfo]
+  ): Unit = {
     if (random.nextDouble() > 0.001) {
       log.debug(s"launch tasksToLaunch $offers, $tasksToLaunch")
       tasksToLaunch.map(_.getTaskId).foreach {
-        scheduleStatusChange(toState = TaskState.TASK_STAGING,
-                             afterDuration = 1.second,
-                             create = true)
+        scheduleStatusChange(
+          toState = TaskState.TASK_STAGING,
+          afterDuration = 1.second,
+          create = true
+        )
       }
 
       if (random.nextDouble() > 0.001) {
         tasksToLaunch.map(_.getTaskId).foreach {
           scheduleStatusChange(
-              toState = TaskState.TASK_RUNNING, afterDuration = 5.seconds)
+            toState = TaskState.TASK_RUNNING,
+            afterDuration = 5.seconds
+          )
         }
       } else {
         tasksToLaunch.map(_.getTaskId).foreach {
           scheduleStatusChange(
-              toState = TaskState.TASK_FAILED, afterDuration = 5.seconds)
+            toState = TaskState.TASK_FAILED,
+            afterDuration = 5.seconds
+          )
         }
       }
     } else {
@@ -224,7 +246,9 @@ class DriverActor(schedulerProps: Props) extends Actor {
   }
 
   private[this] def changeTaskStatus(
-      status: TaskStatus, create: Boolean): Unit = {
+      status: TaskStatus,
+      create: Boolean
+  ): Unit = {
     if (create || tasks.contains(status.getTaskId.getValue)) {
       status.getState match {
         case TaskState.TASK_ERROR | TaskState.TASK_FAILED |
@@ -244,10 +268,11 @@ class DriverActor(schedulerProps: Props) extends Actor {
     }
   }
 
-  private[this] def scheduleStatusChange(toState: TaskState,
-                                         afterDuration: FiniteDuration,
-                                         create: Boolean = false)(
-      taskID: TaskID): Unit = {
+  private[this] def scheduleStatusChange(
+      toState: TaskState,
+      afterDuration: FiniteDuration,
+      create: Boolean = false
+  )(taskID: TaskID): Unit = {
 
     val newStatus = TaskStatus
       .newBuilder()

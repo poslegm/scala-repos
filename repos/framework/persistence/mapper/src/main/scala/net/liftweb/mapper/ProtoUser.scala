@@ -36,7 +36,8 @@ import net.liftweb.proto.{ProtoUser => GenProtoUser}
   * last name, email, etc.
   */
 trait ProtoUser[T <: ProtoUser[T]]
-    extends KeyedMapper[Long, T] with UserIdAsString { self: T =>
+    extends KeyedMapper[Long, T]
+    with UserIdAsString { self: T =>
 
   override def primaryKeyField: MappedLongIndex[T] = id
 
@@ -161,22 +162,24 @@ trait ProtoUser[T <: ProtoUser[T]]
     override def defaultValue = false
   }
 
-  def niceName: String = (firstName.get, lastName.get, email.get) match {
-    case (f, l, e) if f.length > 1 && l.length > 1 =>
-      f + " " + l + " (" + e + ")"
-    case (f, _, e) if f.length > 1 => f + " (" + e + ")"
-    case (_, l, e) if l.length > 1 => l + " (" + e + ")"
-    case (_, _, e) => e
-  }
+  def niceName: String =
+    (firstName.get, lastName.get, email.get) match {
+      case (f, l, e) if f.length > 1 && l.length > 1 =>
+        f + " " + l + " (" + e + ")"
+      case (f, _, e) if f.length > 1 => f + " (" + e + ")"
+      case (_, l, e) if l.length > 1 => l + " (" + e + ")"
+      case (_, _, e)                 => e
+    }
 
-  def shortName: String = (firstName.get, lastName.get) match {
-    case (f, l) if f.length > 1 && l.length > 1 => f + " " + l
-    case (f, _) if f.length > 1 => f
-    case (_, l) if l.length > 1 => l
-    case _ => email.get
-  }
+  def shortName: String =
+    (firstName.get, lastName.get) match {
+      case (f, l) if f.length > 1 && l.length > 1 => f + " " + l
+      case (f, _) if f.length > 1                 => f
+      case (_, l) if l.length > 1                 => l
+      case _                                      => email.get
+    }
 
-  def niceNameWEmailLink = <a href={"mailto:"+email.get}>{niceName}</a>
+  def niceNameWEmailLink = <a href={"mailto:" + email.get}>{niceName}</a>
 }
 
 /**
@@ -184,7 +187,8 @@ trait ProtoUser[T <: ProtoUser[T]]
   * get a bunch of user functionality including password reset, etc.
   */
 trait MetaMegaProtoUser[ModelType <: MegaProtoUser[ModelType]]
-    extends KeyedMetaMapper[Long, ModelType] with GenProtoUser {
+    extends KeyedMetaMapper[Long, ModelType]
+    with GenProtoUser {
   self: ModelType =>
 
   type TheUserType = ModelType
@@ -198,10 +202,10 @@ trait MetaMegaProtoUser[ModelType <: MegaProtoUser[ModelType]]
     * Based on a FieldPointer, build a FieldPointerBridge
     */
   protected implicit def buildFieldBridge(
-      from: FieldPointerType): FieldPointerBridge = new MyPointer(from)
+      from: FieldPointerType
+  ): FieldPointerBridge = new MyPointer(from)
 
-  protected class MyPointer(from: FieldPointerType)
-      extends FieldPointerBridge {
+  protected class MyPointer(from: FieldPointerType) extends FieldPointerBridge {
 
     /**
       * What is the display name of this field?
@@ -211,10 +215,11 @@ trait MetaMegaProtoUser[ModelType <: MegaProtoUser[ModelType]]
     /**
       * Does this represent a pointer to a Password field
       */
-    def isPasswordField_? : Boolean = from match {
-      case a: MappedPassword[_] => true
-      case _ => false
-    }
+    def isPasswordField_? : Boolean =
+      from match {
+        case a: MappedPassword[_] => true
+        case _                    => false
+      }
   }
 
   /**
@@ -305,7 +310,9 @@ trait MetaMegaProtoUser[ModelType <: MegaProtoUser[ModelType]]
     * Given a field pointer and an instance, get the field on that instance
     */
   protected def computeFieldFromPointer(
-      instance: TheUserType, pointer: FieldPointerType): Box[BaseField] =
+      instance: TheUserType,
+      pointer: FieldPointerType
+  ): Box[BaseField] =
     Full(getActualField(instance, pointer))
 
   /**
@@ -334,22 +341,13 @@ trait MetaMegaProtoUser[ModelType <: MegaProtoUser[ModelType]]
     * The list of fields presented to the user at sign-up
     */
   def signupFields: List[FieldPointerType] =
-    List(firstName,
-         lastName,
-         email,
-         locale,
-         timezone,
-         password)
+    List(firstName, lastName, email, locale, timezone, password)
 
   /**
     * The list of fields presented to the user for editing
     */
   def editFields: List[FieldPointerType] =
-    List(firstName,
-         lastName,
-         email,
-         locale,
-         timezone)
+    List(firstName, lastName, email, locale, timezone)
 }
 
 /**

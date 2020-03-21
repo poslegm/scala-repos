@@ -62,13 +62,13 @@ object NonEmptyListTest extends SpecLite {
   "foldl1 is reduceLeft" ! forAll { (rnge: NonEmptyList[IList[Int]]) =>
     val F = Foldable1[NonEmptyList]
     rnge.list.toList.reduceLeft(_ ++ _) must_===
-    (F.foldl1(rnge)(a => b => a ++ b))
+      (F.foldl1(rnge)(a => b => a ++ b))
   }
 
   "foldr1 is reduceRight" ! forAll { (rnge: NonEmptyList[IList[Int]]) =>
     val F = Foldable1[NonEmptyList]
     rnge.list.toList.reduceRight(_ ++ _) must_===
-    (F.foldr1(rnge)(a => b => a ++ b))
+      (F.foldr1(rnge)(a => b => a ++ b))
   }
   "foldRight1 is reduceRight" ! forAll { xs: NonEmptyList[IList[Int]] =>
     val F = Foldable1[NonEmptyList]
@@ -82,10 +82,13 @@ object NonEmptyListTest extends SpecLite {
   }
   "correctness of tails" ! forAll { xs: NonEmptyList[Int] =>
     import NonEmptyList._
-    xs.tails must_=== nel(xs, xs.tail match {
-      case INil() => INil()
-      case ICons(h, t) => nel(h, t).tails.list
-    })
+    xs.tails must_=== nel(
+      xs,
+      xs.tail match {
+        case INil()      => INil()
+        case ICons(h, t) => nel(h, t).tails.list
+      }
+    )
   }
   "toNel is self" ! forAll { xs: NonEmptyList[Int] =>
     Foldable1[NonEmptyList].toNel(xs) must_=== xs

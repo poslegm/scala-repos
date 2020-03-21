@@ -51,7 +51,7 @@ trait Offer[+T] { self =>
     prepare() flatMap { tx =>
       tx.ack() flatMap {
         case Tx.Commit(v) => Future.value(v)
-        case Tx.Abort => sync()
+        case Tx.Abort     => sync()
       }
     }
 
@@ -68,19 +68,22 @@ trait Offer[+T] { self =>
     * translation (performed by {{f}}) is done after the {{Offer[T]}} has
     * successfully synchronized.
     */
-  def map[U](f: T => U): Offer[U] = new Offer[U] {
-    def prepare() = self.prepare() map { tx =>
-      new Tx[U] {
-        import Tx.{Commit, Abort}
-        def ack() = tx.ack() map {
-          case Commit(t) => Commit(f(t))
-          case Abort => Abort
-        }
+  def map[U](f: T => U): Offer[U] =
+    new Offer[U] {
+      def prepare() =
+        self.prepare() map { tx =>
+          new Tx[U] {
+            import Tx.{Commit, Abort}
+            def ack() =
+              tx.ack() map {
+                case Commit(t) => Commit(f(t))
+                case Abort     => Abort
+              }
 
-        def nack() { tx.nack() }
-      }
+            def nack() { tx.nack() }
+          }
+        }
     }
-  }
 
   /**
     * Synonym for `map()`. Useful in combination with `Offer.choose()`
@@ -91,9 +94,7 @@ trait Offer[+T] { self =>
   /**
     * Like {{map}}, but to a constant (call-by-name).
     */
-  def const[U](f: => U): Offer[U] = map { _ =>
-    f
-  }
+  def const[U](f: => U): Offer[U] = map { _ => f }
 
   /**
     * Java-friendly analog of `const()`.
@@ -114,19 +115,18 @@ trait Offer[+T] { self =>
     * offer orElse Offer.const { computeDefaultValue() }
     * }}}
     */
-  def orElse[U >: T](other: Offer[U]): Offer[U] = new Offer[U] {
-    def prepare() = {
-      val ourTx = self.prepare()
-      if (ourTx.isDefined) ourTx
-      else {
-        ourTx foreach { tx =>
-          tx.nack()
+  def orElse[U >: T](other: Offer[U]): Offer[U] =
+    new Offer[U] {
+      def prepare() = {
+        val ourTx = self.prepare()
+        if (ourTx.isDefined) ourTx
+        else {
+          ourTx foreach { tx => tx.nack() }
+          ourTx.raise(LostSynchronization)
+          other.prepare()
         }
-        ourTx.raise(LostSynchronization)
-        other.prepare()
       }
     }
-  }
 
   def or[U](other: Offer[U]): Offer[Either[T, U]] =
     Offer.choose(this map { Left(_) }, other map { Right(_) })
@@ -148,9 +148,7 @@ trait Offer[+T] { self =>
     * closure.  Convenient for loops.
     */
   def andThen(f: => Unit) {
-    sync() onSuccess { _ =>
-      f
-    }
+    sync() onSuccess { _ => f }
   }
 
   /**
@@ -188,9 +186,10 @@ object Offer {
     *
     * Note: Updates here must also be done at [[com.twitter.concurrent.Offers.newConstOffer()]].
     */
-  def const[T](x: => T): Offer[T] = new Offer[T] {
-    def prepare() = Future.value(Tx.const(x))
-  }
+  def const[T](x: => T): Offer[T] =
+    new Offer[T] {
+      def prepare() = Future.value(Tx.const(x))
+    }
 
   /**
     * An offer that never synchronizes.
@@ -223,7 +222,9 @@ object Offer {
     * Package-exposed for testing.
     */
   private[concurrent] def choose[T](
-      random: Option[Random], evs: Seq[Offer[T]]): Offer[T] = {
+      random: Option[Random],
+      evs: Seq[Offer[T]]
+  ): Offer[T] = {
     if (evs.isEmpty) Offer.never
     else
       new Offer[T] {
@@ -260,15 +261,15 @@ object Offer {
           }
 
           def updateLosers(
-              winPos: Int, prepd: Array[Future[Tx[T]]]): Future[Tx[T]] = {
+              winPos: Int,
+              prepd: Array[Future[Tx[T]]]
+          ): Future[Tx[T]] = {
             val winner = prepd(winPos)
             var j = 0
             while (j < prepd.length) {
               val loser = prepd(j)
               if (loser ne winner) {
-                loser onSuccess { tx =>
-                  tx.nack()
-                }
+                loser onSuccess { tx => tx.nack() }
                 loser.raise(LostSynchronization)
               }
               j += 1

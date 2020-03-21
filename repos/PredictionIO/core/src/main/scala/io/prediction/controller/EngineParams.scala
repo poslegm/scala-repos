@@ -32,8 +32,8 @@ class EngineParams(
     val dataSourceParams: (String, Params) = ("", EmptyParams()),
     val preparatorParams: (String, Params) = ("", EmptyParams()),
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
-    val servingParams: (String, Params) = ("", EmptyParams()))
-    extends Serializable {
+    val servingParams: (String, Params) = ("", EmptyParams())
+) extends Serializable {
 
   /** Java-friendly constructor
     *
@@ -45,33 +45,39 @@ class EngineParams(
     * @param servingName Serving name
     * @param servingParams Serving parameters
     */
-  def this(dataSourceName: String,
-           dataSourceParams: Params,
-           preparatorName: String,
-           preparatorParams: Params,
-           algorithmParamsList: _root_.java.util.Map[String, _ <: Params],
-           servingName: String,
-           servingParams: Params) = {
+  def this(
+      dataSourceName: String,
+      dataSourceParams: Params,
+      preparatorName: String,
+      preparatorParams: Params,
+      algorithmParamsList: _root_.java.util.Map[String, _ <: Params],
+      servingName: String,
+      servingParams: Params
+  ) = {
 
     // To work around a json4s weird limitation, the parameter names can not be changed
     this(
-        (dataSourceName, dataSourceParams),
-        (preparatorName, preparatorParams),
-        JavaConversions.mapAsScalaMap(algorithmParamsList).toSeq,
-        (servingName, servingParams)
+      (dataSourceName, dataSourceParams),
+      (preparatorName, preparatorParams),
+      JavaConversions.mapAsScalaMap(algorithmParamsList).toSeq,
+      (servingName, servingParams)
     )
   }
 
   // A case class style copy method.
-  def copy(dataSourceParams: (String, Params) = dataSourceParams,
-           preparatorParams: (String, Params) = preparatorParams,
-           algorithmParamsList: Seq[(String, Params)] = algorithmParamsList,
-           servingParams: (String, Params) = servingParams): EngineParams = {
+  def copy(
+      dataSourceParams: (String, Params) = dataSourceParams,
+      preparatorParams: (String, Params) = preparatorParams,
+      algorithmParamsList: Seq[(String, Params)] = algorithmParamsList,
+      servingParams: (String, Params) = servingParams
+  ): EngineParams = {
 
-    new EngineParams(dataSourceParams,
-                     preparatorParams,
-                     algorithmParamsList,
-                     servingParams)
+    new EngineParams(
+      dataSourceParams,
+      preparatorParams,
+      algorithmParamsList,
+      servingParams
+    )
   }
 }
 
@@ -91,18 +97,20 @@ object EngineParams {
     * @param servingName Serving name
     * @param servingParams Serving parameters
     */
-  def apply(dataSourceName: String = "",
-            dataSourceParams: Params = EmptyParams(),
-            preparatorName: String = "",
-            preparatorParams: Params = EmptyParams(),
-            algorithmParamsList: Seq[(String, Params)] = Seq(),
-            servingName: String = "",
-            servingParams: Params = EmptyParams()): EngineParams = {
+  def apply(
+      dataSourceName: String = "",
+      dataSourceParams: Params = EmptyParams(),
+      preparatorName: String = "",
+      preparatorParams: Params = EmptyParams(),
+      algorithmParamsList: Seq[(String, Params)] = Seq(),
+      servingName: String = "",
+      servingParams: Params = EmptyParams()
+  ): EngineParams = {
     new EngineParams(
-        dataSourceParams = (dataSourceName, dataSourceParams),
-        preparatorParams = (preparatorName, preparatorParams),
-        algorithmParamsList = algorithmParamsList,
-        servingParams = (servingName, servingParams)
+      dataSourceParams = (dataSourceName, dataSourceParams),
+      preparatorParams = (preparatorName, preparatorParams),
+      algorithmParamsList = algorithmParamsList,
+      servingParams = (servingName, servingParams)
     )
   }
 }
@@ -122,11 +130,13 @@ object EngineParams {
   */
 class SimpleEngine[TD, EI, Q, P, A](
     dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
-    algorithmClass: Class[_ <: BaseAlgorithm[TD, _, Q, P]])
-    extends Engine(dataSourceClass,
-                   IdentityPreparator(dataSourceClass),
-                   Map("" -> algorithmClass),
-                   LFirstServing(algorithmClass))
+    algorithmClass: Class[_ <: BaseAlgorithm[TD, _, Q, P]]
+) extends Engine(
+      dataSourceClass,
+      IdentityPreparator(dataSourceClass),
+      Map("" -> algorithmClass),
+      LFirstServing(algorithmClass)
+    )
 
 /** This shorthand class serves the `SimpleEngine` class.
   *
@@ -134,7 +144,10 @@ class SimpleEngine[TD, EI, Q, P, A](
   * @param algorithmParams List of algorithm name-parameter pairs.
   * @group Engine
   */
-class SimpleEngineParams(dataSourceParams: Params = EmptyParams(),
-                         algorithmParams: Params = EmptyParams())
-    extends EngineParams(dataSourceParams = ("", dataSourceParams),
-                         algorithmParamsList = Seq(("", algorithmParams)))
+class SimpleEngineParams(
+    dataSourceParams: Params = EmptyParams(),
+    algorithmParams: Params = EmptyParams()
+) extends EngineParams(
+      dataSourceParams = ("", dataSourceParams),
+      algorithmParamsList = Seq(("", algorithmParams))
+    )

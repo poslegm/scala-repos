@@ -17,8 +17,11 @@ import scala.language.higherKinds
   *
   *  @since 2.8
   */
-abstract class SortedMapFactory[
-    CC[A, B] <: SortedMap[A, B] with SortedMapLike[A, B, CC[A, B]]] {
+abstract class SortedMapFactory[CC[A, B] <: SortedMap[A, B] with SortedMapLike[
+  A,
+  B,
+  CC[A, B]
+]] {
 
   type Coll = CC[_, _]
 

@@ -10,27 +10,29 @@ final class Env(config: Config, system: ActorSystem) {
   private val IndexFlow = config getBoolean "index_flow"
 
   private lazy val indexer = new ExplorerIndexer(
-      endpoint = Endpoint, massImportEndpoint = MassImportEndpoint)
+    endpoint = Endpoint,
+    massImportEndpoint = MassImportEndpoint
+  )
 
-  def cli = new lila.common.Cli {
-    def process = {
-      case "explorer" :: "index" :: since :: Nil =>
-        indexer(since) inject "done"
+  def cli =
+    new lila.common.Cli {
+      def process = {
+        case "explorer" :: "index" :: since :: Nil =>
+          indexer(since) inject "done"
+      }
     }
-  }
 
   def fetchPgn(id: String): Fu[Option[String]] = {
     import play.api.libs.ws.WS
     import play.api.Play.current
     WS.url(s"$Endpoint/master/pgn/$id").get() map {
       case res if res.status == 200 => res.body.some
-      case _ => None
+      case _                        => None
     }
   }
 
   if (IndexFlow)
-    system.actorOf(
-        Props(new Actor {
+    system.actorOf(Props(new Actor {
       context.system.lilaBus.subscribe(self, 'finishGame)
       def receive = {
         case lila.game.actorApi.FinishGame(game, _, _) => indexer(game)
@@ -41,6 +43,8 @@ final class Env(config: Config, system: ActorSystem) {
 object Env {
 
   lazy val current =
-    "explorer" boot new Env(config = lila.common.PlayApp loadConfig "explorer",
-                            system = lila.common.PlayApp.system)
+    "explorer" boot new Env(
+      config = lila.common.PlayApp loadConfig "explorer",
+      system = lila.common.PlayApp.system
+    )
 }

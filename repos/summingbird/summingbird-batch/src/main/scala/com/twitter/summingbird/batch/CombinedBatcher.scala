@@ -27,8 +27,10 @@ import com.twitter.algebird.ExclusiveUpper
   * beforeBound is before.batchOf(beforeBound - 1ms) + 1
   */
 class CombinedBatcher(
-    before: Batcher, beforeBound: ExclusiveUpper[Timestamp], after: Batcher)
-    extends Batcher {
+    before: Batcher,
+    beforeBound: ExclusiveUpper[Timestamp],
+    after: Batcher
+) extends Batcher {
   import OrderedFromOrderingExt._
   val batchAtBound: BatchID = before.batchOf(beforeBound.upper.prev) + 1L
   val afterBatchDelta: BatchID = after.batchOf(beforeBound.upper)

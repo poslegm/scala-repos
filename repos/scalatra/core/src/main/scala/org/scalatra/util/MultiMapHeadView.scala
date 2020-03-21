@@ -10,8 +10,8 @@ object MultiMapHeadView {
     }
   }
 
-  def emptyIndifferent[
-      B]: MultiMapHeadView[String, B] with MapWithIndifferentAccess[B] = {
+  def emptyIndifferent[B]
+      : MultiMapHeadView[String, B] with MapWithIndifferentAccess[B] = {
     new MultiMapHeadView[String, B] with MapWithIndifferentAccess[B] {
       override protected val multiMap = Map.empty[String, Seq[B]]
     }
@@ -22,18 +22,17 @@ trait MultiMapHeadView[A, B] extends Map[A, B] {
 
   protected def multiMap: Map[A, Seq[B]]
 
-  override def get(key: A): Option[B] = multiMap.get(key) flatMap {
-    _.headOption
-  }
+  override def get(key: A): Option[B] =
+    multiMap.get(key) flatMap {
+      _.headOption
+    }
 
   override def size: Int = multiMap.size
 
   override def iterator: Iterator[(A, B)] =
     multiMap.flatMap {
       case (k, v) =>
-        v.headOption.map { _v =>
-          (k, _v)
-        }
+        v.headOption.map { _v => (k, _v) }
     }.iterator
 
   override def -(key: A): Map[A, B] = Map() ++ this - key

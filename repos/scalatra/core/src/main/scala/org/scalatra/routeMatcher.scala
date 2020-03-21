@@ -36,7 +36,8 @@ trait ReversibleRouteMatcher {
   * An implementation of Sinatra's path pattern syntax.
   */
 final class SinatraRouteMatcher(pattern: String)
-    extends RouteMatcher with ReversibleRouteMatcher {
+    extends RouteMatcher
+    with ReversibleRouteMatcher {
 
   lazy val generator: (Builder => Builder) = BuilderGeneratorParser(pattern)
 
@@ -47,7 +48,10 @@ final class SinatraRouteMatcher(pattern: String)
     generator(Builder("", params, splats)).get
 
   case class Builder(
-      path: String, params: Map[String, String], splats: List[String]) {
+      path: String,
+      params: Map[String, String],
+      splats: List[String]
+  ) {
 
     def addLiteral(text: String): Builder = copy(path = path + text)
 
@@ -59,7 +63,8 @@ final class SinatraRouteMatcher(pattern: String)
         copy(path = path + params(name), params = params - name)
       else
         throw new Exception(
-            "Builder \"%s\" requires param \"%s\"" format (pattern, name))
+          "Builder \"%s\" requires param \"%s\"" format (pattern, name)
+        )
 
     def addOptional(name: String): Builder =
       if (params contains name)
@@ -74,8 +79,7 @@ final class SinatraRouteMatcher(pattern: String)
     // checks all splats are used, appends additional params as a query string
     def get: String = {
       if (!splats.isEmpty)
-        throw new Exception(
-            "Too many splats for builder \"%s\"" format pattern)
+        throw new Exception("Too many splats for builder \"%s\"" format pattern)
       val pairs =
         params map {
           case (key, value) => key.urlEncode + "=" + value.urlEncode
@@ -90,22 +94,21 @@ final class SinatraRouteMatcher(pattern: String)
     def apply(pattern: String): (Builder => Builder) =
       parseAll(tokens, pattern) get
 
-    private def tokens: Parser[Builder => Builder] = rep(token) ^^ { tokens =>
-      tokens reduceLeft ((acc, fun) => builder => fun(acc(builder)))
-    }
+    private def tokens: Parser[Builder => Builder] =
+      rep(token) ^^ { tokens =>
+        tokens reduceLeft ((acc, fun) => builder => fun(acc(builder)))
+      }
 
     private def token: Parser[Builder => Builder] =
       splat | prefixedOptional | optional | named | literal
 
-    private def splat: Parser[Builder => Builder] = "*" ^^^ { builder =>
-      builder addSplat
-    }
+    private def splat: Parser[Builder => Builder] =
+      "*" ^^^ { builder => builder addSplat }
 
     private def prefixedOptional: Parser[Builder => Builder] =
       ("." | "/") ~ "?:" ~ """\w+""".r ~ "?" ^^ {
         case p ~ "?:" ~ o ~ "?" =>
-          builder =>
-            builder addPrefixedOptional (o, p)
+          builder => builder addPrefixedOptional (o, p)
       }
 
     private def optional: Parser[Builder => Builder] =
@@ -114,9 +117,7 @@ final class SinatraRouteMatcher(pattern: String)
       }
 
     private def named: Parser[Builder => Builder] =
-      ":" ~> """\w+""".r ^^ { str => builder =>
-        builder addNamed str
-      }
+      ":" ~> """\w+""".r ^^ { str => builder => builder addNamed str }
 
     private def literal: Parser[Builder => Builder] =
       ("""[\.\+\(\)\$]""".r | ".".r) ^^ { str => builder =>
@@ -131,7 +132,8 @@ final class SinatraRouteMatcher(pattern: String)
   * An implementation of Rails' path pattern syntax
   */
 final class RailsRouteMatcher(pattern: String)
-    extends RouteMatcher with ReversibleRouteMatcher {
+    extends RouteMatcher
+    with ReversibleRouteMatcher {
 
   lazy val generator: (Builder => Builder) = BuilderGeneratorParser(pattern)
 
@@ -152,10 +154,12 @@ final class RailsRouteMatcher(pattern: String)
         copy(path = path + params(name), params = params - name)
       else
         throw new Exception(
-            "Builder \"%s\" requires param \"%s\"" format (pattern, name))
+          "Builder \"%s\" requires param \"%s\"" format (pattern, name)
+        )
 
     def optional(builder: Builder => Builder): Builder =
-      try builder(this) catch { case e: Exception => this }
+      try builder(this)
+      catch { case e: Exception => this }
 
     // appends additional params as a query string
     def get: String = {
@@ -173,23 +177,20 @@ final class RailsRouteMatcher(pattern: String)
     def apply(pattern: String): (Builder => Builder) =
       parseAll(tokens, pattern) get
 
-    private def tokens: Parser[Builder => Builder] = rep(token) ^^ { tokens =>
-      tokens reduceLeft ((acc, fun) => builder => fun(acc(builder)))
-    }
+    private def tokens: Parser[Builder => Builder] =
+      rep(token) ^^ { tokens =>
+        tokens reduceLeft ((acc, fun) => builder => fun(acc(builder)))
+      }
 
     //private def token = param | glob | optional | static
     private def token: Parser[Builder => Builder] =
       param | glob | optional | static
 
     private def param: Parser[Builder => Builder] =
-      ":" ~> identifier ^^ { str => builder =>
-        builder addParam str
-      }
+      ":" ~> identifier ^^ { str => builder => builder addParam str }
 
     private def glob: Parser[Builder => Builder] =
-      "*" ~> identifier ^^ { str => builder =>
-        builder addParam str
-      }
+      "*" ~> identifier ^^ { str => builder => builder addParam str }
 
     private def optional: Parser[Builder => Builder] =
       "(" ~> tokens <~ ")" ^^ { subBuilder => builder =>
@@ -197,9 +198,7 @@ final class RailsRouteMatcher(pattern: String)
       }
 
     private def static: Parser[Builder => Builder] =
-      (escaped | char) ^^ { str => builder =>
-        builder addStatic str
-      }
+      (escaped | char) ^^ { str => builder => builder addStatic str }
 
     private def identifier: Regex = """[a-zA-Z_]\w*""".r
 
@@ -215,8 +214,7 @@ final class RailsRouteMatcher(pattern: String)
   }
 }
 
-final class PathPatternRouteMatcher(pattern: PathPattern)
-    extends RouteMatcher {
+final class PathPatternRouteMatcher(pattern: PathPattern) extends RouteMatcher {
 
   def apply(requestPath: String): Option[MultiParams] = pattern(requestPath)
 
@@ -239,7 +237,7 @@ final class RegexRouteMatcher(regex: Regex) extends RouteMatcher {
     regex.findFirstMatchIn(requestPath) map {
       _.subgroups match {
         case Nil => MultiMap()
-        case xs => Map("captures" -> xs)
+        case xs  => Map("captures" -> xs)
       }
     }
 

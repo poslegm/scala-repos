@@ -26,7 +26,8 @@ import mutable.Builder
   *  @define coll immutable sorted map
   */
 trait SortedMap[A, +B]
-    extends Map[A, B] with scala.collection.SortedMap[A, B]
+    extends Map[A, B]
+    with scala.collection.SortedMap[A, B]
     with MapLike[A, B, SortedMap[A, B]]
     with SortedMapLike[A, B, SortedMap[A, B]] {
   self =>
@@ -40,7 +41,8 @@ trait SortedMap[A, +B]
   override def keySet: immutable.SortedSet[A] = new DefaultKeySortedSet
 
   protected class DefaultKeySortedSet
-      extends super.DefaultKeySortedSet with immutable.SortedSet[A] {
+      extends super.DefaultKeySortedSet
+      with immutable.SortedSet[A] {
     override def +(elem: A): SortedSet[A] =
       if (this(elem)) this
       else SortedSet[A]() ++ this + elem
@@ -75,7 +77,10 @@ trait SortedMap[A, +B]
     *  @param elems the remaining elements to add.
     */
   override def +[B1 >: B](
-      elem1: (A, B1), elem2: (A, B1), elems: (A, B1)*): SortedMap[A, B1] =
+      elem1: (A, B1),
+      elem2: (A, B1),
+      elems: (A, B1)*
+  ): SortedMap[A, B1] =
     this + elem1 + elem2 ++ elems
 
   /** Adds a number of elements provided by a traversable object
@@ -90,11 +95,14 @@ trait SortedMap[A, +B]
     new FilteredKeys(p) with SortedMap.Default[A, B] {
       implicit def ordering: Ordering[A] = self.ordering
       override def rangeImpl(
-          from: Option[A], until: Option[A]): SortedMap[A, B] =
+          from: Option[A],
+          until: Option[A]
+      ): SortedMap[A, B] =
         self.rangeImpl(from, until).filterKeys(p)
-      override def iteratorFrom(start: A) = self iteratorFrom start filter {
-        case (k, _) => p(k)
-      }
+      override def iteratorFrom(start: A) =
+        self iteratorFrom start filter {
+          case (k, _) => p(k)
+        }
       override def keysIteratorFrom(start: A) =
         self keysIteratorFrom start filter p
       override def valuesIteratorFrom(start: A) =
@@ -105,11 +113,14 @@ trait SortedMap[A, +B]
     new MappedValues(f) with SortedMap.Default[A, C] {
       implicit def ordering: Ordering[A] = self.ordering
       override def rangeImpl(
-          from: Option[A], until: Option[A]): SortedMap[A, C] =
+          from: Option[A],
+          until: Option[A]
+      ): SortedMap[A, C] =
         self.rangeImpl(from, until).mapValues(f)
-      override def iteratorFrom(start: A) = self iteratorFrom start map {
-        case (k, v) => (k, f(v))
-      }
+      override def iteratorFrom(start: A) =
+        self iteratorFrom start map {
+          case (k, v) => (k, f(v))
+        }
       override def keysIteratorFrom(start: A) = self keysIteratorFrom start
       override def valuesIteratorFrom(start: A) =
         self valuesIteratorFrom start map f
@@ -123,14 +134,16 @@ trait SortedMap[A, +B]
 object SortedMap extends ImmutableSortedMapFactory[SortedMap] {
 
   /** $sortedMapCanBuildFromInfo */
-  implicit def canBuildFrom[A, B](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, (A, B), SortedMap[A, B]] =
+  implicit def canBuildFrom[A, B](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, (A, B), SortedMap[A, B]] =
     new SortedMapCanBuildFrom[A, B]
   def empty[A, B](implicit ord: Ordering[A]): SortedMap[A, B] =
     TreeMap.empty[A, B]
 
   private[collection] trait Default[A, +B]
-      extends SortedMap[A, B] with scala.collection.SortedMap.Default[A, B] {
+      extends SortedMap[A, B]
+      with scala.collection.SortedMap.Default[A, B] {
     self =>
     override def +[B1 >: B](kv: (A, B1)): SortedMap[A, B1] = {
       val b = SortedMap.newBuilder[A, B1]

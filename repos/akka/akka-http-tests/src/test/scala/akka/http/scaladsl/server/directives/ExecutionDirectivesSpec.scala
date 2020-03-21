@@ -19,16 +19,12 @@ class ExecutionDirectivesSpec extends RoutingSpec {
   "The `handleExceptions` directive" should {
     "handle an exception strictly thrown in the inner route with the supplied exception handler" in {
       exceptionShouldBeHandled {
-        handleExceptions(handler) { ctx ⇒
-          throw MyException
-        }
+        handleExceptions(handler) { ctx ⇒ throw MyException }
       }
     }
     "handle an Future.failed RouteResult with the supplied exception handler" in {
       exceptionShouldBeHandled {
-        handleExceptions(handler) { ctx ⇒
-          Future.failed(MyException)
-        }
+        handleExceptions(handler) { ctx ⇒ Future.failed(MyException) }
       }
     }
     "handle an eventually failed Future[RouteResult] with the supplied exception handler" in {
@@ -51,18 +47,19 @@ class ExecutionDirectivesSpec extends RoutingSpec {
       }
     }
     "not interfere with alternative routes" in EventFilter[MyException.type](
-        occurrences = 1).intercept {
+      occurrences = 1
+    ).intercept {
       Get("/abc") ~> get {
-        handleExceptions(handler)(reject) ~ { ctx ⇒
-          throw MyException
-        }
+        handleExceptions(handler)(reject) ~ { ctx ⇒ throw MyException }
       } ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[String] shouldEqual "There was an internal server error."
       }
     }
     "not handle other exceptions" in EventFilter[RuntimeException](
-        occurrences = 1, message = "buh").intercept {
+      occurrences = 1,
+      message = "buh"
+    ).intercept {
       Get("/abc") ~> get {
         handleExceptions(handler) {
           throw new RuntimeException("buh")
@@ -73,7 +70,8 @@ class ExecutionDirectivesSpec extends RoutingSpec {
       }
     }
     "always fall back to a default content type" in EventFilter[
-        RuntimeException](occurrences = 2, message = "buh2").intercept {
+      RuntimeException
+    ](occurrences = 2, message = "buh2").intercept {
       Get("/abc") ~> Accept(MediaTypes.`application/json`) ~> get {
         handleExceptions(handler) {
           throw new RuntimeException("buh2")
@@ -83,8 +81,10 @@ class ExecutionDirectivesSpec extends RoutingSpec {
         responseAs[String] shouldEqual "There was an internal server error."
       }
 
-      Get("/abc") ~> Accept(MediaTypes.`text/xml`,
-                            MediaRanges.`*/*`.withQValue(0f)) ~> get {
+      Get("/abc") ~> Accept(
+        MediaTypes.`text/xml`,
+        MediaRanges.`*/*`.withQValue(0f)
+      ) ~> get {
         handleExceptions(handler) {
           throw new RuntimeException("buh2")
         }

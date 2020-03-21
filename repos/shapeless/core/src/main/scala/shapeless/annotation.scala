@@ -30,7 +30,7 @@ import scala.reflect.macros.whitebox
   *   case class First(i: Int)
   *
   *   @First(3) trait Something
-  *   
+  *
   *
   *   val somethingFirst = Annotation[First, Something].apply()
   *   assert(somethingFirst == First(3))
@@ -54,8 +54,9 @@ object Annotation {
       def apply() = annotation
     }
 
-  implicit def materialize[A, T]: Annotation[A, T] = macro AnnotationMacros
-    .materializeAnnotation[A, T]
+  implicit def materialize[A, T]: Annotation[A, T] =
+    macro AnnotationMacros
+      .materializeAnnotation[A, T]
 }
 
 /**
@@ -106,21 +107,24 @@ trait Annotations[A, T] extends DepFn0 with Serializable {
 }
 
 object Annotations {
-  def apply[A, T](
-      implicit annotations: Annotations[A, T]): Aux[A, T, annotations.Out] =
+  def apply[A, T](implicit
+      annotations: Annotations[A, T]
+  ): Aux[A, T, annotations.Out] =
     annotations
 
   type Aux[A, T, Out0 <: HList] = Annotations[A, T] { type Out = Out0 }
 
   def mkAnnotations[A, T, Out0 <: HList](
-      annotations: => Out0): Aux[A, T, Out0] =
+      annotations: => Out0
+  ): Aux[A, T, Out0] =
     new Annotations[A, T] {
       type Out = Out0
       def apply() = annotations
     }
 
-  implicit def materialize[A, T, Out <: HList]: Aux[A, T, Out] = macro AnnotationMacros
-    .materializeAnnotations[A, T, Out]
+  implicit def materialize[A, T, Out <: HList]: Aux[A, T, Out] =
+    macro AnnotationMacros
+      .materializeAnnotations[A, T, Out]
 }
 
 @macrocompat.bundle
@@ -145,7 +149,7 @@ class AnnotationMacros(val c: whitebox.Context) extends CaseClassMacros {
     else args => q"new $tpe(..$args)"
   }
 
-  def materializeAnnotation[A : WeakTypeTag, T : WeakTypeTag]: Tree = {
+  def materializeAnnotation[A: WeakTypeTag, T: WeakTypeTag]: Tree = {
     val annTpe = weakTypeOf[A]
 
     if (!isProduct(annTpe)) abort(s"$annTpe is not a case class-like type")
@@ -166,8 +170,8 @@ class AnnotationMacros(val c: whitebox.Context) extends CaseClassMacros {
     }
   }
 
-  def materializeAnnotations[
-      A : WeakTypeTag, T : WeakTypeTag, Out : WeakTypeTag]: Tree = {
+  def materializeAnnotations[A: WeakTypeTag, T: WeakTypeTag, Out: WeakTypeTag]
+      : Tree = {
     val annTpe = weakTypeOf[A]
 
     if (!isProduct(annTpe)) abort(s"$annTpe is not a case class-like type")
@@ -183,9 +187,7 @@ class AnnotationMacros(val c: whitebox.Context) extends CaseClassMacros {
           .asMethod
           .paramLists
           .flatten
-          .map { sym =>
-            sym.name.decodedName.toString -> sym
-          }
+          .map { sym => sym.name.decodedName.toString -> sym }
           .toMap
 
         fieldsOf(tpe).map {
@@ -203,9 +205,11 @@ class AnnotationMacros(val c: whitebox.Context) extends CaseClassMacros {
             case ann if ann.tree.tpe =:= annTpe =>
               construct0(ann.tree.children.tail)
           }
-        } else
+        }
+      else
         abort(
-            s"$tpe is not case class like or the root of a sealed family of types")
+          s"$tpe is not case class like or the root of a sealed family of types"
+        )
 
     val wrapTpeTrees = annTreeOpts.map {
       case Some(annTree) =>

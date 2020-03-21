@@ -44,19 +44,21 @@ abstract class ParallelArrayCheck[T](tp: String)
 
   property("array mappings must be equal") = forAll(collectionPairs) {
     case (t, coll) =>
-      val results = for ((f, ind) <- mapFunctions.zipWithIndex) yield
-      ("op index: " + ind) |: t.map(f) == coll.map(f)
+      val results =
+        for ((f, ind) <- mapFunctions.zipWithIndex)
+          yield ("op index: " + ind) |: t.map(f) == coll.map(f)
       results.reduceLeft(_ && _)
   }
 }
 
 class IntParallelArrayCheck(val tasksupport: TaskSupport)
-    extends ParallelArrayCheck[Int]("Int") with IntSeqOperators
+    extends ParallelArrayCheck[Int]("Int")
+    with IntSeqOperators
     with IntValues {
   override def instances(vals: Seq[Gen[Int]]) =
-    oneOf(super.instances(vals), sized { sz =>
-      (0 until sz).toArray.toSeq
-    }, sized { sz =>
-      (-sz until 0).toArray.toSeq
-    })
+    oneOf(
+      super.instances(vals),
+      sized { sz => (0 until sz).toArray.toSeq },
+      sized { sz => (-sz until 0).toArray.toSeq }
+    )
 }

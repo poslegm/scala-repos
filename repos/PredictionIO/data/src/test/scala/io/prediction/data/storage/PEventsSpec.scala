@@ -31,25 +31,29 @@ class PEventsSpec extends Specification with TestEvents {
   val channelId = 6
   val dbName = "test_pio_storage_events_" + hashCode
 
-  def hbLocal = Storage.getDataObject[LEvents](
+  def hbLocal =
+    Storage.getDataObject[LEvents](
       StorageTestUtils.hbaseSourceName,
       dbName
-  )
+    )
 
-  def hbPar = Storage.getDataObject[PEvents](
+  def hbPar =
+    Storage.getDataObject[PEvents](
       StorageTestUtils.hbaseSourceName,
       dbName
-  )
+    )
 
-  def jdbcLocal = Storage.getDataObject[LEvents](
+  def jdbcLocal =
+    Storage.getDataObject[LEvents](
       StorageTestUtils.jdbcSourceName,
       dbName
-  )
+    )
 
-  def jdbcPar = Storage.getDataObject[PEvents](
+  def jdbcPar =
+    Storage.getDataObject[PEvents](
       StorageTestUtils.jdbcSourceName,
       dbName
-  )
+    )
 
   def stopSpark = {
     sc.stop()
@@ -80,9 +84,11 @@ class PEventsSpec extends Specification with TestEvents {
     JDBCPEvents should
     - behave like any PEvents implementation ${events(jdbcLocal, jdbcPar)}
     - (table cleanup) ${Step(
-        StorageTestUtils.dropJDBCTable(s"${dbName}_$appId"))}
+      StorageTestUtils.dropJDBCTable(s"${dbName}_$appId")
+    )}
     - (table cleanup) ${Step(
-        StorageTestUtils.dropJDBCTable(s"${dbName}_${appId}_$channelId"))}
+      StorageTestUtils.dropJDBCTable(s"${dbName}_${appId}_$channelId")
+    )}
 
   """
 
@@ -94,9 +100,11 @@ class PEventsSpec extends Specification with TestEvents {
     find in default ${find(parEventClient)}
     find in channel ${findChannel(parEventClient)}
     aggregate user properties in default ${aggregateUserProperties(
-        parEventClient)}
+      parEventClient
+    )}
     aggregate user properties in channel ${aggregateUserPropertiesChannel(
-        parEventClient)}
+      parEventClient
+    )}
     write to default ${write(parEventClient)}
     write to channel ${writeChannel(parEventClient)}
 
@@ -105,8 +113,8 @@ class PEventsSpec extends Specification with TestEvents {
   /* setup */
 
   // events from TestEvents trait
-  val listOfEvents = List(
-      u1e5, u2e2, u1e3, u1e1, u2e3, u2e1, u1e4, u1e2, r1, r2)
+  val listOfEvents =
+    List(u1e5, u2e2, u1e3, u1e1, u2e3, u2e1, u1e4, u1e2, r1, r2)
   val listOfEventsChannel = List(u3e1, u3e2, u3e3, r3, r4)
 
   def initTest(localEventClient: LEvents) = {
@@ -125,21 +133,25 @@ class PEventsSpec extends Specification with TestEvents {
 
   def find(parEventClient: PEvents) = {
     val resultRDD: RDD[Event] = parEventClient.find(
-        appId = appId
+      appId = appId
     )(sc)
 
-    val results = resultRDD.collect.toList.map { _.copy(eventId = None) } // ignore eventId
+    val results = resultRDD.collect.toList.map {
+      _.copy(eventId = None)
+    } // ignore eventId
 
     results must containTheSameElementsAs(listOfEvents)
   }
 
   def findChannel(parEventClient: PEvents) = {
     val resultRDD: RDD[Event] = parEventClient.find(
-        appId = appId,
-        channelId = Some(channelId)
+      appId = appId,
+      channelId = Some(channelId)
     )(sc)
 
-    val results = resultRDD.collect.toList.map { _.copy(eventId = None) } // ignore eventId
+    val results = resultRDD.collect.toList.map {
+      _.copy(eventId = None)
+    } // ignore eventId
 
     results must containTheSameElementsAs(listOfEventsChannel)
   }
@@ -147,14 +159,14 @@ class PEventsSpec extends Specification with TestEvents {
   def aggregateUserProperties(parEventClient: PEvents) = {
     val resultRDD: RDD[(String, PropertyMap)] =
       parEventClient.aggregateProperties(
-          appId = appId,
-          entityType = "user"
+        appId = appId,
+        entityType = "user"
       )(sc)
     val result: Map[String, PropertyMap] = resultRDD.collectAsMap.toMap
 
     val expected = Map(
-        "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
-        "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
+      "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
+      "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
     )
 
     result must beEqualTo(expected)
@@ -163,14 +175,14 @@ class PEventsSpec extends Specification with TestEvents {
   def aggregateUserPropertiesChannel(parEventClient: PEvents) = {
     val resultRDD: RDD[(String, PropertyMap)] =
       parEventClient.aggregateProperties(
-          appId = appId,
-          channelId = Some(channelId),
-          entityType = "user"
+        appId = appId,
+        channelId = Some(channelId),
+        entityType = "user"
       )(sc)
     val result: Map[String, PropertyMap] = resultRDD.collectAsMap.toMap
 
     val expected = Map(
-        "u3" -> PropertyMap(u3, u3BaseTime, u3LastTime)
+      "u3" -> PropertyMap(u3, u3BaseTime, u3LastTime)
     )
 
     result must beEqualTo(expected)
@@ -183,10 +195,12 @@ class PEventsSpec extends Specification with TestEvents {
 
     // read back
     val resultRDD = parEventClient.find(
-        appId = appId
+      appId = appId
     )(sc)
 
-    val results = resultRDD.collect.toList.map { _.copy(eventId = None) } // ignore eventId
+    val results = resultRDD.collect.toList.map {
+      _.copy(eventId = None)
+    } // ignore eventId
 
     val expected = listOfEvents ++ written
 
@@ -200,11 +214,13 @@ class PEventsSpec extends Specification with TestEvents {
 
     // read back
     val resultRDD = parEventClient.find(
-        appId = appId,
-        channelId = Some(channelId)
+      appId = appId,
+      channelId = Some(channelId)
     )(sc)
 
-    val results = resultRDD.collect.toList.map { _.copy(eventId = None) } // ignore eventId
+    val results = resultRDD.collect.toList.map {
+      _.copy(eventId = None)
+    } // ignore eventId
 
     val expected = listOfEventsChannel ++ written
 

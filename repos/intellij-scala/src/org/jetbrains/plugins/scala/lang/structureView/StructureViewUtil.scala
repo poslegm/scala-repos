@@ -14,7 +14,8 @@ object StructureViewUtil {
   def getParametersAsString(
       x: ScParameters,
       short: Boolean = true,
-      subst: ScSubstitutor = ScSubstitutor.empty): String = {
+      subst: ScSubstitutor = ScSubstitutor.empty
+  ): String = {
     val res: StringBuffer = new StringBuffer("")
     for (child <- x.clauses) {
       res.append("(")
@@ -24,20 +25,25 @@ object StructureViewUtil {
     res.toString
   }
   def getParametersAsString(
-      x: ScParameterClause, short: Boolean, subst: ScSubstitutor): String = {
+      x: ScParameterClause,
+      short: Boolean,
+      subst: ScSubstitutor
+  ): String = {
     val res = new StringBuffer("")
     for (param <- x.parameters) {
       if (short) {
         param.paramType match {
           case Some(pt) => res.append(pt.getText).append(", ")
-          case None => res.append("AnyRef").append(", ")
+          case None     => res.append("AnyRef").append(", ")
         }
       } else {
         res.append(param.name + ": ")
         val typez =
           subst.subst(param.getType(TypingContext.empty).getOrNothing)
-        res.append(ScType.presentableText(typez) +
-            (if (param.isRepeatedParameter) "*" else ""))
+        res.append(
+          ScType.presentableText(typez) +
+            (if (param.isRepeatedParameter) "*" else "")
+        )
         res.append(", ")
       }
     }

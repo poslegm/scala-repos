@@ -15,8 +15,10 @@ import org.scalajs.core.tools.sem.Semantics
 import org.scalajs.core.tools.javascript.ESLevel
 
 final class IncOptimizer(
-    semantics: Semantics, esLevel: ESLevel, considerPositions: Boolean)
-    extends GenIncOptimizer(semantics, esLevel, considerPositions) {
+    semantics: Semantics,
+    esLevel: ESLevel,
+    considerPositions: Boolean
+) extends GenIncOptimizer(semantics, esLevel, considerPositions) {
 
   private[optimizer] object CollOps extends GenIncOptimizer.AbsCollOps {
     type Map[K, V] = mutable.Map[K, V]
@@ -44,8 +46,9 @@ final class IncOptimizer(
     def getAcc[K, V](map: AccMap[K, V], k: K): GenIterable[V] =
       map.getOrElse(k, Nil)
 
-    def parFlatMapKeys[A, B](map: AccMap[A, _])(
-        f: A => GenTraversableOnce[B]): GenIterable[B] =
+    def parFlatMapKeys[A, B](
+        map: AccMap[A, _]
+    )(f: A => GenTraversableOnce[B]): GenIterable[B] =
       map.keys.flatMap(f).toList
 
     // Operations on ParIterable
@@ -63,7 +66,9 @@ final class IncOptimizer(
     methodsToProcess += method
 
   private[optimizer] def newMethodImpl(
-      owner: MethodContainer, encodedName: String): MethodImpl =
+      owner: MethodContainer,
+      encodedName: String
+  ): MethodImpl =
     new SeqMethodImpl(owner, encodedName)
 
   private[optimizer] def processAllTaggedMethods(): Unit = {

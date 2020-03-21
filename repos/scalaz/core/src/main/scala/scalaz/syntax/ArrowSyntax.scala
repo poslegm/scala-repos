@@ -2,9 +2,9 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Arrow` */
-final class ArrowOps[F[_, _], A, B] private[syntax](val self: F[A, B])(
-    implicit val F: Arrow[F])
-    extends Ops[F[A, B]] {
+final class ArrowOps[F[_, _], A, B] private[syntax] (val self: F[A, B])(implicit
+    val F: Arrow[F]
+) extends Ops[F[A, B]] {
   ////
   final def ***[C, D](k: F[C, D]): F[(A, C), (B, D)] =
     F.splitA(self, k)
@@ -24,13 +24,17 @@ sealed trait ToArrowOps0 {
 }
 
 trait ToArrowOps
-    extends ToArrowOps0 with ToSplitOps with ToStrongOps with ToCategoryOps {
+    extends ToArrowOps0
+    with ToSplitOps
+    with ToStrongOps
+    with ToCategoryOps {
 
   implicit def ToArrowOps[F[_, _], A, B](v: F[A, B])(implicit F0: Arrow[F]) =
     new ArrowOps[F, A, B](v)
 
   implicit def ToArrowVFromKleisliLike[G[_], F[G[_], _, _], A, B](
-      v: F[G, A, B])(implicit F0: Arrow[F[G, ?, ?]]) =
+      v: F[G, A, B]
+  )(implicit F0: Arrow[F[G, ?, ?]]) =
     new ArrowOps[F[G, ?, ?], A, B](v)(F0)
 
   ////
@@ -39,7 +43,9 @@ trait ToArrowOps
 }
 
 trait ArrowSyntax[F[_, _]]
-    extends SplitSyntax[F] with StrongSyntax[F] with CategorySyntax[F] {
+    extends SplitSyntax[F]
+    with StrongSyntax[F]
+    with CategorySyntax[F] {
   implicit def ToArrowOps[A, B](v: F[A, B]): ArrowOps[F, A, B] =
     new ArrowOps[F, A, B](v)(ArrowSyntax.this.F)
 

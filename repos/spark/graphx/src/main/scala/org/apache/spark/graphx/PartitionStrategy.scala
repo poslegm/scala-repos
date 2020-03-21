@@ -25,7 +25,10 @@ trait PartitionStrategy extends Serializable {
 
   /** Returns the partition number for a given edge. */
   def getPartition(
-      src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID
+      src: VertexId,
+      dst: VertexId,
+      numParts: PartitionID
+  ): PartitionID
 }
 
 /**
@@ -76,7 +79,10 @@ object PartitionStrategy {
     */
   case object EdgePartition2D extends PartitionStrategy {
     override def getPartition(
-        src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID = {
+        src: VertexId,
+        dst: VertexId,
+        numParts: PartitionID
+    ): PartitionID = {
       val ceilSqrtNumParts: PartitionID = math.ceil(math.sqrt(numParts)).toInt
       val mixingPrime: VertexId = 1125899906842597L
       if (numParts == ceilSqrtNumParts * ceilSqrtNumParts) {
@@ -93,7 +99,7 @@ object PartitionStrategy {
         val lastColRows = numParts - rows * (cols - 1)
         val col = (math.abs(src * mixingPrime) % numParts / rows).toInt
         val row = (math.abs(dst * mixingPrime) %
-            (if (col < cols - 1) rows else lastColRows)).toInt
+          (if (col < cols - 1) rows else lastColRows)).toInt
         col * rows + row
       }
     }
@@ -105,7 +111,10 @@ object PartitionStrategy {
     */
   case object EdgePartition1D extends PartitionStrategy {
     override def getPartition(
-        src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID = {
+        src: VertexId,
+        dst: VertexId,
+        numParts: PartitionID
+    ): PartitionID = {
       val mixingPrime: VertexId = 1125899906842597L
       (math.abs(src * mixingPrime) % numParts).toInt
     }
@@ -117,7 +126,10 @@ object PartitionStrategy {
     */
   case object RandomVertexCut extends PartitionStrategy {
     override def getPartition(
-        src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID = {
+        src: VertexId,
+        dst: VertexId,
+        numParts: PartitionID
+    ): PartitionID = {
       math.abs((src, dst).hashCode()) % numParts
     }
   }
@@ -129,7 +141,10 @@ object PartitionStrategy {
     */
   case object CanonicalRandomVertexCut extends PartitionStrategy {
     override def getPartition(
-        src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID = {
+        src: VertexId,
+        dst: VertexId,
+        numParts: PartitionID
+    ): PartitionID = {
       if (src < dst) {
         math.abs((src, dst).hashCode()) % numParts
       } else {
@@ -139,12 +154,13 @@ object PartitionStrategy {
   }
 
   /** Returns the PartitionStrategy with the specified name. */
-  def fromString(s: String): PartitionStrategy = s match {
-    case "RandomVertexCut" => RandomVertexCut
-    case "EdgePartition1D" => EdgePartition1D
-    case "EdgePartition2D" => EdgePartition2D
-    case "CanonicalRandomVertexCut" => CanonicalRandomVertexCut
-    case _ =>
-      throw new IllegalArgumentException("Invalid PartitionStrategy: " + s)
-  }
+  def fromString(s: String): PartitionStrategy =
+    s match {
+      case "RandomVertexCut"          => RandomVertexCut
+      case "EdgePartition1D"          => EdgePartition1D
+      case "EdgePartition2D"          => EdgePartition2D
+      case "CanonicalRandomVertexCut" => CanonicalRandomVertexCut
+      case _ =>
+        throw new IllegalArgumentException("Invalid PartitionStrategy: " + s)
+    }
 }

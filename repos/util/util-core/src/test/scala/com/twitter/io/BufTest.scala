@@ -11,16 +11,19 @@ import org.scalatest.prop.{GeneratorDrivenPropertyChecks, Checkers}
 
 @RunWith(classOf[JUnitRunner])
 class BufTest
-    extends FunSuite with MockitoSugar with GeneratorDrivenPropertyChecks
-    with Checkers with AssertionsForJUnit {
+    extends FunSuite
+    with MockitoSugar
+    with GeneratorDrivenPropertyChecks
+    with Checkers
+    with AssertionsForJUnit {
 
   val AllCharsets = Seq(
-      Charsets.Iso8859_1,
-      Charsets.UsAscii,
-      Charsets.Utf8,
-      Charsets.Utf16,
-      Charsets.Utf16BE,
-      Charsets.Utf16LE
+    Charsets.Iso8859_1,
+    Charsets.UsAscii,
+    Charsets.Utf8,
+    Charsets.Utf16,
+    Charsets.Utf16BE,
+    Charsets.Utf16LE
   )
 
   test("Buf.ByteArray.slice") {
@@ -71,7 +74,8 @@ class BufTest
     val a3 = Array[Byte](7, 8, 9)
 
     val buf =
-      Buf.ByteArray.Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
+      Buf.ByteArray
+        .Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
         .Owned(a3)
     assert(buf.length == 9)
     val x = Array.fill(9) { 0.toByte }
@@ -85,7 +89,8 @@ class BufTest
     val a3 = Array.range(16, 24).map(_.toByte)
     val arr = a1 ++ a2 ++ a3
     val buf =
-      Buf.ByteArray.Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
+      Buf.ByteArray
+        .Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
         .Owned(a3)
 
     for (i <- 0 until arr.length; j <- i until arr.length) {
@@ -100,7 +105,8 @@ class BufTest
     val a2 = Array.range(8, 16).map(_.toByte)
     val a3 = Array.range(16, 24).map(_.toByte)
     val buf =
-      Buf.ByteArray.Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
+      Buf.ByteArray
+        .Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
         .Owned(a3)
 
     assert(buf.slice(25, 30) == Buf.Empty)
@@ -111,7 +117,8 @@ class BufTest
     val a2 = Array.range(8, 16).map(_.toByte)
     val a3 = Array.range(16, 24).map(_.toByte)
     val buf =
-      Buf.ByteArray.Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
+      Buf.ByteArray
+        .Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
         .Owned(a3)
 
     assert(buf.slice(20, 30) == buf.slice(20, 24)) // just last
@@ -124,7 +131,8 @@ class BufTest
     val a2 = Array.range(8, 16).map(_.toByte)
     val a3 = Array.range(16, 24).map(_.toByte)
     val buf =
-      Buf.ByteArray.Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
+      Buf.ByteArray
+        .Owned(a1) concat Buf.ByteArray.Owned(a2) concat Buf.ByteArray
         .Owned(a3)
 
     intercept[IllegalArgumentException] {
@@ -151,27 +159,8 @@ class BufTest
     val bytes = new Array[Byte](21)
     buf.write(bytes, 0)
 
-    val expected = Array[Byte](-17,
-                               -65,
-                               -68,
-                               -17,
-                               -65,
-                               -68,
-                               -17,
-                               -65,
-                               -68,
-                               -17,
-                               -65,
-                               -68,
-                               -17,
-                               -65,
-                               -68,
-                               -17,
-                               -65,
-                               -68,
-                               -17,
-                               -65,
-                               -68)
+    val expected = Array[Byte](-17, -65, -68, -17, -65, -68, -17, -65, -68, -17,
+      -65, -68, -17, -65, -68, -17, -65, -68, -17, -65, -68)
 
     assert(bytes.toSeq == expected.toSeq)
 
@@ -192,9 +181,7 @@ class BufTest
       def slice(i: Int, j: Int) = throw new Exception("not implemented")
       def length = 12
       def write(output: Array[Byte], off: Int) =
-        (off until off + length) foreach { i =>
-          output(i) = 'a'.toByte
-        }
+        (off until off + length) foreach { i => output(i) = 'a'.toByte }
     }
 
     val Buf.Utf8(str) = buf
@@ -202,8 +189,10 @@ class BufTest
   }
 
   AllCharsets foreach { charset =>
-    test("Buf.StringCoder: decoding to %s does not modify underlying byte buffer"
-          .format(charset.name)) {
+    test(
+      "Buf.StringCoder: decoding to %s does not modify underlying byte buffer"
+        .format(charset.name)
+    ) {
       val coder = new Buf.StringCoder(charset) {}
       val hw = "Hello, world!"
       val bb = charset.encode(hw)
@@ -216,8 +205,10 @@ class BufTest
   }
 
   AllCharsets foreach { charset =>
-    test("Buf.StringCoder: %s charset can encode and decode an English phrase"
-          .format(charset.name)) {
+    test(
+      "Buf.StringCoder: %s charset can encode and decode an English phrase"
+        .format(charset.name)
+    ) {
       val coder = new Buf.StringCoder(charset) {}
       val phrase = "Hello, world!"
       val encoded = coder(phrase)
@@ -247,7 +238,8 @@ class BufTest
 
     assert(Buf.ByteBuffer.Owned(java.nio.ByteBuffer.allocate(0)) == Buf.Empty)
     assert(
-        Buf.ByteBuffer.Owned(java.nio.ByteBuffer.allocateDirect(0)) == Buf.Empty)
+      Buf.ByteBuffer.Owned(java.nio.ByteBuffer.allocateDirect(0)) == Buf.Empty
+    )
 
     val bytes2 = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9, 0)
     val buf2 = Buf.ByteBuffer.Owned(java.nio.ByteBuffer.wrap(bytes2, 3, 4))
@@ -345,8 +337,7 @@ class BufTest
     ae(Buf.Utf8(string), Buf.ByteArray.Owned(shifted, 3, 3 + bytes.length))
   }
 
-  check(
-      Prop.forAll { (in: Int) =>
+  check(Prop.forAll { (in: Int) =>
     val buf = Buf.U32BE(in)
     val Buf.U32BE(out, _) = buf
 
@@ -356,8 +347,7 @@ class BufTest
     out == in && outByteBuf.getInt == in
   })
 
-  check(
-      Prop.forAll { (in: Int) =>
+  check(Prop.forAll { (in: Int) =>
     val buf = Buf.U32LE(in)
     val Buf.U32LE(out, _) = buf
 
@@ -367,8 +357,7 @@ class BufTest
     out == in && outByteBuf.getInt == in
   })
 
-  check(
-      Prop.forAll { (in: Long) =>
+  check(Prop.forAll { (in: Long) =>
     val buf = Buf.U64BE(in)
     val Buf.U64BE(out, _) = buf
 
@@ -378,8 +367,7 @@ class BufTest
     out == in && outByteBuf.getLong == in
   })
 
-  check(
-      Prop.forAll { (in: Long) =>
+  check(Prop.forAll { (in: Long) =>
     val buf = Buf.U64LE(in)
     val Buf.U64LE(out, _) = buf
 
@@ -395,7 +383,7 @@ class BufTest
       case Buf.U64BE(_, _) => true
       case Buf.U32LE(_, _) => true
       case Buf.U64LE(_, _) => true
-      case _ => false
+      case _               => false
     }
     assert(!hasMatch)
 
@@ -405,8 +393,8 @@ class BufTest
       .concat(Buf.U32LE(Int.MinValue))
       .concat(Buf.U64LE(Long.MinValue))
 
-    val Buf.U32BE(be32,
-                  Buf.U64BE(be64, Buf.U32LE(le32, Buf.U64LE(le64, rem)))) = buf
+    val Buf
+      .U32BE(be32, Buf.U64BE(be64, Buf.U32LE(le32, Buf.U64LE(le64, rem)))) = buf
 
     assert(be32 == Int.MaxValue)
     assert(be64 == Long.MaxValue)
@@ -458,17 +446,17 @@ class BufTest
   implicit lazy val arbBuf: Arbitrary[Buf] = {
     import java.nio.charset.StandardCharsets.UTF_8
     val ctors: Seq[String => Buf] = Seq(
-        Buf.Iso8859_1.apply,
-        Buf.UsAscii.apply,
-        Buf.Utf8.apply,
-        Buf.Utf16.apply,
-        Buf.Utf16BE.apply,
-        Buf.Utf16LE.apply,
-        s => Buf.ByteArray.Owned(s.getBytes("UTF-8")),
-        s => Buf.ByteBuffer.Owned(UTF_8.encode(CharBuffer.wrap(s))))
+      Buf.Iso8859_1.apply,
+      Buf.UsAscii.apply,
+      Buf.Utf8.apply,
+      Buf.Utf16.apply,
+      Buf.Utf16BE.apply,
+      Buf.Utf16LE.apply,
+      s => Buf.ByteArray.Owned(s.getBytes("UTF-8")),
+      s => Buf.ByteBuffer.Owned(UTF_8.encode(CharBuffer.wrap(s)))
+    )
 
-    Arbitrary(
-        for {
+    Arbitrary(for {
       s <- Arbitrary.arbitrary[String]
       c <- Gen.oneOf(ctors)
     } yield c.apply(s))

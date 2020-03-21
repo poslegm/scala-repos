@@ -4,57 +4,66 @@ import sbt.internal.util.{Relation, Settings, Dag}
 
 import java.net.URI
 
-final class BuildUtil[Proj](val keyIndex: KeyIndex,
-                            val data: Settings[Scope],
-                            val root: URI,
-                            val rootProjectID: URI => String,
-                            val project: (URI, String) => Proj,
-                            val configurations: Proj => Seq[ConfigKey],
-                            val aggregates: Relation[ProjectRef, ProjectRef]) {
+final class BuildUtil[Proj](
+    val keyIndex: KeyIndex,
+    val data: Settings[Scope],
+    val root: URI,
+    val rootProjectID: URI => String,
+    val project: (URI, String) => Proj,
+    val configurations: Proj => Seq[ConfigKey],
+    val aggregates: Relation[ProjectRef, ProjectRef]
+) {
   def rootProject(uri: URI): Proj =
     project(uri, rootProjectID(uri))
 
   def resolveRef(ref: Reference): ResolvedReference =
     Scope.resolveReference(root, rootProjectID, ref)
 
-  def projectFor(ref: ResolvedReference): Proj = ref match {
-    case ProjectRef(uri, id) => project(uri, id)
-    case BuildRef(uri) => rootProject(uri)
-  }
-  def projectRefFor(ref: ResolvedReference): ProjectRef = ref match {
-    case p: ProjectRef => p
-    case BuildRef(uri) => ProjectRef(uri, rootProjectID(uri))
-  }
-  def projectForAxis(ref: Option[ResolvedReference]): Proj = ref match {
-    case Some(ref) => projectFor(ref)
-    case None => rootProject(root)
-  }
+  def projectFor(ref: ResolvedReference): Proj =
+    ref match {
+      case ProjectRef(uri, id) => project(uri, id)
+      case BuildRef(uri)       => rootProject(uri)
+    }
+  def projectRefFor(ref: ResolvedReference): ProjectRef =
+    ref match {
+      case p: ProjectRef => p
+      case BuildRef(uri) => ProjectRef(uri, rootProjectID(uri))
+    }
+  def projectForAxis(ref: Option[ResolvedReference]): Proj =
+    ref match {
+      case Some(ref) => projectFor(ref)
+      case None      => rootProject(root)
+    }
   def exactProject(refOpt: Option[Reference]): Option[Proj] =
     refOpt map resolveRef flatMap {
       case ProjectRef(uri, id) => Some(project(uri, id))
-      case _ => None
+      case _                   => None
     }
 
   val configurationsForAxis: Option[ResolvedReference] => Seq[String] =
     refOpt => configurations(projectForAxis(refOpt)).map(_.name)
 }
 object BuildUtil {
-  def apply(root: URI,
-            units: Map[URI, LoadedBuildUnit],
-            keyIndex: KeyIndex,
-            data: Settings[Scope]): BuildUtil[ResolvedProject] = {
+  def apply(
+      root: URI,
+      units: Map[URI, LoadedBuildUnit],
+      keyIndex: KeyIndex,
+      data: Settings[Scope]
+  ): BuildUtil[ResolvedProject] = {
     val getp = (build: URI, project: String) =>
       Load.getProject(units, build, project)
     val configs =
       (_: ResolvedProject).configurations.map(c => ConfigKey(c.name))
     val aggregates = aggregationRelation(units)
-    new BuildUtil(keyIndex,
-                  data,
-                  root,
-                  Load getRootProject units,
-                  getp,
-                  configs,
-                  aggregates)
+    new BuildUtil(
+      keyIndex,
+      data,
+      root,
+      Load getRootProject units,
+      getp,
+      configs,
+      aggregates
+    )
   }
 
   def dependencies(units: Map[URI, LoadedBuildUnit]): BuildDependencies = {
@@ -71,8 +80,9 @@ object BuildUtil {
 
   def checkCycles(units: Map[URI, LoadedBuildUnit]): Unit = {
     def getRef(pref: ProjectRef) = units(pref.build).defined(pref.project)
-    def deps(proj: ResolvedProject)(
-        base: ResolvedProject => Seq[ProjectRef]): Seq[ResolvedProject] =
+    def deps(
+        proj: ResolvedProject
+    )(base: ResolvedProject => Seq[ProjectRef]): Seq[ResolvedProject] =
       Dag.topologicalSort(proj)(p => base(p) map getRef)
     // check for cycles
     for ((_, lbu) <- units; proj <- lbu.defined.values) {
@@ -89,7 +99,9 @@ object BuildUtil {
 
   @deprecated("Use getImports(Seq[String]).", "0.13.2")
   def getImports(
-      pluginNames: Seq[String], buildNames: Seq[String]): Seq[String] =
+      pluginNames: Seq[String],
+      buildNames: Seq[String]
+  ): Seq[String] =
     getImports(pluginNames ++ buildNames)
 
   /** `import sbt._, Keys._`, and wildcard import `._` for all names. */
@@ -112,7 +124,8 @@ object BuildUtil {
   def rootedName(s: String): String = if (s contains '.') "_root_." + s else s
 
   def aggregationRelation(
-      units: Map[URI, LoadedBuildUnit]): Relation[ProjectRef, ProjectRef] = {
+      units: Map[URI, LoadedBuildUnit]
+  ): Relation[ProjectRef, ProjectRef] = {
     val depPairs = for {
       (uri, unit) <- units.toIterable
       project <- unit.defined.values

@@ -24,9 +24,10 @@ import cascading.flow.FlowProcess
 import scala.collection.mutable.Buffer
 import scala.collection.JavaConverters._
 
-class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _],
-                         val tupleBuffer: Buffer[Tuple])
-    extends Tap[Properties, In, Out](scheme) {
+class MemoryTap[In, Out](
+    val scheme: Scheme[Properties, In, Out, _, _],
+    val tupleBuffer: Buffer[Tuple]
+) extends Tap[Properties, In, Out](scheme) {
 
   private var modifiedTime: Long = 1L
   def updateModifiedTime: Unit = {
@@ -48,11 +49,15 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _],
 
   override def openForRead(flowProcess: FlowProcess[Properties], input: In) = {
     new TupleEntryChainIterator(
-        scheme.getSourceFields, tupleBuffer.toIterator.asJava)
+      scheme.getSourceFields,
+      tupleBuffer.toIterator.asJava
+    )
   }
 
-  override def openForWrite(flowProcess: FlowProcess[Properties],
-                            output: Out): TupleEntryCollector = {
+  override def openForWrite(
+      flowProcess: FlowProcess[Properties],
+      output: Out
+  ): TupleEntryCollector = {
     tupleBuffer.clear
     new MemoryTupleEntryCollector(tupleBuffer, this)
   }
@@ -63,8 +68,9 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _],
 }
 
 class MemoryTupleEntryCollector(
-    val tupleBuffer: Buffer[Tuple], mt: MemoryTap[_, _])
-    extends TupleEntryCollector {
+    val tupleBuffer: Buffer[Tuple],
+    mt: MemoryTap[_, _]
+) extends TupleEntryCollector {
 
   override def collect(tupleEntry: TupleEntry) {
     mt.updateModifiedTime

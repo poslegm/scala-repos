@@ -33,7 +33,8 @@ import scala.language.implicitConversions
 
 object BooleanExpression {
   implicit def sfxBooleanExpression2jfx(
-      be: BooleanExpression): jfxbb.BooleanExpression =
+      be: BooleanExpression
+  ): jfxbb.BooleanExpression =
     if (be != null) be.delegate else null
 }
 

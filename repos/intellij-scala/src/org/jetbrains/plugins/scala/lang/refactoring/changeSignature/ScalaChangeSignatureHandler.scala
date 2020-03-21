@@ -8,12 +8,22 @@ import com.intellij.openapi.editor.{Editor, ScrollType}
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiElement, PsiFile, PsiMethod}
-import com.intellij.refactoring.changeSignature.{ChangeSignatureHandler, ChangeSignatureUtil}
+import com.intellij.refactoring.changeSignature.{
+  ChangeSignatureHandler,
+  ChangeSignatureUtil
+}
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.intellij.refactoring.{HelpID, RefactoringBundle}
 import org.jetbrains.plugins.scala.extensions.ResolvesTo
-import org.jetbrains.plugins.scala.lang.psi.api.base.{ScMethodLike, ScReferenceElement}
-import org.jetbrains.plugins.scala.lang.psi.api.statements.{ScFunction, ScFunctionDeclaration, ScFunctionDefinition}
+import org.jetbrains.plugins.scala.lang.psi.api.base.{
+  ScMethodLike,
+  ScReferenceElement
+}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.{
+  ScFunction,
+  ScFunctionDeclaration,
+  ScFunctionDefinition
+}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScClass
 import org.jetbrains.plugins.scala.lang.psi.light.isWrapper
 
@@ -27,29 +37,38 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
 
   def invokeWithDialog(project: Project, fun: ScMethodLike) {
     UsageTrigger.trigger(ScalaChangeSignatureHandler.id)
-    val dialog = new ScalaChangeSignatureDialog(
-        project, new ScalaMethodDescriptor(fun))
+    val dialog =
+      new ScalaChangeSignatureDialog(project, new ScalaMethodDescriptor(fun))
     dialog.show()
   }
 
   private def invokeOnElement(
-      project: Project, editor: Editor, element: PsiElement): Unit = {
+      project: Project,
+      editor: Editor,
+      element: PsiElement
+  ): Unit = {
     def showErrorHint(message: String) = {
       val name = ChangeSignatureHandler.REFACTORING_NAME
       CommonRefactoringUtil.showErrorHint(
-          project, editor, message, name, HelpID.CHANGE_SIGNATURE)
+        project,
+        editor,
+        message,
+        name,
+        HelpID.CHANGE_SIGNATURE
+      )
     }
     def isSupportedFor(fun: ScMethodLike): Boolean = {
       fun match {
-        case fun: ScFunction
-            if fun.paramClauses.clauses.exists(_.isImplicit) =>
+        case fun: ScFunction if fun.paramClauses.clauses.exists(_.isImplicit) =>
           val message = ScalaBundle.message(
-              "change.signature.not.supported.implicit.parameters")
+            "change.signature.not.supported.implicit.parameters"
+          )
           showErrorHint(message)
           false
         case fun: ScFunction if fun.hasModifierProperty("implicit") =>
           val message = ScalaBundle.message(
-              "change.signature.not.supported.implicit.functions")
+            "change.signature.not.supported.implicit.functions"
+          )
           showErrorHint(message)
           false
         case fun: ScFunction
@@ -63,25 +82,28 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
     }
 
     @tailrec
-    def unwrapMethod(element: PsiElement): Option[PsiMethod] = element match {
-      case null => None
-      case isWrapper(fun: ScFunction) => unwrapMethod(fun)
-      case fun: ScFunction if fun.isSynthetic =>
-        fun.syntheticCaseClass.flatMap(_.constructor)
-      case m: PsiMethod => Some(m)
-      case _ => None
-    }
+    def unwrapMethod(element: PsiElement): Option[PsiMethod] =
+      element match {
+        case null                       => None
+        case isWrapper(fun: ScFunction) => unwrapMethod(fun)
+        case fun: ScFunction if fun.isSynthetic =>
+          fun.syntheticCaseClass.flatMap(_.constructor)
+        case m: PsiMethod => Some(m)
+        case _            => None
+      }
 
     unwrapMethod(element) match {
       case Some(method) =>
         if (!CommonRefactoringUtil.checkReadOnlyStatus(project, method)) return
         method match {
           case f: ScFunction if f.isSynthetic => return
-          case _ =>
+          case _                              =>
         }
 
         val newMethod = SuperMethodWarningUtil.checkSuperMethod(
-            method, RefactoringBundle.message("to.refactor"))
+          method,
+          RefactoringBundle.message("to.refactor")
+        )
         unwrapMethod(newMethod) match {
           case Some(fun: ScMethodLike) =>
             if (isSupportedFor(fun)) invokeWithDialog(project, fun)
@@ -96,10 +118,12 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
     }
   }
 
-  override def invoke(project: Project,
-                      editor: Editor,
-                      file: PsiFile,
-                      dataContext: DataContext): Unit = {
+  override def invoke(
+      project: Project,
+      editor: Editor,
+      file: PsiFile,
+      dataContext: DataContext
+  ): Unit = {
     editor.getScrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
     val element = Option(findTargetMember(file, editor))
       .getOrElse(CommonDataKeys.PSI_ELEMENT.getData(dataContext))
@@ -107,9 +131,11 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
     invokeOnElement(project, editor, element)
   }
 
-  override def invoke(project: Project,
-                      elements: Array[PsiElement],
-                      dataContext: DataContext): Unit = {
+  override def invoke(
+      project: Project,
+      elements: Array[PsiElement],
+      dataContext: DataContext
+  ): Unit = {
     if (elements.length != 1) return
     val editor: Editor =
       if (dataContext == null) null
@@ -125,9 +151,9 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
 
     def resolvedMethod =
       PsiTreeUtil.getParentOfType(element, classOf[ScReferenceElement]) match {
-        case null => null
+        case null                     => null
         case ResolvesTo(m: PsiMethod) => m
-        case _ => null
+        case _                        => null
       }
     def currentFunction =
       PsiTreeUtil.getParentOfType(element, classOf[ScFunction]) match {
@@ -136,7 +162,7 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
             if !funDef.body.exists(_.isAncestorOf(element)) =>
           funDef
         case decl: ScFunctionDeclaration => decl
-        case _ => null
+        case _                           => null
       }
     def primaryConstr =
       PsiTreeUtil.getParentOfType(element, classOf[ScClass]) match {
@@ -145,12 +171,14 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
           c.constructor match {
             case Some(constr)
                 if PsiTreeUtil.isAncestor(c.nameId, element, false) ||
-                PsiTreeUtil.isAncestor(constr, element, false) =>
+                  PsiTreeUtil.isAncestor(constr, element, false) =>
               constr
             case _ => null
           }
       }
-    Option(resolvedMethod) orElse Option(currentFunction) getOrElse primaryConstr
+    Option(resolvedMethod) orElse Option(
+      currentFunction
+    ) getOrElse primaryConstr
   }
 
   override def findTargetMember(file: PsiFile, editor: Editor): PsiElement = {
@@ -159,7 +187,7 @@ class ScalaChangeSignatureHandler extends ChangeSignatureHandler {
     Option(findTargetMember(element)) getOrElse {
       file.findReferenceAt(offset) match {
         case ResolvesTo(m: PsiMethod) => m
-        case _ => null
+        case _                        => null
       }
     }
   }

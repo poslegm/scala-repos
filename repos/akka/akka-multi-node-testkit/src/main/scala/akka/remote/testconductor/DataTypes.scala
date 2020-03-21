@@ -24,7 +24,8 @@ private[akka] sealed trait ClientOp // messages sent to from Conductor to Player
 private[akka] sealed trait ServerOp // messages sent to from Player to Conductor
 private[akka] sealed trait CommandOp // messages sent from TestConductorExt to Conductor
 private[akka] sealed trait NetworkOp // messages sent over the wire
-private[akka] sealed trait UnconfirmedClientOp extends ClientOp // unconfirmed messages going to the Player
+private[akka] sealed trait UnconfirmedClientOp
+    extends ClientOp // unconfirmed messages going to the Player
 private[akka] sealed trait ConfirmedClientOp extends ClientOp
 
 /**
@@ -34,40 +35,59 @@ private[akka] final case class Hello(name: String, addr: Address)
     extends NetworkOp
 
 private[akka] final case class EnterBarrier(
-    name: String, timeout: Option[FiniteDuration])
-    extends ServerOp with NetworkOp
+    name: String,
+    timeout: Option[FiniteDuration]
+) extends ServerOp
+    with NetworkOp
 private[akka] final case class FailBarrier(name: String)
-    extends ServerOp with NetworkOp
+    extends ServerOp
+    with NetworkOp
 private[akka] final case class BarrierResult(name: String, success: Boolean)
-    extends UnconfirmedClientOp with NetworkOp
+    extends UnconfirmedClientOp
+    with NetworkOp
 
 private[akka] final case class Throttle(
-    node: RoleName, target: RoleName, direction: Direction, rateMBit: Float)
-    extends CommandOp
+    node: RoleName,
+    target: RoleName,
+    direction: Direction,
+    rateMBit: Float
+) extends CommandOp
 private[akka] final case class ThrottleMsg(
-    target: Address, direction: Direction, rateMBit: Float)
-    extends ConfirmedClientOp with NetworkOp
+    target: Address,
+    direction: Direction,
+    rateMBit: Float
+) extends ConfirmedClientOp
+    with NetworkOp
 
 private[akka] final case class Disconnect(
-    node: RoleName, target: RoleName, abort: Boolean)
-    extends CommandOp
+    node: RoleName,
+    target: RoleName,
+    abort: Boolean
+) extends CommandOp
 private[akka] final case class DisconnectMsg(target: Address, abort: Boolean)
-    extends ConfirmedClientOp with NetworkOp
+    extends ConfirmedClientOp
+    with NetworkOp
 
 private[akka] final case class Terminate(
-    node: RoleName, shutdownOrExit: Either[Boolean, Int])
-    extends CommandOp
+    node: RoleName,
+    shutdownOrExit: Either[Boolean, Int]
+) extends CommandOp
 private[akka] final case class TerminateMsg(
-    shutdownOrExit: Either[Boolean, Int])
-    extends ConfirmedClientOp with NetworkOp
+    shutdownOrExit: Either[Boolean, Int]
+) extends ConfirmedClientOp
+    with NetworkOp
 
 private[akka] final case class GetAddress(node: RoleName)
-    extends ServerOp with NetworkOp
+    extends ServerOp
+    with NetworkOp
 private[akka] final case class AddressReply(node: RoleName, addr: Address)
-    extends UnconfirmedClientOp with NetworkOp
+    extends UnconfirmedClientOp
+    with NetworkOp
 
 private[akka] abstract class Done
-    extends ServerOp with UnconfirmedClientOp with NetworkOp
+    extends ServerOp
+    with UnconfirmedClientOp
+    with NetworkOp
 private[akka] case object Done extends Done {
   def getInstance: Done = this
 }
@@ -84,11 +104,12 @@ private[akka] class MsgEncoder extends OneToOneEncoder {
       .setPort(addr.port.get)
       .build
 
-  implicit def direction2proto(dir: Direction): TCP.Direction = dir match {
-    case Direction.Send ⇒ TCP.Direction.Send
-    case Direction.Receive ⇒ TCP.Direction.Receive
-    case Direction.Both ⇒ TCP.Direction.Both
-  }
+  implicit def direction2proto(dir: Direction): TCP.Direction =
+    dir match {
+      case Direction.Send ⇒ TCP.Direction.Send
+      case Direction.Receive ⇒ TCP.Direction.Receive
+      case Direction.Both ⇒ TCP.Direction.Both
+    }
 
   def encode(ctx: ChannelHandlerContext, ch: Channel, msg: AnyRef): AnyRef =
     msg match {
@@ -106,37 +127,49 @@ private[akka] class MsgEncoder extends OneToOneEncoder {
             val res = if (success) BarrierOp.Succeeded else BarrierOp.Failed
             w.setBarrier(TCP.EnterBarrier.newBuilder.setName(name).setOp(res))
           case FailBarrier(name) ⇒
-            w.setBarrier(TCP.EnterBarrier.newBuilder
-                  .setName(name)
-                  .setOp(BarrierOp.Fail))
+            w.setBarrier(
+              TCP.EnterBarrier.newBuilder
+                .setName(name)
+                .setOp(BarrierOp.Fail)
+            )
           case ThrottleMsg(target, dir, rate) ⇒
             w.setFailure(
-                TCP.InjectFailure.newBuilder
-                  .setAddress(target)
-                  .setFailure(TCP.FailType.Throttle)
-                  .setDirection(dir)
-                  .setRateMBit(rate))
+              TCP.InjectFailure.newBuilder
+                .setAddress(target)
+                .setFailure(TCP.FailType.Throttle)
+                .setDirection(dir)
+                .setRateMBit(rate)
+            )
           case DisconnectMsg(target, abort) ⇒
             w.setFailure(
-                TCP.InjectFailure.newBuilder
-                  .setAddress(target)
-                  .setFailure(if (abort) TCP.FailType.Abort
-                      else TCP.FailType.Disconnect))
+              TCP.InjectFailure.newBuilder
+                .setAddress(target)
+                .setFailure(
+                  if (abort) TCP.FailType.Abort
+                  else TCP.FailType.Disconnect
+                )
+            )
           case TerminateMsg(Right(exitValue)) ⇒
-            w.setFailure(TCP.InjectFailure.newBuilder
-                  .setFailure(TCP.FailType.Exit)
-                  .setExitValue(exitValue))
+            w.setFailure(
+              TCP.InjectFailure.newBuilder
+                .setFailure(TCP.FailType.Exit)
+                .setExitValue(exitValue)
+            )
           case TerminateMsg(Left(false)) ⇒
             w.setFailure(
-                TCP.InjectFailure.newBuilder.setFailure(TCP.FailType.Shutdown))
+              TCP.InjectFailure.newBuilder.setFailure(TCP.FailType.Shutdown)
+            )
           case TerminateMsg(Left(true)) ⇒
-            w.setFailure(TCP.InjectFailure.newBuilder
-                  .setFailure(TCP.FailType.ShutdownAbrupt))
+            w.setFailure(
+              TCP.InjectFailure.newBuilder
+                .setFailure(TCP.FailType.ShutdownAbrupt)
+            )
           case GetAddress(node) ⇒
             w.setAddr(TCP.AddressRequest.newBuilder.setNode(node.name))
           case AddressReply(node, addr) ⇒
             w.setAddr(
-                TCP.AddressRequest.newBuilder.setNode(node.name).setAddr(addr))
+              TCP.AddressRequest.newBuilder.setNode(node.name).setAddr(addr)
+            )
           case _: Done ⇒
             w.setDone("")
         }
@@ -150,11 +183,12 @@ private[akka] class MsgDecoder extends OneToOneDecoder {
   implicit def address2scala(addr: TCP.Address): Address =
     Address(addr.getProtocol, addr.getSystem, addr.getHost, addr.getPort)
 
-  implicit def direction2scala(dir: TCP.Direction): Direction = dir match {
-    case TCP.Direction.Send ⇒ Direction.Send
-    case TCP.Direction.Receive ⇒ Direction.Receive
-    case TCP.Direction.Both ⇒ Direction.Both
-  }
+  implicit def direction2scala(dir: TCP.Direction): Direction =
+    dir match {
+      case TCP.Direction.Send ⇒ Direction.Send
+      case TCP.Direction.Receive ⇒ Direction.Receive
+      case TCP.Direction.Both ⇒ Direction.Both
+    }
 
   def decode(ctx: ChannelHandlerContext, ch: Channel, msg: AnyRef): AnyRef =
     msg match {
@@ -169,10 +203,12 @@ private[akka] class MsgDecoder extends OneToOneDecoder {
             case BarrierOp.Failed ⇒ BarrierResult(barrier.getName, false)
             case BarrierOp.Fail ⇒ FailBarrier(barrier.getName)
             case BarrierOp.Enter ⇒
-              EnterBarrier(barrier.getName,
-                           if (barrier.hasTimeout)
-                             Option(Duration.fromNanos(barrier.getTimeout))
-                           else None)
+              EnterBarrier(
+                barrier.getName,
+                if (barrier.hasTimeout)
+                  Option(Duration.fromNanos(barrier.getTimeout))
+                else None
+              )
           }
         } else if (w.hasFailure) {
           val f = w.getFailure

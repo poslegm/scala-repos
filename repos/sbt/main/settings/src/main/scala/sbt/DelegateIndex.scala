@@ -22,4 +22,5 @@ private final class DelegateIndex0(refs: Map[ProjectRef, ProjectDelegates])
 private final class ProjectDelegates(
     val ref: ProjectRef,
     val refs: Seq[ScopeAxis[ResolvedReference]],
-    val confs: Map[ConfigKey, Seq[ScopeAxis[ConfigKey]]])
+    val confs: Map[ConfigKey, Seq[ScopeAxis[ConfigKey]]]
+)

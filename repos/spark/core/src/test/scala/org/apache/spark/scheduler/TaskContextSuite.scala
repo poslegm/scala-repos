@@ -30,7 +30,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.util._
 
 class TaskContextSuite
-    extends SparkFunSuite with BeforeAndAfter with LocalSparkContext {
+    extends SparkFunSuite
+    with BeforeAndAfter
+    with LocalSparkContext {
 
   test("provide metrics sources") {
     val filePath = getClass.getClassLoader
@@ -41,14 +43,15 @@ class TaskContextSuite
     sc = new SparkContext("local", "test", conf)
     val rdd = sc.makeRDD(1 to 1)
     val result = sc
-      .runJob(rdd,
-              (tc: TaskContext, it: Iterator[Int]) =>
-                {
-                  tc.getMetricsSources("jvm").count {
-                    case source: JvmSource => true
-                    case _ => false
-                  }
-              })
+      .runJob(
+        rdd,
+        (tc: TaskContext, it: Iterator[Int]) => {
+          tc.getMetricsSources("jvm").count {
+            case source: JvmSource => true
+            case _                 => false
+          }
+        }
+      )
       .sum
     assert(result > 0)
   }
@@ -59,17 +62,25 @@ class TaskContextSuite
     val rdd = new RDD[String](sc, List()) {
       override def getPartitions = Array[Partition](StubPartition(0))
       override def compute(split: Partition, context: TaskContext) = {
-        context.addTaskCompletionListener(
-            context => TaskContextSuite.completed = true)
+        context.addTaskCompletionListener(context =>
+          TaskContextSuite.completed = true
+        )
         sys.error("failed")
       }
     }
     val closureSerializer = SparkEnv.get.closureSerializer.newInstance()
     val func = (c: TaskContext, i: Iterator[String]) => i.next()
     val taskBinary = sc.broadcast(
-        JavaUtils.bufferToArray(closureSerializer.serialize((rdd, func))))
+      JavaUtils.bufferToArray(closureSerializer.serialize((rdd, func)))
+    )
     val task = new ResultTask[String, String](
-        0, 0, taskBinary, rdd.partitions(0), Seq.empty, 0)
+      0,
+      0,
+      taskBinary,
+      rdd.partitions(0),
+      Seq.empty,
+      0
+    )
     intercept[RuntimeException] {
       task.run(0, 0, null)
     }
@@ -82,17 +93,25 @@ class TaskContextSuite
     val rdd = new RDD[String](sc, List()) {
       override def getPartitions = Array[Partition](StubPartition(0))
       override def compute(split: Partition, context: TaskContext) = {
-        context.addTaskFailureListener(
-            (context, error) => TaskContextSuite.lastError = error)
+        context.addTaskFailureListener((context, error) =>
+          TaskContextSuite.lastError = error
+        )
         sys.error("damn error")
       }
     }
     val closureSerializer = SparkEnv.get.closureSerializer.newInstance()
     val func = (c: TaskContext, i: Iterator[String]) => i.next()
     val taskBinary = sc.broadcast(
-        JavaUtils.bufferToArray(closureSerializer.serialize((rdd, func))))
+      JavaUtils.bufferToArray(closureSerializer.serialize((rdd, func)))
+    )
     val task = new ResultTask[String, String](
-        0, 0, taskBinary, rdd.partitions(0), Seq.empty, 0)
+      0,
+      0,
+      taskBinary,
+      rdd.partitions(0),
+      Seq.empty,
+      0
+    )
     intercept[RuntimeException] {
       task.run(0, 0, null)
     }
@@ -116,11 +135,13 @@ class TaskContextSuite
   test("all TaskFailureListeners should be called even if some fail") {
     val context = TaskContext.empty()
     val listener = mock(classOf[TaskFailureListener])
-    context.addTaskFailureListener(
-        (_, _) => throw new Exception("exception in listener1"))
+    context.addTaskFailureListener((_, _) =>
+      throw new Exception("exception in listener1")
+    )
     context.addTaskFailureListener(listener)
-    context.addTaskFailureListener(
-        (_, _) => throw new Exception("exception in listener3"))
+    context.addTaskFailureListener((_, _) =>
+      throw new Exception("exception in listener3")
+    )
 
     val e = intercept[TaskCompletionListenerException] {
       context.markTaskFailed(new Exception("exception in task"))
@@ -136,14 +157,17 @@ class TaskContextSuite
   }
 
   test(
-      "TaskContext.attemptNumber should return attempt number, not task id (SPARK-4014)") {
-    sc = new SparkContext("local[1,2]", "test") // use maxRetries = 2 because we test failed tasks
+    "TaskContext.attemptNumber should return attempt number, not task id (SPARK-4014)"
+  ) {
+    sc =
+      new SparkContext(
+        "local[1,2]",
+        "test"
+      ) // use maxRetries = 2 because we test failed tasks
     // Check that attemptIds are 0 for all tasks' initial attempts
     val attemptIds = sc
       .parallelize(Seq(1, 2), 2)
-      .mapPartitions { iter =>
-        Seq(TaskContext.get().attemptNumber).iterator
-      }
+      .mapPartitions { iter => Seq(TaskContext.get().attemptNumber).iterator }
       .collect()
     assert(attemptIds.toSet === Set(0))
 
@@ -167,9 +191,19 @@ class TaskContextSuite
     val param = AccumulatorParam.LongAccumulatorParam
     // Create 2 accumulators, one that counts failed values and another that doesn't
     val acc1 = new Accumulator(
-        0L, param, Some("x"), internal = false, countFailedValues = true)
+      0L,
+      param,
+      Some("x"),
+      internal = false,
+      countFailedValues = true
+    )
     val acc2 = new Accumulator(
-        0L, param, Some("y"), internal = false, countFailedValues = false)
+      0L,
+      param,
+      Some("y"),
+      internal = false,
+      countFailedValues = false
+    )
     // Fail first 3 attempts of every task. This means each task should be run 4 times.
     sc.parallelize(1 to 10, 10)
       .map { i =>
@@ -189,25 +223,37 @@ class TaskContextSuite
   }
 
   test(
-      "failed tasks collect only accumulators whose values count during failures") {
+    "failed tasks collect only accumulators whose values count during failures"
+  ) {
     sc = new SparkContext("local", "test")
     val param = AccumulatorParam.LongAccumulatorParam
     val acc1 = new Accumulator(
-        0L, param, Some("x"), internal = false, countFailedValues = true)
+      0L,
+      param,
+      Some("x"),
+      internal = false,
+      countFailedValues = true
+    )
     val acc2 = new Accumulator(
-        0L, param, Some("y"), internal = false, countFailedValues = false)
+      0L,
+      param,
+      Some("y"),
+      internal = false,
+      countFailedValues = false
+    )
     val initialAccums = InternalAccumulator.createAll()
     // Create a dummy task. We won't end up running this; we just want to collect
     // accumulator updates from it.
     val task = new Task[Int](0, 0, 0, Seq.empty[Accumulator[_]]) {
       context = new TaskContextImpl(
-          0,
-          0,
-          0L,
-          0,
-          new TaskMemoryManager(SparkEnv.get.memoryManager, 0L),
-          SparkEnv.get.metricsSystem,
-          initialAccums)
+        0,
+        0,
+        0L,
+        0,
+        new TaskMemoryManager(SparkEnv.get.memoryManager, 0L),
+        SparkEnv.get.metricsSystem,
+        initialAccums
+      )
       context.taskMetrics.registerAccumulator(acc1)
       context.taskMetrics.registerAccumulator(acc2)
       override def runTask(tc: TaskContext): Int = 0

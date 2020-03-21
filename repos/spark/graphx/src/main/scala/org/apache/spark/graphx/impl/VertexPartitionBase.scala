@@ -30,12 +30,11 @@ private[graphx] object VertexPartitionBase {
     * Construct the constituents of a VertexPartitionBase from the given vertices, merging duplicate
     * entries arbitrarily.
     */
-  def initFrom[VD : ClassTag](iter: Iterator[(VertexId, VD)])
-    : (VertexIdToIndexMap, Array[VD], BitSet) = {
+  def initFrom[VD: ClassTag](
+      iter: Iterator[(VertexId, VD)]
+  ): (VertexIdToIndexMap, Array[VD], BitSet) = {
     val map = new GraphXPrimitiveKeyOpenHashMap[VertexId, VD]
-    iter.foreach { pair =>
-      map(pair._1) = pair._2
-    }
+    iter.foreach { pair => map(pair._1) = pair._2 }
     (map.keySet, map._values, map.keySet.getBitSet)
   }
 
@@ -43,13 +42,12 @@ private[graphx] object VertexPartitionBase {
     * Construct the constituents of a VertexPartitionBase from the given vertices, merging duplicate
     * entries using `mergeFunc`.
     */
-  def initFrom[VD : ClassTag](
+  def initFrom[VD: ClassTag](
       iter: Iterator[(VertexId, VD)],
-      mergeFunc: (VD, VD) => VD): (VertexIdToIndexMap, Array[VD], BitSet) = {
+      mergeFunc: (VD, VD) => VD
+  ): (VertexIdToIndexMap, Array[VD], BitSet) = {
     val map = new GraphXPrimitiveKeyOpenHashMap[VertexId, VD]
-    iter.foreach { pair =>
-      map.setMerge(pair._1, pair._2, mergeFunc)
-    }
+    iter.foreach { pair => map.setMerge(pair._1, pair._2, mergeFunc) }
     (map.keySet, map._values, map.keySet.getBitSet)
   }
 }
@@ -62,8 +60,8 @@ private[graphx] object VertexPartitionBase {
   * [[VertexPartition.VertexPartitionOpsConstructor]]).
   */
 private[graphx] abstract class VertexPartitionBase[
-    @specialized(Long, Int, Double) VD : ClassTag]
-    extends Serializable {
+    @specialized(Long, Int, Double) VD: ClassTag
+] extends Serializable {
 
   def index: VertexIdToIndexMap
   def values: Array[VD]
@@ -89,7 +87,8 @@ private[graphx] abstract class VertexPartitionBase[
   * A typeclass for subclasses of `VertexPartitionBase` representing the ability to wrap them in a
   * `VertexPartitionBaseOps`.
   */
-private[graphx] trait VertexPartitionBaseOpsConstructor[
-    T[X] <: VertexPartitionBase[X]] {
-  def toOps[VD : ClassTag](partition: T[VD]): VertexPartitionBaseOps[VD, T]
+private[graphx] trait VertexPartitionBaseOpsConstructor[T[
+    X
+] <: VertexPartitionBase[X]] {
+  def toOps[VD: ClassTag](partition: T[VD]): VertexPartitionBaseOps[VD, T]
 }

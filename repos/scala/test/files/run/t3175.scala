@@ -33,8 +33,9 @@ object Test {
     val strs = Array("abcde", "fghjij")
 
     println(
-        len(Array(1, 2, 3)) + len(Array(4.0, 5.0f)) + len(Array("abc", 5)) +
-        len("bop"))
+      len(Array(1, 2, 3)) + len(Array(4.0, 5.0f)) + len(Array("abc", 5)) +
+        len("bop")
+    )
     println(f1(longs) + f2(bytes) + f3(strs))
 
     f4(longs, 1)
@@ -54,8 +55,11 @@ object Test {
     f12(strs, "jabooboo")
     println(longs(0))
     println(strs(0))
-    f13(new {
-      def update(x: Int, y: String): List[Int] = { println("hi mom"); Nil }
-    }, "irrelevant")
+    f13(
+      new {
+        def update(x: Int, y: String): List[Int] = { println("hi mom"); Nil }
+      },
+      "irrelevant"
+    )
   }
 }

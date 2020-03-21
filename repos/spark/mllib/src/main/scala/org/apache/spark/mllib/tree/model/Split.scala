@@ -31,14 +31,16 @@ import org.apache.spark.mllib.tree.configuration.FeatureType.FeatureType
   */
 @Since("1.0.0")
 @DeveloperApi
-case class Split(@Since("1.0.0") feature: Int,
-                 @Since("1.0.0") threshold: Double,
-                 @Since("1.0.0") featureType: FeatureType,
-                 @Since("1.0.0") categories: List[Double]) {
+case class Split(
+    @Since("1.0.0") feature: Int,
+    @Since("1.0.0") threshold: Double,
+    @Since("1.0.0") featureType: FeatureType,
+    @Since("1.0.0") categories: List[Double]
+) {
 
   override def toString: String = {
     s"Feature = $feature, threshold = $threshold, featureType = $featureType, " +
-    s"categories = $categories"
+      s"categories = $categories"
   }
 }
 
@@ -65,5 +67,6 @@ private[tree] class DummyHighSplit(feature: Int, featureType: FeatureType)
   * @param featureType type of feature -- categorical or continuous
   */
 private[tree] class DummyCategoricalSplit(
-    feature: Int, featureType: FeatureType)
-    extends Split(feature, Double.MaxValue, featureType, List())
+    feature: Int,
+    featureType: FeatureType
+) extends Split(feature, Double.MaxValue, featureType, List())

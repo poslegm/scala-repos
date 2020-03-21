@@ -98,7 +98,8 @@ trait PrintIncludes {
     * @return $SFX $PO
     */
   implicit def jfxPageOrientation2sfx(
-      po: jfxp.PageOrientation): PageOrientation =
+      po: jfxp.PageOrientation
+  ): PageOrientation =
     PageOrientation.jfxEnum2sfx(po)
 
   /**
@@ -144,7 +145,8 @@ trait PrintIncludes {
     * @return $SFX $PA
     */
   implicit def jfxPrinterAttributes2sfx(
-      pa: jfxp.PrinterAttributes): PrinterAttributes =
+      pa: jfxp.PrinterAttributes
+  ): PrinterAttributes =
     if (pa != null) new PrinterAttributes(pa) else null
 
   /**
@@ -163,7 +165,8 @@ trait PrintIncludes {
     * @return $SFX $MT
     */
   implicit def jfxPrinterMarginType2sfx(
-      mt: jfxp.Printer.MarginType): Printer.MarginType =
+      mt: jfxp.Printer.MarginType
+  ): Printer.MarginType =
     Printer.MarginType.jfxEnum2sfx(mt)
 
   /**
@@ -182,7 +185,8 @@ trait PrintIncludes {
     * @return $SFX $JS
     */
   implicit def jfxPrintJobJobStatus2sfx(
-      js: jfxp.PrinterJob.JobStatus): PrinterJob.JobStatus =
+      js: jfxp.PrinterJob.JobStatus
+  ): PrinterJob.JobStatus =
     PrinterJob.JobStatus.jfxEnum2sfx(js)
 
   /**
@@ -201,7 +205,8 @@ trait PrintIncludes {
     * @return $SFX $PR
     */
   implicit def jfxPrintResolution2sfx(
-      pr: jfxp.PrintResolution): PrintResolution =
+      pr: jfxp.PrintResolution
+  ): PrintResolution =
     if (pr != null) new PrintResolution(pr) else null
 
   /**

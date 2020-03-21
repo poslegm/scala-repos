@@ -45,12 +45,15 @@ object LWWRegister {
     * INTERNAL API
     */
   private[akka] def apply[A](
-      node: UniqueAddress, initialValue: A, clock: Clock[A]): LWWRegister[A] =
+      node: UniqueAddress,
+      initialValue: A,
+      clock: Clock[A]
+  ): LWWRegister[A] =
     new LWWRegister(node, initialValue, clock(0L, initialValue))
 
-  def apply[A](initialValue: A)(
-      implicit node: Cluster,
-      clock: Clock[A] = defaultClock[A]): LWWRegister[A] =
+  def apply[A](
+      initialValue: A
+  )(implicit node: Cluster, clock: Clock[A] = defaultClock[A]): LWWRegister[A] =
     apply(node.selfUniqueAddress, initialValue, clock)
 
   /**
@@ -63,7 +66,10 @@ object LWWRegister {
     * Java API
     */
   def create[A](
-      node: Cluster, initialValue: A, clock: Clock[A]): LWWRegister[A] =
+      node: Cluster,
+      initialValue: A,
+      clock: Clock[A]
+  ): LWWRegister[A] =
     apply(initialValue)(node, clock)
 
   /**
@@ -95,9 +101,12 @@ object LWWRegister {
   * This class is immutable, i.e. "modifying" methods return a new instance.
   */
 @SerialVersionUID(1L)
-final class LWWRegister[A] private[akka](
-    private[akka] val node: UniqueAddress, val value: A, val timestamp: Long)
-    extends ReplicatedData with ReplicatedDataSerialization {
+final class LWWRegister[A] private[akka] (
+    private[akka] val node: UniqueAddress,
+    val value: A,
+    val timestamp: Long
+) extends ReplicatedData
+    with ReplicatedDataSerialization {
   import LWWRegister.{Clock, defaultClock}
 
   type T = LWWRegister[A]
@@ -115,8 +124,9 @@ final class LWWRegister[A] private[akka](
     * increasing version number from a database record that is used for optimistic
     * concurrency control.
     */
-  def withValue(value: A)(implicit node: Cluster,
-                          clock: Clock[A] = defaultClock[A]): LWWRegister[A] =
+  def withValue(
+      value: A
+  )(implicit node: Cluster, clock: Clock[A] = defaultClock[A]): LWWRegister[A] =
     withValue(node, value)
 
   /**
@@ -145,7 +155,10 @@ final class LWWRegister[A] private[akka](
     * INTERNAL API
     */
   private[akka] def withValue(
-      node: UniqueAddress, value: A, clock: Clock[A]): LWWRegister[A] =
+      node: UniqueAddress,
+      value: A,
+      clock: Clock[A]
+  ): LWWRegister[A] =
     new LWWRegister(node, value, clock(timestamp, value))
 
   override def merge(that: LWWRegister[A]): LWWRegister[A] =
@@ -158,12 +171,13 @@ final class LWWRegister[A] private[akka](
 
   override def toString: String = s"LWWRegister($value)"
 
-  override def equals(o: Any): Boolean = o match {
-    case other: LWWRegister[_] ⇒
-      timestamp == other.timestamp && value == other.value &&
-      node == other.node
-    case _ ⇒ false
-  }
+  override def equals(o: Any): Boolean =
+    o match {
+      case other: LWWRegister[_] ⇒
+        timestamp == other.timestamp && value == other.value &&
+          node == other.node
+      case _ ⇒ false
+    }
 
   override def hashCode: Int = {
     var result = HashCode.SEED
@@ -180,4 +194,5 @@ object LWWRegisterKey {
 
 @SerialVersionUID(1L)
 final case class LWWRegisterKey[A](_id: String)
-    extends Key[LWWRegister[A]](_id) with ReplicatedDataSerialization
+    extends Key[LWWRegister[A]](_id)
+    with ReplicatedDataSerialization

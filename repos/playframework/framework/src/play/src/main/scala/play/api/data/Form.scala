@@ -32,29 +32,35 @@ import play.api.data.validation._
   * @param errors the collection of errors associated with this form
   * @param value a concrete value of type `T` if the form submission was successful
   */
-case class Form[T](mapping: Mapping[T],
-                   data: Map[String, String],
-                   errors: Seq[FormError],
-                   value: Option[T]) {
+case class Form[T](
+    mapping: Mapping[T],
+    data: Map[String, String],
+    errors: Seq[FormError],
+    value: Option[T]
+) {
 
   /**
     * Constraints associated with this form, indexed by field name.
     */
   val constraints: Map[String, Seq[(String, Seq[Any])]] =
-    mapping.mappings.map { m =>
-      m.key -> m.constraints.collect {
-        case Constraint(Some(name), args) => name -> args
+    mapping.mappings
+      .map { m =>
+        m.key -> m.constraints.collect {
+          case Constraint(Some(name), args) => name -> args
+        }
       }
-    }.filterNot(_._2.isEmpty).toMap
+      .filterNot(_._2.isEmpty)
+      .toMap
 
   /**
     * Formats associated to this form, indexed by field name. *
     */
-  val formats: Map[String, (String, Seq[Any])] = mapping.mappings.map { m =>
-    m.key -> m.format
-  }.collect {
-    case (k, Some(f)) => k -> f
-  }.toMap
+  val formats: Map[String, (String, Seq[Any])] = mapping.mappings
+    .map { m => m.key -> m.format }
+    .collect {
+      case (k, Some(f)) => k -> f
+    }
+    .toMap
 
   /**
     * Binds data to this form, i.e. handles form submission.
@@ -66,10 +72,10 @@ case class Form[T](mapping: Mapping[T],
     mapping
       .bind(data)
       .fold(
-          newErrors =>
-            this.copy(data = data, errors = errors ++ newErrors, value = None),
-          value =>
-            this.copy(data = data, errors = errors, value = Some(value)))
+        newErrors =>
+          this.copy(data = data, errors = errors ++ newErrors, value = None),
+        value => this.copy(data = data, errors = errors, value = Some(value))
+      )
 
   /**
     * Binds data to this form, i.e. handles form submission.
@@ -88,15 +94,14 @@ case class Form[T](mapping: Mapping[T],
   def bindFromRequest()(implicit request: play.api.mvc.Request[_]): Form[T] = {
     bindFromRequest {
       (request.body match {
-        case body: play.api.mvc.AnyContent
-            if body.asFormUrlEncoded.isDefined =>
+        case body: play.api.mvc.AnyContent if body.asFormUrlEncoded.isDefined =>
           body.asFormUrlEncoded.get
         case body: play.api.mvc.AnyContent
             if body.asMultipartFormData.isDefined =>
           body.asMultipartFormData.get.asFormUrlEncoded
         case body: play.api.mvc.AnyContent if body.asJson.isDefined =>
           FormUtils.fromJson(js = body.asJson.get).mapValues(Seq(_))
-        case body: Map[_, _] => body.asInstanceOf[Map[String, Seq[String]]]
+        case body: Map[_, _]                         => body.asInstanceOf[Map[String, Seq[String]]]
         case body: play.api.mvc.MultipartFormData[_] => body.asFormUrlEncoded
         case body: play.api.libs.json.JsValue =>
           FormUtils.fromJson(js = body).mapValues(Seq(_))
@@ -156,10 +161,11 @@ case class Form[T](mapping: Mapping[T],
     * @param success a function to handle form submission success
     * @return a result `R`.
     */
-  def fold[R](hasErrors: Form[T] => R, success: T => R): R = value match {
-    case Some(v) if errors.isEmpty => success(v)
-    case _ => hasErrors(this)
-  }
+  def fold[R](hasErrors: Form[T] => R, success: T => R): R =
+    value match {
+      case Some(v) if errors.isEmpty => success(v)
+      case _                         => hasErrors(this)
+    }
 
   /**
     * Retrieves a field.
@@ -173,12 +179,14 @@ case class Form[T](mapping: Mapping[T],
     * @return the field, returned even if the field does not exist
     */
   def apply(key: String): Field =
-    Field(this,
-          key,
-          constraints.get(key).getOrElse(Nil),
-          formats.get(key),
-          errors.collect { case e if e.key == key => e },
-          data.get(key))
+    Field(
+      this,
+      key,
+      constraints.get(key).getOrElse(Nil),
+      formats.get(key),
+      errors.collect { case e if e.key == key => e },
+      data.get(key)
+    )
 
   /**
     * Retrieves the first global error, if it exists, i.e. an error without any key.
@@ -244,27 +252,31 @@ case class Form[T](mapping: Mapping[T],
   /**
     * Returns the form errors serialized as Json.
     */
-  def errorsAsJson(implicit messages: play.api.i18n.Messages)
-    : play.api.libs.json.JsValue = {
+  def errorsAsJson(implicit
+      messages: play.api.i18n.Messages
+  ): play.api.libs.json.JsValue = {
 
     import play.api.libs.json._
 
     Json.toJson(
-        errors
-          .groupBy(_.key)
-          .mapValues { errors =>
-            errors.map(e =>
-                  messages(e.message, e.args.map(a => translateMsgArg(a)): _*))
-          }
-      )
+      errors
+        .groupBy(_.key)
+        .mapValues { errors =>
+          errors.map(e =>
+            messages(e.message, e.args.map(a => translateMsgArg(a)): _*)
+          )
+        }
+    )
   }
 
-  private def translateMsgArg(msgArg: Any)(
-      implicit messages: play.api.i18n.Messages) = msgArg match {
-    case key: String => messages(key)
-    case keys: Seq[String] => keys.map(key => messages(key))
-    case _ => msgArg
-  }
+  private def translateMsgArg(
+      msgArg: Any
+  )(implicit messages: play.api.i18n.Messages) =
+    msgArg match {
+      case key: String       => messages(key)
+      case keys: Seq[String] => keys.map(key => messages(key))
+      case _                 => msgArg
+    }
 
   /**
     * Adds an error to this form
@@ -309,12 +321,14 @@ case class Form[T](mapping: Mapping[T],
   * @param errors the errors associated to this field
   * @param value the field value, if any
   */
-case class Field(private val form: Form[_],
-                 name: String,
-                 constraints: Seq[(String, Seq[Any])],
-                 format: Option[(String, Seq[Any])],
-                 errors: Seq[FormError],
-                 value: Option[String]) {
+case class Field(
+    private val form: Form[_],
+    name: String,
+    constraints: Seq[(String, Seq[Any])],
+    format: Option[(String, Seq[Any])],
+    errors: Seq[FormError],
+    value: Option[String]
+) {
 
   /**
     * The field ID - the same as the field name but with '.' replaced by '_'.
@@ -341,10 +355,11 @@ case class Field(private val form: Form[_],
     */
   def apply(key: String): Field = {
     form(
-        Option(name)
-          .filterNot(_.isEmpty)
-          .map(_ + (if (key(0) == '[') "" else "."))
-          .getOrElse("") + key)
+      Option(name)
+        .filterNot(_.isEmpty)
+        .map(_ + (if (key(0) == '[') "" else "."))
+        .getOrElse("") + key
+    )
   }
 
   /**
@@ -421,25 +436,31 @@ private[data] object FormUtils {
   def fromJson(prefix: String = "", js: JsValue): Map[String, String] =
     js match {
       case JsObject(fields) => {
-          fields.map {
+        fields
+          .map {
             case (key, value) =>
-              fromJson(Option(prefix)
-                         .filterNot(_.isEmpty)
-                         .map(_ + ".")
-                         .getOrElse("") + key,
-                       value)
-          }.foldLeft(Map.empty[String, String])(_ ++ _)
-        }
+              fromJson(
+                Option(prefix)
+                  .filterNot(_.isEmpty)
+                  .map(_ + ".")
+                  .getOrElse("") + key,
+                value
+              )
+          }
+          .foldLeft(Map.empty[String, String])(_ ++ _)
+      }
       case JsArray(values) => {
-          values.zipWithIndex.map {
+        values.zipWithIndex
+          .map {
             case (value, i) => fromJson(prefix + "[" + i + "]", value)
-          }.foldLeft(Map.empty[String, String])(_ ++ _)
-        }
-      case JsNull => Map.empty
-      case JsUndefined() => Map.empty
+          }
+          .foldLeft(Map.empty[String, String])(_ ++ _)
+      }
+      case JsNull           => Map.empty
+      case JsUndefined()    => Map.empty
       case JsBoolean(value) => Map(prefix -> value.toString)
-      case JsNumber(value) => Map(prefix -> value.toString)
-      case JsString(value) => Map(prefix -> value.toString)
+      case JsNumber(value)  => Map(prefix -> value.toString)
+      case JsString(value)  => Map(prefix -> value.toString)
     }
 }
 
@@ -582,8 +603,7 @@ trait Mapping[T] { self =>
     * @return the new mapping
     */
   def verifying(error: => String, constraint: (T => Boolean)): Mapping[T] = {
-    verifying(
-        Constraint { t: T =>
+    verifying(Constraint { t: T =>
       if (constraint(t)) Valid else Invalid(Seq(ValidationError(error)))
     })
   }
@@ -603,8 +623,7 @@ trait Mapping[T] { self =>
   protected def addPrefix(prefix: String) = {
     Option(prefix)
       .filterNot(_.isEmpty)
-      .map(
-          p => p + Option(key).filterNot(_.isEmpty).map("." + _).getOrElse(""))
+      .map(p => p + Option(key).filterNot(_.isEmpty).map("." + _).getOrElse(""))
   }
 
   protected def applyConstraints(t: T): Either[Seq[FormError], T] = {
@@ -615,7 +634,7 @@ trait Mapping[T] { self =>
 
   protected def collectErrors(t: T): Seq[FormError] = {
     constraints
-      .map(_ (t))
+      .map(_(t))
       .collect {
         case Invalid(errors) => errors.toSeq
       }
@@ -636,8 +655,8 @@ case class WrappedMapping[A, B](
     wrapped: Mapping[A],
     f1: A => B,
     f2: B => A,
-    val additionalConstraints: Seq[Constraint[B]] = Nil)
-    extends Mapping[B] {
+    val additionalConstraints: Seq[Constraint[B]] = Nil
+) extends Mapping[B] {
 
   /**
     * The field key.
@@ -727,7 +746,10 @@ object RepeatedMapping {
   def indexes(key: String, data: Map[String, String]): Seq[Int] = {
     val KeyPattern =
       ("^" + java.util.regex.Pattern.quote(key) + """\[(\d+)\].*$""").r
-    data.toSeq.collect { case (KeyPattern(index), _) => index.toInt }.sorted.distinct
+    data.toSeq
+      .collect { case (KeyPattern(index), _) => index.toInt }
+      .sorted
+      .distinct
   }
 }
 
@@ -736,10 +758,11 @@ object RepeatedMapping {
   *
   * @param wrapped The wrapped mapping
   */
-case class RepeatedMapping[T](wrapped: Mapping[T],
-                              val key: String = "",
-                              val constraints: Seq[Constraint[List[T]]] = Nil)
-    extends Mapping[List[T]] {
+case class RepeatedMapping[T](
+    wrapped: Mapping[T],
+    val key: String = "",
+    val constraints: Seq[Constraint[List[T]]] = Nil
+) extends Mapping[List[T]] {
 
   /**
     * The Format expected for this field, if it exists.
@@ -802,13 +825,16 @@ case class RepeatedMapping[T](wrapped: Mapping[T],
     * @return the plain data and any errors in the plain data
     */
   def unbindAndValidate(
-      value: List[T]): (Map[String, String], Seq[FormError]) = {
+      value: List[T]
+  ): (Map[String, String], Seq[FormError]) = {
     val (datas, errors) = value.zipWithIndex.map {
       case (t, i) =>
         wrapped.withPrefix(key + "[" + i + "]").unbindAndValidate(t)
     }.unzip
-    (datas.foldLeft(Map.empty[String, String])(_ ++ _),
-     errors.flatten ++ collectErrors(value))
+    (
+      datas.foldLeft(Map.empty[String, String])(_ ++ _),
+      errors.flatten ++ collectErrors(value)
+    )
   }
 
   /**
@@ -833,8 +859,9 @@ case class RepeatedMapping[T](wrapped: Mapping[T],
   * @param wrapped the wrapped mapping
   */
 case class OptionalMapping[T](
-    wrapped: Mapping[T], val constraints: Seq[Constraint[Option[T]]] = Nil)
-    extends Mapping[Option[T]] {
+    wrapped: Mapping[T],
+    val constraints: Seq[Constraint[Option[T]]] = Nil
+) extends Mapping[Option[T]] {
 
   override val format: Option[(String, Seq[Any])] = wrapped.format
 
@@ -869,14 +896,13 @@ case class OptionalMapping[T](
     */
   def bind(data: Map[String, String]): Either[Seq[FormError], Option[T]] = {
     data.keys
-      .filter(
-          p => p == key || p.startsWith(key + ".") || p.startsWith(key + "["))
+      .filter(p =>
+        p == key || p.startsWith(key + ".") || p.startsWith(key + "[")
+      )
       .map(k => data.get(k).filterNot(_.isEmpty))
       .collect { case Some(v) => v }
       .headOption
-      .map { _ =>
-        wrapped.bind(data).right.map(Some(_))
-      }
+      .map { _ => wrapped.bind(data).right.map(Some(_)) }
       .getOrElse {
         Right(None)
       }
@@ -901,7 +927,8 @@ case class OptionalMapping[T](
     * @return the plain data and any errors in the plain data
     */
   def unbindAndValidate(
-      value: Option[T]): (Map[String, String], Seq[FormError]) = {
+      value: Option[T]
+  ): (Map[String, String], Seq[FormError]) = {
     val errors = collectErrors(value)
     value
       .map(wrapped.unbindAndValidate)
@@ -930,8 +957,9 @@ case class OptionalMapping[T](
   * @param constraints the constraints associated with this field.
   */
 case class FieldMapping[T](
-    val key: String = "", val constraints: Seq[Constraint[T]] = Nil)(
-    implicit val binder: Formatter[T])
+    val key: String = "",
+    val constraints: Seq[Constraint[T]] = Nil
+)(implicit val binder: Formatter[T])
     extends Mapping[T] {
 
   /**
@@ -1023,12 +1051,13 @@ trait ObjectMapping {
     */
   def merge2(
       a: Either[Seq[FormError], Seq[Any]],
-      b: Either[Seq[FormError], Seq[Any]]): Either[Seq[FormError], Seq[Any]] =
+      b: Either[Seq[FormError], Seq[Any]]
+  ): Either[Seq[FormError], Seq[Any]] =
     (a, b) match {
       case (Left(errorsA), Left(errorsB)) => Left(errorsA ++ errorsB)
-      case (Left(errorsA), Right(_)) => Left(errorsA)
-      case (Right(_), Left(errorsB)) => Left(errorsB)
-      case (Right(a), Right(b)) => Right(a ++ b)
+      case (Left(errorsA), Right(_))      => Left(errorsA)
+      case (Right(_), Left(errorsB))      => Left(errorsB)
+      case (Right(a), Right(b))           => Right(a ++ b)
     }
 
   /**
@@ -1036,12 +1065,11 @@ trait ObjectMapping {
     *
     * @see bind()
     */
-  def merge(results: Either[Seq[FormError], Any]*)
-    : Either[Seq[FormError], Seq[Any]] = {
+  def merge(
+      results: Either[Seq[FormError], Any]*
+  ): Either[Seq[FormError], Seq[Any]] = {
     val all: Seq[Either[Seq[FormError], Seq[Any]]] =
       results.map(_.right.map(Seq(_)))
-    all.fold(Right(Nil)) { (s, i) =>
-      merge2(s, i)
-    }
+    all.fold(Right(Nil)) { (s, i) => merge2(s, i) }
   }
 }

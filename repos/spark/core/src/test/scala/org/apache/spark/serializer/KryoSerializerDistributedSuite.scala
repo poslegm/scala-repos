@@ -24,7 +24,8 @@ import org.apache.spark.serializer.KryoDistributedTest._
 import org.apache.spark.util.Utils
 
 class KryoSerializerDistributedSuite
-    extends SparkFunSuite with LocalSparkContext {
+    extends SparkFunSuite
+    with LocalSparkContext {
 
   test("kryo objects are serialised consistently in different processes") {
     val conf = new SparkConf(false)
@@ -39,7 +40,9 @@ class KryoSerializerDistributedSuite
     sc = new SparkContext("local-cluster[2,1,1024]", "test", conf)
     val original = Thread.currentThread.getContextClassLoader
     val loader = new java.net.URLClassLoader(
-        Array(jar), Utils.getContextOrSparkClassLoader)
+      Array(jar),
+      Utils.getContextOrSparkClassLoader
+    )
     SparkEnv.get.serializer.setDefaultClassLoader(loader)
 
     val cachedRDD =
@@ -64,7 +67,8 @@ object KryoDistributedTest {
       val classLoader = Thread.currentThread.getContextClassLoader
       // scalastyle:off classforname
       k.register(
-          Class.forName(AppJarRegistrator.customClassName, true, classLoader))
+        Class.forName(AppJarRegistrator.customClassName, true, classLoader)
+      )
       // scalastyle:on classforname
     }
   }

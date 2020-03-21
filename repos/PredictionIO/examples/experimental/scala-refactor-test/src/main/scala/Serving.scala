@@ -8,7 +8,8 @@ class Serving extends LServing[Query, PredictedResult] {
   @transient lazy val logger = Logger[this.type]
   override def serve(
       query: Query,
-      predictedResults: Seq[PredictedResult]): PredictedResult = {
+      predictedResults: Seq[PredictedResult]
+  ): PredictedResult = {
     logger.error("Serving.serve")
     predictedResults.head
   }

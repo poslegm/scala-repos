@@ -54,21 +54,20 @@ object mapValues extends UFunc with mapValuesLowPrio {
   // Arrays
   //
 
-  class OpArray[@spec(Double, Int, Float, Long) A,
-                @spec(Double, Int, Float, Long) B : ClassTag]
-      extends Impl2[Array[A], A => B, Array[B]] {
+  class OpArray[
+      @spec(Double, Int, Float, Long) A,
+      @spec(Double, Int, Float, Long) B: ClassTag
+  ] extends Impl2[Array[A], A => B, Array[B]] {
 
     /**Maps all values from the given collection. */
     def apply(from: Array[A], fn: (A) => B): Array[B] = {
       val arr = new Array[B](from.length)
-      cforRange(0 until from.length) { i =>
-        arr(i) = fn(from(i))
-      }
+      cforRange(0 until from.length) { i => arr(i) = fn(from(i)) }
       arr
     }
   }
 
-  implicit def opArray[@spec A, @spec B : ClassTag]: OpArray[A, B] =
+  implicit def opArray[@spec A, @spec B: ClassTag]: OpArray[A, B] =
     new OpArray[A, B]
 
   implicit object OpArrayII extends OpArray[Int, Int]
@@ -106,8 +105,9 @@ sealed trait mapValuesLowPrio {
 
 object mapActiveValues extends UFunc {
 
-  implicit def implFromCanMapValues[T, V, V2, R](
-      implicit cmv: CanMapValues[T, V, V2, R]): Impl2[T, V => V2, R] =
+  implicit def implFromCanMapValues[T, V, V2, R](implicit
+      cmv: CanMapValues[T, V, V2, R]
+  ): Impl2[T, V => V2, R] =
     new Impl2[T, V => V2, R] {
       override def apply(v: T, v2: (V) => V2): R = cmv(v, v2)
     }

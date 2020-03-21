@@ -52,8 +52,9 @@ class ConversionsSpecs extends Specification {
 
     object Impl extends DefaultImplicitConversions {
 
-      def testFor[T](source: String, expected: Option[T])(
-          implicit t: TypeConverter[String, T]) = {
+      def testFor[T](source: String, expected: Option[T])(implicit
+          t: TypeConverter[String, T]
+      ) = {
         t(source) must_== expected
       }
     }
@@ -81,17 +82,23 @@ class ConversionsSpecs extends Specification {
 
       cal.setTime(converted.get)
 
-      cal.get(Calendar.MILLISECOND) aka "The extracted milliseconds from converted Date" must_== currentMs
+      cal.get(
+        Calendar.MILLISECOND
+      ) aka "The extracted milliseconds from converted Date" must_== currentMs
     }
 
     "provide DEF conversion for Seq" in {
 
       import Impl._
 
-      def testConversion[T](args: (String, Seq[T]))(
-          implicit mf: Manifest[T], t: TypeConverter[String, T]) = {
+      def testConversion[T](args: (String, Seq[T]))(implicit
+          mf: Manifest[T],
+          t: TypeConverter[String, T]
+      ) = {
         val (source, expected) = args
-        Impl.stringToSeq(t).apply(source).get must containAllOf(expected).inOrder
+        Impl.stringToSeq(t).apply(source).get must containAllOf(
+          expected
+        ).inOrder
       }
 
       testConversion("1,2,3" -> List(1, 2, 3))

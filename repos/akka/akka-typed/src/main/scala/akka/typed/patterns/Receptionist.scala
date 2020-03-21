@@ -47,16 +47,16 @@ object Receptionist {
     * the end of the referenced Actor’s lifecycle.
     */
   final case class Register[T](key: ServiceKey[T], address: ActorRef[T])(
-      val replyTo: ActorRef[Registered[T]])
-      extends Command
+      val replyTo: ActorRef[Registered[T]]
+  ) extends Command
 
   /**
     * Query the Receptionist for a list of all Actors implementing the given
     * protocol.
     */
   final case class Find[T](key: ServiceKey[T])(
-      val replyTo: ActorRef[Listing[T]])
-      extends Command
+      val replyTo: ActorRef[Listing[T]]
+  ) extends Command
 
   /**
     * Confirmation that the given [[akka.typed.ActorRef]] has been associated with the [[ServiceKey]].
@@ -76,23 +76,26 @@ object Receptionist {
     * }}}
     */
   val behavior: Behavior[Command] = behavior(
-      TypedMultiMap.empty[AbstractServiceKey, KV])
+    TypedMultiMap.empty[AbstractServiceKey, KV]
+  )
 
   private type KV[K <: AbstractServiceKey] = ActorRef[K#Type]
 
   private def behavior(
-      map: TypedMultiMap[AbstractServiceKey, KV]): Behavior[Command] = Full {
-    case Msg(ctx, r: Register[t]) ⇒
-      ctx.watch(r.address)
-      r.replyTo ! Registered(r.key, r.address)
-      behavior(map.inserted(r.key)(r.address))
-    case Msg(ctx, f: Find[t]) ⇒
-      val set = map get f.key
-      f.replyTo ! Listing(f.key, set)
-      Same
-    case Sig(ctx, Terminated(ref)) ⇒
-      behavior(map valueRemoved ref)
-  }
+      map: TypedMultiMap[AbstractServiceKey, KV]
+  ): Behavior[Command] =
+    Full {
+      case Msg(ctx, r: Register[t]) ⇒
+        ctx.watch(r.address)
+        r.replyTo ! Registered(r.key, r.address)
+        behavior(map.inserted(r.key)(r.address))
+      case Msg(ctx, f: Find[t]) ⇒
+        val set = map get f.key
+        f.replyTo ! Listing(f.key, set)
+        Same
+      case Sig(ctx, Terminated(ref)) ⇒
+        behavior(map valueRemoved ref)
+    }
 }
 
 abstract class Receptionist

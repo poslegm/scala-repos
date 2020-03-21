@@ -25,9 +25,13 @@ import scala.language.higherKinds
   *  @author Aleksandar Prokopec
   *  @since 2.8
   */
-abstract class ParMapFactory[
-    CC[X, Y] <: ParMap[X, Y] with ParMapLike[X, Y, CC[X, Y], _]]
-    extends GenMapFactory[CC] with GenericParMapCompanion[CC] {
+abstract class ParMapFactory[CC[X, Y] <: ParMap[X, Y] with ParMapLike[
+  X,
+  Y,
+  CC[X, Y],
+  _
+]] extends GenMapFactory[CC]
+    with GenericParMapCompanion[CC] {
 
   type MapColl = CC[_, _]
 

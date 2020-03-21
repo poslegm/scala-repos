@@ -15,10 +15,12 @@ object Opt {
     try Some {
       val o = ManagementFactory
         .getPlatformMBeanServer()
-        .invoke(DiagnosticName,
-                "getVMOption",
-                Array(name),
-                Array("java.lang.String"))
+        .invoke(
+          DiagnosticName,
+          "getVMOption",
+          Array(name),
+          Array("java.lang.String")
+        )
       o.asInstanceOf[CompositeDataSupport].get("value").asInstanceOf[String]
     } catch {
       case _: IllegalArgumentException =>

@@ -35,8 +35,9 @@ import scala.language.higherKinds
   *    @see CanBuildFrom
   *    @see GenericCanBuildFrom
   */
-abstract class GenTraversableFactory[
-    CC[X] <: GenTraversable[X] with GenericTraversableTemplate[X, CC]]
+abstract class GenTraversableFactory[CC[X] <: GenTraversable[
+  X
+] with GenericTraversableTemplate[X, CC]]
     extends GenericCompanion[CC] {
 
   private[this] val ReusableCBFInstance: GenericCanBuildFrom[Nothing] =
@@ -123,7 +124,8 @@ abstract class GenTraversableFactory[
     *  @return  A $coll that contains the results of `n1 x n2 x n3 x n4` evaluations of `elem`.
     */
   def fill[A](n1: Int, n2: Int, n3: Int, n4: Int)(
-      elem: => A): CC[CC[CC[CC[A]]]] =
+      elem: => A
+  ): CC[CC[CC[CC[A]]]] =
     tabulate(n1)(_ => fill(n2, n3, n4)(elem))
 
   /** Produces a five-dimensional $coll containing the results of some element computation a number of times.
@@ -136,7 +138,8 @@ abstract class GenTraversableFactory[
     *  @return  A $coll that contains the results of `n1 x n2 x n3 x n4 x n5` evaluations of `elem`.
     */
   def fill[A](n1: Int, n2: Int, n3: Int, n4: Int, n5: Int)(
-      elem: => A): CC[CC[CC[CC[CC[A]]]]] =
+      elem: => A
+  ): CC[CC[CC[CC[CC[A]]]]] =
     tabulate(n1)(_ => fill(n2, n3, n4, n5)(elem))
 
   /** Produces a $coll containing values of a given function over a range of integer values starting from 0.
@@ -174,7 +177,8 @@ abstract class GenTraversableFactory[
     *          for `0 <= i1 < n1`, `0 <= i2 < n2`, and `0 <= i3 < n3`.
     */
   def tabulate[A](n1: Int, n2: Int, n3: Int)(
-      f: (Int, Int, Int) => A): CC[CC[CC[A]]] =
+      f: (Int, Int, Int) => A
+  ): CC[CC[CC[A]]] =
     tabulate(n1)(i1 => tabulate(n2, n3)(f(i1, _, _)))
 
   /** Produces a four-dimensional $coll containing values of a given function over ranges of integer values starting from 0.
@@ -187,7 +191,8 @@ abstract class GenTraversableFactory[
     *          for `0 <= i1 < n1`, `0 <= i2 < n2`, `0 <= i3 < n3`, and `0 <= i4 < n4`.
     */
   def tabulate[A](n1: Int, n2: Int, n3: Int, n4: Int)(
-      f: (Int, Int, Int, Int) => A): CC[CC[CC[CC[A]]]] =
+      f: (Int, Int, Int, Int) => A
+  ): CC[CC[CC[CC[A]]]] =
     tabulate(n1)(i1 => tabulate(n2, n3, n4)(f(i1, _, _, _)))
 
   /** Produces a five-dimensional $coll containing values of a given function over ranges of integer values starting from 0.
@@ -201,7 +206,8 @@ abstract class GenTraversableFactory[
     *          for `0 <= i1 < n1`, `0 <= i2 < n2`, `0 <= i3 < n3`, `0 <= i4 < n4`, and `0 <= i5 < n5`.
     */
   def tabulate[A](n1: Int, n2: Int, n3: Int, n4: Int, n5: Int)(
-      f: (Int, Int, Int, Int, Int) => A): CC[CC[CC[CC[CC[A]]]]] =
+      f: (Int, Int, Int, Int, Int) => A
+  ): CC[CC[CC[CC[CC[A]]]]] =
     tabulate(n1)(i1 => tabulate(n2, n3, n4, n5)(f(i1, _, _, _, _)))
 
   /** Produces a $coll containing a sequence of increasing of integers.
@@ -210,7 +216,7 @@ abstract class GenTraversableFactory[
     *  @param end   the end value of the $coll (the first value NOT contained)
     *  @return  a $coll with values `start, start + 1, ..., end - 1`
     */
-  def range[T : Integral](start: T, end: T): CC[T] =
+  def range[T: Integral](start: T, end: T): CC[T] =
     range(start, end, implicitly[Integral[T]].one)
 
   /** Produces a $coll containing equally spaced values in some integer interval.
@@ -219,14 +225,18 @@ abstract class GenTraversableFactory[
     *  @param step  the difference between successive elements of the $coll (must be positive or negative)
     *  @return      a $coll with values `start, start + step, ...` up to, but excluding `end`
     */
-  def range[T : Integral](start: T, end: T, step: T): CC[T] = {
+  def range[T: Integral](start: T, end: T, step: T): CC[T] = {
     val num = implicitly[Integral[T]]
     import num._
 
     if (step == zero) throw new IllegalArgumentException("zero step")
     val b = newBuilder[T]
     b sizeHint immutable.NumericRange.count(
-        start, end, step, isInclusive = false)
+      start,
+      end,
+      step,
+      isInclusive = false
+    )
     var i = start
     while (if (step < zero) end < i else i < end) {
       b += i

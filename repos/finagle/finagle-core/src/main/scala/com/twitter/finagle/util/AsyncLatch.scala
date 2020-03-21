@@ -26,13 +26,12 @@ class AsyncLatch(initialCount: Int = 0) {
     * Execute the given computation when the count of this latch has
     * reached zero.
     */
-  def await(f: => Unit): Unit = synchronized {
-    if (count == 0) f
-    else
-      waiters += { () =>
-        f
-      }
-  }
+  def await(f: => Unit): Unit =
+    synchronized {
+      if (count == 0) f
+      else
+        waiters += { () => f }
+    }
 
   /**
     * Increment the latch. Computations passed to `await` will not be executed
@@ -63,7 +62,7 @@ class AsyncLatch(initialCount: Int = 0) {
 
     pendingTasks match {
       case Left(tasks) =>
-        tasks foreach { _ () }; 0
+        tasks foreach { _() }; 0
       case Right(count) =>
         count
     }

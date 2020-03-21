@@ -38,7 +38,8 @@ import com.mongodb.util.JSON
 import org.bson.types.ObjectId
 
 trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
-    extends BsonMetaRecord[BaseRecord] with MongoMeta[BaseRecord] {
+    extends BsonMetaRecord[BaseRecord]
+    with MongoMeta[BaseRecord] {
 
   self: BaseRecord =>
 
@@ -49,10 +50,11 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
    * be changed to type MandatoryTypedField in a future version. When
    * that happens this will no longer be necessary.
    */
-  private def idValue(inst: BaseRecord): Any = inst.id match {
-    case f: MandatoryTypedField[_] => f.value
-    case x => x
-  }
+  private def idValue(inst: BaseRecord): Any =
+    inst.id match {
+      case f: MandatoryTypedField[_] => f.value
+      case x                         => x
+    }
 
   /*
    * Use the collection associated with this Meta.
@@ -86,12 +88,12 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
     * Find a single row by a qry, using a DBObject.
     */
   def find(qry: DBObject): Box[BaseRecord] = {
-    useColl(
-        coll =>
-          coll.findOne(qry) match {
+    useColl(coll =>
+      coll.findOne(qry) match {
         case null => Empty
-        case dbo => Full(fromDBObject(dbo))
-    })
+        case dbo  => Full(fromDBObject(dbo))
+      }
+    )
   }
 
   /**
@@ -143,47 +145,49 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
     * Find all rows in this collection.
     * Retrieves all documents and puts them in memory.
     */
-  def findAll: List[BaseRecord] = useColl { coll =>
-    /** Mongo Cursors are both Iterable and Iterator,
-      * so we need to reduce ambiguity for implicits
-      */
-    (coll.find: Iterator[DBObject]).map(fromDBObject).toList
-  }
+  def findAll: List[BaseRecord] =
+    useColl { coll =>
+      /** Mongo Cursors are both Iterable and Iterator,
+        * so we need to reduce ambiguity for implicits
+        */
+      (coll.find: Iterator[DBObject]).map(fromDBObject).toList
+    }
 
   /**
     * Find all rows using a DBObject query.
     */
-  def findAll(qry: DBObject,
-              sort: Option[DBObject],
-              opts: FindOption*): List[BaseRecord] = {
-    findAll(sort, opts: _*) { coll =>
-      coll.find(qry)
-    }
+  def findAll(
+      qry: DBObject,
+      sort: Option[DBObject],
+      opts: FindOption*
+  ): List[BaseRecord] = {
+    findAll(sort, opts: _*) { coll => coll.find(qry) }
   }
 
   /**
     * Find all rows and retrieve only keys fields.
     */
-  def findAll(qry: DBObject,
-              keys: DBObject,
-              sort: Option[DBObject],
-              opts: FindOption*): List[BaseRecord] = {
-    findAll(sort, opts: _*) { coll =>
-      coll.find(qry, keys)
-    }
+  def findAll(
+      qry: DBObject,
+      keys: DBObject,
+      sort: Option[DBObject],
+      opts: FindOption*
+  ): List[BaseRecord] = {
+    findAll(sort, opts: _*) { coll => coll.find(qry, keys) }
   }
 
   protected def findAll(sort: Option[DBObject], opts: FindOption*)(
-      f: (DBCollection) => DBCursor): List[BaseRecord] = {
+      f: (DBCollection) => DBCursor
+  ): List[BaseRecord] = {
     val findOpts = opts.toList
 
     useColl { coll =>
       val cur = f(coll)
         .limit(
-            findOpts.find(_.isInstanceOf[Limit]).map(_.value).getOrElse(0)
+          findOpts.find(_.isInstanceOf[Limit]).map(_.value).getOrElse(0)
         )
         .skip(
-            findOpts.find(_.isInstanceOf[Skip]).map(_.value).getOrElse(0)
+          findOpts.find(_.isInstanceOf[Skip]).map(_.value).getOrElse(0)
         )
       sort.foreach(s => cur.sort(s))
       // This retrieves all documents and puts them in memory.
@@ -194,10 +198,12 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
   /**
     * Find all rows and retrieve only keys fields.
     */
-  def findAll(qry: JObject,
-              keys: JObject,
-              sort: Option[JObject],
-              opts: FindOption*): List[BaseRecord] = {
+  def findAll(
+      qry: JObject,
+      keys: JObject,
+      sort: Option[JObject],
+      opts: FindOption*
+  ): List[BaseRecord] = {
     val s = sort.map(JObjectParser.parse(_))
     findAll(JObjectParser.parse(qry), JObjectParser.parse(keys), s, opts: _*)
   }
@@ -212,7 +218,10 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
     * Find all documents using a DBObject query with sort
     */
   def findAll(
-      qry: DBObject, sort: DBObject, opts: FindOption*): List[BaseRecord] =
+      qry: DBObject,
+      sort: DBObject,
+      opts: FindOption*
+  ): List[BaseRecord] =
     findAll(qry, Some(sort), opts: _*)
 
   /**
@@ -226,9 +235,11 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
     * Find all documents using a JObject query with sort
     */
   def findAll(
-      qry: JObject, sort: JObject, opts: FindOption*): List[BaseRecord] =
-    findAll(
-        JObjectParser.parse(qry), Some(JObjectParser.parse(sort)), opts: _*)
+      qry: JObject,
+      sort: JObject,
+      opts: FindOption*
+  ): List[BaseRecord] =
+    findAll(JObjectParser.parse(qry), Some(JObjectParser.parse(sort)), opts: _*)
 
   /**
     * Find all documents using a k, v query
@@ -240,7 +251,11 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
     * Find all documents using a k, v query with JOBject sort
     */
   def findAll(
-      k: String, o: Any, sort: JObject, opts: FindOption*): List[BaseRecord] =
+      k: String,
+      o: Any,
+      sort: JObject,
+      opts: FindOption*
+  ): List[BaseRecord] =
     findAll(new BasicDBObject(k, o), Some(JObjectParser.parse(sort)), opts: _*)
 
   /**
@@ -276,20 +291,18 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
   /**
     * Save the instance in the appropriate backing store. Uses the WriteConcern set on the MongoClient instance.
     */
-  def save(inst: BaseRecord): Boolean = saveOp(inst) {
-    useColl { coll =>
-      coll.save(inst.asDBObject)
+  def save(inst: BaseRecord): Boolean =
+    saveOp(inst) {
+      useColl { coll => coll.save(inst.asDBObject) }
     }
-  }
 
   /**
     * Save the instance in the appropriate backing store
     */
-  def save(inst: BaseRecord, concern: WriteConcern): Boolean = saveOp(inst) {
-    useColl { coll =>
-      coll.save(inst.asDBObject, concern)
+  def save(inst: BaseRecord, concern: WriteConcern): Boolean =
+    saveOp(inst) {
+      useColl { coll => coll.save(inst.asDBObject, concern) }
     }
-  }
 
   /*
    * Save a document to the db using the given Mongo instance
@@ -312,7 +325,11 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
    * Update records with a JObject query using the given Mongo instance
    */
   def update(
-      qry: JObject, newbr: BaseRecord, db: DB, opts: UpdateOption*): Unit = {
+      qry: JObject,
+      newbr: BaseRecord,
+      db: DB,
+      opts: UpdateOption*
+  ): Unit = {
     update(JObjectParser.parse(qry), newbr.asDBObject, db, opts: _*)
   }
 
@@ -357,31 +374,32 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
     *
     * Note: PatternField will always set the dirty flag when set.
     */
-  def update(inst: BaseRecord): Unit = updateOp(inst) {
-    val dirtyFields = fields(inst).filter(_.dirty_?)
-    if (dirtyFields.length > 0) {
-      val (fullFields, otherFields) = dirtyFields
-        .map(field => (field.name, fieldDbValue(field)))
-        .partition(pair => pair._2.isDefined)
+  def update(inst: BaseRecord): Unit =
+    updateOp(inst) {
+      val dirtyFields = fields(inst).filter(_.dirty_?)
+      if (dirtyFields.length > 0) {
+        val (fullFields, otherFields) = dirtyFields
+          .map(field => (field.name, fieldDbValue(field)))
+          .partition(pair => pair._2.isDefined)
 
-      val fieldsToSet = fullFields.map(pair =>
-            (pair._1, pair._2.openOrThrowException("these are all Full")))
-
-      val fieldsToUnset: List[String] = otherFields
-        .filter(
-            pair =>
-              pair._2 match {
-                case Empty => true
-                case _ => false
-            }
+        val fieldsToSet = fullFields.map(pair =>
+          (pair._1, pair._2.openOrThrowException("these are all Full"))
         )
-        .map(_._1)
 
-      if (fieldsToSet.length > 0 || fieldsToUnset.length > 0) {
-        val dbo = BasicDBObjectBuilder.start
+        val fieldsToUnset: List[String] = otherFields
+          .filter(pair =>
+            pair._2 match {
+              case Empty => true
+              case _     => false
+            }
+          )
+          .map(_._1)
 
-        if (fieldsToSet.length > 0) {
-          dbo.add(
+        if (fieldsToSet.length > 0 || fieldsToUnset.length > 0) {
+          val dbo = BasicDBObjectBuilder.start
+
+          if (fieldsToSet.length > 0) {
+            dbo.add(
               "$set",
               fieldsToSet
                 .foldLeft(BasicDBObjectBuilder.start) { (builder, pair) =>
@@ -389,10 +407,10 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
                 }
                 .get
             )
-        }
+          }
 
-        if (fieldsToUnset.length > 0) {
-          dbo.add(
+          if (fieldsToUnset.length > 0) {
+            dbo.add(
               "$unset",
               fieldsToUnset
                 .foldLeft(BasicDBObjectBuilder.start) { (builder, fieldName) =>
@@ -400,10 +418,10 @@ trait MongoMetaRecord[BaseRecord <: MongoRecord[BaseRecord]]
                 }
                 .get
             )
-        }
+          }
 
-        update(inst, dbo.get)
+          update(inst, dbo.get)
+        }
       }
     }
-  }
 }

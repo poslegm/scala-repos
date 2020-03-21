@@ -46,7 +46,8 @@ class Ticket15109SpecMultiJvmNode1 extends Ticket15109Spec
 class Ticket15109SpecMultiJvmNode2 extends Ticket15109Spec
 
 abstract class Ticket15109Spec
-    extends MultiNodeSpec(Ticket15109Spec) with STMultiNodeSpec
+    extends MultiNodeSpec(Ticket15109Spec)
+    with STMultiNodeSpec
     with ImplicitSender {
 
   import Ticket15109Spec._
@@ -88,10 +89,16 @@ abstract class Ticket15109Spec
       runOn(second) {
         // Force a disassociation. Using the message Shutdown, which is suboptimal here, but this is the only
         // DisassociateInfo that triggers the code-path we want to test
-        Await.result(RARP(system).provider.transport
-                       .managementCommand(ForceDisassociateExplicitly(
-                             node(first).address, AssociationHandle.Shutdown)),
-                     3.seconds)
+        Await.result(
+          RARP(system).provider.transport
+            .managementCommand(
+              ForceDisassociateExplicitly(
+                node(first).address,
+                AssociationHandle.Shutdown
+              )
+            ),
+          3.seconds
+        )
       }
 
       enterBarrier("disassociated")

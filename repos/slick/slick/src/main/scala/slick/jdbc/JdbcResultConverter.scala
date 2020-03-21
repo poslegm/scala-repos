@@ -8,8 +8,8 @@ import slick.ast.ScalaBaseType
 
 /** Specialized JDBC ResultConverter for non-`Option` values. */
 class BaseResultConverter[
-    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T](
-    val ti: JdbcType[T], val name: String, val idx: Int)
+    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T
+](val ti: JdbcType[T], val name: String, val idx: Int)
     extends ResultConverter[JdbcResultConverterDomain, T] {
   def read(pr: ResultSet) = {
     val v = ti.getValue(pr, idx)
@@ -29,21 +29,23 @@ class BaseResultConverter[
 /** Specialized JDBC ResultConverter for handling values of type `Option[T]`.
   * Boxing is avoided when the result is `None`. */
 class OptionResultConverter[
-    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T](
-    val ti: JdbcType[T], val idx: Int)
+    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T
+](val ti: JdbcType[T], val idx: Int)
     extends ResultConverter[JdbcResultConverterDomain, Option[T]] {
   def read(pr: ResultSet) = {
     val v = ti.getValue(pr, idx)
     if (ti.wasNull(pr, idx)) None else Some(v)
   }
-  def update(value: Option[T], pr: ResultSet) = value match {
-    case Some(v) => ti.updateValue(v, pr, idx)
-    case _ => ti.updateNull(pr, idx)
-  }
-  def set(value: Option[T], pp: PreparedStatement) = value match {
-    case Some(v) => ti.setValue(v, pp, idx)
-    case _ => ti.setNull(pp, idx)
-  }
+  def update(value: Option[T], pr: ResultSet) =
+    value match {
+      case Some(v) => ti.updateValue(v, pr, idx)
+      case _       => ti.updateNull(pr, idx)
+    }
+  def set(value: Option[T], pp: PreparedStatement) =
+    value match {
+      case Some(v) => ti.setValue(v, pp, idx)
+      case _       => ti.setNull(pp, idx)
+    }
   override def getDumpInfo =
     super.getDumpInfo.copy(mainInfo = s"idx=$idx", attrInfo = ": " + ti)
   def width = 1
@@ -63,8 +65,8 @@ class OptionResultConverter[
 /** Specialized JDBC ResultConverter for handling non-`Option` values with a default.
   * A (possibly specialized) function for the default value is used to translate SQL `NULL` values. */
 class DefaultingResultConverter[
-    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T](
-    val ti: JdbcType[T], val default: () => T, val idx: Int)
+    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T
+](val ti: JdbcType[T], val default: () => T, val idx: Int)
     extends ResultConverter[JdbcResultConverterDomain, T] {
   def read(pr: ResultSet) = {
     val v = ti.getValue(pr, idx)
@@ -73,18 +75,22 @@ class DefaultingResultConverter[
   def update(value: T, pr: ResultSet) = ti.updateValue(value, pr, idx)
   def set(value: T, pp: PreparedStatement) = ti.setValue(value, pp, idx)
   override def getDumpInfo =
-    super.getDumpInfo.copy(mainInfo = s"idx=$idx, default=" + {
-      try default() catch {
-        case e: Throwable => "[" + e.getClass.getName + "]"
-      }
-    }, attrInfo = ": " + ti)
+    super.getDumpInfo.copy(
+      mainInfo = s"idx=$idx, default=" + {
+        try default()
+        catch {
+          case e: Throwable => "[" + e.getClass.getName + "]"
+        }
+      },
+      attrInfo = ": " + ti
+    )
   def width = 1
 }
 
 /** Specialized JDBC ResultConverter for handling `isDefined` checks for `Option` values. */
 class IsDefinedResultConverter[
-    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T](
-    val ti: JdbcType[T], val idx: Int)
+    @specialized(Byte, Short, Int, Long, Char, Float, Double, Boolean) T
+](val ti: JdbcType[T], val idx: Int)
     extends ResultConverter[JdbcResultConverterDomain, Boolean] {
   def read(pr: ResultSet) = {
     ti.getValue(pr, idx)

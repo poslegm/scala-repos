@@ -75,7 +75,7 @@ class Random(seed_in: Long) extends AnyRef with java.io.Serializable {
   def nextDouble(): Double = {
     // ((next(26).toLong << 27) + next(27)) / (1L << 53).toDouble
     ((next(26).toDouble * (1L << 27).toDouble) + next(27).toDouble) /
-    (1L << 53).toDouble
+      (1L << 53).toDouble
   }
 
   def nextBoolean(): Boolean = next(1) != 0
@@ -174,7 +174,7 @@ object Random {
 
   /** Generate a random long from JS RNG to seed a new Random */
   private def randomSeed(): Long =
-    (randomInt().toLong << 32) | (randomInt().toLong & 0xffffffffL)
+    (randomInt().toLong << 32) | (randomInt().toLong & 0xFFFFFFFFL)
 
   private def randomInt(): Int =
     (Math.floor(js.Math.random() * 4294967296.0) - 2147483648.0).toInt

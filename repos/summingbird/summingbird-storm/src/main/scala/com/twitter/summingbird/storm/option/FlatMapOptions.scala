@@ -47,7 +47,8 @@ object FlatMapStormMetrics {
   * bolt.
   */
 class FlatMapStormMetrics(
-    val metrics: () => TraversableOnce[StormMetric[IMetric]])
+    val metrics: () => TraversableOnce[StormMetric[IMetric]]
+)
 
 object SpoutStormMetrics {
   def apply(metrics: => TraversableOnce[StormMetric[IMetric]]) =
@@ -56,8 +57,8 @@ object SpoutStormMetrics {
 }
 
 class SpoutStormMetrics(
-    val metrics: () => TraversableOnce[StormMetric[IMetric]])
-    extends Serializable {
+    val metrics: () => TraversableOnce[StormMetric[IMetric]]
+) extends Serializable {
   def toSpoutMetrics: () => TraversableOnce[Metric[IMetric]] = { () =>
     metrics().map { x: StormMetric[IMetric] =>
       Metric(x.name, x.metric, x.interval.inSeconds)
@@ -84,7 +85,9 @@ case class AckOnEntry(get: Boolean)
   * Maximum number of elements to execute in a given second per task
   */
 case class MaxExecutePerSecond(
-    lowerBound: Long, upperBound: Long, rampUptimeMS: Long) {
-  require(
-      rampUptimeMS >= 0L, "Ramp up time must greater than or equal to zero")
+    lowerBound: Long,
+    upperBound: Long,
+    rampUptimeMS: Long
+) {
+  require(rampUptimeMS >= 0L, "Ramp up time must greater than or equal to zero")
 }

@@ -42,4 +42,6 @@ import scalafx.testutil.SimpleSFXDelegateSpec
 @RunWith(classOf[JUnitRunner])
 class FillTransitionSpec
     extends SimpleSFXDelegateSpec[jfxa.FillTransition, FillTransition](
-        classOf[jfxa.FillTransition], classOf[FillTransition])
+      classOf[jfxa.FillTransition],
+      classOf[FillTransition]
+    )

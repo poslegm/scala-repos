@@ -15,10 +15,13 @@ object Files {
     * @return array of bytes
     */
   def readBytes(file: File, limit: Int = 1024 * 1024 * 4): Array[Byte] = {
-    require(file.length() < limit,
-            "File '%s' is too big".format(file.getAbsolutePath()))
+    require(
+      file.length() < limit,
+      "File '%s' is too big".format(file.getAbsolutePath())
+    )
     val buf = new ByteArrayOutputStream(
-        math.min(limit, file.length().intValue()))
+      math.min(limit, file.length().intValue())
+    )
     val in = new FileInputStream(file)
     try {
       StreamIO.copy(in, buf)
@@ -44,9 +47,7 @@ object Files {
     } else if (file.isFile) {
       file.delete()
     } else {
-      file.listFiles.foreach { f =>
-        delete(f)
-      }
+      file.listFiles.foreach { f => delete(f) }
       file.delete()
     }
   }

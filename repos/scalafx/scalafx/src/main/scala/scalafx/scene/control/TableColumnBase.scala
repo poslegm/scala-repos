@@ -33,7 +33,14 @@ import javafx.{scene => jfxs}
 import scala.language.implicitConversions
 import scala.math.Ordering
 import scalafx.Includes._
-import scalafx.beans.property.{BooleanProperty, DoubleProperty, ObjectProperty, ReadOnlyDoubleProperty, ReadOnlyObjectProperty, StringProperty}
+import scalafx.beans.property.{
+  BooleanProperty,
+  DoubleProperty,
+  ObjectProperty,
+  ReadOnlyDoubleProperty,
+  ReadOnlyObjectProperty,
+  StringProperty
+}
 import scalafx.collections.ObservableBuffer
 import scalafx.css.Styleable
 import scalafx.delegate.SFXDelegate
@@ -44,7 +51,8 @@ import scalafx.scene.control.ContextMenu._
 
 object TableColumnBase {
   implicit def sfxTableColumn2jfx[S, T](
-      tc: TableColumnBase[S, T]): jfxsc.TableColumnBase[S, T] =
+      tc: TableColumnBase[S, T]
+  ): jfxsc.TableColumnBase[S, T] =
     if (tc != null) tc.delegate else null
 
   /**
@@ -53,8 +61,9 @@ object TableColumnBase {
   val DefaultComparator: Ordering[_] =
     Ordering.comparatorToOrdering(jfxsc.TableColumnBase.DEFAULT_COMPARATOR)
   @deprecated(
-      "Use DefaultComparator; DEFAULT_COMPARATOR will be removed in a future release",
-      "8.0.60-R10")
+    "Use DefaultComparator; DEFAULT_COMPARATOR will be removed in a future release",
+    "8.0.60-R10"
+  )
   val DEFAULT_COMPARATOR = DefaultComparator
 }
 
@@ -62,8 +71,9 @@ object TableColumnBase {
   * Wraps [[http://docs.oracle.com/javafx/8/api/javafx/scene/control/TableColumnBase.html]].
   */
 abstract class TableColumnBase[S, T] protected (
-    override val delegate: jfxsc.TableColumnBase[S, T])
-    extends EventHandlerDelegate with Styleable
+    override val delegate: jfxsc.TableColumnBase[S, T]
+) extends EventHandlerDelegate
+    with Styleable
     with SFXDelegate[jfxsc.TableColumnBase[S, T]] {
 
   /**

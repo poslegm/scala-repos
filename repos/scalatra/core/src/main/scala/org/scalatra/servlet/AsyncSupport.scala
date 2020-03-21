@@ -17,14 +17,17 @@ trait AsyncSupport extends ServletBase with ScalatraAsyncSupport {
 
   protected def onAsyncEvent(event: AsyncEvent)(thunk: => Any): Unit = {
     withRequest(event.getSuppliedRequest.asInstanceOf[HttpServletRequest]) {
-      withResponse(event.getSuppliedResponse.asInstanceOf[HttpServletResponse]) {
+      withResponse(
+        event.getSuppliedResponse.asInstanceOf[HttpServletResponse]
+      ) {
         thunk
       }
     }
   }
 
-  protected def withinAsyncContext(context: javax.servlet.AsyncContext)(
-      thunk: => Any): Unit = {
+  protected def withinAsyncContext(
+      context: javax.servlet.AsyncContext
+  )(thunk: => Any): Unit = {
     withRequest(context.getRequest.asInstanceOf[HttpServletRequest]) {
       withResponse(context.getResponse.asInstanceOf[HttpServletResponse]) {
         thunk

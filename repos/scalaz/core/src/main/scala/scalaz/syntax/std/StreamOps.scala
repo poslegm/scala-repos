@@ -15,7 +15,8 @@ final class StreamOps[A](val self: Stream[A]) extends AnyVal {
   final def unfoldForest[B](f: A => (B, () => Stream[A])): Stream[Tree[B]] =
     s.unfoldForest(self)(f)
   final def unfoldForestM[B, M[_]: Monad](
-      f: A => M[(B, Stream[A])]): M[Stream[Tree[B]]] = s.unfoldForestM(self)(f)
+      f: A => M[(B, Stream[A])]
+  ): M[Stream[Tree[B]]] = s.unfoldForestM(self)(f)
   final def intersperse(a: A): Stream[A] = s.intersperse(self, a)
 }
 

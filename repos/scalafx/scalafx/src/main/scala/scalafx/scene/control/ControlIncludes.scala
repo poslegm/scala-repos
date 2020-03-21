@@ -35,8 +35,16 @@ import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import scalafx.scene.control.SplitPane.Divider
 import scalafx.scene.control.TabPane.TabClosingPolicy
-import scalafx.scene.control.TableColumn.{CellDataFeatures, CellEditEvent, SortType}
-import scalafx.scene.control.TableView.{ResizeFeatures, TableViewFocusModel, TableViewSelectionModel}
+import scalafx.scene.control.TableColumn.{
+  CellDataFeatures,
+  CellEditEvent,
+  SortType
+}
+import scalafx.scene.control.TableView.{
+  ResizeFeatures,
+  TableViewFocusModel,
+  TableViewSelectionModel
+}
 import scalafx.scene.control.TreeItem.TreeModificationEvent
 import scalafx.scene.control.TreeView.EditEvent
 import scalafx.scene.control.cell.CellIncludes
@@ -179,8 +187,8 @@ trait ControlIncludes extends CellIncludes {
     if (a != null) new DialogPane(a) else null
 
   implicit def jfxDoubleSpinnerValueFactory2sfx(
-      ev: jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory)
-    : SpinnerValueFactory.DoubleSpinnerValueFactory =
+      ev: jfxsc.SpinnerValueFactory.DoubleSpinnerValueFactory
+  ): SpinnerValueFactory.DoubleSpinnerValueFactory =
     if (ev != null) new SpinnerValueFactory.DoubleSpinnerValueFactory(ev)
     else null
 
@@ -218,7 +226,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $BTBS
     */
   implicit def jfxButtonBase2sfx(b: jfxsc.ButtonBase): ButtonBase =
-    if (b != null) new ButtonBase(b) {} else null
+    if (b != null) new ButtonBase(b) {}
+    else null
 
   /**
     * $START$BUTN.html $BUTN$END
@@ -233,7 +242,8 @@ trait ControlIncludes extends CellIncludes {
     if (b != null) new ButtonBar(b) else null
 
   implicit def jfxButtonData2sfx(
-      b: jfxsc.ButtonBar.ButtonData): ButtonBar.ButtonData =
+      b: jfxsc.ButtonBar.ButtonData
+  ): ButtonBar.ButtonData =
     if (b != null) new ButtonBar.ButtonData(b) else null
 
   implicit def jfxButtonType2sfx(b: jfxsc.ButtonType): ButtonType =
@@ -257,7 +267,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $CHBX
     */
   implicit def jfxChoiceBox2sfx[J <: AnyRef](
-      cb: jfxsc.ChoiceBox[J]): ChoiceBox[J] =
+      cb: jfxsc.ChoiceBox[J]
+  ): ChoiceBox[J] =
     if (cb != null) new ChoiceBox[J](cb) else null
 
   /**
@@ -270,7 +281,8 @@ trait ControlIncludes extends CellIncludes {
     if (c != null) new CheckBox(c) else null
 
   implicit def jfxChoiceDialog2sfx[T](
-      c: jfxsc.ChoiceDialog[T]): ChoiceDialog[T] =
+      c: jfxsc.ChoiceDialog[T]
+  ): ChoiceDialog[T] =
     if (c != null) new ChoiceDialog[T](c) else null
 
   /**
@@ -307,7 +319,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $CTRL
     */
   implicit def jfxControl2sfx(c: jfxsc.Control): Control =
-    if (c != null) new Control(c) {} else null
+    if (c != null) new Control(c) {}
+    else null
 
   /**
     * $START$CLPK.html $CLPK$END
@@ -326,8 +339,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $CBBS
     */
   implicit def jfxComboBoxBase2sfx[T](
-      v: jfxsc.ComboBoxBase[T]): ComboBoxBase[T] =
-    if (v != null) new ComboBoxBase[T](v) {} else null
+      v: jfxsc.ComboBoxBase[T]
+  ): ComboBoxBase[T] =
+    if (v != null) new ComboBoxBase[T](v) {}
+    else null
 
   /**
     * $START$CBBX.html $CBBX$END
@@ -367,7 +382,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $FCMD
     */
   implicit def jfxFocusModel2sfx[T](v: jfxsc.FocusModel[T]): FocusModel[T] =
-    if (v != null) new FocusModel[T](v) {} else null
+    if (v != null) new FocusModel[T](v) {}
+    else null
 
   /**
     * $START$HYLK.html $HYLK$END
@@ -398,8 +414,8 @@ trait ControlIncludes extends CellIncludes {
     if (r != null) new IndexRange(r) else null
 
   implicit def jfxIntegerSpinnerValueFactory2sfx(
-      ev: jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory)
-    : SpinnerValueFactory.IntegerSpinnerValueFactory =
+      ev: jfxsc.SpinnerValueFactory.IntegerSpinnerValueFactory
+  ): SpinnerValueFactory.IntegerSpinnerValueFactory =
     if (ev != null) new SpinnerValueFactory.IntegerSpinnerValueFactory(ev)
     else null
 
@@ -419,7 +435,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $LBLD
     */
   implicit def jfxLabeled2sfx(l: jfxsc.Labeled): Labeled =
-    if (l != null) new Labeled(l) {} else null
+    if (l != null) new Labeled(l) {}
+    else null
 
   /**
     * $START$LSCL.html $LSCL$END
@@ -432,8 +449,8 @@ trait ControlIncludes extends CellIncludes {
     if (l != null) new ListCell(l) else null
 
   implicit def jfxListSpinnerValueFactory2sfx[T](
-      ev: jfxsc.SpinnerValueFactory.ListSpinnerValueFactory[T])
-    : SpinnerValueFactory.ListSpinnerValueFactory[T] =
+      ev: jfxsc.SpinnerValueFactory.ListSpinnerValueFactory[T]
+  ): SpinnerValueFactory.ListSpinnerValueFactory[T] =
     if (ev != null) new SpinnerValueFactory.ListSpinnerValueFactory(ev)
     else null
 
@@ -455,7 +472,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $LVEE
     */
   implicit def jfxListViewEditEvent2sfx[T](
-      l: jfxsc.ListView.EditEvent[T]): ListView.EditEvent[T] =
+      l: jfxsc.ListView.EditEvent[T]
+  ): ListView.EditEvent[T] =
     if (l != null) new ListView.EditEvent(l) else null
 
   /**
@@ -510,7 +528,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SPMIT
     */
   implicit def jfxSeparatorMenuItem2sfx(
-      s: jfxsc.SeparatorMenuItem): SeparatorMenuItem =
+      s: jfxsc.SeparatorMenuItem
+  ): SeparatorMenuItem =
     if (s != null) new SeparatorMenuItem(s) else null
 
   /**
@@ -520,8 +539,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $MSMD
     */
   implicit def jfxMultipleSelectionModel2sfx[T](
-      v: jfxsc.MultipleSelectionModel[T]): MultipleSelectionModel[T] =
-    if (v != null) new MultipleSelectionModel[T](v) {} else null
+      v: jfxsc.MultipleSelectionModel[T]
+  ): MultipleSelectionModel[T] =
+    if (v != null) new MultipleSelectionModel[T](v) {}
+    else null
 
   /**
     * $START$ORST.html $ORST$END
@@ -557,7 +578,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SCTE
     */
   implicit def jfxScrollToEvent2sfx[T](
-      ev: jfxsc.ScrollToEvent[T]): ScrollToEvent[T] =
+      ev: jfxsc.ScrollToEvent[T]
+  ): ScrollToEvent[T] =
     if (ev != null) new ScrollToEvent[T](ev) else null
 
   /**
@@ -567,7 +589,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SCSB
     */
   implicit def jfxScrollPaneScrollBarPolicy2sfx(
-      s: jfxsc.ScrollPane.ScrollBarPolicy): ScrollBarPolicy =
+      s: jfxsc.ScrollPane.ScrollBarPolicy
+  ): ScrollBarPolicy =
     ScrollPane.ScrollBarPolicy.jfxEnum2sfx(s)
 
   /**
@@ -601,8 +624,10 @@ trait ControlIncludes extends CellIncludes {
     if (ev != null) new Spinner[T](ev) else null
 
   implicit def jfxSpinnerValueFactory2sfx[T](
-      ev: jfxsc.SpinnerValueFactory[T]): SpinnerValueFactory[T] =
-    if (ev != null) new SpinnerValueFactory(ev) {} else null
+      ev: jfxsc.SpinnerValueFactory[T]
+  ): SpinnerValueFactory[T] =
+    if (ev != null) new SpinnerValueFactory(ev) {}
+    else null
 
   /**
     * $START$SPMB.html $SPMB$END
@@ -611,7 +636,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SPMB
     */
   implicit def jfxSplitMenuButton2sfx(
-      h: jfxsc.SplitMenuButton): SplitMenuButton =
+      h: jfxsc.SplitMenuButton
+  ): SplitMenuButton =
     if (h != null) new SplitMenuButton(h) else null
 
   /**
@@ -622,7 +648,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TBCL
     */
   implicit def jfxTableCell2sfx[S, T](
-      tc: jfxsc.TableCell[S, T]): TableCell[S, T] =
+      tc: jfxsc.TableCell[S, T]
+  ): TableCell[S, T] =
     if (tc != null) new TableCell[S, T](tc) else null
 
   /**
@@ -633,11 +660,13 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TBCM
     */
   implicit def jfxTableColumn2sfx[S, T](
-      tc: jfxsc.TableColumn[S, T]): TableColumn[S, T] =
+      tc: jfxsc.TableColumn[S, T]
+  ): TableColumn[S, T] =
     if (tc != null) new TableColumn[S, T](tc) else null
 
   implicit def jfxTextInputDialog2sfx(
-      v: jfxsc.TextInputDialog): TextInputDialog =
+      v: jfxsc.TextInputDialog
+  ): TextInputDialog =
     if (v != null) new TextInputDialog(v) else null
 
   /**
@@ -657,7 +686,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TCCD
     */
   implicit def jfxCellDataFeatures2sfx[S, T](
-      cdf: jfxsc.TableColumn.CellDataFeatures[S, T]): CellDataFeatures[S, T] =
+      cdf: jfxsc.TableColumn.CellDataFeatures[S, T]
+  ): CellDataFeatures[S, T] =
     if (cdf != null) new TableColumn.CellDataFeatures[S, T](cdf) else null
 
   /**
@@ -668,7 +698,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TCCE
     */
   implicit def jfxCellEditEvent2sfx[S, T](
-      cee: jfxsc.TableColumn.CellEditEvent[S, T]): CellEditEvent[S, T] =
+      cee: jfxsc.TableColumn.CellEditEvent[S, T]
+  ): CellEditEvent[S, T] =
     if (cee != null) new TableColumn.CellEditEvent[S, T](cee) else null
 
   /**
@@ -679,7 +710,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TBPS
     */
   implicit def jfxTablePosition2sfx[S, T](
-      tp: jfxsc.TablePosition[S, T]): TablePosition[S, T] =
+      tp: jfxsc.TablePosition[S, T]
+  ): TablePosition[S, T] =
     if (tp != null) new TablePosition[S, T](tp) else null
 
   /**
@@ -691,8 +723,10 @@ trait ControlIncludes extends CellIncludes {
     * @since 8.0
     */
   implicit def jfxTablePositionBase2sfx[TC <: jfxsc.TableColumnBase[_, _]](
-      tpb: jfxsc.TablePositionBase[TC]): TablePositionBase[TC] =
-    if (tpb != null) new TablePositionBase[TC](tpb) {} else null
+      tpb: jfxsc.TablePositionBase[TC]
+  ): TablePositionBase[TC] =
+    if (tpb != null) new TablePositionBase[TC](tpb) {}
+    else null
 
   /**
     * $START$TBRW.html $TBRW$END
@@ -722,7 +756,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $RFBS
     */
   implicit def jfxResizeFeaturesBase2sfx[S](
-      rf: jfxsc.ResizeFeaturesBase[S]): ResizeFeaturesBase[S] =
+      rf: jfxsc.ResizeFeaturesBase[S]
+  ): ResizeFeaturesBase[S] =
     if (rf != null) new ResizeFeaturesBase[S](rf) else null
 
   /**
@@ -733,7 +768,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TVRF
     */
   implicit def jfxResizeFeatures2sfx[S](
-      rf: jfxsc.TableView.ResizeFeatures[S]): ResizeFeatures[S] =
+      rf: jfxsc.TableView.ResizeFeatures[S]
+  ): ResizeFeatures[S] =
     if (rf != null) new TableView.ResizeFeatures[S](rf) else null
 
   /**
@@ -744,9 +780,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TVSM
     */
   implicit def jfxTableViewSelectionModel2sfx[S](
-      tvsm: jfxsc.TableView.TableViewSelectionModel[S])
-    : TableViewSelectionModel[S] =
-    if (tvsm != null) new TableView.TableViewSelectionModel[S](tvsm) {} else
+      tvsm: jfxsc.TableView.TableViewSelectionModel[S]
+  ): TableViewSelectionModel[S] =
+    if (tvsm != null) new TableView.TableViewSelectionModel[S](tvsm) {}
+    else
       null
 
   /**
@@ -757,8 +794,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TBSM
     */
   implicit def jfxTableSelectionModel2sfx[T](
-      tsm: jfxsc.TableSelectionModel[T]): TableSelectionModel[T] =
-    if (tsm != null) new TableSelectionModel[T](tsm) {} else null
+      tsm: jfxsc.TableSelectionModel[T]
+  ): TableSelectionModel[T] =
+    if (tsm != null) new TableSelectionModel[T](tsm) {}
+    else null
   /*
    * $START$TBCB.html $TBCB$END
    *
@@ -769,7 +808,8 @@ trait ControlIncludes extends CellIncludes {
    *
    */
   implicit def jfxTableColumnBase2sfx[S, T](
-      tbcb: jfxsc.TableColumnBase[S, T]): TableColumnBase[S, T] =
+      tbcb: jfxsc.TableColumnBase[S, T]
+  ): TableColumnBase[S, T] =
     new TableColumnBase[S, T](tbcb) {
 
       import scalafx.collections.CollectionIncludes._
@@ -786,7 +826,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TVFM
     */
   implicit def jfxTableViewFocusModel2sfx[S](
-      tvfm: jfxsc.TableView.TableViewFocusModel[S]): TableViewFocusModel[S] =
+      tvfm: jfxsc.TableView.TableViewFocusModel[S]
+  ): TableViewFocusModel[S] =
     if (tvfm != null) new TableView.TableViewFocusModel[S](tvfm) else null
 
   /**
@@ -800,15 +841,19 @@ trait ControlIncludes extends CellIncludes {
     * @since 8.0
     */
   implicit def jfxTableFocusModel2sfx[T, TC <: jfxsc.TableColumnBase[T, _]](
-      tfm: jfxsc.TableFocusModel[T, TC]): TableFocusModel[T, TC] =
-    if (tfm != null) new TableFocusModel[T, TC](tfm) {} else null
+      tfm: jfxsc.TableFocusModel[T, TC]
+  ): TableFocusModel[T, TC] =
+    if (tfm != null) new TableFocusModel[T, TC](tfm) {}
+    else null
 
   implicit def jfxTextFormatter2sfx[V](
-      t: jfxsc.TextFormatter[V]): TextFormatter[V] =
+      t: jfxsc.TextFormatter[V]
+  ): TextFormatter[V] =
     if (t != null) new TextFormatter(t) else null
 
   implicit def jfxTextFormatterChange2sfx[V](
-      t: jfxsc.TextFormatter.Change): TextFormatter.Change =
+      t: jfxsc.TextFormatter.Change
+  ): TextFormatter.Change =
     if (t != null) new TextFormatter.Change(t) else null
 
   /**
@@ -834,7 +879,8 @@ trait ControlIncludes extends CellIncludes {
         def userData_=(v: AnyRef) {
           delegate.setUserData(v)
         }
-      } else null
+      }
+    else null
 
   /**
     * $START$SPRT.html $SPRT$END
@@ -853,11 +899,13 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SKIN
     */
   implicit def jfxSkin2sfxSkin[C <: jfxsc.Skinnable](
-      s: jfxsc.Skin[C]): Skin[C] =
+      s: jfxsc.Skin[C]
+  ): Skin[C] =
     if (s != null)
       new Skin[C] {
         override val delegate = s
-      } else null
+      }
+    else null
 
   /**
     * $START$SNBE.html $SNBE$END
@@ -866,8 +914,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SNBE
     */
   implicit def jfxSkinBase2sfx[C <: jfxsc.Control](
-      sb: jfxsc.SkinBase[C]): SkinBase[C] =
-    if (sb != null) new SkinBase[C](sb) {} else null
+      sb: jfxsc.SkinBase[C]
+  ): SkinBase[C] =
+    if (sb != null) new SkinBase[C](sb) {}
+    else null
 
   /**
     * $START$SKNB.html $SKNB$END
@@ -879,7 +929,8 @@ trait ControlIncludes extends CellIncludes {
     if (s != null)
       new Skinnable {
         override val delegate = s
-      } else null
+      }
+    else null
 
   /**
     * $START$PRGI.html $PRGI$END
@@ -888,7 +939,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $PRGI
     */
   implicit def jfxProgressIndicator2sfx(
-      p: jfxsc.ProgressIndicator): ProgressIndicator =
+      p: jfxsc.ProgressIndicator
+  ): ProgressIndicator =
     if (p != null) new ProgressIndicator(p) else null
 
   /**
@@ -935,8 +987,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SCMD
     */
   implicit def jfxSelectionModel2sfx[T](
-      v: jfxsc.SelectionModel[T]): SelectionModel[T] =
-    if (v != null) new SelectionModel[T](v) {} else null
+      v: jfxsc.SelectionModel[T]
+  ): SelectionModel[T] =
+    if (v != null) new SelectionModel[T](v) {}
+    else null
 
   /**
     * $START$SSMD.html $SSMD$END
@@ -946,8 +1000,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $SSMD
     */
   implicit def jfxSingleSelectionModel2sfx[T](
-      v: jfxsc.SingleSelectionModel[T]): SingleSelectionModel[T] =
-    if (v != null) new SingleSelectionModel[T](v) {} else null
+      v: jfxsc.SingleSelectionModel[T]
+  ): SingleSelectionModel[T] =
+    if (v != null) new SingleSelectionModel[T](v) {}
+    else null
 
   /**
     * $START$SPPN.html $SPPN$END
@@ -992,7 +1048,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TPCP
     */
   implicit def jfxTabClosingPolicy2sfx(
-      v: jfxsc.TabPane.TabClosingPolicy): TabClosingPolicy =
+      v: jfxsc.TabPane.TabClosingPolicy
+  ): TabClosingPolicy =
     TabPane.TabClosingPolicy.jfxEnum2sfx(v)
 
   /**
@@ -1012,7 +1069,8 @@ trait ControlIncludes extends CellIncludes {
     * @return a new TextFieldProperty
     */
   implicit def jfxTextFieldProperty2sfx(
-      p: ReadOnlyObjectProperty[jfxsc.TextField]): TextFieldProperty =
+      p: ReadOnlyObjectProperty[jfxsc.TextField]
+  ): TextFieldProperty =
     if (p != null) new TextFieldProperty(p) else null
 
   /**
@@ -1031,8 +1089,10 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TXIC
     */
   implicit def jfxTextInputControl2sfx(
-      t: jfxsc.TextInputControl): TextInputControl =
-    if (t != null) new TextInputControl(t) {} else null
+      t: jfxsc.TextInputControl
+  ): TextInputControl =
+    if (t != null) new TextInputControl(t) {}
+    else null
 
   /**
     * $START$TOTP.html $TOTP$END
@@ -1041,7 +1101,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TOTP
     */
   implicit def jfxTooltip2sfx(t: jfxsc.Tooltip): Tooltip =
-    if (t != null) new Tooltip(t) {} else null
+    if (t != null) new Tooltip(t) {}
+    else null
 
   /**
     * $START$TOBR.html $TOBR$END
@@ -1050,7 +1111,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TOBR
     */
   implicit def jfxToolBar2sfx(t: jfxsc.ToolBar): ToolBar =
-    if (t != null) new ToolBar(t) {} else null
+    if (t != null) new ToolBar(t) {}
+    else null
 
   /**
     * $START$TRCL.html $TRCL$END
@@ -1080,7 +1142,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TIME
     */
   implicit def jfxTreeModificationEvent2sfx[T](
-      tmi: jfxsc.TreeItem.TreeModificationEvent[T]): TreeModificationEvent[T] =
+      tmi: jfxsc.TreeItem.TreeModificationEvent[T]
+  ): TreeModificationEvent[T] =
     if (tmi != null) new TreeItem.TreeModificationEvent[T](tmi) else null
 
   /**
@@ -1101,7 +1164,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TVEE
     */
   implicit def jfxTreeViewEditEvent2sfx[T](
-      t: jfxsc.TreeView.EditEvent[T]): EditEvent[T] =
+      t: jfxsc.TreeView.EditEvent[T]
+  ): EditEvent[T] =
     if (t != null) new TreeView.EditEvent[T](t) else null
 
   /**
@@ -1113,7 +1177,8 @@ trait ControlIncludes extends CellIncludes {
     * @since 8.0
     */
   implicit def jfxTreeTableRow2sfx[T](
-      ttr: jfxsc.TreeTableRow[T]): TreeTableRow[T] =
+      ttr: jfxsc.TreeTableRow[T]
+  ): TreeTableRow[T] =
     if (ttr != null) new TreeTableRow[T](ttr) else null
 
   /**
@@ -1126,7 +1191,8 @@ trait ControlIncludes extends CellIncludes {
     * @since 8.0
     */
   implicit def jfxTreeTableCell2sfx[S, T](
-      ttc: jfxsc.TreeTableCell[S, T]): TreeTableCell[S, T] =
+      ttc: jfxsc.TreeTableCell[S, T]
+  ): TreeTableCell[S, T] =
     if (ttc != null) new TreeTableCell[S, T](ttc) else null
 
   /**
@@ -1158,14 +1224,16 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TRTP
     */
   implicit def jfxTreeTablePosition2sfx[S, T](
-      ttp: jfxsc.TreeTablePosition[S, T]): TreeTablePosition[S, T] =
+      ttp: jfxsc.TreeTablePosition[S, T]
+  ): TreeTablePosition[S, T] =
     if (ttp != null) new TreeTablePosition[S, T](ttp) else null
 
   implicit def jfxTreeTableColumn2sfx[S, T](a: jfxsc.TreeTableColumn[S, T]) =
     if (a != null) new TreeTableColumn[S, T](a) else null
 
   implicit def jfxTreeCellDataFeatures2sfx[S, T](
-      a: jfxsc.TreeTableColumn.CellDataFeatures[S, T]) =
+      a: jfxsc.TreeTableColumn.CellDataFeatures[S, T]
+  ) =
     if (a != null) new TreeTableColumn.CellDataFeatures[S, T](a) else null
 
   /**
@@ -1188,7 +1256,8 @@ trait ControlIncludes extends CellIncludes {
     * @since 8.0
     */
   implicit def jfxTreeTableViewEditEvent2sfx[T](
-      t: jfxsc.TreeTableView.EditEvent[T]) =
+      t: jfxsc.TreeTableView.EditEvent[T]
+  ) =
     if (t != null) new TreeTableView.EditEvent[T](t) else null
 
   /**
@@ -1199,7 +1268,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TVVE
     */
   implicit def jfxTreeTableViewResizeFeatures2sfx[S](
-      rf: jfxsc.TreeTableView.ResizeFeatures[S]) =
+      rf: jfxsc.TreeTableView.ResizeFeatures[S]
+  ) =
     if (rf != null) new TreeTableView.ResizeFeatures[S](rf) else null
 
   /**
@@ -1210,9 +1280,11 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TTVS
     */
   implicit def jfxTreeTableViewSelectionModel2sfx[S](
-      ttvsm: jfxsc.TreeTableView.TreeTableViewSelectionModel[S]) =
+      ttvsm: jfxsc.TreeTableView.TreeTableViewSelectionModel[S]
+  ) =
     if (ttvsm != null)
-      new TreeTableView.TreeTableViewSelectionModel[S](ttvsm) {} else null
+      new TreeTableView.TreeTableViewSelectionModel[S](ttvsm) {}
+    else null
 
   /**
     * $START$TTVF.html $TTVF$END
@@ -1222,7 +1294,8 @@ trait ControlIncludes extends CellIncludes {
     * @return $SFX $TTVF
     */
   implicit def jfxTreeTableViewFocusModel2sfx[S](
-      ttvfm: jfxsc.TreeTableView.TreeTableViewFocusModel[S]) =
+      ttvfm: jfxsc.TreeTableView.TreeTableViewFocusModel[S]
+  ) =
     if (ttvfm != null) new TreeTableView.TreeTableViewFocusModel[S](ttvfm)
     else null
 }

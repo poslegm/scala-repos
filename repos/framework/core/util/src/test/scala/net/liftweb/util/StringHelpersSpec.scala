@@ -72,17 +72,16 @@ object StringHelpersSpec extends Specification with ScalaCheck with StringGen {
       val doesntContainUnderscores = forAll(underscoredStrings) {
         ((name: String) => !camelify(name).contains("_"))
       }
-      val isCamelCased = forAll(underscoredStrings)((name: String) =>
-            {
-          name.forall(_ == '_') && camelify(name).isEmpty ||
+      val isCamelCased = forAll(underscoredStrings)((name: String) => {
+        name.forall(_ == '_') && camelify(name).isEmpty ||
           name.toList.zipWithIndex.forall {
             case (c, i) =>
               c == '_' || correspondingIndexInCamelCase(name, i) == 0 &&
-              correspondingCharInCamelCase(name, i) == c.toUpper ||
-              !previousCharacterIsUnderscore(name, i) &&
-              correspondingCharInCamelCase(name, i) == c ||
-              previousCharacterIsUnderscore(name, i) &&
-              correspondingCharInCamelCase(name, i) == c.toUpper
+                correspondingCharInCamelCase(name, i) == c.toUpper ||
+                !previousCharacterIsUnderscore(name, i) &&
+                  correspondingCharInCamelCase(name, i) == c ||
+                previousCharacterIsUnderscore(name, i) &&
+                  correspondingCharInCamelCase(name, i) == c.toUpper
           }
       })
       (doesntContainUnderscores && isCamelCased)
@@ -91,9 +90,7 @@ object StringHelpersSpec extends Specification with ScalaCheck with StringGen {
       camelify(null) must_== ""
     }
     "leave a CamelCased name untouched" in {
-      forAll(camelCasedStrings) { (name: String) =>
-        camelify(name) == name
-      }
+      forAll(camelCasedStrings) { (name: String) => camelify(name) == name }
     }
   }
 
@@ -123,15 +120,20 @@ object StringHelpersSpec extends Specification with ScalaCheck with StringGen {
     }
     "replace groups found in several strings surrounded by <%= ... %> by their corresponding value in a map" in {
       processString(
-          "<%=hello%> <%=world%>",
-          Map("hello" -> "bonjour", "world" -> "monde")) must_== "bonjour monde"
+        "<%=hello%> <%=world%>",
+        Map("hello" -> "bonjour", "world" -> "monde")
+      ) must_== "bonjour monde"
     }
     "not replace the group if it starts with %" in {
-      processString("<%=%hello%>", Map("hello" -> "bonjour")) must_== "<%=%hello%>"
+      processString(
+        "<%=%hello%>",
+        Map("hello" -> "bonjour")
+      ) must_== "<%=%hello%>"
     }
     "throw an exception if no correspondance is found" in {
       processString("<%=hello%>", Map("hallo" -> "bonjour")) must throwA[
-          Exception]
+        Exception
+      ]
     }
   }
 
@@ -354,8 +356,12 @@ trait StringGen {
   val camelCasedStrings = for {
     length <- choose(0, 4)
     firstLetter <- alphaNumChar.map(_.toUpper)
-    string <- listOfN(length,
-                      frequency((3, alphaNumChar.map(_.toLower)),
-                                (1, alphaNumChar.map(_.toUpper))))
+    string <- listOfN(
+      length,
+      frequency(
+        (3, alphaNumChar.map(_.toLower)),
+        (1, alphaNumChar.map(_.toUpper))
+      )
+    )
   } yield (firstLetter :: string).mkString
 }

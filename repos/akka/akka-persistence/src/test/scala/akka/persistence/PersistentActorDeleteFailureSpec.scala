@@ -17,13 +17,17 @@ object PersistentActorDeleteFailureSpec {
 
   case class DeleteTo(n: Long)
   class SimulatedException(msg: String)
-      extends RuntimeException(msg) with NoStackTrace
+      extends RuntimeException(msg)
+      with NoStackTrace
   class SimulatedSerializationException(msg: String)
-      extends RuntimeException(msg) with NoStackTrace
+      extends RuntimeException(msg)
+      with NoStackTrace
 
   class DeleteFailingInmemJournal extends InmemJournal {
     override def asyncDeleteMessagesTo(
-        persistenceId: String, toSequenceNr: Long): Future[Unit] =
+        persistenceId: String,
+        toSequenceNr: Long
+    ): Future[Unit] =
       Future.failed(new SimulatedException("Boom! Unable to delete events!"))
   }
 
@@ -49,35 +53,46 @@ object PersistentActorDeleteFailureSpec {
 
 class PersistentActorDeleteFailureSpec
     extends PersistenceSpec(
-        PersistenceSpec.config(
-            "inmem",
-            "SnapshotFailureRobustnessSpec",
-            extraConfig = Some("""
+      PersistenceSpec.config(
+        "inmem",
+        "SnapshotFailureRobustnessSpec",
+        extraConfig =
+          Some("""
   akka.persistence.journal.inmem.class = "akka.persistence.PersistentActorDeleteFailureSpec$DeleteFailingInmemJournal"
-  """))) with ImplicitSender {
+  """)
+      )
+    )
+    with ImplicitSender {
   import PersistentActorDeleteFailureSpec._
 
   system.eventStream.publish(
-      TestEvent.Mute(EventFilter[akka.pattern.AskTimeoutException]()))
+    TestEvent.Mute(EventFilter[akka.pattern.AskTimeoutException]())
+  )
 
   "A persistent actor" must {
     "have default warn logging be triggered, when deletion failed" in {
       val persistentActor = system.actorOf(
-          Props(classOf[DoesNotHandleDeleteFailureActor], name, testActor))
+        Props(classOf[DoesNotHandleDeleteFailureActor], name, testActor)
+      )
       system.eventStream.subscribe(testActor, classOf[Logging.Warning])
       persistentActor ! DeleteTo(100)
       val message = expectMsgType[Warning].message.toString
       message should include("Failed to deleteMessages")
-      message should include("Boom! Unable to delete events!") // the `cause` message
+      message should include(
+        "Boom! Unable to delete events!"
+      ) // the `cause` message
     }
 
     "be receive an DeleteMessagesFailure when deletion failed, and the default logging should not be triggered" in {
       val persistentActor = system.actorOf(
-          Props(classOf[HandlesDeleteFailureActor], name, testActor))
+        Props(classOf[HandlesDeleteFailureActor], name, testActor)
+      )
       system.eventStream.subscribe(testActor, classOf[Logging.Warning])
       persistentActor ! DeleteTo(100)
       expectMsgType[DeleteMessagesFailure]
-      expectNoMsg(100.millis) // since the actor handled the message, we do not issue warn logging automatically
+      expectNoMsg(
+        100.millis
+      ) // since the actor handled the message, we do not issue warn logging automatically
     }
   }
 }

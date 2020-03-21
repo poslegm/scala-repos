@@ -27,15 +27,18 @@ class ConfigTest extends WordSpec with Matchers {
     "cascadingAppJar works" in {
       val cls = getClass
       Config.default.setCascadingAppJar(cls).getCascadingAppJar should contain(
-          Success(cls))
+        Success(cls)
+      )
     }
     "default has serialization set" in {
       val sers = Config.default.get("io.serializations").get.split(",").toList
       sers.last shouldBe
-      (classOf[com.twitter.chill.hadoop.KryoSerialization].getName)
+        (classOf[com.twitter.chill.hadoop.KryoSerialization].getName)
     }
     "default has chill configured" in {
-      Config.default.get(com.twitter.chill.config.ConfiguredInstantiator.KEY) should not be empty
+      Config.default.get(
+        com.twitter.chill.config.ConfiguredInstantiator.KEY
+      ) should not be empty
     }
     "setting timestamp twice does not change it" in {
       val date = RichDate.now
@@ -69,14 +72,16 @@ class ConfigTest extends WordSpec with Matchers {
       // the only Kryo classes we don't assign tokens for are the primitives + array
       (kryoClasses -- tokenClasses).forall { c =>
         // primitives cannot be forName'd
-        val prim = Set(classOf[Boolean],
-                       classOf[Byte],
-                       classOf[Short],
-                       classOf[Int],
-                       classOf[Long],
-                       classOf[Float],
-                       classOf[Double],
-                       classOf[Char]).map(_.getName)
+        val prim = Set(
+          classOf[Boolean],
+          classOf[Byte],
+          classOf[Short],
+          classOf[Int],
+          classOf[Long],
+          classOf[Float],
+          classOf[Double],
+          classOf[Char]
+        ).map(_.getName)
 
         prim(c) || Class.forName(c).isArray
       } shouldBe true
@@ -89,8 +94,7 @@ object ConfigProps extends Properties("Config") {
     Arbitrary(Arbitrary.arbitrary[Map[String, String]].map(Config(_)))
 
   property(".+(k, v).get(k) == Some(v)") = forAll {
-    (c: Config, k: String, v: String) =>
-      (c + (k, v)).get(k) == Some(v)
+    (c: Config, k: String, v: String) => (c + (k, v)).get(k) == Some(v)
   }
   property(".-(k).get(k) == None") = forAll { (c: Config, k: String) =>
     (c - k).get(k) == None
@@ -102,17 +106,13 @@ object ConfigProps extends Properties("Config") {
     (c1: Config, c2: Config, keys: Set[String]) =>
       val merged = c1 ++ c2
       val testKeys = c1.toMap.keySet | c2.toMap.keySet ++ keys
-      testKeys.forall { k =>
-        merged.get(k) == c2.get(k).orElse(c1.get(k))
-      }
+      testKeys.forall { k => merged.get(k) == c2.get(k).orElse(c1.get(k)) }
   }
   property("adding many UniqueIDs works") = forAll { (l: List[String]) =>
-    val uids = l.filterNot { s =>
-      s.isEmpty || s.contains(",")
-    }.map(UniqueID(_))
-    (uids.foldLeft(Config.empty) { (conf, id) =>
-            conf.addUniqueId(id)
-          }
-          .getUniqueIds == uids.toSet)
+    val uids =
+      l.filterNot { s => s.isEmpty || s.contains(",") }.map(UniqueID(_))
+    (uids
+      .foldLeft(Config.empty) { (conf, id) => conf.addUniqueId(id) }
+      .getUniqueIds == uids.toSet)
   }
 }

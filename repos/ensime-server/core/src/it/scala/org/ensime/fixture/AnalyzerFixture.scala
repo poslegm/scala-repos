@@ -11,15 +11,15 @@ import org.ensime.indexer.SearchService
 import org.scalatest._
 
 trait AnalyzerFixture {
-  def withAnalyzer(
-      testCode: (EnsimeConfig, TestActorRef[Analyzer]) => Any): Any
+  def withAnalyzer(testCode: (EnsimeConfig, TestActorRef[Analyzer]) => Any): Any
 }
 
 object AnalyzerFixture {
-  private[fixture] def create(
-      search: SearchService)(implicit system: ActorSystem,
-                             config: EnsimeConfig,
-                             vfs: EnsimeVFS): TestActorRef[Analyzer] = {
+  private[fixture] def create(search: SearchService)(implicit
+      system: ActorSystem,
+      config: EnsimeConfig,
+      vfs: EnsimeVFS
+  ): TestActorRef[Analyzer] = {
     val indexer = TestProbe()
     val projectActor = TestProbe()
     TestActorRef(Analyzer(projectActor.ref, indexer.ref, search))
@@ -27,11 +27,14 @@ object AnalyzerFixture {
 }
 
 trait IsolatedAnalyzerFixture
-    extends AnalyzerFixture with IsolatedEnsimeVFSFixture
-    with IsolatedSearchServiceFixture with IsolatedTestKitFixture {
+    extends AnalyzerFixture
+    with IsolatedEnsimeVFSFixture
+    with IsolatedSearchServiceFixture
+    with IsolatedTestKitFixture {
 
   override def withAnalyzer(
-      testCode: (EnsimeConfig, TestActorRef[Analyzer]) => Any): Any = {
+      testCode: (EnsimeConfig, TestActorRef[Analyzer]) => Any
+  ): Any = {
     withVFS { implicit vfs =>
       withTestKit { testkit =>
         import testkit._
@@ -45,8 +48,10 @@ trait IsolatedAnalyzerFixture
 }
 
 trait SharedAnalyzerFixture
-    extends AnalyzerFixture with SharedTestKitFixture
-    with SharedSearchServiceFixture with BeforeAndAfterAll {
+    extends AnalyzerFixture
+    with SharedTestKitFixture
+    with SharedSearchServiceFixture
+    with BeforeAndAfterAll {
 
   private[fixture] var analyzer: TestActorRef[Analyzer] = _
 
@@ -58,6 +63,7 @@ trait SharedAnalyzerFixture
   }
 
   override def withAnalyzer(
-      testCode: (EnsimeConfig, TestActorRef[Analyzer]) => Any): Any =
+      testCode: (EnsimeConfig, TestActorRef[Analyzer]) => Any
+  ): Any =
     testCode(_config, analyzer)
 }

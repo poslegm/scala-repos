@@ -11,7 +11,10 @@ import org.eclipse.jgit.lib.Repository
 import lila.memo.AsyncCache
 
 private[i18n] final class Context(
-    gitUrl: String, gitFile: String, keys: I18nKeys) {
+    gitUrl: String,
+    gitFile: String,
+    keys: I18nKeys
+) {
 
   type Contexts = Map[String, String]
 
@@ -31,26 +34,28 @@ private[i18n] final class Context(
           // logwarn("i18n context skipped key " + key)
           cs
         case (cs, line) if line startsWith "//" => cs
-        case (cs, line) =>
+        case (cs, line)                         =>
           // logwarn("i18n context skipped line " + line.mkString("="))
           cs
       }
 
   private lazy val keySet: Set[String] = keys.keys.map(_.en()).toSet
 
-  private def fetch: Fu[Contexts] = gitClone map { dir =>
-    val filePath = s"${dir.getAbsolutePath}/$gitFile"
-    val content = fileContent(new File(filePath))
-    dir.delete
-    parse(content)
-  }
+  private def fetch: Fu[Contexts] =
+    gitClone map { dir =>
+      val filePath = s"${dir.getAbsolutePath}/$gitFile"
+      val content = fileContent(new File(filePath))
+      dir.delete
+      parse(content)
+    }
 
-  private def gitClone: Fu[File] = Future {
-    val dir = Files.createTempDir
-    dir.deleteOnExit
-    Git.cloneRepository.setURI(gitUrl).setDirectory(dir).setBare(false).call
-    dir
-  }
+  private def gitClone: Fu[File] =
+    Future {
+      val dir = Files.createTempDir
+      dir.deleteOnExit
+      Git.cloneRepository.setURI(gitUrl).setDirectory(dir).setBare(false).call
+      dir
+    }
 
   private def fileContent(file: File) =
     scala.io.Source.fromFile(file.getCanonicalPath, "UTF-8").mkString

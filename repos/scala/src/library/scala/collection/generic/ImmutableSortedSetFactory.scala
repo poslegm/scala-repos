@@ -24,6 +24,7 @@ import scala.language.higherKinds
   *  @define sortedSetCanBuildFromInfo
   *    The standard `CanBuildFrom` instance for sorted sets
   */
-abstract class ImmutableSortedSetFactory[
-    CC[A] <: immutable.SortedSet[A] with SortedSetLike[A, CC[A]]]
+abstract class ImmutableSortedSetFactory[CC[A] <: immutable.SortedSet[
+  A
+] with SortedSetLike[A, CC[A]]]
     extends SortedSetFactory[CC]

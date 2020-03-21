@@ -53,10 +53,11 @@ trait Chars {
   }
 
   /** Is character a line break? */
-  def isLineBreakChar(c: Char) = (c: @switch) match {
-    case LF | FF | CR | SU => true
-    case _ => false
-  }
+  def isLineBreakChar(c: Char) =
+    (c: @switch) match {
+      case LF | FF | CR | SU => true
+      case _                 => false
+    }
 
   /** Is character a whitespace character (but not a new line)? */
   def isWhitespace(c: Char) =
@@ -83,22 +84,25 @@ trait Chars {
   private final val otherLetters = Set[Char]('\u0024', '\u005F') // '$' and '_'
   private final val letterGroups = {
     import JCharacter._
-    Set[Byte](LOWERCASE_LETTER,
-              UPPERCASE_LETTER,
-              OTHER_LETTER,
-              TITLECASE_LETTER,
-              LETTER_NUMBER)
+    Set[Byte](
+      LOWERCASE_LETTER,
+      UPPERCASE_LETTER,
+      OTHER_LETTER,
+      TITLECASE_LETTER,
+      LETTER_NUMBER
+    )
   }
   def isScalaLetter(ch: Char) =
     letterGroups(JCharacter.getType(ch).toByte) || otherLetters(ch)
 
   /** Can character form part of a Scala operator name? */
-  def isOperatorPart(c: Char): Boolean = (c: @switch) match {
-    case '~' | '!' | '@' | '#' | '%' | '^' | '*' | '+' | '-' | '<' | '>' |
-        '?' | ':' | '=' | '&' | '|' | '/' | '\\' =>
-      true
-    case c => isSpecial(c)
-  }
+  def isOperatorPart(c: Char): Boolean =
+    (c: @switch) match {
+      case '~' | '!' | '@' | '#' | '%' | '^' | '*' | '+' | '-' | '<' | '>' |
+          '?' | ':' | '=' | '&' | '|' | '/' | '\\' =>
+        true
+      case c => isSpecial(c)
+    }
 }
 
 object Chars extends Chars {}

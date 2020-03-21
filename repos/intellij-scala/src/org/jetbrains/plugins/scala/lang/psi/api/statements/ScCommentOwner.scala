@@ -16,10 +16,11 @@ trait ScCommentOwner { self: ScalaPsiElement =>
     }
   }
 
-  private def scDocComment: Option[ScDocComment] = self match {
-    case dco: ScDocCommentOwner => dco.docComment
-    case _ => None
-  }
+  private def scDocComment: Option[ScDocComment] =
+    self match {
+      case dco: ScDocCommentOwner => dco.docComment
+      case _                      => None
+    }
 
   def allComments: Seq[PsiComment] = scDocComment.toSeq ++ simpleComment
 

@@ -27,7 +27,9 @@ import org.apache.spark.deploy.master.MasterSource
 import org.apache.spark.metrics.source.Source
 
 class MetricsSystemSuite
-    extends SparkFunSuite with BeforeAndAfter with PrivateMethodTester {
+    extends SparkFunSuite
+    with BeforeAndAfter
+    with PrivateMethodTester {
   var filePath: String = _
   var conf: SparkConf = null
   var securityMgr: SecurityManager = null
@@ -157,7 +159,9 @@ class MetricsSystemSuite
     assert(metricName === source.sourceName)
   }
 
-  test("MetricsSystem with Executor instance and spark.executor.id is not set") {
+  test(
+    "MetricsSystem with Executor instance and spark.executor.id is not set"
+  ) {
     val source = new Source {
       override val sourceName = "dummySource"
       override val metricRegistry = new MetricRegistry()

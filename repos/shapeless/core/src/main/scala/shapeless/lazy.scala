@@ -126,8 +126,10 @@ object Lazy {
   class Values[T <: HList](val values: T) extends Serializable
   object Values {
     implicit val hnilValues: Values[HNil] = new Values(HNil)
-    implicit def hconsValues[H, T <: HList](
-        implicit lh: Lazy[H], t: Values[T]): Values[H :: T] =
+    implicit def hconsValues[H, T <: HList](implicit
+        lh: Lazy[H],
+        t: Values[T]
+    ): Values[H :: T] =
       new Values(lh.value :: t.values)
   }
 
@@ -185,7 +187,7 @@ trait OpenImplicitMacros {
 
   def secondOpenImplicitTpe: Option[Type] =
     c.openImplicits match {
-      case (List(_, second, _ @_ *)) =>
+      case (List(_, second, _ @_*)) =>
         Some(second.pt)
       case _ => None
     }
@@ -193,27 +195,31 @@ trait OpenImplicitMacros {
 
 @macrocompat.bundle
 class LazyMacros(val c: whitebox.Context)
-    extends CaseClassMacros with OpenImplicitMacros with LowPriorityTypes {
+    extends CaseClassMacros
+    with OpenImplicitMacros
+    with LowPriorityTypes {
   import c.universe._
   import c.internal._
   import decorators._
 
   def mkLazyImpl[I](implicit iTag: WeakTypeTag[I]): Tree =
     mkImpl[I](
-        (tree,
-        actualType) => q"_root_.shapeless.Lazy.apply[$actualType]($tree)",
-        q"null.asInstanceOf[_root_.shapeless.Lazy[_root_.scala.Nothing]]"
+      (tree, actualType) => q"_root_.shapeless.Lazy.apply[$actualType]($tree)",
+      q"null.asInstanceOf[_root_.shapeless.Lazy[_root_.scala.Nothing]]"
     )
 
   def mkStrictImpl[I](implicit iTag: WeakTypeTag[I]): Tree =
     mkImpl[I](
-        (tree,
-        actualType) => q"_root_.shapeless.Strict.apply[$actualType]($tree)",
-        q"null.asInstanceOf[_root_.shapeless.Strict[_root_.scala.Nothing]]"
+      (
+          tree,
+          actualType
+      ) => q"_root_.shapeless.Strict.apply[$actualType]($tree)",
+      q"null.asInstanceOf[_root_.shapeless.Strict[_root_.scala.Nothing]]"
     )
 
-  def mkImpl[I](mkInst: (Tree, Type) => Tree, nullInst: => Tree)(
-      implicit iTag: WeakTypeTag[I]): Tree = {
+  def mkImpl[I](mkInst: (Tree, Type) => Tree, nullInst: => Tree)(implicit
+      iTag: WeakTypeTag[I]
+  ): Tree = {
     openImplicitTpeParam match {
       case Some(tpe) => LazyMacros.deriveInstance(this)(tpe, mkInst)
       case None =>
@@ -225,10 +231,10 @@ class LazyMacros(val c: whitebox.Context)
 
   def setAnnotation(msg: String): Unit = {
     val tree0 = c.typecheck(
-        q"""
+      q"""
           new _root_.scala.annotation.implicitNotFound("dummy")
         """,
-        silent = false
+      silent = false
     )
 
     class SubstMessage extends Transformer {
@@ -239,7 +245,7 @@ class LazyMacros(val c: whitebox.Context)
         super.transform {
           tree match {
             case Literal(Constant("dummy")) => Literal(Constant(msg))
-            case t => t
+            case t                          => t
           }
         }
       }
@@ -279,7 +285,7 @@ class LazyMacros(val c: whitebox.Context)
       override def equals(other: Any): Boolean =
         other match {
           case TypeWrapper(tpe0) => tpe =:= tpe0
-          case _ => false
+          case _                 => false
         }
       override def toString = tpe.toString
     }
@@ -299,39 +305,46 @@ class LazyMacros(val c: whitebox.Context)
       def resolveInstance(state: State)(tpe: Type): Option[(State, Tree)] = {
         val former = State.current
         State.current = Some(state)
-        val (state0, tree) = try {
-          val tree = c.inferImplicitValue(tpe, silent = true)
-          if (tree.isEmpty) {
-            tpe.typeSymbol.annotations
-              .find(_.tree.tpe =:= typeOf[
-                      _root_.scala.annotation.implicitNotFound])
-              .foreach { infAnn =>
-                val global = c.universe.asInstanceOf[scala.tools.nsc.Global]
-                val analyzer: global.analyzer.type = global.analyzer
-                val gTpe = tpe.asInstanceOf[global.Type]
-                val errorMsg = gTpe.typeSymbolDirect match {
-                  case analyzer.ImplicitNotFoundMsg(msg) =>
-                    msg.format(
+        val (state0, tree) =
+          try {
+            val tree = c.inferImplicitValue(tpe, silent = true)
+            if (tree.isEmpty) {
+              tpe.typeSymbol.annotations
+                .find(
+                  _.tree.tpe =:= typeOf[
+                    _root_.scala.annotation.implicitNotFound
+                  ]
+                )
+                .foreach { infAnn =>
+                  val global = c.universe.asInstanceOf[scala.tools.nsc.Global]
+                  val analyzer: global.analyzer.type = global.analyzer
+                  val gTpe = tpe.asInstanceOf[global.Type]
+                  val errorMsg = gTpe.typeSymbolDirect match {
+                    case analyzer.ImplicitNotFoundMsg(msg) =>
+                      msg.format(
                         TermName("evidence").asInstanceOf[global.TermName],
-                        gTpe)
-                  case _ =>
-                    s"Implicit value of type $tpe not found"
+                        gTpe
+                      )
+                    case _ =>
+                      s"Implicit value of type $tpe not found"
+                  }
+                  setAnnotation(errorMsg)
                 }
-                setAnnotation(errorMsg)
-              }
+            }
+            (State.current.get, tree)
+          } finally {
+            State.current = former
           }
-          (State.current.get, tree)
-        } finally {
-          State.current = former
-        }
 
         if (tree == EmptyTree) None
         else Some((state0, tree))
       }
 
-      def deriveInstance(instTpe0: Type,
-                         root: Boolean,
-                         mkInst: (Tree, Type) => Tree): Tree = {
+      def deriveInstance(
+          instTpe0: Type,
+          root: Boolean,
+          mkInst: (Tree, Type) => Tree
+      ): Tree = {
         if (root) {
           assert(current.isEmpty)
           val open = c.openImplicits
@@ -372,9 +385,11 @@ class LazyMacros(val c: whitebox.Context)
         val open0 = open match {
           case Nil => Nil
           case h :: t =>
-            h.copy(dependsOn = if (h.instTpe =:= tpe ||
-                                   h.dependsOn.exists(_ =:= tpe)) h.dependsOn
-                  else tpe :: h.dependsOn) :: t
+            h.copy(dependsOn =
+              if (h.instTpe =:= tpe ||
+                  h.dependsOn.exists(_ =:= tpe)) h.dependsOn
+              else tpe :: h.dependsOn
+            ) :: t
         }
         copy(open = open0)
       }
@@ -389,7 +404,10 @@ class LazyMacros(val c: whitebox.Context)
       }
 
       def closeInst(
-          tpe: Type, tree: Tree, actualTpe: Type): (State, Instance) = {
+          tpe: Type,
+          tree: Tree,
+          actualTpe: Type
+      ): (State, Instance) = {
         assert(open.nonEmpty)
         assert(open.head.instTpe =:= tpe)
         val instance = open.head
@@ -402,13 +420,15 @@ class LazyMacros(val c: whitebox.Context)
       def lookup(instTpe: Type): Either[State, (State, Instance)] =
         dict.get(TypeWrapper(instTpe)) match {
           case Some(i) => Right((addDependency(instTpe), i))
-          case None => Left(openInst(instTpe)._1)
+          case None    => Left(openInst(instTpe)._1)
         }
 
       def dependsOn(tpe: Type): List[Instance] = {
         import scala.::
         def helper(
-            tpes: List[List[Type]], acc: List[Instance]): List[Instance] =
+            tpes: List[List[Type]],
+            acc: List[Instance]
+        ): List[Instance] =
           tpes match {
             case Nil => acc
             case Nil :: t =>
@@ -428,22 +448,24 @@ class LazyMacros(val c: whitebox.Context)
     def stripRefinements(tpe: Type): Option[Type] =
       tpe match {
         case RefinedType(parents, decls) => Some(parents.head)
-        case _ => None
+        case _                           => None
       }
 
     def resolve(state: State)(inst: Instance): Option[(State, Instance)] =
-      resolve0(state)(inst.instTpe).filter {
-        case (_, tree, _) => !tree.equalsStructure(inst.ident)
-      }.map {
-        case (state0, extInst, actualTpe) =>
-          state0.closeInst(inst.instTpe, extInst, actualTpe)
-      }
+      resolve0(state)(inst.instTpe)
+        .filter {
+          case (_, tree, _) => !tree.equalsStructure(inst.ident)
+        }
+        .map {
+          case (state0, extInst, actualTpe) =>
+            state0.closeInst(inst.instTpe, extInst, actualTpe)
+        }
 
     def resolve0(state: State)(tpe: Type): Option[(State, Tree, Type)] = {
       val extInstOpt = State
         .resolveInstance(state)(tpe)
         .orElse(
-            stripRefinements(tpe).flatMap(State.resolveInstance(state))
+          stripRefinements(tpe).flatMap(State.resolveInstance(state))
         )
 
       extInstOpt.map {
@@ -471,16 +493,18 @@ class LazyMacros(val c: whitebox.Context)
           derive(tmpState)(innerTpe).right.toOption.flatMap {
             case (state2, inst) =>
               if (inst.inst.isEmpty)
-                resolve0(state2)(innerTpe).map { case (_, tree, _) => tree } else
+                resolve0(state2)(innerTpe).map { case (_, tree, _) => tree }
+              else
                 Some(inst.inst.get)
           }
 
         val existingInstAvailable = existingInstOpt.exists { actualTree =>
-          def ignored = actualTree match {
-            case TypeApply(method, other) =>
-              method.toString().endsWith(ignoring)
-            case _ => false
-          }
+          def ignored =
+            actualTree match {
+              case TypeApply(method, other) =>
+                method.toString().endsWith(ignoring)
+              case _ => false
+            }
 
           ignoring.isEmpty || !ignored
         }
@@ -492,8 +516,9 @@ class LazyMacros(val c: whitebox.Context)
           if (ignoring.isEmpty) appliedType(lowPriorityForTpe, List(innerTpe))
           else
             appliedType(
-                lowPriorityForIgnoringTpe,
-                List(internal.constantType(Constant(ignoring)), innerTpe))
+              lowPriorityForIgnoringTpe,
+              List(internal.constantType(Constant(ignoring)), innerTpe)
+            )
 
         val low = q"null: $lowTpe"
 
@@ -507,7 +532,7 @@ class LazyMacros(val c: whitebox.Context)
           case LowPriorityFor(ignored, tpe) =>
             val res = state0.lookup(instTpe) match {
               case Left(state) => helper(state, instTpe, tpe, ignored)
-              case Right(res) => res
+              case Right(res)  => res
             }
 
             Some(Right(res))
@@ -533,14 +558,21 @@ class LazyMacros(val c: whitebox.Context)
       override def transform(tree: Tree): Tree = {
         super.transform {
           tree match {
-            case UnApply(Apply(Select(qual, nme.unapply | nme.unapplySeq),
-                               List(Ident(nme.SELECTOR_DUMMY))),
-                         args) =>
+            case UnApply(
+                  Apply(
+                    Select(qual, nme.unapply | nme.unapplySeq),
+                    List(Ident(nme.SELECTOR_DUMMY))
+                  ),
+                  args
+                ) =>
               Apply(transform(qual), transformTrees(args))
-            case UnApply(Apply(TypeApply(
-                               Select(qual, nme.unapply | nme.unapplySeq), _),
-                               List(Ident(nme.SELECTOR_DUMMY))),
-                         args) =>
+            case UnApply(
+                  Apply(
+                    TypeApply(Select(qual, nme.unapply | nme.unapplySeq), _),
+                    List(Ident(nme.SELECTOR_DUMMY))
+                  ),
+                  args
+                ) =>
               Apply(transform(qual), transformTrees(args))
             case t => t
           }
@@ -550,9 +582,7 @@ class LazyMacros(val c: whitebox.Context)
 
     def mkInstances(state: State)(primaryTpe: Type): (Tree, Type) = {
       val instances = state.dict.values.toList
-      val (from, to) = instances.map { d =>
-        (d.symbol, NoSymbol)
-      }.unzip
+      val (from, to) = instances.map { d => (d.symbol, NoSymbol) }.unzip
 
       def clean(inst: Tree) = {
         val cleanInst =
@@ -603,9 +633,9 @@ class LazyMacros(val c: whitebox.Context)
 object LazyMacros {
   var dcRef: Option[LazyMacros#DerivationContext] = None
 
-  def deriveInstance(lm: LazyMacros)(
-      tpe: lm.c.Type,
-      mkInst: (lm.c.Tree, lm.c.Type) => lm.c.Tree): lm.c.Tree = {
+  def deriveInstance(
+      lm: LazyMacros
+  )(tpe: lm.c.Type, mkInst: (lm.c.Tree, lm.c.Type) => lm.c.Tree): lm.c.Tree = {
     val (dc, root) = dcRef match {
       case None =>
         lm.resetAnnotation

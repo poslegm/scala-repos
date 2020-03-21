@@ -44,7 +44,8 @@ class BufferTest extends FunSuite {
   test("read Signed Int") {
     val n = 0xfffff6ff
     val br = BufferReader(
-        Array[Byte](0xff.toByte, 0xf6.toByte, 0xff.toByte, 0xff.toByte))
+      Array[Byte](0xff.toByte, 0xf6.toByte, 0xff.toByte, 0xff.toByte)
+    )
     assert(n == br.readInt())
   }
 
@@ -66,11 +67,12 @@ class BufferTest extends FunSuite {
     assert(str == br.readLengthCodedString())
   }
 
-  def writerCtx() = new {
-    val bytes = new Array[Byte](9)
-    val bw = BufferWriter(bytes)
-    val br = BufferReader(bytes)
-  }
+  def writerCtx() =
+    new {
+      val bytes = new Array[Byte](9)
+      val bw = BufferWriter(bytes)
+      val br = BufferReader(bytes)
+    }
 
   test("write byte") {
     val ctx = writerCtx()

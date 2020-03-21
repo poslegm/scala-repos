@@ -27,8 +27,8 @@ import org.apache.spark.sql.execution.metric.SQLMetrics
   * TODO reusing the CompletionIterator?
   */
 private[execution] sealed case class LazyIterator(
-    func: () => TraversableOnce[InternalRow])
-    extends Iterator[InternalRow] {
+    func: () => TraversableOnce[InternalRow]
+) extends Iterator[InternalRow] {
 
   lazy val results = func().toIterator
   override def hasNext: Boolean = results.hasNext
@@ -48,16 +48,18 @@ private[execution] sealed case class LazyIterator(
   * @param output the output attributes of this node, which constructed in analysis phase,
   *               and we can not change it, as the parent node bound with it already.
   */
-case class Generate(generator: Generator,
-                    join: Boolean,
-                    outer: Boolean,
-                    output: Seq[Attribute],
-                    child: SparkPlan)
-    extends UnaryNode {
+case class Generate(
+    generator: Generator,
+    join: Boolean,
+    outer: Boolean,
+    output: Seq[Attribute],
+    child: SparkPlan
+) extends UnaryNode {
 
   private[sql] override lazy val metrics = Map(
-      "numOutputRows" -> SQLMetrics.createLongMetric(sparkContext,
-                                                     "number of output rows"))
+    "numOutputRows" -> SQLMetrics
+      .createLongMetric(sparkContext, "number of output rows")
+  )
 
   override def producedAttributes: AttributeSet = AttributeSet(output)
 
@@ -90,7 +92,8 @@ case class Generate(generator: Generator,
       } else {
         child.execute().mapPartitionsInternal { iter =>
           iter.flatMap(boundGenerator.eval) ++ LazyIterator(
-              boundGenerator.terminate)
+            boundGenerator.terminate
+          )
         }
       }
 

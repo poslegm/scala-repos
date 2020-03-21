@@ -14,7 +14,8 @@ class TaskLabelsTest extends FunSuite with GivenWhenThen with Matchers {
     Given("unlabeled resources")
     When("checking for taskIds")
     val taskIds = f.unlabeledResources.flatMap(
-        TaskLabels.taskIdForResource(f.frameworkId, _))
+      TaskLabels.taskIdForResource(f.frameworkId, _)
+    )
 
     Then("we don't get any taskIds")
     taskIds should be(empty)
@@ -25,8 +26,8 @@ class TaskLabelsTest extends FunSuite with GivenWhenThen with Matchers {
 
     Given("correctly labeled resources")
     When("checking for taskIds")
-    val taskIds = f.labeledResources.flatMap(
-        TaskLabels.taskIdForResource(f.frameworkId, _))
+    val taskIds =
+      f.labeledResources.flatMap(TaskLabels.taskIdForResource(f.frameworkId, _))
 
     Then("we get as many taskIds as resources")
     taskIds should be(Iterable.fill(f.labeledResources.size)(f.taskId))
@@ -38,7 +39,8 @@ class TaskLabelsTest extends FunSuite with GivenWhenThen with Matchers {
     Given("labeled resources for other framework")
     When("checking for taskIds")
     val taskIds = f.labeledResourcesForOtherFramework.flatMap(
-        TaskLabels.taskIdForResource(f.frameworkId, _))
+      TaskLabels.taskIdForResource(f.frameworkId, _)
+    )
 
     Then("we don't get task ids")
     taskIds should be(empty)
@@ -58,11 +60,12 @@ class TaskLabelsTest extends FunSuite with GivenWhenThen with Matchers {
     require(unlabeledResources.forall(!_.hasReservation))
 
     def labelResourcesFor(
-        frameworkId: FrameworkId): Iterable[MesosProtos.Resource] = {
+        frameworkId: FrameworkId
+    ): Iterable[MesosProtos.Resource] = {
       MarathonTestHelper
         .makeBasicOffer(
-            reservation = Some(TaskLabels.labelsForTask(frameworkId, taskId)),
-            role = "test"
+          reservation = Some(TaskLabels.labelsForTask(frameworkId, taskId)),
+          role = "test"
         )
         .getResourcesList
         .asScala

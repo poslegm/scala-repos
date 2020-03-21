@@ -24,7 +24,8 @@ object AllPersistenceIdsSpec {
 }
 
 class AllPersistenceIdsSpec
-    extends AkkaSpec(AllPersistenceIdsSpec.config) with Cleanup
+    extends AkkaSpec(AllPersistenceIdsSpec.config)
+    with Cleanup
     with ImplicitSender {
 
   implicit val mat = ActorMaterializer()(system)
@@ -67,9 +68,7 @@ class AllPersistenceIdsSpec
         probe.expectNext("e")
 
         val more = (1 to 100).map("f" + _)
-        more.foreach { p ⇒
-          system.actorOf(TestActor.props(p)) ! p
-        }
+        more.foreach { p ⇒ system.actorOf(TestActor.props(p)) ! p }
 
         probe.request(100)
         probe.expectNextUnorderedN(more)

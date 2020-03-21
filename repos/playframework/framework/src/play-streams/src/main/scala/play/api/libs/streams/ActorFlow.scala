@@ -32,9 +32,8 @@ object ActorFlow {
   def actorRef[In, Out](
       props: ActorRef => Props,
       bufferSize: Int = 16,
-      overflowStrategy: OverflowStrategy = OverflowStrategy.dropNew)(
-      implicit factory: ActorRefFactory,
-      mat: Materializer): Flow[In, Out, _] = {
+      overflowStrategy: OverflowStrategy = OverflowStrategy.dropNew
+  )(implicit factory: ActorRefFactory, mat: Materializer): Flow[In, Out, _] = {
 
     val (outActor, publisher) = Source
       .actorRef[Out](bufferSize, overflowStrategy)
@@ -42,7 +41,8 @@ object ActorFlow {
       .run()
 
     Flow.fromSinkAndSource(
-        Sink.actorRef(factory.actorOf(Props(new Actor {
+      Sink.actorRef(
+        factory.actorOf(Props(new Actor {
           val flowActor =
             context.watch(context.actorOf(props(outActor), "flowActor"))
 
@@ -55,13 +55,16 @@ object ActorFlow {
             case other => flowActor ! other
           }
 
-          override def supervisorStrategy = OneForOneStrategy() {
-            case _ =>
-              println("Stopping actor due to exception")
-              SupervisorStrategy.Stop
-          }
-        })), Status.Success(())),
-        Source.fromPublisher(publisher)
+          override def supervisorStrategy =
+            OneForOneStrategy() {
+              case _ =>
+                println("Stopping actor due to exception")
+                SupervisorStrategy.Stop
+            }
+        })),
+        Status.Success(())
+      ),
+      Source.fromPublisher(publisher)
     )
   }
 }

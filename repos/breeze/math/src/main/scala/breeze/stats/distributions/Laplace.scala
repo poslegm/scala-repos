@@ -7,9 +7,11 @@ import breeze.numerics.{exp, log}
   *
   * @author dlwh
   **/
-case class Laplace(location: Double, scale: Double)(
-    implicit rand: RandBasis = Rand)
-    extends ContinuousDistr[Double] with Moments[Double, Double] with HasCdf {
+case class Laplace(location: Double, scale: Double)(implicit
+    rand: RandBasis = Rand
+) extends ContinuousDistr[Double]
+    with Moments[Double, Double]
+    with HasCdf {
   def mean: Double = location
 
   def mode: Double = location
@@ -41,12 +43,13 @@ case class Laplace(location: Double, scale: Double)(
     cdf(y) - cdf(x)
   }
 
-  def cdf(x: Double) = x match {
-    case Double.NegativeInfinity => 0.0
-    case Double.PositiveInfinity => 1.0
-    case x if x < location =>
-      0.5 * exp(unnormalizedLogPdf(x))
-    case x =>
-      1 - 0.5 * exp(unnormalizedLogPdf(x))
-  }
+  def cdf(x: Double) =
+    x match {
+      case Double.NegativeInfinity => 0.0
+      case Double.PositiveInfinity => 1.0
+      case x if x < location =>
+        0.5 * exp(unnormalizedLogPdf(x))
+      case x =>
+        1 - 0.5 * exp(unnormalizedLogPdf(x))
+    }
 }

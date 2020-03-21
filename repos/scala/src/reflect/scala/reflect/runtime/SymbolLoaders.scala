@@ -15,7 +15,8 @@ private[reflect] trait SymbolLoaders { self: SymbolTable =>
     *  is found, a package is created instead.
     */
   class TopClassCompleter(clazz: Symbol, module: Symbol)
-      extends SymLoader with FlagAssigningCompleter {
+      extends SymLoader
+      with FlagAssigningCompleter {
     markFlagsCompleted(clazz, module)(mask = ~TopLevelPickledFlags)
     override def complete(sym: Symbol) = {
       debugInfo("completing " + sym + "/" + clazz.fullName)
@@ -37,10 +38,11 @@ private[reflect] trait SymbolLoaders { self: SymbolTable =>
     *  @param name    The simple name of the newly created class
     *  @param completer  The completer to be used to set the info of the class and the module
     */
-  protected def initAndEnterClassAndModule(owner: Symbol,
-                                           name: TypeName,
-                                           completer: (Symbol,
-                                           Symbol) => LazyType) = {
+  protected def initAndEnterClassAndModule(
+      owner: Symbol,
+      name: TypeName,
+      completer: (Symbol, Symbol) => LazyType
+  ) = {
     assert(!(name.toString endsWith "[]"), name)
     val clazz = owner.newClass(name)
     val module = owner.newModule(name.toTermName)
@@ -59,7 +61,10 @@ private[reflect] trait SymbolLoaders { self: SymbolTable =>
   }
 
   protected def initClassAndModule(
-      clazz: Symbol, module: Symbol, completer: LazyType) =
+      clazz: Symbol,
+      module: Symbol,
+      completer: LazyType
+  ) =
     setAllInfos(clazz, module, completer)
 
   /** The type completer for packages.
@@ -109,8 +114,10 @@ private[reflect] trait SymbolLoaders { self: SymbolTable =>
         val existing = super.lookupEntry(sym.name)
         def eitherIsMethod(sym1: Symbol, sym2: Symbol) =
           sym1.isMethod || sym2.isMethod
-        assert(existing == null || eitherIsMethod(existing.sym, sym),
-               s"pkgClass = $pkgClass, sym = $sym, existing = $existing")
+        assert(
+          existing == null || eitherIsMethod(existing.sym, sym),
+          s"pkgClass = $pkgClass, sym = $sym, existing = $existing"
+        )
         super.enter(sym)
       }
     }
@@ -125,61 +132,64 @@ private[reflect] trait SymbolLoaders { self: SymbolTable =>
     // because lookupEntry might cause changes to the global symbol table
     override def syncLockSynchronized[T](body: => T): T = gilSynchronized(body)
     private val negatives = new mutable.HashSet[Name]
-    override def lookupEntry(name: Name): ScopeEntry = syncLockSynchronized {
-      val e = super.lookupEntry(name)
-      if (e != null) e
-      else if (negatives contains name) null
-      else {
-        val path =
-          if (pkgClass.isEmptyPackageClass) name.toString
-          else pkgClass.fullName + "." + name
-        val currentMirror = mirrorThatLoaded(pkgClass)
-        currentMirror.tryJavaClass(path) match {
-          case Some(cls) =>
-            val loadingMirror = currentMirror.mirrorDefining(cls)
-            val (_, module) =
-              if (loadingMirror eq currentMirror) {
-                initAndEnterClassAndModule(
-                    pkgClass, name.toTypeName, new TopClassCompleter(_, _))
-              } else {
-                val origOwner =
-                  loadingMirror.packageNameToScala(pkgClass.fullName)
-                val clazz = origOwner.info decl name.toTypeName
-                val module = origOwner.info decl name.toTermName
-                assert(clazz != NoSymbol)
-                assert(module != NoSymbol)
-                // currentMirror.mirrorDefining(cls) might side effect by entering symbols into pkgClass.info.decls
-                // therefore, even though in the beginning of this method, super.lookupEntry(name) returned null
-                // entering clazz/module now will result in a double-enter assertion in PackageScope.enter
-                // here's how it might happen
-                // 1) we are the rootMirror
-                // 2) cls.getClassLoader is different from our classloader
-                // 3) mirrorDefining(cls) looks up a mirror corresponding to that classloader and cannot find it
-                // 4) mirrorDefining creates a new mirror
-                // 5) that triggers Mirror.init() of the new mirror
-                // 6) that triggers definitions.syntheticCoreClasses
-                // 7) that might materialize symbols and enter them into our scope (because syntheticCoreClasses live in rootMirror)
-                // 8) now we come back here and try to enter one of the now entered symbols => BAM!
-                // therefore we use enterIfNew rather than just enter
-                enterIfNew(clazz)
-                enterIfNew(module)
-                (clazz, module)
-              }
-            debugInfo(s"created $module/${module.moduleClass} in $pkgClass")
-            lookupEntry(name)
-          case none =>
-            debugInfo("*** not found : " + path)
-            negatives += name
-            null
+    override def lookupEntry(name: Name): ScopeEntry =
+      syncLockSynchronized {
+        val e = super.lookupEntry(name)
+        if (e != null) e
+        else if (negatives contains name) null
+        else {
+          val path =
+            if (pkgClass.isEmptyPackageClass) name.toString
+            else pkgClass.fullName + "." + name
+          val currentMirror = mirrorThatLoaded(pkgClass)
+          currentMirror.tryJavaClass(path) match {
+            case Some(cls) =>
+              val loadingMirror = currentMirror.mirrorDefining(cls)
+              val (_, module) =
+                if (loadingMirror eq currentMirror) {
+                  initAndEnterClassAndModule(
+                    pkgClass,
+                    name.toTypeName,
+                    new TopClassCompleter(_, _)
+                  )
+                } else {
+                  val origOwner =
+                    loadingMirror.packageNameToScala(pkgClass.fullName)
+                  val clazz = origOwner.info decl name.toTypeName
+                  val module = origOwner.info decl name.toTermName
+                  assert(clazz != NoSymbol)
+                  assert(module != NoSymbol)
+                  // currentMirror.mirrorDefining(cls) might side effect by entering symbols into pkgClass.info.decls
+                  // therefore, even though in the beginning of this method, super.lookupEntry(name) returned null
+                  // entering clazz/module now will result in a double-enter assertion in PackageScope.enter
+                  // here's how it might happen
+                  // 1) we are the rootMirror
+                  // 2) cls.getClassLoader is different from our classloader
+                  // 3) mirrorDefining(cls) looks up a mirror corresponding to that classloader and cannot find it
+                  // 4) mirrorDefining creates a new mirror
+                  // 5) that triggers Mirror.init() of the new mirror
+                  // 6) that triggers definitions.syntheticCoreClasses
+                  // 7) that might materialize symbols and enter them into our scope (because syntheticCoreClasses live in rootMirror)
+                  // 8) now we come back here and try to enter one of the now entered symbols => BAM!
+                  // therefore we use enterIfNew rather than just enter
+                  enterIfNew(clazz)
+                  enterIfNew(module)
+                  (clazz, module)
+                }
+              debugInfo(s"created $module/${module.moduleClass} in $pkgClass")
+              lookupEntry(name)
+            case none =>
+              debugInfo("*** not found : " + path)
+              negatives += name
+              null
+          }
         }
       }
-    }
   }
 
   /** Assert that packages have package scopes */
   override def validateClassInfo(tp: ClassInfoType) {
-    assert(
-        !tp.typeSymbol.isPackageClass || tp.decls.isInstanceOf[PackageScope])
+    assert(!tp.typeSymbol.isPackageClass || tp.decls.isInstanceOf[PackageScope])
   }
 
   override def newPackageScope(pkgClass: Symbol) = new PackageScope(pkgClass)

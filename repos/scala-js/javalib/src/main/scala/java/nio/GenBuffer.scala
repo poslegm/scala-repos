@@ -32,7 +32,10 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
 
   @inline
   def generic_get(
-      dst: Array[ElementType], offset: Int, length: Int): BufferType = {
+      dst: Array[ElementType],
+      offset: Int,
+      length: Int
+  ): BufferType = {
     validateArrayIndexRange(dst, offset, length)
     load(getPosAndAdvanceRead(length), dst, offset, length)
     self
@@ -64,7 +67,10 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
 
   @inline
   def generic_put(
-      src: Array[ElementType], offset: Int, length: Int): BufferType = {
+      src: Array[ElementType],
+      offset: Int,
+      length: Int
+  ): BufferType = {
     ensureNotReadOnly()
     validateArrayIndexRange(src, offset, length)
     store(getPosAndAdvanceWrite(length), src, offset, length)
@@ -106,8 +112,9 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
   }
 
   @inline
-  def generic_compareTo(that: BufferType)(
-      compare: (ElementType, ElementType) => Int): Int = {
+  def generic_compareTo(
+      that: BufferType
+  )(compare: (ElementType, ElementType) => Int): Int = {
     // scalastyle:off return
     if (self eq that) {
       0
@@ -131,10 +138,12 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
   }
 
   @inline
-  def generic_load(startIndex: Int,
-                   dst: Array[ElementType],
-                   offset: Int,
-                   length: Int): Unit = {
+  def generic_load(
+      startIndex: Int,
+      dst: Array[ElementType],
+      offset: Int,
+      length: Int
+  ): Unit = {
     var selfPos = startIndex
     val endPos = selfPos + length
     var arrayIndex = offset
@@ -146,10 +155,12 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
   }
 
   @inline
-  def generic_store(startIndex: Int,
-                    src: Array[ElementType],
-                    offset: Int,
-                    length: Int): Unit = {
+  def generic_store(
+      startIndex: Int,
+      src: Array[ElementType],
+      offset: Int,
+      length: Int
+  ): Unit = {
     var selfPos = startIndex
     val endPos = selfPos + length
     var arrayIndex = offset

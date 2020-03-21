@@ -27,8 +27,10 @@ sealed trait AssociationEvent extends RemotingLifecycleEvent {
 
 @SerialVersionUID(1L)
 final case class AssociatedEvent(
-    localAddress: Address, remoteAddress: Address, inbound: Boolean)
-    extends AssociationEvent {
+    localAddress: Address,
+    remoteAddress: Address,
+    inbound: Boolean
+) extends AssociationEvent {
 
   protected override def eventName: String = "Associated"
   override def logLevel: Logging.LogLevel = Logging.DebugLevel
@@ -36,19 +38,22 @@ final case class AssociatedEvent(
 
 @SerialVersionUID(1L)
 final case class DisassociatedEvent(
-    localAddress: Address, remoteAddress: Address, inbound: Boolean)
-    extends AssociationEvent {
+    localAddress: Address,
+    remoteAddress: Address,
+    inbound: Boolean
+) extends AssociationEvent {
   protected override def eventName: String = "Disassociated"
   override def logLevel: Logging.LogLevel = Logging.DebugLevel
 }
 
 @SerialVersionUID(1L)
-final case class AssociationErrorEvent(cause: Throwable,
-                                       localAddress: Address,
-                                       remoteAddress: Address,
-                                       inbound: Boolean,
-                                       logLevel: Logging.LogLevel)
-    extends AssociationEvent {
+final case class AssociationErrorEvent(
+    cause: Throwable,
+    localAddress: Address,
+    remoteAddress: Address,
+    inbound: Boolean,
+    logLevel: Logging.LogLevel
+) extends AssociationEvent {
   protected override def eventName: String = "AssociationError"
   override def toString: String =
     s"${super.toString}: Error [${cause.getMessage}] [${Logging.stackTraceFor(cause)}]"
@@ -65,7 +70,10 @@ final case class RemotingListenEvent(listenAddresses: Set[Address])
   override def logLevel: Logging.LogLevel = Logging.InfoLevel
   override def toString: String =
     "Remoting now listens on addresses: " + listenAddresses.mkString(
-        "[", ", ", "]")
+      "[",
+      ", ",
+      "]"
+    )
 }
 
 @SerialVersionUID(1L)
@@ -89,14 +97,15 @@ final case class QuarantinedEvent(address: Address, uid: Int)
   override def logLevel: Logging.LogLevel = Logging.WarningLevel
   override val toString: String =
     s"Association to [$address] having UID [$uid] is irrecoverably failed. UID is now quarantined and all " +
-    "messages to this UID will be delivered to dead letters. Remote actorsystem must be restarted to recover " +
-    "from this situation."
+      "messages to this UID will be delivered to dead letters. Remote actorsystem must be restarted to recover " +
+      "from this situation."
 }
 
 @SerialVersionUID(1L)
 final case class ThisActorSystemQuarantinedEvent(
-    localAddress: Address, remoteAddress: Address)
-    extends RemotingLifecycleEvent {
+    localAddress: Address,
+    remoteAddress: Address
+) extends RemotingLifecycleEvent {
   override def logLevel: LogLevel = Logging.WarningLevel
   override val toString: String =
     s"The remote system ${remoteAddress} has quarantined this system ${localAddress}."
@@ -106,7 +115,10 @@ final case class ThisActorSystemQuarantinedEvent(
   * INTERNAL API
   */
 private[remote] class EventPublisher(
-    system: ActorSystem, log: LoggingAdapter, logLevel: Logging.LogLevel) {
+    system: ActorSystem,
+    log: LoggingAdapter,
+    logLevel: Logging.LogLevel
+) {
   def notifyListeners(message: RemotingLifecycleEvent): Unit = {
     system.eventStream.publish(message)
     if (message.logLevel <= logLevel) log.log(message.logLevel, "{}", message)

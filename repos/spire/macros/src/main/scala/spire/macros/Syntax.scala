@@ -1,7 +1,13 @@
 package spire
 package macros
 
-import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
+import spire.macros.compat.{
+  termName,
+  freshTermName,
+  resetLocalAttrs,
+  Context,
+  setOrig
+}
 
 import scala.language.higherKinds
 
@@ -11,42 +17,45 @@ object Ops extends machinist.Ops {
 
   val operatorNames: Map[String, String] =
     machinist.DefaultOps.operatorNames ++ Map(
-        // partial operations |+|? |+|?? |-|? |-|??
-        ("$bar$plus$bar$qmark$qmark", "opIsDefined"),
-        ("$bar$minus$bar$qmark$qmark", "opInverseIsDefined"),
-        ("$bar$plus$bar$qmark", "partialOp"),
-        ("$bar$minus$bar$qmark", "partialOpInverse"),
-        // partial actions ?|+|> ??|+|> <|+|? <|+|??
-        ("$qmark$bar$plus$bar$greater", "partialActl"),
-        ("$qmark$qmark$bar$plus$bar$greater", "actlIsDefined"),
-        ("$less$bar$plus$bar$qmark", "partialActr"),
-        ("$less$bar$plus$bar$qmark$qmark", "actrIsDefined"),
-        // square root
-        (uesc('√'), "sqrt"),
-        // equality, comparisons
-        (uesc('≡'), "eqv"),
-        (uesc('≠'), "neqv"),
-        (uesc('≤'), "lteqv"),
-        (uesc('≥'), "gteqv"),
-        // lattices/heyting
-        (uesc('∧'), "meet"),
-        (uesc('∨'), "join"),
-        (uesc('⊃'), "imp"),
-        (uesc('¬'), "complement"),
-        // bool
-        (uesc('⊻'), "xor"),
-        (uesc('⊼'), "nand"),
-        (uesc('⊽'), "nor"))
+      // partial operations |+|? |+|?? |-|? |-|??
+      ("$bar$plus$bar$qmark$qmark", "opIsDefined"),
+      ("$bar$minus$bar$qmark$qmark", "opInverseIsDefined"),
+      ("$bar$plus$bar$qmark", "partialOp"),
+      ("$bar$minus$bar$qmark", "partialOpInverse"),
+      // partial actions ?|+|> ??|+|> <|+|? <|+|??
+      ("$qmark$bar$plus$bar$greater", "partialActl"),
+      ("$qmark$qmark$bar$plus$bar$greater", "actlIsDefined"),
+      ("$less$bar$plus$bar$qmark", "partialActr"),
+      ("$less$bar$plus$bar$qmark$qmark", "actrIsDefined"),
+      // square root
+      (uesc('√'), "sqrt"),
+      // equality, comparisons
+      (uesc('≡'), "eqv"),
+      (uesc('≠'), "neqv"),
+      (uesc('≤'), "lteqv"),
+      (uesc('≥'), "gteqv"),
+      // lattices/heyting
+      (uesc('∧'), "meet"),
+      (uesc('∨'), "join"),
+      (uesc('⊃'), "imp"),
+      (uesc('¬'), "complement"),
+      // bool
+      (uesc('⊻'), "xor"),
+      (uesc('⊼'), "nand"),
+      (uesc('⊽'), "nor")
+    )
 
-  def eqv[A, B](c: Context)(rhs: c.Expr[B])(
-      ev: c.Expr[A =:= B]): c.Expr[Boolean] = {
+  def eqv[A, B](
+      c: Context
+  )(rhs: c.Expr[B])(ev: c.Expr[A =:= B]): c.Expr[Boolean] = {
     import c.universe._
     val (e, lhs) = unpack(c)
     c.Expr[Boolean](q"$e.eqv($lhs, $rhs)")
   }
 
-  def neqv[A, B](c: Context)(rhs: c.Expr[B])(
-      ev: c.Expr[A =:= B]): c.Expr[Boolean] = {
+  def neqv[A, B](
+      c: Context
+  )(rhs: c.Expr[B])(ev: c.Expr[A =:= B]): c.Expr[Boolean] = {
     import c.universe._
     val (e, lhs) = unpack(c)
     c.Expr[Boolean](q"$e.neqv($lhs, $rhs)")
@@ -65,8 +74,8 @@ case class SyntaxUtil[C <: Context with Singleton](val c: C) {
     es.forall {
       _.tree match {
         case t @ Ident(_: TermName) if t.symbol.asTerm.isStable => true
-        case Function(_, _) => true
-        case _ => false
+        case Function(_, _)                                     => true
+        case _                                                  => false
       }
     }
 }
@@ -88,37 +97,39 @@ class InlineUtil[C <: Context with Singleton](val c: C) {
     val ApplyName = termName(c)("apply")
 
     class InlineSymbol(symbol: Symbol, value: Tree) extends Transformer {
-      override def transform(tree: Tree): Tree = tree match {
-        case Ident(_) if tree.symbol == symbol =>
-          value
-        case tt: TypeTree if tt.original != null =>
-          //super.transform(TypeTree().setOriginal(transform(tt.original)))
-          super.transform(setOrig(c)(TypeTree(), transform(tt.original)))
-        case _ =>
-          super.transform(tree)
-      }
+      override def transform(tree: Tree): Tree =
+        tree match {
+          case Ident(_) if tree.symbol == symbol =>
+            value
+          case tt: TypeTree if tt.original != null =>
+            //super.transform(TypeTree().setOriginal(transform(tt.original)))
+            super.transform(setOrig(c)(TypeTree(), transform(tt.original)))
+          case _ =>
+            super.transform(tree)
+        }
     }
 
     object InlineApply extends Transformer {
       def inlineSymbol(symbol: Symbol, body: Tree, arg: Tree): Tree =
         new InlineSymbol(symbol, arg).transform(body)
 
-      override def transform(tree: Tree): Tree = tree match {
-        case Apply(Select(Function(params, body), ApplyName), args) =>
-          params.zip(args).foldLeft(body) {
-            case (b, (param, arg)) =>
-              inlineSymbol(param.symbol, b, arg)
-          }
+      override def transform(tree: Tree): Tree =
+        tree match {
+          case Apply(Select(Function(params, body), ApplyName), args) =>
+            params.zip(args).foldLeft(body) {
+              case (b, (param, arg)) =>
+                inlineSymbol(param.symbol, b, arg)
+            }
 
-        case Apply(Function(params, body), args) =>
-          params.zip(args).foldLeft(body) {
-            case (b, (param, arg)) =>
-              inlineSymbol(param.symbol, b, arg)
-          }
+          case Apply(Function(params, body), args) =>
+            params.zip(args).foldLeft(body) {
+              case (b, (param, arg)) =>
+                inlineSymbol(param.symbol, b, arg)
+            }
 
-        case _ =>
-          super.transform(tree)
-      }
+          case _ =>
+            super.transform(tree)
+        }
     }
 
     InlineApply.transform(tree)
@@ -127,9 +138,11 @@ class InlineUtil[C <: Context with Singleton](val c: C) {
 
 object Syntax {
 
-  def cforMacro[A](c: Context)(
-      init: c.Expr[A])(test: c.Expr[A => Boolean], next: c.Expr[A => A])(
-      body: c.Expr[A => Unit]): c.Expr[Unit] = {
+  def cforMacro[A](
+      c: Context
+  )(init: c.Expr[A])(test: c.Expr[A => Boolean], next: c.Expr[A => A])(
+      body: c.Expr[A => Unit]
+  ): c.Expr[Unit] = {
 
     import c.universe._
     val util = SyntaxUtil[c.type](c)
@@ -178,8 +191,9 @@ v     */
     new InlineUtil[c.type](c).inlineAndReset[Unit](tree)
   }
 
-  def cforRangeMacro(c: Context)(r: c.Expr[Range])(
-      body: c.Expr[Int => Unit]): c.Expr[Unit] = {
+  def cforRangeMacro(
+      c: Context
+  )(r: c.Expr[Range])(body: c.Expr[Int => Unit]): c.Expr[Unit] = {
 
     import c.universe._
     val util = SyntaxUtil[c.type](c)
@@ -187,14 +201,15 @@ v     */
     val List(range, index, end, limit, step) =
       util.names("range", "index", "end", "limit", "step")
 
-    def isLiteral(t: Tree): Option[Int] = t match {
-      case Literal(Constant(a)) =>
-        a match {
-          case n: Int => Some(n)
-          case _ => None
-        }
-      case _ => None
-    }
+    def isLiteral(t: Tree): Option[Int] =
+      t match {
+        case Literal(Constant(a)) =>
+          a match {
+            case n: Int => Some(n)
+            case _      => None
+          }
+        case _ => None
+      }
 
     def strideUpTo(fromExpr: Tree, toExpr: Tree, stride: Int): Tree =
       q"""
@@ -273,7 +288,8 @@ v     */
   }
 
   def cforRange2Macro(c: Context)(r1: c.Expr[Range], r2: c.Expr[Range])(
-      body: c.Expr[(Int, Int) => Unit]): c.Expr[Unit] = {
+      body: c.Expr[(Int, Int) => Unit]
+  ): c.Expr[Unit] = {
 
     import c.universe._
     c.Expr[Unit](q"cforRange($r1)(i => cforRange($r2)(j => $body(i, j)))")

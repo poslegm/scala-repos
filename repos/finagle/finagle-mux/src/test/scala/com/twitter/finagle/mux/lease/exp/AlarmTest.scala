@@ -15,9 +15,7 @@ class AlarmTest extends FunSuite with LocalConductors {
 
     Time.withCurrentTimeFrozen { ctl =>
       localThread(conductor) {
-        Alarm.arm({ () =>
-          new DurationAlarm(5.seconds)
-        })
+        Alarm.arm({ () => new DurationAlarm(5.seconds) })
       }
 
       localThread(conductor) {
@@ -80,11 +78,10 @@ class AlarmTest extends FunSuite with LocalConductors {
 
       Time.withCurrentTimeFrozen { ctl =>
         localThread(conductor) {
-          Alarm.armAndExecute({ () =>
-            new DurationAlarm(5.seconds)
-          }, { () =>
-            ctr += 1
-          })
+          Alarm.armAndExecute(
+            { () => new DurationAlarm(5.seconds) },
+            { () => ctr += 1 }
+          )
         }
 
         localThread(conductor) {
@@ -105,7 +102,8 @@ class AlarmTest extends FunSuite with LocalConductors {
 
   trait GenerationAlarmHelper {
     val fakePool = new FakeMemoryPool(
-        new FakeMemoryUsage(StorageUnit.zero, 10.megabytes))
+      new FakeMemoryUsage(StorageUnit.zero, 10.megabytes)
+    )
     val fakeBean = new FakeGarbageCollectorMXBean(0, 0)
     val nfo = new JvmInfo(fakePool, fakeBean)
     val ctr = FakeByteCounter(1, Time.now, nfo)
@@ -180,9 +178,7 @@ class AlarmTest extends FunSuite with LocalConductors {
       fakePool.setSnapshot(usage)
 
       localThread(conductor) {
-        Alarm.arm({ () =>
-          new BytesAlarm(ctr, () => 5.megabytes)
-        })
+        Alarm.arm({ () => new BytesAlarm(ctr, () => 5.megabytes) })
       }
 
       localThread(conductor) {

@@ -14,7 +14,9 @@ object HoconMoveStatementDownActionTest
 @RunWith(classOf[AllTests])
 class HoconMoveStatementDownActionTest
     extends HoconEditorActionTest(
-        IdeActions.ACTION_MOVE_STATEMENT_DOWN_ACTION, "moveStatement/both")
+      IdeActions.ACTION_MOVE_STATEMENT_DOWN_ACTION,
+      "moveStatement/both"
+    )
 
 object HoconMoveStatementDownOnlyActionTest
     extends TestSuiteCompanion[HoconMoveStatementDownOnlyActionTest]
@@ -22,7 +24,9 @@ object HoconMoveStatementDownOnlyActionTest
 @RunWith(classOf[AllTests])
 class HoconMoveStatementDownOnlyActionTest
     extends HoconEditorActionTest(
-        IdeActions.ACTION_MOVE_STATEMENT_DOWN_ACTION, "moveStatement/down")
+      IdeActions.ACTION_MOVE_STATEMENT_DOWN_ACTION,
+      "moveStatement/down"
+    )
 
 object HoconMoveStatementUpActionTest
     extends TestSuiteCompanion[HoconMoveStatementUpActionTest]
@@ -30,7 +34,9 @@ object HoconMoveStatementUpActionTest
 @RunWith(classOf[AllTests])
 class HoconMoveStatementUpActionTest
     extends HoconEditorActionTest(
-        IdeActions.ACTION_MOVE_STATEMENT_UP_ACTION, "moveStatement/both") {
+      IdeActions.ACTION_MOVE_STATEMENT_UP_ACTION,
+      "moveStatement/both"
+    ) {
 
   override protected def preprocessData(parts: Seq[String]) = parts.reverse
 }

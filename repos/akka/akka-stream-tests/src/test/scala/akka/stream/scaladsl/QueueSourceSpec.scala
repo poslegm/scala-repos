@@ -152,8 +152,10 @@ class QueueSourceSpec extends AkkaSpec {
       val s = TestSubscriber.manualProbe[Int]()
       val probe = TestProbe()
       val queue =
-        TestSourceStage(new QueueSource[Int](1, OverflowStrategy.dropHead),
-                        probe).to(Sink.fromSubscriber(s)).run()
+        TestSourceStage(
+          new QueueSource[Int](1, OverflowStrategy.dropHead),
+          probe
+        ).to(Sink.fromSubscriber(s)).run()
       val sub = s.expectSubscription
 
       sub.request(1)
@@ -188,7 +190,9 @@ class QueueSourceSpec extends AkkaSpec {
       val queue =
         Source.queue(1, OverflowStrategy.fail).to(Sink.fromSubscriber(s)).run()
       queue.watchCompletion().pipeTo(testActor)
-      queue.offer(1) //need to wait when first offer is done as initialization can be done in this moment
+      queue.offer(
+        1
+      ) //need to wait when first offer is done as initialization can be done in this moment
       queue.offer(2)
       expectMsgClass(classOf[Status.Failure])
     }

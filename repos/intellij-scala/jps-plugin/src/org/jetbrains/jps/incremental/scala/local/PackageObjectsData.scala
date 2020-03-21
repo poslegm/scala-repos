@@ -19,36 +19,45 @@ class PackageObjectsData extends Serializable {
   private val packageObjectToBaseSources =
     mutable.HashMap[File, HashSet[File]]()
 
-  def add(baseSource: File, packageObject: File): Unit = synchronized {
-    baseSourceToPackageObjects.update(
+  def add(baseSource: File, packageObject: File): Unit =
+    synchronized {
+      baseSourceToPackageObjects.update(
         baseSource,
         baseSourceToPackageObjects.getOrElse(baseSource, HashSet.empty) +
-        packageObject)
-    packageObjectToBaseSources.update(
+          packageObject
+      )
+      packageObjectToBaseSources.update(
         packageObject,
         packageObjectToBaseSources.getOrElse(packageObject, HashSet.empty) +
-        baseSource)
-  }
+          baseSource
+      )
+    }
 
-  def invalidatedPackageObjects(sources: Seq[File]): Set[File] = synchronized {
-    sources
-      .to[HashSet]
-      .flatMap(f => baseSourceToPackageObjects.getOrElse(f, HashSet.empty)) -- sources
-  }
+  def invalidatedPackageObjects(sources: Seq[File]): Set[File] =
+    synchronized {
+      sources
+        .to[HashSet]
+        .flatMap(f =>
+          baseSourceToPackageObjects.getOrElse(f, HashSet.empty)
+        ) -- sources
+    }
 
-  def clear(): Unit = synchronized {
-    baseSourceToPackageObjects.clear()
-    packageObjectToBaseSources.clear()
-  }
+  def clear(): Unit =
+    synchronized {
+      baseSourceToPackageObjects.clear()
+      packageObjectToBaseSources.clear()
+    }
 
   def save(context: CompileContext): Unit = {
     val file = PackageObjectsData.storageFile(context)
     PackageObjectsData.synchronized {
-      using(new ObjectOutputStream(
-              new BufferedOutputStream(new FileOutputStream(file)))) {
-        stream =>
-          stream.writeObject(this)
-          stream.flush()
+      using(
+        new ObjectOutputStream(
+          new BufferedOutputStream(new FileOutputStream(file))
+        )
+      ) { stream =>
+        stream.writeObject(this)
+        stream.flush()
       }
     }
   }
@@ -71,21 +80,23 @@ object PackageObjectsData {
   def getFor(context: CompileContext): PackageObjectsData = {
     def warning(message: String) = {
       context.processMessage(
-          new CompilerMessage("scala", BuildMessage.Kind.WARNING, message))
+        new CompilerMessage("scala", BuildMessage.Kind.WARNING, message)
+      )
     }
 
     def tryToReadData(file: File) = {
       synchronized {
         try {
-          using(new ObjectInputStream(
-                  new BufferedInputStream(new FileInputStream(file)))) {
-            stream =>
-              stream.readObject().asInstanceOf[PackageObjectsData]
-          }
+          using(
+            new ObjectInputStream(
+              new BufferedInputStream(new FileInputStream(file))
+            )
+          ) { stream => stream.readObject().asInstanceOf[PackageObjectsData] }
         } catch {
           case e: Exception =>
             warning(
-                s"Could not read data about package objects dependencies: \n${e.getMessage}")
+              s"Could not read data about package objects dependencies: \n${e.getMessage}"
+            )
             file.delete()
             new PackageObjectsData()
         }

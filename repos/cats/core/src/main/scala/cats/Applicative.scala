@@ -43,15 +43,15 @@ trait Applicative[F[_]] extends Apply[F] { self =>
     *
     * Applicative[Option].compose[List].pure(10) = Some(List(10))
     */
-  def compose[G[_]](
-      implicit GG: Applicative[G]): Applicative[λ[α => F[G[α]]]] =
+  def compose[G[_]](implicit GG: Applicative[G]): Applicative[λ[α => F[G[α]]]] =
     new CompositeApplicative[F, G] {
       implicit def F: Applicative[F] = self
       implicit def G: Applicative[G] = GG
     }
 
-  def traverse[A, G[_], B](value: G[A])(f: A => F[B])(
-      implicit G: Traverse[G]): F[G[B]] =
+  def traverse[A, G[_], B](
+      value: G[A]
+  )(f: A => F[B])(implicit G: Traverse[G]): F[G[B]] =
     G.traverse(value)(f)(this)
 
   def sequence[G[_], A](as: G[F[A]])(implicit G: Traverse[G]): F[G[A]] =
@@ -59,7 +59,8 @@ trait Applicative[F[_]] extends Apply[F] { self =>
 }
 
 trait CompositeApplicative[F[_], G[_]]
-    extends Applicative[λ[α => F[G[α]]]] with CompositeApply[F, G] {
+    extends Applicative[λ[α => F[G[α]]]]
+    with CompositeApply[F, G] {
 
   implicit def F: Applicative[F]
   implicit def G: Applicative[G]

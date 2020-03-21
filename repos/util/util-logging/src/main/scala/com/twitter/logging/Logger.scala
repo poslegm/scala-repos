@@ -40,8 +40,8 @@ object Level {
   case object TRACE extends Level("TRACE", 400)
   case object ALL extends Level("ALL", Int.MinValue)
 
-  private[logging] val AllLevels: Seq[Level] = Seq(
-      OFF, FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG, TRACE, ALL)
+  private[logging] val AllLevels: Seq[Level] =
+    Seq(OFF, FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG, TRACE, ALL)
 
   /**
     * Associate [[java.util.logging.Level]] and `Level` by their integer
@@ -88,11 +88,12 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
 
   override def toString = {
     "<%s name='%s' level=%s handlers=%s use_parent=%s>".format(
-        getClass.getName,
-        name,
-        getLevel(),
-        getHandlers().toList.mkString("[", ", ", "]"),
-        if (getUseParentHandlers()) "true" else "false")
+      getClass.getName,
+      name,
+      getLevel(),
+      getHandlers().toList.mkString("[", ", ", "]"),
+      if (getUseParentHandlers()) "true" else "false"
+    )
   }
 
   /**
@@ -108,8 +109,7 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
     * formatting is required.
     */
   @varargs
-  final def log(
-      level: Level, thrown: Throwable, message: String, items: Any*) {
+  final def log(level: Level, thrown: Throwable, message: String, items: Any*) {
     val myLevel = getLevel
     if ((myLevel eq null) || (level.intValue >= myLevel.intValue)) {
 
@@ -129,7 +129,11 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
     log(level, message, items: _*)
 
   final def apply(
-      level: Level, thrown: Throwable, message: String, items: Any*) =
+      level: Level,
+      thrown: Throwable,
+      message: String,
+      items: Any*
+  ) =
     log(level, thrown, message, items)
 
   // convenience methods:
@@ -237,18 +241,17 @@ class Logger protected (val name: String, private val wrapped: javalog.Logger) {
 
 object NullLogger
     extends Logger(
-        "null", {
-          val jLog = javalog.Logger.getLogger("null")
-          jLog.setLevel(Level.OFF)
-          jLog
-        }
+      "null", {
+        val jLog = javalog.Logger.getLogger("null")
+        jLog.setLevel(Level.OFF)
+        jLog
+      }
     )
 
 object Logger extends Iterable[Logger] {
 
   private[this] val levelNamesMap: Map[String, Level] = Level.AllLevels.map {
-    level =>
-      level.name -> level
+    level => level.name -> level
   }.toMap
 
   private[this] val levelsMap: Map[Int, Level] = Level.AllLevels.map { level =>
@@ -337,7 +340,7 @@ object Logger extends Iterable[Logger] {
     * handlers upon completion.
     */
   def withLoggers(loggerFactories: List[() => Logger])(f: => Unit): Unit =
-    withLazyLoggers(loggerFactories.map(_ ()))(f)
+    withLazyLoggers(loggerFactories.map(_()))(f)
 
   /**
     * Execute a block with a given set of handlers, reverting back to the original
@@ -354,7 +357,7 @@ object Logger extends Iterable[Logger] {
 
     reset()
     loggerFactoryCache = localLoggerFactoryCache
-    loggerFactoryCache.foreach { _ () }
+    loggerFactoryCache.foreach { _() }
   }
 
   /**
@@ -422,6 +425,6 @@ object Logger extends Iterable[Logger] {
     loggerFactoryCache = loggerFactories
 
     clearHandlers()
-    loggerFactories.foreach { _ () }
+    loggerFactories.foreach { _() }
   }
 }

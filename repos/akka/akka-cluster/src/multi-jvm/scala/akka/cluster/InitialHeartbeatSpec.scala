@@ -20,10 +20,13 @@ object InitialHeartbeatMultiJvmSpec extends MultiNodeConfig {
   val second = role("second")
 
   commonConfig(
-      debugConfig(on = false)
-        .withFallback(ConfigFactory.parseString("""
-      akka.cluster.failure-detector.threshold = 4"""))
-        .withFallback(MultiNodeClusterSpec.clusterConfig))
+    debugConfig(on = false)
+      .withFallback(
+        ConfigFactory.parseString("""
+      akka.cluster.failure-detector.threshold = 4""")
+      )
+      .withFallback(MultiNodeClusterSpec.clusterConfig)
+  )
 
   testTransport(on = true)
 }
@@ -49,21 +52,27 @@ abstract class InitialHeartbeatSpec
 
       runOn(first) {
         within(10 seconds) {
-          awaitAssert({
-            cluster.sendCurrentClusterState(testActor)
-            expectMsgType[CurrentClusterState].members.map(_.address) should contain(
-                secondAddress)
-          }, interval = 50.millis)
+          awaitAssert(
+            {
+              cluster.sendCurrentClusterState(testActor)
+              expectMsgType[CurrentClusterState].members
+                .map(_.address) should contain(secondAddress)
+            },
+            interval = 50.millis
+          )
         }
       }
       runOn(second) {
         cluster.join(first)
         within(10 seconds) {
-          awaitAssert({
-            cluster.sendCurrentClusterState(testActor)
-            expectMsgType[CurrentClusterState].members.map(_.address) should contain(
-                firstAddress)
-          }, interval = 50.millis)
+          awaitAssert(
+            {
+              cluster.sendCurrentClusterState(testActor)
+              expectMsgType[CurrentClusterState].members
+                .map(_.address) should contain(firstAddress)
+            },
+            interval = 50.millis
+          )
         }
       }
       enterBarrier("second-joined")

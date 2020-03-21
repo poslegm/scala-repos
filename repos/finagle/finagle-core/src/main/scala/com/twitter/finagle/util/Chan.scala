@@ -31,7 +31,8 @@ trait Proc[-T] extends Chan[T] {
         // Swallow exceptions as these would cause
         // unbounded queue growth.
         if (!closed) {
-          try receiver(elem) catch {
+          try receiver(elem)
+          catch {
             case exc: Throwable =>
               Logger
                 .getLogger("")
@@ -46,9 +47,10 @@ trait Proc[-T] extends Chan[T] {
 }
 
 object Proc {
-  def apply[T](iteratee: T => Unit): Proc[T] = new Proc[T] {
-    def receive = iteratee
-  }
+  def apply[T](iteratee: T => Unit): Proc[T] =
+    new Proc[T] {
+      def receive = iteratee
+    }
 
   val nil: Proc[Any] = new Proc[Any] { def receive = Function.const(()) }
 }

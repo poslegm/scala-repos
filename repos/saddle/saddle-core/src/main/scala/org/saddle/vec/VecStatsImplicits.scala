@@ -26,5 +26,6 @@ trait VecStatsImplicits {
   implicit def vecToLongRollingStats(s: Vec[Long]): VecRollingStats[Long] =
     new VecRollingStats[Long](s)
   implicit def vecToDoubleRollingStats(
-      s: Vec[Double]): VecRollingStats[Double] = new VecRollingStats[Double](s)
+      s: Vec[Double]
+  ): VecRollingStats[Double] = new VecRollingStats[Double](s)
 }

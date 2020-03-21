@@ -25,13 +25,15 @@ final class BlogApi(prismicUrl: String, collection: String) {
       .submit() map (_.results.headOption)
 
   // -- Build a Prismic context
-  def context(ref: Option[String])(
-      implicit linkResolver: (Api, Option[String]) => DocumentLinkResolver) =
+  def context(
+      ref: Option[String]
+  )(implicit linkResolver: (Api, Option[String]) => DocumentLinkResolver) =
     prismicApi map { api =>
       BlogApi.Context(
-          api,
-          ref.map(_.trim).filterNot(_.isEmpty).getOrElse(api.master.ref),
-          linkResolver(api, ref))
+        api,
+        ref.map(_.trim).filterNot(_.isEmpty).getOrElse(api.master.ref),
+        linkResolver(api, ref)
+      )
     }
 
   private val cache = BuiltInCache(200)
@@ -39,12 +41,13 @@ final class BlogApi(prismicUrl: String, collection: String) {
     level match {
       case 'DEBUG => logger debug message
       case 'ERROR => logger error message
-      case _ => logger info message
-  }
+      case _      => logger info message
+    }
 
   private val fetchPrismicApi = AsyncCache.single[Api](
-      f = Api.get(prismicUrl, cache = cache, logger = prismicLogger),
-      timeToLive = 10 seconds)
+    f = Api.get(prismicUrl, cache = cache, logger = prismicLogger),
+    timeToLive = 10 seconds
+  )
 
   def prismicApi = fetchPrismicApi(true)
 }
@@ -62,7 +65,11 @@ object BlogApi {
       }
       .mkString
 
-  case class Context(api: Api, ref: String, linkResolver: DocumentLinkResolver) {
+  case class Context(
+      api: Api,
+      ref: String,
+      linkResolver: DocumentLinkResolver
+  ) {
     def maybeRef = Option(ref).filterNot(_ == api.master.ref)
   }
 }

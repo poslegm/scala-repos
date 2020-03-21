@@ -26,18 +26,19 @@ class MailBox {
   private val receivers = new LinkedList[Receiver];
   private var lastReceiver = receivers;
 
-  def send(msg: Any): Unit = synchronized {
-    var r = receivers;
-    var r1 = r.next;
-    while (r1 != null && !r1.elem.isDefined(msg)) {
-      r = r1; r1 = r1.next;
+  def send(msg: Any): Unit =
+    synchronized {
+      var r = receivers;
+      var r1 = r.next;
+      while (r1 != null && !r1.elem.isDefined(msg)) {
+        r = r1; r1 = r1.next;
+      }
+      if (r1 != null) {
+        r.next = r1.next; r1.elem.msg = msg; r1.elem.notify();
+      } else {
+        lastSent = insert(lastSent, msg);
+      }
     }
-    if (r1 != null) {
-      r.next = r1.next; r1.elem.msg = msg; r1.elem.notify();
-    } else {
-      lastSent = insert(lastSent, msg);
-    }
-  }
 
   def receive[a](f: PartialFunction[Any, a]): a = {
     val msg: Any = synchronized {
@@ -49,9 +50,12 @@ class MailBox {
       if (s1 != null) {
         s.next = s1.next; s1.elem
       } else {
-        val r = insert(lastReceiver, new Receiver {
-          def isDefined(msg: Any) = f.isDefinedAt(msg);
-        });
+        val r = insert(
+          lastReceiver,
+          new Receiver {
+            def isDefined(msg: Any) = f.isDefinedAt(msg);
+          }
+        );
         lastReceiver = r;
         r.elem.wait();
         r.elem.msg
@@ -70,9 +74,12 @@ class MailBox {
       if (s1 != null) {
         s.next = s1.next; s1.elem
       } else {
-        val r = insert(lastReceiver, new Receiver {
-          def isDefined(msg: Any) = f.isDefinedAt(msg);
-        });
+        val r = insert(
+          lastReceiver,
+          new Receiver {
+            def isDefined(msg: Any) = f.isDefinedAt(msg);
+          }
+        );
         lastReceiver = r;
         r.elem.wait(msec);
         if (r.elem.msg == null) r.elem.msg = TIMEOUT;

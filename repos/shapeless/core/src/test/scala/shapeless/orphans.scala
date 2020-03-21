@@ -40,7 +40,7 @@ package OrphansTestDefns {
       override def toString = "CaDeriver.caDerived"
     }
 
-    implicit def derive[T : Generic]: Ca[T] = caDerived.asInstanceOf[Ca[T]]
+    implicit def derive[T: Generic]: Ca[T] = caDerived.asInstanceOf[Ca[T]]
   }
 
   object LowPriorityCaDeriver extends OrphanDeriver[Ca, CaDeriver.type]
@@ -65,7 +65,7 @@ package OrphansTestDefns {
       override def toString = "CbDeriver.cbDerived"
     }
 
-    implicit def derive[T : Generic]: Cb[T] = cbDerived.asInstanceOf[Cb[T]]
+    implicit def derive[T: Generic]: Cb[T] = cbDerived.asInstanceOf[Cb[T]]
   }
 
   object LowPriorityCbDeriver extends OrphanDeriver[Cb, CbDeriver.type]
@@ -89,11 +89,9 @@ package OrphansTestDefns {
   class Quux(b: Boolean)
 
   object MultiOrphans {
-    implicit def caT[T](
-        implicit orphan: Orphan[Ca, CaDeriver.type, T]): Ca[T] =
+    implicit def caT[T](implicit orphan: Orphan[Ca, CaDeriver.type, T]): Ca[T] =
       orphan.instance
-    implicit def cbT[T](
-        implicit orphan: Orphan[Cb, CbDeriver.type, T]): Cb[T] =
+    implicit def cbT[T](implicit orphan: Orphan[Cb, CbDeriver.type, T]): Cb[T] =
       orphan.instance
   }
 
@@ -104,55 +102,63 @@ package OrphansTestDefns {
   }
 
   trait Eq0 {
-    implicit def fallback[T]: Eq[T] = new Eq[T] {
-      override def toString = "Eq.fallback"
-      def eqv(x: T, y: T): Boolean = x == y
-    }
+    implicit def fallback[T]: Eq[T] =
+      new Eq[T] {
+        override def toString = "Eq.fallback"
+        def eqv(x: T, y: T): Boolean = x == y
+      }
   }
 
   object Eq extends Eq0 {
-    implicit def eqInt: Eq[Int] = new Eq[Int] {
-      override def toString = "Eq.eqInt"
-      def eqv(x: Int, y: Int) = x == y
-    }
+    implicit def eqInt: Eq[Int] =
+      new Eq[Int] {
+        override def toString = "Eq.eqInt"
+        def eqv(x: Int, y: Int) = x == y
+      }
 
-    implicit def eqString: Eq[String] = new Eq[String] {
-      override def toString = "Eq.eqString"
-      def eqv(x: String, y: String) = x == y
-    }
+    implicit def eqString: Eq[String] =
+      new Eq[String] {
+        override def toString = "Eq.eqString"
+        def eqv(x: String, y: String) = x == y
+      }
 
-    implicit def eqBoolean: Eq[Boolean] = new Eq[Boolean] {
-      override def toString = "Eq.eqBoolean"
-      def eqv(x: Boolean, y: Boolean) = x == y
-    }
+    implicit def eqBoolean: Eq[Boolean] =
+      new Eq[Boolean] {
+        override def toString = "Eq.eqBoolean"
+        def eqv(x: Boolean, y: Boolean) = x == y
+      }
 
-    implicit def eqFoo: Eq[Foo] = new Eq[Foo] {
-      override def toString = "Eq.eqFoo"
-      def eqv(x: Foo, y: Foo) = x == y
-    }
+    implicit def eqFoo: Eq[Foo] =
+      new Eq[Foo] {
+        override def toString = "Eq.eqFoo"
+        def eqv(x: Foo, y: Foo) = x == y
+      }
   }
 
   object EqDeriver extends TypeClassCompanion[Eq] {
     object typeClass extends TypeClass[Eq] {
-      def emptyProduct = new Eq[HNil] {
-        override def toString = "emptyProduct"
-        def eqv(x: HNil, y: HNil) = true
-      }
+      def emptyProduct =
+        new Eq[HNil] {
+          override def toString = "emptyProduct"
+          def eqv(x: HNil, y: HNil) = true
+        }
 
-      def product[H, T <: HList](h: Eq[H], t: Eq[T]) = new Eq[H :: T] {
-        override def toString(seen: Set[Eq[_]]) =
-          if (seen(this)) s"<loop>"
-          else
-            s"product(${h.toString(seen + this)}, ${t.toString(seen + this)})"
+      def product[H, T <: HList](h: Eq[H], t: Eq[T]) =
+        new Eq[H :: T] {
+          override def toString(seen: Set[Eq[_]]) =
+            if (seen(this)) s"<loop>"
+            else
+              s"product(${h.toString(seen + this)}, ${t.toString(seen + this)})"
 
-        def eqv(x: H :: T, y: H :: T): Boolean =
-          h.eqv(x.head, y.head) && t.eqv(x.tail, y.tail)
-      }
+          def eqv(x: H :: T, y: H :: T): Boolean =
+            h.eqv(x.head, y.head) && t.eqv(x.tail, y.tail)
+        }
 
-      def emptyCoproduct = new Eq[CNil] {
-        override def toString = "emptyCoproduct"
-        def eqv(x: CNil, y: CNil) = true
-      }
+      def emptyCoproduct =
+        new Eq[CNil] {
+          override def toString = "emptyCoproduct"
+          def eqv(x: CNil, y: CNil) = true
+        }
 
       def coproduct[L, R <: Coproduct](l: => Eq[L], r: => Eq[R]) =
         new Eq[L :+: R] {
@@ -161,27 +167,29 @@ package OrphansTestDefns {
             else
               s"coproduct(${l.toString(seen + this)}, ${r.toString(seen + this)})"
 
-          def eqv(x: L :+: R, y: L :+: R): Boolean = (x, y) match {
-            case (Inl(x), Inl(y)) => l.eqv(x, y)
-            case (Inr(x), Inr(y)) => r.eqv(x, y)
-            case _ => false
-          }
+          def eqv(x: L :+: R, y: L :+: R): Boolean =
+            (x, y) match {
+              case (Inl(x), Inl(y)) => l.eqv(x, y)
+              case (Inr(x), Inr(y)) => r.eqv(x, y)
+              case _                => false
+            }
         }
 
-      def project[A, B](b: => Eq[B], ab: A => B, ba: B => A) = new Eq[A] {
-        override def toString(seen: Set[Eq[_]]) =
-          if (seen(this)) s"<loop>" else s"project(${b.toString(seen + this)})"
+      def project[A, B](b: => Eq[B], ab: A => B, ba: B => A) =
+        new Eq[A] {
+          override def toString(seen: Set[Eq[_]]) =
+            if (seen(this)) s"<loop>"
+            else s"project(${b.toString(seen + this)})"
 
-        def eqv(x: A, y: A): Boolean = b.eqv(ab(x), ab(y))
-      }
+          def eqv(x: A, y: A): Boolean = b.eqv(ab(x), ab(y))
+        }
     }
   }
 
   object LowPriorityEqDeriver extends OrphanDeriver[Eq, EqDeriver.type]
 
   object MultiEqOrphans {
-    implicit def eqT[T](
-        implicit orphan: Orphan[Eq, EqDeriver.type, T]): Eq[T] =
+    implicit def eqT[T](implicit orphan: Orphan[Eq, EqDeriver.type, T]): Eq[T] =
       orphan.instance
   }
 
@@ -260,19 +268,27 @@ class OrphansTest {
     import EqDeriver._
 
     assertEquals("Eq.eqInt", implicitly[Eq[Int]].toString)
-    assertEquals("project(product(Eq.eqInt, emptyProduct))",
-                 implicitly[Eq[Foo]].toString)
-    assertEquals("project(product(Eq.eqString, emptyProduct))",
-                 implicitly[Eq[Bar]].toString)
-    assertEquals("project(product(Eq.fallback, emptyProduct))",
-                 implicitly[Eq[Baz]].toString)
+    assertEquals(
+      "project(product(Eq.eqInt, emptyProduct))",
+      implicitly[Eq[Foo]].toString
+    )
+    assertEquals(
+      "project(product(Eq.eqString, emptyProduct))",
+      implicitly[Eq[Bar]].toString
+    )
+    assertEquals(
+      "project(product(Eq.fallback, emptyProduct))",
+      implicitly[Eq[Baz]].toString
+    )
     assertEquals("Eq.fallback", implicitly[Eq[Quux]].toString)
     assertEquals(
-        "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
-        implicitly[Eq[SimpleRec]].toString)
+      "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
+      implicitly[Eq[SimpleRec]].toString
+    )
     assertEquals(
-        "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
-        implicitly[Eq[Tree[Int]]].toString)
+      "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
+      implicitly[Eq[Tree[Int]]].toString
+    )
   }
 
   @Test
@@ -281,16 +297,20 @@ class OrphansTest {
 
     assertEquals("Eq.eqInt", implicitly[Eq[Int]].toString)
     assertEquals("Eq.eqFoo", implicitly[Eq[Foo]].toString)
-    assertEquals("project(product(Eq.eqString, emptyProduct))",
-                 implicitly[Eq[Bar]].toString)
+    assertEquals(
+      "project(product(Eq.eqString, emptyProduct))",
+      implicitly[Eq[Bar]].toString
+    )
     assertEquals("Baz.eqBaz", implicitly[Eq[Baz]].toString)
     assertEquals("Eq.fallback", implicitly[Eq[Quux]].toString)
     assertEquals(
-        "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
-        implicitly[Eq[SimpleRec]].toString)
+      "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
+      implicitly[Eq[SimpleRec]].toString
+    )
     assertEquals(
-        "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
-        implicitly[Eq[Tree[Int]]].toString)
+      "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
+      implicitly[Eq[Tree[Int]]].toString
+    )
   }
 
   @Test
@@ -299,15 +319,19 @@ class OrphansTest {
 
     assertEquals("Eq.eqInt", implicitly[Eq[Int]].toString)
     assertEquals("Eq.eqFoo", implicitly[Eq[Foo]].toString)
-    assertEquals("project(product(Eq.eqString, emptyProduct))",
-                 implicitly[Eq[Bar]].toString)
+    assertEquals(
+      "project(product(Eq.eqString, emptyProduct))",
+      implicitly[Eq[Bar]].toString
+    )
     assertEquals("Baz.eqBaz", implicitly[Eq[Baz]].toString)
     assertEquals("Eq.fallback", implicitly[Eq[Quux]].toString)
     assertEquals(
-        "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
-        implicitly[Eq[SimpleRec]].toString)
+      "project(coproduct(project(product(project(<loop>), emptyProduct)), coproduct(project(emptyProduct), emptyCoproduct)))",
+      implicitly[Eq[SimpleRec]].toString
+    )
     assertEquals(
-        "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
-        implicitly[Eq[Tree[Int]]].toString)
+      "project(coproduct(project(product(Eq.eqInt, emptyProduct)), coproduct(project(product(project(<loop>), product(project(<loop>), emptyProduct))), emptyCoproduct)))",
+      implicitly[Eq[Tree[Int]]].toString
+    )
   }
 }

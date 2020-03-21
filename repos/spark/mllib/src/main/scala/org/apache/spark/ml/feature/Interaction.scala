@@ -44,8 +44,10 @@ import org.apache.spark.sql.types._
   */
 @Since("1.6.0")
 @Experimental
-class Interaction @Since("1.6.0")(override val uid: String)
-    extends Transformer with HasInputCols with HasOutputCol
+class Interaction @Since("1.6.0") (override val uid: String)
+    extends Transformer
+    with HasInputCols
+    with HasOutputCol
     with DefaultParamsWritable {
 
   @Since("1.6.0")
@@ -65,10 +67,11 @@ class Interaction @Since("1.6.0")(override val uid: String)
     require(get(inputCols).isDefined, "Input cols must be defined first.")
     require(get(outputCol).isDefined, "Output col must be defined first.")
     require($(inputCols).length > 0, "Input cols must have non-zero length.")
-    require($(inputCols).distinct.length == $(inputCols).length,
-            "Input cols must be distinct.")
-    StructType(
-        schema.fields :+ StructField($(outputCol), new VectorUDT, false))
+    require(
+      $(inputCols).distinct.length == $(inputCols).length,
+      "Input cols must be distinct."
+    )
+    StructType(schema.fields :+ StructField($(outputCol), new VectorUDT, false))
   }
 
   @Since("1.6.0")
@@ -77,47 +80,50 @@ class Interaction @Since("1.6.0")(override val uid: String)
     val featureEncoders = getFeatureEncoders(inputFeatures)
     val featureAttrs = getFeatureAttrs(inputFeatures)
 
-    def interactFunc = udf { row: Row =>
-      var indices = ArrayBuilder.make[Int]
-      var values = ArrayBuilder.make[Double]
-      var size = 1
-      indices += 0
-      values += 1.0
-      var featureIndex = row.length - 1
-      while (featureIndex >= 0) {
-        val prevIndices = indices.result()
-        val prevValues = values.result()
-        val prevSize = size
-        val currentEncoder = featureEncoders(featureIndex)
-        indices = ArrayBuilder.make[Int]
-        values = ArrayBuilder.make[Double]
-        size *= currentEncoder.outputSize
-        currentEncoder.foreachNonzeroOutput(
+    def interactFunc =
+      udf { row: Row =>
+        var indices = ArrayBuilder.make[Int]
+        var values = ArrayBuilder.make[Double]
+        var size = 1
+        indices += 0
+        values += 1.0
+        var featureIndex = row.length - 1
+        while (featureIndex >= 0) {
+          val prevIndices = indices.result()
+          val prevValues = values.result()
+          val prevSize = size
+          val currentEncoder = featureEncoders(featureIndex)
+          indices = ArrayBuilder.make[Int]
+          values = ArrayBuilder.make[Double]
+          size *= currentEncoder.outputSize
+          currentEncoder.foreachNonzeroOutput(
             row(featureIndex),
-            (i, a) =>
-              {
-                var j = 0
-                while (j < prevIndices.length) {
-                  indices += prevIndices(j) + i * prevSize
-                  values += prevValues(j) * a
-                  j += 1
-                }
-            })
-        featureIndex -= 1
+            (i, a) => {
+              var j = 0
+              while (j < prevIndices.length) {
+                indices += prevIndices(j) + i * prevSize
+                values += prevValues(j) * a
+                j += 1
+              }
+            }
+          )
+          featureIndex -= 1
+        }
+        Vectors.sparse(size, indices.result(), values.result()).compressed
       }
-      Vectors.sparse(size, indices.result(), values.result()).compressed
-    }
 
     val featureCols = inputFeatures.map { f =>
       f.dataType match {
-        case DoubleType => dataset(f.name)
-        case _: VectorUDT => dataset(f.name)
+        case DoubleType                   => dataset(f.name)
+        case _: VectorUDT                 => dataset(f.name)
         case _: NumericType | BooleanType => dataset(f.name).cast(DoubleType)
       }
     }
-    dataset.select(col("*"),
-                   interactFunc(struct(featureCols: _*))
-                     .as($(outputCol), featureAttrs.toMetadata()))
+    dataset.select(
+      col("*"),
+      interactFunc(struct(featureCols: _*))
+        .as($(outputCol), featureAttrs.toMetadata())
+    )
   }
 
   /**
@@ -127,14 +133,19 @@ class Interaction @Since("1.6.0")(override val uid: String)
     * @param features The input feature columns to create encoders for.
     */
   private def getFeatureEncoders(
-      features: Seq[StructField]): Array[FeatureEncoder] = {
+      features: Seq[StructField]
+  ): Array[FeatureEncoder] = {
     def getNumFeatures(attr: Attribute): Int = {
       attr match {
         case nominal: NominalAttribute =>
           math.max(
-              1,
-              nominal.getNumValues.getOrElse(throw new SparkException(
-                      "Nominal features must have attr numValues defined.")))
+            1,
+            nominal.getNumValues.getOrElse(
+              throw new SparkException(
+                "Nominal features must have attr numValues defined."
+              )
+            )
+          )
         case _ =>
           1 // numeric feature
       }
@@ -147,8 +158,11 @@ class Interaction @Since("1.6.0")(override val uid: String)
           val attrs = AttributeGroup
             .fromStructField(f)
             .attributes
-            .getOrElse(throw new SparkException(
-                    "Vector attributes must be defined for interaction."))
+            .getOrElse(
+              throw new SparkException(
+                "Vector attributes must be defined for interaction."
+              )
+            )
           attrs.map(getNumFeatures).toArray
       }
       new FeatureEncoder(numFeatures)
@@ -172,7 +186,9 @@ class Interaction @Since("1.6.0")(override val uid: String)
           val attr = Attribute.decodeStructField(f, preserveName = true)
           if (attr == UnresolvedAttribute) {
             encodedFeatureAttrs(
-                Seq(NumericAttribute.defaultAttr.withName(f.name)), None)
+              Seq(NumericAttribute.defaultAttr.withName(f.name)),
+              None
+            )
           } else if (!attr.name.isDefined) {
             encodedFeatureAttrs(Seq(attr.withName(f.name)), None)
           } else {
@@ -188,7 +204,8 @@ class Interaction @Since("1.6.0")(override val uid: String)
         featureAttrs = encodedAttrs.flatMap { head =>
           featureAttrs.map { tail =>
             NumericAttribute.defaultAttr.withName(
-                head.name.get + ":" + tail.name.get)
+              head.name.get + ":" + tail.name.get
+            )
           }
         }
       }
@@ -206,13 +223,16 @@ class Interaction @Since("1.6.0")(override val uid: String)
     */
   private def encodedFeatureAttrs(
       inputAttrs: Seq[Attribute],
-      groupName: Option[String]): Seq[Attribute] = {
+      groupName: Option[String]
+  ): Seq[Attribute] = {
 
-    def format(index: Int,
-               attrName: Option[String],
-               categoryName: Option[String]): String = {
-      val parts = Seq(
-          groupName, Some(attrName.getOrElse(index.toString)), categoryName)
+    def format(
+        index: Int,
+        attrName: Option[String],
+        categoryName: Option[String]
+    ): String = {
+      val parts =
+        Seq(groupName, Some(attrName.getOrElse(index.toString)), categoryName)
       parts.flatten.mkString("_")
     }
 
@@ -220,12 +240,15 @@ class Interaction @Since("1.6.0")(override val uid: String)
       case (nominal: NominalAttribute, i) =>
         if (nominal.values.isDefined) {
           nominal.values.get.map(v =>
-                BinaryAttribute.defaultAttr.withName(
-                    format(i, nominal.name, Some(v))))
+            BinaryAttribute.defaultAttr
+              .withName(format(i, nominal.name, Some(v)))
+          )
         } else {
           Array.tabulate(nominal.getNumValues.get)(j =>
-                BinaryAttribute.defaultAttr.withName(
-                    format(i, nominal.name, Some(j.toString))))
+            BinaryAttribute.defaultAttr.withName(
+              format(i, nominal.name, Some(j.toString))
+            )
+          )
         }
       case (a: Attribute, i) =>
         Seq(NumericAttribute.defaultAttr.withName(format(i, a.name, None)))
@@ -252,8 +275,7 @@ object Interaction extends DefaultParamsReadable[Interaction] {
   *                    count is equal to the number of categories. For numeric features the count
   *                    should be set to 1.
   */
-private[ml] class FeatureEncoder(numFeatures: Array[Int])
-    extends Serializable {
+private[ml] class FeatureEncoder(numFeatures: Array[Int]) extends Serializable {
   assert(numFeatures.forall(_ > 0), "Features counts must all be positive.")
 
   /** The size of the output vector. */
@@ -279,25 +301,32 @@ private[ml] class FeatureEncoder(numFeatures: Array[Int])
   def foreachNonzeroOutput(value: Any, f: (Int, Double) => Unit): Unit =
     value match {
       case d: Double =>
-        assert(numFeatures.length == 1,
-               "DoubleType columns should only contain one feature.")
+        assert(
+          numFeatures.length == 1,
+          "DoubleType columns should only contain one feature."
+        )
         val numOutputCols = numFeatures.head
         if (numOutputCols > 1) {
-          assert(d >= 0.0 && d == d.toInt && d < numOutputCols,
-                 s"Values from column must be indices, but got $d.")
+          assert(
+            d >= 0.0 && d == d.toInt && d < numOutputCols,
+            s"Values from column must be indices, but got $d."
+          )
           f(d.toInt, 1.0)
         } else {
           f(0, d)
         }
       case vec: Vector =>
         assert(
-            numFeatures.length == vec.size,
-            s"Vector column size was ${vec.size}, expected ${numFeatures.length}")
+          numFeatures.length == vec.size,
+          s"Vector column size was ${vec.size}, expected ${numFeatures.length}"
+        )
         vec.foreachActive { (i, v) =>
           val numOutputCols = numFeatures(i)
           if (numOutputCols > 1) {
-            assert(v >= 0.0 && v == v.toInt && v < numOutputCols,
-                   s"Values from column must be indices, but got $v.")
+            assert(
+              v >= 0.0 && v == v.toInt && v < numOutputCols,
+              s"Values from column must be indices, but got $v."
+            )
             f(outputOffsets(i) + v.toInt, 1.0)
           } else {
             f(outputOffsets(i), v)
@@ -307,6 +336,7 @@ private[ml] class FeatureEncoder(numFeatures: Array[Int])
         throw new SparkException("Values to interact cannot be null.")
       case o =>
         throw new SparkException(
-            s"$o of type ${o.getClass.getName} is not supported.")
+          s"$o of type ${o.getClass.getName} is not supported."
+        )
     }
 }

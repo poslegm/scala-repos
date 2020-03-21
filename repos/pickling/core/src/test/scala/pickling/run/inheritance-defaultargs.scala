@@ -12,11 +12,12 @@ abstract class Person extends Creature {
   val age: Int
 }
 
-case class Firefighter(val name: String,
-                       val age: Int,
-                       val salary: Int,
-                       val species: String = "human")
-    extends Person
+case class Firefighter(
+    val name: String,
+    val age: Int,
+    val salary: Int,
+    val species: String = "human"
+) extends Person
 
 class InheritanceDefaultArgsTest extends FunSuite {
   test("main") {
@@ -24,7 +25,7 @@ class InheritanceDefaultArgsTest extends FunSuite {
 
     val pickleF = (f: Firefighter).pickle
     assert(
-        pickleF.value === """
+      pickleF.value === """
       |{
       |  "$type": "scala.pickling.inheritance.defaultargs.Firefighter",
       |  "name": "Muriel",
@@ -32,12 +33,13 @@ class InheritanceDefaultArgsTest extends FunSuite {
       |  "salary": 30000,
       |  "species": "human"
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleF.unpickle[Firefighter] === f)
 
     val pickleP = (f: Person).pickle
     assert(
-        pickleP.value === """
+      pickleP.value === """
       |{
       |  "$type": "scala.pickling.inheritance.defaultargs.Firefighter",
       |  "name": "Muriel",
@@ -45,12 +47,13 @@ class InheritanceDefaultArgsTest extends FunSuite {
       |  "salary": 30000,
       |  "species": "human"
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleP.unpickle[Person] === f)
 
     val pickleC = (f: Creature).pickle
     assert(
-        pickleC.value === """
+      pickleC.value === """
       |{
       |  "$type": "scala.pickling.inheritance.defaultargs.Firefighter",
       |  "name": "Muriel",
@@ -58,7 +61,8 @@ class InheritanceDefaultArgsTest extends FunSuite {
       |  "salary": 30000,
       |  "species": "human"
       |}
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
     assert(pickleC.unpickle[Creature] === f)
   }
 }

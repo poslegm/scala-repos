@@ -37,12 +37,14 @@ object CommonCompareBinary {
     * check if they are byte-for-byte identical, which is a cheap way to avoid doing
     * potentially complex logic in binary comparators
     */
-  final def earlyEqual(inputStreamA: InputStream,
-                       lenA: Int,
-                       inputStreamB: InputStream,
-                       lenB: Int): Boolean =
+  final def earlyEqual(
+      inputStreamA: InputStream,
+      lenA: Int,
+      inputStreamB: InputStream,
+      lenB: Int
+  ): Boolean =
     (lenA > minSizeForFulBinaryCompare && (lenA == lenB) &&
-        inputStreamA.markSupported && inputStreamB.markSupported) && {
+      inputStreamA.markSupported && inputStreamB.markSupported) && {
       inputStreamA.mark(lenA)
       inputStreamB.mark(lenB)
 
@@ -67,8 +69,8 @@ object CommonCompareBinary {
 object TreeOrderedBuf {
   import CompileTimeLengthTypes._
   def toOrderedSerialization[T](c: Context)(
-      t: TreeOrderedBuf[c.type])(implicit T: t.ctx.WeakTypeTag[T])
-    : t.ctx.Expr[OrderedSerialization[T]] = {
+      t: TreeOrderedBuf[c.type]
+  )(implicit T: t.ctx.WeakTypeTag[T]): t.ctx.Expr[OrderedSerialization[T]] = {
     import t.ctx.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
     val outputLength = freshT("outputLength")
@@ -77,11 +79,10 @@ object TreeOrderedBuf {
       val element = freshT("element")
 
       val fnBodyOpt = t.length(q"$element") match {
-        case _: NoLengthCalculationAvailable[_] => None
+        case _: NoLengthCalculationAvailable[_]  => None
         case const: ConstantLengthCalculation[_] => None
         case f: FastLengthCalculation[_] =>
-          Some(
-              q"""
+          Some(q"""
         _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(${f
             .asInstanceOf[FastLengthCalculation[c.type]]
             .t})
@@ -90,22 +91,24 @@ object TreeOrderedBuf {
           Some(m.asInstanceOf[MaybeLengthCalculation[c.type]].t)
       }
 
-      fnBodyOpt.map { fnBody =>
-        q"""
+      fnBodyOpt
+        .map { fnBody =>
+          q"""
         private[this] def payloadLength($element: $T): _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength = {
           lengthCalculationAttempts += 1
           $fnBody
         }
         """
-      }.getOrElse(q"()")
+        }
+        .getOrElse(q"()")
     }
 
     def binaryLengthGen(typeName: Tree): (Tree, Tree) = {
       val tempLen = freshT("tempLen")
       val lensLen = freshT("lensLen")
       val element = freshT("element")
-      val callDynamic = (q"""override def staticSize: Option[Int] = None""",
-                         q"""
+      val callDynamic =
+        (q"""override def staticSize: Option[Int] = None""", q"""
 
       override def dynamicSize($element: $typeName): Option[Int] = {
         if(skipLenCalc) None else {
@@ -129,14 +132,16 @@ object TreeOrderedBuf {
       t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] =>
           (q"""
-          override def staticSize: Option[Int] = None""",
-           q"""
+          override def staticSize: Option[Int] = None""", q"""
           override def dynamicSize($element: $typeName): Option[Int] = None""")
         case const: ConstantLengthCalculation[_] =>
-          (q"""
-          override val staticSize: Option[Int] = Some(${const.toInt})""", q"""
-          override def dynamicSize($element: $typeName): Option[Int] = staticSize""")
-        case f: FastLengthCalculation[_] => callDynamic
+          (
+            q"""
+          override val staticSize: Option[Int] = Some(${const.toInt})""",
+            q"""
+          override def dynamicSize($element: $typeName): Option[Int] = staticSize"""
+          )
+        case f: FastLengthCalculation[_]  => callDynamic
         case m: MaybeLengthCalculation[_] => callDynamic
       }
     }
@@ -209,14 +214,14 @@ object TreeOrderedBuf {
     def readLength(inputStream: TermName) = {
       t.length(q"e") match {
         case const: ConstantLengthCalculation[_] => q"${const.toInt}"
-        case _ => q"$inputStream.readPosVarInt"
+        case _                                   => q"$inputStream.readPosVarInt"
       }
     }
 
     def discardLength(inputStream: TermName) = {
       t.length(q"e") match {
         case const: ConstantLengthCalculation[_] => q"()"
-        case _ => q"$inputStream.readPosVarInt"
+        case _                                   => q"$inputStream.readPosVarInt"
       }
     }
 
@@ -323,7 +328,9 @@ abstract class TreeOrderedBuf[C <: Context] {
   val tpe: ctx.Type
   // Expected byte buffers to be in values a and b respestively, the tree has the value of the result
   def compareBinary(
-      inputStreamA: ctx.TermName, inputStreamB: ctx.TermName): ctx.Tree
+      inputStreamA: ctx.TermName,
+      inputStreamB: ctx.TermName
+  ): ctx.Tree
   // expects the thing to be tested on in the indiciated TermName
   def hash(element: ctx.TermName): ctx.Tree
 

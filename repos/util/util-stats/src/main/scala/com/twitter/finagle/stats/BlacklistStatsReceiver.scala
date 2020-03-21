@@ -10,8 +10,9 @@ package com.twitter.finagle.stats
   *        blacklist, and false to let it pass through
   */
 class BlacklistStatsReceiver(
-    underlying: StatsReceiver, blacklisted: Seq[String] => Boolean)
-    extends StatsReceiver {
+    underlying: StatsReceiver,
+    blacklisted: Seq[String] => Boolean
+) extends StatsReceiver {
   val repr = underlying.repr
   override def isNull = underlying.isNull
 

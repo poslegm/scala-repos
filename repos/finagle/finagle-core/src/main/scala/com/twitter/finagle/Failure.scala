@@ -10,14 +10,16 @@ import scala.annotation.tailrec
   * describe the origins of the failure to aid in debugging and flags
   * mark attributes of the Failure (e.g. Restartable).
   */
-final class Failure private[finagle](
+final class Failure private[finagle] (
     private[finagle] val why: String,
     val cause: Option[Throwable] = None,
     val flags: Long = 0L,
     protected val sources: Map[Failure.Source.Value, Object] = Map.empty,
     val stacktrace: Array[StackTraceElement] = Failure.NoStacktrace,
-    val logLevel: Level = Level.WARNING)
-    extends Exception(why, cause.orNull) with NoStacktrace with HasLogLevel {
+    val logLevel: Level = Level.WARNING
+) extends Exception(why, cause.orNull)
+    with NoStacktrace
+    with HasLogLevel {
   import Failure._
 
   require(!isFlagged(Wrapped) || cause.isDefined)
@@ -96,9 +98,10 @@ final class Failure private[finagle](
 
   override def toString: String =
     "Failure(%s, flags=0x%02x)\n\twith %s".format(
-        why,
-        flags,
-        if (sources.isEmpty) "NoSources" else sources.mkString("\n\twith "))
+      why,
+      flags,
+      if (sources.isEmpty) "NoSources" else sources.mkString("\n\twith ")
+    )
 
   override def getStackTrace(): Array[StackTraceElement] = stacktrace
   override def printStackTrace(p: java.io.PrintWriter) {
@@ -110,7 +113,7 @@ final class Failure private[finagle](
     a match {
       case that: Failure =>
         this.why.equals(that.why) && this.cause.equals(that.cause) &&
-        this.flags.equals(that.flags) && this.sources.equals(that.sources)
+          this.flags.equals(that.flags) && this.sources.equals(that.sources)
       case _ => false
     }
   }
@@ -130,7 +133,8 @@ final class Failure private[finagle](
 
 object Failure {
   private val NoStacktrace = Array(
-      new StackTraceElement("com.twitter.finagle", "NoStacktrace", null, -1))
+    new StackTraceElement("com.twitter.finagle", "NoStacktrace", null, -1)
+  )
 
   object Source extends Enumeration {
     val Service, Role, RemoteInfo = Value
@@ -166,13 +170,19 @@ object Failure {
   /**
     * Create a new failure with the given cause and flags.
     */
-  def apply(cause: Throwable,
-            flags: Long,
-            logLevel: Level = Level.WARNING): Failure =
+  def apply(
+      cause: Throwable,
+      flags: Long,
+      logLevel: Level = Level.WARNING
+  ): Failure =
     if (cause == null) new Failure("unknown", None, flags, logLevel = logLevel)
     else if (cause.getMessage == null)
       new Failure(
-          cause.getClass.getName, Some(cause), flags, logLevel = logLevel)
+        cause.getClass.getName,
+        Some(cause),
+        flags,
+        logLevel = logLevel
+      )
     else new Failure(cause.getMessage, Some(cause), flags, logLevel = logLevel)
 
   /**
@@ -230,10 +240,11 @@ object Failure {
     * this returns a chained failure with the assigned flags. If it is not,
     * it returns a new failure with the given flags.
     */
-  def adapt(exc: Throwable, flags: Long): Failure = exc match {
-    case f: Failure => f.chained.flagged(flags)
-    case exc => Failure(exc, flags)
-  }
+  def adapt(exc: Throwable, flags: Long): Failure =
+    exc match {
+      case f: Failure => f.chained.flagged(flags)
+      case exc        => Failure(exc, flags)
+    }
 
   /**
     * Create a new wrapped Failure with the given flags. If the passed-in exception
@@ -243,7 +254,7 @@ object Failure {
     require(exc != null)
     exc match {
       case f: Failure => f.flagged(flags | Failure.Wrapped)
-      case exc => Failure(exc, flags | Failure.Wrapped)
+      case exc        => Failure(exc, flags | Failure.Wrapped)
     }
   }
 
@@ -270,8 +281,7 @@ object Failure {
     * Create a new [[Restartable]] failure with the given message and cause.
     */
   def rejected(why: String, cause: Throwable): Failure =
-    new Failure(
-        why, Option(cause), Failure.Restartable, logLevel = Level.DEBUG)
+    new Failure(why, Option(cause), Failure.Restartable, logLevel = Level.DEBUG)
 
   /**
     * A default [[Restartable]] failure.
@@ -283,7 +293,7 @@ object Failure {
     if (!f.isFlagged(Failure.Wrapped)) f.masked(ShowMask)
     else
       f.cause match {
-        case Some(inner: Failure) => show(inner)
+        case Some(inner: Failure)   => show(inner)
         case Some(inner: Throwable) => inner
         case None =>
           throw new IllegalArgumentException("Wrapped failure without a cause")

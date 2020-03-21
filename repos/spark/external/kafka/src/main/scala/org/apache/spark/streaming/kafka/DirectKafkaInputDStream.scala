@@ -52,17 +52,19 @@ import org.apache.spark.streaming.scheduler.rate.RateEstimator
   *  starting point of the stream
   * @param messageHandler function for translating each message into the desired type
   */
-private[streaming] class DirectKafkaInputDStream[K : ClassTag,
-                                                 V : ClassTag,
-                                                 U <: Decoder[K]: ClassTag,
-                                                 T <: Decoder[V]: ClassTag,
-                                                 R : ClassTag](
+private[streaming] class DirectKafkaInputDStream[
+    K: ClassTag,
+    V: ClassTag,
+    U <: Decoder[K]: ClassTag,
+    T <: Decoder[V]: ClassTag,
+    R: ClassTag
+](
     _ssc: StreamingContext,
     val kafkaParams: Map[String, String],
     val fromOffsets: Map[TopicAndPartition, Long],
     messageHandler: MessageAndMetadata[K, V] => R
-)
-    extends InputDStream[R](_ssc) with Logging {
+) extends InputDStream[R](_ssc)
+    with Logging {
   val maxRetries =
     context.sparkContext.getConf.getInt("spark.streaming.kafka.maxRetries", 1)
 
@@ -77,8 +79,12 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
     */
   override protected[streaming] val rateController: Option[RateController] = {
     if (RateController.isBackPressureEnabled(ssc.conf)) {
-      Some(new DirectKafkaRateController(
-              id, RateEstimator.create(ssc.conf, context.graph.batchDuration)))
+      Some(
+        new DirectKafkaRateController(
+          id,
+          RateEstimator.create(ssc.conf, context.graph.batchDuration)
+        )
+      )
     } else {
       None
     }
@@ -90,8 +96,8 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
     .getInt("spark.streaming.kafka.maxRatePerPartition", 0)
 
   protected[streaming] def maxMessagesPerPartition(
-      offsets: Map[TopicAndPartition, Long])
-    : Option[Map[TopicAndPartition, Long]] = {
+      offsets: Map[TopicAndPartition, Long]
+  ): Option[Map[TopicAndPartition, Long]] = {
     val estimatedRateLimit = rateController.map(_.getLatestRate().toInt)
 
     // calculate a per-partition rate limit based on current lag
@@ -108,9 +114,9 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
             case (tp, lag) =>
               val backpressureRate = Math.round(lag / totalLag.toFloat * rate)
               tp ->
-              (if (maxRateLimitPerPartition > 0) {
-                 Math.min(backpressureRate, maxRateLimitPerPartition)
-               } else backpressureRate)
+                (if (maxRateLimitPerPartition > 0) {
+                   Math.min(backpressureRate, maxRateLimitPerPartition)
+                 } else backpressureRate)
           }
         case None =>
           offsets.map { case (tp, offset) => tp -> maxRateLimitPerPartition }
@@ -119,8 +125,7 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
     if (effectiveRateLimitPerPartition.values.sum > 0) {
       val secsPerBatch =
         context.graph.batchDuration.milliseconds.toDouble / 1000
-      Some(
-          effectiveRateLimitPerPartition.map {
+      Some(effectiveRateLimitPerPartition.map {
         case (tp, limit) => tp -> (secsPerBatch * limit).toLong
       })
     } else {
@@ -132,7 +137,8 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
 
   @tailrec
   protected final def latestLeaderOffsets(
-      retries: Int): Map[TopicAndPartition, LeaderOffset] = {
+      retries: Int
+  ): Map[TopicAndPartition, LeaderOffset] = {
     val o = kc.getLatestLeaderOffsets(currentOffsets.keySet)
     // Either.fold would confuse @tailrec, do it manually
     if (o.isLeft) {
@@ -150,27 +156,33 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
   }
 
   // limits the maximum number of messages per partition
-  protected def clamp(leaderOffsets: Map[TopicAndPartition, LeaderOffset])
-    : Map[TopicAndPartition, LeaderOffset] = {
+  protected def clamp(
+      leaderOffsets: Map[TopicAndPartition, LeaderOffset]
+  ): Map[TopicAndPartition, LeaderOffset] = {
     val offsets = leaderOffsets.mapValues(lo => lo.offset)
 
-    maxMessagesPerPartition(offsets).map { mmp =>
-      mmp.map {
-        case (tp, messages) =>
-          val lo = leaderOffsets(tp)
-          tp -> lo.copy(
-              offset = Math.min(currentOffsets(tp) + messages, lo.offset))
+    maxMessagesPerPartition(offsets)
+      .map { mmp =>
+        mmp.map {
+          case (tp, messages) =>
+            val lo = leaderOffsets(tp)
+            tp -> lo.copy(
+              offset = Math.min(currentOffsets(tp) + messages, lo.offset)
+            )
+        }
       }
-    }.getOrElse(leaderOffsets)
+      .getOrElse(leaderOffsets)
   }
 
   override def compute(validTime: Time): Option[KafkaRDD[K, V, U, T, R]] = {
     val untilOffsets = clamp(latestLeaderOffsets(maxRetries))
-    val rdd = KafkaRDD[K, V, U, T, R](context.sparkContext,
-                                      kafkaParams,
-                                      currentOffsets,
-                                      untilOffsets,
-                                      messageHandler)
+    val rdd = KafkaRDD[K, V, U, T, R](
+      context.sparkContext,
+      kafkaParams,
+      currentOffsets,
+      untilOffsets,
+      messageHandler
+    )
 
     // Report the record number and metadata of this batch interval to InputInfoTracker.
     val offsetRanges = currentOffsets.map {
@@ -178,16 +190,21 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
         val uo = untilOffsets(tp)
         OffsetRange(tp.topic, tp.partition, fo, uo.offset)
     }
-    val description = offsetRanges.filter { offsetRange =>
-      // Don't display empty ranges.
-      offsetRange.fromOffset != offsetRange.untilOffset
-    }.map { offsetRange =>
-      s"topic: ${offsetRange.topic}\tpartition: ${offsetRange.partition}\t" +
-      s"offsets: ${offsetRange.fromOffset} to ${offsetRange.untilOffset}"
-    }.mkString("\n")
+    val description = offsetRanges
+      .filter { offsetRange =>
+        // Don't display empty ranges.
+        offsetRange.fromOffset != offsetRange.untilOffset
+      }
+      .map { offsetRange =>
+        s"topic: ${offsetRange.topic}\tpartition: ${offsetRange.partition}\t" +
+          s"offsets: ${offsetRange.fromOffset} to ${offsetRange.untilOffset}"
+      }
+      .mkString("\n")
     // Copy offsetRanges to immutable.List to prevent from being modified by the user
-    val metadata = Map("offsets" -> offsetRanges.toList,
-                       StreamInputInfo.METADATA_KEY_DESCRIPTION -> description)
+    val metadata = Map(
+      "offsets" -> offsetRanges.toList,
+      StreamInputInfo.METADATA_KEY_DESCRIPTION -> description
+    )
     val inputInfo = StreamInputInfo(id, rdd.count, metadata)
     ssc.scheduler.inputInfoTracker.reportInfo(validTime, inputInfo)
 
@@ -201,9 +218,11 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
 
   private[streaming] class DirectKafkaInputDStreamCheckpointData
       extends DStreamCheckpointData(this) {
-    def batchForTime: mutable.HashMap[Time, Array[(String, Int, Long, Long)]] = {
-      data.asInstanceOf[mutable.HashMap[
-              Time, Array[OffsetRange.OffsetRangeTuple]]]
+    def batchForTime
+        : mutable.HashMap[Time, Array[(String, Int, Long, Long)]] = {
+      data.asInstanceOf[mutable.HashMap[Time, Array[
+        OffsetRange.OffsetRangeTuple
+      ]]]
     }
 
     override def update(time: Time) {
@@ -228,13 +247,16 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
       batchForTime.toSeq.sortBy(_._1)(Time.ordering).foreach {
         case (t, b) =>
           logInfo(
-              s"Restoring KafkaRDD for time $t ${b.mkString("[", ", ", "]")}")
+            s"Restoring KafkaRDD for time $t ${b.mkString("[", ", ", "]")}"
+          )
           generatedRDDs +=
-            t -> new KafkaRDD[K, V, U, T, R](context.sparkContext,
-                                             kafkaParams,
-                                             b.map(OffsetRange(_)),
-                                             leaders,
-                                             messageHandler)
+            t -> new KafkaRDD[K, V, U, T, R](
+              context.sparkContext,
+              kafkaParams,
+              b.map(OffsetRange(_)),
+              leaders,
+              messageHandler
+            )
       }
     }
   }
@@ -243,8 +265,9 @@ private[streaming] class DirectKafkaInputDStream[K : ClassTag,
     * A RateController to retrieve the rate from RateEstimator.
     */
   private[streaming] class DirectKafkaRateController(
-      id: Int, estimator: RateEstimator)
-      extends RateController(id, estimator) {
+      id: Int,
+      estimator: RateEstimator
+  ) extends RateController(id, estimator) {
     override def publish(rate: Long): Unit = ()
   }
 }

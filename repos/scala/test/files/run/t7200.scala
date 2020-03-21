@@ -19,13 +19,16 @@ object Test extends App {
     def coflatMap[A, B](f: Nel[A] => B) =
       // ok w/ return type
       l =>
-        Nel(f(l), l.tail match {
-          case Nil => Nil
-          case h :: t => {
+        Nel(
+          f(l),
+          l.tail match {
+            case Nil => Nil
+            case h :: t => {
               val r = coflatMap(f)(Nel(h, t)) // ok w/ type args
               r.head :: r.tail
             }
-        })
+          }
+        )
   }
 
   // Without a recursive call all is well, but with recursion we get a

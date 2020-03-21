@@ -49,8 +49,10 @@ class Analyzer(
     search: SearchService,
     implicit val config: EnsimeConfig,
     implicit val vfs: EnsimeVFS
-)
-    extends Actor with Stash with ActorLogging with RefactoringHandler {
+) extends Actor
+    with Stash
+    with ActorLogging
+    with RefactoringHandler {
 
   import FileUtils._
 
@@ -75,8 +77,8 @@ class Analyzer(
       case None =>
         log.warning("scala-library.jar not present, enabling Odersky mode")
     }
-    settings.classpath.value = config.compileClasspath.mkString(
-        JFile.pathSeparator)
+    settings.classpath.value =
+      config.compileClasspath.mkString(JFile.pathSeparator)
     settings.processArguments(config.compilerArgs, processAll = false)
     presCompLog.debug("Presentation Compiler settings:\n" + settings)
 
@@ -96,20 +98,22 @@ class Analyzer(
     scalaCompiler = makeScalaCompiler()
 
     broadcaster ! SendBackgroundMessageEvent(
-        "Initializing Analyzer. Please wait...")
+      "Initializing Analyzer. Please wait..."
+    )
 
     scalaCompiler.askNotifyWhenReady()
     if (config.sourceMode) scalaCompiler.askReloadAllFiles()
   }
 
-  protected def makeScalaCompiler() = new RichPresentationCompiler(
+  protected def makeScalaCompiler() =
+    new RichPresentationCompiler(
       config,
       settings,
       reporter,
       self,
       indexer,
       search
-  )
+    )
 
   protected def restartCompiler(keepLoaded: Boolean): Unit = {
     log.warning("Restarting the Presentation Compiler")
@@ -131,39 +135,41 @@ class Analyzer(
 
   def receive: Receive = startup
 
-  def startup: Receive = withLabel("startup") {
-    case FullTypeCheckCompleteEvent =>
-      reporter.enable()
-      // legacy clients expect to see AnalyzerReady and a
-      // FullTypeCheckCompleteEvent on connection.
-      broadcaster ! Broadcaster.Persist(AnalyzerReadyEvent)
-      broadcaster ! Broadcaster.Persist(FullTypeCheckCompleteEvent)
-      context.become(ready)
-      unstashAll()
+  def startup: Receive =
+    withLabel("startup") {
+      case FullTypeCheckCompleteEvent =>
+        reporter.enable()
+        // legacy clients expect to see AnalyzerReady and a
+        // FullTypeCheckCompleteEvent on connection.
+        broadcaster ! Broadcaster.Persist(AnalyzerReadyEvent)
+        broadcaster ! Broadcaster.Persist(FullTypeCheckCompleteEvent)
+        context.become(ready)
+        unstashAll()
 
-    case other =>
-      stash()
-  }
+      case other =>
+        stash()
+    }
 
-  def ready: Receive = withLabel("ready") {
-    case ReloadExistingFilesEvent if allFilesMode =>
-      log.info("Skipping reload, in all-files mode")
-    case ReloadExistingFilesEvent =>
-      restartCompiler(keepLoaded = true)
+  def ready: Receive =
+    withLabel("ready") {
+      case ReloadExistingFilesEvent if allFilesMode =>
+        log.info("Skipping reload, in all-files mode")
+      case ReloadExistingFilesEvent =>
+        restartCompiler(keepLoaded = true)
 
-    case FullTypeCheckCompleteEvent =>
-      broadcaster ! FullTypeCheckCompleteEvent
+      case FullTypeCheckCompleteEvent =>
+        broadcaster ! FullTypeCheckCompleteEvent
 
-    case req: RpcAnalyserRequest =>
-      // fommil: I'm not entirely sure about the logic of
-      // enabling/disabling the reporter so I am reluctant to refactor
-      // this, but it would perhaps be simpler if we enable the
-      // reporter when the presentation compiler is loaded, and only
-      // disable it when we explicitly want it to be quiet, instead of
-      // enabling on every incoming message.
-      reporter.enable()
-      allTheThings(req)
-  }
+      case req: RpcAnalyserRequest =>
+        // fommil: I'm not entirely sure about the logic of
+        // enabling/disabling the reporter so I am reluctant to refactor
+        // this, but it would perhaps be simpler if we enable the
+        // reporter when the presentation compiler is loaded, and only
+        // disable it when we explicitly want it to be quiet, instead of
+        // enabling on every incoming message.
+        reporter.enable()
+        allTheThings(req)
+    }
 
   def allTheThings: PartialFunction[RpcAnalyserRequest, Unit] = {
     case RemoveFileReq(file: File) =>
@@ -201,7 +207,10 @@ class Analyzer(
       sender ! withExisting(fileInfo) {
         reporter.disable()
         scalaCompiler.askCompletionsAt(
-            pos(fileInfo, point), maxResults, caseSens)
+          pos(fileInfo, point),
+          maxResults,
+          caseSens
+        )
       }
     case UsesOfSymbolAtPointReq(file, point) =>
       sender ! withExisting(file) {
@@ -229,9 +238,11 @@ class Analyzer(
         scalaCompiler.askLoadedTyped(p.source)
         scalaCompiler.askSymbolInfoAt(p).getOrElse(FalseResponse)
       }
-    case SymbolByNameReq(typeFullName: String,
-                         memberName: Option[String],
-                         signatureString: Option[String]) =>
+    case SymbolByNameReq(
+          typeFullName: String,
+          memberName: Option[String],
+          signatureString: Option[String]
+        ) =>
       sender ! scalaCompiler
         .askSymbolByName(typeFullName, memberName, signatureString)
         .getOrElse(FalseResponse)
@@ -239,11 +250,16 @@ class Analyzer(
       val p = pos(file, range)
       scalaCompiler.askLoadedTyped(p.source)
       sender() ! scalaCompiler.askDocSignatureAtPoint(p)
-    case DocUriForSymbolReq(typeFullName: String,
-                            memberName: Option[String],
-                            signatureString: Option[String]) =>
+    case DocUriForSymbolReq(
+          typeFullName: String,
+          memberName: Option[String],
+          signatureString: Option[String]
+        ) =>
       sender() ! scalaCompiler.askDocSignatureForSymbol(
-          typeFullName, memberName, signatureString)
+        typeFullName,
+        memberName,
+        signatureString
+      )
     case InspectPackageByPathReq(path: String) =>
       sender ! scalaCompiler.askPackageByPath(path).getOrElse(FalseResponse)
     case TypeAtPointReq(file, range: OffsetRange) =>
@@ -293,9 +309,8 @@ class Analyzer(
   def handleReloadFiles(files: List[SourceFileInfo]): RpcResponse = {
     val (existing, missingFiles) = files.partition(FileUtils.exists)
     if (missingFiles.nonEmpty) {
-      val missingFilePaths = missingFiles.map { f =>
-        "\"" + f.file + "\""
-      }.mkString(",")
+      val missingFilePaths =
+        missingFiles.map { f => "\"" + f.file + "\"" }.mkString(",")
       EnsimeServerError(s"file(s): $missingFilePaths do not exist")
     } else {
       val (javas, scalas) =
@@ -340,8 +355,8 @@ object Analyzer {
       broadcaster: ActorRef,
       indexer: ActorRef,
       search: SearchService
-  )(
-      implicit config: EnsimeConfig,
+  )(implicit
+      config: EnsimeConfig,
       vfs: EnsimeVFS
   ) = Props(new Analyzer(broadcaster, indexer, search, config, vfs))
 }

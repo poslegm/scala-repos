@@ -16,21 +16,25 @@ import scala.reflect.ClassTag
   * @author dlwh
   * @author Martin Senne
   **/
-class BitVector(val data: java.util.BitSet,
-                val length: Int,
-                val enforceLength: Boolean = true)
-    extends Vector[Boolean] with VectorLike[Boolean, BitVector] {
+class BitVector(
+    val data: java.util.BitSet,
+    val length: Int,
+    val enforceLength: Boolean = true
+) extends Vector[Boolean]
+    with VectorLike[Boolean, BitVector] {
   def apply(i: Int): Boolean = {
     if (i < 0 || (i >= length))
       throw new IndexOutOfBoundsException(
-          s"$i is not in the range [0, $length)")
+        s"$i is not in the range [0, $length)"
+      )
     data.get(i)
   }
 
   def update(i: Int, v: Boolean) {
     if (i < 0 || (i >= length))
       throw new IndexOutOfBoundsException(
-          s"$i is not in the range [0, $length)")
+        s"$i is not in the range [0, $length)"
+      )
     data.set(i, v)
   }
 
@@ -49,12 +53,12 @@ class BitVector(val data: java.util.BitSet,
       var _next = firstBit
       def hasNext: Boolean =
         (_next >= 0) &&
-        (nextReady || {
-              _next += 1
-              _next = data.nextSetBit(_next)
-              nextReady = _next >= 0
-              nextReady
-            })
+          (nextReady || {
+            _next += 1
+            _next = data.nextSetBit(_next)
+            nextReady = _next >= 0
+            nextReady
+          })
 
       def next(): Int = {
         if (!nextReady) {
@@ -79,7 +83,7 @@ class BitVector(val data: java.util.BitSet,
     else
       other match {
         case x: BitVector => !x.enforceLength || x.length == length
-        case _ => other.length == length
+        case _            => other.length == length
       }
   }
 
@@ -129,8 +133,9 @@ object BitVector extends BitVectorOps {
     def isTraversableAgain(from: BitVector): Boolean = true
   }
 
-  implicit def canMapValues[V2](implicit man: ClassTag[V2])
-    : CanMapValues[BitVector, Boolean, V2, DenseVector[V2]] = {
+  implicit def canMapValues[V2](implicit
+      man: ClassTag[V2]
+  ): CanMapValues[BitVector, Boolean, V2, DenseVector[V2]] = {
     new CanMapValues[BitVector, Boolean, V2, DenseVector[V2]] {
 
       /**Maps all key-value pairs from the given collection. */
@@ -156,16 +161,16 @@ object BitVector extends BitVectorOps {
       }
     }
 
-  implicit def canTraverseKeyValuePairs: CanTraverseKeyValuePairs[
-      BitVector, Int, Boolean] =
+  implicit def canTraverseKeyValuePairs
+      : CanTraverseKeyValuePairs[BitVector, Int, Boolean] =
     new CanTraverseKeyValuePairs[BitVector, Int, Boolean] {
       def isTraversableAgain(from: BitVector): Boolean = true
 
       /** Iterates all key-value pairs from the given collection. */
       def traverse(
           from: BitVector,
-          fn: CanTraverseKeyValuePairs.KeyValuePairsVisitor[Int, Boolean])
-        : Unit = {
+          fn: CanTraverseKeyValuePairs.KeyValuePairsVisitor[Int, Boolean]
+      ): Unit = {
         for (i <- 0 until from.length) {
           fn.visit(i, from(i))
         }
@@ -185,8 +190,9 @@ object BitVector extends BitVectorOps {
       }
     }
 
-  implicit def canMapPairs[V2](implicit man: ClassTag[V2])
-    : CanMapKeyValuePairs[BitVector, Int, Boolean, V2, DenseVector[V2]] =
+  implicit def canMapPairs[V2](implicit
+      man: ClassTag[V2]
+  ): CanMapKeyValuePairs[BitVector, Int, Boolean, V2, DenseVector[V2]] =
     new CanMapKeyValuePairs[BitVector, Int, Boolean, V2, DenseVector[V2]] {
 
       /**Maps all key-value pairs from the given collection. */
@@ -196,7 +202,9 @@ object BitVector extends BitVectorOps {
 
       /**Maps all active key-value pairs from the given collection. */
       def mapActive(
-          from: BitVector, fn: (Int, Boolean) => V2): DenseVector[V2] = {
+          from: BitVector,
+          fn: (Int, Boolean) => V2
+      ): DenseVector[V2] = {
         map(from, fn)
       }
     }

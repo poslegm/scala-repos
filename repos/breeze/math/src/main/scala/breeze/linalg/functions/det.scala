@@ -7,9 +7,9 @@ import spire.implicits.cforRange
   * Computes the determinant of the given real matrix.
   */
 object det extends UFunc {
-  implicit def canDetUsingLU[T](
-      implicit luImpl: LU.Impl[T, (DenseMatrix[Double], Array[Int])])
-    : Impl[T, Double] = {
+  implicit def canDetUsingLU[T](implicit
+      luImpl: LU.Impl[T, (DenseMatrix[Double], Array[Int])]
+  ): Impl[T, Double] = {
     new Impl[T, Double] {
       def apply(X: T): Double = {
 
@@ -24,14 +24,11 @@ object det extends UFunc {
         //  indices, we have to compare them against their position within the array.  A
         //  final complication is that the array indices are 1-based, due to the LU call
         //  into LAPACK.
-        val numExchangedRows = ipiv.map(_ - 1).zipWithIndex.count { piv =>
-          piv._1 != piv._2
-        }
+        val numExchangedRows =
+          ipiv.map(_ - 1).zipWithIndex.count { piv => piv._1 != piv._2 }
 
         var acc = if (numExchangedRows % 2 == 1) -1.0 else 1.0
-        cforRange(0 until m.rows) { i =>
-          acc *= m(i, i)
-        }
+        cforRange(0 until m.rows) { i => acc *= m(i, i) }
 
         acc
       }

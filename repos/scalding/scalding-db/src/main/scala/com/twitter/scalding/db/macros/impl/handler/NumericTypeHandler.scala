@@ -10,13 +10,14 @@ import com.twitter.scalding._
 import com.twitter.scalding.db.macros.impl.FieldName
 
 object NumericTypeHandler {
-  def apply[T](c: Context)(
-      implicit accessorTree: List[c.universe.MethodSymbol],
+  def apply[T](c: Context)(implicit
+      accessorTree: List[c.universe.MethodSymbol],
       fieldName: FieldName,
       defaultValue: Option[c.Expr[String]],
       annotationInfo: List[(c.universe.Type, Option[Int])],
       nullable: Boolean,
-      numericType: String): scala.util.Try[List[ColumnFormat[c.type]]] = {
+      numericType: String
+  ): scala.util.Try[List[ColumnFormat[c.type]]] = {
     import c.universe._
 
     val helper = new {
@@ -35,8 +36,11 @@ object NumericTypeHandler {
         case WithSize(s) if s > 0 =>
           Success(List(ColumnFormat(c)(accessorTree, numericType, Some(s))))
         case WithSize(s) =>
-          Failure(new Exception(
-                  s"Int field $fieldName, has a size defined that is <= 0."))
+          Failure(
+            new Exception(
+              s"Int field $fieldName, has a size defined that is <= 0."
+            )
+          )
         case WithoutSize =>
           Success(List(ColumnFormat(c)(accessorTree, numericType, None)))
       }

@@ -12,9 +12,9 @@ import scala.concurrent.{ExecutionContext, Future}
   * This is intended only for tests - do not use in production!
   * @param ec the execution context to use.
   */
-class InMemoryStore(
-    implicit val ec: ExecutionContext = ExecutionContext.Implicits.global)
-    extends PersistentStore {
+class InMemoryStore(implicit
+    val ec: ExecutionContext = ExecutionContext.Implicits.global
+) extends PersistentStore {
 
   private[this] val entities = TrieMap.empty[ID, InMemoryEntity]
 
@@ -24,14 +24,18 @@ class InMemoryStore(
     }
 
   override def create(
-      key: ID, content: IndexedSeq[Byte]): Future[PersistentEntity] = Future {
-    if (entities.contains(key))
-      throw new StoreCommandFailedException(
-          s"Entity with id $key already exists!")
-    val entity = InMemoryEntity(key, 0, content)
-    entities.put(key, entity)
-    entity
-  }
+      key: ID,
+      content: IndexedSeq[Byte]
+  ): Future[PersistentEntity] =
+    Future {
+      if (entities.contains(key))
+        throw new StoreCommandFailedException(
+          s"Entity with id $key already exists!"
+        )
+      val entity = InMemoryEntity(key, 0, content)
+      entities.put(key, entity)
+      entity
+    }
 
   override def update(entity: PersistentEntity): Future[PersistentEntity] =
     Future {
@@ -51,7 +55,7 @@ class InMemoryStore(
   override def delete(key: ID): Future[Boolean] = {
     entities.get(key) match {
       case Some(value) => Future.successful(entities.remove(key).isDefined)
-      case None => Future.successful(false)
+      case None        => Future.successful(false)
     }
   }
 
@@ -60,8 +64,10 @@ class InMemoryStore(
 }
 
 case class InMemoryEntity(
-    id: String, version: Int, bytes: IndexedSeq[Byte] = Vector.empty)
-    extends PersistentEntity {
+    id: String,
+    version: Int,
+    bytes: IndexedSeq[Byte] = Vector.empty
+) extends PersistentEntity {
   override def withNewContent(bytes: IndexedSeq[Byte]): PersistentEntity =
     copy(bytes = bytes)
   def withNextVersion: InMemoryEntity = copy(version = version + 1)

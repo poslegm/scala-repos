@@ -1,7 +1,8 @@
 object SCL7502B {
   object literal extends Dynamic {
     def applyDynamicNamed(name: String)(
-        fields: (String, Int)*): Object with Dynamic = sys.error("stub")
+        fields: (String, Int)*
+    ): Object with Dynamic = sys.error("stub")
   }
 
   implicit def boolean2int(b: Boolean): Int = 123

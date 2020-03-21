@@ -14,9 +14,10 @@ import Id._
 trait NaturalTransformation[-F[_], +G[_]] { self =>
   def apply[A](fa: F[A]): G[A]
 
-  def compose[E[_]](f: E ~> F): E ~> G = new (E ~> G) {
-    def apply[A](ea: E[A]) = self(f(ea))
-  }
+  def compose[E[_]](f: E ~> F): E ~> G =
+    new (E ~> G) {
+      def apply[A](ea: E[A]) = self(f(ea))
+    }
 
   def andThen[H[_]](f: G ~> H): F ~> H =
     f compose self
@@ -60,12 +61,12 @@ trait BiNaturalTransformation[-F[_, _], +G[_, _]] { self =>
 
 /** A constrained natural transformation */
 trait ConstrainedNaturalTransformation[F[_], G[_], E[_]] {
-  def apply[A : E](f: F[A]): G[A]
+  def apply[A: E](f: F[A]): G[A]
 }
 
 /** A constrained transformation natural in both sides of a bifunctor */
 trait BiConstrainedNaturalTransformation[F[_, _], G[_, _], C[_], E[_]] {
-  def apply[A : C, B : E](f: F[A, B]): G[A, B]
+  def apply[A: C, B: E](f: F[A, B]): G[A, B]
 }
 
 trait DiNaturalTransformation[F[_, _], G[_, _]] {

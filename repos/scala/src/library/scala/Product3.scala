@@ -11,7 +11,8 @@ package scala
 
 object Product3 {
   def unapply[T1, T2, T3](
-      x: Product3[T1, T2, T3]): Option[Product3[T1, T2, T3]] =
+      x: Product3[T1, T2, T3]
+  ): Option[Product3[T1, T2, T3]] =
     Some(x)
 }
 
@@ -33,12 +34,13 @@ trait Product3[+T1, +T2, +T3] extends Any with Product {
     *  @throws  IndexOutOfBoundsException
     */
   @throws(classOf[IndexOutOfBoundsException])
-  override def productElement(n: Int) = n match {
-    case 0 => _1
-    case 1 => _2
-    case 2 => _3
-    case _ => throw new IndexOutOfBoundsException(n.toString())
-  }
+  override def productElement(n: Int) =
+    n match {
+      case 0 => _1
+      case 1 => _2
+      case 2 => _3
+      case _ => throw new IndexOutOfBoundsException(n.toString())
+    }
 
   /** A projection of element 1 of this Product.
     *  @return   A projection of element 1.

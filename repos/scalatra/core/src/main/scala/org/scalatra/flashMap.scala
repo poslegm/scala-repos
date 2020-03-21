@@ -45,17 +45,18 @@ class FlashMap extends MutableMapWithIndifferentAccess[Any] with Serializable {
     * Creates a new iterator over the values of the flash map.  These are the
     * values that were added during the last request.
     */
-  def iterator = new Iterator[(String, Any)] {
-    private[this] val it = m.iterator
+  def iterator =
+    new Iterator[(String, Any)] {
+      private[this] val it = m.iterator
 
-    def hasNext = it.hasNext
+      def hasNext = it.hasNext
 
-    def next = {
-      val kv = it.next
-      flagged += kv._1
-      kv
+      def next = {
+        val kv = it.next
+        flagged += kv._1
+        kv
+      }
     }
-  }
 
   /**
     * Returns the value associated with a key and flags it to be swept.
@@ -69,9 +70,7 @@ class FlashMap extends MutableMapWithIndifferentAccess[Any] with Serializable {
     * Removes all flagged entries.
     */
   def sweep(): Unit = {
-    flagged foreach { key =>
-      m -= key
-    }
+    flagged foreach { key => m -= key }
   }
 
   /**
@@ -143,7 +142,9 @@ trait FlashMapSupport extends Handler {
   import org.scalatra.FlashMapSupport._
 
   abstract override def handle(
-      req: HttpServletRequest, res: HttpServletResponse): Unit = {
+      req: HttpServletRequest,
+      res: HttpServletResponse
+  ): Unit = {
     withRequest(req) {
       val f = flash
       val isOutermost = !request.contains(LockKey)

@@ -29,7 +29,10 @@ class CollapseProjectSuite extends PlanTest {
   object Optimize extends RuleExecutor[LogicalPlan] {
     val batches =
       Batch("Subqueries", FixedPoint(10), EliminateSubqueryAliases) :: Batch(
-          "CollapseProject", Once, CollapseProject) :: Nil
+        "CollapseProject",
+        Once,
+        CollapseProject
+      ) :: Nil
   }
 
   val testRelation = LocalRelation('a.int, 'b.int)
@@ -84,7 +87,8 @@ class CollapseProjectSuite extends PlanTest {
   }
 
   test(
-      "collapse one nondeterministic, one deterministic, independent projects into one") {
+    "collapse one nondeterministic, one deterministic, independent projects into one"
+  ) {
     val query = testRelation
       .select(Rand(10).as('rand), 'a)
       .select(('a + 1).as('a_plus_1))

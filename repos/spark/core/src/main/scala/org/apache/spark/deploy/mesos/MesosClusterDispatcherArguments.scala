@@ -23,7 +23,9 @@ import org.apache.spark.SparkConf
 import org.apache.spark.util.{IntParam, Utils}
 
 private[mesos] class MesosClusterDispatcherArguments(
-    args: Array[String], conf: SparkConf) {
+    args: Array[String],
+    conf: SparkConf
+) {
   var host = Utils.localHostName()
   var port = 7077
   var name = "Spark Cluster"
@@ -37,47 +39,49 @@ private[mesos] class MesosClusterDispatcherArguments(
   propertiesFile = Utils.loadDefaultSparkProperties(conf, propertiesFile)
 
   @tailrec
-  private def parse(args: List[String]): Unit = args match {
-    case ("--host" | "-h") :: value :: tail =>
-      Utils.checkHost(value, "Please use hostname " + value)
-      host = value
-      parse(tail)
+  private def parse(args: List[String]): Unit =
+    args match {
+      case ("--host" | "-h") :: value :: tail =>
+        Utils.checkHost(value, "Please use hostname " + value)
+        host = value
+        parse(tail)
 
-    case ("--port" | "-p") :: IntParam(value) :: tail =>
-      port = value
-      parse(tail)
+      case ("--port" | "-p") :: IntParam(value) :: tail =>
+        port = value
+        parse(tail)
 
-    case ("--webui-port") :: IntParam(value) :: tail =>
-      webUiPort = value
-      parse(tail)
+      case ("--webui-port") :: IntParam(value) :: tail =>
+        webUiPort = value
+        parse(tail)
 
-    case ("--zk" | "-z") :: value :: tail =>
-      zookeeperUrl = Some(value)
-      parse(tail)
+      case ("--zk" | "-z") :: value :: tail =>
+        zookeeperUrl = Some(value)
+        parse(tail)
 
-    case ("--master" | "-m") :: value :: tail =>
-      if (!value.startsWith("mesos://")) {
-        // scalastyle:off println
-        System.err.println(
-            "Cluster dispatcher only supports mesos (uri begins with mesos://)")
-        // scalastyle:on println
-        System.exit(1)
-      }
-      masterUrl = value.stripPrefix("mesos://")
-      parse(tail)
+      case ("--master" | "-m") :: value :: tail =>
+        if (!value.startsWith("mesos://")) {
+          // scalastyle:off println
+          System.err.println(
+            "Cluster dispatcher only supports mesos (uri begins with mesos://)"
+          )
+          // scalastyle:on println
+          System.exit(1)
+        }
+        masterUrl = value.stripPrefix("mesos://")
+        parse(tail)
 
-    case ("--name") :: value :: tail =>
-      name = value
-      parse(tail)
+      case ("--name") :: value :: tail =>
+        name = value
+        parse(tail)
 
-    case ("--properties-file") :: value :: tail =>
-      propertiesFile = value
-      parse(tail)
+      case ("--properties-file") :: value :: tail =>
+        propertiesFile = value
+        parse(tail)
 
-    case ("--help") :: tail =>
-      printUsageAndExit(0)
+      case ("--help") :: tail =>
+        printUsageAndExit(0)
 
-    case Nil => {
+      case Nil => {
         if (masterUrl == null) {
           // scalastyle:off println
           System.err.println("--master is required")
@@ -86,14 +90,14 @@ private[mesos] class MesosClusterDispatcherArguments(
         }
       }
 
-    case _ =>
-      printUsageAndExit(1)
-  }
+      case _ =>
+        printUsageAndExit(1)
+    }
 
   private def printUsageAndExit(exitCode: Int): Unit = {
     // scalastyle:off println
     System.err.println(
-        "Usage: MesosClusterDispatcher [options]\n" + "\n" + "Options:\n" +
+      "Usage: MesosClusterDispatcher [options]\n" + "\n" + "Options:\n" +
         "  -h HOST, --host HOST    Hostname to listen on\n" +
         "  -p PORT, --port PORT    Port to listen on (default: 7077)\n" +
         "  --webui-port WEBUI_PORT WebUI Port to listen on (default: 8081)\n" +
@@ -102,7 +106,8 @@ private[mesos] class MesosClusterDispatcherArguments(
         "  -z --zk ZOOKEEPER       Comma delimited URLs for connecting to \n" +
         "                          Zookeeper for persistence\n" +
         "  --properties-file FILE  Path to a custom Spark properties file.\n" +
-        "                          Default is conf/spark-defaults.conf.")
+        "                          Default is conf/spark-defaults.conf."
+    )
     // scalastyle:on println
     System.exit(exitCode)
   }

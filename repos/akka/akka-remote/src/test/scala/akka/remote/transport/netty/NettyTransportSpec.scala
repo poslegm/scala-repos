@@ -13,9 +13,11 @@ import scala.concurrent.duration.Duration
 
 object NettyTransportSpec {
   val commonConfig =
-    ConfigFactory.parseString("""
+    ConfigFactory.parseString(
+      """
     akka.actor.provider = "akka.remote.RemoteActorRefProvider"
-  """)
+  """
+    )
 
   def getInternal()(implicit sys: ActorSystem) =
     BoundAddressesExtension(sys).boundAddresses.values.flatten
@@ -25,10 +27,12 @@ object NettyTransportSpec {
 
   implicit class RichInetSocketAddress(address: InetSocketAddress) {
     def toAkkaAddress(protocol: String)(implicit system: ActorSystem) =
-      Address(protocol,
-              system.name,
-              address.getAddress.getHostAddress,
-              address.getPort)
+      Address(
+        protocol,
+        system.name,
+        address.getAddress.getHostAddress,
+        address.getPort
+      )
   }
 
   implicit class RichAkkaAddress(address: Address) {
@@ -41,10 +45,8 @@ class NettyTransportSpec extends WordSpec with Matchers with BindBehaviour {
   import akka.remote.transport.netty.NettyTransportSpec._
 
   "NettyTransport" should {
-    behave like theOneWhoKnowsTheDifferenceBetweenBoundAndRemotingAddress(
-        "tcp")
-    behave like theOneWhoKnowsTheDifferenceBetweenBoundAndRemotingAddress(
-        "udp")
+    behave like theOneWhoKnowsTheDifferenceBetweenBoundAndRemotingAddress("tcp")
+    behave like theOneWhoKnowsTheDifferenceBetweenBoundAndRemotingAddress("udp")
 
     "bind to a random port" in {
       val bindConfig = ConfigFactory.parseString(s"""
@@ -62,7 +64,9 @@ class NettyTransportSpec extends WordSpec with Matchers with BindBehaviour {
 
     "bind to a random port but remoting accepts from a specified port" in {
       val address = SocketUtil.temporaryServerAddress(
-          InetAddress.getLocalHost.getHostAddress, udp = false)
+        InetAddress.getLocalHost.getHostAddress,
+        udp = false
+      )
 
       val bindConfig = ConfigFactory.parseString(s"""
         akka.remote.netty.tcp {
@@ -81,7 +85,9 @@ class NettyTransportSpec extends WordSpec with Matchers with BindBehaviour {
 
     "bind to a specified port and remoting accepts from a bound port" in {
       val address = SocketUtil.temporaryServerAddress(
-          InetAddress.getLocalHost.getHostAddress, udp = false)
+        InetAddress.getLocalHost.getHostAddress,
+        udp = false
+      )
 
       val bindConfig = ConfigFactory.parseString(s"""
         akka.remote.netty.tcp {
@@ -125,7 +131,9 @@ class NettyTransportSpec extends WordSpec with Matchers with BindBehaviour {
         ActorSystem("sys", bindConfig.withFallback(commonConfig))
 
       getInternal.flatMap(_.port) should contain(getExternal.port.get)
-      getInternal.map(_.host.get should include regex "0.0.0.0".r) // regexp dot is intentional to match IPv4 and 6 addresses
+      getInternal.map(
+        _.host.get should include regex "0.0.0.0".r
+      ) // regexp dot is intentional to match IPv4 and 6 addresses
 
       Await.result(sys.terminate(), Duration.Inf)
     }
@@ -137,7 +145,8 @@ trait BindBehaviour {
   import akka.remote.transport.netty.NettyTransportSpec._
 
   def theOneWhoKnowsTheDifferenceBetweenBoundAndRemotingAddress(
-      proto: String) = {
+      proto: String
+  ) = {
     s"bind to default $proto address" in {
       val address = SocketUtil.temporaryServerAddress(udp = proto == "udp")
 
@@ -161,15 +170,22 @@ trait BindBehaviour {
 
     s"bind to specified $proto address" in {
       val address = SocketUtil.temporaryServerAddress(
-          address = "127.0.0.1", udp = proto == "udp")
-      val bindAddress = try SocketUtil.temporaryServerAddress(
-          address = "127.0.1.1", udp = proto == "udp") catch {
-        case e: java.net.BindException ⇒
-          info(
-              s"skipping test due to [${e.getMessage}], you probably have to use `ifconfig lo0 alias 127.0.1.1`")
-          pending
-          null
-      }
+        address = "127.0.0.1",
+        udp = proto == "udp"
+      )
+      val bindAddress =
+        try SocketUtil.temporaryServerAddress(
+          address = "127.0.1.1",
+          udp = proto == "udp"
+        )
+        catch {
+          case e: java.net.BindException ⇒
+            info(
+              s"skipping test due to [${e.getMessage}], you probably have to use `ifconfig lo0 alias 127.0.1.1`"
+            )
+            pending
+            null
+        }
 
       val bindConfig = ConfigFactory.parseString(s"""
         akka.remote {

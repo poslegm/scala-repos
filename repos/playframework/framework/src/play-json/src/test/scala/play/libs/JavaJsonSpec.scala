@@ -28,7 +28,8 @@ class JavaJsonSpec extends Specification {
         |}""".stripMargin
 
     val testJsonInputStream = new ByteArrayInputStream(
-        testJsonString.getBytes("UTF-8"))
+      testJsonString.getBytes("UTF-8")
+    )
 
     val testJson = mapper.createObjectNode()
     testJson
@@ -74,11 +75,12 @@ class JavaJsonSpec extends Specification {
       }
     }
     "ignore unknown fields when deserializing to a POJO" in new JsonScope(
-        Json.newDefaultMapper()) {
+      Json.newDefaultMapper()
+    ) {
       val javaPOJO = Json.fromJson(testJson, classOf[JavaPOJO])
       javaPOJO.getBar must_== "baz"
       javaPOJO.getFoo must_== "bar"
-      javaPOJO.getInstant must_== Instant.ofEpochSecond(1425435861l)
+      javaPOJO.getInstant must_== Instant.ofEpochSecond(1425435861L)
       javaPOJO.getOptNumber must_== Optional.of(55555)
     }
   }

@@ -1,7 +1,12 @@
 package scalaz
 package concurrent
 
-import java.util.concurrent.{ScheduledExecutorService, ExecutorService, ThreadFactory, Executors}
+import java.util.concurrent.{
+  ScheduledExecutorService,
+  ExecutorService,
+  ThreadFactory,
+  Executors
+}
 
 /**
   * Evaluate an expression in some specific manner. A typical strategy will schedule asynchronous
@@ -37,7 +42,9 @@ trait Strategys extends StrategysLow {
     */
   val DefaultExecutorService: ExecutorService = {
     Executors.newFixedThreadPool(
-        Runtime.getRuntime.availableProcessors, DefaultDaemonThreadFactory)
+      Runtime.getRuntime.availableProcessors,
+      DefaultDaemonThreadFactory
+    )
   }
 
   /**
@@ -60,8 +67,7 @@ trait StrategysLow {
   implicit val Sequential: Strategy = new Strategy {
     def apply[A](a: => A) = {
       val v = a
-      () =>
-        v
+      () => v
     }
   }
 
@@ -70,18 +76,18 @@ trait StrategysLow {
   /**
     * A strategy that evaluates its arguments using an implicit ExecutorService.
     */
-  implicit def Executor(implicit s: ExecutorService) = new Strategy {
+  implicit def Executor(implicit s: ExecutorService) =
+    new Strategy {
 
-    import java.util.concurrent.Callable
+      import java.util.concurrent.Callable
 
-    def apply[A](a: => A) = {
-      val fut = s.submit(new Callable[A] {
-        def call = a
-      })
-      () =>
-        fut.get
+      def apply[A](a: => A) = {
+        val fut = s.submit(new Callable[A] {
+          def call = a
+        })
+        () => fut.get
+      }
     }
-  }
 
   /**
     * A strategy that performs no evaluation of its argument.
@@ -101,8 +107,7 @@ trait StrategysLow {
         def call = a
       })
       thread.shutdown()
-      () =>
-        fut.get
+      () => fut.get
     }
   }
 
@@ -118,8 +123,7 @@ trait StrategysLow {
         def doInBackground = a
       }
       worker.execute
-      () =>
-        worker.get
+      () => worker.get
     }
   }
 
@@ -132,13 +136,11 @@ trait StrategysLow {
     import java.util.concurrent.{Callable, FutureTask}
 
     def apply[A](a: => A) = {
-      val task = new FutureTask[A](
-          new Callable[A] {
+      val task = new FutureTask[A](new Callable[A] {
         def call = a
       })
       invokeLater(task)
-      () =>
-        task.get
+      () => task.get
     }
   }
 }

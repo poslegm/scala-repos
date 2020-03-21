@@ -15,10 +15,11 @@ object SnapshotSerializationSpec {
   // is bigger than 255 bytes (this happens to be 269)
   object XXXXXXXXXXXXXXXXXXXX {
     class MySnapshot(val id: String) extends SerializationMarker {
-      override def equals(obj: scala.Any) = obj match {
-        case s: MySnapshot ⇒ s.id.equals(id)
-        case _ ⇒ false
-      }
+      override def equals(obj: scala.Any) =
+        obj match {
+          case s: MySnapshot ⇒ s.id.equals(id)
+          case _ ⇒ false
+        }
     }
   }
 
@@ -65,11 +66,12 @@ object SnapshotSerializationSpec {
 
 class SnapshotSerializationSpec
     extends PersistenceSpec(
-        PersistenceSpec.config(
-            "leveldb",
-            "SnapshotSerializationSpec",
-            serialization = "off",
-            extraConfig = Some("""
+      PersistenceSpec.config(
+        "leveldb",
+        "SnapshotSerializationSpec",
+        serialization = "off",
+        extraConfig =
+          Some("""
     akka.actor {
       serializers {
         my-snapshot = "akka.persistence.SnapshotSerializationSpec$MySerializer"
@@ -78,7 +80,10 @@ class SnapshotSerializationSpec
         "akka.persistence.SnapshotSerializationSpec$SerializationMarker" = my-snapshot
       }
     }
-  """))) with ImplicitSender {
+  """)
+      )
+    )
+    with ImplicitSender {
 
   import SnapshotSerializationSpec._
   import SnapshotSerializationSpec.XXXXXXXXXXXXXXXXXXXX._

@@ -25,13 +25,18 @@ class DecoderSpec extends WordSpec with CodecSpecSupport {
     }
     "correctly transform the message if it contains a Content-Encoding header" in {
       val request =
-        HttpRequest(POST,
-                    entity = HttpEntity(smallText),
-                    headers = List(`Content-Encoding`(DummyDecoder.encoding)))
+        HttpRequest(
+          POST,
+          entity = HttpEntity(smallText),
+          headers = List(`Content-Encoding`(DummyDecoder.encoding))
+        )
       val decoded = DummyDecoder.decode(request)
       decoded.headers shouldEqual Nil
-      decoded.entity.toStrict(1.second).awaitResult(1.second) shouldEqual HttpEntity(
-          dummyDecompress(smallText))
+      decoded.entity
+        .toStrict(1.second)
+        .awaitResult(1.second) shouldEqual HttpEntity(
+        dummyDecompress(smallText)
+      )
     }
   }
 
@@ -43,21 +48,29 @@ class DecoderSpec extends WordSpec with CodecSpecSupport {
   case object DummyDecoder extends StreamDecoder {
     val encoding = HttpEncodings.compress
 
-    override def newDecompressorStage(maxBytesPerChunk: Int)
-      : () ⇒ GraphStage[FlowShape[ByteString, ByteString]] =
+    override def newDecompressorStage(
+        maxBytesPerChunk: Int
+    ): () ⇒ GraphStage[FlowShape[ByteString, ByteString]] =
       () ⇒
         new SimpleLinearGraphStage[ByteString] {
           override def createLogic(
-              inheritedAttributes: Attributes): GraphStageLogic =
+              inheritedAttributes: Attributes
+          ): GraphStageLogic =
             new GraphStageLogic(shape) {
-              setHandler(in, new InHandler {
-                override def onPush(): Unit =
-                  push(out, grab(in) ++ ByteString("compressed"))
-              })
-              setHandler(out, new OutHandler {
-                override def onPull(): Unit = pull(in)
-              })
+              setHandler(
+                in,
+                new InHandler {
+                  override def onPush(): Unit =
+                    push(out, grab(in) ++ ByteString("compressed"))
+                }
+              )
+              setHandler(
+                out,
+                new OutHandler {
+                  override def onPull(): Unit = pull(in)
+                }
+              )
             }
-      }
+        }
   }
 }

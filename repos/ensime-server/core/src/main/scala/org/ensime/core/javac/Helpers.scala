@@ -5,14 +5,21 @@ package org.ensime.core.javac
 import akka.event.slf4j.SLF4JLogging
 import com.sun.source.tree.{Tree, IdentifierTree}
 import com.sun.source.util.TreePath
-import javax.lang.model.`type`.{DeclaredType, PrimitiveType, TypeKind, TypeMirror}
+import javax.lang.model.`type`.{
+  DeclaredType,
+  PrimitiveType,
+  TypeKind,
+  TypeMirror
+}
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.{Element, TypeElement}
 import org.ensime.core.{DocFqn, DocSig}
 
-case class JavaFqn(pack: Option[String],
-                   typename: Option[String],
-                   fieldOrMethod: Option[String]) {
+case class JavaFqn(
+    pack: Option[String],
+    typename: Option[String],
+    fieldOrMethod: Option[String]
+) {
   def toDocSig =
     DocSig(DocFqn(pack.getOrElse(""), typename.getOrElse("")), fieldOrMethod)
   def toFqnString = Array(pack, typename, fieldOrMethod).flatten.mkString(".")
@@ -23,11 +30,14 @@ case class JavaFqn(pack: Option[String],
 
 object JavaFqn {
   def apply(
-      pack: String, tpe: String, fieldOrMethod: Option[String]): JavaFqn = {
+      pack: String,
+      tpe: String,
+      fieldOrMethod: Option[String]
+  ): JavaFqn = {
     JavaFqn(
-        if (pack.isEmpty) None else Some(pack),
-        if (tpe.isEmpty) None else Some(tpe),
-        fieldOrMethod
+      if (pack.isEmpty) None else Some(pack),
+      if (tpe.isEmpty) None else Some(tpe),
+      fieldOrMethod
     )
   }
 }
@@ -36,10 +46,10 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
 
   def typeMirror(info: CompilationInfo, t: Tree): Option[TypeMirror] = {
     Option(
-        info
-          .getTrees()
-          .getTypeMirror(
-              info.getTrees().getPath(info.getCompilationUnit(), t)))
+      info
+        .getTrees()
+        .getTypeMirror(info.getTrees().getPath(info.getCompilationUnit(), t))
+    )
   }
 
   def typeElement(info: CompilationInfo, t: Tree): Option[Element] = {
@@ -57,9 +67,8 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
   }
 
   private def parseFqnAsClass(s: String): Option[JavaFqn] = {
-    val (front, back) = s.split("\\.").partition { s =>
-      s.forall(Character.isLowerCase)
-    }
+    val (front, back) =
+      s.split("\\.").partition { s => s.forall(Character.isLowerCase) }
     Some(JavaFqn(front.mkString("."), back.mkString("."), None))
   }
 
@@ -92,9 +101,8 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
   }
 
   def fqn(info: CompilationInfo, t: Tree): Option[JavaFqn] = {
-    Option(info.getTrees().getPath(info.getCompilationUnit(), t)).flatMap {
-      p =>
-        fqn(info, p)
+    Option(info.getTrees().getPath(info.getCompilationUnit(), t)).flatMap { p =>
+      fqn(info, p)
     }
   }
 
@@ -106,14 +114,14 @@ trait Helpers extends UnsafeHelpers with SLF4JLogging {
     // TypeMirror docs
     tm match {
       case tm: DeclaredType if tm.getKind == TypeKind.DECLARED => {
-          tm.asElement match {
-            case te: TypeElement =>
-              parseFqnAsClass(te.getQualifiedName.toString)
-            case _ => {
-                None
-              }
+        tm.asElement match {
+          case te: TypeElement =>
+            parseFqnAsClass(te.getQualifiedName.toString)
+          case _ => {
+            None
           }
         }
+      }
       case tm: PrimitiveType if tm.getKind.isPrimitive =>
         Some(JavaFqn(None, Some(tm.toString), None))
       case _ => None

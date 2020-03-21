@@ -9,17 +9,20 @@ object Library {
   trait AggregateFunctionSymbol extends TermSymbol
   class JdbcFunction(name: String) extends FunctionSymbol(name) {
     override def hashCode = name.hashCode
-    override def equals(o: Any) = o match {
-      case o: JdbcFunction => name == o.name
-      case _ => false
-    }
+    override def equals(o: Any) =
+      o match {
+        case o: JdbcFunction => name == o.name
+        case _               => false
+      }
   }
   class SqlFunction(name: String) extends FunctionSymbol(name)
   class SqlOperator(name: String) extends FunctionSymbol(name)
   class AggregateFunction(name: String)
-      extends FunctionSymbol(name) with AggregateFunctionSymbol
+      extends FunctionSymbol(name)
+      with AggregateFunctionSymbol
   class SqlAggregateFunction(name: String)
-      extends SqlFunction(name) with AggregateFunctionSymbol
+      extends SqlFunction(name)
+      with AggregateFunctionSymbol
 
   // Boolean operators
   val And = new SqlOperator("and")
@@ -112,7 +115,7 @@ class FunctionSymbol(val name: String) extends TermSymbol {
     Apply(this, ConstArray.from(ch))(tpe)
 
   /** Create a typed Apply of this Symbol */
-  def typed[T : ScalaBaseType](ch: Node*): Apply =
+  def typed[T: ScalaBaseType](ch: Node*): Apply =
     Apply(this, ConstArray.from(ch))(implicitly[ScalaBaseType[T]])
 
   override def toString = "Function " + name

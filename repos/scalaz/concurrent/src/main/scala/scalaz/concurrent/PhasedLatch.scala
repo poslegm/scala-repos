@@ -17,9 +17,10 @@ sealed abstract class PhasedLatch {
 
   /** Await the current phase for the specified period. */
   @throws(classOf[InterruptedException])
-  final def awaitFor(time: Long, unit: TimeUnit) = currentPhase flatMap {
-    awaitPhaseFor(_, time, unit)
-  }
+  final def awaitFor(time: Long, unit: TimeUnit) =
+    currentPhase flatMap {
+      awaitPhaseFor(_, time, unit)
+    }
 
   /** Await for the specified phase.*/
   @throws(classOf[InterruptedException])
@@ -38,7 +39,7 @@ trait PhasedLatches {
   private[this] lazy val phaseOrder = Order.order[Int] { (a, b) =>
     import Ordering._
     (b - a) match {
-      case 0 => EQ
+      case 0          => EQ
       case x if x > 0 => GT
       case y if y < 0 => LT
     }
@@ -76,9 +77,10 @@ trait PhasedLatches {
       def awaitPhase(phase: Int) = IO { sync acquireSharedInterruptibly phase }
 
       @throws(classOf[InterruptedException])
-      def awaitPhaseFor(phase: Int, period: Long, unit: TimeUnit) = IO {
-        sync.tryAcquireSharedNanos(phase, unit.toNanos(period))
-      }
+      def awaitPhaseFor(phase: Int, period: Long, unit: TimeUnit) =
+        IO {
+          sync.tryAcquireSharedNanos(phase, unit.toNanos(period))
+        }
 
       def currentPhase = IO(sync.currentPhase)
     })

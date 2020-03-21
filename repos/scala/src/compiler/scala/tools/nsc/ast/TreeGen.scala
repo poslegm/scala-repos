@@ -31,24 +31,26 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     mkImportFromSelector(qualSym, ImportSelector(name, 0, toName, 0) :: Nil)
 
   private def mkImportFromSelector(
-      qualSym: Symbol, selector: List[ImportSelector]): Import = {
+      qualSym: Symbol,
+      selector: List[ImportSelector]
+  ): Import = {
     assert(qualSym ne null, this)
     val qual = gen.mkAttributedStableRef(qualSym)
     val importSym =
-      (NoSymbol newImport NoPosition setFlag SYNTHETIC setInfo ImportType(
-              qual))
+      (NoSymbol newImport NoPosition setFlag SYNTHETIC setInfo ImportType(qual))
     val importTree =
       (Import(qual, selector) setSymbol importSym setType NoType)
     importTree
   }
 
   // wrap the given expression in a SoftReference so it can be gc-ed
-  def mkSoftRef(expr: Tree): Tree = atPos(expr.pos) {
-    val constructor = SoftReferenceClass.info
-      .nonPrivateMember(nme.CONSTRUCTOR)
-      .suchThat(_.paramss.flatten.size == 1)
-    NewFromConstructor(constructor, expr)
-  }
+  def mkSoftRef(expr: Tree): Tree =
+    atPos(expr.pos) {
+      val constructor = SoftReferenceClass.info
+        .nonPrivateMember(nme.CONSTRUCTOR)
+        .suchThat(_.paramss.flatten.size == 1)
+      NewFromConstructor(constructor, expr)
+    }
 
   // Builds a tree of the form "{ lhs = rhs ; lhs  }"
   def mkAssignAndReturn(lhs: Symbol, rhs: Tree): Tree = {
@@ -80,15 +82,17 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     *  @param    args          value arguments
     *  @return   the tree
     */
-  def mkManifestFactoryCall(full: Boolean,
-                            constructor: String,
-                            tparg: Type,
-                            args: List[Tree]): Tree =
+  def mkManifestFactoryCall(
+      full: Boolean,
+      constructor: String,
+      tparg: Type,
+      args: List[Tree]
+  ): Tree =
     mkMethodCall(
-        if (full) FullManifestModule else PartialManifestModule,
-        newTermName(constructor),
-        List(tparg),
-        args
+      if (full) FullManifestModule else PartialManifestModule,
+      newTermName(constructor),
+      List(tparg),
+      args
     )
 
   /** Make a synchronized block on 'monitor'. */
@@ -100,14 +104,19 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     if (clazz.typeParams.isEmpty) Ident(clazz)
     else
       AppliedTypeTree(
-          Ident(clazz),
-          1 to numParams map (_ => Bind(tpnme.WILDCARD, EmptyTree)) toList)
+        Ident(clazz),
+        1 to numParams map (_ => Bind(tpnme.WILDCARD, EmptyTree)) toList
+      )
   }
   def mkBindForCase(patVar: Symbol, clazz: Symbol, targs: List[Type]): Tree = {
-    Bind(patVar,
-         Typed(Ident(nme.WILDCARD),
-               if (targs.isEmpty) mkAppliedTypeForCase(clazz)
-               else AppliedTypeTree(Ident(clazz), targs map TypeTree)))
+    Bind(
+      patVar,
+      Typed(
+        Ident(nme.WILDCARD),
+        if (targs.isEmpty) mkAppliedTypeForCase(clazz)
+        else AppliedTypeTree(Ident(clazz), targs map TypeTree)
+      )
+    )
   }
 
   def wildcardStar(tree: Tree) =
@@ -132,10 +141,10 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     */
   def mkWrapArray(tree: Tree, elemtp: Type) = {
     mkMethodCall(
-        PredefModule,
-        wrapArrayMethodName(elemtp),
-        if (isPrimitiveValueType(elemtp)) Nil else List(elemtp),
-        List(tree)
+      PredefModule,
+      wrapArrayMethodName(elemtp),
+      if (isPrimitiveValueType(elemtp)) Nil else List(elemtp),
+      List(tree)
     )
   }
 
@@ -147,17 +156,23 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     *    x.$asInstanceOf[`pt`]()  if at or after erasure
     */
   override def mkCast(tree: Tree, pt: Type): Tree = {
-    debuglog("casting " + tree + ":" + tree.tpe + " to " + pt + " at phase: " +
-        phase)
+    debuglog(
+      "casting " + tree + ":" + tree.tpe + " to " + pt + " at phase: " +
+        phase
+    )
     assert(!tree.tpe.isInstanceOf[MethodType], tree)
     assert(!pt.isInstanceOf[MethodType], tree)
-    assert(pt eq pt.normalize,
-           tree + " : " + debugString(pt) + " ~>" + debugString(pt.normalize))
+    assert(
+      pt eq pt.normalize,
+      tree + " : " + debugString(pt) + " ~>" + debugString(pt.normalize)
+    )
     atPos(tree.pos) {
-      mkAsInstanceOf(tree,
-                     pt,
-                     any = !phase.next.erasedTypes,
-                     wrapInApply = isAtPhaseAfter(currentRun.uncurryPhase))
+      mkAsInstanceOf(
+        tree,
+        pt,
+        any = !phase.next.erasedTypes,
+        wrapInApply = isAtPhaseAfter(currentRun.uncurryPhase)
+      )
     }
   }
 
@@ -177,11 +192,12 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
 
   /** Translate names in Select/Ident nodes to type names.
     */
-  def convertToTypeName(tree: Tree): Option[RefTree] = tree match {
-    case Select(qual, name) => Some(Select(qual, name.toTypeName))
-    case Ident(name) => Some(Ident(name.toTypeName))
-    case _ => None
-  }
+  def convertToTypeName(tree: Tree): Option[RefTree] =
+    tree match {
+      case Select(qual, name) => Some(Select(qual, name.toTypeName))
+      case Ident(name)        => Some(Ident(name.toTypeName))
+      case _                  => None
+    }
 
   /** Try to convert Select(qual, name) to a SelectFromTypeTree.
     */
@@ -197,10 +213,17 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     *  which refer to it.
     */
   private def mkPackedValDef(
-      expr: Tree, owner: Symbol, name: Name): (ValDef, () => Ident) = {
+      expr: Tree,
+      owner: Symbol,
+      name: Name
+  ): (ValDef, () => Ident) = {
     val packedType = typer.packedType(expr, owner)
     val sym =
-      owner.newValue(name.toTermName, expr.pos.makeTransparent, SYNTHETIC) setInfo packedType
+      owner.newValue(
+        name.toTermName,
+        expr.pos.makeTransparent,
+        SYNTHETIC
+      ) setInfo packedType
 
     (ValDef(sym, expr), () => Ident(sym) setPos sym.pos.focus setType expr.tpe)
   }
@@ -208,13 +231,14 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
   /** Used in situations where you need to access value of an expression several times
     */
   def evalOnce(expr: Tree, owner: Symbol, unit: CompilationUnit)(
-      within: (() => Tree) => Tree): Tree = {
+      within: (() => Tree) => Tree
+  ): Tree = {
     var used = false
     if (treeInfo.isExprSafeToInline(expr)) {
       within(() => if (used) expr.duplicate else { used = true; expr })
     } else {
-      val (valDef, identFn) = mkPackedValDef(
-          expr, owner, unit.freshTermName("ev$"))
+      val (valDef, identFn) =
+        mkPackedValDef(expr, owner, unit.freshTermName("ev$"))
       val containing = within(identFn)
       ensureNonOverlapping(containing, List(expr))
       Block(List(valDef), containing) setPos (containing.pos union expr.pos)
@@ -222,7 +246,8 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
   }
 
   def evalOnceAll(exprs: List[Tree], owner: Symbol, unit: CompilationUnit)(
-      within: (List[() => Tree]) => Tree): Tree = {
+      within: (List[() => Tree]) => Tree
+  ): Tree = {
     val vdefs = new ListBuffer[ValDef]
     val exprs1 = new ListBuffer[() => Tree]
     val used = new Array[Boolean](exprs.length)
@@ -231,12 +256,11 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
       if (treeInfo.isExprSafeToInline(expr)) {
         exprs1 += {
           val idx = i
-          () =>
-            if (used(idx)) expr.duplicate else { used(idx) = true; expr }
+          () => if (used(idx)) expr.duplicate else { used(idx) = true; expr }
         }
       } else {
-        val (valDef, identFn) = mkPackedValDef(
-            expr, owner, unit.freshTermName("ev$"))
+        val (valDef, identFn) =
+          mkPackedValDef(expr, owner, unit.freshTermName("ev$"))
         vdefs += valDef
         exprs1 += identFn
       }
@@ -257,22 +281,27 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
     *  The idiom works only if the condition is using a volatile field.
     *  @see http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
     */
-  def mkSynchronizedCheck(clazz: Symbol,
-                          cond: Tree,
-                          syncBody: List[Tree],
-                          stats: List[Tree]): Tree =
+  def mkSynchronizedCheck(
+      clazz: Symbol,
+      cond: Tree,
+      syncBody: List[Tree],
+      stats: List[Tree]
+  ): Tree =
     mkSynchronizedCheck(mkAttributedThis(clazz), cond, syncBody, stats)
 
-  def mkSynchronizedCheck(attrThis: Tree,
-                          cond: Tree,
-                          syncBody: List[Tree],
-                          stats: List[Tree]): Tree = {
-    def blockOrStat(stats: List[Tree]): Tree = stats match {
-      case head :: Nil => head
-      case _ => Block(stats: _*)
-    }
-    val sync = mkSynchronized(
-        attrThis, If(cond, blockOrStat(syncBody), EmptyTree))
+  def mkSynchronizedCheck(
+      attrThis: Tree,
+      cond: Tree,
+      syncBody: List[Tree],
+      stats: List[Tree]
+  ): Tree = {
+    def blockOrStat(stats: List[Tree]): Tree =
+      stats match {
+        case head :: Nil => head
+        case _           => Block(stats: _*)
+      }
+    val sync =
+      mkSynchronized(attrThis, If(cond, blockOrStat(syncBody), EmptyTree))
     blockOrStat(sync :: stats)
   }
 
@@ -305,7 +334,8 @@ abstract class TreeGen extends scala.reflect.internal.TreeGen with TreeDSL {
       fun: Function,
       owner: Symbol,
       name: TermName,
-      additionalFlags: FlagSet = NoFlags) = {
+      additionalFlags: FlagSet = NoFlags
+  ) = {
     val funParams = fun.vparams map (_.symbol)
     val formals :+ restpe = fun.tpe.typeArgs
 

@@ -17,14 +17,16 @@ import akka.actor.ExtensionIdProvider
   * and port.
   */
 object AddressUidExtension
-    extends ExtensionId[AddressUidExtension] with ExtensionIdProvider {
+    extends ExtensionId[AddressUidExtension]
+    with ExtensionIdProvider {
   override def get(system: ActorSystem): AddressUidExtension =
     super.get(system)
 
   override def lookup = AddressUidExtension
 
   override def createExtension(
-      system: ExtendedActorSystem): AddressUidExtension =
+      system: ExtendedActorSystem
+  ): AddressUidExtension =
     new AddressUidExtension(system)
 }
 

@@ -23,21 +23,26 @@ import java.net.URLClassLoader
 
 trait ScalaJSDirectCompiler extends DirectCompiler {
   override def newGlobal(
-      settings: Settings, reporter: Reporter): PartestGlobal = {
+      settings: Settings,
+      reporter: Reporter
+  ): PartestGlobal = {
     new PartestGlobal(settings, reporter) {
       override protected def loadRoughPluginsList(): List[Plugin] = {
         (super.loadRoughPluginsList() :+ Plugin.instantiate(
-                classOf[ScalaJSPlugin], this))
+          classOf[ScalaJSPlugin],
+          this
+        ))
       }
     }
   }
 }
 
-class ScalaJSRunner(testFile: File,
-                    suiteRunner: SuiteRunner,
-                    scalaJSOverridePath: String,
-                    options: ScalaJSPartestOptions)
-    extends nest.Runner(testFile, suiteRunner) {
+class ScalaJSRunner(
+    testFile: File,
+    suiteRunner: SuiteRunner,
+    scalaJSOverridePath: String,
+    options: ScalaJSPartestOptions
+) extends nest.Runner(testFile, suiteRunner) {
 
   private val compliantSems: List[String] = {
     scalaJSConfigFile("sem").fold(List.empty[String]) { file =>
@@ -62,8 +67,8 @@ class ScalaJSRunner(testFile: File,
     new DirectCompiler(this) with ScalaJSDirectCompiler
   override def extraJavaOptions = {
     super.extraJavaOptions ++ Seq(
-        s"-Dscalajs.partest.optMode=${options.optMode.id}",
-        s"-Dscalajs.partest.compliantSems=${compliantSems.mkString(",")}"
+      s"-Dscalajs.partest.optMode=${options.optMode.id}",
+      s"-Dscalajs.partest.compliantSems=${compliantSems.mkString(",")}"
     )
   }
 }
@@ -99,10 +104,12 @@ trait ScalaJSSuiteRunner extends SuiteRunner {
     val state =
       if (failed && !runner.logFile.canRead) runner.genPass()
       else {
-        val (state, elapsed) = try timed(runner.run()) catch {
-          case t: Throwable =>
-            throw new RuntimeException(s"Error running $testFile", t)
-        }
+        val (state, elapsed) =
+          try timed(runner.run())
+          catch {
+            case t: Throwable =>
+              throw new RuntimeException(s"Error running $testFile", t)
+          }
         NestUI.reportTest(state)
         runner.cleanup()
         state
@@ -111,20 +118,25 @@ trait ScalaJSSuiteRunner extends SuiteRunner {
   }
 
   override def runTestsForFiles(
-      kindFiles: Array[File], kind: String): Array[TestState] = {
+      kindFiles: Array[File],
+      kind: String
+  ): Array[TestState] = {
     super.runTestsForFiles(kindFiles.filter(shouldUseTest), kind)
   }
 
   private lazy val listDir = s"/scala/tools/partest/scalajs/$scalaVersion"
 
   private lazy val buglistedTestFileNames = readTestList(
-      s"$listDir/BuglistedTests.txt")
+    s"$listDir/BuglistedTests.txt"
+  )
 
   private lazy val blacklistedTestFileNames = readTestList(
-      s"$listDir/BlacklistedTests.txt")
+    s"$listDir/BlacklistedTests.txt"
+  )
 
   private lazy val whitelistedTestFileNames = readTestList(
-      s"$listDir/WhitelistedTests.txt")
+    s"$listDir/WhitelistedTests.txt"
+  )
 
   private def readTestList(resourceName: String): Set[String] = {
     val source = scala.io.Source.fromURL(getClass.getResource(resourceName))
@@ -146,12 +158,12 @@ trait ScalaJSSuiteRunner extends SuiteRunner {
     import ScalaJSPartestOptions._
     options.testFilter match {
       case UnknownTests => { absPath =>
-          !blacklistedTestFileNames.contains(absPath) &&
-          !whitelistedTestFileNames.contains(absPath) &&
-          !buglistedTestFileNames.contains(absPath)
-        }
+        !blacklistedTestFileNames.contains(absPath) &&
+        !whitelistedTestFileNames.contains(absPath) &&
+        !buglistedTestFileNames.contains(absPath)
+      }
       case BlacklistedTests => blacklistedTestFileNames
-      case BuglistedTests => buglistedTestFileNames
+      case BuglistedTests   => buglistedTestFileNames
       case WhitelistedTests => whitelistedTestFileNames
       case SomeTests(names) => names.map(extendShortTestName _).toSet
     }
@@ -177,17 +189,17 @@ class ScalaJSSBTRunner(
     scalacArgs: Array[String],
     val options: ScalaJSPartestOptions,
     val scalaVersion: String
-)
-    extends SBTRunner(
-        partestFingerprint,
-        eventHandler,
-        loggers,
-        "test/files",
-        testClassLoader,
-        javaCmd,
-        javacCmd,
-        scalacArgs
-    ) with ScalaJSSuiteRunner {
+) extends SBTRunner(
+      partestFingerprint,
+      eventHandler,
+      loggers,
+      "test/files",
+      testClassLoader,
+      javaCmd,
+      javacCmd,
+      scalacArgs
+    )
+    with ScalaJSSuiteRunner {
 
   // The test root for partest is read out through the system properties,
   // not passed as an argument

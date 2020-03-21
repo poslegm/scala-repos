@@ -18,7 +18,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 /**
   * Public API but not intended for subclassing
   */
-abstract class ClientConnectionSettings private[akka]() {
+abstract class ClientConnectionSettings private[akka] () {
   self: ClientConnectionSettingsImpl ⇒
   def getUserAgentHeader: Optional[UserAgent]
   def getConnectingTimeout: FiniteDuration
@@ -31,20 +31,24 @@ abstract class ClientConnectionSettings private[akka]() {
   // ---
 
   def withUserAgentHeader(
-      newValue: Optional[UserAgent]): ClientConnectionSettings =
+      newValue: Optional[UserAgent]
+  ): ClientConnectionSettings =
     self.copy(userAgentHeader = newValue.asScala.map(_.asScala))
   def withConnectingTimeout(
-      newValue: FiniteDuration): ClientConnectionSettings =
+      newValue: FiniteDuration
+  ): ClientConnectionSettings =
     self.copy(connectingTimeout = newValue)
   def withIdleTimeout(newValue: Duration): ClientConnectionSettings =
     self.copy(idleTimeout = newValue)
   def withRequestHeaderSizeHint(newValue: Int): ClientConnectionSettings =
     self.copy(requestHeaderSizeHint = newValue)
-  def withWebsocketRandomFactory(newValue: java.util.function.Supplier[Random])
-    : ClientConnectionSettings =
+  def withWebsocketRandomFactory(
+      newValue: java.util.function.Supplier[Random]
+  ): ClientConnectionSettings =
     self.copy(websocketRandomFactory = () ⇒ newValue.get())
   def withSocketOptions(
-      newValue: java.lang.Iterable[SocketOption]): ClientConnectionSettings =
+      newValue: java.lang.Iterable[SocketOption]
+  ): ClientConnectionSettings =
     self.copy(socketOptions = newValue.asScala.toList)
   def withParserSettings(newValue: ParserSettings): ClientConnectionSettings =
     self.copy(parserSettings = newValue.asScala)

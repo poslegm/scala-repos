@@ -22,10 +22,12 @@ import org.apache.spark.graphx._
 import org.apache.spark.graphx.util.GraphGenerators
 
 object GridPageRank {
-  def apply(nRows: Int,
-            nCols: Int,
-            nIter: Int,
-            resetProb: Double): Seq[(VertexId, Double)] = {
+  def apply(
+      nRows: Int,
+      nCols: Int,
+      nIter: Int,
+      resetProb: Double
+  ): Seq[(VertexId, Double)] = {
     val inNbrs =
       Array.fill(nRows * nCols)(collection.mutable.MutableList.empty[Int])
     val outDegree = Array.fill(nRows * nCols)(0)
@@ -92,10 +94,12 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
 
       val staticErrors = staticRanks2.map {
         case (vid, pr) =>
-          val p = math.abs(pr -
-              (resetProb + (1.0 - resetProb) * (resetProb * (nVertices - 1))))
+          val p = math.abs(
+            pr -
+              (resetProb + (1.0 - resetProb) * (resetProb * (nVertices - 1)))
+          )
           val correct =
-            (vid > 0 && pr == resetProb) || (vid == 0L && p < 1.0E-5)
+            (vid > 0 && pr == resetProb) || (vid == 0L && p < 1.0e-5)
           if (!correct) 1 else 0
       }
       assert(staticErrors.sum === 0)
@@ -165,7 +169,8 @@ class PageRankSuite extends SparkFunSuite with LocalSparkContext {
         gridGraph.staticPageRank(numIter, resetProb).vertices.cache()
       val dynamicRanks = gridGraph.pageRank(tol, resetProb).vertices.cache()
       val referenceRanks = VertexRDD(
-          sc.parallelize(GridPageRank(rows, cols, numIter, resetProb))).cache()
+        sc.parallelize(GridPageRank(rows, cols, numIter, resetProb))
+      ).cache()
 
       assert(compareRanks(staticRanks, referenceRanks) < errorTol)
       assert(compareRanks(dynamicRanks, referenceRanks) < errorTol)

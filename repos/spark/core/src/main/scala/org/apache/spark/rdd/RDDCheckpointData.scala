@@ -36,9 +36,9 @@ private[spark] object CheckpointState extends Enumeration {
   * as well as, manages the post-checkpoint state by providing the updated partitions,
   * iterator and preferred locations of the checkpointed RDD.
   */
-private[spark] abstract class RDDCheckpointData[T : ClassTag](
-    @transient private val rdd: RDD[T])
-    extends Serializable {
+private[spark] abstract class RDDCheckpointData[T: ClassTag](
+    @transient private val rdd: RDD[T]
+) extends Serializable {
 
   import CheckpointState._
 
@@ -53,9 +53,10 @@ private[spark] abstract class RDDCheckpointData[T : ClassTag](
   /**
     * Return whether the checkpoint data for this RDD is already persisted.
     */
-  def isCheckpointed: Boolean = RDDCheckpointData.synchronized {
-    cpState == Checkpointed
-  }
+  def isCheckpointed: Boolean =
+    RDDCheckpointData.synchronized {
+      cpState == Checkpointed
+    }
 
   /**
     * Materialize this RDD and persist its content.
@@ -101,9 +102,10 @@ private[spark] abstract class RDDCheckpointData[T : ClassTag](
     * Return the partitions of the resulting checkpoint RDD.
     * For tests only.
     */
-  def getPartitions: Array[Partition] = RDDCheckpointData.synchronized {
-    cpRDD.map(_.partitions).getOrElse { Array.empty }
-  }
+  def getPartitions: Array[Partition] =
+    RDDCheckpointData.synchronized {
+      cpRDD.map(_.partitions).getOrElse { Array.empty }
+    }
 }
 
 /**

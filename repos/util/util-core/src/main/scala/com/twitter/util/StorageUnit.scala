@@ -27,13 +27,13 @@ object StorageUnit {
     if (lower endsWith "s") lower = lower dropRight 1
 
     lower match {
-      case "byte" => 1L
+      case "byte"     => 1L
       case "kilobyte" => 1L << 10
       case "megabyte" => 1L << 20
       case "gigabyte" => 1L << 30
       case "terabyte" => 1L << 40
       case "petabyte" => 1L << 50
-      case "exabyte" => 1L << 60
+      case "exabyte"  => 1L << 60
       case badUnit =>
         throw new NumberFormatException("Unrecognized unit %s".format(badUnit))
     }
@@ -43,16 +43,18 @@ object StorageUnit {
     * Note, this can cause overflows of the Long used to represent the
     * number of bytes.
     */
-  def parse(s: String): StorageUnit = s.split("\\.") match {
-    case Array(v, u) =>
-      val vv = v.toLong
-      val uu = factor(u)
-      new StorageUnit(vv * uu)
+  def parse(s: String): StorageUnit =
+    s.split("\\.") match {
+      case Array(v, u) =>
+        val vv = v.toLong
+        val uu = factor(u)
+        new StorageUnit(vv * uu)
 
-    case _ =>
-      throw new NumberFormatException(
-          "invalid storage unit string: %s".format(s))
-  }
+      case _ =>
+        throw new NumberFormatException(
+          "invalid storage unit string: %s".format(s)
+        )
+    }
 }
 
 /**
@@ -116,7 +118,10 @@ class StorageUnit(val bytes: Long) extends Ordered[StorageUnit] {
       "%d B".format(bytes)
     } else {
       "%.1f %ciB".formatLocal(
-          Locale.ENGLISH, display * bytes.signum, prefix.charAt(prefixIndex))
+        Locale.ENGLISH,
+        display * bytes.signum,
+        prefix.charAt(prefixIndex)
+      )
     }
   }
 }

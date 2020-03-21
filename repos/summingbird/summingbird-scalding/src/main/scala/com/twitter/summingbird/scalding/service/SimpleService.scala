@@ -38,20 +38,23 @@ trait SimpleService[K, V] extends ExternalService[K, V] {
   def satisfiable(requested: DateRange, mode: Mode): Try[DateRange]
 
   def serve[W](covering: DateRange, input: TypedPipe[(Timestamp, (K, W))])(
-      implicit flowDef: FlowDef,
-      mode: Mode): TypedPipe[(Timestamp, (K, (W, Option[V])))]
+      implicit
+      flowDef: FlowDef,
+      mode: Mode
+  ): TypedPipe[(Timestamp, (K, (W, Option[V])))]
 
   final def lookup[W](
-      getKeys: PipeFactory[(K, W)]): PipeFactory[(K, (W, Option[V]))] =
-    StateWithError({ intMode: FactoryInput =>
-      val (timeSpan, mode) = intMode
-      Scalding
-        .toDateRange(timeSpan)
-        .right
-        .flatMap(satisfiable(_, mode))
-        .right
-        .flatMap {
-          dr =>
+      getKeys: PipeFactory[(K, W)]
+  ): PipeFactory[(K, (W, Option[V]))] =
+    StateWithError({
+      intMode: FactoryInput =>
+        val (timeSpan, mode) = intMode
+        Scalding
+          .toDateRange(timeSpan)
+          .right
+          .flatMap(satisfiable(_, mode))
+          .right
+          .flatMap { dr =>
             val ts = dr.as[Interval[Timestamp]]
             getKeys((ts, mode)).right.map {
               case ((avail, m), getFlow) =>
@@ -61,6 +64,6 @@ trait SimpleService[K, V] extends ExternalService[K, V] {
                 })
                 ((avail, m), rdr)
             }
-        }
+          }
     })
 }

@@ -35,7 +35,8 @@ import scalafx.delegate.SFXDelegate
 
 object ReadOnlyStringWrapper {
   implicit def sfxReadOnlyStringWrapper2jfx(
-      w: ReadOnlyStringWrapper): jfxbp.ReadOnlyStringWrapper =
+      w: ReadOnlyStringWrapper
+  ): jfxbp.ReadOnlyStringWrapper =
     if (w != null) w.delegate else null
 
   /** Creates a new ReadOnlyStringWrapper instance.
@@ -47,9 +48,10 @@ object ReadOnlyStringWrapper {
 
 /** Wrapper for [[http://docs.oracle.com/javase/8/javafx/api/javafx/beans/property/ReadOnlyStringWrapper.html javafx.beans.property.ReadOnlyStringWrapper]] */
 class ReadOnlyStringWrapper(
-    override val delegate: jfxbp.ReadOnlyStringWrapper = new jfxbp.ReadOnlyStringWrapper(
-          ))
-    extends StringProperty(delegate)
+    override val delegate: jfxbp.ReadOnlyStringWrapper =
+      new jfxbp.ReadOnlyStringWrapper(
+        )
+) extends StringProperty(delegate)
     with SFXDelegate[jfxbp.ReadOnlyStringWrapper] {
 
   /** Creates a new ReadOnlyStringWrapper instance.

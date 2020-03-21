@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-14 Miles Sabin 
+ * Copyright (c) 2012-14 Miles Sabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ object ImpredicativeExamples extends App {
     def apply[T](l: List[T]) = l.head
   }
 
-  def g(o: Option[List ~> Id]) = o match {
-    case None => (0, '0')
-    case Some(get) => (get(List(1, 2)), get(List('a', 'b', 'c')))
-  }
+  def g(o: Option[List ~> Id]) =
+    o match {
+      case None      => (0, '0')
+      case Some(get) => (get(List(1, 2)), get(List('a', 'b', 'c')))
+    }
 
   val gNone = g(None)
   typed[(Int, Char)](gNone)

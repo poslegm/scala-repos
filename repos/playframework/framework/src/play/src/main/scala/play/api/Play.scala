@@ -42,21 +42,28 @@ object Play {
    * declaring a factory in order to yield a parser of a specific type.
    */
   private[play] val xercesSaxParserFactory = SAXParserFactory.newInstance(
-      "org.apache.xerces.jaxp.SAXParserFactoryImpl",
-      Play.getClass.getClassLoader)
+    "org.apache.xerces.jaxp.SAXParserFactoryImpl",
+    Play.getClass.getClassLoader
+  )
   xercesSaxParserFactory.setFeature(
-      Constants.SAX_FEATURE_PREFIX +
+    Constants.SAX_FEATURE_PREFIX +
       Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE,
-      false)
+    false
+  )
   xercesSaxParserFactory.setFeature(
-      Constants.SAX_FEATURE_PREFIX +
+    Constants.SAX_FEATURE_PREFIX +
       Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE,
-      false)
-  xercesSaxParserFactory.setFeature(Constants.XERCES_FEATURE_PREFIX +
-                                    Constants.DISALLOW_DOCTYPE_DECL_FEATURE,
-                                    true)
+    false
+  )
   xercesSaxParserFactory.setFeature(
-      XMLConstants.FEATURE_SECURE_PROCESSING, true)
+    Constants.XERCES_FEATURE_PREFIX +
+      Constants.DISALLOW_DOCTYPE_DECL_FEATURE,
+    true
+  )
+  xercesSaxParserFactory.setFeature(
+    XMLConstants.FEATURE_SECURE_PROCESSING,
+    true
+  )
 
   /*
    * A parser to be used that is configured to ensure that no schemas are loaded.
@@ -78,7 +85,9 @@ object Play {
     * @deprecated This is a static reference to application, use DI, since 2.5.0
     */
   @deprecated(
-      "This is a static reference to application, use DI instead", "2.5.0")
+    "This is a static reference to application, use DI instead",
+    "2.5.0"
+  )
   def maybeApplication: Option[Application] = Option(_currentApp)
 
   private[play] def privateMaybeApplication: Option[Application] =
@@ -96,10 +105,13 @@ object Play {
     * @deprecated This is a static reference to application, use DI, since 2.5.0
     */
   @deprecated(
-      "This is a static reference to application, use DI instead", "2.5.0")
+    "This is a static reference to application, use DI instead",
+    "2.5.0"
+  )
   implicit def current: Application =
     privateMaybeApplication.getOrElse(
-        sys.error("There is no started application"))
+      sys.error("There is no started application")
+    )
 
   @volatile private[play] var _currentApp: Application = _
 
@@ -129,7 +141,7 @@ object Play {
 
     app.mode match {
       case Mode.Test =>
-      case mode => logger.info("Application started (" + mode + ")")
+      case mode      => logger.info("Application started (" + mode + ")")
     }
   }
 
@@ -140,7 +152,8 @@ object Play {
     if (app != null) {
       Threads.withContextClassLoader(app.classloader) {
         app.global.onStop(app)
-        try { Await.ready(app.stop(), Duration.Inf) } catch {
+        try { Await.ready(app.stop(), Duration.Inf) }
+        catch {
           case NonFatal(e) => logger.warn("Error stopping application", e)
         }
       }
@@ -152,8 +165,9 @@ object Play {
     * @deprecated inject the [[play.api.Environment]] instead
     */
   @deprecated("inject the play.api.Environment instead", "2.5.0")
-  def resourceAsStream(name: String)(
-      implicit app: Application): Option[InputStream] = {
+  def resourceAsStream(
+      name: String
+  )(implicit app: Application): Option[InputStream] = {
     app.resourceAsStream(name)
   }
 
@@ -161,7 +175,9 @@ object Play {
     * @deprecated inject the [[play.api.Environment]] instead
     */
   @deprecated("inject the play.api.Environment instead", "2.5.0")
-  def resource(name: String)(implicit app: Application): Option[java.net.URL] = {
+  def resource(
+      name: String
+  )(implicit app: Application): Option[java.net.URL] = {
     app.resource(name)
   }
 
@@ -177,8 +193,9 @@ object Play {
     * @deprecated inject the [[play.api.Environment]] instead
     */
   @deprecated("inject the play.api.Environment instead", "2.5.0")
-  def getExistingFile(relativePath: String)(
-      implicit app: Application): Option[File] = {
+  def getExistingFile(
+      relativePath: String
+  )(implicit app: Application): Option[File] = {
     app.getExistingFile(relativePath)
   }
 

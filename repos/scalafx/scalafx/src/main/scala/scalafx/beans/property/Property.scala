@@ -36,7 +36,8 @@ import scalafx.delegate.SFXDelegate
 
 object Property {
   implicit def sfxProperty2jfx[T, J <: Any](
-      p: Property[T, J]): jfxbp.Property[J] = p.delegate
+      p: Property[T, J]
+  ): jfxbp.Property[J] = p.delegate
 }
 
 /**
@@ -47,7 +48,8 @@ object Property {
   * @tparam J Indicates Java type to be wrapped by T. Eventually T and J could be the same.
   */
 trait Property[@specialized(Int, Long, Float, Double, Boolean) T, J <: Any]
-    extends ReadOnlyProperty[T, J] with SFXDelegate[jfxbp.Property[J]] {
+    extends ReadOnlyProperty[T, J]
+    with SFXDelegate[jfxbp.Property[J]] {
 
   /**
     * Set the wrapped value.

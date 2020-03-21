@@ -109,31 +109,28 @@ class A18 {
       class A
       new A6 {}
       val y = {
-        if ((new Object).hashCode() == 1) { class B {}; new B } else 2
-        if ((new Object).hashCode() == 1) new A6 {} else "haifish"
+        if ((new Object).hashCode() == 1) { class B {}; new B }
+        else 2
+        if ((new Object).hashCode() == 1) new A6 {}
+        else "haifish"
       }
     }
   }
 }
 
-class A19 { ((x: String) => x + "3")
+class A19 {
+  ((x: String) => x + "3")
 
-val x = { ((x: String) => x + "1")
-}
+  val x = { ((x: String) => x + "1") }
 
-{ ((x: String) => x + "2")
-}
+  { ((x: String) => x + "2") }
 }
 
 class A20 { (s: String) =>
   {
-    { (s: String) =>
-      ()
-    }
-    { (s: String) => (s: String) =>
-      1
-    }
-}
+    { (s: String) => () }
+    { (s: String) => (s: String) => 1 }
+  }
 }
 
 class A21 {
@@ -192,18 +189,16 @@ trait A24 extends A24Base {
 
 class SI_9105 {
   //      outerClass       enclMeth
-  val fun = (s: String) =>
-    {
-      class A //        SI_9105           null
-      def m: Object = { class B; new B } //        SI_9105            m$1
-      val f: Object = { class C; new C } //        SI_9105           null
+  val fun = (s: String) => {
+    class A //        SI_9105           null
+    def m: Object = { class B; new B } //        SI_9105            m$1
+    val f: Object = { class C; new C } //        SI_9105           null
   }
   def met =
-    (s: String) =>
-      {
-        class D //        SI_9105            met
-        def m: Object = { class E; new E } //        SI_9105            m$1
-        val f: Object = { class F; new F } //        SI_9105            met
+    (s: String) => {
+      class D //        SI_9105            met
+      def m: Object = { class E; new E } //        SI_9105            m$1
+      val f: Object = { class F; new F } //        SI_9105            met
     }
 
   def byName(op: => Any) = 0
@@ -214,12 +209,13 @@ class SI_9105 {
     val f: Object = { class I; new I } //        SI_9105           null
     ""
   }
-  def bnM = byName {
-    class J //        SI_9105            bnM
-    def m: Object = { class K; new K } //        SI_9105            m$1
-    val f: Object = { class L; new L } //        SI_9105            bnM
-    ""
-  }
+  def bnM =
+    byName {
+      class J //        SI_9105            bnM
+      def m: Object = { class K; new K } //        SI_9105            m$1
+      val f: Object = { class L; new L } //        SI_9105            bnM
+      ""
+    }
 }
 
 trait SI_9124 {
@@ -229,7 +225,10 @@ trait SI_9124 {
 
   def f = new A { def f2 = 0 } // enclosing method is f in the interface SI_9124
 
-  private def g: Object = new A { def f3 = 0 } // only encl class (SI_9124), encl meth can be g in 2.12 because the interface SI_9124 now has the method g
+  private def g: Object =
+    new A {
+      def f3 = 0
+    } // only encl class (SI_9124), encl meth can be g in 2.12 because the interface SI_9124 now has the method g
 
   object O {
     // member, no encl meth attribute
@@ -283,7 +282,9 @@ object NestedInValueClass {
     // A has InnerClass entries for the two closures (and for A and A$). not for B / C
     def f = {
       def g =
-        List().map(x => ((s: String) => x)): @noinline // outer class A, no outer method (g is moved to the companion, doesn't exist in A)
+        List().map(x =>
+          ((s: String) => x)
+        ): @noinline // outer class A, no outer method (g is moved to the companion, doesn't exist in A)
       g.map(x => ((s: String) => x)): @noinline // outer class A, outer method f
     }
     // statements and field declarations are not allowed in value classes

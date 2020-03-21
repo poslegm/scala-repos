@@ -55,54 +55,68 @@ object PhysicalOperation extends PredicateHelper {
     *   SELECT key AS c2 FROM t1 WHERE key > 10
     * }}}
     */
-  private def collectProjectsAndFilters(
-      plan: LogicalPlan): (Option[Seq[NamedExpression]], Seq[Expression],
-  LogicalPlan, Map[Attribute, Expression]) =
+  private def collectProjectsAndFilters(plan: LogicalPlan): (
+      Option[Seq[NamedExpression]],
+      Seq[Expression],
+      LogicalPlan,
+      Map[Attribute, Expression]
+  ) =
     plan match {
       case Project(fields, child) if fields.forall(_.deterministic) =>
         val (_, filters, other, aliases) = collectProjectsAndFilters(child)
         val substitutedFields = fields
           .map(substitute(aliases))
           .asInstanceOf[Seq[NamedExpression]]
-          (Some(substitutedFields),
-           filters,
-           other,
-           collectAliases(substitutedFields))
+        (
+          Some(substitutedFields),
+          filters,
+          other,
+          collectAliases(substitutedFields)
+        )
 
       case Filter(condition, child) if condition.deterministic =>
-        val (fields, filters, other, aliases) = collectProjectsAndFilters(
-            child)
+        val (fields, filters, other, aliases) = collectProjectsAndFilters(child)
         val substitutedCondition = substitute(aliases)(condition)
-        (fields,
-         filters ++ splitConjunctivePredicates(substitutedCondition),
-         other,
-         aliases)
+        (
+          fields,
+          filters ++ splitConjunctivePredicates(substitutedCondition),
+          other,
+          aliases
+        )
 
       case other =>
         (None, Nil, other, Map.empty)
     }
 
   private def collectAliases(
-      fields: Seq[Expression]): Map[Attribute, Expression] =
+      fields: Seq[Expression]
+  ): Map[Attribute, Expression] =
     fields.collect {
       case a @ Alias(child, _) => a.toAttribute -> child
     }.toMap
 
-  private def substitute(aliases: Map[Attribute, Expression])(
-      expr: Expression): Expression = {
+  private def substitute(
+      aliases: Map[Attribute, Expression]
+  )(expr: Expression): Expression = {
     expr.transform {
       case a @ Alias(ref: AttributeReference, name) =>
         aliases
           .get(ref)
-          .map(Alias(_, name)(
-                  a.exprId, a.qualifiers, isGenerated = a.isGenerated))
+          .map(
+            Alias(_, name)(a.exprId, a.qualifiers, isGenerated = a.isGenerated)
+          )
           .getOrElse(a)
 
       case a: AttributeReference =>
         aliases
           .get(a)
-          .map(Alias(_, a.name)(
-                  a.exprId, a.qualifiers, isGenerated = a.isGenerated))
+          .map(
+            Alias(_, a.name)(
+              a.exprId,
+              a.qualifiers,
+              isGenerated = a.isGenerated
+            )
+          )
           .getOrElse(a)
     }
   }
@@ -117,54 +131,73 @@ object PhysicalOperation extends PredicateHelper {
 object ExtractEquiJoinKeys extends Logging with PredicateHelper {
 
   /** (joinType, leftKeys, rightKeys, condition, leftChild, rightChild) */
-  type ReturnType = (JoinType, Seq[Expression], Seq[Expression],
-  Option[Expression], LogicalPlan, LogicalPlan)
+  type ReturnType = (
+      JoinType,
+      Seq[Expression],
+      Seq[Expression],
+      Option[Expression],
+      LogicalPlan,
+      LogicalPlan
+  )
 
-  def unapply(plan: LogicalPlan): Option[ReturnType] = plan match {
-    case join @ Join(left, right, joinType, condition) =>
-      logDebug(s"Considering join on: $condition")
-      // Find equi-join predicates that can be evaluated before the join, and thus can be used
-      // as join keys.
-      val predicates = condition.map(splitConjunctivePredicates).getOrElse(Nil)
-      val joinKeys = predicates.flatMap {
-        case EqualTo(l, r) if canEvaluate(l, left) && canEvaluate(r, right) =>
-          Some((l, r))
-        case EqualTo(l, r) if canEvaluate(l, right) && canEvaluate(r, left) =>
-          Some((r, l))
-        // Replace null with default value for joining key, then those rows with null in it could
-        // be joined together
-        case EqualNullSafe(l, r)
-            if canEvaluate(l, left) && canEvaluate(r, right) =>
-          Some((Coalesce(Seq(l, Literal.default(l.dataType))),
-                Coalesce(Seq(r, Literal.default(r.dataType)))))
-        case EqualNullSafe(l, r)
-            if canEvaluate(l, right) && canEvaluate(r, left) =>
-          Some((Coalesce(Seq(r, Literal.default(r.dataType))),
-                Coalesce(Seq(l, Literal.default(l.dataType)))))
-        case other => None
-      }
-      val otherPredicates = predicates.filterNot {
-        case EqualTo(l, r) =>
-          canEvaluate(l, left) && canEvaluate(r, right) ||
-          canEvaluate(l, right) && canEvaluate(r, left)
-        case other => false
-      }
+  def unapply(plan: LogicalPlan): Option[ReturnType] =
+    plan match {
+      case join @ Join(left, right, joinType, condition) =>
+        logDebug(s"Considering join on: $condition")
+        // Find equi-join predicates that can be evaluated before the join, and thus can be used
+        // as join keys.
+        val predicates =
+          condition.map(splitConjunctivePredicates).getOrElse(Nil)
+        val joinKeys = predicates.flatMap {
+          case EqualTo(l, r) if canEvaluate(l, left) && canEvaluate(r, right) =>
+            Some((l, r))
+          case EqualTo(l, r) if canEvaluate(l, right) && canEvaluate(r, left) =>
+            Some((r, l))
+          // Replace null with default value for joining key, then those rows with null in it could
+          // be joined together
+          case EqualNullSafe(l, r)
+              if canEvaluate(l, left) && canEvaluate(r, right) =>
+            Some(
+              (
+                Coalesce(Seq(l, Literal.default(l.dataType))),
+                Coalesce(Seq(r, Literal.default(r.dataType)))
+              )
+            )
+          case EqualNullSafe(l, r)
+              if canEvaluate(l, right) && canEvaluate(r, left) =>
+            Some(
+              (
+                Coalesce(Seq(r, Literal.default(r.dataType))),
+                Coalesce(Seq(l, Literal.default(l.dataType)))
+              )
+            )
+          case other => None
+        }
+        val otherPredicates = predicates.filterNot {
+          case EqualTo(l, r) =>
+            canEvaluate(l, left) && canEvaluate(r, right) ||
+              canEvaluate(l, right) && canEvaluate(r, left)
+          case other => false
+        }
 
-      if (joinKeys.nonEmpty) {
-        val (leftKeys, rightKeys) = joinKeys.unzip
-        logDebug(s"leftKeys:$leftKeys | rightKeys:$rightKeys")
-        Some(
-            (joinType,
-             leftKeys,
-             rightKeys,
-             otherPredicates.reduceOption(And),
-             left,
-             right))
-      } else {
-        None
-      }
-    case _ => None
-  }
+        if (joinKeys.nonEmpty) {
+          val (leftKeys, rightKeys) = joinKeys.unzip
+          logDebug(s"leftKeys:$leftKeys | rightKeys:$rightKeys")
+          Some(
+            (
+              joinType,
+              leftKeys,
+              rightKeys,
+              otherPredicates.reduceOption(And),
+              left,
+              right
+            )
+          )
+        } else {
+          None
+        }
+      case _ => None
+    }
 }
 
 /**
@@ -192,7 +225,9 @@ object ExtractFiltersAndInnerJoins extends PredicateHelper {
         (plans ++ Seq(right), conditions ++ cond.toSeq)
 
       case Filter(
-          filterCondition, j @ Join(left, right, Inner, joinCondition)) =>
+            filterCondition,
+            j @ Join(left, right, Inner, joinCondition)
+          ) =>
         val (plans, conditions) = flattenJoin(j)
         (plans, conditions ++ splitConjunctivePredicates(filterCondition))
 
@@ -213,17 +248,19 @@ object ExtractFiltersAndInnerJoins extends PredicateHelper {
   * A pattern that collects all adjacent unions and returns their children as a Seq.
   */
 object Unions {
-  def unapply(plan: LogicalPlan): Option[Seq[LogicalPlan]] = plan match {
-    case u: Union =>
-      Some(collectUnionChildren(mutable.Stack(u), Seq.empty[LogicalPlan]))
-    case _ => None
-  }
+  def unapply(plan: LogicalPlan): Option[Seq[LogicalPlan]] =
+    plan match {
+      case u: Union =>
+        Some(collectUnionChildren(mutable.Stack(u), Seq.empty[LogicalPlan]))
+      case _ => None
+    }
 
   // Doing a depth-first tree traversal to combine all the union children.
   @tailrec
   private def collectUnionChildren(
       plans: mutable.Stack[LogicalPlan],
-      children: Seq[LogicalPlan]): Seq[LogicalPlan] = {
+      children: Seq[LogicalPlan]
+  ): Seq[LogicalPlan] = {
     if (plans.isEmpty) children
     else {
       plans.pop match {
@@ -240,10 +277,11 @@ object Unions {
   * Extractor for retrieving Int value.
   */
 object IntegerIndex {
-  def unapply(a: Any): Option[Int] = a match {
-    case Literal(a: Int, IntegerType) => Some(a)
-    // When resolving ordinal in Sort, negative values are extracted for issuing error messages.
-    case UnaryMinus(IntegerLiteral(v)) => Some(-v)
-    case _ => None
-  }
+  def unapply(a: Any): Option[Int] =
+    a match {
+      case Literal(a: Int, IntegerType) => Some(a)
+      // When resolving ordinal in Sort, negative values are extracted for issuing error messages.
+      case UnaryMinus(IntegerLiteral(v)) => Some(-v)
+      case _                             => None
+    }
 }

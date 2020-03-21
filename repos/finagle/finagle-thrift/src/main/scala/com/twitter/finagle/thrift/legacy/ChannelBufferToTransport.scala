@@ -34,8 +34,9 @@ private[thrift] class ChannelBufferToTransport(underlying: ChannelBuffer)
   *
   */
 private[thrift] class DuplexChannelBufferTransport(
-    input: ChannelBuffer, output: ChannelBuffer)
-    extends TTransport {
+    input: ChannelBuffer,
+    output: ChannelBuffer
+) extends TTransport {
   override def isOpen = true
   override def open() {}
   override def close() {}

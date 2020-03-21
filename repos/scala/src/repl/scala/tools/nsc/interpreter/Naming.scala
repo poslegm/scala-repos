@@ -27,15 +27,16 @@ trait Naming {
     if (binaryChars > 5) // more than one can count while holding a hamburger
       cleaned map {
         case c if lineSeparator contains c => c
-        case c if c.isWhitespace => ' '
-        case c if c < 32 => '?'
-        case c => c
+        case c if c.isWhitespace           => ' '
+        case c if c < 32                   => '?'
+        case c                             => c
       }
     // Not lots - preserve whitespace and ESC
     else
       cleaned map
-      (ch =>
-            if (ch.isWhitespace || ch == ESC) ch else if (ch < 32) '?' else ch)
+        (ch =>
+          if (ch.isWhitespace || ch == ESC) ch else if (ch < 32) '?' else ch
+        )
   }
 
   // The two name forms this is catching are the two sides of this assignment:
@@ -46,9 +47,10 @@ trait Naming {
     val sn = sessionNames
     val members =
       List(sn.read, sn.eval, sn.print) map Regex.quote mkString
-      ("(?:", "|", ")")
+        ("(?:", "|", ")")
     debugging("lineRegex")(
-        Regex.quote(sn.line) + """\d+[./]""" + members + """[$.]""")
+      Regex.quote(sn.line) + """\d+[./]""" + members + """[$.]"""
+    )
   }
 
   private def removeLineWrapper(s: String) = s.replaceAll(lineRegex, "")
@@ -99,8 +101,7 @@ trait Naming {
 
   val freshLineId = {
     var x = 0
-    () =>
-      { x += 1; x }
+    () => { x += 1; x }
   }
   def freshUserVarName() = userVar()
   def freshInternalVarName() = internalVar()

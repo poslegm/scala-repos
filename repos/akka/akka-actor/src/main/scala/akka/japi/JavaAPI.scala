@@ -81,7 +81,8 @@ trait Creator[T] extends Serializable {
 
 object JavaPartialFunction {
   sealed abstract class NoMatchException
-      extends RuntimeException with NoStackTrace
+      extends RuntimeException
+      with NoStackTrace
   case object NoMatch extends NoMatchException
   final def noMatch(): RuntimeException = NoMatch
 }
@@ -122,23 +123,30 @@ object JavaPartialFunction {
   * does not throw `noMatch()` it will continue with calling
   * `JavaPartialFunction.apply(x, false)`.
   */
-abstract class JavaPartialFunction[A, B]
-    extends AbstractPartialFunction[A, B] {
+abstract class JavaPartialFunction[A, B] extends AbstractPartialFunction[A, B] {
   import JavaPartialFunction._
 
   @throws(classOf[Exception])
   def apply(x: A, isCheck: Boolean): B
 
-  final def isDefinedAt(x: A): Boolean = try { apply(x, true); true } catch {
-    case NoMatch ⇒ false
-  }
-  final override def apply(x: A): B = try apply(x, false) catch {
-    case NoMatch ⇒ throw new MatchError(x)
-  }
+  final def isDefinedAt(x: A): Boolean =
+    try { apply(x, true); true }
+    catch {
+      case NoMatch ⇒ false
+    }
+  final override def apply(x: A): B =
+    try apply(x, false)
+    catch {
+      case NoMatch ⇒ throw new MatchError(x)
+    }
   final override def applyOrElse[A1 <: A, B1 >: B](
-      x: A1, default: A1 ⇒ B1): B1 = try apply(x, false) catch {
-    case NoMatch ⇒ default(x)
-  }
+      x: A1,
+      default: A1 ⇒ B1
+  ): B1 =
+    try apply(x, false)
+    catch {
+      case NoMatch ⇒ default(x)
+    }
 }
 
 /**
@@ -260,7 +268,8 @@ object Util {
     * Turns an [[java.lang.Iterable]] into an immutable Scala IndexedSeq (by copying it).
     */
   def immutableIndexedSeq[T](
-      iterable: java.lang.Iterable[T]): immutable.IndexedSeq[T] =
+      iterable: java.lang.Iterable[T]
+  ): immutable.IndexedSeq[T] =
     immutableSeq(iterable).toVector
 
   // TODO in case we decide to pull in scala-java8-compat methods below could be removed - https://github.com/akka/akka/issues/16247

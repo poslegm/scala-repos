@@ -28,10 +28,11 @@ object TraverseTestJVM extends SpecLite {
       val as = Stream.range(0, 100000)
       val state: State[Int, IO[Stream[Int]]] =
         as.traverseSTrampoline[IO, Int, Int](a =>
-              for {
+          for {
             s <- State.get[Int]
             _ <- State.put(a)
-          } yield IO(a - s))
+          } yield IO(a - s)
+        )
       state.eval(0).unsafePerformIO().take(3) must_=== (Stream(0, 1, 1))
     }
   }

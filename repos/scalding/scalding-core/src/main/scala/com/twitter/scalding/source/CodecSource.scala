@@ -36,9 +36,7 @@ object BytesWritableCodec {
   def get =
     Bijection.build[Array[Byte], BytesWritable] { arr =>
       new BytesWritable(arr)
-    } { w =>
-      Arrays.copyOfRange(w.getBytes, 0, w.getLength)
-    }
+    } { w => Arrays.copyOfRange(w.getBytes, 0, w.getLength) }
 }
 
 object CodecSource {
@@ -47,9 +45,12 @@ object CodecSource {
 }
 
 class CodecSource[T] private (
-    val hdfsPaths: Seq[String], val maxFailures: Int = 0)(
-    implicit @transient injection: Injection[T, Array[Byte]])
-    extends FileSource with Mappable[T] with LocalTapSource {
+    val hdfsPaths: Seq[String],
+    val maxFailures: Int = 0
+)(implicit @transient injection: Injection[T, Array[Byte]])
+    extends FileSource
+    with Mappable[T]
+    with LocalTapSource {
   import Dsl._
 
   val fieldSym = 'encodedBytes
@@ -61,8 +62,10 @@ class CodecSource[T] private (
   override def converter[U >: T] =
     TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def hdfsScheme =
-    HadoopSchemeInstance(new WritableSequenceFile(
-            field, classOf[BytesWritable]).asInstanceOf[Scheme[_, _, _, _, _]])
+    HadoopSchemeInstance(
+      new WritableSequenceFile(field, classOf[BytesWritable])
+        .asInstanceOf[Scheme[_, _, _, _, _]]
+    )
 
   protected lazy val checkedInversion =
     new MaxFailuresCheck[T, BytesWritable](maxFailures)(injectionBox.get)
@@ -77,10 +80,11 @@ class CodecSource[T] private (
   override def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
     val tap = createTap(Read)(mode)
     mode.openForRead(config, tap).asScala.flatMap { te =>
-      checkedInversion(te
-            .selectTuple(sourceFields)
-            .getObject(0)
-            .asInstanceOf[BytesWritable])
+      checkedInversion(
+        te.selectTuple(sourceFields)
+          .getObject(0)
+          .asInstanceOf[BytesWritable]
+      )
     }
   }
 }

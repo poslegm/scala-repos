@@ -7,7 +7,10 @@ import annotation.tailrec
 
 import java.util.concurrent.{ConcurrentSkipListSet, ConcurrentHashMap}
 import java.util.Comparator
-import scala.collection.JavaConverters.{asScalaIteratorConverter, collectionAsScalaIterableConverter}
+import scala.collection.JavaConverters.{
+  asScalaIteratorConverter,
+  collectionAsScalaIterableConverter
+}
 
 /**
   * An implementation of a ConcurrentMultiMap
@@ -17,9 +20,12 @@ import scala.collection.JavaConverters.{asScalaIteratorConverter, collectionAsSc
 class Index[K, V](val mapSize: Int, val valueComparator: Comparator[V]) {
 
   def this(mapSize: Int, cmp: (V, V) ⇒ Int) =
-    this(mapSize, new Comparator[V] {
-      def compare(a: V, b: V): Int = cmp(a, b)
-    })
+    this(
+      mapSize,
+      new Comparator[V] {
+        def compare(a: V, b: V): Int = cmp(a, b)
+      }
+    )
 
   private val container =
     new ConcurrentHashMap[K, ConcurrentSkipListSet[V]](mapSize)
@@ -40,7 +46,8 @@ class Index[K, V](val mapSize: Int, val valueComparator: Comparator[V]) {
       if (set ne null) {
         set.synchronized {
           if (set.isEmpty)
-            retry = true //IF the set is empty then it has been removed, so signal retry
+            retry =
+              true //IF the set is empty then it has been removed, so signal retry
           else {
             //Else add the value to the set and signal that retry is not needed
             added = set add v
@@ -56,7 +63,8 @@ class Index[K, V](val mapSize: Int, val valueComparator: Comparator[V]) {
         if (oldSet ne null) {
           oldSet.synchronized {
             if (oldSet.isEmpty)
-              retry = true //IF the set is empty then it has been removed, so signal retry
+              retry =
+                true //IF the set is empty then it has been removed, so signal retry
             else {
               //Else try to add the value to the set and signal that retry is not needed
               added = oldSet add v
@@ -130,7 +138,10 @@ class Index[K, V](val mapSize: Int, val valueComparator: Comparator[V]) {
         if (set.remove(value)) {
           //If we can remove the value
           if (set.isEmpty) //and the set becomes empty
-            container.remove(key, emptySet) //We try to remove the key if it's mapped to an empty set
+            container.remove(
+              key,
+              emptySet
+            ) //We try to remove the key if it's mapped to an empty set
 
           true //Remove succeeded
         } else false //Remove failed
@@ -149,7 +160,9 @@ class Index[K, V](val mapSize: Int, val valueComparator: Comparator[V]) {
       set.synchronized {
         container.remove(key, set)
         val ret =
-          collectionAsScalaIterableConverter(set.clone()).asScala // Make copy since we need to clear the original
+          collectionAsScalaIterableConverter(
+            set.clone()
+          ).asScala // Make copy since we need to clear the original
         set.clear() // Clear the original set to signal to any pending writers that there was a conflict
         Some(ret)
       }
@@ -170,7 +183,10 @@ class Index[K, V](val mapSize: Int, val valueComparator: Comparator[V]) {
           if (set.remove(value)) {
             //If we can remove the value
             if (set.isEmpty) //and the set becomes empty
-              container.remove(e.getKey, emptySet) //We try to remove the key if it's mapped to an empty set
+              container.remove(
+                e.getKey,
+                emptySet
+              ) //We try to remove the key if it's mapped to an empty set
           }
         }
       }

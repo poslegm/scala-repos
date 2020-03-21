@@ -45,8 +45,8 @@ object DatePicker {
   * Wraps [[http://docs.oracle.com/javase/8/javafx/api/javafx/scene/control/DatePicker.html]].
   */
 class DatePicker(
-    override val delegate: jfxsc.DatePicker = new jfxsc.DatePicker())
-    extends ComboBoxBase[LocalDate](delegate)
+    override val delegate: jfxsc.DatePicker = new jfxsc.DatePicker()
+) extends ComboBoxBase[LocalDate](delegate)
     with SFXDelegate[jfxsc.DatePicker] {
 
   /**

@@ -40,17 +40,18 @@ object LogTester {
 class LogBuffer extends AppenderBase[ILoggingEvent] {
   private val buffer = ListBuffer.empty[ILoggingEvent]
 
-  def append(eventObject: ILoggingEvent) = buffer.synchronized {
-    buffer.append(eventObject)
-  }
-
-  def find(level: Option[Level] = None,
-           logger: Option[String] = None,
-           messageContains: Option[String] = None): List[ILoggingEvent] =
+  def append(eventObject: ILoggingEvent) =
     buffer.synchronized {
-      val byLevel = level.fold(buffer) { l =>
-        buffer.filter(_.getLevel == l)
-      }
+      buffer.append(eventObject)
+    }
+
+  def find(
+      level: Option[Level] = None,
+      logger: Option[String] = None,
+      messageContains: Option[String] = None
+  ): List[ILoggingEvent] =
+    buffer.synchronized {
+      val byLevel = level.fold(buffer) { l => buffer.filter(_.getLevel == l) }
       val byLogger = logger.fold(byLevel) { l =>
         byLevel.filter(_.getLoggerName == l)
       }

@@ -11,15 +11,17 @@ package object runtime {
   def assumingES6: Boolean =
     scala.scalajs.LinkingInfo.assumingES6
 
-  def wrapJavaScriptException(e: Any): Throwable = e match {
-    case e: Throwable => e
-    case _ => js.JavaScriptException(e)
-  }
+  def wrapJavaScriptException(e: Any): Throwable =
+    e match {
+      case e: Throwable => e
+      case _            => js.JavaScriptException(e)
+    }
 
-  def unwrapJavaScriptException(th: Throwable): Any = th match {
-    case js.JavaScriptException(e) => e
-    case _ => th
-  }
+  def unwrapJavaScriptException(th: Throwable): Any =
+    th match {
+      case js.JavaScriptException(e) => e
+      case _                         => th
+    }
 
   def cloneObject(from: js.Object): js.Object = {
     val fromDyn = from.asInstanceOf[js.Dynamic]
@@ -31,9 +33,10 @@ package object runtime {
   }
 
   @inline final def genTraversableOnce2jsArray[A](
-      col: GenTraversableOnce[A]): js.Array[A] = {
+      col: GenTraversableOnce[A]
+  ): js.Array[A] = {
     col match {
-      case col: js.ArrayOps[A] => col.result()
+      case col: js.ArrayOps[A]     => col.result()
       case col: js.WrappedArray[A] => col.array
       case _ =>
         val result = new js.Array[A]
@@ -43,7 +46,8 @@ package object runtime {
   }
 
   final def jsTupleArray2jsObject(
-      tuples: js.Array[(String, js.Any)]): js.Object with js.Dynamic = {
+      tuples: js.Array[(String, js.Any)]
+  ): js.Object with js.Dynamic = {
     val result = js.Dynamic.literal()
     for ((name, value) <- tuples) result.updateDynamic(name)(value)
     result
@@ -77,7 +81,8 @@ package object runtime {
     *  `js.ConstructorTag.materialize`.
     */
   def newConstructorTag[T <: js.Any](
-      constructor: js.Dynamic): js.ConstructorTag[T] =
+      constructor: js.Dynamic
+  ): js.ConstructorTag[T] =
     new js.ConstructorTag[T](constructor)
 
   /** Returns an array of the enumerable properties in an object's prototype
@@ -166,7 +171,7 @@ package object runtime {
       val fbits = 23
       val bias = (1 << (ebits - 1)) - 1
       val twoPowFbits = (1 << fbits).toDouble
-      val SubnormalThreshold = 1.1754943508222875E-38 // pow(2, 1-bias)
+      val SubnormalThreshold = 1.1754943508222875e-38 // pow(2, 1-bias)
 
       val isNegative = v < 0
       val av = if (isNegative) -v else v

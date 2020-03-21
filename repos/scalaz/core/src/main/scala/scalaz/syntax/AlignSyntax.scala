@@ -2,9 +2,9 @@ package scalaz
 package syntax
 
 /** Wraps a value `self` and provides methods related to `Align` */
-final class AlignOps[F[_], A] private[syntax](val self: F[A])(
-    implicit val F: Align[F])
-    extends Ops[F[A]] {
+final class AlignOps[F[_], A] private[syntax] (val self: F[A])(implicit
+    val F: Align[F]
+) extends Ops[F[A]] {
   ////
   def align[B](b: F[B]): F[A \&/ B] = F.align(self, b)
   def alignWith[B, C](fb: F[B])(f: (A \&/ B) => C): F[C] =

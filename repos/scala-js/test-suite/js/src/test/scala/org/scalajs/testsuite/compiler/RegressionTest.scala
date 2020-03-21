@@ -180,8 +180,10 @@ class RegressionTest {
   @Test
   def should_support_class_literals_for_existential_value_types_issue_218(
       ): Unit = {
-    assertEquals("org.scalajs.testsuite.compiler.RegressionTest$Bug218Foo",
-                 scala.reflect.classTag[Bug218Foo[_]].toString)
+    assertEquals(
+      "org.scalajs.testsuite.compiler.RegressionTest$Bug218Foo",
+      scala.reflect.classTag[Bug218Foo[_]].toString
+    )
   }
 
   @Test def should_support_Buffer_issue_268(): Unit = {
@@ -288,14 +290,17 @@ class RegressionTest {
       ): Unit = {
     def giveMeANull(): Null = null
     assertThrows(classOf[Exception], (giveMeANull(): StringBuilder).append(5))
-    assertThrows(
-        classOf[Exception], (giveMeANull(): scala.runtime.IntRef).elem)
+    assertThrows(classOf[Exception], (giveMeANull(): scala.runtime.IntRef).elem)
 
     def giveMeANothing(): Nothing = sys.error("boom")
     assertThrows(
-        classOf[Exception], (giveMeANothing(): StringBuilder).append(5))
+      classOf[Exception],
+      (giveMeANothing(): StringBuilder).append(5)
+    )
     assertThrows(
-        classOf[Exception], (giveMeANothing(): scala.runtime.IntRef).elem)
+      classOf[Exception],
+      (giveMeANothing(): scala.runtime.IntRef).elem
+    )
   }
 
   @Test
@@ -373,12 +378,14 @@ class RegressionTest {
          * the call itself.
          * The optimizer eliminates the useless asInstanceOf.
          */
-        concat(v, {
-          // This must be a true block
-          var x = 1
-          while (x < 5) x += 1
-          x
-        })
+        concat(
+          v, {
+            // This must be a true block
+            var x = 1
+            while (x < 5) x += 1
+            x
+          }
+        )
       }
     }
 
@@ -505,7 +512,7 @@ object RegressionTest {
 
     def bug(x: Int, e: Boolean): Unit = {
       x match {
-        case 1 => doSomething(123, 456, ())
+        case 1      => doSomething(123, 456, ())
         case 2 if e =>
       }
 

@@ -43,12 +43,12 @@ object FileChooser {
 
   object ExtensionFilter {
     implicit def sfxExtensionFilter2jfx(
-        ef: ExtensionFilter): jfxs.FileChooser.ExtensionFilter =
+        ef: ExtensionFilter
+    ): jfxs.FileChooser.ExtensionFilter =
       if (ef != null) ef.delegate else null
   }
 
-  class ExtensionFilter(
-      override val delegate: jfxs.FileChooser.ExtensionFilter)
+  class ExtensionFilter(override val delegate: jfxs.FileChooser.ExtensionFilter)
       extends SFXDelegate[jfxs.FileChooser.ExtensionFilter] {
 
     /**
@@ -68,9 +68,9 @@ object FileChooser {
 
     /*
      * Creates an ExtensionFilter with the specified description and the file name extensions.
-     * NOTE IMPLEMENTATION: for constructor with extensions varargs compile complaints with message: "double definition: constructor 
-     * ExtensionFilter:(description: String, extensions: String*)scalafx.stage.FileChooser.ExtensionFilter and constructor 
-     * ExtensionFilter:(description: String, extensions: Seq[String])scalafx.stage.FileChooser.ExtensionFilter 
+     * NOTE IMPLEMENTATION: for constructor with extensions varargs compile complaints with message: "double definition: constructor
+     * ExtensionFilter:(description: String, extensions: String*)scalafx.stage.FileChooser.ExtensionFilter and constructor
+     * ExtensionFilter:(description: String, extensions: Seq[String])scalafx.stage.FileChooser.ExtensionFilter
      * at line XX have same type after erasure: (description: java.lang.String, extensions: Seq)scalafx.stage.FileChooser#ExtensionFilter".
      * So I decided maintain just Seq constructor.
      */
@@ -104,8 +104,8 @@ object FileChooser {
   * }}}
   */
 class FileChooser(
-    override val delegate: jfxs.FileChooser = new jfxs.FileChooser)
-    extends SFXDelegate[jfxs.FileChooser] {
+    override val delegate: jfxs.FileChooser = new jfxs.FileChooser
+) extends SFXDelegate[jfxs.FileChooser] {
 
   /**
     * The initial directory for the displayed dialog.
@@ -125,11 +125,14 @@ class FileChooser(
 
   /** This property is used to pre-select the extension filter for the next displayed dialog
     * and to read the user-selected extension filter from the dismissed dialog. */
-  def selectedExtensionFilter: ObjectProperty[jfxs.FileChooser.ExtensionFilter] =
+  def selectedExtensionFilter
+      : ObjectProperty[jfxs.FileChooser.ExtensionFilter] =
     delegate.selectedExtensionFilterProperty
   def selectedExtensionFilter_=(v: ExtensionFilter) {
     ObjectProperty.fillProperty[jfxs.FileChooser.ExtensionFilter](
-        selectedExtensionFilter, v)
+      selectedExtensionFilter,
+      v
+    )
   }
 
   /**

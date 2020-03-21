@@ -31,7 +31,9 @@ import org.apache.spark.util.ManualClock
   * Tests whether scope information is passed from DStream operations to RDDs correctly.
   */
 class DStreamScopeSuite
-    extends SparkFunSuite with BeforeAndAfter with BeforeAndAfterAll {
+    extends SparkFunSuite
+    with BeforeAndAfter
+    with BeforeAndAfterAll {
   private var ssc: StreamingContext = null
   private val batchDuration: Duration = Seconds(1)
 
@@ -84,12 +86,8 @@ class DStreamScopeSuite
 
   test("scoping simple operations") {
     val inputStream = new DummyInputDStream(ssc)
-    val mappedStream = inputStream.map { i =>
-      i + 1
-    }
-    val filteredStream = mappedStream.filter { i =>
-      i % 2 == 0
-    }
+    val mappedStream = inputStream.map { i => i + 1 }
+    val filteredStream = mappedStream.filter { i => i % 2 == 0 }
     filteredStream.initialize(Time(0))
 
     val mappedScopeBase =
@@ -108,7 +106,11 @@ class DStreamScopeSuite
     // DStream's base scopes
     assertDefined(mappedScopeBase, mappedScope1, mappedScope2, mappedScope3)
     assertDefined(
-        filteredScopeBase, filteredScope1, filteredScope2, filteredScope3)
+      filteredScopeBase,
+      filteredScope1,
+      filteredScope2,
+      filteredScope3
+    )
     assert(mappedScopeBase.get.name === "map")
     assert(filteredScopeBase.get.name === "filter")
     assertScopeCorrect(mappedScopeBase.get, mappedScope1.get, 1000)
@@ -172,18 +174,23 @@ class DStreamScopeSuite
 
     // Assert that all children RDDs inherit the DStream operation name correctly
     assertDefined(
-        transformScopeBase, transformScope1, transformScope2, transformScope3)
+      transformScopeBase,
+      transformScope1,
+      transformScope2,
+      transformScope3
+    )
     assert(transformScopeBase.get.name === "transform")
     assertNestedScopeCorrect(transformScope1.get, 1000)
     assertNestedScopeCorrect(transformScope2.get, 2000)
     assertNestedScopeCorrect(transformScope3.get, 3000)
 
     def assertNestedScopeCorrect(
-        rddScope: RDDOperationScope, batchTime: Long): Unit = {
+        rddScope: RDDOperationScope,
+        batchTime: Long
+    ): Unit = {
       assert(rddScope.name === "reduceByKey")
       assert(rddScope.parent.isDefined)
-      assertScopeCorrect(
-          transformScopeBase.get, rddScope.parent.get, batchTime)
+      assertScopeCorrect(transformScopeBase.get, rddScope.parent.get, batchTime)
     }
   }
 
@@ -215,7 +222,10 @@ class DStreamScopeSuite
         assert(rddScope.get.name === "reduceByKey")
         assert(rddScope.get.parent.isDefined)
         assertScopeCorrect(
-            foreachBaseScope.get, rddScope.get.parent.get, (idx + 1) * 1000)
+          foreachBaseScope.get,
+          rddScope.get.parent.get,
+          (idx + 1) * 1000
+        )
     }
   }
 
@@ -224,19 +234,27 @@ class DStreamScopeSuite
     assert(ssc != null)
     assert(ssc.sc.getLocalProperty(SparkContext.RDD_SCOPE_KEY) == null)
     assert(
-        ssc.sc.getLocalProperty(SparkContext.RDD_SCOPE_NO_OVERRIDE_KEY) == null)
+      ssc.sc.getLocalProperty(SparkContext.RDD_SCOPE_NO_OVERRIDE_KEY) == null
+    )
   }
 
   /** Assert that the given RDD scope inherits the name and ID of the base scope correctly. */
-  private def assertScopeCorrect(baseScope: RDDOperationScope,
-                                 rddScope: RDDOperationScope,
-                                 batchTime: Long): Unit = {
+  private def assertScopeCorrect(
+      baseScope: RDDOperationScope,
+      rddScope: RDDOperationScope,
+      batchTime: Long
+  ): Unit = {
     val (baseScopeId, baseScopeName) = (baseScope.id, baseScope.name)
     val formattedBatchTime = UIUtils.formatBatchTime(
-        batchTime, ssc.graph.batchDuration.milliseconds, showYYYYMMSS = false)
+      batchTime,
+      ssc.graph.batchDuration.milliseconds,
+      showYYYYMMSS = false
+    )
     assert(rddScope.id === s"${baseScopeId}_$batchTime")
     assert(
-        rddScope.name.replaceAll("\\n", " ") === s"$baseScopeName @ $formattedBatchTime")
+      rddScope.name
+        .replaceAll("\\n", " ") === s"$baseScopeName @ $formattedBatchTime"
+    )
     assert(rddScope.parent.isEmpty) // There should not be any higher scope
   }
 

@@ -38,14 +38,18 @@ class SimulatedDriver(driverProps: Props) extends SchedulerDriver {
   override def declineOffer(offerId: OfferID): Status =
     driverCmd(DriverActor.DeclineOffer(offerId))
 
-  override def launchTasks(offerIds: util.Collection[OfferID],
-                           tasks: util.Collection[TaskInfo]): Status =
+  override def launchTasks(
+      offerIds: util.Collection[OfferID],
+      tasks: util.Collection[TaskInfo]
+  ): Status =
     driverCmd(DriverActor.LaunchTasks(offerIds.toSeq, tasks.toSeq))
 
   // Mesos 0.23.x
-  override def acceptOffers(offerIds: util.Collection[OfferID],
-                            ops: util.Collection[Offer.Operation],
-                            filters: Filters): Status =
+  override def acceptOffers(
+      offerIds: util.Collection[OfferID],
+      ops: util.Collection[Offer.Operation],
+      filters: Filters
+  ): Status =
     driverCmd(DriverActor.AcceptOffers(offerIds.toSeq, ops.toSeq, filters))
 
   override def killTask(taskId: TaskID): Status =
@@ -61,18 +65,27 @@ class SimulatedDriver(driverProps: Props) extends SchedulerDriver {
   override def declineOffer(offerId: OfferID, filters: Filters): Status =
     Status.DRIVER_RUNNING
 
-  override def launchTasks(offerIds: util.Collection[OfferID],
-                           tasks: util.Collection[TaskInfo],
-                           filters: Filters): Status = ???
-  override def launchTasks(offerId: OfferID,
-                           tasks: util.Collection[TaskInfo],
-                           filters: Filters): Status = ???
   override def launchTasks(
-      offerId: OfferID, tasks: util.Collection[TaskInfo]): Status = ???
+      offerIds: util.Collection[OfferID],
+      tasks: util.Collection[TaskInfo],
+      filters: Filters
+  ): Status = ???
+  override def launchTasks(
+      offerId: OfferID,
+      tasks: util.Collection[TaskInfo],
+      filters: Filters
+  ): Status = ???
+  override def launchTasks(
+      offerId: OfferID,
+      tasks: util.Collection[TaskInfo]
+  ): Status = ???
   override def requestResources(requests: util.Collection[Request]): Status =
     ???
   override def sendFrameworkMessage(
-      executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]): Status =
+      executorId: ExecutorID,
+      slaveId: SlaveID,
+      data: Array[Byte]
+  ): Status =
     ???
   override def acknowledgeStatusUpdate(ackStatus: TaskStatus): Status = status
 
@@ -83,10 +96,11 @@ class SimulatedDriver(driverProps: Props) extends SchedulerDriver {
   @volatile
   var driverActorRefOpt: Option[ActorRef] = None
 
-  private def status: Status = system match {
-    case None => Status.DRIVER_STOPPED
-    case Some(_) => Status.DRIVER_RUNNING
-  }
+  private def status: Status =
+    system match {
+      case None    => Status.DRIVER_STOPPED
+      case Some(_) => Status.DRIVER_RUNNING
+    }
 
   override def start(): Status = {
     log.info("Starting simulated Mesos")

@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -69,16 +69,22 @@ trait ShardConfig extends BaseConfig {
 case class IngestSystem(ingestActor: ActorRef, stoppable: Stoppable)
 
 object IngestSystem extends Logging {
-  def actorStop(config: ShardConfig, actor: ActorRef, name: String)(
-      implicit system: ActorSystem,
-      executor: ExecutionContext): Future[Unit] = {
+  def actorStop(config: ShardConfig, actor: ActorRef, name: String)(implicit
+      system: ActorSystem,
+      executor: ExecutionContext
+  ): Future[Unit] = {
     for {
-      _ <- Future(logger.debug(config.logPrefix + " Stopping " + name +
-              " actor within " + config.stopTimeout.duration))
+      _ <- Future(
+        logger.debug(
+          config.logPrefix + " Stopping " + name +
+            " actor within " + config.stopTimeout.duration
+        )
+      )
       b <- gracefulStop(actor, config.stopTimeout.duration)
     } yield {
       logger.debug(
-          config.logPrefix + " Stop call for " + name + " actor returned " + b)
+        config.logPrefix + " Stop call for " + name + " actor returned " + b
+      )
     }
   } recover {
     case e => logger.error("Error stopping " + name + " actor", e)
@@ -95,10 +101,13 @@ trait ShardSystemActorModule extends YggConfigComponent with Logging {
       routingActor: ActorRef,
       checkpoint: YggCheckpoint,
       checkpointCoordination: CheckpointCoordination,
-      permissionsFinder: PermissionsFinder[Future]): Option[ActorRef]
+      permissionsFinder: PermissionsFinder[Future]
+  ): Option[ActorRef]
 
-  def initShardActors(permissionsFinder: PermissionsFinder[Future],
-                      routingActor: ActorRef): Option[IngestSystem] = {
+  def initShardActors(
+      permissionsFinder: PermissionsFinder[Future],
+      routingActor: ActorRef
+  ): Option[IngestSystem] = {
     val ingestActorSystem: ActorSystem = ActorSystem("Ingest")
 
     def loadCheckpoint(): Option[YggCheckpoint] =
@@ -109,26 +118,31 @@ trait ShardSystemActorModule extends YggConfigComponent with Logging {
             sys.error("Unable to load Kafka checkpoint: " + errors)
 
           case Some(Success(checkpoint)) => Some(checkpoint)
-          case None => None
+          case None                      => None
         }
       }
 
     val initialCheckpoint = loadCheckpoint()
 
-    val ingestActor = for (checkpoint <- initialCheckpoint;
-    init <- initIngestActor(ingestActorSystem,
-                            routingActor,
-                            checkpoint,
-                            checkpointCoordination,
-                            permissionsFinder)) yield init
+    val ingestActor =
+      for (checkpoint <- initialCheckpoint;
+           init <- initIngestActor(
+             ingestActorSystem,
+             routingActor,
+             checkpoint,
+             checkpointCoordination,
+             permissionsFinder
+           )) yield init
 
     val stoppable = Stoppable.fromFuture({
       import IngestSystem.actorStop
       logger.info("Stopping bifrost system")
       for {
         _ <- ingestActor map {
-          actorStop(yggConfig, _, "ingestActor")(ingestActorSystem,
-                                                 ingestActorSystem.dispatcher)
+          actorStop(yggConfig, _, "ingestActor")(
+            ingestActorSystem,
+            ingestActorSystem.dispatcher
+          )
         } getOrElse { Future(())(ingestActorSystem.dispatcher) }
       } yield {
         ingestActorSystem.shutdown()

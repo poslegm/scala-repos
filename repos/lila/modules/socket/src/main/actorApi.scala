@@ -24,4 +24,7 @@ case object PopulationTell
 case class NbMembers(nb: Int)
 
 case class StartWatching(
-    uid: String, member: SocketMember, gameIds: Set[String])
+    uid: String,
+    member: SocketMember,
+    gameIds: Set[String]
+)

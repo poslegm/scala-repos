@@ -30,7 +30,11 @@ import java.{util => ju}
 import javafx.{collections => jfxc}
 
 import scala.collection.JavaConversions._
-import scala.collection.generic.{GenericCompanion, GenericSetTemplate, MutableSetFactory}
+import scala.collection.generic.{
+  GenericCompanion,
+  GenericSetTemplate,
+  MutableSetFactory
+}
 import scala.collection.mutable.{Builder, Set, SetLike}
 import scala.language.implicitConversions
 import scalafx.beans.Observable
@@ -50,7 +54,8 @@ object ObservableSet extends MutableSetFactory[ObservableSet] {
     * @return JavaFX's $OS inside parameter.
     */
   implicit def sfxObservableSet2sfxObservableSet[T](
-      os: ObservableSet[T]): jfxc.ObservableSet[T] =
+      os: ObservableSet[T]
+  ): jfxc.ObservableSet[T] =
     if (os != null) os.delegate else null
 
   // CHANGING INDICATORS - BEGIN
@@ -122,9 +127,12 @@ object ObservableSet extends MutableSetFactory[ObservableSet] {
   * @define SET `Set`
   */
 trait ObservableSet[T]
-    extends Set[T] with SetLike[T, ObservableSet[T]]
-    with GenericSetTemplate[T, ObservableSet] with Builder[T, ObservableSet[T]]
-    with Observable with SFXDelegate[jfxc.ObservableSet[T]] {
+    extends Set[T]
+    with SetLike[T, ObservableSet[T]]
+    with GenericSetTemplate[T, ObservableSet]
+    with Builder[T, ObservableSet[T]]
+    with Observable
+    with SFXDelegate[jfxc.ObservableSet[T]] {
 
   /**
     * The factory companion object that builds instances of class $OS.
@@ -175,11 +183,12 @@ trait ObservableSet[T]
   /**
     * Creates a new iterator over elements of this set
     */
-  def iterator = new Iterator[T] {
-    val it = delegate.iterator
-    def hasNext = it.hasNext
-    def next() = it.next()
-  }
+  def iterator =
+    new Iterator[T] {
+      val it = delegate.iterator
+      def hasNext = it.hasNext
+      def next() = it.next()
+    }
 
   /**
     * @return This $SET's size.
@@ -211,8 +220,9 @@ trait ObservableSet[T]
               ObservableSet.Remove(change.getElementRemoved)
             case _ =>
               throw new IllegalStateException(
-                  "Irregular Change. Added: " + change.getElementAdded +
-                  ", Removed: " + change.getElementRemoved)
+                "Irregular Change. Added: " + change.getElementAdded +
+                  ", Removed: " + change.getElementRemoved
+              )
           }
 
         op(ObservableSet.this, changeEvent)
@@ -226,8 +236,7 @@ trait ObservableSet[T]
     * @param op No-argument function to be activated when some change in this $OS was made.
     */
   def onChange(op: => Unit) {
-    delegate.addListener(
-        new jfxc.SetChangeListener[T] {
+    delegate.addListener(new jfxc.SetChangeListener[T] {
       def onChanged(change: jfxc.SetChangeListener.Change[_ <: T]) {
         op
       }
@@ -249,5 +258,5 @@ trait ObservableSet[T]
   */
 class ObservableHashSet[T](
     override val delegate: jfxc.ObservableSet[T] = jfxc.FXCollections
-        .observableSet(new ju.HashSet[T]))
-    extends ObservableSet[T]
+      .observableSet(new ju.HashSet[T])
+) extends ObservableSet[T]

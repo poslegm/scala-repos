@@ -6,7 +6,12 @@ package akka.stream.scaladsl
 import akka.actor.ActorRef
 import akka.stream.{Attributes, ActorMaterializer}
 import akka.stream.impl.fusing.GraphStages.SimpleLinearGraphStage
-import akka.stream.stage.{TimerGraphStageLogic, OutHandler, AsyncCallback, InHandler}
+import akka.stream.stage.{
+  TimerGraphStageLogic,
+  OutHandler,
+  AsyncCallback,
+  InHandler
+}
 import akka.testkit.AkkaSpec
 import akka.testkit.TestDuration
 
@@ -46,13 +51,19 @@ class GraphStageTimersSpec extends AkkaSpec {
       new TimerGraphStageLogic(shape) {
         val tickCount = Iterator from 1
 
-        setHandler(in, new InHandler {
-          override def onPush() = push(out, grab(in))
-        })
+        setHandler(
+          in,
+          new InHandler {
+            override def onPush() = push(out, grab(in))
+          }
+        )
 
-        setHandler(out, new OutHandler {
-          override def onPull(): Unit = pull(in)
-        })
+        setHandler(
+          out,
+          new OutHandler {
+            override def onPull(): Unit = pull(in)
+          }
+        )
 
         override def preStart() = {
           sideChannel.asyncCallback = getAsyncCallback(onTestEvent)
@@ -67,20 +78,21 @@ class GraphStageTimersSpec extends AkkaSpec {
             cancelTimer("TestRepeatedTimer")
         }
 
-        private def onTestEvent(event: Any): Unit = event match {
-          case TestSingleTimer ⇒
-            scheduleOnce("TestSingleTimer", 500.millis.dilated)
-          case TestSingleTimerResubmit ⇒
-            scheduleOnce("TestSingleTimerResubmit", 500.millis.dilated)
-          case TestCancelTimer ⇒
-            scheduleOnce("TestCancelTimer", 1.milli.dilated)
-            // Likely in mailbox but we cannot guarantee
-            cancelTimer("TestCancelTimer")
-            probe ! TestCancelTimerAck
-            scheduleOnce("TestCancelTimer", 500.milli.dilated)
-          case TestRepeatedTimer ⇒
-            schedulePeriodically("TestRepeatedTimer", 100.millis.dilated)
-        }
+        private def onTestEvent(event: Any): Unit =
+          event match {
+            case TestSingleTimer ⇒
+              scheduleOnce("TestSingleTimer", 500.millis.dilated)
+            case TestSingleTimerResubmit ⇒
+              scheduleOnce("TestSingleTimerResubmit", 500.millis.dilated)
+            case TestCancelTimer ⇒
+              scheduleOnce("TestCancelTimer", 1.milli.dilated)
+              // Likely in mailbox but we cannot guarantee
+              cancelTimer("TestCancelTimer")
+              probe ! TestCancelTimerAck
+              scheduleOnce("TestCancelTimer", 500.milli.dilated)
+            case TestRepeatedTimer ⇒
+              schedulePeriodically("TestRepeatedTimer", 100.millis.dilated)
+          }
       }
   }
 
@@ -164,16 +176,22 @@ class GraphStageTimersSpec extends AkkaSpec {
           override def preStart(): Unit =
             schedulePeriodically("tick", 100.millis)
 
-          setHandler(out, new OutHandler {
-            override def onPull() = () // Do nothing
-            override def onDownstreamFinish() = completeStage()
-          })
+          setHandler(
+            out,
+            new OutHandler {
+              override def onPull() = () // Do nothing
+              override def onDownstreamFinish() = completeStage()
+            }
+          )
 
-          setHandler(in, new InHandler {
-            override def onPush() = () // Do nothing
-            override def onUpstreamFinish() = completeStage()
-            override def onUpstreamFailure(ex: Throwable) = failStage(ex)
-          })
+          setHandler(
+            in,
+            new InHandler {
+              override def onPush() = () // Do nothing
+              override def onUpstreamFinish() = completeStage()
+              override def onUpstreamFailure(ex: Throwable) = failStage(ex)
+            }
+          )
 
           override def onTimer(timerKey: Any) = {
             tickCount += 1
@@ -215,13 +233,19 @@ class GraphStageTimersSpec extends AkkaSpec {
             new TimerGraphStageLogic(shape) {
               override def preStart(): Unit = scheduleOnce("tick", 100.millis)
 
-              setHandler(in, new InHandler {
-                override def onPush() = () // Ingore
-              })
+              setHandler(
+                in,
+                new InHandler {
+                  override def onPush() = () // Ingore
+                }
+              )
 
-              setHandler(out, new OutHandler {
-                override def onPull(): Unit = pull(in)
-              })
+              setHandler(
+                out,
+                new OutHandler {
+                  override def onPull(): Unit = pull(in)
+                }
+              )
 
               override def onTimer(timerKey: Any) = throw exception
             }

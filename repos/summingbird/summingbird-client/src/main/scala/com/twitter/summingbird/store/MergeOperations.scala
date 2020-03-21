@@ -31,8 +31,9 @@ object MergeOperations {
   // checking that the batch layer is not more than batchesToKeep
   // behind. the manner of doing that on a per-key basis will change
   // in storehaus 0.3, so add in that check during the upgrade.
-  def sortedSum[V : Semigroup](
-      opts: Seq[Option[(BatchID, V)]]): Option[(BatchID, V)] =
+  def sortedSum[V: Semigroup](
+      opts: Seq[Option[(BatchID, V)]]
+  ): Option[(BatchID, V)] =
     Semigroup.sumOption(opts.flatten.sortBy(_._1))
 
   /**
@@ -40,30 +41,33 @@ object MergeOperations {
     */
   def pivot[K] = Pivot.of[(K, BatchID), K, BatchID]
 
-  def collect[T, U](seq: Seq[(T, Future[U])])(
-      implicit collect: FutureCollector[(T, U)]): Future[Seq[(T, U)]] =
+  def collect[T, U](
+      seq: Seq[(T, Future[U])]
+  )(implicit collect: FutureCollector[(T, U)]): Future[Seq[(T, U)]] =
     collect {
       seq.map { case (t, futureU) => futureU.map(t -> _) }
     }
 
-  def mergeResults[K, V : Semigroup](
+  def mergeResults[K, V: Semigroup](
       m1: Map[K, Future[Seq[Option[(BatchID, V)]]]],
-      m2: Map[K, Future[Seq[Option[(BatchID, V)]]]])
-    : Map[K, Future[Option[(BatchID, V)]]] =
+      m2: Map[K, Future[Seq[Option[(BatchID, V)]]]]
+  ): Map[K, Future[Option[(BatchID, V)]]] =
     Semigroup.plus(m1, m2).map {
       case (k, v) =>
         k -> v.map(sortedSum(_))
     }
 
   def dropBatches[K, V](
-      m: Map[K, Future[Option[(BatchID, V)]]]): Map[K, Future[Option[V]]] =
+      m: Map[K, Future[Option[(BatchID, V)]]]
+  ): Map[K, Future[Option[V]]] =
     m.map { case (k, v) => k -> v.map(_.map(_._2)) }
 
   /**
     * Pivots each BatchID out of the key and into the Value's future.
     */
-  def pivotBatches[K, V](m: Map[(K, BatchID), FOpt[V]])
-    : Map[K, Future[Seq[Option[(BatchID, V)]]]] =
+  def pivotBatches[K, V](
+      m: Map[(K, BatchID), FOpt[V]]
+  ): Map[K, Future[Seq[Option[(BatchID, V)]]]] =
     pivot.withValue(m).map {
       case (k, it) =>
         k -> collect(it.toSeq).map {
@@ -71,8 +75,9 @@ object MergeOperations {
         }
     }
 
-  def decrementOfflineBatch[K, V](m: Map[K, FOpt[(BatchID, V)]])
-    : Map[K, Future[Seq[Option[(BatchID, V)]]]] =
+  def decrementOfflineBatch[K, V](
+      m: Map[K, FOpt[(BatchID, V)]]
+  ): Map[K, Future[Seq[Option[(BatchID, V)]]]] =
     m.map {
       case (k, futureOptV) =>
         k -> futureOptV.map { optV =>
@@ -85,13 +90,15 @@ object MergeOperations {
     * with batchesToKeep. The more recent BatchID is used as the begining of the
     * range used to query the onlineStore.
     */
-  def expand(offlineReturn: Option[BatchID],
-             nowBatch: BatchID,
-             batchesToKeep: Int): Iterable[BatchID] = {
+  def expand(
+      offlineReturn: Option[BatchID],
+      nowBatch: BatchID,
+      batchesToKeep: Int
+  ): Iterable[BatchID] = {
     val initBatch = Semigroup
       .plus(
-          Some(nowBatch - (batchesToKeep - 1)),
-          offlineReturn
+        Some(nowBatch - (batchesToKeep - 1)),
+        offlineReturn
       )
       .get // This will never throw, as this option can never be None
     // (because we included an explicit "Some" inside)
@@ -99,14 +106,15 @@ object MergeOperations {
   }
 
   def generateOnlineKeys[K](ks: Seq[K], nowBatch: BatchID, batchesToKeep: Int)(
-      lookup: K => FOpt[BatchID])(
-      implicit collect: FutureCollector[(K, Iterable[BatchID])])
-    : Future[Set[(K, BatchID)]] =
+      lookup: K => FOpt[BatchID]
+  )(implicit
+      collect: FutureCollector[(K, Iterable[BatchID])]
+  ): Future[Set[(K, BatchID)]] =
     for {
       collected <- collect(
-          ks.map { k =>
-            lookup(k).map { k -> expand(_, nowBatch, batchesToKeep) }
-          }
+        ks.map { k =>
+          lookup(k).map { k -> expand(_, nowBatch, batchesToKeep) }
+        }
       )
     } yield pivot.invert(collected.toMap).toSet
 }

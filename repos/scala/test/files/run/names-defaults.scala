@@ -8,7 +8,10 @@ object Test extends App {
   // re-order using names, call-site evaluation order
   test1(1, "@")
   test1(b = get("$"), a = get(2))
-  test1(a = get(3), b = get("**")) // should not transform into a block. how to test?
+  test1(
+    a = get(3),
+    b = get("**")
+  ) // should not transform into a block. how to test?
   test3(b = get(110), a = get(11))(c = get("\\"), d = get(2.399))
   test3(get(14), get(3920))(d = get("}"), c = get("["))
 
@@ -145,7 +148,8 @@ object Test extends App {
   val b1 = new B("dklfj")(e = "nixda")
   println(b1.printB)
   val c1 = new C(a = "dlkf", c = new { override def toString() = "struct" })(
-      e = "???")
+    e = "???"
+  )
   println(c1.print)
   val c2 = C("dflkj", c = Some(209): Option[Int])(None, "!!")
   println(c2.print)
@@ -159,8 +163,7 @@ object Test extends App {
   println(mn.foo()())
   println(mn.bar(10))
   // anonymous class
-  println(
-      (new M {
+  println((new M {
     def foo[T >: String](x: Int, y: T)(z: String = "2") = z;
     def bar(x: Int, y: Double) = x
   }).foo()())
@@ -185,7 +188,10 @@ object Test extends App {
   test5 { argName = 5 }
   println(argName) // should be 5
   val a: Unit =
-    test1(a = 10, b = "2") // local values a and b exist, but it's not ambiguous since they're vals
+    test1(
+      a = 10,
+      b = "2"
+    ) // local values a and b exist, but it's not ambiguous since they're vals
 
   // dependent types and copy method
   val a11 = new A2
@@ -404,9 +410,7 @@ object Test extends App {
     inner(c = "/")
   }
   def test5(argName: Unit) = println("test5")
-  def test6(x: Int) = { () =>
-    x
-  }
+  def test6(x: Int) = { () => x }
   def test7(s: String) = List(1).foreach(_ => println(s))
 
   def test8(x: Int = 1)(implicit y: Int, z: String = "kldfj") = z + x + y
@@ -414,14 +418,18 @@ object Test extends App {
 }
 
 class Base {
-  def test1[T1, T2](a: Int = 100, b: T1)(c: T2, d: String = a + ": " + b)(
-      e: T2 = c, f: Int) =
+  def test1[T1, T2](
+      a: Int = 100,
+      b: T1
+  )(c: T2, d: String = a + ": " + b)(e: T2 = c, f: Int) =
     println(a + ": " + d + ", " + b + ", " + c + ", " + e + ", " + f)
 }
 
 class Sub1 extends Base {
-  override def test1[U1, U2](b: Int, a: U1)(m: U2, r: String = "overridden")(
-      o: U2, f: Int = 555) =
+  override def test1[U1, U2](
+      b: Int,
+      a: U1
+  )(m: U2, r: String = "overridden")(o: U2, f: Int = 555) =
     println(b + ": " + r + ", " + a + ", " + m + ", " + o + ", " + f)
 }
 

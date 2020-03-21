@@ -3,7 +3,12 @@ package org.jetbrains.plugins.scala.codeInsight.intention.types
 import com.intellij.codeInsight.completion.{InsertHandler, InsertionContext}
 import com.intellij.codeInsight.lookup._
 import com.intellij.codeInsight.template.impl.TemplateManagerImpl
-import com.intellij.codeInsight.template.{Expression, ExpressionContext, Result, TextResult}
+import com.intellij.codeInsight.template.{
+  Expression,
+  ExpressionContext,
+  Result,
+  TextResult
+}
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import org.jetbrains.plugins.scala.lang.psi.types.ScTypeText
 
@@ -18,13 +23,15 @@ abstract class ChooseValueExpression[T](lookupItems: Seq[T], defaultItem: T)
 
   val lookupElements: Array[LookupElement] = calcLookupElements().toArray
 
-  def calcLookupElements(): Seq[LookupElementBuilder] = lookupItems.map {
-    elem =>
+  def calcLookupElements(): Seq[LookupElementBuilder] =
+    lookupItems.map { elem =>
       LookupElementBuilder
         .create(elem, lookupString(elem))
         .withInsertHandler(new InsertHandler[LookupElement] {
           override def handleInsert(
-              context: InsertionContext, item: LookupElement): Unit = {
+              context: InsertionContext,
+              item: LookupElement
+          ): Unit = {
             val topLevelEditor =
               InjectedLanguageUtil.getTopLevelEditor(context.getEditor)
             val templateState =
@@ -35,18 +42,22 @@ abstract class ChooseValueExpression[T](lookupItems: Seq[T], defaultItem: T)
                 //need to insert with FQNs
                 val newText = result(item.getObject.asInstanceOf[T])
                 topLevelEditor.getDocument.replaceString(
-                    range.getStartOffset, range.getEndOffset, newText)
+                  range.getStartOffset,
+                  range.getEndOffset,
+                  newText
+                )
               }
             }
           }
         })
-  }
+    }
 
   override def calculateResult(context: ExpressionContext): Result =
     new TextResult(lookupString(defaultItem))
 
   override def calculateLookupItems(
-      context: ExpressionContext): Array[LookupElement] =
+      context: ExpressionContext
+  ): Array[LookupElement] =
     if (lookupElements.length > 1) lookupElements
     else null
 
@@ -55,8 +66,9 @@ abstract class ChooseValueExpression[T](lookupItems: Seq[T], defaultItem: T)
 }
 
 class ChooseTypeTextExpression(
-    lookupItems: Seq[ScTypeText], default: ScTypeText)
-    extends ChooseValueExpression[ScTypeText](lookupItems, default) {
+    lookupItems: Seq[ScTypeText],
+    default: ScTypeText
+) extends ChooseValueExpression[ScTypeText](lookupItems, default) {
   def this(lookupItems: Seq[ScTypeText]) {
     this(lookupItems, lookupItems.head)
   }

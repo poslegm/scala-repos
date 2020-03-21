@@ -10,9 +10,10 @@ trait TypeConverterFactory[T] extends BindingImplicits {
 }
 
 trait TypeConverterFactories extends BindingImplicits {
-  implicit def typeConverterFactory[A](
-      implicit seqConverter: TypeConverter[Seq[String], A],
-      stringConverter: TypeConverter[String, A]): TypeConverterFactory[A] =
+  implicit def typeConverterFactory[A](implicit
+      seqConverter: TypeConverter[Seq[String], A],
+      stringConverter: TypeConverter[String, A]
+  ): TypeConverterFactory[A] =
     new TypeConverterFactory[A] {
       def resolveMultiParams: TypeConverter[Seq[String], A] = seqConverter
 

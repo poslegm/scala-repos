@@ -48,9 +48,7 @@ package scala.collection.mutable {
       val oldElems = set.toList
       set --= ks
       val deletedElems = ks.toSet
-      oldElems.forall { e =>
-        set.contains(e) == !deletedElems(e)
-      }
+      oldElems.forall { e => set.contains(e) == !deletedElems(e) }
     }
 
     property("iterator") = forAll { (ks: Set[K]) =>
@@ -98,7 +96,7 @@ package scala.collection.mutable {
         val mset = mutable.TreeSet[K]()
 
         ops.foreach {
-          case Left(k) => iset += k; mset += k
+          case Left(k)  => iset += k; mset += k
           case Right(k) => iset -= k; mset -= k
         }
 
@@ -116,8 +114,10 @@ package scala.collection.mutable {
       from.fold(true)(_ <= key) && until.fold(true)(_ > key)
 
     def keysInView[This <: TraversableOnce[K], That](
-        keys: This, from: Option[K], until: Option[K])(
-        implicit bf: CanBuildFrom[This, K, That]) = {
+        keys: This,
+        from: Option[K],
+        until: Option[K]
+    )(implicit bf: CanBuildFrom[This, K, That]) = {
       (bf.apply(keys) ++= keys.filter(in(_, from, until))).result()
     }
 
@@ -146,8 +146,12 @@ package scala.collection.mutable {
     }
 
     property("++=") = forAll {
-      (set: mutable.TreeSet[K], ks: Seq[K], from: Option[K],
-      until: Option[K]) =>
+      (
+          set: mutable.TreeSet[K],
+          ks: Seq[K],
+          from: Option[K],
+          until: Option[K]
+      ) =>
         val setView = set.rangeImpl(from, until)
         setView ++= ks
         ks.toSet.forall { k =>
@@ -168,13 +172,15 @@ package scala.collection.mutable {
     }
 
     property("--=") = forAll {
-      (set: mutable.TreeSet[K], ks: Seq[K], from: Option[K],
-      until: Option[K]) =>
+      (
+          set: mutable.TreeSet[K],
+          ks: Seq[K],
+          from: Option[K],
+          until: Option[K]
+      ) =>
         val setView = set.rangeImpl(from, until)
         setView --= ks
-        ks.toSet.forall { k =>
-          !set.contains(k) && !setView.contains(k)
-        }
+        ks.toSet.forall { k => !set.contains(k) && !setView.contains(k) }
     }
 
     property("iterator") = forAll {
@@ -193,19 +199,27 @@ package scala.collection.mutable {
 
         val setView = set.rangeImpl(from, until)
         val newLower = Some(from.fold(k)(ord.max(_, k)))
-        setView.iteratorFrom(k).toSeq == keysInView(ks, newLower, until).toSeq.sorted
+        setView.iteratorFrom(k).toSeq == keysInView(
+          ks,
+          newLower,
+          until
+        ).toSeq.sorted
     }
 
     property("headOption") = forAll {
       (set: mutable.TreeSet[K], from: Option[K], until: Option[K]) =>
         val setView = set.rangeImpl(from, until)
-        setView.headOption == Try(keysInView(set.iterator, from, until).next()).toOption
+        setView.headOption == Try(
+          keysInView(set.iterator, from, until).next()
+        ).toOption
     }
 
     property("lastOption") = forAll {
       (set: mutable.TreeSet[K], from: Option[K], until: Option[K]) =>
         val setView = set.rangeImpl(from, until)
-        setView.lastOption == Try(keysInView(set.iterator, from, until).max).toOption
+        setView.lastOption == Try(
+          keysInView(set.iterator, from, until).max
+        ).toOption
     }
 
     property("clear") = forAll {

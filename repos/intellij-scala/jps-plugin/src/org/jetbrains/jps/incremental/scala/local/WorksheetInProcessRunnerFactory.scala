@@ -8,7 +8,11 @@ import java.nio.ByteBuffer
 import com.intellij.util.Base64Converter
 import com.martiansoftware.nailgun.ThreadLocalPrintStream
 import org.jetbrains.jps.incremental.scala.data.CompilerJars
-import org.jetbrains.jps.incremental.scala.remote.{EventGeneratingClient, Arguments, WorksheetOutputEvent}
+import org.jetbrains.jps.incremental.scala.remote.{
+  EventGeneratingClient,
+  Arguments,
+  WorksheetOutputEvent
+}
 
 /**
   * User: Dmitry.Naydanov
@@ -20,20 +24,27 @@ class WorksheetInProcessRunnerFactory {
   }
 
   def getRunner(
-      out: PrintStream, standalone: Boolean): WorksheetInProcessRunner =
+      out: PrintStream,
+      standalone: Boolean
+  ): WorksheetInProcessRunner =
     new WorksheetInProcessRunnerImpl(out, standalone)
 
   private var classLoader: Option[(Set[URL], Set[URL], URLClassLoader)] = None
 
   private def createClassLoader(
-      compilerUrls: Set[URL], classpathUrls: Set[URL]) = {
-    val loader = new URLClassLoader(
-        (compilerUrls ++ classpathUrls).toArray, null)
+      compilerUrls: Set[URL],
+      classpathUrls: Set[URL]
+  ) = {
+    val loader =
+      new URLClassLoader((compilerUrls ++ classpathUrls).toArray, null)
     classLoader = Some((compilerUrls, classpathUrls, loader))
     loader
   }
 
-  private def getClassLoader(compilerUrls: Seq[URL], classpathUrls: Seq[URL]) = {
+  private def getClassLoader(
+      compilerUrls: Seq[URL],
+      classpathUrls: Seq[URL]
+  ) = {
     val compilerSet = compilerUrls.toSet
     val classpathSet = classpathUrls.toSet
 
@@ -46,8 +57,9 @@ class WorksheetInProcessRunnerFactory {
   }
 
   private class WorksheetInProcessRunnerImpl(
-      out: PrintStream, standalone: Boolean)
-      extends WorksheetInProcessRunner {
+      out: PrintStream,
+      standalone: Boolean
+  ) extends WorksheetInProcessRunner {
     private val TRACE_PREFIX = 21
     private val WORKSHEET = "#worksheet#"
 
@@ -77,11 +89,15 @@ class WorksheetInProcessRunnerFactory {
       override def flush() {
         if (buffer.position() == 0) return
         val event = WorksheetOutputEvent(
-            new String(buffer.array(), 0, buffer.position()))
+          new String(buffer.array(), 0, buffer.position())
+        )
         buffer.clear()
         val encode = Base64Converter.encode(event.toBytes)
-        out.write(if (standalone && !encode.endsWith("="))
-              (encode + "=").getBytes else encode.getBytes)
+        out.write(
+          if (standalone && !encode.endsWith("="))
+            (encode + "=").getBytes
+          else encode.getBytes
+        )
       }
     }
 
@@ -102,10 +118,12 @@ class WorksheetInProcessRunnerFactory {
             arguments.compilationData.classpath.map(_.toURI.toURL)
 
           val classLoader = new URLClassLoader(
-              worksheetUrls.toArray,
-              getClassLoader(
-                  compilerUrlSeq,
-                  classpathUrls diff worksheetUrls.map(_.toURI.toURL)))
+            worksheetUrls.toArray,
+            getClassLoader(
+              compilerUrlSeq,
+              classpathUrls diff worksheetUrls.map(_.toURI.toURL)
+            )
+          )
 
           try {
             val cl = Class.forName(className, true, classLoader)
@@ -127,9 +145,9 @@ class WorksheetInProcessRunnerFactory {
 
               val e = if (userEx.getCause != null) userEx.getCause else userEx
               cleanStackTrace(
-                  e,
-                  arguments.compilationData.sources.headOption.orNull.getName,
-                  className + "$" + className
+                e,
+                arguments.compilationData.sources.headOption.orNull.getName,
+                className + "$" + className
               ).printStackTrace(new PrintStream(myOut, false))
             case e: Exception =>
               client trace e
@@ -140,7 +158,10 @@ class WorksheetInProcessRunnerFactory {
     }
 
     private def cleanStackTrace(
-        e: Throwable, fileName: String, className: String): Throwable = {
+        e: Throwable,
+        fileName: String,
+        className: String
+    ): Throwable = {
       def transformElement(original: StackTraceElement): StackTraceElement = {
         val originalClassName = original.getClassName
         val declaringClassName =
@@ -150,10 +171,12 @@ class WorksheetInProcessRunnerFactory {
           else originalClassName
         val originalFileName =
           if (fileName == null) original.getFileName else fileName
-        new StackTraceElement(declaringClassName,
-                              original.getMethodName,
-                              originalFileName,
-                              original.getLineNumber - 4)
+        new StackTraceElement(
+          declaringClassName,
+          original.getMethodName,
+          originalFileName,
+          original.getLineNumber - 4
+        )
       }
 
       val els = e.getStackTrace
@@ -164,10 +187,11 @@ class WorksheetInProcessRunnerFactory {
       val referenceElement = els(length - TRACE_PREFIX)
 
       newTrace(newTrace.length - 1) = new StackTraceElement(
-          WORKSHEET,
-          WORKSHEET,
-          if (fileName == null) referenceElement.getFileName else fileName,
-          referenceElement.getLineNumber - 4)
+        WORKSHEET,
+        WORKSHEET,
+        if (fileName == null) referenceElement.getFileName else fileName,
+        referenceElement.getLineNumber - 4
+      )
 
       var i: Int = 0
       while (i < newTrace.length - 1) {

@@ -16,7 +16,13 @@ limitations under the License.
 
 package com.twitter.scalding.serialization
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream, Serializable}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  InputStream,
+  OutputStream,
+  Serializable
+}
 
 import scala.util.{Success, Try}
 import scala.util.hashing.Hashing
@@ -80,8 +86,9 @@ object Serialization {
   def read[T](in: InputStream)(implicit ser: Serialization[T]): Try[T] =
     ser.read(in)
 
-  def write[T](out: OutputStream, t: T)(
-      implicit ser: Serialization[T]): Try[Unit] =
+  def write[T](out: OutputStream, t: T)(implicit
+      ser: Serialization[T]
+  ): Try[Unit] =
     ser.write(out, t)
 
   def toBytes[T](t: T)(implicit ser: Serialization[T]): Array[Byte] = {
@@ -100,7 +107,7 @@ object Serialization {
     }
   }
 
-  def fromBytes[T : Serialization](b: Array[Byte]): Try[T] =
+  def fromBytes[T: Serialization](b: Array[Byte]): Try[T] =
     read(new ByteArrayInputStream(b))
 
   /**
@@ -115,7 +122,7 @@ object Serialization {
   /**
     * Do these two items write equivalently?
     */
-  def writeEquiv[T : Serialization](a: T, b: T): Boolean =
+  def writeEquiv[T: Serialization](a: T, b: T): Boolean =
     java.util.Arrays.equals(toBytes(a), toBytes(b))
 
   /**
@@ -127,55 +134,59 @@ object Serialization {
     *
     * forAll(roundTripLaw[T]) in a valid test in scalacheck style
     */
-  def roundTripLaw[T : Serialization]: Law1[T] =
-    Law1("roundTrip", { (t: T) =>
-      equiv(roundTrip(t), t)
-    })
+  def roundTripLaw[T: Serialization]: Law1[T] =
+    Law1("roundTrip", { (t: T) => equiv(roundTrip(t), t) })
 
   /**
     * If two items are equal, they should serialize byte for byte equivalently
     */
-  def serializationIsEquivalence[T : Serialization]: Law2[T] =
-    Law2("equiv(a, b) == (write(a) == write(b))", { (t1: T, t2: T) =>
-      equiv(t1, t2) == writeEquiv(t1, t2)
-    })
+  def serializationIsEquivalence[T: Serialization]: Law2[T] =
+    Law2(
+      "equiv(a, b) == (write(a) == write(b))",
+      { (t1: T, t2: T) => equiv(t1, t2) == writeEquiv(t1, t2) }
+    )
 
-  def hashCodeImpliesEquality[T : Serialization]: Law2[T] =
-    Law2("equiv(a, b) => hash(a) == hash(b)", { (t1: T, t2: T) =>
-      !equiv(t1, t2) || (hash(t1) == hash(t2))
-    })
+  def hashCodeImpliesEquality[T: Serialization]: Law2[T] =
+    Law2(
+      "equiv(a, b) => hash(a) == hash(b)",
+      { (t1: T, t2: T) => !equiv(t1, t2) || (hash(t1) == hash(t2)) }
+    )
 
-  def reflexivity[T : Serialization]: Law1[T] =
-    Law1("equiv(a, a) == true", { (t1: T) =>
-      equiv(t1, t1)
-    })
+  def reflexivity[T: Serialization]: Law1[T] =
+    Law1("equiv(a, a) == true", { (t1: T) => equiv(t1, t1) })
 
   /**
     * The sizes must match and be correct if they are present
     */
-  def sizeLaw[T : Serialization]: Law1[T] =
-    Law1("staticSize.orElse(dynamicSize(t)).map { _ == toBytes(t).length }", {
-      (t: T) =>
+  def sizeLaw[T: Serialization]: Law1[T] =
+    Law1(
+      "staticSize.orElse(dynamicSize(t)).map { _ == toBytes(t).length }",
+      { (t: T) =>
         val ser = implicitly[Serialization[T]]
         (ser.staticSize, ser.dynamicSize(t)) match {
           case (Some(s), Some(d)) if d == s => toBytes(t).length == s
-          case (Some(s), _) => false // if static exists it must match dynamic
-          case (None, Some(d)) => toBytes(t).length == d
-          case (None, None) => true // can't tell
+          case (Some(s), _)                 => false // if static exists it must match dynamic
+          case (None, Some(d))              => toBytes(t).length == d
+          case (None, None)                 => true // can't tell
         }
-    })
+      }
+    )
 
-  def transitivity[T : Serialization]: Law3[T] =
+  def transitivity[T: Serialization]: Law3[T] =
     Law3(
-        "equiv(a, b) && equiv(b, c) => equiv(a, c)", { (t1: T, t2: T, t3: T) =>
-      !(equiv(t1, t2) && equiv(t2, t3)) || equiv(t1, t3)
-    })
+      "equiv(a, b) && equiv(b, c) => equiv(a, c)",
+      { (t1: T, t2: T, t3: T) =>
+        !(equiv(t1, t2) && equiv(t2, t3)) || equiv(t1, t3)
+      }
+    )
 
-  def allLaws[T : Serialization]: Iterable[Law[T]] =
-    List(roundTripLaw,
-         serializationIsEquivalence,
-         hashCodeImpliesEquality,
-         reflexivity,
-         sizeLaw,
-         transitivity)
+  def allLaws[T: Serialization]: Iterable[Law[T]] =
+    List(
+      roundTripLaw,
+      serializationIsEquivalence,
+      hashCodeImpliesEquality,
+      reflexivity,
+      sizeLaw,
+      transitivity
+    )
 }

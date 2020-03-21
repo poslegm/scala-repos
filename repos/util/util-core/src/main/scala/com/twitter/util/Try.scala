@@ -10,7 +10,8 @@ object Try {
   case class PredicateDoesNotObtain() extends Exception()
 
   def apply[R](r: => R): Try[R] = {
-    try { Return(r) } catch {
+    try { Return(r) }
+    catch {
       case NonFatal(e) => Throw(e)
     }
   }
@@ -20,7 +21,8 @@ object Try {
     * errors.
     */
   def withFatals[R](r: => R)(f: PartialFunction[Throwable, Try[R]]): Try[R] =
-    try Try(r) catch {
+    try Try(r)
+    catch {
       case e: Throwable if f.isDefinedAt(e) => f(e)
     }
 
@@ -32,9 +34,7 @@ object Try {
     if (ts.isEmpty) Return(Seq.empty[A])
     else
       Try {
-        ts map { t =>
-          t()
-        }
+        ts map { t => t() }
       }
   }
 
@@ -57,7 +57,7 @@ object Try {
     try {
       o match {
         case Some(item) => Return(item)
-        case None => Throw(failure())
+        case None       => Throw(failure())
       }
     } catch {
       case NonFatal(e) => Throw(e)
@@ -153,7 +153,8 @@ sealed abstract class Try[+R] {
     * does not support higher-kinded types.
     */
   def rescue[R2 >: R](
-      rescueException: PartialFunction[Throwable, Try[R2]]): Try[R2]
+      rescueException: PartialFunction[Throwable, Try[R2]]
+  ): Try[R2]
 
   /**
     * Calls the exceptionHandler with the exception if this is a Throw. This is like map for the exception.
@@ -179,9 +180,7 @@ sealed abstract class Try[+R] {
     * chained `this` as in `respond`.
     */
   def ensure(f: => Unit): Try[R] =
-    respond { _ =>
-      f
-    }
+    respond { _ => f }
 
   /**
     * Returns None if this is a Throw or a Some containing the value if this is a Return
@@ -268,21 +267,25 @@ final case class Return[+R](r: R) extends Try[R] {
 
   def throwable: Throwable =
     throw new IllegalStateException(
-        "this Try is not a Throw; did you fail to check isThrow?")
+      "this Try is not a Throw; did you fail to check isThrow?"
+    )
 
   def rescue[R2 >: R](
-      rescueException: PartialFunction[Throwable, Try[R2]]): Try[R2] =
+      rescueException: PartialFunction[Throwable, Try[R2]]
+  ): Try[R2] =
     this
 
   def apply(): R = r
 
   def flatMap[R2](f: R => Try[R2]): Try[R2] =
-    try f(r) catch { case NonFatal(e) => Throw(e) }
+    try f(r)
+    catch { case NonFatal(e) => Throw(e) }
 
   def flatten[T](implicit ev: R <:< Try[T]): Try[T] = r
 
   def map[X](f: R => X): Try[X] =
-    try Return(f(r)) catch { case NonFatal(e) => Throw(e) }
+    try Return(f(r))
+    catch { case NonFatal(e) => Throw(e) }
 
   def exists(p: R => Boolean): Boolean = p(r)
 
@@ -296,5 +299,6 @@ final case class Return[+R](r: R) extends Try[R] {
   def onSuccess(f: R => Unit): Try[R] = { f(r); this }
 
   def handle[R2 >: R](
-      rescueException: PartialFunction[Throwable, R2]): Try[R2] = this
+      rescueException: PartialFunction[Throwable, R2]
+  ): Try[R2] = this
 }

@@ -1,19 +1,19 @@
 /*
- *  ____    ____    _____    ____    ___     ____ 
+ *  ____    ____    _____    ____    ___     ____
  * |  _ \  |  _ \  | ____|  / ___|  / _/    / ___|        Precog (R)
  * | |_) | | |_) | |  _|   | |     | |  /| | |  _         Advanced Analytics Engine for NoSQL Data
  * |  __/  |  _ <  | |___  | |___  |/ _| | | |_| |        Copyright (C) 2010 - 2013 SlamData, Inc.
  * |_|     |_| \_\ |_____|  \____|   /__/   \____|        All Rights Reserved.
  *
- * This program is free software: you can redistribute it and/or modify it under the terms of the 
- * GNU Affero General Public License as published by the Free Software Foundation, either version 
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Affero General Public License as published by the Free Software Foundation, either version
  * 3 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
  * the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with this 
+ * You should have received a copy of the GNU Affero General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -50,7 +50,8 @@ object V1SegmentFormat extends SegmentFormat {
       }
 
     def readSegmentId(
-        channel: ReadableByteChannel): Validation[IOException, SegmentId] =
+        channel: ReadableByteChannel
+    ): Validation[IOException, SegmentId] =
       for {
         buffer <- readChunk(channel)
         blockId <- wrapException(buffer.getLong())
@@ -59,9 +60,11 @@ object V1SegmentFormat extends SegmentFormat {
       } yield SegmentId(blockId, cpath, ctype)
 
     def readSegment(
-        channel: ReadableByteChannel): Validation[IOException, Segment] = {
+        channel: ReadableByteChannel
+    ): Validation[IOException, Segment] = {
       def readArray[A](
-          ctype: CValueType[A]): Validation[IOException, (BitSet, Array[A])] =
+          ctype: CValueType[A]
+      ): Validation[IOException, (BitSet, Array[A])] =
         for {
           buffer <- readChunk(channel)
         } yield {
@@ -69,9 +72,7 @@ object V1SegmentFormat extends SegmentFormat {
           val defined = Codec.BitSetCodec.read(buffer)
           val codec = getCodecFor(ctype)
           val values = ctype.manifest.newArray(length)
-          defined.foreach { row =>
-            values(row) = codec.read(buffer)
-          }
+          defined.foreach { row => values(row) = codec.read(buffer) }
           (defined, values)
         }
 
@@ -120,8 +121,10 @@ object V1SegmentFormat extends SegmentFormat {
   }
 
   object writer extends SegmentWriter {
-    def writeSegment(channel: WritableByteChannel,
-                     segment: Segment): Validation[IOException, PrecogUnit] = {
+    def writeSegment(
+        channel: WritableByteChannel,
+        segment: Segment
+    ): Validation[IOException, PrecogUnit] = {
       for {
         _ <- writeSegmentId(channel, segment)
         _ <- segment match {
@@ -137,7 +140,8 @@ object V1SegmentFormat extends SegmentFormat {
 
     private def writeSegmentId(
         channel: WritableByteChannel,
-        segment: Segment): Validation[IOException, PrecogUnit] = {
+        segment: Segment
+    ): Validation[IOException, PrecogUnit] = {
       val tpeFlag = CTypeFlags.getFlagFor(segment.ctype)
       val strPath = segment.cpath.toString
       val maxSize = Codec.Utf8Codec.maxSize(strPath) + tpeFlag.length + 8
@@ -153,7 +157,8 @@ object V1SegmentFormat extends SegmentFormat {
     private def writeArraySegment[@spec(Boolean, Long, Double) A](
         channel: WritableByteChannel,
         segment: ArraySegment[A],
-        codec: Codec[A]): Validation[IOException, PrecogUnit] = {
+        codec: Codec[A]
+    ): Validation[IOException, PrecogUnit] = {
       var maxSize = Codec.BitSetCodec.maxSize(segment.defined) + 4
       segment.defined.foreach { row =>
         maxSize += codec.maxSize(segment.values(row))
@@ -170,10 +175,12 @@ object V1SegmentFormat extends SegmentFormat {
     }
 
     private def writeBooleanSegment(
-        channel: WritableByteChannel, segment: BooleanSegment) = {
+        channel: WritableByteChannel,
+        segment: BooleanSegment
+    ) = {
       val maxSize =
         Codec.BitSetCodec.maxSize(segment.defined) +
-        Codec.BitSetCodec.maxSize(segment.values) + 4
+          Codec.BitSetCodec.maxSize(segment.values) + 4
       writeChunk(channel, maxSize) { buffer =>
         buffer.putInt(segment.length)
         Codec.BitSetCodec.writeUnsafe(segment.defined, buffer)
@@ -183,7 +190,9 @@ object V1SegmentFormat extends SegmentFormat {
     }
 
     private def writeNullSegment(
-        channel: WritableByteChannel, segment: NullSegment) = {
+        channel: WritableByteChannel,
+        segment: NullSegment
+    ) = {
       val maxSize = Codec.BitSetCodec.maxSize(segment.defined) + 4
       writeChunk(channel, maxSize) { buffer =>
         buffer.putInt(segment.length)
@@ -196,7 +205,8 @@ object V1SegmentFormat extends SegmentFormat {
   private def allocate(size: Int): ByteBuffer = ByteBuffer.allocate(size)
 
   def writeChunk[A](channel: WritableByteChannel, maxSize: Int)(
-      f: ByteBuffer => A): Validation[IOException, A] = {
+      f: ByteBuffer => A
+  ): Validation[IOException, A] = {
     val buffer = allocate(maxSize + 4)
     buffer.position(4)
 
@@ -217,7 +227,8 @@ object V1SegmentFormat extends SegmentFormat {
   }
 
   def readChunk(
-      channel: ReadableByteChannel): Validation[IOException, ByteBuffer] = {
+      channel: ReadableByteChannel
+  ): Validation[IOException, ByteBuffer] = {
     try {
       val buffer0 = allocate(4)
       while (buffer0.remaining() > 0) {
@@ -238,16 +249,18 @@ object V1SegmentFormat extends SegmentFormat {
     }
   }
 
-  private def getCodecFor[A](ctype: CValueType[A]): Codec[A] = ctype match {
-    case CPeriod =>
-      Codec.LongCodec.as[Period](_.toStandardDuration.getMillis, new Period(_))
-    case CBoolean => Codec.BooleanCodec
-    case CString => Codec.Utf8Codec
-    case CLong => Codec.PackedLongCodec
-    case CDouble => Codec.DoubleCodec
-    case CNum => Codec.BigDecimalCodec
-    case CDate => Codec.DateCodec
-    case CArrayType(elemType) =>
-      Codec.ArrayCodec(getCodecFor(elemType))(elemType.manifest)
-  }
+  private def getCodecFor[A](ctype: CValueType[A]): Codec[A] =
+    ctype match {
+      case CPeriod =>
+        Codec.LongCodec
+          .as[Period](_.toStandardDuration.getMillis, new Period(_))
+      case CBoolean => Codec.BooleanCodec
+      case CString  => Codec.Utf8Codec
+      case CLong    => Codec.PackedLongCodec
+      case CDouble  => Codec.DoubleCodec
+      case CNum     => Codec.BigDecimalCodec
+      case CDate    => Codec.DateCodec
+      case CArrayType(elemType) =>
+        Codec.ArrayCodec(getCodecFor(elemType))(elemType.manifest)
+    }
 }

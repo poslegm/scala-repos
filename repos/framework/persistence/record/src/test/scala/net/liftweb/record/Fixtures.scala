@@ -37,7 +37,8 @@ class BasicTestRecord private () extends Record[BasicTestRecord] {
 }
 
 object BasicTestRecord
-    extends BasicTestRecord with MetaRecord[BasicTestRecord] {
+    extends BasicTestRecord
+    with MetaRecord[BasicTestRecord] {
   override def fieldOrder = List(field2, field1)
 }
 
@@ -50,25 +51,30 @@ class PasswordTestRecord private () extends Record[PasswordTestRecord] {
     def validateNonEmptyPassword(v: String): List[FieldError] =
       v match {
         case "testvalue" => Text("no way!")
-        case _ => Nil
+        case _           => Nil
       }
   }
 }
 
 object PasswordTestRecord
-    extends PasswordTestRecord with MetaRecord[PasswordTestRecord]
+    extends PasswordTestRecord
+    with MetaRecord[PasswordTestRecord]
 
 class StringTestRecord private () extends Record[StringTestRecord] {
   def meta = StringTestRecord
 
   object string extends StringField(this, 32) {
     override def validations =
-      valMinLen(3, "String field name must be at least 3 characters.") _ :: super.validations
+      valMinLen(
+        3,
+        "String field name must be at least 3 characters."
+      ) _ :: super.validations
   }
 }
 
 object StringTestRecord
-    extends StringTestRecord with MetaRecord[StringTestRecord]
+    extends StringTestRecord
+    with MetaRecord[StringTestRecord]
 
 object MyTestEnum extends Enumeration {
   val ONE = Value("ONE")
@@ -111,11 +117,13 @@ class LifecycleTestRecord private () extends Record[LifecycleTestRecord] {
     meta.foreachCallback(this, f)
 
   object stringFieldWithCallbacks
-      extends StringField(this, 100) with HarnessedLifecycleCallbacks
+      extends StringField(this, 100)
+      with HarnessedLifecycleCallbacks
 }
 
 object LifecycleTestRecord
-    extends LifecycleTestRecord with MetaRecord[LifecycleTestRecord]
+    extends LifecycleTestRecord
+    with MetaRecord[LifecycleTestRecord]
 
 class ValidationTestRecord private () extends Record[ValidationTestRecord] {
   def meta = ValidationTestRecord
@@ -127,7 +135,8 @@ class ValidationTestRecord private () extends Record[ValidationTestRecord] {
 }
 
 object ValidationTestRecord
-    extends ValidationTestRecord with MetaRecord[ValidationTestRecord]
+    extends ValidationTestRecord
+    with MetaRecord[ValidationTestRecord]
 
 class FilterTestRecord private () extends Record[FilterTestRecord] {
   def meta = FilterTestRecord
@@ -143,7 +152,8 @@ class FilterTestRecord private () extends Record[FilterTestRecord] {
 }
 
 object FilterTestRecord
-    extends FilterTestRecord with MetaRecord[FilterTestRecord]
+    extends FilterTestRecord
+    with MetaRecord[FilterTestRecord]
 
 class FieldTypeTestRecord private () extends Record[FieldTypeTestRecord] {
   def meta = FieldTypeTestRecord
@@ -261,20 +271,24 @@ class FieldTypeTestRecord private () extends Record[FieldTypeTestRecord] {
   def fieldsToCompare = {
     fields
       .filterNot(_.name == "mandatoryBinaryField") // binarys don't compare
-      .filterNot(_.name == "mandatoryDateTimeField") // toInternetDate is lossy (doesn't retain time to ms precision)
+      .filterNot(
+        _.name == "mandatoryDateTimeField"
+      ) // toInternetDate is lossy (doesn't retain time to ms precision)
   }
 
-  override def equals(other: Any): Boolean = other match {
-    case that: FieldTypeTestRecord =>
-      that.fieldsToCompare.corresponds(this.fieldsToCompare) { (a, b) =>
-        a.name == b.name && a.valueBox == b.valueBox
-      }
-    case _ => false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: FieldTypeTestRecord =>
+        that.fieldsToCompare.corresponds(this.fieldsToCompare) { (a, b) =>
+          a.name == b.name && a.valueBox == b.valueBox
+        }
+      case _ => false
+    }
 }
 
 object FieldTypeTestRecord
-    extends FieldTypeTestRecord with MetaRecord[FieldTypeTestRecord]
+    extends FieldTypeTestRecord
+    with MetaRecord[FieldTypeTestRecord]
 
 trait SyntheticTestTrait {
 
@@ -282,7 +296,8 @@ trait SyntheticTestTrait {
 }
 
 class SyntheticTestRecord
-    extends Record[SyntheticTestRecord] with SyntheticTestTrait {
+    extends Record[SyntheticTestRecord]
+    with SyntheticTestTrait {
 
   object genericField extends StringField(this, 1024)
 
@@ -290,7 +305,8 @@ class SyntheticTestRecord
 }
 
 object SyntheticTestRecord
-    extends SyntheticTestRecord with MetaRecord[SyntheticTestRecord]
+    extends SyntheticTestRecord
+    with MetaRecord[SyntheticTestRecord]
 
 class CustomFormatDateTimeRecord private ()
     extends Record[CustomFormatDateTimeRecord] {
@@ -321,4 +337,5 @@ class CustomTypeIntFieldRecord private ()
 }
 
 object CustomTypeIntFieldRecord
-    extends CustomTypeIntFieldRecord with MetaRecord[CustomTypeIntFieldRecord]
+    extends CustomTypeIntFieldRecord
+    with MetaRecord[CustomTypeIntFieldRecord]

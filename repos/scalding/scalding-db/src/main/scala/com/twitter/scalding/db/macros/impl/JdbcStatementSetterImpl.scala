@@ -30,7 +30,8 @@ import com.twitter.scalding.db.JdbcStatementSetter
 private[macros] object JdbcStatementSetterImpl {
 
   def caseClassJdbcSetterCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(
-      implicit T: c.WeakTypeTag[T]): c.Expr[JdbcStatementSetter[T]] = {
+      implicit T: c.WeakTypeTag[T]
+  ): c.Expr[JdbcStatementSetter[T]] = {
     import c.universe._
 
     val stmtTerm = newTermName(c.fresh("stmt"))

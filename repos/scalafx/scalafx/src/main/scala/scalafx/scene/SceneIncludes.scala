@@ -48,9 +48,15 @@ object SceneIncludes extends SceneIncludes
   * Classes/Traits to their ScalaFX counterparts.
   */
 trait SceneIncludes
-    extends ChartIncludes with LayoutIncludes with PaintIncludes
-    with ShapeIncludes with TextIncludes with ImageIncludes with EffectIncludes
-    with LowerPriorityIncludes with ControlIncludes
+    extends ChartIncludes
+    with LayoutIncludes
+    with PaintIncludes
+    with ShapeIncludes
+    with TextIncludes
+    with ImageIncludes
+    with EffectIncludes
+    with LowerPriorityIncludes
+    with ControlIncludes
 
 /**
   * Contains implicit methods to convert from
@@ -81,7 +87,8 @@ trait SceneIncludes
 trait LowerPriorityIncludes {
 
   implicit def jfxAccessibleAction2sfx(
-      e: jfxs.AccessibleAction): AccessibleAction =
+      e: jfxs.AccessibleAction
+  ): AccessibleAction =
     AccessibleAction.jfxEnum2sfx(e)
 
   implicit def jfxAccessibleRole2sfx(e: jfxs.AccessibleRole): AccessibleRole =
@@ -106,7 +113,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $CAM
     */
   implicit def jfxCamera2sfx(v: jfxs.Camera): Camera =
-    if (v != null) new Camera(v) {} else null
+    if (v != null) new Camera(v) {}
+    else null
 
   /**
     * $START$CUR.html $CUR$END
@@ -115,7 +123,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $CUR
     */
   implicit def jfxCursor2sfx(v: jfxs.Cursor): Cursor =
-    if (v != null) new Cursor(v) {} else null
+    if (v != null) new Cursor(v) {}
+    else null
 
   /**
     * $START$DPT.html $DPT$END
@@ -145,7 +154,8 @@ trait LowerPriorityIncludes {
     if (ic != null) new ImageCursor(ic) else null
 
   implicit def jfxLightBase2sfx(v: jfxs.LightBase): LightBase =
-    if (v != null) new LightBase(v) {} else null
+    if (v != null) new LightBase(v) {}
+    else null
 
   /**
     * $START$NOD.html $NOD$END
@@ -154,7 +164,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $NOD
     */
   implicit def jfxNode2sfx(v: jfxs.Node): Node =
-    if (v != null) new Node(v) {} else null
+    if (v != null) new Node(v) {}
+    else null
 
   /**
     * $START$PRC.html $PRC$END
@@ -172,7 +183,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $PAR
     */
   implicit def jfxParent2sfx(v: jfxs.Parent): Parent =
-    if (v != null) new Parent(v) {} else null
+    if (v != null) new Parent(v) {}
+    else null
 
   /**
     * $START$PEC.html $PEC$END
@@ -181,7 +193,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $PEC
     */
   implicit def jfxPerspectiveCamera2sfx(
-      v: jfxs.PerspectiveCamera): PerspectiveCamera =
+      v: jfxs.PerspectiveCamera
+  ): PerspectiveCamera =
     if (v != null) new PerspectiveCamera(v) else null
 
   implicit def jfxPointLight2sfx(v: jfxs.PointLight): PointLight =
@@ -205,7 +218,8 @@ trait LowerPriorityIncludes {
     * @throws java.lang.IllegalArgumentException if `v` has no known correspondence in ScalaFX.
     */
   implicit def jfxSceneAntialiasing2sfx(
-      v: jfxs.SceneAntialiasing): SceneAntialiasing = {
+      v: jfxs.SceneAntialiasing
+  ): SceneAntialiasing = {
     // A value of null is treated as though antialiasing is disabled.
     if (v eq null) SceneAntialiasing.Disabled
     else new SceneAntialiasing(v)
@@ -218,7 +232,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $SCP
     */
   implicit def jfxSceneProperty2sfx(
-      p: ReadOnlyObjectProperty[jfxs.Scene]): SceneProperty =
+      p: ReadOnlyObjectProperty[jfxs.Scene]
+  ): SceneProperty =
     if (p != null) new SceneProperty(p) else null
 
   /**
@@ -228,7 +243,8 @@ trait LowerPriorityIncludes {
     * @return $SFX $SNP
     */
   implicit def jfxSnapshotParameters2sfx(
-      sp: jfxs.SnapshotParameters): SnapshotParameters =
+      sp: jfxs.SnapshotParameters
+  ): SnapshotParameters =
     if (sp != null) new SnapshotParameters(sp) else null
 
   /**

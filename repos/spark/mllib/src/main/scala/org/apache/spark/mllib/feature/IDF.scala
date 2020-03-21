@@ -21,7 +21,12 @@ import breeze.linalg.{DenseVector => BDV}
 
 import org.apache.spark.annotation.Since
 import org.apache.spark.api.java.JavaRDD
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.linalg.{
+  DenseVector,
+  SparseVector,
+  Vector,
+  Vectors
+}
 import org.apache.spark.rdd.RDD
 
 /**
@@ -37,7 +42,7 @@ import org.apache.spark.rdd.RDD
   *                   should appear for filtering
   */
 @Since("1.1.0")
-class IDF @Since("1.2.0")(@Since("1.2.0") val minDocFreq: Int) {
+class IDF @Since("1.2.0") (@Since("1.2.0") val minDocFreq: Int) {
 
   @Since("1.1.0")
   def this() = this(0)
@@ -52,9 +57,10 @@ class IDF @Since("1.2.0")(@Since("1.2.0") val minDocFreq: Int) {
   def fit(dataset: RDD[Vector]): IDFModel = {
     val idf = dataset
       .treeAggregate(
-          new IDF.DocumentFrequencyAggregator(minDocFreq = minDocFreq))(
-          seqOp = (df, v) => df.add(v),
-          combOp = (df1, df2) => df1.merge(df2)
+        new IDF.DocumentFrequencyAggregator(minDocFreq = minDocFreq)
+      )(
+        seqOp = (df, v) => df.add(v),
+        combOp = (df1, df2) => df1.merge(df2)
       )
       .idf()
     new IDFModel(idf)
@@ -109,7 +115,8 @@ private object IDF {
           }
         case other =>
           throw new UnsupportedOperationException(
-              s"Only sparse and dense vectors are supported but got ${other.getClass}.")
+            s"Only sparse and dense vectors are supported but got ${other.getClass}."
+          )
       }
       m += 1L
       this
@@ -162,7 +169,7 @@ private object IDF {
   * Represents an IDF model that can transform term frequency vectors.
   */
 @Since("1.1.0")
-class IDFModel private[spark](@Since("1.1.0") val idf: Vector)
+class IDFModel private[spark] (@Since("1.1.0") val idf: Vector)
     extends Serializable {
 
   /**
@@ -178,8 +185,9 @@ class IDFModel private[spark](@Since("1.1.0") val idf: Vector)
   @Since("1.1.0")
   def transform(dataset: RDD[Vector]): RDD[Vector] = {
     val bcIdf = dataset.context.broadcast(idf)
-    dataset.mapPartitions(
-        iter => iter.map(v => IDFModel.transform(bcIdf.value, v)))
+    dataset.mapPartitions(iter =>
+      iter.map(v => IDFModel.transform(bcIdf.value, v))
+    )
   }
 
   /**
@@ -233,7 +241,8 @@ private object IDFModel {
         Vectors.dense(newValues)
       case other =>
         throw new UnsupportedOperationException(
-            s"Only sparse and dense vectors are supported but got ${other.getClass}.")
+          s"Only sparse and dense vectors are supported but got ${other.getClass}."
+        )
     }
   }
 }

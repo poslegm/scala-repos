@@ -23,7 +23,8 @@ import generic._
   *  @define coll immutable sorted set
   */
 trait SortedSet[A]
-    extends Set[A] with scala.collection.SortedSet[A]
+    extends Set[A]
+    with scala.collection.SortedSet[A]
     with SortedSetLike[A, SortedSet[A]] {
 
   /** Needs to be overridden in subclasses. */
@@ -37,12 +38,14 @@ trait SortedSet[A]
 object SortedSet extends ImmutableSortedSetFactory[SortedSet] {
 
   /** $sortedSetCanBuildFromInfo */
-  def canBuildFrom[A](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, A, SortedSet[A]] =
+  def canBuildFrom[A](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, A, SortedSet[A]] =
     newCanBuildFrom[A]
   def empty[A](implicit ord: Ordering[A]): SortedSet[A] = TreeSet.empty[A]
   // Force a declaration here so that BitSet's (which does not inherit from SortedSetFactory) can be more specific
-  override implicit def newCanBuildFrom[A](
-      implicit ord: Ordering[A]): CanBuildFrom[Coll, A, SortedSet[A]] =
+  override implicit def newCanBuildFrom[A](implicit
+      ord: Ordering[A]
+  ): CanBuildFrom[Coll, A, SortedSet[A]] =
     super.newCanBuildFrom
 }

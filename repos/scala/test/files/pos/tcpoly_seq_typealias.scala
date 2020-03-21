@@ -14,7 +14,7 @@ trait HOSeq {
   // variance: if we write m[+x] instead of +m[+x], x is an invariant position because its enclosing type
   //           is an invariant position -- should probably rule that out?
   trait Iterable[+t] {
-    type m [+x]
+    type m[+x]
 
     //def unit[a](orig: a): m[a]
     def iterator: Iterator[t]
@@ -40,8 +40,9 @@ trait HOSeq {
     // which are then added to the result one by one
     // the compiler should be able to find the right accumulator (implicit buf) to build the result
     // to get concat, resColl = SingletonIterable, f = unit for SingletonIterable
-    def flatMap[resColl[+x] <: Iterable[x], s](f: t => resColl[s])(
-        implicit buf: Accumulator[resColl, s]): resColl[s] = {
+    def flatMap[resColl[+x] <: Iterable[x], s](
+        f: t => resColl[s]
+    )(implicit buf: Accumulator[resColl, s]): resColl[s] = {
       // TODO:  would a viewbound for resColl[x] be better?
       // -- 2nd-order type params are not yet in scope in view bound
       val elems = iterator
@@ -69,7 +70,8 @@ trait HOSeq {
         start = last
       } else {
         val last1 = last
-        last = new HOSeq.this.::(x, null) // hack: ::'s tail will actually be last
+        last =
+          new HOSeq.this.::(x, null) // hack: ::'s tail will actually be last
         //last1.tl = last
       }
     }
@@ -113,16 +115,17 @@ trait HOSeq {
     def head: t
     def tail: List[t]
     def isEmpty: Boolean
-    def iterator: Iterator[t] = new Iterator[t] {
-      var these = List.this
-      def hasNext: Boolean = !these.isEmpty
-      def next: t =
-        if (!hasNext)
-          throw new NoSuchElementException("next on empty Iterator")
-        else {
-          val result = these.head; these = these.tail; result
-        }
-    }
+    def iterator: Iterator[t] =
+      new Iterator[t] {
+        var these = List.this
+        def hasNext: Boolean = !these.isEmpty
+        def next: t =
+          if (!hasNext)
+            throw new NoSuchElementException("next on empty Iterator")
+          else {
+            val result = these.head; these = these.tail; result
+          }
+      }
     // construct an empty accumulator that will produce the same structure as this iterable, with elements of type t
     def accumulator[t]: Accumulator[List, t] = listAccumulator[t]
   }

@@ -29,7 +29,9 @@ import org.apache.spark.SparkException
   * @param name Name of the endpoint.
   */
 private[spark] case class RpcEndpointAddress(
-    val rpcAddress: RpcAddress, val name: String) {
+    val rpcAddress: RpcAddress,
+    val name: String
+) {
 
   require(name != null, "RpcEndpoint name must be provided.")
 

@@ -21,8 +21,9 @@ import java.io.{InputStream, OutputStream}
 import scala.util.{Failure, Success, Try}
 
 class Serialization2[A, B](
-    val serA: Serialization[A], val serB: Serialization[B])
-    extends Serialization[(A, B)] {
+    val serA: Serialization[A],
+    val serB: Serialization[B]
+) extends Serialization[(A, B)] {
   override def hash(x: (A, B)) = {
     import MurmurHashUtils._
     val h1 = mixH1(seed, serA.hash(x._1))
@@ -37,8 +38,8 @@ class Serialization2[A, B](
     val b = serB.read(in)
     (a, b) match {
       case (Success(a), Success(b)) => Success((a, b))
-      case (Failure(e), _) => Failure(e)
-      case (_, Failure(e)) => Failure(e)
+      case (Failure(e), _)          => Failure(e)
+      case (_, Failure(e))          => Failure(e)
     }
   }
 
@@ -63,20 +64,25 @@ class Serialization2[A, B](
 }
 
 object OrderedSerialization2 {
-  def maybeOrderedSerialization2[A, B](
-      implicit ordA: Ordering[A], ordB: Ordering[B]): Ordering[(A, B)] = {
+  def maybeOrderedSerialization2[A, B](implicit
+      ordA: Ordering[A],
+      ordB: Ordering[B]
+  ): Ordering[(A, B)] = {
     (ordA, ordB) match {
       case (ordA: OrderedSerialization[_], ordB: OrderedSerialization[_]) =>
-        new OrderedSerialization2(ordA.asInstanceOf[OrderedSerialization[A]],
-                                  ordB.asInstanceOf[OrderedSerialization[B]])
+        new OrderedSerialization2(
+          ordA.asInstanceOf[OrderedSerialization[A]],
+          ordB.asInstanceOf[OrderedSerialization[B]]
+        )
       case _ => Ordering.Tuple2(ordA, ordB)
     }
   }
 }
 
 class OrderedSerialization2[A, B](
-    val ordA: OrderedSerialization[A], val ordB: OrderedSerialization[B])
-    extends Serialization2[A, B](ordA, ordB)
+    val ordA: OrderedSerialization[A],
+    val ordB: OrderedSerialization[B]
+) extends Serialization2[A, B](ordA, ordB)
     with OrderedSerialization[(A, B)] {
   override def compare(x: (A, B), y: (A, B)) = {
     val ca = ordA.compare(x._1, y._1)
@@ -89,9 +95,9 @@ class OrderedSerialization2[A, B](
     // we have to read the second ones to skip
     val cB = ordB.compareBinary(a, b)
     cA match {
-      case OrderedSerialization.Equal => cB
+      case OrderedSerialization.Equal                 => cB
       case f @ OrderedSerialization.CompareFailure(_) => f
-      case _ => cA // the first is not equal
+      case _                                          => cA // the first is not equal
     }
   }
 }

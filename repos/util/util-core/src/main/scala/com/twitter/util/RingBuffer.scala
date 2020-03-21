@@ -2,9 +2,8 @@ package com.twitter.util
 
 import scala.reflect.ClassTag
 
-@deprecated(
-    "Use com.google.common.collect.EvictingQueue instead", "2014-10-11")
-class RingBuffer[A : ClassTag](val maxSize: Int) extends Seq[A] {
+@deprecated("Use com.google.common.collect.EvictingQueue instead", "2014-10-11")
+class RingBuffer[A: ClassTag](val maxSize: Int) extends Seq[A] {
   private val array = new Array[A](maxSize)
   private var read = 0
   private var write = 0
@@ -69,15 +68,16 @@ class RingBuffer[A : ClassTag](val maxSize: Int) extends Seq[A] {
     }
   }
 
-  override def iterator = new Iterator[A] {
-    var idx = 0
-    def hasNext = idx != count_
-    def next = {
-      val res = apply(idx)
-      idx += 1
-      res
+  override def iterator =
+    new Iterator[A] {
+      var idx = 0
+      def hasNext = idx != count_
+      def next = {
+        val res = apply(idx)
+        idx += 1
+        res
+      }
     }
-  }
 
   override def drop(n: Int): RingBuffer[A] = {
     if (n >= maxSize) clear()

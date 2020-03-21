@@ -10,7 +10,8 @@ class Serving extends LServing[Query, PredictedResult] {
 
   override def serve(
       query: Query,
-      predictedResults: Seq[PredictedResult]): PredictedResult = {
+      predictedResults: Seq[PredictedResult]
+  ): PredictedResult = {
 
     // MODFIED
     val standard: Seq[Array[ItemScore]] =

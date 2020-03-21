@@ -48,7 +48,8 @@ object TreeTableCell {
     * @return JavaFX TreeTableCell
     */
   implicit def sfxTreeTableCell2jfx[S, T](
-      ttc: TreeTableCell[S, T]): jfxsc.TreeTableCell[S, T] =
+      ttc: TreeTableCell[S, T]
+  ): jfxsc.TreeTableCell[S, T] =
     if (ttc != null) ttc.delegate else null
 }
 
@@ -67,9 +68,9 @@ object TreeTableCell {
   * @define ORIGINALDOC Original Documentation]].
   */
 class TreeTableCell[S, T](
-    override val delegate: jfxsc.TreeTableCell[S, T] = new jfxsc.TreeTableCell[
-          S, T])
-    extends IndexedCell[T](delegate)
+    override val delegate: jfxsc.TreeTableCell[S, T] =
+      new jfxsc.TreeTableCell[S, T]
+) extends IndexedCell[T](delegate)
     with SFXDelegate[jfxsc.TreeTableCell[S, T]] {
 
   /**

@@ -71,7 +71,7 @@ package object math {
   def fib(n: Long): BigInt = {
     if (n < 0) throw new IllegalArgumentException(n.toString)
     var i = 63
-    while ( ((n >>> i) & 1) == 0 && i >= 0) i -= 1
+    while (((n >>> i) & 1) == 0 && i >= 0) i -= 1
     @tailrec def loop(a: BigInt, b: BigInt, i: Int): BigInt = {
       val c = a + b
       if (i < 0) b
@@ -93,7 +93,7 @@ package object math {
     * round
     */
   final def round(a: Float): Float =
-    if (Math.abs(a) >= 16777216.0F) a else Math.round(a).toFloat
+    if (Math.abs(a) >= 16777216.0f) a else Math.round(a).toFloat
   final def round(a: Double): Double =
     if (Math.abs(a) >= 4503599627370496.0) a else Math.round(a).toDouble
   final def round(a: BigDecimal): BigDecimal =
@@ -125,7 +125,10 @@ package object math {
     // take a BigDecimal to a BigInt power
     @tailrec
     def power(
-        result: BigDecimal, base: BigDecimal, exponent: BigInt): BigDecimal =
+        result: BigDecimal,
+        base: BigDecimal,
+        exponent: BigInt
+    ): BigDecimal =
       if (exponent.signum == 0) result
       else if (exponent.testBit(0))
         power(result * base, base * base, exponent >> 1)
@@ -304,11 +307,10 @@ package object math {
   final def gcd(a: BigInt, b: BigInt): BigInt = a.gcd(b)
   final def gcd[A](x: A, y: A)(implicit ev: EuclideanRing[A]): A = ev.gcd(x, y)
   final def gcd[A](xs: Seq[A])(implicit ev: EuclideanRing[A]): A =
-    xs.foldLeft(ev.zero) { (x, y) =>
-      gcd(y, x)
-    }
-  final def gcd[A](x: A, y: A, z: A, rest: A*)(
-      implicit ev: EuclideanRing[A]): A =
+    xs.foldLeft(ev.zero) { (x, y) => gcd(y, x) }
+  final def gcd[A](x: A, y: A, z: A, rest: A*)(implicit
+      ev: EuclideanRing[A]
+  ): A =
     gcd(gcd(gcd(x, y), z), gcd(rest))
 
   /**
@@ -413,8 +415,11 @@ package object math {
   final def ulp(x: Double): Double = Math.ulp(x)
   final def ulp(x: Float): Double = Math.ulp(x)
 
-  final def hypot[@sp(Float, Double) A](x: A, y: A)(
-      implicit f: Field[A], n: NRoot[A], o: Order[A]): A = {
+  final def hypot[@sp(Float, Double) A](x: A, y: A)(implicit
+      f: Field[A],
+      n: NRoot[A],
+      o: Order[A]
+  ): A = {
     import spire.implicits._
     if (x > y) x.abs * (1 + (y / x) ** 2).sqrt
     else y.abs * (1 + (x / y) ** 2).sqrt
@@ -424,20 +429,20 @@ package object math {
 
   private[spire] def anyIsZero(n: Any): Boolean =
     n match {
-      case x if x == 0 => true
+      case x if x == 0                => true
       case c: ScalaNumericConversions => c.isValidInt && c.toInt == 0
-      case _ => false
+      case _                          => false
     }
 
   private[spire] def anyToDouble(n: Any): Double =
     n match {
-      case n: Byte => n.toDouble
-      case n: Short => n.toDouble
-      case n: Char => n.toDouble
-      case n: Int => n.toDouble
-      case n: Long => n.toDouble
-      case n: Float => n.toDouble
-      case n: Double => n
+      case n: Byte                    => n.toDouble
+      case n: Short                   => n.toDouble
+      case n: Char                    => n.toDouble
+      case n: Int                     => n.toDouble
+      case n: Long                    => n.toDouble
+      case n: Float                   => n.toDouble
+      case n: Double                  => n
       case c: ScalaNumericConversions => c.toDouble
       case _ =>
         throw new UnsupportedOperationException(s"$n is not a ScalaNumber")
@@ -445,13 +450,13 @@ package object math {
 
   private[spire] def anyToLong(n: Any): Long =
     n match {
-      case n: Byte => n.toLong
-      case n: Short => n.toLong
-      case n: Char => n.toLong
-      case n: Int => n.toLong
-      case n: Long => n
-      case n: Float => n.toLong
-      case n: Double => n.toLong
+      case n: Byte                    => n.toLong
+      case n: Short                   => n.toLong
+      case n: Char                    => n.toLong
+      case n: Int                     => n.toLong
+      case n: Long                    => n
+      case n: Float                   => n.toLong
+      case n: Double                  => n.toLong
       case c: ScalaNumericConversions => c.toLong
       case _ =>
         throw new UnsupportedOperationException(s"$n is not a ScalaNumber")
@@ -459,13 +464,13 @@ package object math {
 
   private[spire] def anyIsWhole(n: Any): Boolean =
     n match {
-      case _: Byte => true
-      case _: Short => true
-      case _: Char => true
-      case _: Int => true
-      case _: Long => true
-      case n: Float => n.isWhole
-      case n: Double => n.isWhole
+      case _: Byte                    => true
+      case _: Short                   => true
+      case _: Char                    => true
+      case _: Int                     => true
+      case _: Long                    => true
+      case n: Float                   => n.isWhole
+      case n: Double                  => n.isWhole
       case c: ScalaNumericConversions => c.isWhole
       case _ =>
         throw new UnsupportedOperationException(s"$n is not a ScalaNumber")
@@ -473,13 +478,13 @@ package object math {
 
   private[spire] def anyIsValidInt(n: Any): Boolean =
     n match {
-      case _: Byte => true
-      case _: Short => true
-      case _: Char => true
-      case _: Int => true
-      case n: Long => n.isValidInt
-      case n: Float => n.isValidInt
-      case n: Double => n.isValidInt
+      case _: Byte                    => true
+      case _: Short                   => true
+      case _: Char                    => true
+      case _: Int                     => true
+      case n: Long                    => n.isValidInt
+      case n: Float                   => n.isValidInt
+      case n: Double                  => n.isValidInt
       case c: ScalaNumericConversions => c.isValidInt
       case _ =>
         throw new UnsupportedOperationException(s"$n is not a ScalaNumber")

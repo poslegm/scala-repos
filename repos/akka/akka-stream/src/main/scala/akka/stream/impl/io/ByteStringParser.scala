@@ -37,38 +37,42 @@ private[akka] abstract class ByteStringParser[T]
     @tailrec private def doParse(): Unit =
       if (buffer.nonEmpty) {
         val reader = new ByteReader(buffer)
-        val cont = try {
-          val parseResult = current.parse(reader)
-          acceptUpstreamFinish = parseResult.acceptUpstreamFinish
-          parseResult.result.map(emit(objOut, _))
-          if (parseResult.nextStep == FinishedParser) {
-            completeStage()
-            false
-          } else {
-            buffer = reader.remainingData
-            current = parseResult.nextStep
-            true
+        val cont =
+          try {
+            val parseResult = current.parse(reader)
+            acceptUpstreamFinish = parseResult.acceptUpstreamFinish
+            parseResult.result.map(emit(objOut, _))
+            if (parseResult.nextStep == FinishedParser) {
+              completeStage()
+              false
+            } else {
+              buffer = reader.remainingData
+              current = parseResult.nextStep
+              true
+            }
+          } catch {
+            case NeedMoreData ⇒
+              acceptUpstreamFinish = false
+              if (current.canWorkWithPartialData) buffer = reader.remainingData
+              pull(bytesIn)
+              false
           }
-        } catch {
-          case NeedMoreData ⇒
-            acceptUpstreamFinish = false
-            if (current.canWorkWithPartialData) buffer = reader.remainingData
-            pull(bytesIn)
-            false
-        }
         if (cont) doParse()
       } else pull(bytesIn)
 
-    setHandler(bytesIn, new InHandler {
-      override def onPush(): Unit = {
-        pullOnParserRequest = false
-        buffer ++= grab(bytesIn)
-        doParse()
+    setHandler(
+      bytesIn,
+      new InHandler {
+        override def onPush(): Unit = {
+          pullOnParserRequest = false
+          buffer ++= grab(bytesIn)
+          doParse()
+        }
+        override def onUpstreamFinish(): Unit =
+          if (buffer.isEmpty && acceptUpstreamFinish) completeStage()
+          else current.onTruncation()
       }
-      override def onUpstreamFinish(): Unit =
-        if (buffer.isEmpty && acceptUpstreamFinish) completeStage()
-        else current.onTruncation()
-    })
+    )
   }
 }
 
@@ -83,9 +87,11 @@ private[akka] object ByteStringParser {
     * @param acceptUpstreamFinish - if true - stream will complete when received `onUpstreamFinish`, if "false"
     *                             - onTruncation will be called
     */
-  case class ParseResult[+T](result: Option[T],
-                             nextStep: ParseStep[T],
-                             acceptUpstreamFinish: Boolean = true)
+  case class ParseResult[+T](
+      result: Option[T],
+      nextStep: ParseStep[T],
+      acceptUpstreamFinish: Boolean = true
+  )
 
   trait ParseStep[+T] {
 
@@ -102,7 +108,8 @@ private[akka] object ByteStringParser {
   object FinishedParser extends ParseStep[Nothing] {
     override def parse(reader: ByteReader) =
       throw new IllegalStateException(
-          "no initial parser installed: you must use startWith(...)")
+        "no initial parser installed: you must use startWith(...)"
+      )
   }
 
   val NeedMoreData = new Exception with NoStackTrace
@@ -140,12 +147,12 @@ private[akka] object ByteStringParser {
     def readShortLE(): Int = readByte() | (readByte() << 8)
     def readIntLE(): Int = readShortLE() | (readShortLE() << 16)
     def readLongLE(): Long =
-      (readIntLE() & 0xffffffffL) | ((readIntLE() & 0xffffffffL) << 32)
+      (readIntLE() & 0xFFFFFFFFL) | ((readIntLE() & 0xFFFFFFFFL) << 32)
 
     def readShortBE(): Int = (readByte() << 8) | readByte()
     def readIntBE(): Int = (readShortBE() << 16) | readShortBE()
     def readLongBE(): Long =
-      ((readIntBE() & 0xffffffffL) << 32) | (readIntBE() & 0xffffffffL)
+      ((readIntBE() & 0xFFFFFFFFL) << 32) | (readIntBE() & 0xFFFFFFFFL)
 
     def skip(numBytes: Int): Unit =
       if (off + numBytes <= input.length) off += numBytes

@@ -14,7 +14,8 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.ScEarlyDefinitions
   */
 class ScEarlyDefinitionsStubImpl[ParentPsi <: PsiElement](
     parent: StubElement[ParentPsi],
-    elemType: IStubElementType[
-        _ <: StubElement[_ <: PsiElement], _ <: PsiElement])
-    extends StubBaseWrapper[ScEarlyDefinitions](parent, elemType)
+    elemType: IStubElementType[_ <: StubElement[
+      _ <: PsiElement
+    ], _ <: PsiElement]
+) extends StubBaseWrapper[ScEarlyDefinitions](parent, elemType)
     with ScEarlyDefinitionsStub {}

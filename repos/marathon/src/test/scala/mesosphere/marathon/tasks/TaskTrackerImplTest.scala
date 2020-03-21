@@ -7,7 +7,11 @@ import mesosphere.marathon.core.task.tracker.impl.TaskSerializer
 import mesosphere.marathon.{MarathonTestHelper, MarathonSpec}
 import mesosphere.marathon.Protos.MarathonTask
 import mesosphere.marathon.core.leadership.AlwaysElectedLeadershipModule
-import mesosphere.marathon.core.task.tracker.{TaskTracker, TaskCreationHandler, TaskUpdater}
+import mesosphere.marathon.core.task.tracker.{
+  TaskTracker,
+  TaskCreationHandler,
+  TaskUpdater
+}
 import mesosphere.marathon.metrics.Metrics
 import mesosphere.marathon.state.PathId.StringPathId
 import mesosphere.marathon.state.{PathId, TaskRepository}
@@ -26,7 +30,9 @@ import org.scalatest.{GivenWhenThen, Matchers}
 import scala.collection._
 
 class TaskTrackerImplTest
-    extends MarathonSpec with Matchers with GivenWhenThen
+    extends MarathonSpec
+    with Matchers
+    with GivenWhenThen
     with MarathonShutdownHookSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,7 +48,11 @@ class TaskTrackerImplTest
   before {
     state = spy(new InMemoryStore)
     val taskTrackerModule = MarathonTestHelper.createTaskTrackerModule(
-        AlwaysElectedLeadershipModule(shutdownHooks), state, config, metrics)
+      AlwaysElectedLeadershipModule(shutdownHooks),
+      state,
+      config,
+      metrics
+    )
     taskTracker = taskTrackerModule.taskTracker
     taskCreationHandler = taskTrackerModule.taskCreationHandler
     taskUpdater = taskTrackerModule.taskUpdater
@@ -68,15 +78,18 @@ class TaskTrackerImplTest
   }
 
   private[this] def testCreatedAndGetTask(
-      call: (TaskTracker, Task.Id) => Option[MarathonTask]): Unit = {
+      call: (TaskTracker, Task.Id) => Option[MarathonTask]
+  ): Unit = {
     val sampleTask = makeSampleTask(TEST_APP_NAME)
 
     taskCreationHandler.created(sampleTask).futureValue
 
     val fetchedTask = call(taskTracker, sampleTask.taskId)
 
-    assert(fetchedTask.get.equals(sampleTask.marathonTask),
-           "Tasks are not properly stored")
+    assert(
+      fetchedTask.get.equals(sampleTask.marathonTask),
+      "Tasks are not properly stored"
+    )
   }
 
   test("List") {
@@ -88,7 +101,8 @@ class TaskTrackerImplTest
   }
 
   private[this] def testList(
-      call: TaskTracker => TaskTracker.TasksByApp): Unit = {
+      call: TaskTracker => TaskTracker.TasksByApp
+  ): Unit = {
     val task1 = makeSampleTask(TEST_APP_NAME / "a")
     val task2 = makeSampleTask(TEST_APP_NAME / "b")
     val task3 = makeSampleTask(TEST_APP_NAME / "b")
@@ -100,18 +114,27 @@ class TaskTrackerImplTest
     val testAppTasks = call(taskTracker)
 
     testAppTasks.allAppIdsWithTasks should be(
-        Set(TEST_APP_NAME / "a", TEST_APP_NAME / "b"))
+      Set(TEST_APP_NAME / "a", TEST_APP_NAME / "b")
+    )
 
     testAppTasks.appTasksMap(TEST_APP_NAME / "a").appId should equal(
-        TEST_APP_NAME / "a")
+      TEST_APP_NAME / "a"
+    )
     testAppTasks.appTasksMap(TEST_APP_NAME / "b").appId should equal(
-        TEST_APP_NAME / "b")
-    testAppTasks.appTasksMap(TEST_APP_NAME / "a").marathonTasks should have size 1
-    testAppTasks.appTasksMap(TEST_APP_NAME / "b").marathonTasks should have size 2
+      TEST_APP_NAME / "b"
+    )
+    testAppTasks
+      .appTasksMap(TEST_APP_NAME / "a")
+      .marathonTasks should have size 1
+    testAppTasks
+      .appTasksMap(TEST_APP_NAME / "b")
+      .marathonTasks should have size 2
     testAppTasks.appTasksMap(TEST_APP_NAME / "a").taskMap.keySet should equal(
-        Set(task1.taskId))
+      Set(task1.taskId)
+    )
     testAppTasks.appTasksMap(TEST_APP_NAME / "b").taskMap.keySet should equal(
-        Set(task2.taskId, task3.taskId))
+      Set(task2.taskId, task3.taskId)
+    )
   }
 
   test("GetTasks") {
@@ -166,7 +189,8 @@ class TaskTrackerImplTest
   }
 
   private[this] def testContains(
-      count: (TaskTracker, PathId) => Boolean): Unit = {
+      count: (TaskTracker, PathId) => Boolean
+  ): Unit = {
     val task1 = makeSampleTask(TEST_APP_NAME / "a")
 
     taskCreationHandler.created(task1).futureValue
@@ -216,14 +240,15 @@ class TaskTrackerImplTest
       .futureValue
     shouldContainTask(taskTracker.appTasksSync(TEST_APP_NAME), sampleTask)
     assert(
-        taskTracker
-          .appTasksSync(TEST_APP_NAME)
-          .head
-          .launched
-          .get
-          .status
-          .mesosStatus
-          .get == runningTaskStatus)
+      taskTracker
+        .appTasksSync(TEST_APP_NAME)
+        .head
+        .launched
+        .get
+        .status
+        .mesosStatus
+        .get == runningTaskStatus
+    )
 
     // TASK TERMINATED
     taskCreationHandler.terminated(sampleTask.taskId).futureValue
@@ -242,8 +267,10 @@ class TaskTrackerImplTest
       .failed
       .futureValue
     assert(failure.getCause != null)
-    assert(failure.getCause.getMessage.contains("does not exist"),
-           s"message: ${failure.getMessage}")
+    assert(
+      failure.getCause.getMessage.contains("does not exist"),
+      s"message: ${failure.getMessage}"
+    )
   }
 
   test("TASK_FAILED status update will expunge task") {
@@ -285,8 +312,8 @@ class TaskTrackerImplTest
     val res = taskUpdater.statusUpdate(TEST_APP_NAME, runningTaskStatus)
     ScalaFutures.whenReady(res.failed) { e =>
       assert(
-          e.getCause.getMessage == s"${sampleTask.taskId} of app [/foo] does not exist",
-          s"Got message: ${e.getCause.getMessage}"
+        e.getCause.getMessage == s"${sampleTask.taskId} of app [/foo] does not exist",
+        s"Got message: ${e.getCause.getMessage}"
       )
     }
     shouldNotContainTask(taskTracker.appTasksSync(TEST_APP_NAME), sampleTask)
@@ -335,8 +362,10 @@ class TaskTrackerImplTest
       .statusUpdate(appName3, makeTaskStatus(app3_task3.taskId))
       .futureValue
 
-    assert(state.allIds().futureValue.size == 6,
-           "Incorrect number of tasks in state")
+    assert(
+      state.allIds().futureValue.size == 6,
+      "Incorrect number of tasks in state"
+    )
 
     val app1Tasks = taskTracker.appTasksSync(appName1).toSet
 
@@ -480,7 +509,9 @@ class TaskTrackerImplTest
     verify(state, times(1)).update(any())
   }
 
-  test("Should store if state and health changed (no health present at first)") {
+  test(
+    "Should store if state and health changed (no health present at first)"
+  ) {
     val sampleTask = makeSampleTask(TEST_APP_NAME)
     val status = Protos.TaskStatus.newBuilder
       .setState(Protos.TaskState.TASK_RUNNING)
@@ -509,8 +540,11 @@ class TaskTrackerImplTest
     MarathonTestHelper
       .stagedTaskForApp(appId)
       .withAgentInfo(
-          _.copy(host = "host",
-                 attributes = Iterable(TextAttribute("attr1", "bar"))))
+        _.copy(
+          host = "host",
+          attributes = Iterable(TextAttribute("attr1", "bar"))
+        )
+      )
       .withNetworking(Task.HostPorts(Iterable(999)))
   }
 
@@ -520,8 +554,9 @@ class TaskTrackerImplTest
 
   def containsTask(tasks: Iterable[Task], task: Task) =
     tasks.exists(t =>
-          t.taskId == task.taskId && t.agentInfo.host == task.agentInfo.host &&
-          t.launched.map(_.networking) == task.launched.map(_.networking))
+      t.taskId == task.taskId && t.agentInfo.host == task.agentInfo.host &&
+        t.launched.map(_.networking) == task.launched.map(_.networking)
+    )
   def shouldContainTask(tasks: Iterable[Task], task: Task) =
     assert(containsTask(tasks, task), s"Should contain ${task.taskId}")
   def shouldNotContainTask(tasks: Iterable[Task], task: Task) =
@@ -529,20 +564,24 @@ class TaskTrackerImplTest
 
   def shouldHaveTaskStatus(task: Task, taskStatus: TaskStatus) {
     assert(
-        task.launched.exists(_.status.mesosStatus.get == taskStatus),
-        s"Should have task status ${taskStatus.getState.toString}"
+      task.launched.exists(_.status.mesosStatus.get == taskStatus),
+      s"Should have task status ${taskStatus.getState.toString}"
     )
   }
 
   def stateShouldNotContainKey(state: PersistentStore, key: Task.Id) {
     val keyWithPrefix = TaskRepository.storePrefix + key.idString
-    assert(!state.allIds().futureValue.toSet.contains(keyWithPrefix),
-           s"Key $keyWithPrefix was found in state")
+    assert(
+      !state.allIds().futureValue.toSet.contains(keyWithPrefix),
+      s"Key $keyWithPrefix was found in state"
+    )
   }
 
   def stateShouldContainKey(state: PersistentStore, key: Task.Id) {
     val keyWithPrefix = TaskRepository.storePrefix + key.idString
-    assert(state.allIds().futureValue.toSet.contains(keyWithPrefix),
-           s"Key $keyWithPrefix was not found in state")
+    assert(
+      state.allIds().futureValue.toSet.contains(keyWithPrefix),
+      s"Key $keyWithPrefix was not found in state"
+    )
   }
 }

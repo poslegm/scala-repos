@@ -17,8 +17,9 @@ import generic._
   *  @define coll linked hash map
   */
 object LinkedHashMap extends MutableMapFactory[LinkedHashMap] {
-  implicit def canBuildFrom[A, B]: CanBuildFrom[
-      Coll, (A, B), LinkedHashMap[A, B]] = new MapCanBuildFrom[A, B]
+  implicit def canBuildFrom[A, B]
+      : CanBuildFrom[Coll, (A, B), LinkedHashMap[A, B]] =
+    new MapCanBuildFrom[A, B]
   def empty[A, B] = new LinkedHashMap[A, B]
 }
 
@@ -46,9 +47,11 @@ object LinkedHashMap extends MutableMapFactory[LinkedHashMap] {
   */
 @SerialVersionUID(1L)
 class LinkedHashMap[A, B]
-    extends AbstractMap[A, B] with Map[A, B]
+    extends AbstractMap[A, B]
+    with Map[A, B]
     with MapLike[A, B, LinkedHashMap[A, B]]
-    with HashTable[A, LinkedEntry[A, B]] with Serializable {
+    with HashTable[A, LinkedEntry[A, B]]
+    with Serializable {
 
   override def empty = LinkedHashMap.empty[A, B]
   override def size = tableSize
@@ -83,21 +86,26 @@ class LinkedHashMap[A, B]
   }
 
   @deprecatedOverriding(
-      "+= should not be overridden so it stays consistent with put.", "2.11.0")
+    "+= should not be overridden so it stays consistent with put.",
+    "2.11.0"
+  )
   def +=(kv: (A, B)): this.type = { put(kv._1, kv._2); this }
 
   @deprecatedOverriding(
-      "-= should not be overridden so it stays consistent with remove.",
-      "2.11.0")
+    "-= should not be overridden so it stays consistent with remove.",
+    "2.11.0"
+  )
   def -=(key: A): this.type = { remove(key); this }
 
-  def iterator: Iterator[(A, B)] = new AbstractIterator[(A, B)] {
-    private var cur = firstEntry
-    def hasNext = cur ne null
-    def next =
-      if (hasNext) { val res = (cur.key, cur.value); cur = cur.later; res } else
-        Iterator.empty.next()
-  }
+  def iterator: Iterator[(A, B)] =
+    new AbstractIterator[(A, B)] {
+      private var cur = firstEntry
+      def hasNext = cur ne null
+      def next =
+        if (hasNext) { val res = (cur.key, cur.value); cur = cur.later; res }
+        else
+          Iterator.empty.next()
+    }
 
   protected class FilteredKeys(p: A => Boolean) extends super.FilteredKeys(p) {
     override def empty = LinkedHashMap.empty
@@ -119,21 +127,25 @@ class LinkedHashMap[A, B]
 
   override def keySet: scala.collection.Set[A] = new DefaultKeySet
 
-  override def keysIterator: Iterator[A] = new AbstractIterator[A] {
-    private var cur = firstEntry
-    def hasNext = cur ne null
-    def next =
-      if (hasNext) { val res = cur.key; cur = cur.later; res } else
-        Iterator.empty.next()
-  }
+  override def keysIterator: Iterator[A] =
+    new AbstractIterator[A] {
+      private var cur = firstEntry
+      def hasNext = cur ne null
+      def next =
+        if (hasNext) { val res = cur.key; cur = cur.later; res }
+        else
+          Iterator.empty.next()
+    }
 
-  override def valuesIterator: Iterator[B] = new AbstractIterator[B] {
-    private var cur = firstEntry
-    def hasNext = cur ne null
-    def next =
-      if (hasNext) { val res = cur.value; cur = cur.later; res } else
-        Iterator.empty.next()
-  }
+  override def valuesIterator: Iterator[B] =
+    new AbstractIterator[B] {
+      private var cur = firstEntry
+      def hasNext = cur ne null
+      def next =
+        if (hasNext) { val res = cur.value; cur = cur.later; res }
+        else
+          Iterator.empty.next()
+    }
 
   override def foreach[U](f: ((A, B)) => U) {
     var cur = firstEntry
@@ -166,10 +178,13 @@ class LinkedHashMap[A, B]
   }
 
   private def writeObject(out: java.io.ObjectOutputStream) {
-    serializeTo(out, { entry =>
-      out.writeObject(entry.key)
-      out.writeObject(entry.value)
-    })
+    serializeTo(
+      out,
+      { entry =>
+        out.writeObject(entry.key)
+        out.writeObject(entry.value)
+      }
+    )
   }
 
   private def readObject(in: java.io.ObjectInputStream) {

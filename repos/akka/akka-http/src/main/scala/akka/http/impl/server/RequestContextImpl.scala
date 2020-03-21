@@ -20,8 +20,8 @@ import scala.compat.java8.FutureConverters._
   * INTERNAL API
   */
 private[http] final case class RequestContextImpl(
-    underlying: ScalaRequestContext)
-    extends RequestContext {
+    underlying: ScalaRequestContext
+) extends RequestContext {
   // provides auto-conversion to japi.RouteResult
   import RouteResultImpl._
 
@@ -49,7 +49,8 @@ private[http] final case class RequestContextImpl(
         underlying.complete(value)
       case _ ⇒
         throw new IllegalArgumentException(
-            s"Unsupported marshaller: $marshaller")
+          s"Unsupported marshaller: $marshaller"
+        )
     }
   def complete(response: jm.HttpResponse): RouteResult =
     underlying.complete(response.asScala)

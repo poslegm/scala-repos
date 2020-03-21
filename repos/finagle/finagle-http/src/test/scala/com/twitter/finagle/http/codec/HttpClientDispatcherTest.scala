@@ -11,7 +11,11 @@ import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus.OK
 import org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1
-import org.jboss.netty.handler.codec.http.{DefaultHttpChunk, DefaultHttpResponse, HttpChunk}
+import org.jboss.netty.handler.codec.http.{
+  DefaultHttpChunk,
+  DefaultHttpResponse,
+  HttpChunk
+}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -34,37 +38,40 @@ class OpTransport[In, Out](_ops: List[OpTransport.Op[In, Out]])
 
   var ops = _ops
 
-  def read() = ops match {
-    case Read(res) :: rest =>
-      ops = rest
-      res
-    case _ =>
-      fail(s"Expected ${ops.headOption}; got read()")
-  }
+  def read() =
+    ops match {
+      case Read(res) :: rest =>
+        ops = rest
+        res
+      case _ =>
+        fail(s"Expected ${ops.headOption}; got read()")
+    }
 
-  def write(in: In) = ops match {
-    case Write(accept, res) :: rest =>
-      if (!accept(in)) fail(s"Did not accept write $in")
+  def write(in: In) =
+    ops match {
+      case Write(accept, res) :: rest =>
+        if (!accept(in)) fail(s"Did not accept write $in")
 
-      ops = rest
-      res
-    case _ =>
-      fail(s"Expected ${ops.headOption}; got write($in)")
-  }
+        ops = rest
+        res
+      case _ =>
+        fail(s"Expected ${ops.headOption}; got write($in)")
+    }
 
-  def close(deadline: Time) = ops match {
-    case Close(res) :: rest =>
-      ops = rest
-      status = Status.Closed
-      res respond {
-        case Return(()) =>
-          onClose.setValue(new Exception("closed"))
-        case Throw(exc) =>
-          onClose.setValue(exc)
-      }
-    case _ =>
-      fail(s"Expected ${ops.headOption}; got close($deadline)")
-  }
+  def close(deadline: Time) =
+    ops match {
+      case Close(res) :: rest =>
+        ops = rest
+        status = Status.Closed
+        res respond {
+          case Return(()) =>
+            onClose.setValue(new Exception("closed"))
+          case Throw(exc) =>
+            onClose.setValue(exc)
+        }
+      case _ =>
+        fail(s"Expected ${ops.headOption}; got close($deadline)")
+    }
 
   var status: Status = Status.Open
   val onClose = new Promise[Throwable]
@@ -83,7 +90,8 @@ class HttpClientDispatcherTest extends FunSuite {
 
   def chunk(content: String) =
     new DefaultHttpChunk(
-        ChannelBuffers.wrappedBuffer(content.getBytes("UTF-8")))
+      ChannelBuffers.wrappedBuffer(content.getBytes("UTF-8"))
+    )
 
   private val timeout = Duration.fromSeconds(2)
 
@@ -106,25 +114,19 @@ class HttpClientDispatcherTest extends FunSuite {
     val c = res.reader.read(Int.MaxValue)
     assert(!c.isDefined)
     req.writer.write(Buf.Utf8("a"))
-    out.read() flatMap { c =>
-      out.write(c)
-    }
+    out.read() flatMap { c => out.write(c) }
     assert(Await.result(c, timeout) === Some(Buf.Utf8("a")))
 
     val cc = res.reader.read(Int.MaxValue)
     assert(!cc.isDefined)
     req.writer.write(Buf.Utf8("some other thing"))
-    out.read() flatMap { c =>
-      out.write(c)
-    }
+    out.read() flatMap { c => out.write(c) }
     assert(Await.result(cc, timeout) === Some(Buf.Utf8("some other thing")))
 
     val last = res.reader.read(Int.MaxValue)
     assert(!last.isDefined)
     req.close()
-    out.read() flatMap { c =>
-      out.write(c)
-    }
+    out.read() flatMap { c => out.write(c) }
     assert(Await.result(last, timeout).isEmpty)
   }
 
@@ -195,7 +197,9 @@ class HttpClientDispatcherTest extends FunSuite {
 
     val writep = new Promise[Unit]
     val transport = OpTransport[Any, Any](
-        Write(Function.const(true), writep), Close(Future.Done))
+      Write(Function.const(true), writep),
+      Close(Future.Done)
+    )
 
     val disp = new HttpClientDispatcher(transport)
     val req = Request()
@@ -223,11 +227,12 @@ class HttpClientDispatcherTest extends FunSuite {
     val readp = new Promise[Nothing]
     val transport =
       OpTransport[Any, Any](
-                            // First write the initial request.
-                            Write(_.isInstanceOf[HttpRequest], Future.Done),
-                            // Read the response
-                            Read(readp),
-                            Close(Future.Done))
+        // First write the initial request.
+        Write(_.isInstanceOf[HttpRequest], Future.Done),
+        // Read the response
+        Read(readp),
+        Close(Future.Done)
+      )
 
     val disp = new HttpClientDispatcher(transport)
     val req = Request()
@@ -255,13 +260,14 @@ class HttpClientDispatcherTest extends FunSuite {
     val chunkp = new Promise[Unit]
     val transport =
       OpTransport[Any, Any](
-                            // First write the initial request.
-                            Write(_.isInstanceOf[HttpRequest], Future.Done),
-                            // Read the response
-                            Read(Future.never),
-                            // Then we try to write the chunk
-                            Write(_.isInstanceOf[HttpChunk], chunkp),
-                            Close(Future.Done))
+        // First write the initial request.
+        Write(_.isInstanceOf[HttpRequest], Future.Done),
+        // Read the response
+        Read(Future.never),
+        // Then we try to write the chunk
+        Write(_.isInstanceOf[HttpChunk], chunkp),
+        Close(Future.Done)
+      )
 
     val disp = new HttpClientDispatcher(transport)
     val req = Request()

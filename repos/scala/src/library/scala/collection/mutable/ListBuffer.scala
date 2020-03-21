@@ -43,9 +43,12 @@ import java.io.{ObjectOutputStream, ObjectInputStream}
 @SerialVersionUID(3419063961353022662L)
 final class ListBuffer[A]
     extends AbstractBuffer[A]
-    with Buffer[A] with GenericTraversableTemplate[A, ListBuffer]
+    with Buffer[A]
+    with GenericTraversableTemplate[A, ListBuffer]
     with BufferLike[A, ListBuffer[A]]
-    with ReusableBuilder[A, List[A]] with SeqForwarder[A] with Serializable {
+    with ReusableBuilder[A, List[A]]
+    with SeqForwarder[A]
+    with Serializable {
   override def companion: GenericCompanion[ListBuffer] = ListBuffer
 
   import scala.collection.Traversable
@@ -173,10 +176,11 @@ final class ListBuffer[A]
     this
   }
 
-  override def ++=(xs: TraversableOnce[A]): this.type = xs match {
-    case x: AnyRef if x eq this => this ++= (this take size)
-    case _ => super.++=(xs)
-  }
+  override def ++=(xs: TraversableOnce[A]): this.type =
+    xs match {
+      case x: AnyRef if x eq this => this ++= (this take size)
+      case _                      => super.++=(xs)
+    }
 
   override def ++=:(xs: TraversableOnce[A]): this.type =
     if (xs.asInstanceOf[AnyRef] eq this) ++=:(this take size)
@@ -264,11 +268,13 @@ final class ListBuffer[A]
   override def remove(n: Int, count: Int) {
     if (count < 0)
       throw new IllegalArgumentException(
-          "removing negative number of elements: " + count.toString)
+        "removing negative number of elements: " + count.toString
+      )
     else if (count == 0) return // Nothing to do
     if (n < 0 || n > len - count)
       throw new IndexOutOfBoundsException(
-          "at " + n.toString + " deleting " + count.toString)
+        "at " + n.toString + " deleting " + count.toString
+      )
     if (exported) copy()
     val n1 = n max 0
     val count1 = count min (len - n1)
@@ -389,25 +395,26 @@ final class ListBuffer[A]
     *  guaranteed to be consistent.  In particular, an empty `ListBuffer`
     *  will give an empty iterator even if the `ListBuffer` is later filled.
     */
-  override def iterator: Iterator[A] = new AbstractIterator[A] {
-    // Have to be careful iterating over mutable structures.
-    // This used to have "(cursor ne last0)" as part of its hasNext
-    // condition, which means it can return true even when the iterator
-    // is exhausted.  Inconsistent results are acceptable when one mutates
-    // a structure while iterating, but we should never return hasNext == true
-    // on exhausted iterators (thus creating exceptions) merely because
-    // values were changed in-place.
-    var cursor: List[A] = if (ListBuffer.this.isEmpty) Nil else start
+  override def iterator: Iterator[A] =
+    new AbstractIterator[A] {
+      // Have to be careful iterating over mutable structures.
+      // This used to have "(cursor ne last0)" as part of its hasNext
+      // condition, which means it can return true even when the iterator
+      // is exhausted.  Inconsistent results are acceptable when one mutates
+      // a structure while iterating, but we should never return hasNext == true
+      // on exhausted iterators (thus creating exceptions) merely because
+      // values were changed in-place.
+      var cursor: List[A] = if (ListBuffer.this.isEmpty) Nil else start
 
-    def hasNext: Boolean = cursor ne Nil
-    def next(): A =
-      if (!hasNext) throw new NoSuchElementException("next on empty Iterator")
-      else {
-        val ans = cursor.head
-        cursor = cursor.tail
-        ans
-      }
-  }
+      def hasNext: Boolean = cursor ne Nil
+      def next(): A =
+        if (!hasNext) throw new NoSuchElementException("next on empty Iterator")
+        else {
+          val ans = cursor.head
+          cursor = cursor.tail
+          ans
+        }
+    }
 
   // Private methods
 
@@ -423,10 +430,11 @@ final class ListBuffer[A]
     }
   }
 
-  override def equals(that: Any): Boolean = that match {
-    case that: ListBuffer[_] => this.start equals that.start
-    case _ => super.equals(that)
-  }
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: ListBuffer[_] => this.start equals that.start
+      case _                   => super.equals(that)
+    }
 
   /** Returns a clone of this buffer.
     *

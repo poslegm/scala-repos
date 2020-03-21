@@ -41,46 +41,59 @@ object LocSpec extends Specification {
     }
 
     "calculate href for menu with parameters" in {
-      val loc = (Menu.param[Param]("Test",
-                                   "Test",
-                                   s => Full(Param(s)),
-                                   p => p.s) / "foo" / "bar" / *).toLoc
+      val loc = (Menu.param[Param](
+        "Test",
+        "Test",
+        s => Full(Param(s)),
+        p => p.s
+      ) / "foo" / "bar" / *).toLoc
       loc.calcHref(Param("myparam")) mustEqual "/foo/bar/myparam"
     }
 
     "should not match a Req matching its Link when currentValue is Empty" in {
       val testMenu =
-        Menu.param[Param]("Test", "Test", s => Empty, p => "bacon") / "foo" / "bar" / *
+        Menu.param[Param](
+          "Test",
+          "Test",
+          s => Empty,
+          p => "bacon"
+        ) / "foo" / "bar" / *
       val testSiteMap = SiteMap(testMenu)
 
       val testLoc = testMenu.toLoc
       val mockReq = new MockHttpServletRequest("http://test/foo/bar/123")
 
       testS(mockReq) {
-        testReq(mockReq) { req =>
-          testLoc.doesMatch_?(req) mustEqual false
-        }
+        testReq(mockReq) { req => testLoc.doesMatch_?(req) mustEqual false }
       }
     }
 
     "matchs a Req when currentValue is Empty, a * was used, and MatchWithoutCurrentValue is a param" in {
       val testMenu =
-        Menu.param[Param]("Test", "Test", s => Empty, p => "bacon") / "foo" / "bar" / * >> Loc.MatchWithoutCurrentValue
+        Menu.param[Param](
+          "Test",
+          "Test",
+          s => Empty,
+          p => "bacon"
+        ) / "foo" / "bar" / * >> Loc.MatchWithoutCurrentValue
       val testSiteMap = SiteMap(testMenu)
 
       val testLoc = testMenu.toLoc
       val mockReq = new MockHttpServletRequest("http://test/foo/bar/123")
 
       testS(mockReq) {
-        testReq(mockReq) { req =>
-          testLoc.doesMatch_?(req) mustEqual true
-        }
+        testReq(mockReq) { req => testLoc.doesMatch_?(req) mustEqual true }
       }
     }
 
     "matchs a Req when currentValue is Empty, and MatchWithoutCurrentValue is a param" in {
       val testMenu =
-        Menu.param[Param]("Test", "Test", s => Empty, p => "bacon") / "foo" / "bar" >> Loc.MatchWithoutCurrentValue
+        Menu.param[Param](
+          "Test",
+          "Test",
+          s => Empty,
+          p => "bacon"
+        ) / "foo" / "bar" >> Loc.MatchWithoutCurrentValue
       val testSiteMap = SiteMap(testMenu)
 
       val testLoc = testMenu.toLoc

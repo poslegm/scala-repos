@@ -42,7 +42,9 @@ class DefaultTest extends ApplicabilityTestBase {
       case ExcessArgument(Expression("B")) :: Nil =>
     }
     assertProblems("(a: A = null)", "(A, B, C)") {
-      case ExcessArgument(Expression("B")) :: ExcessArgument(Expression("C")) :: Nil =>
+      case ExcessArgument(Expression("B")) :: ExcessArgument(
+            Expression("C")
+          ) :: Nil =>
     }
     assertProblems("(a: A = null, b: B = null)", "(A, B, C)") {
       case ExcessArgument(Expression("C")) :: Nil =>
@@ -68,7 +70,8 @@ class DefaultTest extends ApplicabilityTestBase {
     }
     assertProblems("(a: A, b: B, c: C = null)", "()") {
       case MissedValueParameter(Parameter("a")) :: MissedValueParameter(
-          Parameter("b")) :: Nil =>
+            Parameter("b")
+          ) :: Nil =>
     }
     assertProblems("(a: A = null, b: B)", "()") {
       case MissedValueParameter(Parameter("b")) :: Nil =>
@@ -93,7 +96,9 @@ class DefaultTest extends ApplicabilityTestBase {
     }
     assertProblems("(a: A = null, b: B = null)", "(B, A)") {
       case TypeMismatch(Expression("B"), Type("A")) :: TypeMismatch(
-          Expression("A"), Type("B")) :: Nil =>
+            Expression("A"),
+            Type("B")
+          ) :: Nil =>
     }
   }
 }

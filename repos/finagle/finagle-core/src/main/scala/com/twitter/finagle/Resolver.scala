@@ -7,7 +7,12 @@ import com.twitter.conversions.time._
 import com.twitter.finagle.stats.{DefaultStatsReceiver, StatsReceiver}
 import com.twitter.finagle.util._
 import com.twitter.util._
-import java.net.{InetAddress, InetSocketAddress, SocketAddress, UnknownHostException}
+import java.net.{
+  InetAddress,
+  InetSocketAddress,
+  SocketAddress,
+  UnknownHostException
+}
 import java.util.logging.Logger
 
 /**
@@ -20,8 +25,9 @@ import java.util.logging.Logger
   */
 class ResolverNotFoundException(scheme: String)
     extends Exception(
-        "Resolver not found for scheme \"%s\". Please add the jar containing this resolver to your classpath"
-          .format(scheme))
+      "Resolver not found for scheme \"%s\". Please add the jar containing this resolver to your classpath"
+        .format(scheme)
+    )
 
 /**
   * Indicates that multiple [[com.twitter.finagle.Resolver Resolvers]] were
@@ -31,8 +37,7 @@ class ResolverNotFoundException(scheme: String)
   * mechanism. These exceptions typically suggest that there are multiple
   * libraries on the classpath with conflicting scheme definitions.
   */
-class MultipleResolversPerSchemeException(
-    resolvers: Map[String, Seq[Resolver]])
+class MultipleResolversPerSchemeException(resolvers: Map[String, Seq[Resolver]])
     extends NoStacktrace {
   override def getMessage = {
     val msgs =
@@ -77,7 +82,7 @@ trait Resolver {
   final def resolve(name: String): Try[Group[SocketAddress]] =
     bind(name) match {
       case Var.Sampled(Addr.Failed(e)) => Throw(e)
-      case va => Return(Group.fromVarAddr(va))
+      case va                          => Return(Group.fromVarAddr(va))
     }
 }
 
@@ -98,8 +103,7 @@ object InetResolver {
 private[finagle] class InetResolver(
     unscopedStatsReceiver: StatsReceiver,
     pollIntervalOpt: Option[Duration]
-)
-    extends Resolver {
+) extends Resolver {
   import InetSocketAddressUtil._
 
   type HostPortMetadata = (String, Int, Addr.Metadata)
@@ -141,8 +145,7 @@ private[finagle] class InetResolver(
   def toAddr(hp: Seq[HostPortMetadata]): Future[Addr] = {
     val elapsed = Stopwatch.start()
     Future
-      .collectToTry(
-          hp.map {
+      .collectToTry(hp.map {
         case (host, port, meta) =>
           resolveHost(host).map { inetAddrs =>
             inetAddrs.map { inetAddr =>
@@ -171,8 +174,8 @@ private[finagle] class InetResolver(
             case Throw(e) => e
           } match {
             case Some(_: UnknownHostException) => Future.value(Addr.Neg)
-            case Some(e) => Future.value(Addr.Failed(e))
-            case None => Future.value(Addr.Bound(Set[Address]()))
+            case Some(e)                       => Future.value(Addr.Failed(e))
+            case None                          => Future.value(Addr.Bound(Set[Address]()))
           }
         }
       }
@@ -204,16 +207,16 @@ private[finagle] class InetResolver(
   /**
     * Binds to the specified hostnames, and refreshes the DNS information periodically.
     */
-  def bind(hosts: String): Var[Addr] = Try(parseHostPorts(hosts)) match {
-    case Return(hp) =>
-      bindHostPortsToAddr(
-          hp.map {
-        case (host, port) =>
-          (host, port, Addr.Metadata.empty)
-      })
-    case Throw(exc) =>
-      Var.value(Addr.Failed(exc))
-  }
+  def bind(hosts: String): Var[Addr] =
+    Try(parseHostPorts(hosts)) match {
+      case Return(hp) =>
+        bindHostPortsToAddr(hp.map {
+          case (host, port) =>
+            (host, port, Addr.Metadata.empty)
+        })
+      case Throw(exc) =>
+        Var.value(Addr.Failed(exc))
+    }
 }
 
 /**
@@ -241,8 +244,7 @@ object FixedInetResolver {
 private[finagle] class FixedInetResolver(
     statsReceiver: StatsReceiver,
     resolveOverride: Option[String => Future[Seq[InetAddress]]]
-)
-    extends InetResolver(statsReceiver, None) {
+) extends InetResolver(statsReceiver, None) {
 
   override val scheme = FixedInetResolver.scheme
 
@@ -286,19 +288,21 @@ private[finagle] abstract class BaseResolver(f: () => Seq[Resolver]) {
     val rs = f()
     val log = Logger.getLogger(getClass.getName)
     val resolvers =
-      Seq(inetResolver,
-          fixedInetResolver,
-          NegResolver,
-          NilResolver,
-          FailResolver) ++ rs
+      Seq(
+        inetResolver,
+        fixedInetResolver,
+        NegResolver,
+        NilResolver,
+        FailResolver
+      ) ++ rs
 
     val dups =
       resolvers.groupBy(_.scheme).filter { case (_, rs) => rs.size > 1 }
 
     if (dups.nonEmpty) throw new MultipleResolversPerSchemeException(dups)
 
-    for (r <- resolvers) log.info(
-        "Resolver[%s] = %s(%s)".format(r.scheme, r.getClass.getName, r))
+    for (r <- resolvers)
+      log.info("Resolver[%s] = %s(%s)".format(r.scheme, r.getClass.getName, r))
 
     resolvers
   }
@@ -316,16 +320,16 @@ private[finagle] abstract class BaseResolver(f: () => Seq[Resolver]) {
   private[this] def delex(ts: Seq[Token]) =
     ts map {
       case El(e) => e
-      case Bang => "!"
-      case Eq => "="
+      case Bang  => "!"
+      case Eq    => "="
     } mkString ""
 
   private[this] def lex(s: String) = {
     s.foldLeft(List[Token]()) {
-      case (ts, '=') => Eq :: ts
-      case (ts, '!') => Bang :: ts
+      case (ts, '=')        => Eq :: ts
+      case (ts, '!')        => Bang :: ts
       case (El(s) :: ts, c) => El(s + c) :: ts
-      case (ts, c) => El("" + c) :: ts
+      case (ts, c)          => El("" + c) :: ts
     }
   }.reverse
 
@@ -354,8 +358,11 @@ private[finagle] abstract class BaseResolver(f: () => Seq[Resolver]) {
   def resolve(addr: String): Try[Group[SocketAddress]] =
     Try { eval(addr) } flatMap {
       case Name.Path(_) =>
-        Throw(new IllegalArgumentException(
-                "Resolver.resolve does not support logical names"))
+        Throw(
+          new IllegalArgumentException(
+            "Resolver.resolve does not support logical names"
+          )
+        )
       case bound @ Name.Bound(_) =>
         Return(NameGroup(bound))
     }
@@ -388,7 +395,7 @@ private[finagle] abstract class BaseResolver(f: () => Seq[Resolver]) {
         case El(scheme) :: Bang :: name =>
           resolvers.find(_.scheme == scheme) match {
             case Some(resolver) => (resolver, delex(name))
-            case None => throw new ResolverNotFoundException(scheme)
+            case None           => throw new ResolverNotFoundException(scheme)
           }
 
         case ts => (inetResolver, delex(ts))
@@ -407,7 +414,7 @@ private[finagle] abstract class BaseResolver(f: () => Seq[Resolver]) {
   def evalLabeled(addr: String): (Name, String) = {
     val (label, rest) = lex(addr) match {
       case El(n) :: Eq :: rest => (n, rest)
-      case rest => ("", rest)
+      case rest                => ("", rest)
     }
 
     (eval(delex(rest)), label)

@@ -58,22 +58,16 @@ object RemoteNodeDeathWatchMultiJvmSpec extends MultiNodeConfig {
 
 // Several different variations of the test
 
-class RemoteNodeDeathWatchFastMultiJvmNode1
-    extends RemoteNodeDeathWatchFastSpec
-class RemoteNodeDeathWatchFastMultiJvmNode2
-    extends RemoteNodeDeathWatchFastSpec
-class RemoteNodeDeathWatchFastMultiJvmNode3
-    extends RemoteNodeDeathWatchFastSpec
+class RemoteNodeDeathWatchFastMultiJvmNode1 extends RemoteNodeDeathWatchFastSpec
+class RemoteNodeDeathWatchFastMultiJvmNode2 extends RemoteNodeDeathWatchFastSpec
+class RemoteNodeDeathWatchFastMultiJvmNode3 extends RemoteNodeDeathWatchFastSpec
 abstract class RemoteNodeDeathWatchFastSpec extends RemoteNodeDeathWatchSpec {
   override def scenario = "fast"
 }
 
-class RemoteNodeDeathWatchSlowMultiJvmNode1
-    extends RemoteNodeDeathWatchSlowSpec
-class RemoteNodeDeathWatchSlowMultiJvmNode2
-    extends RemoteNodeDeathWatchSlowSpec
-class RemoteNodeDeathWatchSlowMultiJvmNode3
-    extends RemoteNodeDeathWatchSlowSpec
+class RemoteNodeDeathWatchSlowMultiJvmNode1 extends RemoteNodeDeathWatchSlowSpec
+class RemoteNodeDeathWatchSlowMultiJvmNode2 extends RemoteNodeDeathWatchSlowSpec
+class RemoteNodeDeathWatchSlowMultiJvmNode3 extends RemoteNodeDeathWatchSlowSpec
 abstract class RemoteNodeDeathWatchSlowSpec extends RemoteNodeDeathWatchSpec {
   override def scenario = "slow"
   override def sleep(): Unit = Thread.sleep(3000)
@@ -81,7 +75,8 @@ abstract class RemoteNodeDeathWatchSlowSpec extends RemoteNodeDeathWatchSpec {
 
 abstract class RemoteNodeDeathWatchSpec
     extends MultiNodeSpec(RemoteNodeDeathWatchMultiJvmSpec)
-    with STMultiNodeSpec with ImplicitSender {
+    with STMultiNodeSpec
+    with ImplicitSender {
 
   import RemoteNodeDeathWatchMultiJvmSpec._
   import RemoteWatcher._
@@ -100,8 +95,7 @@ abstract class RemoteNodeDeathWatchSpec
   }
 
   def identify(role: RoleName, actorName: String): ActorRef = {
-    system.actorSelection(node(role) / "user" / actorName) ! Identify(
-        actorName)
+    system.actorSelection(node(role) / "user" / actorName) ! Identify(actorName)
     expectMsgType[ActorIdentity].ref.get
   }
 
@@ -398,8 +392,7 @@ abstract class RemoteNodeDeathWatchSpec
 
         log.info("exit second")
         testConductor.exit(second, 0).await
-        expectMsgType[WrappedTerminated](15 seconds).t.actor should ===(
-            subject)
+        expectMsgType[WrappedTerminated](15 seconds).t.actor should ===(subject)
 
         // verify that things are cleaned up, and heartbeating is stopped
         assertCleanup()

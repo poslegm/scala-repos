@@ -66,7 +66,9 @@ trait MixableMappedField extends BaseField {
   * (e.g., MappedPassword) in the database
   */
 trait BaseMappedField
-    extends SelectableField with Bindable with MixableMappedField
+    extends SelectableField
+    with Bindable
+    with MixableMappedField
     with Serializable {
 
   def dbDisplay_? = true
@@ -137,10 +139,12 @@ trait BaseMappedField
     val name = dbColumnName
 
     val conn = DB.currentConnection
-    conn.map { c =>
-      if (c.metaData.storesMixedCaseIdentifiers) name
-      else name.toLowerCase
-    }.openOr(name)
+    conn
+      .map { c =>
+        if (c.metaData.storesMixedCaseIdentifiers) name
+        else name.toLowerCase
+      }
+      .openOr(name)
   }
 
   /**
@@ -230,9 +234,9 @@ trait TypedField[FieldType] {
 /**
   * A Mapped field that is Nullable in the database.  Will return Empty box for NULL values and Full for non-null values
   */
-trait MappedNullableField[
-    NullableFieldType <: Any, OwnerType <: Mapper[OwnerType]]
-    extends MappedField[Box[NullableFieldType], OwnerType] {
+trait MappedNullableField[NullableFieldType <: Any, OwnerType <: Mapper[
+  OwnerType
+]] extends MappedField[Box[NullableFieldType], OwnerType] {
 
   /**
     * All fields of this type are NULLable
@@ -245,17 +249,17 @@ trait MappedNullableField[
     * Create an input field for the item
     */
   override def _toForm: Box[NodeSeq] =
-    S.fmapFunc({ s: List[String] =>
-      this.setFromAny(s)
-    }) { funcName =>
+    S.fmapFunc({ s: List[String] => this.setFromAny(s) }) { funcName =>
       Full(appendFieldId(<input type={formInputType}
                        name={funcName}
-                       value={get match {
-                         case null => ""
-                         case Full(null) => ""
-                         case Full(s) => s.toString
-                         case _ => ""
-                       }}/>))
+                       value={
+        get match {
+          case null       => ""
+          case Full(null) => ""
+          case Full(s)    => s.toString
+          case _          => ""
+        }
+      }/>))
     }
 }
 
@@ -265,8 +269,10 @@ trait MappedNullableField[
   */
 trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
     extends TypedField[FieldType]
-    with BaseOwnedMappedField[OwnerType] with FieldIdentifier
-    with PSettableValueHolder[FieldType] with scala.Equals {
+    with BaseOwnedMappedField[OwnerType]
+    with FieldIdentifier
+    with PSettableValueHolder[FieldType]
+    with scala.Equals {
 
   /**
     * Will be set to the type of the field
@@ -311,9 +317,7 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
     * Given the driver type, return a list of SQL creation strings for the columns represented by this field
     */
   def fieldCreatorString(dbType: DriverType): List[String] =
-    dbColumnNames(name).map { c =>
-      fieldCreatorString(dbType, c)
-    }
+    dbColumnNames(name).map { c => fieldCreatorString(dbType, c) }
 
   def notNullAppender() = if (dbNotNull_?) " NOT NULL " else ""
 
@@ -421,12 +425,13 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
   /**
     * The name of this field
     */
-  final def name = synchronized {
-    if (_name eq null) {
-      fieldOwner.checkNames
+  final def name =
+    synchronized {
+      if (_name eq null) {
+        fieldOwner.checkNames
+      }
+      _name
     }
-    _name
-  }
 
   /**
     * Set the name of this field
@@ -461,11 +466,12 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
     fieldOwner.getSingleton.internal_dbTableName + ":" + name
 
   def toForm: Box[NodeSeq] = {
-    def mf(in: scala.xml.Node): NodeSeq = in match {
-      case g: Group => g.nodes.flatMap(mf)
-      case e: Elem => e % toFormAppendedAttributes
-      case other => other
-    }
+    def mf(in: scala.xml.Node): NodeSeq =
+      in match {
+        case g: Group => g.nodes.flatMap(mf)
+        case e: Elem  => e % toFormAppendedAttributes
+        case other    => other
+      }
 
     _toForm
       .map(_.flatMap(mf))
@@ -476,12 +482,15 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
     * Create an input field for the item
     */
   override def _toForm: Box[NodeSeq] =
-    S.fmapFunc({ s: List[String] =>
-      this.setFromAny(s)
-    }) { funcName =>
+    S.fmapFunc({ s: List[String] => this.setFromAny(s) }) { funcName =>
       Full(appendFieldId(<input type={formInputType}
                        name={funcName}
-                       value={get match {case null => "" case s => s.toString}}/>))
+                       value={
+        get match {
+          case null => ""
+          case s    => s.toString
+        }
+      }/>))
     }
 
   /**
@@ -494,13 +503,14 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
   /**
     * If the field has a defined fieldId, append it
     */
-  protected def appendFieldId(in: Elem): Elem = fieldId match {
-    case Some(i) => {
+  protected def appendFieldId(in: Elem): Elem =
+    fieldId match {
+      case Some(i) => {
         import util.Helpers._
         in % ("id" -> i)
       }
-    case _ => in
-  }
+      case _ => in
+    }
 
   /**
     * Set the field to the Box value if the Box is Full
@@ -522,9 +532,11 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
   }
 
   def runFilters(
-      in: FieldType, filter: List[FieldType => FieldType]): FieldType =
+      in: FieldType,
+      filter: List[FieldType => FieldType]
+  ): FieldType =
     filter match {
-      case Nil => in
+      case Nil     => in
       case x :: xs => runFilters(x(in), xs)
     }
 
@@ -533,24 +545,34 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
     */
   protected def real_i_set_!(value: FieldType): FieldType
 
-  def buildSetActualValue(accessor: Method,
-                          inst: AnyRef,
-                          columnName: String): (OwnerType, AnyRef) => Unit
+  def buildSetActualValue(
+      accessor: Method,
+      inst: AnyRef,
+      columnName: String
+  ): (OwnerType, AnyRef) => Unit
   def buildSetLongValue(
-      accessor: Method, columnName: String): (OwnerType, Long, Boolean) => Unit
+      accessor: Method,
+      columnName: String
+  ): (OwnerType, Long, Boolean) => Unit
   def buildSetStringValue(
-      accessor: Method, columnName: String): (OwnerType, String) => Unit
+      accessor: Method,
+      columnName: String
+  ): (OwnerType, String) => Unit
   def buildSetDateValue(
-      accessor: Method, columnName: String): (OwnerType, Date) => Unit
+      accessor: Method,
+      columnName: String
+  ): (OwnerType, Date) => Unit
   def buildSetBooleanValue(
       accessor: Method,
-      columnName: String): (OwnerType, Boolean, Boolean) => Unit
+      columnName: String
+  ): (OwnerType, Boolean, Boolean) => Unit
   protected def getField(inst: OwnerType, meth: Method) =
     meth.invoke(inst).asInstanceOf[MappedField[FieldType, OwnerType]];
   protected def doField(
       inst: OwnerType,
       meth: Method,
-      func: PartialFunction[MappedField[FieldType, OwnerType], Unit]) {
+      func: PartialFunction[MappedField[FieldType, OwnerType], Unit]
+  ) {
     val f = getField(inst, meth)
     if (func.isDefinedAt(f)) func(f)
   }
@@ -640,7 +662,7 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
   override def toString: String =
     get match {
       case null => ""
-      case v => v.toString
+      case v    => v.toString
     }
 
   def validations: List[FieldType => List[FieldError]] = Nil
@@ -688,10 +710,11 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
 
   protected def real_convertToJDBCFriendly(value: FieldType): Object
 
-  override def hashCode(): Int = i_is_! match {
-    case null => 0
-    case x => x.hashCode
-  }
+  override def hashCode(): Int =
+    i_is_! match {
+      case null => 0
+      case x    => x.hashCode
+    }
 
   /**
     * Does the "right thing" comparing mapped fields
@@ -699,21 +722,22 @@ trait MappedField[FieldType <: Any, OwnerType <: Mapper[OwnerType]]
   override def equals(other: Any): Boolean = {
     (other match {
       case e: scala.Equals => e canEqual this
-      case _ => true
+      case _               => true
     }) &&
     (other match {
-          case mapped: MappedField[_, _] => this.i_is_! == mapped.i_is_!
-          case ov: AnyRef
-              if (ov ne null) && dbFieldClass.isAssignableFrom(ov.getClass) =>
-            this.get == runFilters(ov.asInstanceOf[FieldType], setFilter)
-          case ov => this.get == ov
-        })
+      case mapped: MappedField[_, _] => this.i_is_! == mapped.i_is_!
+      case ov: AnyRef
+          if (ov ne null) && dbFieldClass.isAssignableFrom(ov.getClass) =>
+        this.get == runFilters(ov.asInstanceOf[FieldType], setFilter)
+      case ov => this.get == ov
+    })
   }
 
-  def canEqual(that: Any) = that match {
-    case ar: AnyRef => ar.getClass == this.getClass
-    case _ => false
-  }
+  def canEqual(that: Any) =
+    that match {
+      case ar: AnyRef => ar.getClass == this.getClass
+      case _          => false
+    }
 
   override def asHtml: scala.xml.Node = Text(toString)
 }

@@ -90,8 +90,8 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
         val stageId = stageInfo.stageId
         stageIds += stageId
         stageIdToJobId(stageId) = jobId
-        stageIdToGraph(stageId) = RDDOperationGraph.makeOperationGraph(
-            stageInfo)
+        stageIdToGraph(stageId) =
+          RDDOperationGraph.makeOperationGraph(stageInfo)
         trimStagesIfNecessary()
       }
 
@@ -100,35 +100,36 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
 
   /** Keep track of stages that have completed. */
   override def onStageCompleted(
-      stageCompleted: SparkListenerStageCompleted): Unit = synchronized {
-    val stageId = stageCompleted.stageInfo.stageId
-    if (stageIdToJobId.contains(stageId)) {
-      // Note: Only do this if the stage has not already been cleaned up
-      // Otherwise, we may never clean this stage from `completedStageIds`
-      completedStageIds += stageCompleted.stageInfo.stageId
+      stageCompleted: SparkListenerStageCompleted
+  ): Unit =
+    synchronized {
+      val stageId = stageCompleted.stageInfo.stageId
+      if (stageIdToJobId.contains(stageId)) {
+        // Note: Only do this if the stage has not already been cleaned up
+        // Otherwise, we may never clean this stage from `completedStageIds`
+        completedStageIds += stageCompleted.stageInfo.stageId
+      }
     }
-  }
 
   /** On job end, find all stages in this job that are skipped and mark them as such. */
-  override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = synchronized {
-    val jobId = jobEnd.jobId
-    jobIdToStageIds.get(jobId).foreach { stageIds =>
-      val skippedStageIds = stageIds.filter { sid =>
-        !completedStageIds.contains(sid)
+  override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit =
+    synchronized {
+      val jobId = jobEnd.jobId
+      jobIdToStageIds.get(jobId).foreach { stageIds =>
+        val skippedStageIds = stageIds.filter { sid =>
+          !completedStageIds.contains(sid)
+        }
+        // Note: Only do this if the job has not already been cleaned up
+        // Otherwise, we may never clean this job from `jobIdToSkippedStageIds`
+        jobIdToSkippedStageIds(jobId) = skippedStageIds
       }
-      // Note: Only do this if the job has not already been cleaned up
-      // Otherwise, we may never clean this job from `jobIdToSkippedStageIds`
-      jobIdToSkippedStageIds(jobId) = skippedStageIds
     }
-  }
 
   /** Clean metadata for old stages if we have exceeded the number to retain. */
   private def trimStagesIfNecessary(): Unit = {
     if (stageIds.size >= retainedStages) {
       val toRemove = math.max(retainedStages / 10, 1)
-      stageIds.take(toRemove).foreach { id =>
-        cleanStage(id)
-      }
+      stageIds.take(toRemove).foreach { id => cleanStage(id) }
       stageIds.trimStart(toRemove)
     }
   }
@@ -137,9 +138,7 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   private def trimJobsIfNecessary(): Unit = {
     if (jobIds.size >= retainedJobs) {
       val toRemove = math.max(retainedJobs / 10, 1)
-      jobIds.take(toRemove).foreach { id =>
-        cleanJob(id)
-      }
+      jobIds.take(toRemove).foreach { id => cleanJob(id) }
       jobIds.trimStart(toRemove)
     }
   }
@@ -148,18 +147,14 @@ private[ui] class RDDOperationGraphListener(conf: SparkConf)
   private[ui] def cleanStage(stageId: Int): Unit = {
     completedStageIds.remove(stageId)
     stageIdToGraph.remove(stageId)
-    stageIdToJobId.remove(stageId).foreach { jobId =>
-      cleanJob(jobId)
-    }
+    stageIdToJobId.remove(stageId).foreach { jobId => cleanJob(jobId) }
   }
 
   /** Clean metadata for the given job and all stages that belong to it. */
   private[ui] def cleanJob(jobId: Int): Unit = {
     jobIdToSkippedStageIds.remove(jobId)
     jobIdToStageIds.remove(jobId).foreach { stageIds =>
-      stageIds.foreach { stageId =>
-        cleanStage(stageId)
-      }
+      stageIds.foreach { stageId => cleanStage(stageId) }
     }
   }
 }

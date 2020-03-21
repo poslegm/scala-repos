@@ -17,12 +17,14 @@ import slick.jdbc.JdbcBackend
 object Implicits {
 
   // Convert to slick session.
-  implicit def request2Session(
-      implicit request: HttpServletRequest): JdbcBackend#Session =
+  implicit def request2Session(implicit
+      request: HttpServletRequest
+  ): JdbcBackend#Session =
     Database.getSession(request)
 
-  implicit def context2ApiJsonFormatContext(
-      implicit context: Context): JsonFormat.Context =
+  implicit def context2ApiJsonFormatContext(implicit
+      context: Context
+  ): JsonFormat.Context =
     JsonFormat.Context(context.baseUrl)
 
   implicit class RichSeq[A](seq: Seq[A]) {
@@ -32,21 +34,23 @@ object Implicits {
 
     @scala.annotation.tailrec
     private def split[A](list: Seq[A], result: Seq[Seq[A]] = Nil)(
-        condition: (A, A) => Boolean): Seq[Seq[A]] =
+        condition: (A, A) => Boolean
+    ): Seq[Seq[A]] =
       list match {
         case x :: xs => {
-            xs.span(condition(x, _)) match {
-              case (matched, remained) =>
-                split(remained, result :+ (x :: matched))(condition)
-            }
+          xs.span(condition(x, _)) match {
+            case (matched, remained) =>
+              split(remained, result :+ (x :: matched))(condition)
           }
+        }
         case Nil => result
       }
   }
 
   implicit class RichString(value: String) {
-    def replaceBy(regex: Regex)(
-        replace: Regex.MatchData => Option[String]): String = {
+    def replaceBy(
+        regex: Regex
+    )(replace: Regex.MatchData => Option[String]): String = {
       val sb = new StringBuilder()
       var i = 0
       regex.findAllIn(value).matchData.foreach { m =>
@@ -54,7 +58,7 @@ object Implicits {
         i = m.end
         replace(m) match {
           case Some(s) => sb.append(s)
-          case None => sb.append(m.matched)
+          case None    => sb.append(m.matched)
         }
       }
       if (i < value.length) {
@@ -63,15 +67,18 @@ object Implicits {
       sb.toString
     }
 
-    def toIntOpt: Option[Int] = catching(classOf[NumberFormatException]) opt {
-      Integer.parseInt(value)
-    }
+    def toIntOpt: Option[Int] =
+      catching(classOf[NumberFormatException]) opt {
+        Integer.parseInt(value)
+      }
   }
 
   implicit class RichRequest(request: HttpServletRequest) {
 
     def paths: Array[String] =
-      (request.getRequestURI.substring(request.getContextPath.length + 1) match {
+      (request.getRequestURI.substring(
+        request.getContextPath.length + 1
+      ) match {
         case path if path.startsWith("api/v3/repos/") =>
           path.substring(13 /* "/api/v3/repos".length */ )
         case path if path.startsWith("api/v3/orgs/") =>
@@ -91,7 +98,7 @@ object Implicits {
       val url = request.getRequestURL.toString
       val len =
         url.length -
-        (request.getRequestURI.length - request.getContextPath.length)
+          (request.getRequestURI.length - request.getContextPath.length)
       url.substring(0, len).stripSuffix("/")
     }
   }

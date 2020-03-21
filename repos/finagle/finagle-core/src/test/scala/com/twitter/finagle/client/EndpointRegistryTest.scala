@@ -25,15 +25,18 @@ class EndpointRegistryTest extends FunSuite {
   val dtab = Dtab.read("/foo => /bar")
   val dtab2 = Dtab.read("/foo => /baz")
 
-  def getEndpoints(registry: EndpointRegistry,
-                   name: String,
-                   dtab: Dtab,
-                   path: String): Option[Addr] = {
+  def getEndpoints(
+      registry: EndpointRegistry,
+      name: String,
+      dtab: Dtab,
+      path: String
+  ): Option[Addr] = {
     registry.endpoints(name).get(dtab).flatMap(_.get(path))
   }
 
   test(
-      "adding endpoints for a path for a dtab for a new client adds it to the registry") {
+    "adding endpoints for a path for a dtab for a new client adds it to the registry"
+  ) {
     val registry = new EndpointRegistry()
 
     assert(registry.endpoints(name).isEmpty)
@@ -46,7 +49,8 @@ class EndpointRegistryTest extends FunSuite {
   }
 
   test(
-      "adding endpoints for a path for a dtab for an existing client adds them to the registry") {
+    "adding endpoints for a path for a dtab for an existing client adds them to the registry"
+  ) {
     val registry = new EndpointRegistry()
 
     registry.addObservation(name, dtab, path, endpoints)
@@ -57,7 +61,8 @@ class EndpointRegistryTest extends FunSuite {
   }
 
   test(
-      "adding endpoints for a path for an existing dtab adds them to the registry") {
+    "adding endpoints for a path for an existing dtab adds them to the registry"
+  ) {
     val registry = new EndpointRegistry()
 
     registry.addObservation(name, dtab, path, endpoints)
@@ -68,7 +73,8 @@ class EndpointRegistryTest extends FunSuite {
   }
 
   test(
-      "removing a path for a dtab for a client with only one dtab removes the client from the registry") {
+    "removing a path for a dtab for a client with only one dtab removes the client from the registry"
+  ) {
     val registry = new EndpointRegistry()
 
     registry.addObservation(name, dtab, path, endpoints)

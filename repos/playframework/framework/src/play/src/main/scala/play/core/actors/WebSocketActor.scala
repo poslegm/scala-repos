@@ -14,11 +14,18 @@ import scala.reflect.ClassTag
 private[play] object WebSocketActor {
 
   object WebSocketActorSupervisor {
-    def props[In, Out : ClassTag](enumerator: Enumerator[In],
-                                  iteratee: Iteratee[Out, Unit],
-                                  createHandler: ActorRef => Props) =
-      Props(new WebSocketActorSupervisor[In, Out](
-              enumerator, iteratee, createHandler))
+    def props[In, Out: ClassTag](
+        enumerator: Enumerator[In],
+        iteratee: Iteratee[Out, Unit],
+        createHandler: ActorRef => Props
+    ) =
+      Props(
+        new WebSocketActorSupervisor[In, Out](
+          enumerator,
+          iteratee,
+          createHandler
+        )
+      )
   }
 
   /**
@@ -27,7 +34,8 @@ private[play] object WebSocketActor {
   private class WebSocketActorSupervisor[In, Out](
       enumerator: Enumerator[In],
       iteratee: Iteratee[Out, Unit],
-      createHandler: ActorRef => Props)(implicit messageType: ClassTag[Out])
+      createHandler: ActorRef => Props
+  )(implicit messageType: ClassTag[Out])
       extends Actor {
 
     import context.dispatcher
@@ -60,9 +68,9 @@ private[play] object WebSocketActor {
 
     // Use a foreach iteratee to consume the WebSocket and feed it into the Actor
     // It's very important that we use the trampoline execution context here, otherwise it's possible that
-    val consumer = Iteratee.foreach[In] { msg =>
-      webSocketActor ! msg
-    }(play.api.libs.iteratee.Execution.trampoline)
+    val consumer = Iteratee.foreach[In] { msg => webSocketActor ! msg }(
+      play.api.libs.iteratee.Execution.trampoline
+    )
 
     (enumerator |>> consumer).onComplete { _ =>
       // When the WebSocket is complete, either due to an error or not, shutdown
@@ -86,9 +94,10 @@ private[play] object WebSocketActor {
       channel.end()
     }
 
-    override def supervisorStrategy = OneForOneStrategy() {
-      case _ => SupervisorStrategy.Stop
-    }
+    override def supervisorStrategy =
+      OneForOneStrategy() {
+        case _ => SupervisorStrategy.Stop
+      }
   }
 
   object WebSocketsActor {
@@ -105,11 +114,12 @@ private[play] object WebSocketActor {
       *                      to.
       * @param messageType The type of message this WebSocket deals with.
       */
-    case class Connect[In, Out](requestId: Long,
-                                enumerator: Enumerator[In],
-                                iteratee: Iteratee[Out, Unit],
-                                createHandler: ActorRef => Props)(
-        implicit val messageType: ClassTag[Out])
+    case class Connect[In, Out](
+        requestId: Long,
+        enumerator: Enumerator[In],
+        iteratee: Iteratee[Out, Unit],
+        createHandler: ActorRef => Props
+    )(implicit val messageType: ClassTag[Out])
   }
 
   /**
@@ -121,9 +131,10 @@ private[play] object WebSocketActor {
     def receive = {
       case c @ Connect(requestId, enumerator, iteratee, createHandler) =>
         implicit val mt = c.messageType
-        context.actorOf(WebSocketActorSupervisor.props(
-                            enumerator, iteratee, createHandler),
-                        requestId.toString)
+        context.actorOf(
+          WebSocketActorSupervisor.props(enumerator, iteratee, createHandler),
+          requestId.toString
+        )
     }
   }
 
@@ -133,7 +144,8 @@ private[play] object WebSocketActor {
   object WebSocketsExtension extends ExtensionId[WebSocketsExtension] {
     def createExtension(system: ExtendedActorSystem) = {
       new WebSocketsExtension(
-          system.systemActorOf(WebSocketsActor.props, "websockets"))
+        system.systemActorOf(WebSocketsActor.props, "websockets")
+      )
     }
   }
 

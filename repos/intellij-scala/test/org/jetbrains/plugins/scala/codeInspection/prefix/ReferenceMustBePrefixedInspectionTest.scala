@@ -3,7 +3,10 @@ package codeInspection.prefix
 
 import com.intellij.codeInspection.LocalInspectionTool
 import org.jetbrains.plugins.scala.codeInspection.ScalaLightInspectionFixtureTestAdapter
-import org.jetbrains.plugins.scala.codeInspection.prefixMutableCollections.{AddPrefixFix, ReferenceMustBePrefixedInspection}
+import org.jetbrains.plugins.scala.codeInspection.prefixMutableCollections.{
+  AddPrefixFix,
+  ReferenceMustBePrefixedInspection
+}
 
 /**
   * Nikolay.Tropin
@@ -24,7 +27,8 @@ class ReferenceMustBePrefixedInspectionTest
     testFix(text, result)
   }
 
-  def testType() = doTest(
+  def testType() =
+    doTest(
       s"""import java.util.List
         |
         |object AAA {
@@ -41,9 +45,10 @@ class ReferenceMustBePrefixedInspectionTest
        |object AAA {
        |  val list: util.List[Int] = null
        |}"""
-  )
+    )
 
-  def testExtends() = doTest(
+  def testExtends() =
+    doTest(
       s"""import scala.collection.mutable.Seq
         |
         |object AAA extends ${START}Seq$END[Int]""",
@@ -54,9 +59,10 @@ class ReferenceMustBePrefixedInspectionTest
        |import scala.collection.mutable.Seq
        |
        |object AAA extends mutable.Seq[Int]"""
-  )
+    )
 
-  def testApply() = doTest(
+  def testApply() =
+    doTest(
       s"""import scala.collection.mutable.Seq
         |
         |object AAA {
@@ -73,9 +79,10 @@ class ReferenceMustBePrefixedInspectionTest
       |object AAA {
       |  val s = mutable.Seq(0, 1)
       |}"""
-  )
+    )
 
-  def testUnapply() = doTest(
+  def testUnapply() =
+    doTest(
       s"""import scala.collection.mutable.HashMap
        |
        |object AAA {
@@ -98,9 +105,10 @@ class ReferenceMustBePrefixedInspectionTest
       |    case hm: mutable.HashMap =>
       |  }
       |}"""
-  )
+    )
 
-  def testHaveImport() = doTest(
+  def testHaveImport() =
+    doTest(
       s"""import scala.collection.mutable.HashMap
        |import scala.collection.mutable
        |
@@ -119,5 +127,5 @@ class ReferenceMustBePrefixedInspectionTest
       |object AAA {
       |  val hm: mutable.HashMap = null
       |}"""
-  )
+    )
 }

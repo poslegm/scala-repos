@@ -471,8 +471,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.singleType]] */
     @deprecated(
-        "Use `ClassSymbol.thisPrefix` or `internal.singleType` instead",
-        "2.11.0")
+      "Use `ClassSymbol.thisPrefix` or `internal.singleType` instead",
+      "2.11.0"
+    )
     def apply(pre: Type, sym: Symbol)(implicit token: CompatToken): Type =
       internal.singleType(pre, sym)
   }
@@ -517,10 +518,12 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.superType]] */
     @deprecated(
-        "Use `ClassSymbol.superPrefix` or `internal.superType` instead",
-        "2.11.0")
-    def apply(thistpe: Type, supertpe: Type)(
-        implicit token: CompatToken): Type =
+      "Use `ClassSymbol.superPrefix` or `internal.superType` instead",
+      "2.11.0"
+    )
+    def apply(thistpe: Type, supertpe: Type)(implicit
+        token: CompatToken
+    ): Type =
       internal.superType(thistpe, supertpe)
   }
 
@@ -613,8 +616,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.typeRef]] */
     @deprecated("Use `internal.typeRef` instead", "2.11.0")
-    def apply(pre: Type, sym: Symbol, args: List[Type])(
-        implicit token: CompatToken): Type = internal.typeRef(pre, sym, args)
+    def apply(pre: Type, sym: Symbol, args: List[Type])(implicit
+        token: CompatToken
+    ): Type = internal.typeRef(pre, sym, args)
   }
 
   /** The API that all type refs support.
@@ -676,14 +680,16 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.refinedType]] */
     @deprecated("Use `internal.refinedType` instead", "2.11.0")
-    def apply(parents: List[Type], decls: Scope)(
-        implicit token: CompatToken): RefinedType =
+    def apply(parents: List[Type], decls: Scope)(implicit
+        token: CompatToken
+    ): RefinedType =
       internal.refinedType(parents, decls)
 
     /** @see [[InternalApi.refinedType]] */
     @deprecated("Use `internal.refinedType` instead", "2.11.0")
-    def apply(parents: List[Type], decls: Scope, clazz: Symbol)(
-        implicit token: CompatToken): RefinedType =
+    def apply(parents: List[Type], decls: Scope, clazz: Symbol)(implicit
+        token: CompatToken
+    ): RefinedType =
       internal.refinedType(parents, decls, clazz)
   }
 
@@ -731,8 +737,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.classInfoType]] */
     @deprecated("Use `internal.classInfoType` instead", "2.11.0")
-    def apply(parents: List[Type], decls: Scope, typeSymbol: Symbol)(
-        implicit token: CompatToken): ClassInfoType =
+    def apply(parents: List[Type], decls: Scope, typeSymbol: Symbol)(implicit
+        token: CompatToken
+    ): ClassInfoType =
       internal.classInfoType(parents, decls, typeSymbol)
   }
 
@@ -784,8 +791,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.methodType]] */
     @deprecated("Use `internal.methodType` instead", "2.11.0")
-    def apply(params: List[Symbol], resultType: Type)(
-        implicit token: CompatToken): MethodType =
+    def apply(params: List[Symbol], resultType: Type)(implicit
+        token: CompatToken
+    ): MethodType =
       internal.methodType(params, resultType)
   }
 
@@ -824,8 +832,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.nullaryMethodType]] */
     @deprecated("Use `internal.nullaryMethodType` instead", "2.11.0")
-    def apply(resultType: Type)(
-        implicit token: CompatToken): NullaryMethodType =
+    def apply(
+        resultType: Type
+    )(implicit token: CompatToken): NullaryMethodType =
       internal.nullaryMethodType(resultType)
   }
 
@@ -862,8 +871,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.polyType]] */
     @deprecated("Use `internal.polyType` instead", "2.11.0")
-    def apply(typeParams: List[Symbol], resultType: Type)(
-        implicit token: CompatToken): PolyType =
+    def apply(typeParams: List[Symbol], resultType: Type)(implicit
+        token: CompatToken
+    ): PolyType =
       internal.polyType(typeParams, resultType)
   }
 
@@ -904,8 +914,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.existentialType]] */
     @deprecated("Use `internal.existentialType` instead", "2.11.0")
-    def apply(quantified: List[Symbol], underlying: Type)(
-        implicit token: CompatToken): ExistentialType =
+    def apply(quantified: List[Symbol], underlying: Type)(implicit
+        token: CompatToken
+    ): ExistentialType =
       internal.existentialType(quantified, underlying)
   }
 
@@ -946,8 +957,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.annotatedType]] */
     @deprecated("Use `internal.annotatedType` instead", "2.11.0")
-    def apply(annotations: List[Annotation], underlying: Type)(
-        implicit token: CompatToken): AnnotatedType =
+    def apply(annotations: List[Annotation], underlying: Type)(implicit
+        token: CompatToken
+    ): AnnotatedType =
       internal.annotatedType(annotations, underlying)
   }
 
@@ -1050,8 +1062,9 @@ trait Types { self: Universe =>
 
     /** @see [[InternalApi.boundedWildcardType]] */
     @deprecated("Use `internal.boundedWildcardType` instead", "2.11.0")
-    def apply(bounds: TypeBounds)(
-        implicit token: CompatToken): BoundedWildcardType =
+    def apply(
+        bounds: TypeBounds
+    )(implicit token: CompatToken): BoundedWildcardType =
       internal.boundedWildcardType(bounds)
   }
 

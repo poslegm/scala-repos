@@ -20,8 +20,10 @@ import org.scalajs.core.tools.javascript.ESLevel
 import ConcurrencyUtils._
 
 final class ParIncOptimizer(
-    semantics: Semantics, esLevel: ESLevel, considerPositions: Boolean)
-    extends GenIncOptimizer(semantics, esLevel, considerPositions) {
+    semantics: Semantics,
+    esLevel: ESLevel,
+    considerPositions: Boolean
+) extends GenIncOptimizer(semantics, esLevel, considerPositions) {
 
   private[optimizer] object CollOps extends GenIncOptimizer.AbsCollOps {
     type Map[K, V] = TrieMap[K, V]
@@ -53,8 +55,9 @@ final class ParIncOptimizer(
     def getAcc[K, V](map: AccMap[K, V], k: K): GenIterable[V] =
       map.get(k).fold[Iterable[V]](Nil)(_.removeAll()).toParArray
 
-    def parFlatMapKeys[A, B](map: AccMap[A, _])(
-        f: A => GenTraversableOnce[B]): GenIterable[B] =
+    def parFlatMapKeys[A, B](
+        map: AccMap[A, _]
+    )(f: A => GenTraversableOnce[B]): GenIterable[B] =
       map.keys.flatMap(f).toParArray
 
     // Operations on ParIterable
@@ -77,7 +80,9 @@ final class ParIncOptimizer(
     methodsToProcess += method
 
   private[optimizer] def newMethodImpl(
-      owner: MethodContainer, encodedName: String): MethodImpl =
+      owner: MethodContainer,
+      encodedName: String
+  ): MethodImpl =
     new ParMethodImpl(owner, encodedName)
 
   private[optimizer] def processAllTaggedMethods(): Unit = {

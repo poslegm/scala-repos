@@ -18,18 +18,19 @@ trait ArrayObjectOutput extends ObjectOutput {
   def anyRefArr: Array[Any]
 }
 
-class GenObjectInput(booleanIter: Iterator[Boolean],
-                     byteIter: Iterator[Int],
-                     charIter: Iterator[Int],
-                     doubleIter: Iterator[Double],
-                     floatIter: Iterator[Float],
-                     intIter: Iterator[Int],
-                     longIter: Iterator[Long],
-                     shortIter: Iterator[Int],
-                     arrByteIter: Iterator[Array[Byte]],
-                     anyRefIter: Iterator[Any],
-                     stringIter: Iterator[String])
-    extends ObjectInput {
+class GenObjectInput(
+    booleanIter: Iterator[Boolean],
+    byteIter: Iterator[Int],
+    charIter: Iterator[Int],
+    doubleIter: Iterator[Double],
+    floatIter: Iterator[Float],
+    intIter: Iterator[Int],
+    longIter: Iterator[Long],
+    shortIter: Iterator[Int],
+    arrByteIter: Iterator[Array[Byte]],
+    anyRefIter: Iterator[Any],
+    stringIter: Iterator[String]
+) extends ObjectInput {
   def readByte(): Byte = byteIter.next().asInstanceOf[Byte]
   def readBoolean(): Boolean = booleanIter.next()
   def readChar(): Char = charIter.next().asInstanceOf[Char]
@@ -59,7 +60,8 @@ class GenObjectInput(booleanIter: Iterator[Boolean],
 
 case class GenObjectOutput(
     val booleanArrBuf: ArrayBuffer[Boolean] = new ArrayBuffer[Boolean],
-    val byteArrBuf: ArrayBuffer[Int] = new ArrayBuffer[Int], // Byte stored as Int
+    val byteArrBuf: ArrayBuffer[Int] =
+      new ArrayBuffer[Int], // Byte stored as Int
     val charArrBuf: ArrayBuffer[Int] = new ArrayBuffer[Int],
     val doubleArrBuf: ArrayBuffer[Double] = new ArrayBuffer[Double],
     val floatArrBuf: ArrayBuffer[Float] = new ArrayBuffer[Float],
@@ -69,20 +71,21 @@ case class GenObjectOutput(
     val arrByteArrBuf: ArrayBuffer[Array[Byte]] = new ArrayBuffer[Array[Byte]],
     val anyRefArrBuf: ArrayBuffer[Any] = new ArrayBuffer[Any],
     val stringArrBuf: ArrayBuffer[String] = new ArrayBuffer[String]
-)
-    extends ObjectOutput {
+) extends ObjectOutput {
   def toInput: ObjectInput =
-    new GenObjectInput(booleanArrBuf.iterator,
-                       byteArrBuf.iterator,
-                       charArrBuf.iterator,
-                       doubleArrBuf.iterator,
-                       floatArrBuf.iterator,
-                       intArrBuf.iterator,
-                       longArrBuf.iterator,
-                       shortArrBuf.iterator,
-                       arrByteArrBuf.iterator,
-                       anyRefArrBuf.iterator,
-                       stringArrBuf.iterator)
+    new GenObjectInput(
+      booleanArrBuf.iterator,
+      byteArrBuf.iterator,
+      charArrBuf.iterator,
+      doubleArrBuf.iterator,
+      floatArrBuf.iterator,
+      intArrBuf.iterator,
+      longArrBuf.iterator,
+      shortArrBuf.iterator,
+      arrByteArrBuf.iterator,
+      anyRefArrBuf.iterator,
+      stringArrBuf.iterator
+    )
 
   // Members declared in java.io.DataOutput
   def writeBoolean(x: Boolean): Unit = { booleanArrBuf += x }

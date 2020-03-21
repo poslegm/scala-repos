@@ -27,7 +27,8 @@ private[collection] trait Wrappers {
   }
 
   case class IteratorWrapper[A](underlying: Iterator[A])
-      extends ju.Iterator[A] with ju.Enumeration[A] {
+      extends ju.Iterator[A]
+      with ju.Enumeration[A] {
     def hasNext = underlying.hasNext
     def next() = underlying.next()
     def hasMoreElements = underlying.hasNext
@@ -40,28 +41,33 @@ private[collection] trait Wrappers {
   }
 
   case class JIteratorWrapper[A](underlying: ju.Iterator[A])
-      extends AbstractIterator[A] with Iterator[A] {
+      extends AbstractIterator[A]
+      with Iterator[A] {
     def hasNext = underlying.hasNext
     def next() = underlying.next
   }
 
   case class JEnumerationWrapper[A](underlying: ju.Enumeration[A])
-      extends AbstractIterator[A] with Iterator[A] {
+      extends AbstractIterator[A]
+      with Iterator[A] {
     def hasNext = underlying.hasMoreElements
     def next() = underlying.nextElement
   }
 
   case class IterableWrapper[A](underlying: Iterable[A])
-      extends ju.AbstractCollection[A] with IterableWrapperTrait[A] {}
+      extends ju.AbstractCollection[A]
+      with IterableWrapperTrait[A] {}
 
   case class JIterableWrapper[A](underlying: jl.Iterable[A])
-      extends AbstractIterable[A] with Iterable[A] {
+      extends AbstractIterable[A]
+      with Iterable[A] {
     def iterator = underlying.iterator
     def newBuilder[B] = new mutable.ArrayBuffer[B]
   }
 
   case class JCollectionWrapper[A](underlying: ju.Collection[A])
-      extends AbstractIterable[A] with Iterable[A] {
+      extends AbstractIterable[A]
+      with Iterable[A] {
     def iterator = underlying.iterator
     override def size = underlying.size
     override def isEmpty = underlying.isEmpty
@@ -69,12 +75,14 @@ private[collection] trait Wrappers {
   }
 
   case class SeqWrapper[A](underlying: Seq[A])
-      extends ju.AbstractList[A] with IterableWrapperTrait[A] {
+      extends ju.AbstractList[A]
+      with IterableWrapperTrait[A] {
     def get(i: Int) = underlying(i)
   }
 
   case class MutableSeqWrapper[A](underlying: mutable.Seq[A])
-      extends ju.AbstractList[A] with IterableWrapperTrait[A] {
+      extends ju.AbstractList[A]
+      with IterableWrapperTrait[A] {
     def get(i: Int) = underlying(i)
     override def set(i: Int, elem: A) = {
       val p = underlying(i)
@@ -84,7 +92,8 @@ private[collection] trait Wrappers {
   }
 
   case class MutableBufferWrapper[A](underlying: mutable.Buffer[A])
-      extends ju.AbstractList[A] with IterableWrapperTrait[A] {
+      extends ju.AbstractList[A]
+      with IterableWrapperTrait[A] {
     def get(i: Int) = underlying(i)
     override def set(i: Int, elem: A) = {
       val p = underlying(i); underlying(i) = elem; p
@@ -94,7 +103,8 @@ private[collection] trait Wrappers {
   }
 
   case class JListWrapper[A](underlying: ju.List[A])
-      extends mutable.AbstractBuffer[A] with mutable.Buffer[A] {
+      extends mutable.AbstractBuffer[A]
+      with mutable.Buffer[A] {
     def length = underlying.size
     override def isEmpty = underlying.isEmpty
     override def iterator: Iterator[A] = underlying.iterator
@@ -117,34 +127,39 @@ private[collection] trait Wrappers {
 
   @SerialVersionUID(1L)
   class SetWrapper[A](underlying: Set[A])
-      extends ju.AbstractSet[A] with Serializable { self =>
+      extends ju.AbstractSet[A]
+      with Serializable { self =>
     // Note various overrides to avoid performance gotchas.
     override def contains(o: Object): Boolean = {
-      try { underlying.contains(o.asInstanceOf[A]) } catch {
+      try { underlying.contains(o.asInstanceOf[A]) }
+      catch {
         case cce: ClassCastException => false
       }
     }
     override def isEmpty = underlying.isEmpty
     def size = underlying.size
-    def iterator = new ju.Iterator[A] {
-      val ui = underlying.iterator
-      var prev: Option[A] = None
-      def hasNext = ui.hasNext
-      def next = { val e = ui.next(); prev = Some(e); e }
-      def remove = prev match {
-        case Some(e) =>
-          underlying match {
-            case ms: mutable.Set[a] =>
-              ms remove e
-              prev = None
+    def iterator =
+      new ju.Iterator[A] {
+        val ui = underlying.iterator
+        var prev: Option[A] = None
+        def hasNext = ui.hasNext
+        def next = { val e = ui.next(); prev = Some(e); e }
+        def remove =
+          prev match {
+            case Some(e) =>
+              underlying match {
+                case ms: mutable.Set[a] =>
+                  ms remove e
+                  prev = None
+                case _ =>
+                  throw new UnsupportedOperationException("remove")
+              }
             case _ =>
-              throw new UnsupportedOperationException("remove")
+              throw new IllegalStateException(
+                "next must be called at least once before remove"
+              )
           }
-        case _ =>
-          throw new IllegalStateException(
-              "next must be called at least once before remove")
       }
-    }
   }
 
   case class MutableSetWrapper[A](underlying: mutable.Set[A])
@@ -155,14 +170,16 @@ private[collection] trait Wrappers {
       sz < underlying.size
     }
     override def remove(elem: AnyRef) =
-      try underlying remove elem.asInstanceOf[A] catch {
+      try underlying remove elem.asInstanceOf[A]
+      catch {
         case ex: ClassCastException => false
       }
     override def clear() = underlying.clear()
   }
 
   case class JSetWrapper[A](underlying: ju.Set[A])
-      extends mutable.AbstractSet[A] with mutable.Set[A]
+      extends mutable.AbstractSet[A]
+      with mutable.Set[A]
       with mutable.SetLike[A, JSetWrapper[A]] {
 
     override def size = underlying.size
@@ -187,13 +204,14 @@ private[collection] trait Wrappers {
 
   @SerialVersionUID(1L)
   class MapWrapper[A, B](underlying: Map[A, B])
-      extends ju.AbstractMap[A, B] with Serializable { self =>
+      extends ju.AbstractMap[A, B]
+      with Serializable { self =>
     override def size = underlying.size
 
     override def get(key: AnyRef): B =
       try {
         underlying get key.asInstanceOf[A] match {
-          case None => null.asInstanceOf[B]
+          case None    => null.asInstanceOf[B]
           case Some(v) => v
         }
       } catch {
@@ -204,45 +222,49 @@ private[collection] trait Wrappers {
       new ju.AbstractSet[ju.Map.Entry[A, B]] {
         def size = self.size
 
-        def iterator = new ju.Iterator[ju.Map.Entry[A, B]] {
-          val ui = underlying.iterator
-          var prev: Option[A] = None
+        def iterator =
+          new ju.Iterator[ju.Map.Entry[A, B]] {
+            val ui = underlying.iterator
+            var prev: Option[A] = None
 
-          def hasNext = ui.hasNext
+            def hasNext = ui.hasNext
 
-          def next() = {
-            val (k, v) = ui.next()
-            prev = Some(k)
-            new ju.Map.Entry[A, B] {
-              import scala.util.hashing.byteswap32
-              def getKey = k
-              def getValue = v
-              def setValue(v1: B) = self.put(k, v1)
-              override def hashCode =
-                byteswap32(k.##) + (byteswap32(v.##) << 16)
-              override def equals(other: Any) = other match {
-                case e: ju.Map.Entry[_, _] => k == e.getKey && v == e.getValue
-                case _ => false
+            def next() = {
+              val (k, v) = ui.next()
+              prev = Some(k)
+              new ju.Map.Entry[A, B] {
+                import scala.util.hashing.byteswap32
+                def getKey = k
+                def getValue = v
+                def setValue(v1: B) = self.put(k, v1)
+                override def hashCode =
+                  byteswap32(k.##) + (byteswap32(v.##) << 16)
+                override def equals(other: Any) =
+                  other match {
+                    case e: ju.Map.Entry[_, _] =>
+                      k == e.getKey && v == e.getValue
+                    case _ => false
+                  }
+              }
+            }
+
+            def remove() {
+              prev match {
+                case Some(k) =>
+                  underlying match {
+                    case mm: mutable.Map[a, _] =>
+                      mm remove k
+                      prev = None
+                    case _ =>
+                      throw new UnsupportedOperationException("remove")
+                  }
+                case _ =>
+                  throw new IllegalStateException(
+                    "next must be called at least once before remove"
+                  )
               }
             }
           }
-
-          def remove() {
-            prev match {
-              case Some(k) =>
-                underlying match {
-                  case mm: mutable.Map[a, _] =>
-                    mm remove k
-                    prev = None
-                  case _ =>
-                    throw new UnsupportedOperationException("remove")
-                }
-              case _ =>
-                throw new IllegalStateException(
-                    "next must be called at least once before remove")
-            }
-          }
-        }
       }
 
     override def containsKey(key: AnyRef): Boolean =
@@ -258,15 +280,16 @@ private[collection] trait Wrappers {
 
   case class MutableMapWrapper[A, B](underlying: mutable.Map[A, B])
       extends MapWrapper[A, B](underlying) {
-    override def put(k: A, v: B) = underlying.put(k, v) match {
-      case Some(v1) => v1
-      case None => null.asInstanceOf[B]
-    }
+    override def put(k: A, v: B) =
+      underlying.put(k, v) match {
+        case Some(v1) => v1
+        case None     => null.asInstanceOf[B]
+      }
 
     override def remove(k: AnyRef): B =
       try {
         underlying remove k.asInstanceOf[A] match {
-          case None => null.asInstanceOf[B]
+          case None    => null.asInstanceOf[B]
           case Some(v) => v
         }
       } catch {
@@ -277,8 +300,11 @@ private[collection] trait Wrappers {
   }
 
   trait JMapWrapperLike[
-      A, B, +Repr <: mutable.MapLike[A, B, Repr] with mutable.Map[A, B]]
-      extends mutable.Map[A, B] with mutable.MapLike[A, B, Repr] {
+      A,
+      B,
+      +Repr <: mutable.MapLike[A, B, Repr] with mutable.Map[A, B]
+  ] extends mutable.Map[A, B]
+      with mutable.MapLike[A, B, Repr] {
     def underlying: ju.Map[A, B]
 
     override def size = underlying.size
@@ -299,11 +325,12 @@ private[collection] trait Wrappers {
 
     override def remove(k: A): Option[B] = Option(underlying remove k)
 
-    def iterator: Iterator[(A, B)] = new AbstractIterator[(A, B)] {
-      val ui = underlying.entrySet.iterator
-      def hasNext = ui.hasNext
-      def next() = { val e = ui.next(); (e.getKey, e.getValue) }
-    }
+    def iterator: Iterator[(A, B)] =
+      new AbstractIterator[(A, B)] {
+        val ui = underlying.entrySet.iterator
+        def hasNext = ui.hasNext
+        def next() = { val e = ui.next(); (e.getKey, e.getValue) }
+      }
 
     override def clear() = underlying.clear()
 
@@ -311,8 +338,8 @@ private[collection] trait Wrappers {
   }
 
   /** Wraps a Java map as a Scala one.  If the map is to support concurrent access,
-    * use [[JConcurrentMapWrapper]] instead.  If the wrapped map is synchronized 
-    * (e.g. from `java.util.Collections.synchronizedMap`), it is your responsibility 
+    * use [[JConcurrentMapWrapper]] instead.  If the wrapped map is synchronized
+    * (e.g. from `java.util.Collections.synchronizedMap`), it is your responsibility
     * to wrap all non-atomic operations with `underlying.synchronized`.
     * This includes `get`, as `java.util.Map`'s API does not allow for an
     * atomic `get` when `null` values may be present.
@@ -324,14 +351,15 @@ private[collection] trait Wrappers {
   }
 
   class ConcurrentMapWrapper[A, B](
-      override val underlying: concurrent.Map[A, B])
-      extends MutableMapWrapper[A, B](underlying)
+      override val underlying: concurrent.Map[A, B]
+  ) extends MutableMapWrapper[A, B](underlying)
       with juc.ConcurrentMap[A, B] {
 
-    def putIfAbsent(k: A, v: B) = underlying.putIfAbsent(k, v) match {
-      case Some(v) => v
-      case None => null.asInstanceOf[B]
-    }
+    def putIfAbsent(k: A, v: B) =
+      underlying.putIfAbsent(k, v) match {
+        case Some(v) => v
+        case None    => null.asInstanceOf[B]
+      }
 
     def remove(k: AnyRef, v: AnyRef) =
       try {
@@ -341,10 +369,11 @@ private[collection] trait Wrappers {
           false
       }
 
-    def replace(k: A, v: B): B = underlying.replace(k, v) match {
-      case Some(v) => v
-      case None => null.asInstanceOf[B]
-    }
+    def replace(k: A, v: B): B =
+      underlying.replace(k, v) match {
+        case Some(v) => v
+        case None    => null.asInstanceOf[B]
+      }
 
     def replace(k: A, oldval: B, newval: B) =
       underlying.replace(k, oldval, newval)
@@ -384,20 +413,21 @@ private[collection] trait Wrappers {
     def get(key: AnyRef) =
       try {
         underlying get key.asInstanceOf[A] match {
-          case None => null.asInstanceOf[B]
+          case None    => null.asInstanceOf[B]
           case Some(v) => v
         }
       } catch {
         case ex: ClassCastException => null.asInstanceOf[B]
       }
-    def put(key: A, value: B): B = underlying.put(key, value) match {
-      case Some(v) => v
-      case None => null.asInstanceOf[B]
-    }
+    def put(key: A, value: B): B =
+      underlying.put(key, value) match {
+        case Some(v) => v
+        case None    => null.asInstanceOf[B]
+      }
     override def remove(key: AnyRef) =
       try {
         underlying remove key.asInstanceOf[A] match {
-          case None => null.asInstanceOf[B]
+          case None    => null.asInstanceOf[B]
           case Some(v) => v
         }
       } catch {
@@ -406,7 +436,8 @@ private[collection] trait Wrappers {
   }
 
   case class JDictionaryWrapper[A, B](underlying: ju.Dictionary[A, B])
-      extends mutable.AbstractMap[A, B] with mutable.Map[A, B] {
+      extends mutable.AbstractMap[A, B]
+      with mutable.Map[A, B] {
     override def size: Int = underlying.size
 
     def get(k: A) = Option(underlying get k)
@@ -422,7 +453,7 @@ private[collection] trait Wrappers {
 
     def iterator =
       enumerationAsScalaIterator(underlying.keys) map
-      (k => (k, underlying get k))
+        (k => (k, underlying get k))
 
     override def clear() = underlying.clear()
   }

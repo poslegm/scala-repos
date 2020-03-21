@@ -40,7 +40,8 @@ private[io] class OutputStreamWriter(out: OutputStream, bufsize: Int)
   def write(buf: Buf): Future[Unit] =
     if (done.isDefined) done
     else
-      (done or writeOp.getAndSet(_ => Future.exception(WriteExc))(buf)) transform {
+      (done or writeOp
+        .getAndSet(_ => Future.exception(WriteExc))(buf)) transform {
         case Return(_) =>
           writeOp.set(doWrite)
           Future.Done
@@ -58,7 +59,8 @@ private[io] class OutputStreamWriter(out: OutputStream, bufsize: Int)
     if (done.updateIfEmpty(Throw(CloseExc)))
       FuturePool.unboundedPool {
         out.close()
-      } else Future.Done
+      }
+    else Future.Done
 }
 
 private object OutputStreamWriter {

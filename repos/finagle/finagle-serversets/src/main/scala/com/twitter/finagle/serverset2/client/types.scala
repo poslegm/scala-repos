@@ -25,17 +25,20 @@ private[serverset2] sealed trait Node {
 }
 
 private[serverset2] object Node {
-  case class ACL(acl: Seq[com.twitter.finagle.serverset2.client.Data.ACL],
-                 stat: com.twitter.finagle.serverset2.client.Data.Stat)
-      extends Node
+  case class ACL(
+      acl: Seq[com.twitter.finagle.serverset2.client.Data.ACL],
+      stat: com.twitter.finagle.serverset2.client.Data.Stat
+  ) extends Node
 
-  case class Children(children: Seq[String],
-                      stat: com.twitter.finagle.serverset2.client.Data.Stat)
-      extends Node
+  case class Children(
+      children: Seq[String],
+      stat: com.twitter.finagle.serverset2.client.Data.Stat
+  ) extends Node
 
   case class Data(
-      data: Option[Buf], stat: com.twitter.finagle.serverset2.client.Data.Stat)
-      extends Node
+      data: Option[Buf],
+      stat: com.twitter.finagle.serverset2.client.Data.Stat
+  ) extends Node
 }
 
 private[serverset2] sealed abstract class NodeEvent(val name: String)
@@ -52,11 +55,12 @@ private[serverset2] object NodeEvent {
 private[serverset2] sealed trait Op
 
 private[serverset2] object Op {
-  case class Create(path: String,
-                    data: Option[Buf],
-                    acl: Seq[Data.ACL],
-                    createMode: CreateMode)
-      extends Op
+  case class Create(
+      path: String,
+      data: Option[Buf],
+      acl: Seq[Data.ACL],
+      createMode: CreateMode
+  ) extends Op
   case class SetData(path: String, data: Option[Buf], version: Option[Int])
       extends Op
   case class Delete(path: String, version: Option[Int]) extends Op
@@ -93,6 +97,6 @@ private[serverset2] object WatchState {
   object Pending extends WatchState
   case class Determined(event: NodeEvent) extends WatchState
   case class SessionState(
-      state: com.twitter.finagle.serverset2.client.SessionState)
-      extends WatchState
+      state: com.twitter.finagle.serverset2.client.SessionState
+  ) extends WatchState
 }
